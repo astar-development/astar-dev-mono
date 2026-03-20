@@ -1,0 +1,169 @@
+<Project>
+
+  <!--
+    Directory.Build.targets — repo root
+    ═════════════════════════════════════
+    MSBuild imports this file automatically for every project, AFTER the
+    project's own .csproj has been evaluated. This makes it the right place
+    for targets that need to act on fully-resolved properties and items —
+    things that wouldn't work in Directory.Build.props because the project
+    file hasn't been read yet at that point.
+
+    Use this file for:
+      • Enforcing conventions (package metadata completeness, naming)
+      • Source Link wiring (runs after SDK targets are imported)
+      • Consistent copyright header injection
+      • Post-build housekeeping
+
+    Sub-folders can have their own Directory.Build.targets that imports this
+    one, following the same pattern as Directory.Build.props:
+
+        <Project>
+          <Import Project="$([MSBuild]::GetPathOfFileAbove(
+            'Directory.Build.targets',
+            '$(MSBuildThisFileDirectory)../'))" />
+          ... additions here ...
+        </Project>
+  -->
+
+
+  <!-- ── Source Link — GitHub ──────────────────────────────────────────────
+    Source Link embeds a mapping from PDB source paths to GitHub URLs so
+    consumers can step through your package source in their debugger.
+
+    Requires Microsoft.SourceLink.GitHub in Directory.Packages.props and
+    <EmbedAllSources>true</EmbedAllSources> in Directory.Build.props
+    (both already set).
+
+    This target only applies to packable projects — test projects and apps
+    that set IsPackable=false are unaffected.
+  -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub"
+                      PrivateAssets="All" />
+  </ItemGroup>
+
+
+  <!-- ── Enforce package metadata on packable projects ─────────────────────
+    Catches packages that are missing required NuGet metadata before they
+    get anywhere near a publish step. Fails loudly at build time rather
+    than silently publishing an incomplete package.
+
+    Required fields: Description, PackageTags, PackageLicenseExpression.
+    Authors, Copyright, and RepositoryUrl are set globally in
+    Directory.Build.props so they're not checked here.
+  -->
+  <Target Name="ValidatePackageMetadata"
+          BeforeTargets="GenerateNuspec"
+          Condition="'$(IsPackable)' == 'true' AND '$(DesignTimeBuild)' != 'true'">
+
+    <Error Condition="'$(Description)' == ''"
+           Text="[$(MSBuildProjectName)] NuGet package is missing a Description.
+                 Add &lt;Description&gt;...&lt;/Description&gt; to the .csproj." />
+
+    <Error Condition="'$(PackageTags)' == ''"
+           Text="[$(MSBuildProjectName)] NuGet package is missing PackageTags.
+                 Add &lt;PackageTags&gt;tag1;tag2&lt;/PackageTags&gt; to the .csproj." />
+
+    <Error Condition="'$(PackageLicenseExpression)' == '' AND '$(PackageLicenseFile)' == ''"
+           Text="[$(MSBuildProjectName)] NuGet package is missing a license.
+                 Add &lt;PackageLicenseExpression&gt;MIT&lt;/PackageLicenseExpression&gt;
+                 (or your chosen SPDX identifier) to the .csproj." />
+
+  </Target>
+
+
+  <!-- ── Enforce project naming conventions ────────────────────────────────
+    Ensures every project in packages/ starts with your company prefix.
+    Prevents a stray 'Utilities.csproj' slipping through without a proper
+    namespaced name.
+
+    Adjust the prefix and folder condition to match your structure.
+  -->
+  <Target Name="ValidateProjectNaming"
+          BeforeTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+
+    <PropertyGroup>
+      <_IsInPackagesFolder>$([System.String]::new('$(MSBuildProjectDirectory)').Contains('/packages/'))</_IsInPackagesFolder>
+      <_HasCorrectPrefix>$([System.String]::new('$(MSBuildProjectName)').StartsWith('AStar.Development.'))</_HasCorrectPrefix>
+    </PropertyGroup>
+
+    <Warning Condition="'$(_IsInPackagesFolder)' == 'true' AND '$(_HasCorrectPrefix)' == 'false'"
+             Text="[$(MSBuildProjectName)] Projects in packages/ should be prefixed
+                   'AStar.Development.' to match your NuGet package naming convention." />
+
+  </Target>
+
+
+  <!-- ── Warn on local version fallback ────────────────────────────────────
+    The '0.0.1-local' version in Directory.Build.props is a fallback for
+    developer builds. This target warns (not errors) if a packable project
+    is packed with that version, which usually means someone ran
+    `dotnet pack` locally without supplying a version.
+  -->
+  <Target Name="WarnOnLocalVersion"
+          BeforeTargets="GenerateNuspec"
+          Condition="'$(IsPackable)' == 'true' AND '$(DesignTimeBuild)' != 'true'">
+
+    <Warning Condition="$(Version.EndsWith('-local'))"
+             Text="[$(MSBuildProjectName)] Packing with local fallback version '$(Version)'.
+                   Supply a real version: dotnet pack -p:Version=1.2.3" />
+
+  </Target>
+
+
+  <!-- ── Reproducible builds: stamp build metadata ─────────────────────────
+    Writes a BuildInfo.txt into the output directory containing the
+    version, commit SHA, and build timestamp. Useful for diagnosing
+    'which version is actually deployed' questions.
+
+    Only runs for non-test Release builds.
+  -->
+  <Target Name="WriteBuildInfo"
+          AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release' AND
+                     '$(IsPackable)' == 'true' AND
+                     '$(DesignTimeBuild)' != 'true'">
+
+    <PropertyGroup>
+      <_BuildInfoPath>$(OutputPath)BuildInfo.txt</_BuildInfoPath>
+      <_BuildInfoContent>
+Project:    $(MSBuildProjectName)
+Version:    $(Version)
+Commit:     $(SourceRevisionId)
+Built:      $([System.DateTime]::UtcNow.ToString('yyyy-MM-dd HH:mm:ss')) UTC
+Framework:  $(TargetFramework)
+      </_BuildInfoContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_BuildInfoPath)"
+                      Lines="$(_BuildInfoContent)"
+                      Overwrite="true" />
+
+  </Target>
+
+
+  <!-- ── Clean up BuildInfo on Clean ──────────────────────────────────────
+    Ensures `dotnet clean` removes the BuildInfo.txt file along with
+    everything else in the output directory.
+  -->
+  <Target Name="CleanBuildInfo" AfterTargets="Clean">
+    <Delete Files="$(OutputPath)BuildInfo.txt" />
+  </Target>
+
+
+  <!-- ── Test projects: enable blame mode for hung test detection ──────────
+    When a test run hangs (common with Avalonia UI tests if the headless
+    display isn't configured correctly), blame mode writes a sequence file
+    so you can see exactly which test was running when the process hung.
+
+    Only applies to test projects (IsPackable=false + name ends in .Tests).
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR
+                             $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
+    <VSTestBlame>true</VSTestBlame>
+    <VSTestBlameCrash>true</VSTestBlameCrash>
+  </PropertyGroup>
+
+</Project>

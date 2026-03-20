@@ -1,0 +1,176 @@
+# ════════════════════════════════════════════════════════════════════════════
+# nuget-publish.yml
+# Triggers on a version tag (e.g. v1.2.3 or packages/my-pkg/v2.0.0).
+#
+# Two tagging strategies are supported — pick one and document it in README:
+#
+#   A) Repo-wide tag:      v1.2.3
+#      Publishes ALL packages in packages/ at the same version.
+#      Simple, good when your packages are tightly coupled and versioned together.
+#
+#   B) Per-package tag:    packages/MyPkg.Core/v1.2.3
+#      Publishes only the tagged package.
+#      Better when packages have independent release cadences.
+#
+# This workflow implements strategy A by default (most practical for a solo
+# developer). Notes for switching to B are included inline.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Publish NuGet packages
+
+on:
+  push:
+    tags:
+      # Matches: v1.0.0, v1.2.3, v2.0.0-beta.1, v3.0.0-rc.2 etc.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+      # For strategy B, also match per-package tags:
+      # - 'packages/**/v[0-9]+.[0-9]+.[0-9]+'
+
+# ── Permissions ──────────────────────────────────────────────────────────────
+permissions:
+  contents: read    # Checkout the repo
+  packages: write   # Push .nupkg files to GitHub Packages
+
+# ── Environment variables ─────────────────────────────────────────────────────
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+
+jobs:
+
+  validate-and-publish:
+    name: Build, test & publish
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # Full history for GitVersion / Nerdbank.GitVersioning
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # ── Derive the version from the tag ────────────────────────────────────
+      # Strips the leading 'v' from the tag (v1.2.3 → 1.2.3) and exposes it
+      # as PACKAGE_VERSION for use in subsequent steps.
+      - name: Extract version from tag
+        id: version
+        run: |
+          RAW_TAG="${{ github.ref_name }}"
+          # Strip leading 'v' — NuGet versions don't include it
+          VERSION="${RAW_TAG#v}"
+          echo "PACKAGE_VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Publishing version: ${VERSION}"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      # Authenticate so restore can pull your own packages if needed
+      - name: Authenticate to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Restore
+        run: dotnet restore
+
+      # ── Build in Release with the tag-derived version ──────────────────────
+      # Version, AssemblyVersion and FileVersion are all stamped here.
+      # This overrides the '0.0.1-local' fallback in Directory.Build.props.
+      - name: Build
+        run: |
+          dotnet build \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${{ env.PACKAGE_VERSION }} \
+            -p:AssemblyVersion=${{ steps.version.outputs.version }} \
+            -p:FileVersion=${{ steps.version.outputs.version }} \
+            -p:TreatWarningsAsErrors=true
+
+      # ── Run tests before packing — don't publish broken packages ──────────
+      - name: Test
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=results.trx" \
+            --results-directory ./TestResults
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Publish — test results
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      # ── Pack ────────────────────────────────────────────────────────────────
+      # Only packs projects where <IsPackable>true</IsPackable> (the default).
+      # Test projects are excluded because Directory.Build.props sets
+      # IsPackable=false for any project ending in .Tests.
+      - name: Pack
+        run: |
+          dotnet pack \
+            --no-build \
+            --configuration Release \
+            -p:Version=${{ env.PACKAGE_VERSION }} \
+            --output ./nupkgs
+
+      # ── Inspect what was packed (useful for debugging) ─────────────────────
+      - name: List packages
+        run: ls -la ./nupkgs/
+
+      # ── Push to GitHub Packages ────────────────────────────────────────────
+      # --skip-duplicate means re-running the workflow for an existing tag
+      # won't fail — it just skips already-published versions.
+      # Remove that flag if you want strict idempotency enforcement.
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --skip-duplicate
+
+      # ── Also push to NuGet.org (if publishing publicly) ───────────────────
+      # Uncomment this step and add NUGET_ORG_API_KEY to your repo secrets
+      # (Settings → Secrets → Actions) to also publish to nuget.org.
+      #
+      # - name: Push to NuGet.org
+      #   run: |
+      #     dotnet nuget push "./nupkgs/*.nupkg" \
+      #       --api-key ${{ secrets.NUGET_ORG_API_KEY }} \
+      #       --source "https://api.nuget.org/v3/index.json" \
+      #       --skip-duplicate
+
+      # ── Create a GitHub Release with the .nupkg files attached ────────────
+      # This gives external consumers a release page with download links
+      # and a place to put release notes.
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: ${{ contains(env.PACKAGE_VERSION, '-') }}
+          generate_release_notes: true    # Auto-generates from PR titles / commits
+          files: |
+            ./nupkgs/*.nupkg
+            ./nupkgs/*.snupkg

@@ -1,0 +1,162 @@
+# ════════════════════════════════════════════════════════════════════════════
+# .gitignore — mono-repo root
+# Covers: .NET 10 / C#, Avalonia, Blazor, Next.js, Terraform, Rider, VS Code
+# ════════════════════════════════════════════════════════════════════════════
+
+
+# ── Build output ─────────────────────────────────────────────────────────────
+# Centralised artifacts/ folder (set in Directory.Build.props).
+# This single line replaces the traditional per-project bin/ and obj/ entries.
+/artifacts/
+
+# Safety net: if any project overrides BaseOutputPath back to default,
+# catch the traditional locations too.
+**/bin/
+**/obj/
+
+
+# ── NuGet ────────────────────────────────────────────────────────────────────
+# Local package cache — restored from feed on demand, never committed.
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+# NuGet fallback folders and HTTP cache
+~/.nuget/
+
+# CPM lock file — commit this if you want fully reproducible restores,
+# leave it ignored if you prefer flexibility. Uncomment to commit:
+# !packages.lock.json
+packages.lock.json
+
+
+# ── .NET / C# ────────────────────────────────────────────────────────────────
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+launchSettings.json
+
+# Publish output
+**/publish/
+**/PublishOutput/
+
+# Entity Framework migrations snapshot backups
+*.Designer.cs.bak
+
+# dotnet test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.cobertura.xml
+
+
+# ── Avalonia ─────────────────────────────────────────────────────────────────
+# Avalonia Designer cache
+.avalonia/
+
+
+# ── Next.js / Node ───────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.npm/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Next.js build trace
+.next/trace
+
+# Vercel (if used for deployment)
+.vercel/
+
+
+# ── Terraform ────────────────────────────────────────────────────────────────
+# Local Terraform working directory
+**/.terraform/
+
+# State files — these contain secrets and infrastructure details.
+# If you use remote state (e.g. Terraform Cloud, Azure Storage) these
+# should never be local. If you use local state intentionally for a
+# dev environment, override per-folder with a nested .gitignore.
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform plan output — can contain secrets
+*.tfplan
+
+# Override files — local developer customisations, not for source control
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform lock file — COMMIT this (ensures consistent provider versions).
+# It is explicitly un-ignored here in case a parent rule ever catches it.
+!.terraform.lock.hcl
+
+# Crash log files
+crash.log
+crash.*.log
+
+
+# ── Scripts ───────────────────────────────────────────────────────────────────
+# Compiled PowerShell script modules
+*.psc1
+*.psm1.bak
+
+
+# ── Rider ────────────────────────────────────────────────────────────────────
+.idea/
+# Run configurations are personal — if you want to share them,
+# move them to .run/ and un-ignore selectively:
+# !.idea/runConfigurations/
+*.sln.iml
+
+
+# ── VS Code ───────────────────────────────────────────────────────────────────
+# The .vscode/ folder IS committed (extensions.json, settings.json, etc.)
+# but personal/local overrides are not.
+.vscode/settings.local.json
+.vscode/.ropeproject
+.vscode/launch.local.json
+
+
+# ── OS noise ─────────────────────────────────────────────────────────────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+
+# ── Secrets & credentials ─────────────────────────────────────────────────────
+# Belt-and-braces catches — these should never be committed regardless
+# of where they live in the repo.
+*.pfx
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+appsettings.*.local.json
+secrets.json
+local.settings.json

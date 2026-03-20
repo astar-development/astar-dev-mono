@@ -1,0 +1,153 @@
+# ════════════════════════════════════════════════════════════════════════════
+# dotnet-ci.yml
+# Triggers on any push or PR that touches .NET source, packages, or tests.
+# Builds the entire solution and runs all test projects.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    paths:
+      # Any C# source, project, or solution file
+      - 'apps/**/*.cs'
+      - 'apps/**/*.csproj'
+      - 'apps/**/*.axaml'        # Avalonia XAML
+      - 'apps/**/*.razor'        # Blazor components
+      - 'packages/**/*.cs'
+      - 'packages/**/*.csproj'
+      - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
+      # Root MSBuild / NuGet config — changing these affects everything
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - '*.slnx'
+      # This workflow file itself
+      - '.github/workflows/dotnet-ci.yml'
+
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+    paths:
+      - 'apps/**/*.cs'
+      - 'apps/**/*.csproj'
+      - 'apps/**/*.axaml'
+      - 'apps/**/*.razor'
+      - 'packages/**/*.cs'
+      - 'packages/**/*.csproj'
+      - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - '*.slnx'
+      - '.github/workflows/dotnet-ci.yml'
+
+# Least-privilege permissions — only grant what each job actually needs.
+# This overrides the repo-level default (which is often too broad).
+permissions:
+  contents: read          # Checkout the repo
+  checks: write           # Publish test results via dorny/test-reporter
+  pull-requests: write    # Allow test-reporter to annotate PRs with failures
+
+# Cancel any in-progress run for the same branch/PR when a new push arrives.
+# Saves CI minutes and keeps the queue clean.
+concurrency:
+  group: dotnet-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true                  # Suppress the SDK banner in logs
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip              # Faster restore — skips XML doc download
+
+jobs:
+
+  build-and-test:
+    name: Build & test
+    # Avalonia desktop apps require a display server on Linux CI.
+    # ubuntu-latest with xvfb handles this cleanly and is the fastest/cheapest runner.
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history needed if you use GitVersion or Nerdbank.GitVersioning
+          fetch-depth: 0
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          # Reads the version from global.json automatically — no duplication needed
+          global-json-file: global.json
+
+      # Cache the NuGet package cache keyed on Directory.Packages.props.
+      # A change to any package version busts the cache and triggers a fresh restore.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      # Authenticate to GitHub Packages so the restore step can pull your
+      # own published NuGet packages as dependencies if needed.
+      - name: Authenticate to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: |
+          dotnet build \
+            --no-restore \
+            --configuration Release \
+            -p:TreatWarningsAsErrors=true
+
+      # Run all test projects. Results are published to the Actions summary
+      # so you can see pass/fail per test without digging through logs.
+      - name: Test
+        run: |
+          dotnet test \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=results.trx" \
+            --results-directory ./TestResults \
+            --collect:"XPlat Code Coverage" \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()   # Run even if tests fail so you see the report
+        with:
+          name: Test results
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: TestResults/**/coverage.cobertura.xml
+          fail_ci_if_error: false   # Coverage upload failure shouldn't block CI

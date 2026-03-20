@@ -1,0 +1,308 @@
+# ════════════════════════════════════════════════════════════════════════════
+# infra-deploy.yml
+# Triggers on pushes to main that touch infra/** (Terraform).
+# On pull requests it plans only — never applies on a PR.
+# On merge to main it plans then applies.
+#
+# Assumes:
+#   - Remote state backend (Terraform Cloud, Azure Storage, or S3).
+#     Local state should never be used in CI — see infra/README.md.
+#   - One or more environment secrets set in GitHub repo settings:
+#       TF_API_TOKEN          — Terraform Cloud token (if using TF Cloud)
+#       ARM_CLIENT_ID         — Azure SP client ID (if using Azure backend)
+#       ARM_CLIENT_SECRET     — Azure SP secret
+#       ARM_SUBSCRIPTION_ID   — Azure subscription
+#       ARM_TENANT_ID         — Azure tenant
+#     Add/remove credential secrets to match your cloud provider.
+#
+# Folder structure assumed:
+#   infra/
+#     terraform/
+#       prod/       ← production workspace
+#       staging/    ← staging workspace
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Infrastructure deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-deploy.yml'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-deploy.yml'
+
+  # Allow manual trigger from the Actions UI — useful for emergency re-applies
+  # or when you need to apply without a code change.
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to target
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - prod
+      action:
+        description: Terraform action to run
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  contents: read      # Checkout the repo
+  pull-requests: write  # Post the plan output as a PR comment
+
+# Only one infra deployment at a time — never run two applies concurrently.
+# For prod specifically this prevents state corruption.
+concurrency:
+  group: infra-deploy-${{ github.ref }}
+  cancel-in-progress: false   # Don't cancel in-progress infra ops — let them finish
+
+env:
+  DOTNET_NOLOGO: true
+  TF_IN_AUTOMATION: true      # Suppresses Terraform's "running in automation" hints
+  TF_INPUT: false             # Never prompt for input in CI
+
+jobs:
+
+  # ── Detect which environments changed ──────────────────────────────────────
+  # Rather than always running both staging and prod, detect which workspace
+  # folders actually changed and only run those jobs.
+  detect-changes:
+    name: Detect changed environments
+    runs-on: ubuntu-latest
+    outputs:
+      staging: ${{ steps.filter.outputs.staging }}
+      prod: ${{ steps.filter.outputs.prod }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            staging:
+              - 'infra/terraform/staging/**'
+            prod:
+              - 'infra/terraform/prod/**'
+
+  # ── Staging ────────────────────────────────────────────────────────────────
+  terraform-staging:
+    name: Staging — ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.staging == 'true' ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    runs-on: ubuntu-latest
+    environment: staging    # Links to GitHub Environment (Settings → Environments)
+                            # Set required reviewers here for an approval gate
+
+    defaults:
+      run:
+        working-directory: infra/terraform/staging
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          # Pin the Terraform version — same reasoning as global.json for .NET.
+          # Update deliberately, never let it float.
+          terraform_version: "1.10.5"
+          # If using Terraform Cloud for state + runs, set your token here.
+          # Remove cli_config_credentials_token if using a different backend.
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      # Cloud provider credentials — shown for Azure.
+      # Replace with AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY for AWS,
+      # or GOOGLE_CREDENTIALS for GCP.
+      - name: Configure cloud credentials
+        run: echo "Credentials injected via environment secrets"
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+      - name: Terraform init
+        run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+      # Validate catches syntax errors and provider mismatches before planning.
+      - name: Terraform validate
+        run: terraform validate
+
+      # Check formatting — fails if any .tf file isn't properly formatted.
+      # Run `terraform fmt -recursive` locally to fix.
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform plan
+        id: plan
+        run: |
+          terraform plan \
+            -out=tfplan \
+            -detailed-exitcode \
+            -input=false
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        # Exit code 2 means changes are present (not an error).
+        # Exit code 0 means no changes. Exit code 1 means error.
+        continue-on-error: true
+
+      # Post the plan output as a comment on the PR so you can review
+      # infrastructure changes alongside code changes.
+      - name: Comment plan on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const output = `### Terraform plan — staging
+
+            \`\`\`
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+
+            *Pushed by @${{ github.actor }}, action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      # Fail the job if plan itself errored (exit code 1).
+      # Exit code 2 (changes present) is fine — we handle that below.
+      - name: Check plan result
+        if: steps.plan.outcome == 'failure' && steps.plan.outputs.exitcode == '1'
+        run: exit 1
+
+      # Apply only on push to main (not on PRs) or explicit workflow_dispatch apply.
+      # This is the critical gate — PRs can only plan, never apply.
+      - name: Terraform apply
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
+        run: terraform apply -auto-approve -input=false tfplan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+  # ── Production ─────────────────────────────────────────────────────────────
+  terraform-prod:
+    name: Production — ${{ github.event_name == 'pull_request' && 'plan' || 'apply' }}
+    needs:
+      - detect-changes
+      - terraform-staging    # Prod always waits for staging to succeed first
+    if: |
+      needs.detect-changes.outputs.prod == 'true' ||
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'prod')
+    runs-on: ubuntu-latest
+    environment: prod        # Set required reviewers in GitHub Environment settings
+                             # for a mandatory human approval gate before prod apply
+
+    defaults:
+      run:
+        working-directory: infra/terraform/prod
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform init
+        run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform plan
+        id: plan
+        run: |
+          terraform plan \
+            -out=tfplan \
+            -detailed-exitcode \
+            -input=false
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        continue-on-error: true
+
+      - name: Comment plan on PR
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const output = `### Terraform plan — prod
+
+            \`\`\`
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+
+            *Pushed by @${{ github.actor }}, action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Check plan result
+        if: steps.plan.outcome == 'failure' && steps.plan.outputs.exitcode == '1'
+        run: exit 1
+
+      - name: Terraform apply
+        if: |
+          (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.action == 'apply')
+        run: terraform apply -auto-approve -input=false tfplan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
