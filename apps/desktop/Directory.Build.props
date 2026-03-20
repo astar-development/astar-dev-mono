@@ -1,0 +1,100 @@
+<Project>
+  <!--
+    apps/desktop/Directory.Build.props
+    ════════════════════════════════════
+    Inherits from the repo root. Applies to all Avalonia desktop app projects.
+
+    Avalonia targets multiple platforms from a single codebase. The settings
+    here reflect that — particularly around runtime identifiers, self-contained
+    publishing, and platform-specific TFM overrides.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Desktop apps are not NuGet packages -->
+    <IsPackable>false</IsPackable>
+
+    <!-- Desktop apps are published — dotnet publish produces platform installers -->
+    <IsPublishable>true</IsPublishable>
+
+    <!-- XML docs not needed for app projects -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- Recommended analyser level — same reasoning as apps/web/ -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!-- Avalonia apps are executable outputs -->
+    <OutputType>WinExe</OutputType>
+
+    <!-- Use the Avalonia-compatible startup object.
+         Individual projects override this with their own Program class. -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- ── Runtime identifiers ────────────────────────────────────────────────
+    Define the set of platforms you publish for. Avalonia supports all three
+    major desktop platforms from a single project.
+
+    These are used by `dotnet publish -r <rid>` in CI.
+    Individual projects can narrow this list if a specific app is
+    intentionally single-platform. -->
+  <PropertyGroup>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- ── Self-contained publishing ─────────────────────────────────────────
+    Publish as self-contained for Release builds so the app bundles its own
+    .NET runtime. End users don't need to install anything.
+
+    Debug builds are framework-dependent (faster inner loop, smaller output). -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <SelfContained>true</SelfContained>
+
+    <!-- Trim unused code from the published bundle.
+         Avalonia 11+ is trim-compatible. If you reference libraries that
+         aren't trim-safe, add <TrimmerRootDescriptor> entries or set
+         <PublishTrimmed>false</PublishTrimmed> in the specific .csproj. -->
+    <PublishTrimmed>true</PublishTrimmed>
+
+    <!-- Produce a single-file executable per platform.
+         Dramatically simplifies distribution — one file to ship. -->
+    <PublishSingleFile>true</PublishSingleFile>
+
+    <!-- Keep the PDB alongside the executable for crash reporting.
+         Without this, stack traces from end users are symbolless. -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <!-- ── Windows-specific: application manifest ────────────────────────────
+    On Windows, set the DPI awareness and execution level via an app manifest.
+    Avalonia handles DPI internally but an explicit manifest prevents Windows
+    from applying legacy DPI scaling that can blur the UI.
+
+    Place an app.manifest file in each desktop project's root. -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <ApplicationManifest Condition="Exists('$(MSBuildProjectDirectory)/app.manifest')">
+      $(MSBuildProjectDirectory)/app.manifest
+    </ApplicationManifest>
+  </PropertyGroup>
+
+  <!-- ── macOS-specific: bundle settings ───────────────────────────────────
+    When publishing for osx-*, dotnet publish can produce an .app bundle.
+    Set the bundle identifier here as a default; individual apps should
+    override with their own reverse-DNS identifier. -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <CFBundleIdentifier Condition="'$(CFBundleIdentifier)' == ''">
+      com.astardevelopment.$(MSBuildProjectName.ToLower())
+    </CFBundleIdentifier>
+  </PropertyGroup>
+
+  <!-- ── Avalonia design-time support ──────────────────────────────────────
+    Ensures the Avalonia previewer has access to compiled assets at design
+    time. This resolves the most common cause of the previewer failing to
+    show live previews in Rider and VS Code. -->
+  <ItemGroup>
+    <AvaloniaResource Include="**\*.axaml" />
+    <AvaloniaResource Include="**\*.png"
+                      Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+
+</Project>
