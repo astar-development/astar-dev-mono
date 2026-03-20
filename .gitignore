@@ -20,7 +20,6 @@
 *.nupkg
 *.snupkg
 .nuget/
-packages/
 # NuGet fallback folders and HTTP cache
 ~/.nuget/
 

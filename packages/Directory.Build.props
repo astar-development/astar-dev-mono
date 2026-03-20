@@ -1,0 +1,107 @@
+<Project>
+  <!--
+    packages/Directory.Build.props
+    ═══════════════════════════════
+    Inherits everything from the repo root, then applies stricter settings
+    appropriate for published NuGet packages. These projects are public-facing
+    and consumed by external developers, so the bar is higher than for apps.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- All projects in packages/ are packable by default.
+         Individual projects that are helpers/internals can override with
+         <IsPackable>false</IsPackable> in their own .csproj. -->
+    <IsPackable>true</IsPackable>
+
+    <!-- Packages are not directly runnable -->
+    <IsPublishable>false</IsPublishable>
+
+    <!-- Generate XML documentation — consumers see IntelliSense summaries
+         for every public API. Missing <summary> tags become warnings,
+         which TreatWarningsAsErrors promotes to errors. Document your APIs. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Suppress the 'missing XML comment' warning only for internal members.
+         Public API must be documented; internals are exempt.
+         CS1591 = missing XML comment for publicly visible type or member. -->
+    <NoWarn>$(NoWarn)</NoWarn>
+
+    <!-- Strong-name signing — uncomment and point at your .snk file if you
+         need strong-named assemblies (e.g. for GAC or certain enterprise
+         deployment scenarios). Most NuGet packages don't need this.
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../keys/AStarDevelopment.snk</AssemblyOriginatorKeyFile>
+    -->
+  </PropertyGroup>
+
+  <!-- ── Analyser strictness ────────────────────────────────────────────────
+    Published packages get a stricter analyser ruleset than apps.
+    Consumers will depend on the API surface being clean and consistent. -->
+  <PropertyGroup>
+    <!-- Enforce all recommended .NET analysers at warning level.
+         Combined with TreatWarningsAsErrors in the root props, this means
+         any analyser violation blocks the package build. -->
+    <AnalysisLevel>latest-all</AnalysisLevel>
+
+    <!-- Enable nullable annotations checking at a stricter level for packages.
+         Consumers benefit most from accurate nullability annotations. -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- ── API compatibility enforcement ─────────────────────────────────────
+    Microsoft.DotNet.ApiCompat (ships with .NET 10 SDK) compares the built
+    assembly against a baseline to catch accidental breaking changes.
+
+    On first use: build once to generate the baseline, then commit it.
+    Subsequent builds fail if the public API surface changes unexpectedly.
+
+    Uncomment once you have established packages with a stable API surface.
+    New packages should enable this after their first stable (1.0.0) release.
+
+  <PropertyGroup>
+    <ApiCompatEnabled>true</ApiCompatEnabled>
+    <ApiCompatBaselineFile>$(MSBuildProjectDirectory)/ApiBaseline.txt</ApiCompatBaselineFile>
+    <ApiCompatGenerateSuppressionFile>false</ApiCompatGenerateSuppressionFile>
+  </PropertyGroup>
+  -->
+
+  <!-- ── Package icon ───────────────────────────────────────────────────────
+    A shared package icon for all NuGet packages. Place a 128×128 PNG at
+    the path below. NuGet.org and GitHub Packages both display it.
+    Individual packages can override <PackageIcon> in their own .csproj. -->
+  <PropertyGroup>
+    <PackageIcon Condition="'$(PackageIcon)' == ''">icon.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(PackageIcon)' == 'icon.png'">
+    <None Include="$(MSBuildThisFileDirectory)../assets/nuget-icon.png"
+          Pack="true"
+          PackagePath="icon.png"
+          Condition="Exists('$(MSBuildThisFileDirectory)../assets/nuget-icon.png')" />
+  </ItemGroup>
+
+  <!-- ── Shared package README ──────────────────────────────────────────────
+    Each package should have its own README.md (shown on GitHub Packages /
+    NuGet.org). This wires up the per-project README automatically — no need
+    to add it to every individual .csproj. -->
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)/README.md"
+          Pack="true"
+          PackagePath="/"
+          Condition="Exists('$(MSBuildProjectDirectory)/README.md')" />
+  </ItemGroup>
+
+  <!-- ── License ────────────────────────────────────────────────────────────
+    A shared LICENSE file packed into every NuGet package.
+    Place your licence text at /assets/LICENSE.txt.
+    Individual packages can override <PackageLicenseExpression> or
+    <PackageLicenseFile> in their own .csproj if needed. -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../assets/LICENSE.txt"
+          Pack="true"
+          PackagePath="/"
+          Condition="Exists('$(MSBuildThisFileDirectory)../assets/LICENSE.txt')" />
+  </ItemGroup>
+
+</Project>
