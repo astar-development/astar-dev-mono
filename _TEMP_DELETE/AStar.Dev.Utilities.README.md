@@ -5,7 +5,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/AStar.Dev.Utilities.svg)](https://www.nuget.org/packages/AStar.Dev.Utilities)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/AStar.Dev.Utilities.svg)](https://www.nuget.org/packages/AStar.Dev.Utilities)
-[![CI](https://github.com/your-org/your-repo/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/your-org/your-repo/actions/workflows/dotnet-ci.yml)
+[![CI](https://github.com/your-org/astar-dev-mono//actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/your-org/astar-dev-mono//actions/workflows/dotnet-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
 ---
@@ -82,11 +82,11 @@ Guard.AgainstNullOrEmpty(name, nameof(name));
 
 ## Compatibility
 
-| Package version | .NET | Notes |
-|----------------|------|-------|
-| 2.x | .NET 10+ | Current. Managed via Nerdbank.GitVersioning in mono-repo |
-| 1.6.x | .NET 10 | Final release from standalone repo. Security fixes only. |
-| 1.5.x and earlier | .NET 8, 9 | End of life |
+| Package version   | .NET      | Notes                                                    |
+| ----------------- | --------- | -------------------------------------------------------- |
+| 2.x               | .NET 10+  | Current. Managed via Nerdbank.GitVersioning in mono-repo |
+| 1.6.x             | .NET 10   | Final release from standalone repo. Security fixes only. |
+| 1.5.x and earlier | .NET 8, 9 | End of life                                              |
 
 This package targets `net10.0` and has no platform-specific dependencies.
 It runs on Windows, macOS, and Linux.
@@ -109,18 +109,18 @@ on the .NET 10 base class library.
 ### 1.6.2 — _yyyy-mm-dd_
 
 - Last release from standalone repository
-- [Release notes](https://github.com/your-org/your-repo/releases/tag/v1.6.2)
+- [Release notes](https://github.com/your-org/astar-dev-mono//releases/tag/v1.6.2)
 
-[Full changelog →](https://github.com/your-org/your-repo/releases?q=AStar.Dev.Utilities)
+[Full changelog →](https://github.com/your-org/astar-dev-mono//releases?q=AStar.Dev.Utilities)
 
 ---
 
 ## Contributing
 
-This package lives in the [AStar Development mono-repo](https://github.com/your-org/your-repo)
+This package lives in the [AStar Development mono-repo](https://github.com/your-org/astar-dev-mono/)
 under `packages/core/AStar.Dev.Utilities/`.
 
-Bug reports and feature requests → [GitHub Issues](https://github.com/your-org/your-repo/issues)
+Bug reports and feature requests → [GitHub Issues](https://github.com/your-org/astar-dev-mono//issues)
 
 To contribute a fix or feature:
 
