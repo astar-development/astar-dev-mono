@@ -1,0 +1,53 @@
+{
+  "recommendations": [
+
+    // ── C# / .NET ────────────────────────────────────────────────────────────
+    // C# Dev Kit: solution explorer, test runner, IntelliSense for .NET 6+
+    "ms-dotnettools.csdevkit",
+    // Core C# language server (pulled in by Dev Kit, but explicit is safer)
+    "ms-dotnettools.csharp",
+    // .NET MAUI / Avalonia XAML IntelliSense — covers .axaml files
+    "ms-dotnettools.dotnet-maui",
+
+    // ── Avalonia ─────────────────────────────────────────────────────────────
+    // Avalonia XAML previewer and IntelliSense
+    "avaloniaui.avaloniaui-vscode",
+
+    // ── Blazor / ASP.NET ─────────────────────────────────────────────────────
+    // Razor/.cshtml syntax, IntelliSense and hot reload support
+    "ms-dotnettools.blazorwasm-companion",
+
+    // ── JavaScript / TypeScript / Next.js ────────────────────────────────────
+    // ESLint — catches lint errors inline as you type
+    "dbaeumer.vscode-eslint",
+    // Prettier — JS/TS/JSON/CSS formatter (set as default formatter in settings.json)
+    "esbenp.prettier-vscode",
+    // Tailwind CSS IntelliSense — autocomplete for class names (useful if any Next.js app uses Tailwind)
+    "bradlc.vscode-tailwindcss",
+
+    // ── Terraform / Infrastructure ───────────────────────────────────────────
+    // Official HashiCorp extension: syntax, validation, fmt on save
+    "hashicorp.terraform",
+
+    // ── Git & repo health ────────────────────────────────────────────────────
+    // GitLens: blame, history, branch compare — invaluable in a mono-repo
+    "eamodio.gitlens",
+    // Highlights TODO/FIXME/HACK/NOTE comments across the whole workspace
+    "gruntfuggly.todo-tree",
+
+    // ── GitHub Actions ───────────────────────────────────────────────────────
+    // Validates workflow YAML, autocomplete for actions and event triggers
+    "github.vscode-github-actions",
+
+    // ── EditorConfig ─────────────────────────────────────────────────────────
+    // Applies .editorconfig rules live in the editor (indent, charset, line endings)
+    "editorconfig.editorconfig",
+
+    // ── General quality-of-life ──────────────────────────────────────────────
+    // YAML schema validation (useful for GitHub Actions workflow files)
+    "redhat.vscode-yaml",
+    // Spell checker — catches typos in comments, strings, and markdown
+    "streetsidesoftware.code-spell-checker"
+
+  ]
+}

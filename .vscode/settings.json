@@ -1,0 +1,119 @@
+{
+
+  // ── C# Dev Kit — point at your root solution file ────────────────────────
+  // Tells the C# language server which .sln to load. Without this VS Code
+  // may prompt you to pick one (or guess wrong) every time you open the repo.
+  "dotnet.defaultSolution": "MonoRepo.sln",
+
+  // ── Format on save (global) ──────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  // Also run ESLint/Roslyn code actions (organise usings, fix warnings) on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // ── Per-language formatter assignments ──────────────────────────────────
+  // C# → Roslyn (via C# Dev Kit). Roslyn respects your .editorconfig rules.
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  // Razor/Blazor → C# Dev Kit handles .razor and .cshtml
+  "[razor]": {
+    "editor.defaultFormatter": "ms-dotnettools.csdevkit"
+  },
+  // JavaScript, TypeScript, JSX, TSX → Prettier
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // JSON/JSONC → Prettier (covers package.json, tsconfig.json, appsettings.json)
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // Terraform → HashiCorp extension (runs terraform fmt on save)
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
+  },
+  "[terraform-vars]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.formatOnSave": true
+  },
+  // Markdown → Prettier
+  "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // YAML (GitHub Actions, config files) → Prettier
+  "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // XAML / Avalonia .axaml — VS Code has no dedicated formatter,
+  // fall back to the built-in XML formatter for basic indentation
+  "[xml]": { "editor.defaultFormatter": "redhat.vscode-xml" },
+
+  // ── ESLint — scope to JS/TS only (don't let it try to lint .cs files) ───
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // Tell ESLint where your root config lives relative to the workspace
+  "eslint.workingDirectories": [
+    { "pattern": "apps/web/*/" }
+  ],
+
+  // ── Terraform ───────────────────────────────────────────────────────────
+  "terraform.languageServer.enable": true,
+  // Validate on save (catches missing variables, wrong types)
+  "terraform.validation.enableEnhancedValidation": true,
+
+  // ── File associations ────────────────────────────────────────────────────
+  // Treat Avalonia XAML files as XML so syntax highlighting works
+  // (the Avalonia extension overrides this for its own previewer)
+  "files.associations": {
+    "*.axaml": "xml",
+    "*.props": "xml",
+    "*.targets": "xml",
+    "*.csproj": "xml",
+    "*.sln": "plaintext"
+  },
+
+  // ── Search / file watcher exclusions ────────────────────────────────────
+  // Stops VS Code indexing build artefacts — speeds up search and reduces
+  // CPU/memory usage significantly in a large mono-repo.
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/.terraform/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.terraform": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/*.nupkg": true
+  },
+
+  // ── GitLens ──────────────────────────────────────────────────────────────
+  // Inline blame is useful; the status bar current line info can get noisy —
+  // adjust to taste.
+  "gitlens.currentLine.enabled": true,
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.statusBar.enabled": false,
+
+  // ── TODO Tree ────────────────────────────────────────────────────────────
+  "todo-tree.general.tags": ["TODO", "FIXME", "HACK", "NOTE", "BUG"],
+  "todo-tree.highlights.defaultHighlight": {
+    "foreground": "white",
+    "type": "tag"
+  },
+
+  // ── Editor comfort ───────────────────────────────────────────────────────
+  // These are safe to commit — they're about correctness, not cosmetics.
+  "editor.rulers": [120],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+
+}

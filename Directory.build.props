@@ -1,0 +1,125 @@
+<Project>
+
+  <!--
+    Directory.Build.props — repo root
+    ══════════════════════════════════
+    MSBuild automatically imports this file for every .csproj in the repo,
+    walking up from the project folder until it finds one.
+
+    Sub-folders (e.g. apps/web/, packages/core/) can have their own
+    Directory.Build.props that imports this one and then overrides specific
+    properties. Pattern for a child file:
+
+        <Project>
+          <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+          <PropertyGroup>
+            ... overrides here ...
+          </PropertyGroup>
+        </Project>
+  -->
+
+  <!-- ── Target framework ───────────────────────────────────────────────── -->
+  <PropertyGroup>
+    <!--
+      Default TFM for all projects. Avalonia and Blazor both support net10.0.
+      Desktop apps that need platform-specific APIs can override with
+      net10.0-windows, net10.0-macos etc. in their own .csproj.
+    -->
+    <TargetFramework>net10.0</TargetFramework>
+
+    <!--
+      Produce deterministic builds — same inputs always produce identical
+      binary output. Important for NuGet package reproducibility.
+    -->
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!-- ── Language & compiler ────────────────────────────────────────────── -->
+  <PropertyGroup>
+    <!-- Always use the latest stable C# version available in the SDK -->
+    <LangVersion>latest</LangVersion>
+
+    <!-- Enforce nullable reference types across the whole repo.
+         New code must be null-safe; existing code will surface warnings
+         as you migrate. Set to 'warnings' first if onboarding a large
+         legacy codebase. -->
+    <Nullable>enable</Nullable>
+
+    <!-- Enable implicit global usings (System, System.Linq, etc.)
+         Each project type (web, console, test) gets its own set automatically. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Treat all compiler warnings as errors in CI.
+         Override to 'false' in a specific project if you have a legitimate
+         exception (e.g. a generated-code project). -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Enable .NET 10 analysis rules at the recommended level.
+         'Default' is a good balance; switch to 'All' if you want maximum
+         pedantry on new projects. -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <!-- ── NuGet package metadata (applies to all published packages) ──────── -->
+  <PropertyGroup>
+    <!--
+      Shared metadata for all ~50 NuGet packages. Individual packages can
+      override any of these in their own .csproj.
+    -->
+    <Authors>Jason Barden</Authors>
+    <Company>AStar Development</Company>
+    <Copyright>Copyright © $([System.DateTime]::Now.Year) AStar Development</Copyright>
+
+    <!--
+      Version is set by CI via -p:Version=$(GitTag) at publish time.
+      This is the fallback for local development builds.
+    -->
+    <Version>0.0.1-local</Version>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <FileVersion>0.0.1.0</FileVersion>
+
+    <!-- Embed symbols in the package for a better debugging experience -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- Embed source files in the PDB so consumers can step through your code -->
+    <EmbedAllSources>true</EmbedAllSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+    <!--
+      Required for deterministic/source-linked builds.
+      Set your actual GitHub repo URL here.
+    -->
+    <RepositoryUrl>https://github.com/your-org/your-repo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- ── Output paths ───────────────────────────────────────────────────── -->
+  <PropertyGroup>
+    <!--
+      Redirect all bin/ and obj/ output to a single folder at the repo root.
+      This keeps the source tree clean and makes it easy to .gitignore
+      all build output in one line: /artifacts/
+    -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)artifacts/bin/$(MSBuildProjectName)</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)artifacts/obj/$(MSBuildProjectName)</BaseIntermediateOutputPath>
+
+    <!-- Keep the standard Debug/Release subfolder structure within artifacts/ -->
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <!-- ── Test projects — suppress package metadata noise ───────────────── -->
+  <!--
+    Projects whose names end in .Tests or .IntegrationTests are not published
+    as NuGet packages. Suppress the warnings that fire when package metadata
+    (Authors, RepositoryUrl etc.) is set on non-packable projects.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) Or
+                             $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+</Project>
