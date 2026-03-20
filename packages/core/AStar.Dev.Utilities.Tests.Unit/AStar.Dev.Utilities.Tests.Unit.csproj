@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStar.Dev.Utilities.Tests.Unit
+    ════════════════════════════════
+    Unit tests for AStar.Dev.Utilities.
+
+    IsPackable=false and VSTestBlame are inherited from the root
+    Directory.Build.props / Directory.Build.targets — nothing to set here.
+
+    Uses a <ProjectReference> to the package rather than a <PackageReference>
+    so changes to the package are immediately visible without a publish cycle.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="../AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <!--
+      Add NSubstitute or Moq here if the tests need mocking.
+      <PackageReference Include="NSubstitute" />
+    -->
+  </ItemGroup>
+
+  <!--
+    Nerdbank.GitVersioning — needed in test projects only to stamp
+    the test assembly version consistently with the package it tests.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning"
+                      PrivateAssets="all"
+                      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+</Project>

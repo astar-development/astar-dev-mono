@@ -1,0 +1,19 @@
+<!--
+  Add these two lines to MonoRepo.slnx inside the appropriate <Folder> element.
+  If you haven't created solution folders yet, they can go directly under <Solution>.
+
+  Suggested structure:
+
+  <Solution>
+    <Folder Name="/packages/">
+      <Folder Name="/packages/core/">
+        <Project Path="packages/core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <Project Path="packages/core/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+      </Folder>
+    </Folder>
+  </Solution>
+
+  SLNX folder nesting mirrors the filesystem — no GUIDs required.
+  The solution folder structure is cosmetic (IDE display only) and does not
+  affect build order or project references.
+-->

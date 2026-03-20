@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStar.Dev.Utilities
+    ═══════════════════
+    Extension methods, helpers, and shared primitives consumed across all
+    AStar Development packages and applications.
+
+    Intentionally lean — TFM, nullable, analysers, IsPackable, GenerateDocumentationFile,
+    and SourceLink are all inherited from packages/Directory.Build.props and the
+    repo root Directory.Build.props. Only package-specific metadata lives here.
+
+    Version is managed by Nerdbank.GitVersioning via version.json — do not
+    add a <Version> element here.
+  -->
+
+  <PropertyGroup>
+    <Description>
+      A collection of extension methods, helper utilities, and shared primitives
+      used across AStar Development packages and applications. Targets .NET 10.
+    </Description>
+    <PackageTags>utilities;extensions;helpers;astar;astardevelopment</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/your-org/your-repo/tree/main/packages/core/AStar.Dev.Utilities</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <!--
+    Direct dependencies — versions come from Directory.Packages.props.
+    Add only what this package genuinely needs at runtime.
+    Prefer Microsoft.Extensions.* abstractions over concrete implementations
+    so consumers can supply their own.
+  -->
+  <ItemGroup>
+    <!--
+      Add <PackageReference Include="..." /> entries here as needed.
+      Example — if you depend on Microsoft.Extensions.Logging.Abstractions:
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    -->
+  </ItemGroup>
+
+  <!--
+    Nerdbank.GitVersioning — build-time only, never a runtime dependency.
+    PrivateAssets="all" ensures it does not appear as a dependency in the .nupkg.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning"
+                      PrivateAssets="all"
+                      IsImplicitlyDefined="true" />
+  </ItemGroup>
+
+</Project>
