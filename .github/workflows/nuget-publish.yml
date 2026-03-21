@@ -1,6 +1,6 @@
 # ════════════════════════════════════════════════════════════════════════════
 # nuget-publish.yml
-#
+# - dummy update to trigger workflow
 # Per-package tagging strategy (strategy B).
 #
 # Tag format:  {PackageName}/v{version}
