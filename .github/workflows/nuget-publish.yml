@@ -150,16 +150,12 @@ jobs:
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --skip-duplicate
 
-      # ── Also push to NuGet.org (if publishing publicly) ───────────────────
-      # Uncomment this step and add NUGET_ORG_API_KEY to your repo secrets
-      # (Settings → Secrets → Actions) to also publish to nuget.org.
-      #
-      # - name: Push to NuGet.org
-      #   run: |
-      #     dotnet nuget push "./nupkgs/*.nupkg" \
-      #       --api-key ${{ secrets.NUGET_ORG_API_KEY }} \
-      #       --source "https://api.nuget.org/v3/index.json" \
-      #       --skip-duplicate
+      - name: Push to NuGet.org
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate
 
       # ── Create a GitHub Release with the .nupkg files attached ────────────
       # This gives external consumers a release page with download links
