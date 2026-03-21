@@ -22,13 +22,14 @@ repo — what was decided, why, and what alternatives were considered. They are
 written once and rarely updated; if a decision is reversed, a new ADR is written
 rather than editing the old one.
 
-| #                                            | Title                               | Status   | Date         |
-| -------------------------------------------- | ----------------------------------- | -------- | ------------ |
-| [001](adr/001-mono-repo.md)                  | Adopt a mono-repo structure         | Accepted | _yyyy-mm-dd_ |
-| [002](adr/002-central-package-management.md) | Use Central Package Management      | Accepted | _yyyy-mm-dd_ |
-| [003](adr/003-avalonia-for-desktop.md)       | Avalonia for cross-platform desktop | Accepted | _yyyy-mm-dd_ |
-| [004](adr/004-github-packages-for-nuget.md)  | GitHub Packages as NuGet feed       | Accepted | _yyyy-mm-dd_ |
-| [005](adr/005-slnx-solution-format.md)       | Use SLNX solution format            | Accepted | _yyyy-mm-dd_ |
+| #                                             | Title                                                    | Status   | Date         |
+| --------------------------------------------- | -------------------------------------------------------- | -------- | ------------ |
+| [001](adr/001-mono-repo.md)                   | Adopt a mono-repo structure                              | Accepted | _yyyy-mm-dd_ |
+| [002](adr/002-central-package-management.md)  | Use Central Package Management                           | Accepted | _yyyy-mm-dd_ |
+| [003](adr/003-avalonia-for-desktop.md)        | Avalonia for cross-platform desktop                      | Accepted | _yyyy-mm-dd_ |
+| [004](adr/004-github-packages-for-nuget.md)   | GitHub Packages as NuGet feed                            | Accepted | _yyyy-mm-dd_ |
+| [005](adr/005-slnx-solution-format.md)        | Use SLNX solution format                                 | Accepted | _yyyy-mm-dd_ |
+| [006](adr/006-nuget-configuration-lessons.md) | NuGet configuration quirks resolved during initial setup | Accepted | 2026-03-21   |
 
 ### Adding a new ADR
 
