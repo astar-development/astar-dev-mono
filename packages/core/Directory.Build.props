@@ -71,14 +71,14 @@
     the path below. NuGet.org and GitHub Packages both display it.
     Individual packages can override <PackageIcon> in their own .csproj. -->
   <PropertyGroup>
-    <PackageIcon Condition="'$(PackageIcon)' == ''">icon.png</PackageIcon>
+    <PackageIcon Condition="'$(PackageIcon)' == ''">astar.png</PackageIcon>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(PackageIcon)' == 'icon.png'">
-    <None Include="$(MSBuildThisFileDirectory)../assets/nuget-icon.png"
+  <ItemGroup Condition="'$(PackageIcon)' == 'astar.png'">
+    <None Include="$(MSBuildThisFileDirectory)../assets/astar.png"
           Pack="true"
-          PackagePath="icon.png"
-          Condition="Exists('$(MSBuildThisFileDirectory)../assets/nuget-icon.png')" />
+          PackagePath="astar.png"
+          Condition="Exists('$(MSBuildThisFileDirectory)../assets/astar.png')" />
   </ItemGroup>
 
   <!-- ── Shared package README ──────────────────────────────────────────────
