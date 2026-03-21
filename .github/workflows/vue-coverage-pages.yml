@@ -1,16 +1,19 @@
 # ════════════════════════════════════════════════════════════════════════════
 # vue-coverage-pages.yml
-# Fires when vue-ci completes successfully on main.
+# Triggers on push to main touching the Vue app.
 # Re-runs tests to collect coverage and publishes reports to GitHub Pages.
+# Note: workflow_run triggers are not recognised by GitHub Pages environment
+# protection rules; a direct push trigger is required.
 # ════════════════════════════════════════════════════════════════════════════
 
 name: Vue Coverage Pages
 
 on:
-  workflow_run:
-    workflows: ['Vue CI']
+  push:
     branches: [main]
-    types: [completed]
+    paths:
+      - 'apps/web/astar-dev-vue/**'
+      - '.github/workflows/vue-coverage-pages.yml'
 
 concurrency:
   group: vue-coverage-pages-${{ github.ref }}
@@ -25,7 +28,6 @@ jobs:
   publish:
     name: Build coverage site
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
     defaults:

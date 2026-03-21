@@ -1,0 +1,100 @@
+# ════════════════════════════════════════════════════════════════════════════
+# fab4kids-c.yml
+# Builds the fab4kids-c React/Vite SPA and deploys to Azure Web App fab4kids-c.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: fab4kids-c
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/fab4kids-c/**'
+      - '.github/workflows/fab4kids-c.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: fab4kids-c-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/web/fab4kids-c
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/fab4kids-c/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: fab4kids-c-dist
+          path: apps/web/fab4kids-c/dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fab4kids-c-dist
+          path: deploy
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D38250F359894740B9F426282B35BB4C }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D1C185E2D4E64FF289C24F8C1192CC4C }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_957E06BA4ECC4790BA368C378A8B89A5 }}
+
+      - name: Configure startup command
+        run: |
+          RESOURCE_GROUP=$(az webapp list --query "[?name=='fab4kids-c'].resourceGroup | [0]" -o tsv)
+          if [ -z "$RESOURCE_GROUP" ]; then
+            echo "Could not determine resource group for app 'fab4kids-c'"
+            exit 1
+          fi
+          az webapp config set \
+            --name fab4kids-c \
+            --resource-group "$RESOURCE_GROUP" \
+            --startup-file "pm2 serve /home/site/wwwroot --no-daemon --spa"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: fab4kids-c
+          slot-name: Production
+          package: deploy
