@@ -1,0 +1,54 @@
+.section {
+  padding: 62px 24px;
+}
+
+.section--solid {
+  border-bottom: 1px solid #26303d;
+}
+
+.section--top-border {
+  border-top: 1px solid #26303d;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.section__head {
+  margin-bottom: 28px;
+}
+
+.section__head h2 {
+  color: #f3f6fb;
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  margin-bottom: 8px;
+}
+
+.section__head p {
+  color: #b9c9d8;
+}
+
+.panel {
+  background: #102233;
+  border: 1px solid #2a3f55;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.panel h3 {
+  color: #eaf2fa;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.panel p {
+  color: #bfd0e0;
+  font-size: 0.93rem;
+}
+
+.panel__meta {
+  margin-top: 12px;
+  color: #8ba3b8;
+  font-size: 0.8rem;
+}
