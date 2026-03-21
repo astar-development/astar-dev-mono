@@ -12,7 +12,7 @@
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
     "^refs/heads/release/.*$",
-    "^refs/tags/v.*$"
+    "^refs/tags/.*/v\\d+\\.\\d+\\.\\d+$"
   ],
 
   "cloudBuild": {
