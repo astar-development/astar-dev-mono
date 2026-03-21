@@ -73,6 +73,10 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   TF_IN_AUTOMATION: true      # Suppresses Terraform's "running in automation" hints
   TF_INPUT: false             # Never prompt for input in CI
 
