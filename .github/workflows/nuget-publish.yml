@@ -1,36 +1,44 @@
 # ════════════════════════════════════════════════════════════════════════════
 # nuget-publish.yml
-# Triggers on a version tag (e.g. v1.2.3 or packages/my-pkg/v2.0.0).
 #
-# Two tagging strategies are supported — pick one and document it in README:
+# Per-package tagging strategy (strategy B).
 #
-#   A) Repo-wide tag:      v1.2.3
-#      Publishes ALL packages in packages/ at the same version.
-#      Simple, good when your packages are tightly coupled and versioned together.
+# Tag format:  {PackageName}/v{version}
+# Examples:
+#   AStar.Dev.Utilities/v1.6.3
+#   AStar.Dev.SomeNewPackage/v1.0.0
+#   AStar.Dev.AnotherPackage/v2.1.0-beta.1
 #
-#   B) Per-package tag:    packages/MyPkg.Core/v1.2.3
-#      Publishes only the tagged package.
-#      Better when packages have independent release cadences.
+# Each package has its own independent tag namespace. A new package starting
+# at v1.0.0 can be tagged without any conflict with other packages at higher
+# versions. Packages are never accidentally co-released.
 #
-# This workflow implements strategy A by default (most practical for a solo
-# developer). Notes for switching to B are included inline.
+# How versioning works:
+#   Version comes from Nerdbank.GitVersioning (version.json + git height).
+#   The tag is the trigger and the release label — NOT the version source.
+#   The workflow extracts the package name from the tag, locates the project,
+#   and packs only that project.
+#
+# Release process:
+#   git tag AStar.Dev.Utilities/v1.6.3
+#   git push origin AStar.Dev.Utilities/v1.6.3
 # ════════════════════════════════════════════════════════════════════════════
 
-name: Publish NuGet packages
+name: Publish NuGet package
 
 on:
   push:
     tags:
-      # Matches: v1.0.0, v1.2.3, v2.0.0-beta.1, v3.0.0-rc.2 etc.
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'
-      # For strategy B, also match per-package tags:
-      # - 'packages/**/v[0-9]+.[0-9]+.[0-9]+'
+      # Matches: AStar.Dev.Utilities/v1.6.3
+      #          AStar.Dev.SomePackage/v1.0.0-beta.1
+      - '*/v[0-9]+.[0-9]+.[0-9]+'
+      - '*/v[0-9]+.[0-9]+.[0-9]+-*'
 
-# ── Permissions ──────────────────────────────────────────────────────────────
+# ── Permissions ───────────────────────────────────────────────────────────────
 permissions:
-  contents: read    # Checkout the repo
-  packages: write   # Push .nupkg files to GitHub Packages
+  contents: write   # Create GitHub Release
+  packages: write   # Push .nupkg to GitHub Packages
+  checks: write     # Publish test results
 
 # ── Environment variables ─────────────────────────────────────────────────────
 env:
@@ -52,25 +60,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
-          fetch-depth: 0    # Full history for GitVersion / Nerdbank.GitVersioning
+          fetch-depth: 0    # Full history required for Nerdbank.GitVersioning
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: global.json
 
-      # ── Derive the version from the tag ────────────────────────────────────
-      # Strips the leading 'v' from the tag (v1.2.3 → 1.2.3) and exposes it
-      # as PACKAGE_VERSION for use in subsequent steps.
-      - name: Extract version from tag
-        id: version
+      # ── Derive package name and version from the tag ───────────────────────
+      # Tag format: {PackageName}/v{version}
+      # e.g. AStar.Dev.Utilities/v1.6.3
+      #
+      # PACKAGE_NAME    → AStar.Dev.Utilities
+      # PACKAGE_VERSION → 1.6.3 (leading 'v' stripped — NuGet doesn't use it)
+      - name: Extract package name and version from tag
+        id: tag
         run: |
           RAW_TAG="${{ github.ref_name }}"
-          # Strip leading 'v' — NuGet versions don't include it
-          VERSION="${RAW_TAG#v}"
-          echo "PACKAGE_VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Publishing version: ${VERSION}"
+          PACKAGE_NAME="${RAW_TAG%/v*}"
+          RAW_VERSION="${RAW_TAG##*/v}"
+          echo "PACKAGE_NAME=${PACKAGE_NAME}"   >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=${RAW_VERSION}" >> $GITHUB_ENV
+          echo "package_name=${PACKAGE_NAME}"   >> $GITHUB_OUTPUT
+          echo "version=${RAW_VERSION}"         >> $GITHUB_OUTPUT
+          echo "prerelease=${{ contains(github.ref_name, '-') }}" >> $GITHUB_OUTPUT
+          echo "Tagged package : ${PACKAGE_NAME}"
+          echo "Tagged version : ${RAW_VERSION}"
+
+      # ── Locate the project file ────────────────────────────────────────────
+      # Searches packages/ for a .csproj matching the package name.
+      # Fails fast with a clear error if not found.
+      - name: Locate project
+        id: project
+        run: |
+          CSPROJ=$(find packages/ -name "${{ env.PACKAGE_NAME }}.csproj" | head -1)
+          if [ -z "$CSPROJ" ]; then
+            echo "ERROR: Could not find ${{ env.PACKAGE_NAME }}.csproj under packages/"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$CSPROJ")
+          echo "CSPROJ=${CSPROJ}"           >> $GITHUB_ENV
+          echo "PROJECT_DIR=${PROJECT_DIR}" >> $GITHUB_ENV
+          echo "csproj=${CSPROJ}"           >> $GITHUB_OUTPUT
+          echo "project_dir=${PROJECT_DIR}" >> $GITHUB_OUTPUT
+          echo "Found project : ${CSPROJ}"
 
       - name: Cache NuGet packages
         uses: actions/cache@v4.2.3
@@ -80,69 +113,56 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # Authenticate so restore can pull your own packages if needed
-      - name: Authenticate to GitHub Packages
-        run: |
-          dotnet nuget add source \
-            --username ${{ github.actor }} \
-            --password ${{ secrets.GITHUB_TOKEN }} \
-            --store-password-in-clear-text \
-            --name github \
-            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-
       - name: Restore
         run: dotnet restore
 
-      # ── Build in Release with the tag-derived version ──────────────────────
-      # Version, AssemblyVersion and FileVersion are all stamped here.
-      # This overrides the '0.0.1-local' fallback in Directory.Build.props.
+      # ── Build the specific package only ───────────────────────────────────
+      # Version comes from Nerdbank.GitVersioning — do NOT pass -p:Version.
+      # nbgv reads version.json + git history to stamp the correct version.
       - name: Build
         run: |
-          dotnet build \
+          dotnet build "${{ env.CSPROJ }}" \
             --no-restore \
             --configuration Release \
-            -p:Version=${{ env.PACKAGE_VERSION }} \
-            -p:AssemblyVersion=${{ steps.version.outputs.version }} \
-            -p:FileVersion=${{ steps.version.outputs.version }} \
             -p:TreatWarningsAsErrors=true
 
-      # ── Run tests before packing — don't publish broken packages ──────────
+      # ── Find and run the matching test project ─────────────────────────────
+      # Looks for a sibling *.Tests.Unit project next to the package.
+      # Skips gracefully if no test project exists.
       - name: Test
         run: |
-          dotnet test \
-            --no-build \
-            --configuration Release \
-            --logger "trx;LogFileName=results.trx" \
-            --results-directory ./TestResults
+          TEST_PROJ=$(find packages/ -name "${{ env.PACKAGE_NAME }}.Tests.Unit.csproj" | head -1)
+          if [ -z "$TEST_PROJ" ]; then
+            echo "WARNING: No test project found for ${{ env.PACKAGE_NAME }} — skipping"
+          else
+            echo "Running tests: ${TEST_PROJ}"
+            dotnet test "${TEST_PROJ}" \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=results.trx" \
+              --results-directory ./TestResults
+          fi
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: TestResults/**/*.trx
-          check_name: Publish — test results
+          check_name: ${{ env.PACKAGE_NAME }} — test results
           fail_on: test failures
 
-      # ── Pack ────────────────────────────────────────────────────────────────
-      # Only packs projects where <IsPackable>true</IsPackable> (the default).
-      # Test projects are excluded because Directory.Build.props sets
-      # IsPackable=false for any project ending in .Tests.
+      # ── Pack the specific package only ────────────────────────────────────
       - name: Pack
         run: |
-          dotnet pack \
+          dotnet pack "${{ env.CSPROJ }}" \
             --no-build \
             --configuration Release \
-            -p:Version=${{ env.PACKAGE_VERSION }} \
             --output ./nupkgs
 
-      # ── Inspect what was packed (useful for debugging) ─────────────────────
       - name: List packages
         run: ls -la ./nupkgs/
 
-      # ── Push to GitHub Packages ────────────────────────────────────────────
-      # --skip-duplicate means re-running the workflow for an existing tag
-      # won't fail — it just skips already-published versions.
-      # Remove that flag if you want strict idempotency enforcement.
+      # ── Push to GitHub Packages ───────────────────────────────────────────
       - name: Push to GitHub Packages
         run: |
           dotnet nuget push "./nupkgs/*.nupkg" \
@@ -150,28 +170,24 @@ jobs:
             --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
             --skip-duplicate
 
-      # ── Also push to NuGet.org (if publishing publicly) ───────────────────
-      # Uncomment this step and add NUGET_ORG_API_KEY to your repo secrets
-      # (Settings → Secrets → Actions) to also publish to nuget.org.
-      #
-      # - name: Push to NuGet.org
-      #   run: |
-      #     dotnet nuget push "./nupkgs/*.nupkg" \
-      #       --api-key ${{ secrets.NUGET_ORG_API_KEY }} \
-      #       --source "https://api.nuget.org/v3/index.json" \
-      #       --skip-duplicate
+      - name: Push to NuGet.org
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate
 
-      # ── Create a GitHub Release with the .nupkg files attached ────────────
-      # This gives external consumers a release page with download links
-      # and a place to put release notes.
+      # ── Create a GitHub Release ───────────────────────────────────────────
+      # Release name includes the package name so the releases page is
+      # scannable when multiple packages have been released.
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2.2.1
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ env.PACKAGE_VERSION }}
+          name: ${{ env.PACKAGE_NAME }} v${{ env.PACKAGE_VERSION }}
           draft: false
-          prerelease: ${{ contains(env.PACKAGE_VERSION, '-') }}
-          generate_release_notes: true    # Auto-generates from PR titles / commits
+          prerelease: ${{ steps.tag.outputs.prerelease }}
+          generate_release_notes: true
           files: |
             ./nupkgs/*.nupkg
             ./nupkgs/*.snupkg
