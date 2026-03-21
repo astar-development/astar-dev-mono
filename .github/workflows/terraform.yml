@@ -73,8 +73,9 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
-  TF_IN_AUTOMATION: true      # Suppresses Terraform's "running in automation" hints
-  TF_INPUT: false             # Never prompt for input in CI
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
 
