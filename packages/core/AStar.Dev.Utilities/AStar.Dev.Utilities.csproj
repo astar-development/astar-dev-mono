@@ -9,9 +9,6 @@
     Intentionally lean — TFM, nullable, analysers, IsPackable, GenerateDocumentationFile,
     and SourceLink are all inherited from packages/Directory.Build.props and the
     repo root Directory.Build.props. Only package-specific metadata lives here.
-
-    Version is managed by Nerdbank.GitVersioning via version.json — do not
-    add a <Version> element here.
   -->
 
   <PropertyGroup>
@@ -24,6 +21,7 @@
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
     <PackageReleaseNotes>No functional changes. Just a new 'home' on GitHub.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <!--
@@ -38,10 +36,6 @@
       Example — if you depend on Microsoft.Extensions.Logging.Abstractions:
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" VersionOverride="3.9.50" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
