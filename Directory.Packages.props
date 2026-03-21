@@ -1,5 +1,4 @@
 <Project>
-
   <!--
     Directory.Packages.props — Central Package Management (CPM)
     ════════════════════════════════════════════════════════════
@@ -33,141 +32,127 @@
     Keep packages alphabetical within each section.
     Run `dotnet outdated` (dotnet tool: dotnet-outdated-tool) to audit versions.
   -->
-
   <PropertyGroup>
     <!-- This is what activates CPM. Do not remove. -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-
     <!--
       Prevents any .csproj from pinning its own version without VersionOverride.
       Catches accidental version attributes left over from pre-CPM projects.
     -->
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup Label="Core framework and hosting">
-    <PackageVersion Include="Microsoft.Extensions.Configuration"                    Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder"             Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json"               Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection"              Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting"                          Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions"             Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http"                             Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging"                          Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions"             Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options"                          Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions"  Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Logging">
     <!--
       Serilog is listed as a common choice — swap for Microsoft.Extensions.Logging
       only or NLog if that's your preference. Keep all Serilog sinks in sync.
     -->
-    <PackageVersion Include="Serilog"                                               Version="4.2.0" />
-    <PackageVersion Include="Serilog.Extensions.Hosting"                            Version="8.0.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging"                            Version="8.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Console"                                 Version="6.0.0" />
-    <PackageVersion Include="Serilog.Sinks.File"                                    Version="6.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Seq"                                     Version="8.0.0" />
+    <PackageVersion Include="Serilog" Version="4.2.0" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Seq" Version="8.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Data access">
     <!--
       EF Core — all packages must share the same version.
       CPM makes this trivially enforceable.
     -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore"                         Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions"            Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design"                  Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational"              Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                  Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer"               Version="10.0.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools"                   Version="10.0.0" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL"                 Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Authentication and security">
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer"         Version="10.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"     Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Web"                                Version="3.4.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt"                       Version="8.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="3.4.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
-
   <ItemGroup Label="HTTP and API">
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi"                          Version="10.0.0" />
-    <PackageVersion Include="Refit"                                                 Version="8.0.0" />
-    <PackageVersion Include="Refit.HttpClientFactory"                               Version="8.0.0" />
-    <PackageVersion Include="Polly"                                                 Version="8.5.0" />
-    <PackageVersion Include="Polly.Extensions.Http"                                 Version="3.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageVersion Include="Refit" Version="8.0.0" />
+    <PackageVersion Include="Refit.HttpClientFactory" Version="8.0.0" />
+    <PackageVersion Include="Polly" Version="8.5.0" />
+    <PackageVersion Include="Polly.Extensions.Http" Version="3.0.0" />
   </ItemGroup>
-
   <ItemGroup Label="Serialisation">
-    <PackageVersion Include="System.Text.Json"                                      Version="10.0.0" />
-    <PackageVersion Include="Newtonsoft.Json"                                       Version="13.0.3" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-
   <ItemGroup Label="Messaging and background jobs">
-    <PackageVersion Include="MediatR"                                               Version="12.4.0" />
-    <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection"      Version="11.1.0" />
+    <PackageVersion Include="MediatR" Version="12.4.0" />
+    <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
   </ItemGroup>
-
   <ItemGroup Label="Avalonia desktop">
     <!--
       All Avalonia packages must share the same version — CPM enforces this.
     -->
-    <PackageVersion Include="Avalonia"                                              Version="11.2.3" />
-    <PackageVersion Include="Avalonia.Controls.DataGrid"                            Version="11.2.3" />
-    <PackageVersion Include="Avalonia.Desktop"                                      Version="11.2.3" />
-    <PackageVersion Include="Avalonia.Diagnostics"                                  Version="11.2.3" />
-    <PackageVersion Include="Avalonia.Fonts.Inter"                                  Version="11.2.3" />
-    <PackageVersion Include="Avalonia.ReactiveUI"                                   Version="11.2.3" />
-    <PackageVersion Include="Avalonia.Themes.Fluent"                                Version="11.2.3" />
-    <PackageVersion Include="ReactiveUI"                                            Version="20.1.1" />
-    <PackageVersion Include="ReactiveUI.Fody"                                       Version="20.1.1" />
+    <PackageVersion Include="Avalonia" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageVersion Include="ReactiveUI" Version="20.1.1" />
+    <PackageVersion Include="ReactiveUI.Fody" Version="20.1.1" />
   </ItemGroup>
-
   <ItemGroup Label="Blazor and web">
     <!--
       Most Blazor packages ship in-box with the .NET 10 SDK and don't need
       explicit PackageVersion entries. Add third-party component libraries here.
     -->
-    <PackageVersion Include="MudBlazor"                                             Version="8.3.0" />
-    <PackageVersion Include="Blazored.LocalStorage"                                 Version="4.5.0" />
-    <PackageVersion Include="Blazored.FluentValidation"                             Version="2.1.0" />
-    <PackageVersion Include="FluentValidation"                                      Version="11.11.0" />
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions"        Version="11.11.0" />
+    <PackageVersion Include="MudBlazor" Version="8.3.0" />
+    <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageVersion Include="Blazored.FluentValidation" Version="2.1.0" />
+    <PackageVersion Include="FluentValidation" Version="11.11.0" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
   </ItemGroup>
-
   <ItemGroup Label="Testing">
     <!--
       Test packages are IsPackable=false (set in Directory.Build.props) so these
       versions never leak into published NuGet packages.
     -->
-    <PackageVersion Include="coverlet.collector"                                    Version="6.0.3" />
-    <PackageVersion Include="Shouldly"                                              Version="4.3.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk"                                Version="17.13.0" />
-    <PackageVersion Include="Moq"                                                   Version="4.20.72" />
-    <PackageVersion Include="NSubstitute"                                           Version="5.3.0" />
-    <PackageVersion Include="xunit.v3"                                              Version="3.2.2" />
-    <PackageVersion Include="xunit.runner.visualstudio"                             Version="2.8.2" />
-    <PackageVersion Include="Bogus"                                                 Version="35.6.1" />
-    <PackageVersion Include="Respawn"                                               Version="6.2.1" />
-    <PackageVersion Include="Testcontainers"                                        Version="3.11.0" />
+    <PackageVersion Include="coverlet.collector" Version="8.0.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="Bogus" Version="35.6.1" />
+    <PackageVersion Include="Respawn" Version="6.2.1" />
+    <PackageVersion Include="Testcontainers" Version="3.11.0" />
   </ItemGroup>
-
   <ItemGroup Label="Build and source link tooling">
     <!--
       These are build-time only — they don't appear as runtime dependencies.
       PrivateAssets="all" is set in the .csproj, not here.
     -->
-    <PackageVersion Include="GitVersion.MsBuild"                                    Version="6.2.0" />
-    <PackageVersion Include="Microsoft.SourceLink.GitHub"                           Version="8.0.0" />
-    <PackageVersion Include="Nerdbank.GitVersioning"                                Version="3.7.115" />
+    <PackageVersion Include="GitVersion.MsBuild" Version="6.2.0" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.201" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" />
   </ItemGroup>
-
   <!--
     ── Your own internal packages ──────────────────────────────────────────
     When consuming your own packages from other projects within the repo,
@@ -182,5 +167,4 @@
       <PackageVersion Include="AStar.Dev.Infra.DataAccess" Version="1.4.2" />
     </ItemGroup>
   -->
-
 </Project>

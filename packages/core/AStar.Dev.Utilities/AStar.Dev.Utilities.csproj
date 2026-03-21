@@ -44,9 +44,7 @@
     PrivateAssets="all" ensures it does not appear as a dependency in the .nupkg.
   -->
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning"
-                  VersionOverride="3.7.115"
-                  PrivateAssets="all" />
+    <PackageReference Include="Nerdbank.GitVersioning" VersionOverride="3.9.50" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

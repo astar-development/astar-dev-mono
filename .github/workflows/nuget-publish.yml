@@ -38,7 +38,6 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   NUGET_XMLDOC_MODE: skip
-  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
 
@@ -49,12 +48,12 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0    # Full history for GitVersion / Nerdbank.GitVersioning
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
           global-json-file: global.json
 
@@ -72,12 +71,22 @@ jobs:
           echo "Publishing version: ${VERSION}"
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: |
             nuget-${{ runner.os }}-
+
+      # Authenticate so restore can pull your own packages if needed
+      - name: Authenticate to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
       - name: Restore
         run: dotnet restore
@@ -105,13 +114,12 @@ jobs:
             --results-directory ./TestResults
 
       - name: Publish test results
-        uses: dorny/test-reporter@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          name: Publish — test results
-          path: TestResults/**/*.trx
-          reporter: dotnet-trx
-          fail-on-error: true
+          files: TestResults/**/*.trx
+          check_name: Publish — test results
+          fail_on: test failures
 
       # ── Pack ────────────────────────────────────────────────────────────────
       # Only packs projects where <IsPackable>true</IsPackable> (the default).
@@ -155,7 +163,7 @@ jobs:
       # This gives external consumers a release page with download links
       # and a place to put release notes.
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.2.1
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ env.PACKAGE_VERSION }}
