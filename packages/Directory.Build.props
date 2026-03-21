@@ -75,10 +75,10 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PackageIcon)' == 'astar.png'">
-    <None Include="$(MSBuildThisFileDirectory)../assets/astar.png"
+    <None Include="$(MSBuildThisFileDirectory)/assets/astar.png"
           Pack="true"
           PackagePath="astar.png"
-          Condition="Exists('$(MSBuildThisFileDirectory)../assets/astar.png')" />
+          Condition="Exists('$(MSBuildThisFileDirectory)/assets/astar.png')" />
   </ItemGroup>
 
   <!-- ── Shared package README ──────────────────────────────────────────────
