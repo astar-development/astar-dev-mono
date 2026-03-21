@@ -87,9 +87,9 @@
     to add it to every individual .csproj. -->
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/README.md"
-          Pack="true"
-          PackagePath="/"
-          Condition="Exists('$(MSBuildProjectDirectory)/README.md')" />
+      Pack="true"
+      PackagePath=""
+      Condition="Exists('$(MSBuildProjectDirectory)/README.md')" />
   </ItemGroup>
 
   <!-- ── License ────────────────────────────────────────────────────────────
