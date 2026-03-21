@@ -1,0 +1,137 @@
+.products-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.products-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.products-header h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #FF6B9D, #C96DD8, #6B8EFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.products-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.products-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+}
+
+.filters {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.filter-section {
+  margin-bottom: 2rem;
+}
+
+.filter-section h3 {
+  color: #FF6B9D;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.filter-option input[type="radio"] {
+  cursor: pointer;
+  accent-color: #FF6B9D;
+}
+
+.sort-select {
+  width: 100%;
+  padding: 0.7rem;
+  border: 2px solid #FF6B9D;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background-color: white;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: #C96DD8;
+}
+
+.products-grid {
+  min-height: 400px;
+}
+
+.products-info {
+  margin-bottom: 1.5rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.no-products {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.no-products p {
+  font-size: 1.2rem;
+  color: #666;
+  margin: 0.5rem 0;
+}
+
+@media (max-width: 1024px) {
+  .products-container {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .filter-section {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+}

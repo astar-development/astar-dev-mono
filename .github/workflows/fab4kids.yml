@@ -1,0 +1,100 @@
+# ════════════════════════════════════════════════════════════════════════════
+# fab4kids.yml
+# Builds the fab4kids React/Vite SPA and deploys to Azure Web App fab4kids.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: fab4kids
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/fab4kids/**'
+      - '.github/workflows/fab4kids.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: fab4kids-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/web/fab4kids
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/fab4kids/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: fab4kids-dist
+          path: apps/web/fab4kids/dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: fab4kids-dist
+          path: deploy
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FC652DF7690C43C38A54203D655D9343 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A87C7E3F618C4044B0BDD67D48EF0979 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7AD044A1FB4B484996554004904D8C59 }}
+
+      - name: Configure startup command
+        run: |
+          RESOURCE_GROUP=$(az webapp list --query "[?name=='fab4kids'].resourceGroup | [0]" -o tsv)
+          if [ -z "$RESOURCE_GROUP" ]; then
+            echo "Could not determine resource group for app 'fab4kids'"
+            exit 1
+          fi
+          az webapp config set \
+            --name fab4kids \
+            --resource-group "$RESOURCE_GROUP" \
+            --startup-file "pm2 serve /home/site/wwwroot --no-daemon --spa"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: fab4kids
+          slot-name: Production
+          package: deploy
