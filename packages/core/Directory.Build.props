@@ -31,7 +31,7 @@
          need strong-named assemblies (e.g. for GAC or certain enterprise
          deployment scenarios). Most NuGet packages don't need this.
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../keys/AStarDevelopment.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../keys/AStar.Dev.snk</AssemblyOriginatorKeyFile>
     -->
   </PropertyGroup>
 

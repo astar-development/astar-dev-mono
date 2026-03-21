@@ -34,7 +34,7 @@ commented-out step in the same workflow handles NuGet.org publication when
 a `NUGET_ORG_API_KEY` secret is present.
 
 `NuGet.Config` at the repo root configures Package Source Mapping so that all
-`AStarDevelopment.*` packages resolve exclusively from the GitHub Packages feed,
+`AStar.Dev.*` packages resolve exclusively from the GitHub Packages feed,
 and all other packages resolve from NuGet.org. This prevents dependency
 confusion attacks where a malicious package on NuGet.org shares a name with a
 private package.

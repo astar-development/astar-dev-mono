@@ -1,4 +1,4 @@
-# AStar.Dev.Utilities — migration checklist
+# AStar.Development.Utilities — migration checklist
 
 Work through these steps in order. Each step should leave the repo in a
 buildable state — commit after each one so you have clean rollback points.
@@ -7,25 +7,25 @@ buildable state — commit after each one so you have clean rollback points.
 STEP 1 — Create the folder structure
 ────────────────────────────────────────────────────────────────────────────
 
-  mkdir -p packages/core/AStar.Dev.Utilities
-  mkdir -p packages/core/AStar.Dev.Utilities.Tests.Unit
+  mkdir -p packages/core/AStar.Development.Utilities
+  mkdir -p packages/core/AStar.Development.Utilities.Tests.Unit
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 2 — Place the .csproj files
 ────────────────────────────────────────────────────────────────────────────
 
-  Copy AStar.Dev.Utilities.csproj
-    → packages/core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj
+  Copy AStar.Development.Utilities.csproj
+    → packages/core/AStar.Development.Utilities/AStar.Development.Utilities.csproj
 
-  Copy AStar.Dev.Utilities.Tests.Unit.csproj
-    → packages/core/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj
+  Copy AStar.Development.Utilities.Tests.Unit.csproj
+    → packages/core/AStar.Development.Utilities.Tests.Unit/AStar.Development.Utilities.Tests.Unit.csproj
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 3 — Place version.json
 ────────────────────────────────────────────────────────────────────────────
 
   Copy version.json
-    → packages/core/AStar.Dev.Utilities/version.json
+    → packages/core/AStar.Development.Utilities/version.json
 
   The Tests.Unit project inherits this version automatically.
   No separate version.json needed for the test project.
@@ -34,8 +34,8 @@ STEP 3 — Place version.json
 STEP 4 — Place the package README
 ────────────────────────────────────────────────────────────────────────────
 
-  Copy AStar.Dev.Utilities.README.md
-    → packages/core/AStar.Dev.Utilities/README.md
+  Copy AStar.Development.Utilities.README.md
+    → packages/core/AStar.Development.Utilities/README.md
 
   Fill in the real Usage examples from the existing package source.
   The placeholder sections (string extensions, collection helpers, guards)
@@ -47,8 +47,8 @@ STEP 5 — Copy source files
 
   From the existing standalone repo, copy all .cs files:
 
-    Source files  → packages/core/AStar.Dev.Utilities/
-    Test files    → packages/core/AStar.Dev.Utilities.Tests.Unit/
+    Source files  → packages/core/AStar.Development.Utilities/
+    Test files    → packages/core/AStar.Development.Utilities.Tests.Unit/
 
   Do NOT change namespaces yet. Get it building green first.
   Namespace refactoring (if desired) is a separate commit after verification.
@@ -65,8 +65,8 @@ STEP 6 — Add both projects to MonoRepo.slnx
 
   Open MonoRepo.slnx and add inside the appropriate folder:
 
-    <Project Path="packages/core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
-    <Project Path="packages/core/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+    <Project Path="packages/core/AStar.Development.Utilities/AStar.Development.Utilities.csproj" />
+    <Project Path="packages/core/AStar.Development.Utilities.Tests.Unit/AStar.Development.Utilities.Tests.Unit.csproj" />
 
   See slnx-entries.txt for the recommended folder nesting.
 
@@ -81,7 +81,7 @@ STEP 7 — Wire up Nerdbank.GitVersioning
        dotnet tool install -g nbgv
 
   c) Verify the version resolves correctly:
-       nbgv get-version packages/core/AStar.Dev.Utilities
+       nbgv get-version packages/core/AStar.Development.Utilities
 
      Expected output includes:
        NuGetPackageVersion: 1.6.3-pre.{height}
@@ -90,22 +90,22 @@ STEP 7 — Wire up Nerdbank.GitVersioning
   d) Commit version.json before running a build — Nerdbank.GitVersioning
      requires the file to be in git history to calculate the version height.
 
-       git add packages/core/AStar.Dev.Utilities/version.json
-       git commit -m "chore(packages/core): add AStar.Dev.Utilities to mono-repo at 1.6.3-pre"
+       git add packages/core/AStar.Development.Utilities/version.json
+       git commit -m "chore(packages/core): add AStar.Development.Utilities to mono-repo at 1.6.3-pre"
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 8 — Verify: build, test, pack
 ────────────────────────────────────────────────────────────────────────────
 
   # Build the package only
-  dotnet build packages/core/AStar.Dev.Utilities
+  dotnet build packages/core/AStar.Development.Utilities
 
   # Run unit tests
-  dotnet test packages/core/AStar.Dev.Utilities.Tests.Unit
+  dotnet test packages/core/AStar.Development.Utilities.Tests.Unit
 
   # Pack and inspect — confirm version is 1.6.3-pre.{height}
-  dotnet pack packages/core/AStar.Dev.Utilities --configuration Release
-  ls artifacts/bin/AStar.Dev.Utilities/
+  dotnet pack packages/core/AStar.Development.Utilities --configuration Release
+  ls artifacts/bin/AStar.Development.Utilities/
 
   # Build the entire solution — confirm nothing else broke
   dotnet build
@@ -115,14 +115,14 @@ STEP 9 — Update consumers (within the repo)
 ────────────────────────────────────────────────────────────────────────────
 
   Any other package or app in the mono-repo that currently references
-  AStar.Dev.Utilities via <PackageReference> should be updated to use
+  AStar.Development.Utilities via <PackageReference> should be updated to use
   <ProjectReference> instead:
 
     REMOVE:
-      <PackageReference Include="AStar.Dev.Utilities" />
+      <PackageReference Include="AStar.Development.Utilities" />
 
     ADD:
-      <ProjectReference Include="../../core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+      <ProjectReference Include="../../core/AStar.Development.Utilities/AStar.Development.Utilities.csproj" />
 
   (Adjust the relative path to match each consumer's location in the repo.)
 

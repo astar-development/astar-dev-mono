@@ -62,7 +62,7 @@ Background material and standards that apply across the repo.
 
 | Document | Description |
 |----------|-------------|
-| [Package naming conventions](reference/package-naming.md) | The `AStarDevelopment.[Area].[Name]` naming scheme and area definitions |
+| [Package naming conventions](reference/package-naming.md) | The `AStar.Dev.[Area].[Name]` naming scheme and area definitions |
 | [Versioning policy](reference/versioning-policy.md) | How semantic versioning is applied, what constitutes a breaking change, and the pre-release convention |
 | [Branch and PR strategy](reference/branching-strategy.md) | Branch naming, merge strategy, and PR requirements |
 | [NuGet feed access](reference/nuget-feed-access.md) | How to grant a contractor or CI system access to GitHub Packages |

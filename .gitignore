@@ -20,6 +20,8 @@
 *.nupkg
 *.snupkg
 .nuget/
+**/packages.lock.json
+~/.nuget/packages/
 # NuGet fallback folders and HTTP cache
 ~/.nuget/
 
@@ -159,3 +161,5 @@ $RECYCLE.BIN/
 appsettings.*.local.json
 secrets.json
 local.settings.json
+%USERPROFILE%/
+~/

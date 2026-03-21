@@ -83,7 +83,7 @@
     override with their own reverse-DNS identifier. -->
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <CFBundleIdentifier Condition="'$(CFBundleIdentifier)' == ''">
-      com.astardevelopment.$(MSBuildProjectName.ToLower())
+      com.astardev.$(MSBuildProjectName.ToLower())
     </CFBundleIdentifier>
   </PropertyGroup>
 

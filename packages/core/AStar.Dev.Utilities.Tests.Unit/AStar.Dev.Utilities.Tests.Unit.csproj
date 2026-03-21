@@ -13,29 +13,22 @@
   -->
 
   <ItemGroup>
-    <ProjectReference Include="../AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="FluentAssertions" />
-    <!--
-      Add NSubstitute or Moq here if the tests need mocking.
-      <PackageReference Include="NSubstitute" />
-    -->
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
-  <!--
-    Nerdbank.GitVersioning — needed in test projects only to stamp
-    the test assembly version consistently with the package it tests.
-  -->
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning"
-                      PrivateAssets="all"
-                      IsImplicitlyDefined="true" />
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+    <Using Include="NSubstitute" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

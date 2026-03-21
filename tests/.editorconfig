@@ -1,0 +1,58 @@
+# .editorconfig — integration and E2E test override
+# ══════════════════════════════════════════════════
+# Placed at tests/ repo root.
+# Inherits from the repo root .editorconfig and relaxes rules
+# appropriate for integration and E2E test code.
+#
+# Integration tests have different characteristics from unit tests:
+#   - They spin up real infrastructure (databases, HTTP servers, containers)
+#   - They use test fixtures with significant setup/teardown
+#   - They may intentionally exercise slow paths and timeout scenarios
+#   - Class and method names describe complex multi-step scenarios
+
+root = false
+
+[*.cs]
+
+# ── XML documentation ─────────────────────────────────────────────────────────
+dotnet_diagnostic.CS1591.severity = none
+
+# ── Line length ───────────────────────────────────────────────────────────────
+# Integration test scenarios have even longer descriptive names than unit tests.
+max_line_length = 240
+
+# ── Accessibility modifiers ───────────────────────────────────────────────────
+dotnet_style_require_accessibility_modifiers = never : none
+
+# ── Naming rules ──────────────────────────────────────────────────────────────
+dotnet_diagnostic.IDE1006.severity = suggestion
+dotnet_naming_rule.async_methods_end_with_async.severity = none
+
+# ── Async / Task handling ─────────────────────────────────────────────────────
+# Integration tests are almost entirely async. Relax warnings about
+# async method structure that don't apply in a test context.
+dotnet_diagnostic.CA1849.severity = suggestion   # Use async overloads
+dotnet_diagnostic.MA0004.severity = suggestion   # Use ConfigureAwait
+
+# ── Resource disposal ────────────────────────────────────────────────────────
+# Integration test fixtures use IAsyncLifetime and IDisposable patterns
+# that static analysis sometimes flags incorrectly.
+dotnet_diagnostic.CA2000.severity = suggestion   # Dispose objects before scope lost
+dotnet_diagnostic.CA1001.severity = suggestion   # Types that own disposable fields
+
+# ── Testcontainers / infrastructure setup ─────────────────────────────────────
+# Long-running setup methods, large fixture classes, and multiple
+# responsibilities per class are normal in integration test infrastructure.
+dotnet_diagnostic.CA1515.severity = none         # Consider making public types internal
+dotnet_diagnostic.S1118.severity = none          # Add a private constructor (SonarAnalyser)
+
+# ── Nullable ──────────────────────────────────────────────────────────────────
+# Same reasoning as unit tests — null is sometimes intentional.
+dotnet_diagnostic.CS8625.severity = suggestion
+dotnet_diagnostic.CS8600.severity = suggestion
+
+# ── Magic numbers / literal values ───────────────────────────────────────────
+dotnet_diagnostic.CA1707.severity = none
+
+# ── Expression-bodied members ────────────────────────────────────────────────
+csharp_style_expression_bodied_methods = false : none

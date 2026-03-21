@@ -43,7 +43,9 @@
                       PrivateAssets="All" />
   </ItemGroup>
 
-
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('.Tests.'))">
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
   <!-- ── Enforce package metadata on packable projects ─────────────────────
     Catches packages that are missing required NuGet metadata before they
     get anywhere near a publish step. Fails loudly at build time rather
@@ -86,12 +88,12 @@
 
     <PropertyGroup>
       <_IsInPackagesFolder>$([System.String]::new('$(MSBuildProjectDirectory)').Contains('/packages/'))</_IsInPackagesFolder>
-      <_HasCorrectPrefix>$([System.String]::new('$(MSBuildProjectName)').StartsWith('AStar.Development.'))</_HasCorrectPrefix>
+      <_HasCorrectPrefix>$([System.String]::new('$(MSBuildProjectName)').StartsWith('AStar.Dev.'))</_HasCorrectPrefix>
     </PropertyGroup>
 
     <Warning Condition="'$(_IsInPackagesFolder)' == 'true' AND '$(_HasCorrectPrefix)' == 'false'"
              Text="[$(MSBuildProjectName)] Projects in packages/ should be prefixed
-                   'AStar.Development.' to match your NuGet package naming convention." />
+                   'AStar.Dev.' to match your NuGet package naming convention." />
 
   </Target>
 
