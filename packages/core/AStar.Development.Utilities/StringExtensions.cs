@@ -67,12 +67,16 @@ public static class StringExtensions
     /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
-    public static bool IsImage(this string fileName) =>
-        fileName.EndsWith(".jpg",     StringComparison.OrdinalIgnoreCase)
+    public static bool IsImage(this string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName)) return false;
+        
+        return fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
         || fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
-        || fileName.EndsWith(".png",  StringComparison.OrdinalIgnoreCase)
-        || fileName.EndsWith(".bmp",  StringComparison.OrdinalIgnoreCase)
-        || fileName.EndsWith(".gif",  StringComparison.OrdinalIgnoreCase);
+        || fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+        || fileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
+        || fileName.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// </summary>
@@ -87,8 +91,12 @@ public static class StringExtensions
     /// <param name="value">The raw string to potentially truncate</param>
     /// <param name="truncateLength">The maximum length the string should be truncated to if required</param>
     /// <returns>The specified string or the truncated version</returns>
-    public static string TruncateIfRequired(this string value, int truncateLength) =>
-        value.Length > truncateLength ? value[..truncateLength] : value;
+    public static string TruncateIfRequired(this string value, int truncateLength)
+    {
+        if (string.IsNullOrEmpty(value) || truncateLength <= 0) return value;
+
+        return value.Length > truncateLength ? value[..truncateLength] : value;
+    }
 
     /// <summary>
     ///     The RemoveTrailing method will, as the name suggests, remove the specified character from the end if it exists
@@ -96,8 +104,12 @@ public static class StringExtensions
     /// <param name="value">The raw string to potentially remove the trailing character from</param>
     /// <param name="removeTrailing">The character to remove from the end if it exists</param>
     /// <returns>The original or updated string</returns>
-    public static string RemoveTrailing(this string value, string removeTrailing) =>
-        value.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
+    public static string RemoveTrailing(this string value, string removeTrailing)
+    {
+        if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(removeTrailing)) return value;
+
+        return value.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
             ? value[..^removeTrailing.Length]
             : value;
+    }
 }

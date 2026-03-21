@@ -45,8 +45,8 @@
   -->
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning"
-                      PrivateAssets="all"
-                      IsImplicitlyDefined="true" />
+                  VersionOverride="3.7.115"
+                  PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

@@ -11,7 +11,9 @@ public static class LinqExtensions
     /// <typeparam name="T"></typeparam>
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
     {
-        foreach(var item in enumerable)
+        if (enumerable == null || action == null) return;
+
+        foreach(T? item in enumerable)
         {
             action(item);
         }

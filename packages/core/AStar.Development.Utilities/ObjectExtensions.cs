@@ -14,8 +14,8 @@ public static class ObjectExtensions
     ///     The ToJson method, as you might expect, converts the supplied object to its JSON equivalent (using the
     ///     JsonSerializerDefaults.Web defaults with WriteIndented set to true)
     /// </summary>
-    /// <param name="object">The object to convert to JSON</param>
+    /// <param name="obj">The object to convert to JSON</param>
     /// <returns>The JSON string of the object supplied</returns>
-    public static string ToJson<T>(this T @object) =>
-        JsonSerializer.Serialize(@object, Options);
+    public static string ToJson<T>(this T obj) =>
+        JsonSerializer.Serialize(obj, Options);
 }
