@@ -1,0 +1,81 @@
+# ════════════════════════════════════════════════════════════════════════════
+# vue-coverage-pages.yml
+# Fires when vue-ci completes successfully on main.
+# Re-runs tests to collect coverage and publishes reports to GitHub Pages.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Vue Coverage Pages
+
+on:
+  workflow_run:
+    workflows: ['Vue CI']
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: vue-coverage-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  publish:
+    name: Build coverage site
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/web/astar-dev-vue
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/astar-dev-vue/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test with coverage (client)
+        run: npx vitest run -c tests/client/vitest.config.ts --coverage
+
+      - name: Test with coverage (server)
+        run: npx vitest run -c tests/server/vitest.config.ts --coverage || echo "No server tests"
+
+      - name: Prepare coverage site
+        run: |
+          mkdir coverage-site
+          cp -r client/coverage coverage-site/client
+          cp -r server/coverage coverage-site/server || true
+
+      - name: Upload coverage artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/astar-dev-vue/coverage-site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: publish
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+
+    steps:
+
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4

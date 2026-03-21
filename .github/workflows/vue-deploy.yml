@@ -1,0 +1,89 @@
+# ════════════════════════════════════════════════════════════════════════════
+# vue-deploy.yml
+# Fires when vue-ci completes successfully on main.
+# Builds, packages, and deploys the Vue/Express app to Azure Web App astar-dev.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Vue Deploy
+
+on:
+  workflow_run:
+    workflows: ['Vue CI']
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vue-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: astar-dev
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    defaults:
+      run:
+        working-directory: apps/web/astar-dev-vue
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/astar-dev-vue/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build client
+        run: npm run build --workspace=client
+
+      - name: Build server
+        run: npm run build --workspace=server
+
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r server/dist deploy/dist
+          cp server/package.json deploy/
+          mkdir -p deploy/client/dist
+          cp -r client/dist/. deploy/client/dist/
+          find deploy -maxdepth 4 -type f | sort
+
+      - name: Install production dependencies
+        run: npm install --omit=dev
+        working-directory: apps/web/astar-dev-vue/deploy
+
+      - name: Deploy to Azure Web App
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: apps/web/astar-dev-vue/deploy/
+
+      - name: Wait for app to warm up
+        run: sleep 15
+
+      - name: Health check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astardevelopment.co.uk/api/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Health check passed"
