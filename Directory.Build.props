@@ -91,7 +91,7 @@
       Required for deterministic/source-linked builds.
       Set your actual GitHub repo URL here.
     -->
-    <RepositoryUrl>https://github.com/your-org/your-repo</RepositoryUrl>
+    <RepositoryUrl>https://github.com/your-org/astar-dev-mono/</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

@@ -302,13 +302,13 @@ All workflows require explicit permissions and run with least-privilege
 
 ### NuGet package naming
 
-All packages follow the `AStarDevelopment.[Area].[Name]` pattern:
+All packages follow the `AStar.Dev.[Area].[Name]` pattern:
 
 ```
-AStarDevelopment.Core.Domain
-AStarDevelopment.Infra.DataAccess
-AStarDevelopment.Infra.Auth
-AStarDevelopment.Ui.Components
+AStar.Dev.Core.Domain
+AStar.Dev.Infra.DataAccess
+AStar.Dev.Infra.Auth
+AStar.Dev.Ui.Components
 ```
 
 ### Project structure

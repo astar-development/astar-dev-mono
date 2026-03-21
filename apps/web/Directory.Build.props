@@ -1,0 +1,62 @@
+<Project>
+  <!--
+    apps/web/Directory.Build.props
+    ════════════════════════════════
+    Inherits from the repo root. Applies to all .NET web projects — Blazor
+    WebAssembly, Blazor Server, and any ASP.NET Core APIs.
+
+    Next.js apps in this folder are not .NET projects and are unaffected
+    by MSBuild — they use next.config.js / package.json for their config.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Web apps are not NuGet packages -->
+    <IsPackable>false</IsPackable>
+
+    <!-- Web apps are published (dotnet publish produces the deployment artefact) -->
+    <IsPublishable>true</IsPublishable>
+
+    <!-- XML docs are not needed for app projects — they're not consumed as APIs -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- Slightly more relaxed analyser level for apps vs packages.
+         'latest-recommended' catches real bugs without the full noise of
+         'latest-all' which is more appropriate for public library code. -->
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+
+  <!-- ── Blazor WebAssembly — trim and AOT settings ────────────────────────
+    Trimming removes unused code from the WASM bundle, significantly reducing
+    download size. AOT compiles IL to WASM ahead of time for faster startup.
+
+    Both are expensive at build time so are only enabled for Release builds.
+    Debug builds stay fast for inner-loop development. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Enable IL trimming for Release WASM builds.
+         If you see runtime errors after enabling trimming, specific assemblies
+         can be excluded with <TrimmerRootDescriptor> or [DynamicDependency]. -->
+    <PublishTrimmed Condition="'$(OutputType)' == 'Exe'">true</PublishTrimmed>
+
+    <!-- Ahead-of-time compilation. Dramatically improves startup performance
+         at the cost of a larger initial download.
+         Comment out if your WASM apps are largely server-rendered (Blazor Server). -->
+    <RunAOTCompilation Condition="'$(OutputType)' == 'Exe'">true</RunAOTCompilation>
+  </PropertyGroup>
+
+  <!-- ── Development-time HTTPS ────────────────────────────────────────────
+    Ensure the ASP.NET Core development certificate is trusted for local HTTPS.
+    This is a no-op on CI (cert is not needed there) and only affects
+    local developer experience. -->
+  <PropertyGroup>
+    <ApplicationUrl Condition="'$(ApplicationUrl)' == ''">https://localhost:5001;http://localhost:5000</ApplicationUrl>
+  </PropertyGroup>
+
+  <!-- ── Static web assets ──────────────────────────────────────────────────
+    Opt in to the .NET 10 fingerprinted static asset pipeline. Adds
+    content hashes to asset filenames for optimal cache busting. -->
+  <PropertyGroup>
+    <StaticWebAssetsFingerprintContent>true</StaticWebAssetsFingerprintContent>
+  </PropertyGroup>
+
+</Project>

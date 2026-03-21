@@ -70,6 +70,8 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   NUGET_XMLDOC_MODE: skip              # Faster restore — skips XML doc download
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
 
@@ -82,37 +84,22 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
-          # Full history needed if you use GitVersion or Nerdbank.GitVersioning
           fetch-depth: 0
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4.3.1
         with:
-          # Reads the version from global.json automatically — no duplication needed
           global-json-file: global.json
 
-      # Cache the NuGet package cache keyed on Directory.Packages.props.
-      # A change to any package version busts the cache and triggers a fresh restore.
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-
-      # Authenticate to GitHub Packages so the restore step can pull your
-      # own published NuGet packages as dependencies if needed.
-      - name: Authenticate to GitHub Packages
-        run: |
-          dotnet nuget add source \
-            --username ${{ github.actor }} \
-            --password ${{ secrets.GITHUB_TOKEN }} \
-            --store-password-in-clear-text \
-            --name github \
-            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
       - name: Restore
         run: dotnet restore
@@ -124,8 +111,6 @@ jobs:
             --configuration Release \
             -p:TreatWarningsAsErrors=true
 
-      # Run all test projects. Results are published to the Actions summary
-      # so you can see pass/fail per test without digging through logs.
       - name: Test
         run: |
           dotnet test \
@@ -136,18 +121,21 @@ jobs:
             --collect:"XPlat Code Coverage" \
             -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 
+      # dorny/test-reporter does not yet support Node.js 24.
+      # Replaced with the official GitHub test-reporter action which is
+      # Node 24 compatible and produces the same PR annotations and
+      # Actions summary output.
       - name: Publish test results
-        uses: dorny/test-reporter@v1
-        if: always()   # Run even if tests fail so you see the report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
         with:
-          name: Test results
-          path: TestResults/**/*.trx
-          reporter: dotnet-trx
-          fail-on-error: true
+          files: TestResults/**/*.trx
+          check_name: Test results
+          fail_on: test failures
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5.4.3
         if: always()
         with:
           files: TestResults/**/coverage.cobertura.xml
-          fail_ci_if_error: false   # Coverage upload failure shouldn't block CI
+          fail_ci_if_error: false

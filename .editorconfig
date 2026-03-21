@@ -124,10 +124,10 @@ dotnet_style_require_accessibility_modifiers                        = for_non_in
 
 # ── Code block preferences ────────────────────────────────────────────────────
 
-csharp_prefer_braces                                               = false : warning
+csharp_prefer_braces                                               = true : warning
 csharp_prefer_simple_using_statement                               = true : suggestion
 csharp_style_prefer_primary_constructors                           = true : suggestion
-csharp_style_namespace_declarations                                = file_scoped : error
+csharp_style_namespace_declarations                                = file_scoped : warning
 
 # ── 'this.' qualifier ─────────────────────────────────────────────────────────
 # Don't prefix fields/properties/methods with 'this.' — it's noise.
@@ -267,6 +267,24 @@ trim_trailing_whitespace = true
 # so we override the global trim rule here.
 trim_trailing_whitespace = false
 max_line_length          = off    # Let prose wrap naturally
+
+# ── Test projects — all locations ────────────────────────────────────────────
+# Matches any .cs file inside a folder whose name contains .Tests.
+# Covers *.Tests.Unit, *.Tests.Integration, *.Tests.Acceptance etc.
+# under apps/, packages/, tests/, or anywhere else in the repo.
+[*.Tests.*/**/*.cs]
+dotnet_diagnostic.CS1591.severity                        = none
+max_line_length                                          = 200
+dotnet_style_require_accessibility_modifiers             = never : none
+dotnet_diagnostic.IDE1006.severity                       = suggestion
+dotnet_naming_rule.async_methods_end_with_async.severity = none
+dotnet_diagnostic.IDE0060.severity                       = suggestion
+csharp_style_expression_bodied_methods                   = false : none
+dotnet_diagnostic.CA1707.severity                        = none
+dotnet_diagnostic.CA1508.severity                        = suggestion
+dotnet_diagnostic.CS8625.severity                        = suggestion
+dotnet_diagnostic.CS8600.severity                        = suggestion
+
 
 # ── Shell scripts ─────────────────────────────────────────────────────────────
 [*.{sh,bash}]

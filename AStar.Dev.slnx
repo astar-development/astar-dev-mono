@@ -1,2 +1,12 @@
-<Solution>
-</Solution>
+  <Solution>
+    <Folder Name="/packages/">
+      <Folder Name="/packages/core/">
+        <Project Path="packages/core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <Project Path="packages/core/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+      </Folder>
+    </Folder>
+    <Folder Name="/packages/core/">
+        <Project Path="packages\core\AStar.Dev.Utilities.Tests.Unit\AStar.Dev.Utilities.Tests.Unit.csproj" />
+        <Project Path="packages\core\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
+    </Folder>
+  </Solution>

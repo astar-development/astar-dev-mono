@@ -73,8 +73,9 @@ concurrency:
 
 env:
   DOTNET_NOLOGO: true
-  TF_IN_AUTOMATION: true      # Suppresses Terraform's "running in automation" hints
-  TF_INPUT: false             # Never prompt for input in CI
+  TF_IN_AUTOMATION: true
+  TF_INPUT: false
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
 
@@ -89,10 +90,10 @@ jobs:
       prod: ${{ steps.filter.outputs.prod }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Detect changed paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v3.0.2
         id: filter
         with:
           filters: |
@@ -119,10 +120,10 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v3.1.2
         with:
           # Pin the Terraform version — same reasoning as global.json for .NET.
           # Update deliberately, never let it float.
@@ -178,7 +179,7 @@ jobs:
       # Post the plan output as a comment on the PR so you can review
       # infrastructure changes alongside code changes.
       - name: Comment plan on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7.0.1
         if: github.event_name == 'pull_request'
         with:
           script: |
@@ -236,10 +237,10 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v3.1.2
         with:
           terraform_version: "1.10.5"
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
@@ -273,7 +274,7 @@ jobs:
         continue-on-error: true
 
       - name: Comment plan on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v7.0.1
         if: github.event_name == 'pull_request'
         with:
           script: |
