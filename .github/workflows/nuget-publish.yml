@@ -137,7 +137,6 @@ jobs:
           else
             echo "Running tests: ${TEST_PROJ}"
             dotnet test "${TEST_PROJ}" \
-              --no-build \
               --configuration Release \
               --logger "trx;LogFileName=results.trx" \
               --results-directory ./TestResults
