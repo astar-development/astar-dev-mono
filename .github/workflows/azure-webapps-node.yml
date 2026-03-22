@@ -33,6 +33,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web/fab4kids
+        
     steps:
     - uses: actions/checkout@v4
 
