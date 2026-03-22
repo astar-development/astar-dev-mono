@@ -4,7 +4,7 @@
 # Lints, type-checks, tests, and builds both client and server.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: Fab4Kids CI
+name: Fab4Kids CI - copy of AStar
 
 on:
   push:
