@@ -24,15 +24,15 @@ const logoUrl = computed(() => {
 <template>
   <header class="hero">
     <div class="topbar">
-      
+
       <div class="topbar__brand">
         <img :src="logoUrl + '?v=' + theme" :key="theme" class="logo" alt="Logo" />
         <div>
           <div class="topbar__title">AStar Development</div>
-          <div class="topbar__subtitle">Software Architecture & Branding</div>
+          <div class="topbar__subtitle">Software Architecture & Development</div>
         </div>
       </div>
-      
+
     </div>
 
     <div class="hero__content">
@@ -273,7 +273,7 @@ const logoUrl = computed(() => {
 }
 
 .hero__eyebrow-row .theme-select {
-  margin: 0;  
+  margin: 0;
   margin-left: 24px; /* small spacing so it doesn't crowd the eyebrow */
 }
 
