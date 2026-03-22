@@ -44,18 +44,11 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web/fab4kids/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Prepare deployment package
+      - name: npm install, build, and test
         run: |
-          mkdir deploy
-          cp -r dist deploy/
-          printf '{"scripts":{"start":"serve -s dist -l 8080"},"dependencies":{"serve":"^14.2.1"}}' > deploy/package.json
-          cd deploy && npm install --omit=dev
+          npm install
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4.6.2

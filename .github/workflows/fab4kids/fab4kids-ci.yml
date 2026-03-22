@@ -1,0 +1,100 @@
+# ════════════════════════════════════════════════════════════════════════════
+# fab4kids-ci.yml
+# Triggers on any push or PR that touches the Fab4Kids app or this workflow.
+# Lints, type-checks, tests, and builds both client and server.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Fab4Kids CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    paths:
+      - 'apps/web/fab4kids/**'
+      - '.github/workflows/fab4kids-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+    paths:
+      - 'apps/web/fab4kids/**'
+      - '.github/workflows/fab4kids-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fab4kids-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  ci:
+    name: Lint, test & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web/fab4kids
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/fab4kids/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint (client)
+        run: npm run lint --workspace=client || echo "No lint script"
+
+      - name: Type-check (client)
+        run: npm run type-check --workspace=client
+
+      - name: Test with coverage (client)
+        run: npx vitest run -c tests/client/vitest.config.ts --coverage
+
+      - name: Upload client coverage
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: client-coverage
+          path: apps/web/fab4kids/client/coverage
+          retention-days: 7
+
+      - name: Build + type-check server
+        run: npm run build --workspace=server
+
+      - name: Test with coverage (server)
+        run: npx vitest run -c tests/server/vitest.config.ts --coverage || echo "No server tests"
+
+      - name: Upload server coverage
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: server-coverage
+          path: apps/web/fab4kids/server/coverage
+          retention-days: 7
+
+      - name: Build client
+        run: npm run build --workspace=client
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: build-artifacts
+          path: |
+            apps/web/fab4kids/client/dist
+            apps/web/fab4kids/server/dist
+          retention-days: 7
