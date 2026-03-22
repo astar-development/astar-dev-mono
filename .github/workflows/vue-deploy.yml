@@ -73,7 +73,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
           package: apps/web/astar-dev-vue/deploy/
 
       - name: Wait for app to warm up
