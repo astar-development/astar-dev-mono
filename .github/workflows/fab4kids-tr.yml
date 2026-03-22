@@ -50,11 +50,18 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r dist deploy/
+          printf '{"scripts":{"start":"serve -s dist -l 8080"},"dependencies":{"serve":"^14.2.1"}}' > deploy/package.json
+          npm install --prefix deploy --omit=dev
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: fab4kids-tr-dist
-          path: apps/web/fab4kids-tr/dist
+          path: apps/web/fab4kids-tr/deploy
           retention-days: 7
 
   deploy:
