@@ -21,6 +21,7 @@ on:
     paths:
       - 'apps/web/astar-dev-vue/**'
       - '.github/workflows/vue-ci.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
