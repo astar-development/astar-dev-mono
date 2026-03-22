@@ -4,7 +4,7 @@
 # Builds, packages, and deploys the Fab4Kids app to Azure Web App fab4kids.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: fab4kids Deploy
+name: Fab4Kids Deploy - copy of AStar
 
 on:
   workflow_run:
