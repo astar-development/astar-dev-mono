@@ -1,4 +1,4 @@
-name: Deploy Infrastructure
+name: Fab4Kids - Deploy Infrastructure
 
 permissions:
   contents: read
@@ -8,7 +8,7 @@ on:
     branches:
       - main
     paths:
-      - 'infra/**'
+      - 'infra/fab4kids/**'
   workflow_dispatch:
 
 jobs:
@@ -27,5 +27,5 @@ jobs:
         uses: azure/arm-deploy@v2
         with:
           resourceGroupName: rg-astar-dev
-          template: infra/main.bicep
+          template: infra/fab4kids/main.bicep
           failOnStdErr: false

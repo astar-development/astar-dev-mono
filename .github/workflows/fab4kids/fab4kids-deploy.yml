@@ -1,4 +1,4 @@
-name: Build and deploy to Azure Web App
+name: Fab4Kids - Build and Deploy
 
 on:
   push:
