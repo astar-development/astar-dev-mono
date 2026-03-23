@@ -269,10 +269,12 @@ trim_trailing_whitespace = false
 max_line_length          = off    # Let prose wrap naturally
 
 # ── Test projects — all locations ────────────────────────────────────────────
-# Matches any .cs file inside a folder whose name contains .Tests.
+# Matches any file inside a folder whose name contains .Tests.
 # Covers *.Tests.Unit, *.Tests.Integration, *.Tests.Acceptance etc.
 # under apps/, packages/, tests/, or anywhere else in the repo.
-[*.Tests.*/**/*.cs]
+# **/ prefix: test folder can appear at any directory depth.
+# /** suffix: matches files directly in the test project folder root (not just subdirectories).
+[**/*.Tests.*/**]
 dotnet_diagnostic.CS1591.severity                        = none
 max_line_length                                          = 200
 dotnet_style_require_accessibility_modifiers             = never : none
