@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>AStar.Dev.Clock</AssemblyName>
+    <RootNamespace>AStar.Dev.Clock</RootNamespace>
+    <Company>AStar Development</Company>
+    <Product>AStar Development Clock</Product>
+    <ApplicationIcon>Assets/astar.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**"/>
+  </ItemGroup>
+  <!-- Rely on Avalonia SDK defaults to include **/*.axaml once -->
+
+  <!-- Ensure nested duplicate sources under src/ are not included in this project -->
+  <ItemGroup>
+    <Compile Remove="src/**/*.cs"/>
+    <AvaloniaResource Remove="src/**/*.axaml"/>
+    <None Remove="src/**"/>
+    <EmbeddedResource Remove="src/**"/>
+    <None Update="Assets\astar.ico">
+      <Pack>true</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
