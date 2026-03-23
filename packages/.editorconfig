@@ -1,0 +1,12 @@
+# EditorConfig — packages directory
+# Provides scoped overrides for projects under packages/
+root = false
+
+# Test projects — relaxed rules
+# Matches *.Tests.Unit, *.Tests.Integration, etc. projects under packages/
+# Uses **/ prefix so the test folder name can appear at any depth (e.g. packages/core/Foo.Tests.Unit/)
+# Uses /** suffix so files directly in the test folder root are also matched (not just subdirectories)
+[**/*.Tests.*/**]
+dotnet_diagnostic.CA1707.severity = none   # Remove underscores from member names
+dotnet_diagnostic.CA1305.severity = none   # Locale-specific ToString() behavior
+dotnet_diagnostic.CA2007.severity = none   # Consider calling ConfigureAwait on awaited task
