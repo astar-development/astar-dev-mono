@@ -1,4 +1,8 @@
   <Solution>
+    <Folder Name="/apps/" />
+    <Folder Name="/apps/desktop/">
+        <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
+    </Folder>
     <Folder Name="/packages/">
       <Folder Name="/packages/core/">
         <Project Path="packages/core/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />

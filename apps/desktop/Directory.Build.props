@@ -88,11 +88,9 @@
   </PropertyGroup>
 
   <!-- ── Avalonia design-time support ──────────────────────────────────────
-    Ensures the Avalonia previewer has access to compiled assets at design
-    time. This resolves the most common cause of the previewer failing to
-    show live previews in Rider and VS Code. -->
+    The Avalonia SDK auto-includes **/*.axaml — no explicit include needed.
+    PNG assets are included for Debug builds so the previewer can resolve them. -->
   <ItemGroup>
-    <AvaloniaResource Include="**\*.axaml" />
     <AvaloniaResource Include="**\*.png"
                       Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
