@@ -12,17 +12,22 @@
   -->
 
   <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageTags>utilities;extensions;helpers;astar;astardevelopment</PackageTags>
     <Title>AStar Dev Utilities</Title>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Description>A collection of useful utilities that do not fit within any of the other, more targeted, AStar Dev NuGet packages.</Description>
-    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono//tree/main/packages/core/AStar.Dev.Utilities</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono//tree/main/packages/core</PackageProjectUrl>
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
     <PackageReleaseNotes>No functional changes. Just a new 'home' on GitHub.</PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-  </PropertyGroup>
+</PropertyGroup>
 
   <!--
     Direct dependencies — versions come from Directory.Packages.props.

@@ -21,14 +21,10 @@ STEP 2 — Place the .csproj files
     → packages/core/AStar.Development.Utilities.Tests.Unit/AStar.Development.Utilities.Tests.Unit.csproj
 
 ────────────────────────────────────────────────────────────────────────────
-STEP 3 — Place version.json
+STEP 3 — REMOVED
 ────────────────────────────────────────────────────────────────────────────
 
-  Copy version.json
-    → packages/core/AStar.Development.Utilities/version.json
-
-  The Tests.Unit project inherits this version automatically.
-  No separate version.json needed for the test project.
+  REMOVED
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 4 — Place the package README
@@ -54,10 +50,8 @@ STEP 5 — Copy source files
   Namespace refactoring (if desired) is a separate commit after verification.
 
   Do NOT copy:
-    - The old .csproj (replaced by the new lean version)
     - bin/ obj/ .vs/ .idea/ folders
     - Any version-related files (AssemblyInfo.cs version attributes etc.)
-      Nerdbank.GitVersioning generates these automatically.
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 6 — Add both projects to MonoRepo.slnx
@@ -71,27 +65,24 @@ STEP 6 — Add both projects to MonoRepo.slnx
   See slnx-entries.txt for the recommended folder nesting.
 
 ────────────────────────────────────────────────────────────────────────────
-STEP 7 — Wire up Nerdbank.GitVersioning
+STEP 7 — CSPROJ Updates
 ────────────────────────────────────────────────────────────────────────────
 
-  a) Add to Directory.Packages.props (see packages-props-addition.txt):
-       <PackageVersion Include="Nerdbank.GitVersioning" Version="3.7.115" />
-
-  b) Install the nbgv CLI tool if not already installed:
-       dotnet tool install -g nbgv
-
-  c) Verify the version resolves correctly:
-       nbgv get-version packages/core/AStar.Development.Utilities
-
-     Expected output includes:
-       NuGetPackageVersion: 1.6.3-pre.{height}
-       AssemblyVersion: 1.6.0.0
-
-  d) Commit version.json before running a build — Nerdbank.GitVersioning
-     requires the file to be in git history to calculate the version height.
-
-       git add packages/core/AStar.Development.Utilities/version.json
-       git commit -m "chore(packages/core): add AStar.Development.Utilities to mono-repo at 1.6.3-pre"
+- Ensure the Directory.Packages.props includes any new NuGet packages
+- Remove any versions of NuGet packages in the relevant csproj files
+- Update the test project(s) to reference the new location - currently, this is just removing "\src" from the path
+- Add <NoWarn>CA1716</NoWarn> if necessary
+- Ensure casing of the README (and the ACTUAL file of course):
+    - <PackageReadmeFile>README.md</PackageReadmeFile>
+    - <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono//tree/main/packages/<AREA>></PackageProjectUrl>
+    - <PackageId>AStar.Dev.Functional.Extensions</PackageId> - need to check the AStar.Dev.Utilities deployment to see if it has it or not
+- Remove any of the following from the production project:
+    - <PackageIcon>astar.png</PackageIcon>
+        <Authors>AStar Development, Jason Barden</Authors>
+        <Company>AStar Development</Company>
+        <Copyright>AStar Development 2025</Copyright>
+        <Version>0.4.5</Version>
+        <None Include="..\..\astar.png" Pack="True" PackagePath="/" Link="astar.png" />
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 8 — Verify: build, test, pack
