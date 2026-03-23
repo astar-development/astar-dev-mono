@@ -1,5 +1,8 @@
 name: Deploy Infrastructure
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
