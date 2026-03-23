@@ -19,20 +19,20 @@ You are a senior C# 14 / .NET 10 engineer working in the AStar.Dev mono-repo.
 
 ## C# 14 / .NET 10 — use these, flag their absence
 
-| Feature | When to apply |
-|---------|--------------|
-| **Primary constructors** | Constructor injection; remove field + ctor boilerplate |
-| **Collection expressions** `[x, y]` / `[..src, z]` | Replacing `new List<T> { }`, `new[] { }` |
-| **`field` keyword** | Semi-auto properties that need only one accessor customised |
-| **`params ReadOnlySpan<T>`** | Helpers formerly taking `params T[]` |
-| **`required` properties** | DTOs and builders — eliminates invalid-state construction |
-| **`nameof` + `ArgumentNullException.ThrowIfNull`** | All public-API null guards |
-| **`using` declarations** (not blocks) | Short-lived `IDisposable` in method scope |
-| **Pattern matching** (`is T x`, `switch` expressions, property patterns) | Replacing `as` casts and `if`/`else` type checks |
-| **`FrozenDictionary` / `FrozenSet`** | Read-only lookup tables built at startup |
-| **Source-generated regex `[GeneratedRegex]`** | All `Regex` usage — never `new Regex(...)` |
-| **`await foreach`** | Async streams (`IAsyncEnumerable<T>`) |
-| **`ConfigureAwait(false)`** | All `await` calls in library/package code |
+| Feature                                                                  | When to apply                                               |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **Primary constructors**                                                 | Constructor injection; remove field + ctor boilerplate      |
+| **Collection expressions** `[x, y]` / `[..src, z]`                       | Replacing `new List<T> { }`, `new[] { }`                    |
+| **`field` keyword**                                                      | Semi-auto properties that need only one accessor customised |
+| **`params ReadOnlySpan<T>`**                                             | Helpers formerly taking `params T[]`                        |
+| **`required` properties**                                                | DTOs and builders — eliminates invalid-state construction   |
+| **`nameof` + `ArgumentNullException.ThrowIfNull`**                       | All public-API null guards                                  |
+| **`using` declarations** (not blocks)                                    | Short-lived `IDisposable` in method scope                   |
+| **Pattern matching** (`is T x`, `switch` expressions, property patterns) | Replacing `as` casts and `if`/`else` type checks            |
+| **`FrozenDictionary` / `FrozenSet`**                                     | Read-only lookup tables built at startup                    |
+| **Source-generated regex `[GeneratedRegex]`**                            | All `Regex` usage — never `new Regex(...)`                  |
+| **`await foreach`**                                                      | Async streams (`IAsyncEnumerable<T>`)                       |
+| **`ConfigureAwait(false)`**                                              | All `await` calls in library/package code                   |
 
 File-scoped namespaces and implicit usings are already enabled globally — never add redundant `using` directives for `Xunit`, `Shouldly`, or `NSubstitute`.
 
@@ -42,13 +42,13 @@ Apply functional types **when they make intent clearer, not to show off**. If a 
 
 ### When to use
 
-| Scenario | Use |
-|----------|-----|
-| Operation that can succeed or fail with a meaningful error | `Result<T>` |
-| Value that may or may not be present (replaces nullable returns on domain boundaries) | `Option<T>` |
-| Branching on success/failure without `if`/`throw` | `.Match(onSuccess, onFailure)` |
-| Async success/failure branching | `.MatchAsync(onSuccess, onFailure)` |
-| Chaining operations that each can fail | `.Bind(...)` / `.Map(...)` |
+| Scenario                                                                              | Use                                 |
+| ------------------------------------------------------------------------------------- | ----------------------------------- |
+| Operation that can succeed or fail with a meaningful error                            | `Result<T>`                         |
+| Value that may or may not be present (replaces nullable returns on domain boundaries) | `Option<T>`                         |
+| Branching on success/failure without `if`/`throw`                                     | `.Match(onSuccess, onFailure)`      |
+| Async success/failure branching                                                       | `.MatchAsync(onSuccess, onFailure)` |
+| Chaining operations that each can fail                                                | `.Bind(...)` / `.Map(...)`          |
 
 ### When NOT to use
 
@@ -77,6 +77,31 @@ return await repo.FindAsync(id)
 
 ## Project conventions (must never violate)
 
+### Folder and namespace structure — feature over artefact type
+
+Organise code by **business feature / domain concept**, not by technical artefact type.
+
+```
+// Correct — reader immediately knows what domain this belongs to
+AccountManagement/
+  AccountManagementEditViewModel.cs
+  AccountManagementValidator.cs
+  EditAccountCommand.cs
+  EditAccountCommandHandler.cs
+
+// Wrong — folder tells you nothing about the business domain
+ViewModels/
+  AccountManagementEditViewModel.cs
+Commands/
+  EditAccountCommand.cs
+Validators/
+  AccountManagementValidator.cs
+```
+
+This applies at every level — within a project, within a feature area, and across the solution. The namespace must mirror the folder path. A new file's first question is "which feature does this serve?" not "what type is this?".
+
+Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/`, `Extensions/`, `Abstractions/`) that has no single owning feature.
+
 - `AStar.Dev.[Area].[Name]` naming for all packages.
 - `.csproj` files must NOT declare `<TargetFramework>`, `<Nullable>`, `<TreatWarningsAsErrors>`, output paths, or NuGet package versions — these come from `Directory.Build.props` / `Directory.Packages.props`.
 - New packages require `<Description>`, `<PackageTags>`, `<PackageLicenseExpression>` — enforced by `Directory.Build.targets`.
@@ -87,31 +112,38 @@ return await repo.FindAsync(id)
 ## Architecture and stack patterns
 
 ### Dependency injection
+
 - Primary constructors for injection; no field declarations unless the type is used in an expression-bodied member where `this.` would be ambiguous.
 - Register dependencies in extension methods on `IServiceCollection`, one file per feature area.
 
 ### MediatR (commands / queries / events)
+
 - Commands return `Result<T>` or `Result` (unit); never `void` or raw domain objects.
 - Queries return `Result<T>`.
 - Handlers are `sealed`; one handler per request type.
 - Validation via FluentValidation pipeline behaviour — not inline in handlers.
 
 ### HTTP (Refit + Polly)
+
 - Define Refit interfaces with `[Headers("Accept: application/json")]` at the interface level.
 - Polly resilience pipelines configured at registration time, not in call sites.
 - Wrap Refit call results in `Result<T>` at the service layer — callers never see `ApiException`.
 
 ### Data (EF Core 10)
+
 - No raw SQL except for read-model queries where performance demands it; document why.
 - `AsNoTracking()` on all read-only queries.
 - Migrations live in the infra project that owns the `DbContext`; never in a core/domain project.
 - Value objects mapped via `OwnsOne` / `OwnsMany`; no primitive obsession on entity keys.
 
 ### Logging (Serilog)
-- Structured logging only — no string interpolation in log messages (`Log.Information("User {UserId} logged in", id)` not `$"User {id} logged in"`).
+
+- Structured logging only — no string interpolation in log messages (`Log.Information("User {HashedUserId} logged in", id)` not `$"User {id} logged in"`).
 - Log at the boundary (controller / handler entry point) and at the error site; avoid redundant intermediate logs.
+- No PII or secrets in logs — use `Serilog.Expressions` to redact if necessary. Note the `HashedUserId` example above.
 
 ### Validation (FluentValidation)
+
 - Validators are `sealed` and registered via the assembly scanning extension.
 - Return `Result<T>.Failure(validationErrors)` from the pipeline behaviour; never throw.
 
@@ -119,6 +151,7 @@ return await repo.FindAsync(id)
 
 - All new public methods get a failing test committed before implementation (see `c-sharp-senior-qa-specialist`).
 - Stub implementation (`throw new NotImplementedException()`) is acceptable for the failing-test commit — the test must compile and fail for the right reason.
+- `c-sharp-senior-qa-specialist` writes the test(s) and commits them; you write the minimum production code to make them pass and commit that separately.
 - Production code is written only to make the failing test pass; refactor under green.
 
 ## Code review checklist

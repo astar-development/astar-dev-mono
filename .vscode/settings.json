@@ -1,5 +1,4 @@
 {
-
   // ── C# Dev Kit — point at your root solution file ────────────────────────
   // Tells the C# language server which .sln to load. Without this VS Code
   // may prompt you to pick one (or guess wrong) every time you open the repo.
@@ -48,16 +47,9 @@
   "[xml]": { "editor.defaultFormatter": "redhat.vscode-xml" },
 
   // ── ESLint — scope to JS/TS only (don't let it try to lint .cs files) ───
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   // Tell ESLint where your root config lives relative to the workspace
-  "eslint.workingDirectories": [
-    { "pattern": "apps/web/*/" }
-  ],
+  "eslint.workingDirectories": [{ "pattern": "apps/web/*/" }],
 
   // ── Terraform ───────────────────────────────────────────────────────────
   "terraform.languageServer.enable": true,
@@ -114,6 +106,7 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
-
+  "files.insertFinalNewline": true,
+  "cSpell.language": "en-GB",
+  "cSpell.words": ["Parameterised", "Serilog", "Shouldly"]
 }
