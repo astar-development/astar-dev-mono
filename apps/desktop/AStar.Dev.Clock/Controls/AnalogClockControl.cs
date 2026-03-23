@@ -88,7 +88,7 @@ public class AnalogClockControl : Control
             var pos = new Point(center.X + cos * numberRadius, center.Y + sin * numberRadius);
 
             // Use FormattedText so we can measure and center precisely
-            var text = h.ToString();
+            var text = h.ToString(culture);
             var ft = new FormattedText(text, culture, flow, numberTypeface, numberSize, foreground);
             // Approximate text size since FormattedText doesn't expose Size in this API surface
             var approxWidth = (text.Length == 1 ? 0.6 : 0.9) * numberSize;
