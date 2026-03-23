@@ -1,0 +1,5 @@
+﻿{
+  "irrelevantDate": "<date>",
+  "irrelevantGuid": "<GUID>",
+  "irrelevantString": "Irrelevant string"
+}

@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Test.Helpers.Unit</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Test.Helpers.Unit.ShouldlyExtensions">
+            <summary>
+                The <see cref="T:AStar.Dev.Test.Helpers.Unit.ShouldlyExtensions" /> class containing the current extensions for the Shouldly package
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Test.Helpers.Unit.ShouldlyExtensions.ShouldMatchMaskedApproved``1(``0)">
+            <summary>
+                The ShouldMatchMaskedApproved method abstracts the original ShouldMatchApproved and adds masking for ISO Dates and GUIDs within the object being compared
+            </summary>
+            <param name="source">The object to check to the approved version</param>
+            <typeparam name="T">The type of the object being compared</typeparam>
+        </member>
+        <member name="M:AStar.Dev.Test.Helpers.Unit.ShouldlyExtensionsRegex.RegexIsoDate">
+            <remarks>
+            Pattern:<br/>
+            <code>\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z)</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a Unicode digit exactly 4 times.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a character in the set [01].<br/>
+            ○ Match a Unicode digit.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a character in the set [0-3].<br/>
+            ○ Match a Unicode digit.<br/>
+            ○ Match 'T'.<br/>
+            ○ Match a character in the set [0-2].<br/>
+            ○ Match a Unicode digit.<br/>
+            ○ Match ':'.<br/>
+            ○ Match a character in the set [0-5].<br/>
+            ○ Match a Unicode digit.<br/>
+            ○ Match ':'.<br/>
+            ○ Match a character in the set [0-5].<br/>
+            ○ Match a Unicode digit.<br/>
+            ○ Match '.'.<br/>
+            ○ Match a Unicode digit atomically at least once.<br/>
+            ○ 1st capture group.<br/>
+                ○ Match with 2 alternative expressions, atomically.<br/>
+                    ○ Match a sequence of expressions.<br/>
+                        ○ Match an empty string.<br/>
+                        ○ Match a character in the set [0-2].<br/>
+                        ○ Match a Unicode digit.<br/>
+                        ○ Match ':'.<br/>
+                        ○ Match a character in the set [0-5].<br/>
+                        ○ Match a Unicode digit.<br/>
+                    ○ Match 'Z'.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.Test.Helpers.Unit.ShouldlyExtensionsRegex.RegexGuid">
+            <remarks>
+            Pattern:<br/>
+            <code>\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a word character exactly 8 times.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a word character exactly 4 times.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a word character exactly 4 times.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a word character exactly 4 times.<br/>
+            ○ Match '-'.<br/>
+            ○ Match a word character exactly 12 times.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexIsoDate_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the RegexIsoDate method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.RegexIsoDate_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexIsoDate_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexIsoDate_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexGuid_1">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the RegexGuid method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.RegexGuid_1.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexGuid_1.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.RegexGuid_1.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.Utilities.IsWordChar(System.Char)">
+            <summary>Determines whether the character is part of the [\w] set.</summary>
+        </member>
+    </members>
+</doc>

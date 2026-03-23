@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Test.Helpers.Minimal.Api</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Test.Helpers.Minimal.Api.ResultExtensions">
+            <summary>
+                The <see cref="T:AStar.Dev.Test.Helpers.Minimal.Api.ResultExtensions" /> class containing the relevant extensions on the <see cref="T:Microsoft.AspNetCore.Http.IResult" /> interface
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Test.Helpers.Minimal.Api.ResultExtensions.ResultValue``1(Microsoft.AspNetCore.Http.IResult)">
+            <summary>
+                The GetResultValue method will return the value property from the <see cref="T:Microsoft.AspNetCore.Http.IResult" /> object
+                This method exists as the underlying classes are, for reasons best known to Microsoft, internal sealed classes...
+            </summary>
+            <param name="result">The <see cref="T:Microsoft.AspNetCore.Http.IResult" /> object to return the value from</param>
+            <typeparam name="T">The type of the value to return</typeparam>
+            <returns>A nullable instance of the specified return type</returns>
+        </member>
+        <member name="M:AStar.Dev.Test.Helpers.Minimal.Api.ResultExtensions.ResultStatusCode(Microsoft.AspNetCore.Http.IResult)">
+            <summary>
+                The GetResultStatusCode method will return the Status Code property from the <see cref="T:Microsoft.AspNetCore.Http.IResult" /> object
+                This method exists as the underlying classes are, for reasons best known to Microsoft, internal sealed classes...
+            </summary>
+            <param name="result">The <see cref="T:Microsoft.AspNetCore.Http.IResult" /> object to return the Status Code from</param>
+            <returns>A nullable instance of the specified return type</returns>
+        </member>
+    </members>
+</doc>

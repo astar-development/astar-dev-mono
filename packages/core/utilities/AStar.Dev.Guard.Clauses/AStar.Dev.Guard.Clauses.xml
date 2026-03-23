@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Guard.Clauses</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Guard.Clauses.GuardAgainst">
+            <summary>
+                The root <seealso href="GuardAgainst"></seealso> class.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Guard.Clauses.GuardAgainst.Null``1(``0)">
+            <summary>
+                This method will check whether the specified object is null or not.
+            </summary>
+            <typeparam name="T">
+                Specifies the generic object to check for null.
+            </typeparam>
+            <param name="objectToCheck">
+                The object to check for null.
+            </param>
+            <returns>
+                The original object if it is not null.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+                Thrown when the object is, in fact, null.
+            </exception>
+        </member>
+        <member name="M:AStar.Dev.Guard.Clauses.GuardAgainst.Negative``1(``0)">
+             <summary>
+            
+             </summary>
+             <param name="objectToCheck"></param>
+             <typeparam name="T"></typeparam>
+             <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -103,7 +103,7 @@ This applies at every level — within a project, within a feature area, and acr
 Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/`, `Extensions/`, `Abstractions/`) that has no single owning feature.
 
 - `AStar.Dev.[Area].[Name]` naming for all packages.
-- `.csproj` files must NOT declare `<TargetFramework>`, `<Nullable>`, `<TreatWarningsAsErrors>`, output paths, or NuGet package versions — these come from `Directory.Build.props` / `Directory.Packages.props`.
+- `.csproj` files must NOT declare ``, `<Nullable>`, `<TreatWarningsAsErrors>`, output paths, or NuGet package versions — these come from `Directory.Build.props`/`Directory.Packages.props`.
 - New packages require `<Description>`, `<PackageTags>`, `<PackageLicenseExpression>` — enforced by `Directory.Build.targets`.
 - Use `<ProjectReference>` to sibling packages during development; never `<PackageReference>` to their NuGet form locally.
 - Build output goes to `artifacts/` — never reference binaries inside project directories.

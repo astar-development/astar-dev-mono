@@ -28,6 +28,7 @@ The environment in which these issues manifested:
 ### 1. `<clear />` self-closing tags rejected by NuGet parser
 
 **Symptom:**
+
 ```
 Unable to parse config file because: Missing required attribute 'key'
 in element 'packageSource'. Path: '/path/to/NuGet.Config'.
@@ -40,6 +41,7 @@ it doesn't mention self-closing tags at all.
 
 **Resolution:** Replace all self-closing tags in `NuGet.Config` with explicit
 open/close pairs:
+
 ```xml
 <!-- Before -->
 <clear />
@@ -53,6 +55,7 @@ open/close pairs:
 ### 2. `<packageSourceMapping>` requires `key` not `name`
 
 **Symptom:** Same misleading error as above:
+
 ```
 Unable to parse config file because: Missing required attribute 'key'
 in element 'packageSource'.
@@ -64,6 +67,7 @@ shows `name` as the attribute for `<packageSource>` elements inside
 instead — inconsistent with the published documentation.
 
 **Resolution:** Use `key` throughout `<packageSourceMapping>`:
+
 ```xml
 <!-- Before (matches docs but rejected by NuGet 7.0.2.0) -->
 <packageSource name="github">
@@ -85,6 +89,7 @@ instead — inconsistent with the published documentation.
 ### 3. `globalPackagesFolder` environment variable not expanded on Linux
 
 **Symptom:** NuGet created literal folders inside the repo:
+
 ```
 /path/to/repo/%USERPROFILE%/.nuget/packages/
 /path/to/repo/~/.nuget/packages/
@@ -107,6 +112,7 @@ setting. Omitting it is the correct cross-platform approach.
 
 The two rogue folders were removed and the following entries added to
 `.gitignore` as a permanent safety net:
+
 ```
 %USERPROFILE%/
 ~/
@@ -139,7 +145,8 @@ inherited from project templates or older conventions.
 
 ### 5. `Directory.Build.props` case sensitivity on Linux
 
-**Symptom:** The `<TargetFramework>` value was empty, causing:
+**Symptom:** The `` value was empty, causing:
+
 ```
 The TargetFramework value '' was not recognized.
 ```
@@ -163,6 +170,7 @@ appears to work but inherits none of the shared configuration.
 ### 6. Nerdbank.GitVersioning requires committed `version.json`
 
 **Symptom:**
+
 ```
 rev-parse produced no commit for packages/core/AStar.Dev.Utilities
 ```
@@ -188,9 +196,11 @@ content. No commit = no version = confusing errors downstream.
 ### 7. `nbgv get-version` path argument is not a project path
 
 **Symptom:**
+
 ```
 rev-parse produced no commit for packages/core/AStar.Dev.Utilities
 ```
+
 (even after committing `version.json`)
 
 **Cause:** `nbgv get-version packages/core/AStar.Dev.Utilities` interprets
@@ -198,11 +208,13 @@ the argument as a git commit-ish reference, not a filesystem path to a
 project directory.
 
 **Resolution:** Use the `-p` / `--project` flag to specify a project directory:
+
 ```bash
 nbgv get-version -p packages/core/AStar.Dev.Utilities
 ```
 
 Or `cd` into the project directory first:
+
 ```bash
 cd packages/core/AStar.Dev.Utilities && nbgv get-version
 ```

@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        netstandard2.0</TargetFramework>
+        <IsPackable>true</IsPackable>
+        <Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <PackageId>AStar.Dev.Source.Generators</PackageId>
+        <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoWarn>$(NoWarn);NU5128</NoWarn>
+        <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
+        <PackageTags>source-generator;strongid;attributes;astartools</PackageTags>
+        <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/source-generators</PackageProjectUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageReleaseNotes>
+			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
+			v0.1.6 - Fix build and packaging issues.
+			v0.1.5 - Update dependencies to latest Roslyn versions.
+			v0.1.4 - Add missing namespace in generated ServiceRegistrations class.
+			- Rename ServiceAttribute to AutoRegisterServiceAttribute for clarity</PackageReleaseNotes>
+        <Title>AStar Dev Source Generators</Title>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" PrivateAssets="all" />
+    </ItemGroup>
+
+        <!-- Build the Attributes project separately and copy its DLL into the output
+             so the generator package contains the attributes types without creating
+             a NuGet package dependency on a separate Attributes package. -->
+        <Target Name="BuildAndCopyAttributes" BeforeTargets="Pack;GenerateNuspec">
+            <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)" />
+            <ItemGroup>
+                <_AttributesDll Include="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\bin\$(Configuration)\$(TargetFramework)\AStar.Dev.Source.Generators.Attributes.dll" />
+            </ItemGroup>
+            <Message Importance="High" Text="Copying Attributes DLL from '@(_AttributesDll)' to '$(OutputPath)'" />
+            <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+        </Target>
+
+    <!-- Package the generator DLL and its dependencies in the analyzers folder -->
+    <ItemGroup>
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <!-- Include the Attributes DLL that the generator depends on -->
+        <None Include="$(OutputPath)\AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <!-- Include the Attributes DLL in lib folder for compile-time reference -->
+        <None Include="$(OutputPath)\AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" />
+        <!-- Include build props to auto-reference the Attributes assembly -->
+        <None Include="build\AStar.Dev.Source.Generators.props" Pack="true" PackagePath="build" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="astar.png">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+      <None Update="Readme.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
+
+</Project>

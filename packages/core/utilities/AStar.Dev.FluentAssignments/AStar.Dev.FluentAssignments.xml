@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.FluentAssignments</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions">
+            <summary>
+            The <see cref="T:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions"/> class contains the initial extension methods. Over time, this may be separated into separate classes.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.WillBeSet``1(``0)">
+            <summary>
+            The <see cref="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.WillBeSet``1(``0)"/> method provides a simple pass-through starting point for the assignment.
+            There is no functionality in this method, it exists purely to make the sentence more fluent / readable.
+            </summary>
+            <typeparam name="T">The typeof the parameter for the assignment.</typeparam>
+            <param name="value">The actual value that may be assigned.</param>
+            <returns>The value supplied to the extension method.</returns>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.IfItIs``1(``0)">
+             <summary>
+            
+             </summary>
+             <typeparam name="T"></typeparam>
+             <param name="value"></param>
+             <returns></returns>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.NotNull``1(``0)">
+            <summary>
+            This method will check whether the specified object is null or not.
+            </summary>
+            <typeparam name="T">
+            Specifies the generic object to check for null.
+            </typeparam>
+            <param name="object">
+            The object to check for null.
+            </param>
+            <returns>
+            The original object if it is not null.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when the object is, in fact, null.
+            </exception>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.And``1(``0)">
+            <summary>
+            Here just to make the checks more fluent...
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.ItIsGreaterThan``1(``0,``0)">
+             <summary>
+            
+             </summary>
+             <typeparam name="T"></typeparam>
+             <param name="value"></param>
+             <param name="minimum"></param>
+             <returns></returns>
+             <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:AStar.Dev.FluentAssignments.FluentAssignmentsExtensions.ItIsLessThan``1(``0,``0)">
+             <summary>
+            
+             </summary>
+             <typeparam name="T"></typeparam>
+             <param name="value"></param>
+             <param name="maximum"></param>
+             <returns></returns>
+             <exception cref="T:System.ArgumentException"></exception>
+        </member>
+    </members>
+</doc>

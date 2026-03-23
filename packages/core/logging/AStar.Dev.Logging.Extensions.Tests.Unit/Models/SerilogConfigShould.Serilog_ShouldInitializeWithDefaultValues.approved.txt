@@ -1,0 +1,19 @@
+﻿{
+  "enrich": [],
+  "writeTo": [
+    {
+      "name": "Seq",
+      "args": {
+        "serverUrl": "http://seq:5341"
+      }
+    }
+  ],
+  "minimumLevel": {
+    "default": "",
+    "override": {
+      "microsoftAspNetCore": "",
+      "systemNetHttp": "",
+      "aStar": ""
+    }
+  }
+}

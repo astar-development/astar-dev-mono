@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <Description>This package contains the currently supported methods for interacting with the Admin API whilst abstracting the details..</Description>
+        <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>true</IsPackable>
+        <Nullable>enable</Nullable>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/internal-apis</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>Update.</PackageReleaseNotes>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <Title>AStar.Dev.Admin.Api.Client.Sdk</Title>
+        <UserSecretsId>3a340cb0-60ee-4e38-93ac-0f8829c7193d</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="Readme.md" Pack="true" PackagePath=""/>
+        <None Include="..\..\AStar.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AStar.Dev.Api.Client.Sdk.Shared" Version="0.1.0"/>
+        <PackageReference Include="AStar.Dev.Api.HealthChecks" Version="0.4.0"/>
+        <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="9.0.4"/>
+        <PackageReference Include="AStar.Dev.Functional.Extensions" Version="0.2.0"/>
+        <PackageReference Include="AStar.Dev.Logging.Extensions" Version="0.5.3"/>
+        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.1"/>
+        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.1.0"/>
+        <PackageReference Include="Microsoft.Identity.Web" Version="3.8.4"/>
+        <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.8.4"/>
+        <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.8.4"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4"/>
+        <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.4.0"/>
+        <PackageReference Include="Microsoft.Identity.Web.TokenAcquisition" Version="3.8.4"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <NoWarn>1701;1702;</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <NoWarn>1701;1702;</NoWarn>
+    </PropertyGroup>
+
+</Project>

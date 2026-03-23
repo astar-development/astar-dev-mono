@@ -1,0 +1,54 @@
+{
+  "Serilog": {
+    "Enrich": [
+      "FromLogContext",
+      "WithMachineName",
+      "WithSpan",
+      "WithExceptionDetails"
+    ],
+    "WriteTo": [
+      {
+        "Name": "Seq",
+        "Args": {
+          "serverUrl": "http://seq:5341"
+        }
+      },
+      {
+        "Name": "ApplicationInsights",
+        "Args": {
+          // "connectionString": "Get from Secrets Manager / Key Vault / etc.",
+          "telemetryConverter": "Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters.TraceTelemetryConverter, Serilog.Sinks.ApplicationInsights"
+        }
+      }
+    ],
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft.AspNetCore": "Warning",
+        "System.Net.Http": "Information",
+        "AStar": "Debug"
+      }
+    }
+  },
+  "Logging": {
+    "Console": {
+      "FormatterName": "json",
+      "FormatterOptions": {
+        "SingleLine": true,
+        "IncludeScopes": true,
+        "TimestampFormat": "HH:mm:ss ",
+        "UseUtcTimestamp": true,
+        "JsonWriterOptions": {
+          "Indented": true
+        }
+      }
+    },
+    "ApplicationInsights": {
+      "LogLevel": {
+        "Default": "Information",
+        "Microsoft.AspNetCore": "Warning",
+        "AStar": "Debug"
+      }
+    }
+  }
+}
