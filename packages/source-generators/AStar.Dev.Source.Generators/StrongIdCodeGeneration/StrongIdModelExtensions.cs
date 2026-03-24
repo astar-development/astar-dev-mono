@@ -2,6 +2,9 @@
 
 namespace AStar.Dev.Source.Generators.StrongIdCodeGeneration;
 
+/// <summary>
+///  The <see cref="StrongIdModelExtensions" /> class provides extension methods for working with the <see cref="StrongIdModel" /> class, including a method to create the underlying type from a StrongId attribute.
+/// </summary>
 public static partial class StrongIdModelExtensions
 {
     /// <summary>
@@ -9,7 +12,7 @@ public static partial class StrongIdModelExtensions
     /// </summary>
     public static string CreateUnderlyingTypeFromAttribute(AttributeData attr)
     {
-        if(attr.ConstructorArguments.Length != 1)
+        if(attr?.ConstructorArguments.Length != 1)
             return "System.Guid";
 
         TypedConstant tc = attr.ConstructorArguments[0];

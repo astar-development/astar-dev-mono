@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using AStar.Dev.Source.Generators.OptionsBindingGeneration;
-using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
+﻿using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 

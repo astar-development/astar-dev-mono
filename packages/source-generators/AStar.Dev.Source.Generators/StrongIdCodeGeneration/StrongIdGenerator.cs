@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -8,10 +7,17 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace AStar.Dev.Source.Generators.StrongIdCodeGeneration;
 
+/// <summary>
+///   The <see cref="StrongIdGenerator" /> class is a source
+/// </summary>
 [Generator]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1038:Compiler extensions should be implemented in assemblies with compiler-provided references", Justification = "<Pending>")]
 public class StrongIdGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all readonly partial record structs with attributes and generates source code for those annotated with the <see cref="Attributes.StrongIdAttribute" />.
+    /// </summary>
+    /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Find all readonly partial record structs with attributes

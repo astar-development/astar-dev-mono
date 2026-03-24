@@ -1,15 +1,21 @@
 ﻿using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 
+/// <summary>
+///  The <see cref="ServiceRegistrationGenerator" /> class is a source generator that scans for classes annotated with the <see cref="Attributes.AutoRegisterServiceAttribute" /> and generates extension methods to register those classes as services in an IServiceCollection. It uses Roslyn's incremental generator APIs to efficiently analyze the syntax tree and generate code at compile time.
+/// </summary>
 [Generator]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1038:Compiler extensions should be implemented in assemblies with compiler-provided references", Justification = "<Pending>")]
 public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes annotated with the <see cref="Attributes.AutoRegisterServiceAttribute" /> and generates source code for them.
+    /// </summary>
+    /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<INamedTypeSymbol?> classSyntax = CreateClassSyntaxProvider(context);

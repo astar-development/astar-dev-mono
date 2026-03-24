@@ -1,17 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AStar.Dev.Source.Generators.OptionsBindingGeneration;
 
+/// <summary>
+///   The <see cref="OptionsBindingGenerator" /> class is a source
+/// </summary>
 [Generator]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1038:Compiler extensions should be implemented in assemblies with compiler-provided references", Justification = "<Pending>")]
 public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 {
     private const string AttrFqn = "AStar.Dev.Source.Generators.Attributes.AutoRegisterOptionsAttribute";
 
+/// <summary>
+///  The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes or structs annotated with the <see cref="Attributes.AutoRegisterOptionsAttribute" /> and generates source code for them.
+/// </summary>
+/// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValueProvider<ImmutableArray<OptionsTypeInfo?>> optionsTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -27,6 +32,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             {
                 if(info == null)
                     continue;
+
                 if(string.IsNullOrWhiteSpace(info.SectionName))
                 {
                     var diag = Diagnostic.Create(

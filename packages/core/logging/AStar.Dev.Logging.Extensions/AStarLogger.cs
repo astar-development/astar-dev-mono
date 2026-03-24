@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.ApplicationInsights;
 
 namespace AStar.Dev.Logging.Extensions;
 

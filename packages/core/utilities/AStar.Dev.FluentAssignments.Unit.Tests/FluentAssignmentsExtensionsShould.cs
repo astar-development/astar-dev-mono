@@ -1,5 +1,3 @@
-using Shouldly;
-
 namespace AStar.Dev.FluentAssignments.Unit.Tests;
 
 public class FluentAssignmentsExtensionsShould

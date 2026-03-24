@@ -1,32 +1,29 @@
-﻿using System;
-using System.Linq;
-using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.ServiceRegistrationGeneration;
 
 public class ServiceRegistrationGeneratorShould()
 {
-    private const string AttributeSource = @"using System; 
+    private const string AttributeSource = @"using System;
 
-namespace AStar.Dev.Source.Generators.Attributes 
-{     
-    public enum ServiceLifetime 
-    { 
-        Singleton, 
-        Scoped, 
-        Transient 
+namespace AStar.Dev.Source.Generators.Attributes
+{
+    public enum ServiceLifetime
+    {
+        Singleton,
+        Scoped,
+        Transient
     }
-    
+
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public sealed class AutoRegisterServiceAttribute : Attribute 
-    {  
-        public AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) { Lifetime = lifetime; }  
-        public ServiceLifetime Lifetime { get; }  
+    public sealed class AutoRegisterServiceAttribute : Attribute
+    {
+        public AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) { Lifetime = lifetime; }
+        public ServiceLifetime Lifetime { get; }
         public Type? As { get; set; }
         public bool AsSelf { get; set; } = false;
-    } 
+    }
 }
 ";
 
@@ -53,11 +50,11 @@ namespace AStar.Dev.Source.Generators.Attributes
         const string input = @"using AStar.Dev.Source.Generators.Attributes;
 
 namespace TestNamespace
-{ 
-    public interface IFoo { } 
-    
-    [AutoRegisterService] 
-    public class Foo : IFoo { } 
+{
+    public interface IFoo { }
+
+    [AutoRegisterService]
+    public class Foo : IFoo { }
 }
 ";
         CSharpCompilation compilation = CreateCompilation(input);
@@ -90,12 +87,12 @@ public static class GeneratedServiceCollectionExtensions
     {
         const string input = @"using AStar.Dev.Source.Generators.Attributes;
 
-namespace TestNamespace 
-{ 
-    public interface IFoo { } 
-    
-    [AutoRegisterService(ServiceLifetime.Singleton)] 
-    public class Foo : IFoo { } 
+namespace TestNamespace
+{
+    public interface IFoo { }
+
+    [AutoRegisterService(ServiceLifetime.Singleton)]
+    public class Foo : IFoo { }
 }";
         CSharpCompilation compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
@@ -129,10 +126,10 @@ public static class GeneratedServiceCollectionExtensions
 
 namespace TestNamespace
 {
-    public interface IFoo { } 
-    
-    [AutoRegisterService(AsSelf = true)] 
-    public class Foo : IFoo { } 
+    public interface IFoo { }
+
+    [AutoRegisterService(AsSelf = true)]
+    public class Foo : IFoo { }
 }";
         CSharpCompilation compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
@@ -165,14 +162,14 @@ public static class GeneratedServiceCollectionExtensions
     {
         const string input = @"using AStar.Dev.Source.Generators.Attributes;
 
-namespace TestNamespace 
-{ 
-    public interface IFoo { } 
-    
-    public interface IBar { } 
-    
-    [AutoRegisterService(As = typeof(IBar))] 
-    public class Foo : IFoo, IBar { } 
+namespace TestNamespace
+{
+    public interface IFoo { }
+
+    public interface IBar { }
+
+    [AutoRegisterService(As = typeof(IBar))]
+    public class Foo : IFoo, IBar { }
 }";
         CSharpCompilation compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
@@ -204,10 +201,10 @@ public static class GeneratedServiceCollectionExtensions
     {
         const string input = @"using AStar.Dev.Source.Generators.Attributes;
 
-namespace TestNamespace 
+namespace TestNamespace
 {
     [AutoRegisterService(AsSelf = true)]
-    public class Foo { } 
+    public class Foo { }
 }
 ";
         CSharpCompilation compilation = CreateCompilation(input);
@@ -240,18 +237,18 @@ public static class GeneratedServiceCollectionExtensions
     {
         const string input = @"using AStar.Dev.Source.Generators.Attributes;
 
-namespace TestNamespace 
-{ 
-    public interface IFoo { } 
-    
+namespace TestNamespace
+{
+    public interface IFoo { }
+
     [AutoRegisterService]
-    public abstract class AbstractFoo : IFoo { } 
-    
-    [AutoRegisterService] internal class InternalFoo : IFoo 
-    { } 
-    
-    [AutoRegisterService] 
-    public class GenericFoo<T> : IFoo { } 
+    public abstract class AbstractFoo : IFoo { }
+
+    [AutoRegisterService] internal class InternalFoo : IFoo
+    { }
+
+    [AutoRegisterService]
+    public class GenericFoo<T> : IFoo { }
 }
 ";
         CSharpCompilation compilation = CreateCompilation(input);
@@ -273,9 +270,9 @@ namespace TestNamespace
     {
         const string input = @"namespace TestNamespace
 {
-    public interface IFoo { } 
+    public interface IFoo { }
 
-    public class Foo : IFoo { } 
+    public class Foo : IFoo { }
 }";
         CSharpCompilation compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
