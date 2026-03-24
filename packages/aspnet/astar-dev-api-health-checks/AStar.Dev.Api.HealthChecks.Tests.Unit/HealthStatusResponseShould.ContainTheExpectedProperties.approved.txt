@@ -1,0 +1,8 @@
+﻿{
+  "name": "Test Name",
+  "description": "Test Description",
+  "status": "OK",
+  "durationInMilliseconds": 123,
+  "data": {},
+  "exception": "Test Exception"
+}

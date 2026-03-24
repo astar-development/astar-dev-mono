@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Infrastructure.UsageDb</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Infrastructure.UsageDb.Configurations.ApiUsageEventConfiguration">
+            <summary>
+                The <see cref="T:AStar.Dev.Infrastructure.UsageDb.Configurations.ApiUsageEventConfiguration" /> class containing, you guessed it, the ApiUsageEvent configuration settings
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Configurations.ApiUsageEventConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent})">
+            <summary>
+                The Configure method will configure the ApiUsageEvent table in the database
+            </summary>
+            <param name="builder">An instance of the <see cref="T:Microsoft.EntityFrameworkCore.Metadata.Builders.ElementTypeBuilder" /> to add the configuration to</param>
+            <returns>void</returns>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext.#ctor">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext.#ctor(AStar.Dev.Infrastructure.Data.ConnectionString)">
+            <summary>
+            </summary>
+            <param name="connectionString"></param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext.ApiUsage">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>
+                The overridden OnModelCreating method.
+            </summary>
+            <param name="modelBuilder">
+            </param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent">
+            <summary>
+            </summary>
+            <param name="ApiName"></param>
+            <param name="ApiEndpoint"></param>
+            <param name="HttpMethod"></param>
+            <param name="ElapsedMilliseconds"></param>
+            <param name="StatusCode"></param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.#ctor(System.String,System.String,System.String,System.Double,System.Int32)">
+            <summary>
+            </summary>
+            <param name="ApiName"></param>
+            <param name="ApiEndpoint"></param>
+            <param name="HttpMethod"></param>
+            <param name="ElapsedMilliseconds"></param>
+            <param name="StatusCode"></param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.ApiName">
+            <summary></summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.ApiEndpoint">
+            <summary></summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.HttpMethod">
+            <summary></summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.ElapsedMilliseconds">
+            <summary></summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.StatusCode">
+            <summary></summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.Id">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.UsageDb.Data.ApiUsageEvent.Timestamp">
+            <summary>
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Api.Usage.Logger.Migrations.InitialConfiguration">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.InitialConfiguration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.InitialConfiguration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.InitialConfiguration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Api.Usage.Logger.Migrations.UseDateTime">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.UseDateTime.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.UseDateTime.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.UseDateTime.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Api.Usage.Logger.Migrations.ClusterOnTimestamp">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.ClusterOnTimestamp.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.ClusterOnTimestamp.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.ClusterOnTimestamp.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Api.Usage.Logger.Migrations.AddHttpMethod">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.AddHttpMethod.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.AddHttpMethod.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Api.Usage.Logger.Migrations.AddHttpMethod.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

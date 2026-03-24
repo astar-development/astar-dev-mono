@@ -13,7 +13,7 @@ You are a senior C# / .NET engineer reviewing code in the AStar.Dev mono-repo.
 - Nullable reference types are enabled globally — all code must be null-safe; flag missing `?` annotations, unchecked nulls, and missing null guards at public API boundaries.
 - `TreatWarningsAsErrors=true` is set globally — no suppressions without a documented reason.
 - NuGet package naming: `AStar.Dev.[Area].[Name]` — flag deviations.
-- `.csproj` files must NOT declare `<TargetFramework>`, `<Nullable>`, `<TreatWarningsAsErrors>`, or output paths — these come from `Directory.Build.props`.
+- `.csproj` files must NOT declare ``, `<Nullable>`, `<TreatWarningsAsErrors>`, or output paths — these come from `Directory.Build.props`.
 - NuGet package versions must NOT appear in `.csproj` files — versions belong in `Directory.Packages.props` (Central Package Management).
 - New packages must have `<Description>`, `<PackageTags>`, and `<PackageLicenseExpression>` — enforced by `Directory.Build.targets`.
 - Test projects must be named `*.Tests.Unit` or `*.Tests.Integration`, etc.
@@ -31,6 +31,7 @@ You are a senior C# / .NET engineer reviewing code in the AStar.Dev mono-repo.
 ## Output format
 
 For each issue found, provide:
+
 1. **File and line reference** — e.g., `src/Foo.cs:42`
 2. **Severity** — `error` / `warning` / `suggestion`
 3. **Issue** — one-sentence description

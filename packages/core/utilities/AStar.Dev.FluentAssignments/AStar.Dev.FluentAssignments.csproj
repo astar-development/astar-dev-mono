@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Title>AStar.Dev.FluentAssignments</Title>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+
+	<IncludeSymbols>True</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
+	<Description>A group of extensions methods that make assigning values more fluent and include conditional checks along the way...</Description>
+	<Version>0.1.0</Version>
+	<DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReleaseNotes>version 0.1.0 is the initial version so has no changes.</PackageReleaseNotes>
+    <PackageTags>AStar</PackageTags>
+  </PropertyGroup>
+
+</Project>
+
+

@@ -3,14 +3,52 @@
     <Folder Name="/apps/desktop/">
         <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
     </Folder>
-    <Folder Name="/packages/">
-      <Folder Name="/packages/core/">
-        <Project Path="packages/core/Utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
-        <Project Path="packages/core/Utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
-      </Folder>
+    <Folder Name="/apps/web/" />
+    <Folder Name="/infra/" />
+    <Folder Name="/packages/" />
+    <Folder Name="/packages/aspnet/" />
+    <Folder Name="/packages/aspnet/astar-dev-api-health-checks/">
+        <Project Path="packages/aspnet/astar-dev-api-health-checks/AStar.Dev.Api.HealthChecks.Tests.Unit/AStar.Dev.Api.HealthChecks.Tests.Unit.csproj" />
+        <Project Path="packages/aspnet/astar-dev-api-health-checks/AStar.Dev.Api.HealthChecks/AStar.Dev.Api.HealthChecks.csproj" />
     </Folder>
-    <Folder Name="/packages/core/Functional.Extensions/">
-        <Project Path="packages/core/Functional.Extensions/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
-        <Project Path="packages/core/Functional.Extensions/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <Folder Name="/packages/core/" />
+    <Folder Name="/packages/core/functional/">
+        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
+        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
     </Folder>
+    <Folder Name="/packages/core/logging/">
+        <Project Path="packages/core/logging/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
+        <Project Path="packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    </Folder>
+    <Folder Name="/packages/core/utilities/">
+        <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments.Tests.Unit/AStar.Dev.FluentAssignments.Tests.Unit.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments/AStar.Dev.FluentAssignments.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses.Tests.Unit/AStar.Dev.Guard.Clauses.Tests.Unit.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting/AStar.Dev.Technical.Debt.Reporting.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+    </Folder>
+    <Folder Name="/packages/infrastructure/" />
+    <Folder Name="/packages/infrastructure/astar-dev-infrastructure-filesdb/">
+        <Project Path="packages/infrastructure/astar-dev-infrastructure-filesdb/AStar.Dev.Infrastructure.FilesDb.Tests.Unit/AStar.Dev.Infrastructure.FilesDb.Tests.Unit.csproj" />
+        <Project Path="packages/infrastructure/astar-dev-infrastructure-filesdb/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
+    </Folder>
+    <Folder Name="/packages/infrastructure/astar-dev-infrastructure-usagedb/">
+        <Project Path="packages/infrastructure/astar-dev-infrastructure-usagedb/AStar.Dev.Infrastructure.UsageDb.Tests.Unit/AStar.Dev.Infrastructure.UsageDb.Tests.Unit.csproj" />
+        <Project Path="packages/infrastructure/astar-dev-infrastructure-usagedb/AStar.Dev.Infrastructure.UsageDb/AStar.Dev.Infrastructure.UsageDb.csproj" />
+    </Folder>
+    <Folder Name="/packages/infrastructure/astar-dev-infrastructure/">
+        <Project Path="packages/infrastructure/astar-dev-infrastructure/AStar.Dev.Infrastructure.Tests.Unit/AStar.Dev.Infrastructure.Tests.Unit.csproj" />
+        <Project Path="packages/infrastructure/astar-dev-infrastructure/AStar.Dev.Infrastructure/AStar.Dev.Infrastructure.csproj" />
+    </Folder>
+    <Folder Name="/packages/source-generators/">
+        <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
+        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
+        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" />
+        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Sample/AStar.Dev.Source.Generators.Sample.csproj" />
+        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
+        <Project Path="packages/source-generators/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" />
+    </Folder>
+    <Folder Name="/tests/" />
   </Solution>

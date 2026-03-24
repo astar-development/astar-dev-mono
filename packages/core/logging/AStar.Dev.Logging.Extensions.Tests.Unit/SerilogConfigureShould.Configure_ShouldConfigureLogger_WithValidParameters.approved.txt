@@ -1,0 +1,9 @@
+﻿{
+  "writeTo": {},
+  "auditTo": {},
+  "minimumLevel": {},
+  "enrich": {},
+  "filter": {},
+  "destructure": {},
+  "readFrom": {}
+}

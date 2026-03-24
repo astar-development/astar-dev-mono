@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Api.HealthChecks</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Api.HealthChecks.HealthCheckExtensions">
+            <summary>
+                The <see cref="T:AStar.Dev.Api.HealthChecks.HealthCheckExtensions" /> class contains the relevant method(s) to configure the endpoints.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Api.HealthChecks.HealthCheckExtensions.ConfigureHealthCheckEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>
+                The <see cref="M:AStar.Dev.Api.HealthChecks.HealthCheckExtensions.ConfigureHealthCheckEndpoints(Microsoft.AspNetCore.Builder.WebApplication)" /> method will add a basic health/live and health/ready endpoint.
+            </summary>
+            <param name="app">An instance of <see cref="T:Microsoft.AspNetCore.Builder.WebApplication" /> to configure</param>
+            <returns>The original <see cref="T:Microsoft.AspNetCore.Builder.WebApplication" /> to facilitate further method chaining</returns>
+        </member>
+        <member name="T:AStar.Dev.Api.HealthChecks.HealthStatusResponse">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.Name">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.Description">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.Status">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.DurationInMilliseconds">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.Data">
+            <summary>
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Api.HealthChecks.HealthStatusResponse.Exception">
+            <summary>
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Api.HealthChecks.IApiClient">
+            <summary>
+                The <see href="IApiClient"></see> interface.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Api.HealthChecks.IApiClient.GetHealthAsync(System.Threading.CancellationToken)">
+            <summary>
+                The GetHealthAsync method will return the basic Health Status of the API.
+            </summary>
+            <param name="cancellationToken">The token to optionally use to cancel the operation</param>
+            <returns>
+                An instance of the <see href="HealthStatusResponse"></see> class containing the text representation of the API
+                Health Status.
+            </returns>
+        </member>
+    </members>
+</doc>

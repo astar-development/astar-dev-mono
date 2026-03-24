@@ -1,0 +1,509 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Logging.Extensions</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Logging.Extensions.AStarEventIds">
+            <summary>
+                The <see cref="T:AStar.Dev.Logging.Extensions.AStarEventIds" /> class contains the defined <see cref="T:Microsoft.Extensions.Logging.EventId" /> events available for logging
+                Stand-alone <see cref="T:Microsoft.Extensions.Logging.EventId" /> events can be defined but care should be taken to avoid reusing the values used here
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.AStarEventIds.PageView">
+            <summary>
+                Gets the <see cref="T:Microsoft.Extensions.Logging.EventId" /> preconfigured for logging a page view
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.AStarLogger`1">
+            <summary>
+                Provides an implementation of <see cref="T:AStar.Dev.Logging.Extensions.ILoggerAstar`1" /> that integrates application telemetry tracking
+                with structured logging for enhanced observability in A* applications.
+            </summary>
+            <typeparam name="TCategoryName">The category name for the logger, typically derived from the type being logged.</typeparam>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.#ctor(Microsoft.Extensions.Logging.ILogger{`0},Microsoft.ApplicationInsights.TelemetryClient)">
+            <summary>
+                Provides an implementation of <see cref="T:AStar.Dev.Logging.Extensions.ILoggerAstar`1" /> that integrates application telemetry tracking
+                with structured logging for enhanced observability in A* applications.
+            </summary>
+            <typeparam name="TCategoryName">The category name for the logger, typically derived from the type being logged.</typeparam>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.LogPageView(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.BeginScope``1(``0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.IsEnabled(Microsoft.Extensions.Logging.LogLevel)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.Log``1(Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,``0,System.Exception,System.Func{``0,System.Exception,System.String})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer">
+            <summary>
+                A telemetry initializer responsible for setting the Cloud Role Name
+                and Instrumentation Key in the telemetry context.
+            </summary>
+            <param name="roleOrApplicationName">The Role / Application Name to configure Application Insights with</param>
+            <param name="instrumentationKey">The Instrumentation Key to configure Application Insights with</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer.#ctor(System.String,System.String)">
+            <summary>
+                A telemetry initializer responsible for setting the Cloud Role Name
+                and Instrumentation Key in the telemetry context.
+            </summary>
+            <param name="roleOrApplicationName">The Role / Application Name to configure Application Insights with</param>
+            <param name="instrumentationKey">The Instrumentation Key to configure Application Insights with</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer.Initialize(Microsoft.ApplicationInsights.Channel.ITelemetry)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Configuration">
+            <summary>
+                Provides configuration settings for the logging extensions.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Configuration.ExternalSettingsFile">
+            <summary>
+                Gets the default filename for the external logging settings configuration file.
+            </summary>
+            <remarks>
+                The value returned by <c>ExternalSettingsFile</c> is a constant string representing
+                the filename used to store external logging configuration settings. This property
+                ensures consistent reference to the expected configuration file across the application.
+            </remarks>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.ILoggerAstar`1">
+            <summary>
+                Defines an interface for a logging mechanism that extends the basic ILogger functionalities
+                by adding support for logging specific page view events.
+            </summary>
+            <typeparam name="T">The type representing the category name for the logger.</typeparam>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ILoggerAstar`1.LogPageView(System.String)">
+            <summary>
+            </summary>
+            <param name="pageName"></param>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.ITelemetryClient">
+            <summary>
+                Defines the contract for telemetry client implementations used to track and log telemetry data.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ITelemetryClient.TrackPageView(System.String)">
+            <summary>
+                Tracks a page view with the specified name.
+            </summary>
+            <param name="name">The name of the page being viewed.</param>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.LoggingExtensions">
+            <summary>
+                The <see cref="T:AStar.Dev.Logging.Extensions.LoggingExtensions" /> class contains, as you might expect, extension methods for configuring Serilog
+                / Application Insights.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LoggingExtensions.AddSerilogLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)">
+            <summary>
+                The <see cref="M:AStar.Dev.Logging.Extensions.LoggingExtensions.AddSerilogLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)" /> method will add Serilog to the logging providers.
+            </summary>
+            <param name="builder">
+            </param>
+            <param name="externalSettingsFile">
+                The name (including extension) of the file containing the Serilog Configuration settings.
+            </param>
+            <returns>
+                The original instance of <see cref="T:Microsoft.AspNetCore.Builder.WebApplicationBuilder" /> for further method chaining.
+            </returns>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LoggingExtensions.AddSerilogLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String)">
+            <summary>
+                The <see cref="M:AStar.Dev.Logging.Extensions.LoggingExtensions.AddSerilogLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String)" /> method will add Serilog to the logging providers.
+            </summary>
+            <param name="builder">
+            </param>
+            <param name="externalSettingsFile">
+                The name (including extension) of the file containing the Serilog Configuration settings.
+            </param>
+            <returns>
+                The original instance of <see cref="T:Microsoft.Extensions.Hosting.HostApplicationBuilder" /> for further method chaining.
+            </returns>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.LogMessage">
+            <summary>
+                Provides static methods for logging specific HTTP-related events using strongly-typed logging templates.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.PageView(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an informational message indicating that a specific page has been viewed.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="pageName">The name of the page that was viewed.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Trace(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an informational message indicating that a specific page has been viewed.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="pageName">The name of the page that was viewed.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Debug(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
+            <summary>
+                Logs a debug message for the specified location.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="location">The location of the event.</param>
+            <param name="debugMessage">The debug message to log.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
+            <summary>
+                Logs an informational message for the specified location.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="location">The location of the event.</param>
+            <param name="informationMessage">The information message to log.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Logs an informational message with details about a specific API call.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="location">The location where the event occurred.</param>
+            <param name="httpRequest">A summary of the request.</param>
+            <param name="httpMethod">The HTTP Method (GET / POST etc.)</param>
+            <param name="apiEndpoint">The API Endpoint called.</param>
+            <param name="apiName">The name of the API.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Warning(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
+            <summary>
+                Logs a warning message for the specified location.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="location">The location of the event.</param>
+            <param name="warningMessage">The warning message to log.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.LogException(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.String,System.String)">
+            <summary>
+            Logs a critical exception event, providing detailed information about the exception type, message, and stack trace.
+            </summary>
+            <param name="logger">The logger used to log the event.</param>
+            <param name="location">The location of the event.</param>
+            <param name="exceptionType">The type of the exception being logged.</param>
+            <param name="exceptionMessage">The message associated with the exception.</param>
+            <param name="exceptionStack">The stack trace of the exception.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.BadRequest(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for a Bad Request (400) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Bad Request.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Unauthorized(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for an Unauthorized (401) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Unauthorized access.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Forbidden(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
+            <summary>
+                Logs a warning message for a Forbidden (403) event, including the requested path and user information.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Forbidden error.</param>
+            <param name="user">The user associated with the HTTP request; defaults to "Not known" if not provided.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.NotFound(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for a Not Found (404) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that resulted in the Not Found status.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Conflict(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for a Conflict (409) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Conflict.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.UnprocessableEntity(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for an Unprocessable Entity (422) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Unprocessable Entity.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.TooManyRequests(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a warning message for a Too Many Requests (429) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Too Many Requests.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.InternalServerError(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an error message for an Internal Server Error (500) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Internal Server Error.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.BadGateway(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an error message for a Bad Gateway (502) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Bad Gateway error.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.ServiceUnavailable(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an error message for a Service Unavailable (503) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Service Unavailable error.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.GatewayTimeout(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an error message for a Gateway Timeout (504) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Gateway Timeout.</param>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.ApplicationInsights">
+            <summary>
+                The <see cref="T:AStar.Dev.Logging.Extensions.Models.ApplicationInsights" /> class which is used to configure the logging.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.ApplicationInsights.LogLevel">
+            <summary>
+                The Log level to use.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.Args">
+            <summary>
+                Represents the configuration arguments for logging components.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Args.ServerUrl">
+            <summary>
+                Gets or sets the URL of the server used for logging purposes.
+            </summary>
+            <remarks>
+                The default value is an empty string if not explicitly set.
+                This property can be used to configure the target server address for logging connectivity.
+            </remarks>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.Console">
+            <summary>
+                Represents a console logging configuration for formatting output in a logging system.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Console.FormatterName">
+            <summary>
+                Gets or sets the name of the formatter used for console logging output.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Console.FormatterOptions">
+            <summary>
+                Gets or sets the options for configuring the console log formatter.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.FormatterOptions">
+            <summary>
+                Represents the configuration options for formatting log output.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.FormatterOptions.SingleLine">
+            <summary>
+                Indicates whether the log output should be formatted as a single line.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.FormatterOptions.IncludeScopes">
+            <summary>
+                Determines whether scope information should be included in the log output.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.FormatterOptions.TimestampFormat">
+            <summary>
+                Specifies the format for timestamps in log entries.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.FormatterOptions.UseUtcTimestamp">
+            <summary>
+                Determines whether to use the UTC time zone for timestamps in the log output.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.FormatterOptions.JsonWriterOptions">
+            <summary>
+                Represents configurable options for customizing the behavior of JSON writing
+                within the logging formatter.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.JsonWriterOptions">
+            <summary>
+                Represents options for configuring the behavior of a JSON writer.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.JsonWriterOptions.Indented">
+            <summary>
+                Gets or sets a value indicating whether the JSON output should be indented.
+                If set to <see langword="true" />, the JSON will be formatted with additional
+                whitespace for readability (e.g., line breaks and indentation).
+                If set to <see langword="false" />, the JSON will be written as a single line
+                without extra whitespace, minimizing the output size.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.Logging">
+            <summary>
+                Represents the configuration settings for logging within the system.
+            </summary>
+            <remarks>
+                This class provides properties for configuring console logging and Application Insights logging.
+            </remarks>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Logging.Console">
+            <summary>
+                Represents the configuration settings for console-based logging within the application.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Logging.ApplicationInsights">
+            <summary>
+                Represents the configuration settings for Application Insights logging functionality.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.LogLevel">
+            <summary>
+                Represents logging levels configuration for various components in the application.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.LogLevel.Default">
+            <summary>
+                Gets or sets the default logging level for the application.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.LogLevel.MicrosoftAspNetCore">
+            <summary>
+                Gets or sets the logging level configuration specific to Microsoft.AspNetCore components.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.LogLevel.AStar">
+            <summary>
+                Gets or sets the logging level configuration specific to the AStar component.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.MinimumLevel">
+            <summary>
+                Represents the minimum logging levels configuration, providing a mechanism
+                to define default logging levels as well as overrides for specific namespaces or components.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.MinimumLevel.Default">
+            <summary>
+                Represents the default logging level configuration within the <see cref="T:AStar.Dev.Logging.Extensions.Models.MinimumLevel" /> class,
+                allowing the specification of a baseline logging level for the application.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.MinimumLevel.Override">
+            <summary>
+                Represents configuration overrides for specific logging sources or categories within
+                the <see cref="T:AStar.Dev.Logging.Extensions.Models.MinimumLevel" /> class, allowing custom logging levels to be defined
+                for particular components of the application.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.Override">
+            <summary>
+                Represents a configuration override for specific logging domains or namespaces.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Override.MicrosoftAspNetCore">
+            <summary>
+                The Microsoft.AspNetCore logging level override configuration.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Override.SystemNetHttp">
+            <summary>
+                The System.Net.Http logging level override configuration.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Override.AStar">
+            <summary>
+                The logging level override configuration specific to the AStar namespace or domain.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.Serilog">
+            <summary>
+                Represents the configuration settings for the Serilog logging framework.
+                This class is used to define the settings such as log enrichment, log output destinations, and log level configurations.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Serilog.Enrich">
+            <summary>
+                A collection of enrichers used to add additional contextual data to log events.
+                Each element in the array represents the name of an enricher to be applied during logging.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Serilog.WriteTo">
+            <summary>
+                A collection of targets where log events are written during logging.
+                Each element in the array specifies the name of the sink and its associated arguments.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.Serilog.MinimumLevel">
+            <summary>
+                Configures the minimum logging levels for log events.
+                This property determines the default logging level and allows overrides for specific components or namespaces.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.SerilogConfig">
+            <summary>
+                Represents the configuration for Serilog logging within the application.
+                This class provides properties to define the setup for logging,
+                including Serilog-related configuration and general logging options.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.SerilogConfig.Serilog">
+            <summary>
+                Represents the configuration for Serilog logging.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.SerilogConfig.Logging">
+            <summary>
+                Represents the configuration for standard logging in the application.
+                This class provides properties to define logging behavior, including settings
+                for console output and Application Insights integration.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Models.WriteTo">
+            <summary>
+                Represents the configuration target for writing logs in a Serilog configuration.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.WriteTo.Name">
+            <summary>
+                Gets or sets the name of the logging sink to which log events are written.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Logging.Extensions.Models.WriteTo.Args">
+            <summary>
+                Gets or sets the arguments for configuring the logging sink.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Logging.Extensions.SerilogConfigure">
+            <summary>
+                Provides an extension method for configuring Serilog logging with Application Insights and console output.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.SerilogConfigure.Configure(Serilog.LoggerConfiguration,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration)">
+            <summary>
+                Configures the Serilog logger using the specified settings and telemetry configuration.
+            </summary>
+            <param name="loggerConfiguration">The <see cref="T:Serilog.LoggerConfiguration" /> instance to be configured.</param>
+            <param name="configuration">The application configuration settings to read from.</param>
+            <param name="telemetryConfiguration">The <see cref="T:Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration" /> instance used for Application Insights integration.</param>
+            <returns>The configured instance of <see cref="T:Serilog.LoggerConfiguration" />.</returns>
+        </member>
+    </members>
+</doc>

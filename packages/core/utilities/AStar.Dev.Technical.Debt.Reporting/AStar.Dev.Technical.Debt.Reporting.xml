@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStar.Dev.Technical.Debt.Reporting</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute">
+            <summary>
+                The <see cref="T:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute" /> attribute
+            </summary>
+            <param name="painEstimate">The estimated hours to resolve</param>
+            <param name="hoursToResolve">The estimated pain level</param>
+            <param name="description">The description of the refactoring to be performed</param>
+        </member>
+        <member name="M:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute.#ctor(System.Int32,System.Int32,System.String)">
+            <summary>
+                The <see cref="T:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute" /> attribute
+            </summary>
+            <param name="painEstimate">The estimated hours to resolve</param>
+            <param name="hoursToResolve">The estimated pain level</param>
+            <param name="description">The description of the refactoring to be performed</param>
+        </member>
+        <member name="P:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute.HoursToResolve">
+            <summary>
+                The estimated hours to resolve
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute.Description">
+            <summary>
+                Gets the description of the refactoring to be performed
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Technical.Debt.Reporting.RefactorAttribute.PainEstimate">
+            <summary>
+                The estimated pain level - quantity to be defined
+            </summary>
+        </member>
+    </members>
+</doc>

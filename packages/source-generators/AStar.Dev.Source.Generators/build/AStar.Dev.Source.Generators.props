@@ -1,0 +1,9 @@
+<Project>
+  <!-- This ensures the Attributes assembly is available as a compile-time reference for consumers -->
+  <ItemGroup>
+    <Reference Include="AStar.Dev.Source.Generators.Attributes">
+      <HintPath>$(MSBuildThisFileDirectory)..\lib\netstandard2.0\AStar.Dev.Source.Generators.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

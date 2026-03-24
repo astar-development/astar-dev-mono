@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageId>AStar.Dev.Functional.Extensions</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Description>F#-inspired Result type with functional combinators, async support, and LINQ integration.</Description>
+        <PackageTags>result functional monad async linq</PackageTags>
+        <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <IsPackable>true</IsPackable>
+        <Title>AStar.Dev.Functional.Extensions</Title>
+        <PackageReleaseNotes>Add a pair of additional extension methods for MatchAsync to handle additional scenarios.</PackageReleaseNotes>
+        <NoWarn>CA1716</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="True" PackagePath="/" Link="README.md" />
+        <None Include="..\Readme-option.md" Pack="True" PackagePath="/" Link="Readme-option.md" />
+        <None Include="..\Readme-result.md" Pack="True" PackagePath="/" Link="Readme-result.md" />
+    </ItemGroup>
+
+</Project>
