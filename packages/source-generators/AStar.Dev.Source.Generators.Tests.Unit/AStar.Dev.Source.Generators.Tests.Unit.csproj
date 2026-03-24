@@ -24,9 +24,25 @@
 </PropertyGroup>
 
 <ItemGroup>
+  <!-- Normal reference so tests can instantiate generator types directly -->
   <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
-  <ProjectReference Include="..\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" />
+  <ProjectReference Include="..\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" PrivateAssets="all" />
 </ItemGroup>
+
+<!-- Also register the generator and its Attributes dependency as analyzers
+     so the compiler runs generators during build (needed by TestStrongIds.cs). -->
+<Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
+    <MSBuild Projects="..\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj"
+             Targets="GetTargetPath"
+             Properties="Configuration=$(Configuration)">
+        <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+    <MSBuild Projects="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj"
+             Targets="GetTargetPath"
+             Properties="Configuration=$(Configuration)">
+        <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+</Target>
 
 	<ItemGroup>
 		<Using Include="Xunit" />

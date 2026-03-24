@@ -5,8 +5,11 @@ namespace AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 
 internal static class ServiceCollectionCodeGenerator
 {
-    public static string Generate(IReadOnlyList<ServiceModel> items)
+    public static string? Generate(IReadOnlyList<ServiceModel> items)
     {
+        if (items.Count == 0)
+            return null;
+
         IEnumerable<string> registrations = BuildServiceRegistrations(items);
         ServiceModel item = items[0];
 

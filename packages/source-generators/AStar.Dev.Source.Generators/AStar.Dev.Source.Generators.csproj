@@ -13,6 +13,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
+        <IncludeSymbols>false</IncludeSymbols>
         <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
         <PackageTags>source-generator;strongid;attributes;astartools</PackageTags>
         <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/source-generators</PackageProjectUrl>
@@ -37,7 +38,7 @@
     <!-- Build the Attributes project separately and copy its DLL into the output
             so the generator package contains the attributes types without creating
             a NuGet package dependency on a separate Attributes package. -->
-    <Target Name="BuildAndCopyAttributes" BeforeTargets="Pack;GenerateNuspec">
+    <Target Name="BuildAndCopyAttributes" AfterTargets="Build" BeforeTargets="Pack;GenerateNuspec">
         <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
             <Output TaskParameter="TargetOutputs" ItemName="_AttributesDll" />
         </MSBuild>
@@ -45,16 +46,20 @@
         <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
-    <!-- Package the generator DLL and its dependencies in the analyzers folder -->
+    <!-- Include build props to auto-reference the Attributes assembly -->
     <ItemGroup>
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <!-- Include the Attributes DLL that the generator depends on -->
-        <None Include="$(OutputPath)\AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-        <!-- Include the Attributes DLL in lib folder for compile-time reference -->
-        <None Include="$(OutputPath)\AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" />
-        <!-- Include build props to auto-reference the Attributes assembly -->
         <None Include="build\AStar.Dev.Source.Generators.props" Pack="true" PackagePath="build" />
     </ItemGroup>
+
+    <!-- Package the generator DLL and its dependencies in the analyzers folder.
+         Added via a target so the paths resolve correctly after build output redirection. -->
+    <Target Name="AddPackContent" BeforeTargets="GenerateNuspec" DependsOnTargets="BuildAndCopyAttributes">
+        <ItemGroup>
+            <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            <None Include="$(OutputPath)AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            <None Include="$(OutputPath)AStar.Dev.Source.Generators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" />
+        </ItemGroup>
+    </Target>
 
     <ItemGroup>
       <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" PrivateAssets="all" />
