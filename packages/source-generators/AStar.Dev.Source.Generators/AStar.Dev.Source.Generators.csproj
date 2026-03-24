@@ -34,17 +34,16 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
     </ItemGroup>
 
-        <!-- Build the Attributes project separately and copy its DLL into the output
-             so the generator package contains the attributes types without creating
-             a NuGet package dependency on a separate Attributes package. -->
-        <Target Name="BuildAndCopyAttributes" BeforeTargets="Pack;GenerateNuspec">
-            <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)" />
-            <ItemGroup>
-                <_AttributesDll Include="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\bin\$(Configuration)\$(TargetFramework)\AStar.Dev.Source.Generators.Attributes.dll" />
-            </ItemGroup>
-            <Message Importance="High" Text="Copying Attributes DLL from '@(_AttributesDll)' to '$(OutputPath)'" />
-            <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-        </Target>
+    <!-- Build the Attributes project separately and copy its DLL into the output
+            so the generator package contains the attributes types without creating
+            a NuGet package dependency on a separate Attributes package. -->
+    <Target Name="BuildAndCopyAttributes" BeforeTargets="Pack;GenerateNuspec">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+            <Output TaskParameter="TargetOutputs" ItemName="_AttributesDll" />
+        </MSBuild>
+        <Message Importance="High" Text="Copying Attributes DLL from '@(_AttributesDll)' to '$(OutputPath)'" />
+        <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    </Target>
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder -->
     <ItemGroup>
@@ -56,14 +55,9 @@
         <!-- Include build props to auto-reference the Attributes assembly -->
         <None Include="build\AStar.Dev.Source.Generators.props" Pack="true" PackagePath="build" />
     </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" PrivateAssets="all" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Update="Readme.md">
-        <Pack>True</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
     </ItemGroup>
 
 </Project>

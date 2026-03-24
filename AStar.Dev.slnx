@@ -21,12 +21,11 @@
         <Project Path="packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
     </Folder>
     <Folder Name="/packages/core/utilities/">
-        <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments.Unit.Tests/AStar.Dev.FluentAssignments.Unit.Tests.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments.Tests.Unit/AStar.Dev.FluentAssignments.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments/AStar.Dev.FluentAssignments.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses.Tests.Unit/AStar.Dev.Guard.Clauses.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting/AStar.Dev.Technical.Debt.Reporting.csproj" />
-        <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting.Tests.Unit/AStar.Dev.Technical.Debt.Reporting.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
     </Folder>

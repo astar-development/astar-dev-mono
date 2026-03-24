@@ -24,8 +24,8 @@
 </PropertyGroup>
 
 <ItemGroup>
-  <ProjectReference Include="..\..\src\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
-  <ProjectReference Include="..\..\src\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" />
+  <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
+  <ProjectReference Include="..\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" />
 </ItemGroup>
 
 	<ItemGroup>

@@ -217,9 +217,6 @@
                 Gets or sets the DuplicatesDetails loaded from the configured view in the database
             </summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.FilesDb.Data.FilesContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
-            <inheritdoc />
-        </member>
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Data.FilesContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <summary>
                 The overridden OnModelCreating method

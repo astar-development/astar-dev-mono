@@ -75,7 +75,7 @@ public class FluentAssignmentsExtensionsShould
         comparison.ShouldThrow<ArgumentException>().Message.ShouldBe($"The specified value of {value} was not less than the specified maximum of {minimum} (Parameter 'maximum')");
     }
 
-    private class AnyClass
+    private sealed class AnyClass
     {
         public int Id { get; set; }
     }

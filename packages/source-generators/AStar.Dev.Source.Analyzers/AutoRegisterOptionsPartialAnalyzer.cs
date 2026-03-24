@@ -17,7 +17,7 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     /// </summary>
     public const string DiagnosticId = "ASTAROPT002";
 
-    private static readonly DiagnosticDescriptor Rule = new(
+    private static readonly DiagnosticDescriptor _rule = new(
         DiagnosticId,
         "Options class must be partial",
         "Options class '{0}' must be declared partial to support source generation",
@@ -26,11 +26,16 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true);
 
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(_rule);
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
     {
+        if(context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
+
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
         context.RegisterSyntaxNodeAction(AnalyzeType, SyntaxKind.ClassDeclaration, SyntaxKind.StructDeclaration);
@@ -65,7 +70,7 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var diag = Diagnostic.Create(Rule, typeDecl.Identifier.GetLocation(), symbol.Name);
+        var diag = Diagnostic.Create(_rule, typeDecl.Identifier.GetLocation(), symbol.Name);
         context.ReportDiagnostic(diag);
     }
 }
