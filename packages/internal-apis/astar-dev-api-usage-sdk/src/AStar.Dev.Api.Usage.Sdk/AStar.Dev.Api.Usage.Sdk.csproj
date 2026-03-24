@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -30,19 +31,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Logging.Extensions" Version="0.6.2"/>
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.2"/>
-        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8"/>
-        <PackageReference Include="Aspire.RabbitMQ.Client.v7" Version="9.4.1"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Options" />
+        <PackageReference Include="Aspire.RabbitMQ.Client.v7" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

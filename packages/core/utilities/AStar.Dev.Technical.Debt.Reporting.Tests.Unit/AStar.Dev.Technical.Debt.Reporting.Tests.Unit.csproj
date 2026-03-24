@@ -7,22 +7,22 @@
         <RootNamespace>AStar.Dev.Technical.Debt.Reporting</RootNamespace>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="coverlet.collector" Version="6.0.4">
+    <ItemGroup>>
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.1" />
-        <PackageReference Include="Shouldly" Version="4.3.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-        <PackageReference Include="xunit" Version="2.9.3" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
+        <PackageReference Include="JetBrains.Annotations" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

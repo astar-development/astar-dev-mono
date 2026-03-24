@@ -37,8 +37,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.0"/>
-        <PackageReference Include="Shouldly" Version="4.3.0"/>
+        <PackageReference Include="Shouldly" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

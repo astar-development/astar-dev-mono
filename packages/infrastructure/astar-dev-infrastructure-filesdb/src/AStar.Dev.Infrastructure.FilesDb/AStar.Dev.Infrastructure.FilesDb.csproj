@@ -30,21 +30,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Infrastructure" Version="0.1.2"/>
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.2"/>
-        <PackageReference Include="AStar.Dev.Functional.Extensions" Version="0.4.5"/>
-        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.16" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
+        <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" >
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

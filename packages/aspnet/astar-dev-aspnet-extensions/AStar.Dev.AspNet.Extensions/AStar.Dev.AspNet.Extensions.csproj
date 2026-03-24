@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -30,21 +31,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.2"/>
-        <PackageReference Include="AStar.Dev.Api.HealthChecks" Version="0.4.3"/>
-        <PackageReference Include="AStar.Dev.Api.Usage.Sdk" Version="0.1.0"/>
-        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1"/>
-    </ItemGroup>
+        <PackageReference Include="Asp.Versioning.Mvc" />
+        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
 
-    <ItemGroup>
-        <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0"/>
-        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0"/>
-
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8"/>
-        <PackageReference Include="Serilog" Version="4.3.0"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Serilog" />
     </ItemGroup>
 
     <ItemGroup>

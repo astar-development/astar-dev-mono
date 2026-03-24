@@ -17,13 +17,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-        <PackageReference Include="xunit.v3" Version="3.0.1"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\src\AStar.Dev.Infrastructure.FilesDb\AStar.Dev.Infrastructure.FilesDb.csproj"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
 
 </Project>

@@ -30,13 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.2"/>
-        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1"/>
-        <PackageReference Include="AStar.Dev.Api.Usage.Sdk" Version="0.1.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     </ItemGroup>
 
 </Project>

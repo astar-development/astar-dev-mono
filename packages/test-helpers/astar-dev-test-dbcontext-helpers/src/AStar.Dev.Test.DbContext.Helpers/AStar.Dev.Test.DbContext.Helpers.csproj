@@ -31,20 +31,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Infrastructure.FilesDb" Version="0.1.0" />
-        <PackageReference Include="AStar.Dev.Utilities" Version="1.6.2"/>
-        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.8"/>
-        <PackageReference Include="Shouldly" Version="4.3.0"/>
-        <PackageReference Include="xunit" Version="2.9.3"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" >
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
