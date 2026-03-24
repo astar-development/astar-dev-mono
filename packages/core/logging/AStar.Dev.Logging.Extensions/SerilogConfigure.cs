@@ -21,6 +21,6 @@ internal static class SerilogConfigure
         => loggerConfiguration
            .WriteTo.ApplicationInsights(telemetryConfiguration,
                                         TelemetryConverter.Traces).WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message:lj}{NewLine}{Exception}",
-                                                                                   formatProvider: new CultureInfo(0809))
+                                                                                   formatProvider: new CultureInfo("en-GB"))
            .ReadFrom.Configuration(configuration);
 }

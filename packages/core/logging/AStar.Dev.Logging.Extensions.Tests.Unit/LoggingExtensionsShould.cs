@@ -16,7 +16,6 @@ public sealed class LoggingExtensionsShould
             builder.AddSerilogLogging(fileNameWithPath!);
         }
 
-        // Assert that no exception is thrown
         Should.NotThrow(action);
     }
 
