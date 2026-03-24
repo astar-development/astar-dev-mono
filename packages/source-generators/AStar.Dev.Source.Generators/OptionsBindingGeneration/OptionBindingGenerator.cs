@@ -47,7 +47,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 
             if(validTypes.Count == 0)
                 return;
-            var code = OptionsBindingCodeGenerator.Generate(validTypes);
+            string code = OptionsBindingCodeGenerator.Generate(validTypes);
             spc.AddSource("AutoOptionsRegistrationExtensions.g.cs", code);
         });
     }
@@ -56,9 +56,9 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
     {
         if(ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
             return null;
-        var typeName = typeSymbol.Name;
-        var ns = typeSymbol.ContainingNamespace?.ToDisplayString();
-        var fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
+        string typeName = typeSymbol.Name;
+        string? ns = typeSymbol.ContainingNamespace?.ToDisplayString();
+        string fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
         string? sectionName = null;
         AttributeData? attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
         if(attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
@@ -76,8 +76,8 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             }
         }
 
-        return !string.IsNullOrWhiteSpace(sectionName) 
-            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation()) 
+        return !string.IsNullOrWhiteSpace(sectionName)
+            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation())
             : ExtractSectionNameFromMembers(ctx, typeSymbol, sectionName, typeName, fullTypeName);
     }
 

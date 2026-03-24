@@ -21,14 +21,14 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
 
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptions>()");
         generatedText.ShouldContain(".Bind(configuration.GetSection(\"MySection\"))");
     }
@@ -46,13 +46,13 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyStructOptions>()");
         generatedText.ShouldContain(".Bind(configuration.GetSection(\"StructSection\"))");
     }
@@ -70,13 +70,13 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptionsWithField>()");
         generatedText.ShouldContain(".Bind(configuration.GetSection(\"FieldSection\"))");
     }
@@ -94,13 +94,13 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptionsWithBoth>()");
         generatedText.ShouldContain(".Bind(configuration.GetSection(\"AttrSection\"))");
         generatedText.ShouldNotContain("FieldSection");
@@ -120,7 +120,7 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         result.Diagnostics.ShouldContain(d => d.Id == "ASTAROPT001");
@@ -143,13 +143,13 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.OptionsA>()");
         generatedText.ShouldContain(".Bind(configuration.GetSection(\"SectionA\"))");
         generatedText.ShouldContain("services.AddOptions<TestNamespace.OptionsB>()");
@@ -167,13 +167,13 @@ namespace TestNamespace
 }";
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         if(allGenerated.Count > 0)
         {
-            var generatedText = allGenerated[0].SourceText.ToString();
+            string generatedText = allGenerated[0].SourceText.ToString();
             generatedText.ShouldNotContain("NotRegistered");
         }
     }

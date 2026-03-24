@@ -41,6 +41,11 @@
         <Using Include="Shouldly"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
+      <ProjectReference Include="..\AStar.Dev.Api.HealthChecks\AStar.Dev.Api.HealthChecks.csproj" />
+    </ItemGroup>
+
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <NoWarn>1701;1702;IDE0058;</NoWarn>

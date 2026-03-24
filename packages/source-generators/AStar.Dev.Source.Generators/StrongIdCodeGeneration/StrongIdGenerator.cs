@@ -47,10 +47,10 @@ public class StrongIdGenerator : IIncrementalGenerator
                     continue;
 
                 // Use StrongIdModel logic for underlying type
-                var underlyingType = StrongIdModelExtensions.CreateUnderlyingTypeFromAttribute(attr);
-                var ns = symbol.ContainingNamespace.IsGlobalNamespace ? null : symbol.ContainingNamespace.ToDisplayString();
+                string underlyingType = StrongIdModelExtensions.CreateUnderlyingTypeFromAttribute(attr);
+                string? ns = symbol.ContainingNamespace.IsGlobalNamespace ? null : symbol.ContainingNamespace.ToDisplayString();
                 var modelObj = new StrongIdModel(ns, symbol.Name, symbol.DeclaredAccessibility, underlyingType);
-                var code = StrongIdCodeGenerator.Generate(modelObj);
+                string code = StrongIdCodeGenerator.Generate(modelObj);
                 spc.AddSource($"{modelObj.ModelName}_StrongId.g.cs", SourceText.From(code, Encoding.UTF8));
             }
         });

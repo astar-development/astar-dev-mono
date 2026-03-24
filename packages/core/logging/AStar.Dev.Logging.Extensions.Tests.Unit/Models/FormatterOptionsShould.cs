@@ -10,7 +10,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        var result = options.SingleLine;
+        bool result = options.SingleLine;
 
         Assert.False(result);
     }
@@ -28,7 +28,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        var result = options.IncludeScopes;
+        bool result = options.IncludeScopes;
 
         Assert.False(result);
     }
@@ -46,7 +46,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        var result = options.TimestampFormat;
+        string result = options.TimestampFormat;
 
         Assert.Equal("HH:mm:ss ", result);
     }
@@ -55,7 +55,7 @@ public class FormatterOptionsShould
     public void TimestampFormat_ShouldSetAndGetCorrectly()
     {
         var options   = new FormatterOptions();
-        var newFormat = "yyyy-MM-dd";
+        string newFormat = "yyyy-MM-dd";
 
         options.TimestampFormat = newFormat;
 
@@ -67,7 +67,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        var result = options.UseUtcTimestamp;
+        bool result = options.UseUtcTimestamp;
 
         Assert.True(result);
     }
@@ -85,7 +85,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        var result = options.JsonWriterOptions;
+        JsonWriterOptions result = options.JsonWriterOptions;
 
         Assert.NotNull(result);
     }

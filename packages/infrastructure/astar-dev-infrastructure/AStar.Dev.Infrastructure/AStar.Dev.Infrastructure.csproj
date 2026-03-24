@@ -20,12 +20,13 @@
         <PackageReleaseNotes>Initial creation.</PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <Title>AStar.Dev.Infrastructure</Title>
+        <PackageTags>AStar</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="LICENSE" Pack="true" PackagePath=""/>
-        <None Include="Readme.md" Pack="true" PackagePath=""/>
-        <None Include="astar.png" Pack="true" PackagePath=""/>
+
+
+
     </ItemGroup>
 
     <ItemGroup>

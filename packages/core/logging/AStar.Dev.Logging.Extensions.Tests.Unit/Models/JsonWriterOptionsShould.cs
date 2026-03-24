@@ -10,7 +10,7 @@ public class JsonWriterOptionsShould
     {
         var options = new JsonWriterOptions();
 
-        var isIndented = options.Indented;
+        bool isIndented = options.Indented;
 
         isIndented.ShouldBeFalse("The default value for Indented should be false.");
     }

@@ -1,3 +1,5 @@
+using AStar.Dev.Logging.Extensions.Tests.Unit.Helpers;
+
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(LogMessage))]
@@ -12,7 +14,7 @@ public class LogMessageTemplateShould
         LogMessage.BadRequest(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(400);
         log.Message.ShouldBe($"Bad Request (400) for `{path}`");
@@ -28,7 +30,7 @@ public class LogMessageTemplateShould
         LogMessage.Unauthorized(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(401);
         log.Message.ShouldBe($"Unauthorized (401) for `{path}`");
@@ -45,7 +47,7 @@ public class LogMessageTemplateShould
         LogMessage.Forbidden(logger, path, user);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(403);
         log.Message.ShouldBe($"Forbidden (403) for `{path}` for user `{user}`");
@@ -61,7 +63,7 @@ public class LogMessageTemplateShould
         LogMessage.NotFound(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(404);
         log.Message.ShouldBe($"Not Found (404) for `{path}`");
@@ -77,7 +79,7 @@ public class LogMessageTemplateShould
         LogMessage.Conflict(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(409);
         log.Message.ShouldBe($"Conflict (409) for `{path}`");
@@ -93,7 +95,7 @@ public class LogMessageTemplateShould
         LogMessage.UnprocessableEntity(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(422);
         log.Message.ShouldBe($"Unprocessable Entity (422) for `{path}`");
@@ -109,7 +111,7 @@ public class LogMessageTemplateShould
         LogMessage.TooManyRequests(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(429);
         log.Message.ShouldBe($"Too Many Requests (429) for `{path}`");
@@ -125,7 +127,7 @@ public class LogMessageTemplateShould
         LogMessage.InternalServerError(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Error);
         log.EventId.Id.ShouldBe(500);
         log.Message.ShouldBe($"Internal Server Error (500) for `{path}`");
@@ -141,7 +143,7 @@ public class LogMessageTemplateShould
         LogMessage.BadGateway(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Error);
         log.EventId.Id.ShouldBe(502);
         log.Message.ShouldBe($"Bad Gateway (502) for `{path}`");
@@ -157,7 +159,7 @@ public class LogMessageTemplateShould
         LogMessage.ServiceUnavailable(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Error);
         log.EventId.Id.ShouldBe(503);
         log.Message.ShouldBe($"Service Unavailable (503) for `{path}`");
@@ -173,7 +175,7 @@ public class LogMessageTemplateShould
         LogMessage.GatewayTimeout(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
+        (LogLevel Level, EventId EventId, string Message, Exception? Exception) log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Error);
         log.EventId.Id.ShouldBe(504);
         log.Message.ShouldBe($"Gateway Timeout (504) for `{path}`");

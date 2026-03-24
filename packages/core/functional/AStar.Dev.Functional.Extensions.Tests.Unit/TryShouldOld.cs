@@ -5,9 +5,9 @@ public class TryShouldOld
     [Fact]
     public void Try_Run_CapturesSuccess()
     {
-        var result = Try.Run(() => 42);
+        Result<int, Exception> result = Try.Run(() => 42);
 
-        var output = result.Match(
+        int output = result.Match(
                                   ok => ok,
                                   ex => -1);
 
@@ -17,9 +17,9 @@ public class TryShouldOld
     [Fact]
     public void Try_Run_CapturesException()
     {
-        var result = Try.Run<int>(() => throw new InvalidOperationException("fail"));
+        Result<int, Exception> result = Try.Run<int>(() => throw new InvalidOperationException("fail"));
 
-        var output = result.Match(
+        int output = result.Match(
                                   ok => ok,
                                   ex => -1);
 
@@ -29,11 +29,11 @@ public class TryShouldOld
     [Fact]
     public void Try_Match_ReturnsCorrectBranch()
     {
-        var success = Try.Run(() => "done");
-        var failure = Try.Run<string>(() => throw new InvalidOperationException("fail"));
+        Result<string, Exception> success = Try.Run(() => "done");
+        Result<string, Exception> failure = Try.Run<string>(() => throw new InvalidOperationException("fail"));
 
-        var a = success.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
-        var b = failure.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
+        string a = success.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
+        string b = failure.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
 
         Assert.Equal("OK: done",  a);
         Assert.Equal("ERR: fail", b);

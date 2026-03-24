@@ -18,7 +18,7 @@ public static partial class StrongIdModelExtensions
             if(tc.Value is ITypeSymbol typeSymbol)
             {
                 // Prefer a fully-qualified display (remove the global:: if present)
-                var display = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", "");
+                string display = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", "");
                 return display;
             }
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Core;
 
 namespace AStar.Dev.Logging.Extensions;
 
@@ -34,9 +35,9 @@ public static class LoggingExtensions
 
         _ = builder.Services.AddScoped(typeof(ILoggerAstar<>), typeof(AStarLogger<>));
         _ = builder.Services.AddApplicationInsightsTelemetry(builder.Configuration);
-        var serviceProvider = builder.Services.BuildServiceProvider();
+        ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
 
-        var logger = new LoggerConfiguration().Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()).CreateLogger();
+        Logger logger = new LoggerConfiguration().Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()).CreateLogger();
 
         logger.Debug("Serilog has been configured.");
 
@@ -69,9 +70,9 @@ public static class LoggingExtensions
 
         // Register a default TelemetryConfiguration if not present, for test/integration scenarios.
         _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new());
-        var serviceProvider = builder.Services.BuildServiceProvider();
+        ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
 
-        var logger = new LoggerConfiguration()
+        Logger logger = new LoggerConfiguration()
                      .Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>())
                      .CreateLogger();
 

@@ -2,6 +2,10 @@
 
 namespace AStar.Dev.Source.Generators.Attributes;
 
+/// <summary>
+///
+/// </summary>
+/// <param name="lifetime"></param>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) : Attribute
 {
@@ -18,5 +22,5 @@ public sealed class AutoRegisterServiceAttribute(ServiceLifetime lifetime = Serv
     /// <summary>
     /// Also register the concrete type as itself (optional)
     /// </summary>
-    public bool AsSelf { get; set; } = false;
+    public bool AsSelf { get; set; }
 }

@@ -9,11 +9,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var mapped = result.Map(value => value.ToString());
+        Result<string, string> mapped = result.Map(value => value.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        err => throw new InvalidOperationException("Should not be error")
                                       );
@@ -26,11 +26,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Error("error message");
 
-        var mapped = result.Map(value => value.ToString());
+        Result<string, string> mapped = result.Map(value => value.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -43,11 +43,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var mapped = await result.MapAsync(value => Task.FromResult(value.ToString()));
+        Result<string, string> mapped = await result.MapAsync(value => Task.FromResult(value.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -60,11 +60,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Error("error message");
 
-        var mapped = await result.MapAsync(value => Task.FromResult(value.ToString()));
+        Result<string, string> mapped = await result.MapAsync(value => Task.FromResult(value.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -77,11 +77,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var mapped = await resultTask.MapAsync(value => value.ToString());
+        Result<string, string> mapped = await resultTask.MapAsync(value => value.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -94,11 +94,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error message"));
 
-        var mapped = await resultTask.MapAsync(value => value.ToString());
+        Result<string, string> mapped = await resultTask.MapAsync(value => value.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -111,11 +111,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var mapped = await resultTask.MapAsync(value => Task.FromResult(value.ToString()));
+        Result<string, string> mapped = await resultTask.MapAsync(value => Task.FromResult(value.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -128,11 +128,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error message"));
 
-        var mapped = await resultTask.MapAsync(value => Task.FromResult(value.ToString()));
+        Result<string, string> mapped = await resultTask.MapAsync(value => Task.FromResult(value.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -149,11 +149,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var mapped = result.MapFailure(error => error.ToString());
+        Result<string, string> mapped = result.MapFailure(error => error.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -166,11 +166,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var mapped = result.MapFailure(error => error.ToString());
+        Result<string, string> mapped = result.MapFailure(error => error.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -183,11 +183,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var mapped = await result.MapFailureAsync(error => Task.FromResult(error.ToString()));
+        Result<string, string> mapped = await result.MapFailureAsync(error => Task.FromResult(error.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -200,11 +200,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var mapped = await result.MapFailureAsync(error => Task.FromResult(error.ToString()));
+        Result<string, string> mapped = await result.MapFailureAsync(error => Task.FromResult(error.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -217,11 +217,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
 
-        var mapped = await resultTask.MapFailureAsync(error => error.ToString());
+        Result<string, string> mapped = await resultTask.MapFailureAsync(error => error.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -234,11 +234,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
 
-        var mapped = await resultTask.MapFailureAsync(error => error.ToString());
+        Result<string, string> mapped = await resultTask.MapFailureAsync(error => error.ToString());
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -251,11 +251,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
 
-        var mapped = await resultTask.MapFailureAsync(error => Task.FromResult(error.ToString()));
+        Result<string, string> mapped = await resultTask.MapFailureAsync(error => Task.FromResult(error.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        _ => throw new InvalidOperationException("Should not be success"),
                                        err => err
                                       );
@@ -268,11 +268,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
 
-        var mapped = await resultTask.MapFailureAsync(error => Task.FromResult(error.ToString()));
+        Result<string, string> mapped = await resultTask.MapFailureAsync(error => Task.FromResult(error.ToString()));
 
         mapped.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = mapped.Match(
+        string matchResult = mapped.Match(
                                        ok => ok,
                                        _ => throw new InvalidOperationException("Should not be error")
                                       );
@@ -289,11 +289,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var bound = result.Bind(value => new Result<string, string>.Ok(value.ToString()));
+        Result<string, string> bound = result.Bind(value => new Result<string, string>.Ok(value.ToString()));
 
         bound.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       ok => ok,
                                       _ => throw new InvalidOperationException("Should not be error")
                                      );
@@ -306,11 +306,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var bound = result.Bind<int, string, string>(value => new Result<string, string>.Error("bound error"));
+        Result<string, string> bound = result.Bind<int, string, string>(value => new Result<string, string>.Error("bound error"));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -323,11 +323,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Error("original error");
 
-        var bound = result.Bind<int, string, string>(value => new Result<string, string>.Ok(value.ToString()));
+        Result<string, string> bound = result.Bind<int, string, string>(value => new Result<string, string>.Ok(value.ToString()));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -340,11 +340,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
+        Result<string, string> bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
 
         bound.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       ok => ok,
                                       _ => throw new InvalidOperationException("Should not be error")
                                      );
@@ -357,11 +357,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Error("bound error")));
+        Result<string, string> bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Error("bound error")));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -374,11 +374,11 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Error("original error");
 
-        var bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
+        Result<string, string> bound = await result.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -391,11 +391,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var bound = await resultTask.BindAsync(value => new Result<string, string>.Ok(value.ToString()));
+        Result<string, string> bound = await resultTask.BindAsync(value => new Result<string, string>.Ok(value.ToString()));
 
         bound.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       ok => ok,
                                       _ => throw new InvalidOperationException("Should not be error")
                                      );
@@ -408,11 +408,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var bound = await resultTask.BindAsync(value => new Result<string, string>.Error("bound error"));
+        Result<string, string> bound = await resultTask.BindAsync(value => new Result<string, string>.Error("bound error"));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -425,11 +425,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("original error"));
 
-        var bound = await resultTask.BindAsync(value => new Result<string, string>.Ok(value.ToString()));
+        Result<string, string> bound = await resultTask.BindAsync(value => new Result<string, string>.Ok(value.ToString()));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -442,11 +442,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
+        Result<string, string> bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
 
         bound.ShouldBeOfType<Result<string, string>.Ok>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       ok => ok,
                                       _ => throw new InvalidOperationException("Should not be error")
                                      );
@@ -459,11 +459,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
-        var bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Error("bound error")));
+        Result<string, string> bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Error("bound error")));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -476,11 +476,11 @@ public class ResultExtensionsShould
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("original error"));
 
-        var bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
+        Result<string, string> bound = await resultTask.BindAsync(value => Task.FromResult<Result<string, string>>(new Result<string, string>.Ok(value.ToString())));
 
         bound.ShouldBeOfType<Result<string, string>.Error>();
 
-        var matchResult = bound.Match(
+        string matchResult = bound.Match(
                                       _ => throw new InvalidOperationException("Should not be success"),
                                       err => err
                                      );
@@ -496,9 +496,9 @@ public class ResultExtensionsShould
     public void ExecuteSideEffectAndReturnOriginalResultWhenTappingSuccessResult()
     {
         var result          = new Result<int, string>.Ok(42);
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = result.Tap(value => sideEffectValue = value);
+        Result<int, string> tapped = result.Tap(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(42);
         tapped.ShouldBeSameAs(result);
@@ -508,9 +508,9 @@ public class ResultExtensionsShould
     public void NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorResult()
     {
         var result          = new Result<int, string>.Error("error");
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = result.Tap(value => sideEffectValue = value);
+        Result<int, string> tapped = result.Tap(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(0);
         tapped.ShouldBeSameAs(result);
@@ -520,9 +520,9 @@ public class ResultExtensionsShould
     public void ExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorResult()
     {
         var result          = new Result<string, int>.Error(42);
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = result.TapError(value => sideEffectValue = value);
+        Result<string, int> tapped = result.TapError(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(42);
         tapped.ShouldBeSameAs(result);
@@ -532,9 +532,9 @@ public class ResultExtensionsShould
     public void NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessResult()
     {
         var result          = new Result<string, int>.Ok("success");
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = result.TapError(value => sideEffectValue = value);
+        Result<string, int> tapped = result.TapError(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(0);
         tapped.ShouldBeSameAs(result);
@@ -544,9 +544,9 @@ public class ResultExtensionsShould
     public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingSuccessResult()
     {
         var result          = new Result<int, string>.Ok(42);
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await result.TapAsync(value =>
+        Result<int, string> tapped = await result.TapAsync(value =>
                                            {
                                                sideEffectValue = value;
 
@@ -561,9 +561,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorResult()
     {
         var result          = new Result<int, string>.Error("error");
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await result.TapAsync(value =>
+        Result<int, string> tapped = await result.TapAsync(value =>
                                            {
                                                sideEffectValue = value;
 
@@ -578,9 +578,9 @@ public class ResultExtensionsShould
     public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorResult()
     {
         var result          = new Result<string, int>.Error(42);
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await result.TapErrorAsync(value =>
+        Result<string, int> tapped = await result.TapErrorAsync(value =>
                                                 {
                                                     sideEffectValue = value;
 
@@ -595,9 +595,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessResult()
     {
         var result          = new Result<string, int>.Ok("success");
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await result.TapErrorAsync(value =>
+        Result<string, int> tapped = await result.TapErrorAsync(value =>
                                                 {
                                                     sideEffectValue = value;
 
@@ -612,9 +612,9 @@ public class ResultExtensionsShould
     public async Task ExecuteSideEffectAndReturnOriginalResultWhenTappingSuccessTaskResult()
     {
         var resultTask      = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapAsync(value => sideEffectValue = value);
+        Result<int, string> tapped = await resultTask.TapAsync(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(42);
         tapped.ShouldBe(await resultTask);
@@ -624,9 +624,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorTaskResult()
     {
         var resultTask      = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error"));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapAsync(value => sideEffectValue = value);
+        Result<int, string> tapped = await resultTask.TapAsync(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(0);
         tapped.ShouldBe(await resultTask);
@@ -636,9 +636,9 @@ public class ResultExtensionsShould
     public async Task ExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorTaskResult()
     {
         var resultTask      = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapErrorAsync(value => sideEffectValue = value);
+        Result<string, int> tapped = await resultTask.TapErrorAsync(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(42);
         tapped.ShouldBe(await resultTask);
@@ -648,9 +648,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessTaskResult()
     {
         var resultTask      = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapErrorAsync(value => sideEffectValue = value);
+        Result<string, int> tapped = await resultTask.TapErrorAsync(value => sideEffectValue = value);
 
         sideEffectValue.ShouldBe(0);
         tapped.ShouldBe(await resultTask);
@@ -660,9 +660,9 @@ public class ResultExtensionsShould
     public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingSuccessTaskResult()
     {
         var resultTask      = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapAsync(value =>
+        Result<int, string> tapped = await resultTask.TapAsync(value =>
                                                {
                                                    sideEffectValue = value;
 
@@ -677,9 +677,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorTaskResult()
     {
         var resultTask      = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error"));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapAsync(value =>
+        Result<int, string> tapped = await resultTask.TapAsync(value =>
                                                {
                                                    sideEffectValue = value;
 
@@ -694,9 +694,9 @@ public class ResultExtensionsShould
     public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorTaskResult()
     {
         var resultTask      = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapErrorAsync(value =>
+        Result<string, int> tapped = await resultTask.TapErrorAsync(value =>
                                                     {
                                                         sideEffectValue = value;
 
@@ -711,9 +711,9 @@ public class ResultExtensionsShould
     public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessTaskResult()
     {
         var resultTask      = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
-        var sideEffectValue = 0;
+        int sideEffectValue = 0;
 
-        var tapped = await resultTask.TapErrorAsync(value =>
+        Result<string, int> tapped = await resultTask.TapErrorAsync(value =>
                                                     {
                                                         sideEffectValue = value;
 

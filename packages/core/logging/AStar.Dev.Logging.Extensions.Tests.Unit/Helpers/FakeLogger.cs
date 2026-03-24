@@ -1,6 +1,6 @@
-namespace AStar.Dev.Logging.Extensions.Tests.Unit;
+namespace AStar.Dev.Logging.Extensions.Tests.Unit.Helpers;
 
-public class FakeLogger : ILogger
+internal sealed class FakeLogger : ILogger
 {
     public List<(LogLevel Level, EventId EventId, string Message, Exception? Exception)> Logs { get; } = new();
 
@@ -10,11 +10,11 @@ public class FakeLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        var message = formatter(state, exception);
+        string message = formatter(state, exception);
         Logs.Add((logLevel, eventId, message, exception));
     }
 
-    private class NullScope : IDisposable
+    private sealed class NullScope : IDisposable
     {
         public static NullScope Instance { get; } = new();
         public void Dispose() { }

@@ -21,13 +21,13 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Int32 Id)");
     }
 
@@ -44,13 +44,13 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.String Id)");
     }
 
@@ -67,13 +67,13 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id)");
     }
 
@@ -90,13 +90,13 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
         GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var generatedText = generated.SourceText.ToString();
+        string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id);");
     }
 
@@ -113,7 +113,7 @@ namespace TestNamespace
         CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();

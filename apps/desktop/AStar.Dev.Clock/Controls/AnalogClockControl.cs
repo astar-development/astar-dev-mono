@@ -42,16 +42,16 @@ public class AnalogClockControl : Control
     {
         base.Render(context);
 
-        var bounds = Bounds;
-        var center = bounds.Center;
-        var radius = Math.Min(bounds.Width, bounds.Height) * 0.45;
+        Rect bounds = Bounds;
+        Point center = bounds.Center;
+        double radius = Math.Min(bounds.Width, bounds.Height) * 0.45;
 
         // Theme-aware brushes
-        var isDark = ActualThemeVariant == ThemeVariant.Dark
+        bool isDark = ActualThemeVariant == ThemeVariant.Dark
                      || Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
-        var foreground = Foreground ?? (isDark ? Brushes.White : Brushes.Black);
+        IBrush foreground = Foreground ?? (isDark ? Brushes.White : Brushes.Black);
 
-        var faceBrush = isDark ? new SolidColorBrush(Color.FromUInt32(0xFF22252A)) : new SolidColorBrush(Color.FromUInt32(0xFFFFFFFF));
+        SolidColorBrush faceBrush = isDark ? new SolidColorBrush(Color.FromUInt32(0xFF22252A)) : new SolidColorBrush(Color.FromUInt32(0xFFFFFFFF));
         var facePen = new Pen(isDark ? new SolidColorBrush(Color.FromUInt32(0xFF444A52)) : new SolidColorBrush(Color.FromUInt32(0xFFCCCCCC)), 2);
         var tickPen = new Pen(foreground, 2);
         var minorTickPen = new Pen(foreground);
@@ -60,49 +60,49 @@ public class AnalogClockControl : Control
         context.DrawEllipse(faceBrush, facePen, center, radius, radius);
 
         // Draw ticks
-        for (var i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
-            var angle = Math.PI * 2 * (i / 60.0) - Math.PI / 2; // start at 12 o'clock
-            var cos = Math.Cos(angle);
-            var sin = Math.Sin(angle);
+            double angle = Math.PI * 2 * (i / 60.0) - Math.PI / 2; // start at 12 o'clock
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
 
             var outer = new Point(center.X + cos * radius * 0.95, center.Y + sin * radius * 0.95);
-            var innerLen = (i % 5 == 0) ? 0.78 : 0.88; // hour ticks longer
+            double innerLen = (i % 5 == 0) ? 0.78 : 0.88; // hour ticks longer
             var inner = new Point(center.X + cos * radius * innerLen, center.Y + sin * radius * innerLen);
             context.DrawLine(i % 5 == 0 ? tickPen : minorTickPen, inner, outer);
         }
 
         // Draw hour numbers (1-12)
         // Keep them inside the hour ticks a bit
-        var numberRadius = radius * 0.66;
+        double numberRadius = radius * 0.66;
         var numberTypeface = new Typeface(Typeface.Default.FontFamily, FontStyle.Normal, FontWeight.SemiBold);
-        var numberSize = Math.Max(10, radius * 0.12); // scale with control size, clamp to a readable minimum
-        var culture = CultureInfo.CurrentUICulture;
+        double numberSize = Math.Max(10, radius * 0.12); // scale with control size, clamp to a readable minimum
+        CultureInfo culture = CultureInfo.CurrentUICulture;
         const FlowDirection flow = FlowDirection.LeftToRight;
-        for (var h = 1; h <= 12; h++)
+        for (int h = 1; h <= 12; h++)
         {
-            var angle = Math.PI * 2 * (h / 12.0) - Math.PI / 2; // 12 at the top
-            var cos = Math.Cos(angle);
-            var sin = Math.Sin(angle);
+            double angle = Math.PI * 2 * (h / 12.0) - Math.PI / 2; // 12 at the top
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
 
             var pos = new Point(center.X + cos * numberRadius, center.Y + sin * numberRadius);
 
             // Use FormattedText so we can measure and center precisely
-            var text = h.ToString(culture);
+            string text = h.ToString(culture);
             var ft = new FormattedText(text, culture, flow, numberTypeface, numberSize, foreground);
             // Approximate text size since FormattedText doesn't expose Size in this API surface
-            var approxWidth = (text.Length == 1 ? 0.6 : 0.9) * numberSize;
-            var approxHeight = numberSize; // rough height equals font size
+            double approxWidth = (text.Length == 1 ? 0.6 : 0.9) * numberSize;
+            double approxHeight = numberSize; // rough height equals font size
             // Center the text at computed position
             var origin = new Point(pos.X - approxWidth / 2.0, pos.Y - approxHeight / 2.0);
             context.DrawText(ft, origin);
         }
 
         // Current time
-        var now = DateTime.Now;
-        var sec = now.Second + now.Millisecond / 1000.0;
-        var min = now.Minute + sec / 60.0;
-        var hour = now.Hour % 12 + min / 60.0;
+        DateTime now = DateTime.Now;
+        double sec = now.Second + now.Millisecond / 1000.0;
+        double min = now.Minute + sec / 60.0;
+        double hour = now.Hour % 12 + min / 60.0;
 
         // Hands
         DrawHand(context, center, radius * 0.55, hour / 12.0, 5, Brushes.Red);
@@ -116,7 +116,7 @@ public class AnalogClockControl : Control
 
     private static void DrawHand(DrawingContext ctx, Point center, double length, double unit, double thickness, IBrush brush)
     {
-        var angle = unit * Math.PI * 2 - Math.PI / 2;
+        double angle = unit * Math.PI * 2 - Math.PI / 2;
         var end = new Point(center.X + Math.Cos(angle) * length, center.Y + Math.Sin(angle) * length);
         var pen = new Pen(brush, thickness, lineCap: PenLineCap.Round);
         ctx.DrawLine(pen, center, end);

@@ -47,7 +47,7 @@ public static class FilesContextExtensions
                                                            bool                   excludeViewed,
                                                            CancellationToken      cancellationToken)
     {
-        var filesToReturn = files.Include(fileDetail => fileDetail.FileAccessDetail).AsNoTracking().AsQueryable();
+        IQueryable<FileDetail> filesToReturn = files.Include(fileDetail => fileDetail.FileAccessDetail).AsNoTracking().AsQueryable();
 
         if(cancellationToken.IsCancellationRequested)
         {

@@ -30,7 +30,7 @@ public static class FluentAssignmentsExtensions
     /// <typeparam name="T">
     /// Specifies the generic object to check for null.
     /// </typeparam>
-    /// <param name="object">
+    /// <param name="obj">
     /// The object to check for null.
     /// </param>
     /// <returns>
@@ -39,7 +39,7 @@ public static class FluentAssignmentsExtensions
     /// <exception cref="ArgumentNullException">
     /// Thrown when the object is, in fact, null.
     /// </exception>
-    public static T NotNull<T>(this T @object) => @object is null ? throw new ArgumentNullException(nameof(@object)) : @object;
+    public static T NotNull<T>(this T obj) => obj is null ? throw new ArgumentNullException(nameof(obj)) : obj;
 
     /// <summary>
     /// Here just to make the checks more fluent...

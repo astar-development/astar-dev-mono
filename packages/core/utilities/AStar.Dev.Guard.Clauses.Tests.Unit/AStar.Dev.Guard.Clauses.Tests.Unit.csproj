@@ -34,6 +34,10 @@
         <Using Include="Shouldly"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\AStar.Dev.Guard.Clauses\AStar.Dev.Guard.Clauses.csproj" />
+    </ItemGroup>
+
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <NoWarn>1701;1702;IDE0058;</NoWarn>

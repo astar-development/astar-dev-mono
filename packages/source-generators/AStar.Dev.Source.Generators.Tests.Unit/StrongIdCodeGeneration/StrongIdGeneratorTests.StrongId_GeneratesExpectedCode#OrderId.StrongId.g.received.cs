@@ -22,7 +22,7 @@ public readonly partial struct OrderId : System.IEquatable<OrderId>
 
     public static bool TryParse(string? s, out OrderId value)
     {
-        var ok = System.Guid.TryParse(s, out Guid g);
+        bool ok = System.Guid.TryParse(s, out Guid g);
         value = ok ? new(g) : default;
         return ok;
     }

@@ -7,7 +7,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var matched = result.Match(
+        string matched = result.Match(
                                    success => $"Success: {success}",
                                    error => $"Error: {error}");
 
@@ -19,7 +19,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var matched = result.Match(
+        string matched = result.Match(
                                    success => $"Success: {success}",
                                    error => $"Error: {error}");
 
@@ -31,7 +31,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => Task.FromResult($"Success: {success}"),
                                               error => $"Error: {error}");
 
@@ -43,7 +43,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => Task.FromResult($"Success: {success}"),
                                               error => $"Error: {error}");
 
@@ -55,7 +55,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => $"Success: {success}",
                                               error => Task.FromResult($"Error: {error}"));
 
@@ -67,7 +67,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => $"Success: {success}",
                                               error => Task.FromResult($"Error: {error}"));
 
@@ -79,7 +79,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Ok("success");
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => Task.FromResult($"Success: {success}"),
                                               error => Task.FromResult($"Error: {error}"));
 
@@ -91,7 +91,7 @@ public class ResultShould
     {
         var result = new Result<string, int>.Error(42);
 
-        var matched = await result.MatchAsync(
+        string matched = await result.MatchAsync(
                                               success => Task.FromResult($"Success: {success}"),
                                               error => Task.FromResult($"Error: {error}"));
 
@@ -101,7 +101,7 @@ public class ResultShould
     [Fact]
     public void CreateOkResultWithCorrectValue()
     {
-        var value = "test value";
+        string value = "test value";
 
         var result = new Result<string, int>.Ok(value);
 
@@ -111,7 +111,7 @@ public class ResultShould
     [Fact]
     public void CreateErrorResultWithCorrectReason()
     {
-        var reason = 42;
+        int reason = 42;
 
         var result = new Result<string, int>.Error(reason);
 

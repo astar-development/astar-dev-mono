@@ -12,7 +12,7 @@ public class OverrideShould
     {
         var overrideInstance = new Override();
 
-        var result = overrideInstance.MicrosoftAspNetCore;
+        string result = overrideInstance.MicrosoftAspNetCore;
 
         Assert.NotNull(result);
         Assert.Equal(string.Empty, result);
@@ -35,7 +35,7 @@ public class OverrideShould
     {
         var overrideInstance = new Override();
 
-        var result = overrideInstance.SystemNetHttp;
+        string result = overrideInstance.SystemNetHttp;
 
         Assert.NotNull(result);
         Assert.Equal(string.Empty, result);
@@ -57,7 +57,7 @@ public class OverrideShould
     {
         var overrideInstance = new Override();
 
-        var result = overrideInstance.AStar;
+        string result = overrideInstance.AStar;
 
         Assert.NotNull(result);
         Assert.Equal(string.Empty, result);

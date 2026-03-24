@@ -3,7 +3,7 @@
 namespace AStar.Dev.Source.Generators.Attributes;
 
 /// <summary>
-/// Attribute used to indicate that a class or struct should be automatically registered as an <see cref="IOptions{T}"/>,
+/// Attribute used to indicate that a class or struct should be automatically registered as an IOption{T}.
 /// with an optional section name provided for configuration purposes.
 /// </summary>
 /// <remarks>
@@ -11,7 +11,7 @@ namespace AStar.Dev.Source.Generators.Attributes;
 /// and does not allow multiple usage on the same target.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
-public class AutoRegisterOptionsAttribute(string? sectionName = null) : Attribute
+public sealed class AutoRegisterOptionsAttribute(string? sectionName = null) : Attribute
 {
     /// <summary>
     /// Gets the name of the configuration section associated with this instance.

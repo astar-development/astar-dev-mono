@@ -11,15 +11,16 @@
         <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
         <Description>Initially, just an attribute to mark code as having technical debt. Later versions will extend this package to include reporting and tests that can be used to monitor the total Technical Debt.</Description>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
         <PackageReleaseNotes>Fix missing package icon.</PackageReleaseNotes>
+        <PackageTags>AStar</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="LICENSE" Pack="true" PackagePath=""/>
-        <None Include="Readme.md" Pack="true" PackagePath=""/>
-        <None Include="astar.png" Pack="true" PackagePath=""/>
+
+
+
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

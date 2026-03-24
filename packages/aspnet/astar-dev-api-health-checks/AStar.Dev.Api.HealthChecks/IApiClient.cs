@@ -13,5 +13,5 @@ public interface IApiClient
     ///     An instance of the <see href="HealthStatusResponse"></see> class containing the text representation of the API
     ///     Health Status.
     /// </returns>
-    public Task<HealthStatusResponse> GetHealthAsync(CancellationToken cancellationToken = default);
+    Task<HealthStatusResponse> GetHealthAsync(CancellationToken cancellationToken = default);
 }

@@ -11,7 +11,7 @@ namespace AStar.Dev.Source.Generators.Attributes;
 /// It supports specifying an HTTP method type and an optional method group name for categorization or grouping.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public class AutoRegisterEndpointAttribute(HttpMethod? methodType, string? methodGroupName = null) : Attribute
+public sealed class AutoRegisterEndpointAttribute(HttpMethod? methodType, string? methodGroupName = null) : Attribute
 {
     /// <summary>
     /// Gets the HTTP method type associated with the endpoint.

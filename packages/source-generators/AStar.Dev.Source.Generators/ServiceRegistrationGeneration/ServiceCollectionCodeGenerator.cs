@@ -11,7 +11,8 @@ internal static class ServiceCollectionCodeGenerator
     public static string Generate(IReadOnlyList<ServiceModel> items)
     {
         IEnumerable<string> registrations = BuildServiceRegistrations(items);
-        ServiceModel? item = items.FirstOrDefault();
+        ServiceModel item = items[0];
+
         return BuildSourceFile(registrations, item?.Namespace ?? "AStar.Dev");
     }
 
@@ -21,14 +22,16 @@ internal static class ServiceCollectionCodeGenerator
 
         foreach(ServiceModel model in items)
         {
-            foreach(var registration in CreateRegistrationsForModel(model).Where(seen.Add))
+            foreach(string? registration in CreateRegistrationsForModel(model).Where(seen.Add))
+            {
                 yield return registration;
+            }
         }
     }
 
     private static IEnumerable<string> CreateRegistrationsForModel(ServiceModel model)
     {
-        var method = GetRegistrationMethod(model.Lifetime);
+        string method = GetRegistrationMethod(model.Lifetime);
 
         if(!string.IsNullOrEmpty(model.ServiceFqn))
         {
@@ -65,7 +68,7 @@ internal static class ServiceCollectionCodeGenerator
         _ = sb.AppendLine("    public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)");
         _ = sb.AppendLine("    {");
 
-        foreach(var registration in registrations)
+        foreach(string? registration in registrations)
             _ = sb.AppendLine(registration);
 
         _ = sb.AppendLine("        return services;");

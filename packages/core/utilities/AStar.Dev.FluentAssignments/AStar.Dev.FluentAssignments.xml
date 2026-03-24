@@ -33,7 +33,7 @@
             <typeparam name="T">
             Specifies the generic object to check for null.
             </typeparam>
-            <param name="object">
+            <param name="obj">
             The object to check for null.
             </param>
             <returns>

@@ -66,7 +66,7 @@ public static class EncryptionExtensions
         aesAlg.Key = Encoding.UTF8.GetBytes(key ?? Key);
         aesAlg.IV  = Encoding.UTF8.GetBytes(iv  ?? Iv);
 
-        var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+        ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
         using var msDecrypt = new MemoryStream(Convert.FromBase64String(encryptedText));
 

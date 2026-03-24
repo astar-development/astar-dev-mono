@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-    net8.0</TargetFramework>
     <!--
     This template uses native xUnit.net command line options when using 'dotnet run' and
     VSTest by default when using 'dotnet test'. For more information on how to enable support
@@ -31,6 +30,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
   </ItemGroup>
 
 </Project>

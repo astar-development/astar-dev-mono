@@ -44,7 +44,7 @@ public sealed class JwtEvents(ILogger<JwtEvents> logger)
     private static Task ValidateUserIdIsPopulates(TokenValidatedContext context)
     {
         var claimsPrincipal = context.Principal;
-        var userId          = claimsPrincipal?.FindFirst(t => t.Type == "name")?.Value;
+        string? userId          = claimsPrincipal?.FindFirst(t => t.Type == "name")?.Value;
 
         if(string.IsNullOrEmpty(userId))
         {

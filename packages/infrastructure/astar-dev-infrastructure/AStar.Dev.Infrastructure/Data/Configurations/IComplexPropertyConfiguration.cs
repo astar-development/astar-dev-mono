@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStar.Dev.Infrastructure.Data.Configurations;
@@ -5,11 +6,11 @@ namespace AStar.Dev.Infrastructure.Data.Configurations;
 /// <summary>
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
-public interface IComplexPropertyConfiguration<TEntity>
+public interface IComplexPropertyConfiguration<TEntity> where TEntity : class // Should be more specific
 {
     /// <summary>
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
-    public void Configure(ComplexPropertyBuilder<TEntity> builder);
+    void Configure(ComplexPropertyBuilder<TEntity> builder);
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        netstandard2.0</TargetFramework>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <IsPackable>true</IsPackable>
         <Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
@@ -60,10 +60,6 @@
       <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup>
-      <None Update="astar.png">
-        <Pack>True</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
       <None Update="Readme.md">
         <Pack>True</Pack>
         <PackagePath>\</PackagePath>

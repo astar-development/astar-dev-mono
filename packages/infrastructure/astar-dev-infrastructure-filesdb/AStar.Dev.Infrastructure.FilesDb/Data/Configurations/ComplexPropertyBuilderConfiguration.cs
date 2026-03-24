@@ -12,7 +12,7 @@ public static class ComplexPropertyBuilderConfiguration
     /// <param name="configuration"></param>
     /// <typeparam name="TEntity"></typeparam>
     /// <returns></returns>
-    public static ComplexPropertyBuilder<TEntity> Configure<TEntity>(this ComplexPropertyBuilder<TEntity> propertyBuilder, IComplexPropertyConfiguration<TEntity> configuration)
+    public static ComplexPropertyBuilder<TEntity> Configure<TEntity>(this ComplexPropertyBuilder<TEntity> propertyBuilder, IComplexPropertyConfiguration<TEntity> configuration) where TEntity : notnull
     {
         configuration.Configure(propertyBuilder);
 

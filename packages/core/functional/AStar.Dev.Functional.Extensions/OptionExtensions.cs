@@ -140,7 +140,7 @@ public static class OptionExtensions
         this Task<Option<T>>   optionTask,
         Func<T, Task<TResult>> mapAsync)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return await option.MapAsync(mapAsync);
     }
@@ -173,7 +173,7 @@ public static class OptionExtensions
         this Task<Option<T>>           optionTask,
         Func<T, Task<Option<TResult>>> bindAsync)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return await option.BindAsync(bindAsync);
     }
@@ -203,7 +203,7 @@ public static class OptionExtensions
         this Task<Option<T>> optionTask,
         Func<Task<TError>>   errorFactoryAsync)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return await option.ToResultAsync(errorFactoryAsync);
     }
@@ -243,7 +243,7 @@ public static class OptionExtensions
         this Task<Option<T>> optionTask,
         Action<T>            action)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return option.Tap(action);
     }
@@ -255,7 +255,7 @@ public static class OptionExtensions
         this Task<Option<T>> optionTask,
         Func<T, Task>        actionAsync)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return await option.TapAsync(actionAsync);
     }
@@ -317,7 +317,7 @@ public static class OptionExtensions
         this Task<Option<T>> optionTask,
         T                    fallback)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return option.OrElse(fallback);
     }
@@ -329,7 +329,7 @@ public static class OptionExtensions
         this Task<Option<T>> optionTask,
         Func<Task<T>>        getFallbackAsync)
     {
-        var option = await optionTask;
+        Option<T> option = await optionTask;
 
         return await option.OrElseAsync(getFallbackAsync);
     }
@@ -339,7 +339,7 @@ public static class OptionExtensions
     /// </summary>
     public static IEnumerable<T> Values<T>(this IEnumerable<Option<T>> options)
     {
-        foreach(var option in options)
+        foreach(Option<T>? option in options)
         {
             if(option is Option<T>.Some some)
             {
@@ -365,9 +365,9 @@ public static class OptionExtensions
         this IEnumerable<T>      source,
         Func<T, Option<TResult>> chooser)
     {
-        foreach(var item in source)
+        foreach(T item in source)
         {
-            var option = chooser(item);
+            Option<TResult>? option = chooser(item);
 
             if(option is Option<TResult>.Some some)
             {

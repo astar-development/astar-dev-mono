@@ -58,7 +58,7 @@ public static class HealthCheckExtensions
     {
         httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-        var dependencyHealthChecks = healthReport.Entries.Select(static entry => new HealthStatusResponse
+        IEnumerable<HealthStatusResponse> dependencyHealthChecks = healthReport.Entries.Select(static entry => new HealthStatusResponse
                                                                                  {
                                                                                      Name        = entry.Key,
                                                                                      Description = entry.Value.Description,
@@ -76,7 +76,7 @@ public static class HealthCheckExtensions
                                       DependencyHealthChecks                = dependencyHealthChecks
                                   };
 
-        var responseString = JsonSerializer.Serialize(healthCheckResponse, JsonSerializerOptions);
+        string responseString = JsonSerializer.Serialize(healthCheckResponse, JsonSerializerOptions);
 
         return httpContext.Response.WriteAsync(responseString);
     }

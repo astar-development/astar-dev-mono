@@ -19,7 +19,7 @@ public class LogLevelShould
     public void Default_ShouldAllowSettingValue()
     {
         var logLevel      = new LogLevel();
-        var expectedValue = "Info";
+        string expectedValue = "Info";
 
         logLevel.Default = expectedValue;
 
@@ -39,7 +39,7 @@ public class LogLevelShould
     public void MicrosoftAspNetCore_ShouldAllowSettingValue()
     {
         var logLevel      = new LogLevel();
-        var expectedValue = "Warning";
+        string expectedValue = "Warning";
 
         logLevel.MicrosoftAspNetCore = expectedValue;
 
@@ -59,7 +59,7 @@ public class LogLevelShould
     public void AStar_ShouldAllowSettingValue()
     {
         var logLevel      = new LogLevel();
-        var expectedValue = "Error";
+        string expectedValue = "Error";
 
         logLevel.AStar = expectedValue;
 

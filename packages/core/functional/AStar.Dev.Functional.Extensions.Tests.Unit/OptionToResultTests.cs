@@ -7,7 +7,7 @@ public class OptionToResultTests
     {
         var opt    = new Option<int>.Some(42);
         var result = opt.ToResult(() => "missing");
-        Assert.True(result is Result<int, string>.Ok ok && ok.Value == 42);
+        Assert.True(result is Result<int, string>.Ok { Value: 42 });
     }
 
     [Fact]
@@ -15,6 +15,6 @@ public class OptionToResultTests
     {
         var opt    = Option.None<int>();
         var result = opt.ToResult(() => "missing");
-        Assert.True(result is Result<int, string>.Error err && err.Reason == "missing");
+        Assert.True(result is Result<int, string>.Error { Reason: "missing" });
     }
 }

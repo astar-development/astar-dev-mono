@@ -9,7 +9,7 @@ public class MinimumLevelShould
     public void DefaultProperty_GetsAndSetsValuesCorrectly()
     {
         var minimumLevel = new MinimumLevel();
-        var testValue    = "Information";
+        string testValue    = "Information";
 
         minimumLevel.Default = testValue;
 
@@ -51,7 +51,7 @@ public class MinimumLevelShould
     {
         var minimumLevel = new MinimumLevel();
 
-        var overrideInstance = minimumLevel.Override;
+        Override overrideInstance = minimumLevel.Override;
 
         Assert.Equal(string.Empty, overrideInstance.MicrosoftAspNetCore);
         Assert.Equal(string.Empty, overrideInstance.SystemNetHttp);

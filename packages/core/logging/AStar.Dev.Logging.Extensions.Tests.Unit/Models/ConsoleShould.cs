@@ -22,7 +22,7 @@ public class ConsoleShould
     public void Console_SetFormatterName_ShouldUpdateValue()
     {
         var console               = new Console();
-        var expectedFormatterName = "CustomFormatter";
+        string expectedFormatterName = "CustomFormatter";
 
         console.FormatterName = expectedFormatterName;
 

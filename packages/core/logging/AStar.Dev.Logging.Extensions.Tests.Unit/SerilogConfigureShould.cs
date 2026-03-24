@@ -14,9 +14,9 @@ public class SerilogConfigureShould
         var loggerConfiguration = new LoggerConfiguration();
         var configurationMock   = new ConfigurationBuilder();
         configurationMock.AddInMemoryCollection();
-        var telemetryConfiguration = new TelemetryConfiguration();
+        using var telemetryConfiguration = new TelemetryConfiguration();
 
-        var result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
+        LoggerConfiguration result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
 
         result.ShouldNotBeNull();
         result.ShouldBeOfType<LoggerConfiguration>();
@@ -31,7 +31,7 @@ public class SerilogConfigureShould
         LoggerConfiguration? loggerConfiguration = null;
         var                  configurationMock   = new ConfigurationBuilder();
         configurationMock.AddInMemoryCollection();
-        var telemetryConfiguration = new TelemetryConfiguration();
+        using var telemetryConfiguration = new TelemetryConfiguration();
 
         Should.Throw<NullReferenceException>(() => loggerConfiguration!.Configure(configurationMock.Build(), telemetryConfiguration));
     }
@@ -41,7 +41,7 @@ public class SerilogConfigureShould
     {
         var             loggerConfiguration    = new LoggerConfiguration();
         IConfiguration? configuration          = null;
-        var             telemetryConfiguration = new TelemetryConfiguration();
+        using var             telemetryConfiguration = new TelemetryConfiguration();
 
         Should.Throw<NullReferenceException>(() => loggerConfiguration.Configure(configuration!, telemetryConfiguration));
     }
@@ -50,7 +50,7 @@ public class SerilogConfigureShould
     public void Configure_ShouldThrowInvalidOperationException_WhenTelemetryConfigurationIsNull()
     {
         var                     loggerConfiguration    = new LoggerConfiguration();
-        var                     configurationMock      = Substitute.For<IConfiguration>();
+        IConfiguration?                     configurationMock      = Substitute.For<IConfiguration>();
         TelemetryConfiguration? telemetryConfiguration = null;
 
         Should.Throw<InvalidOperationException>(() => loggerConfiguration.Configure(configurationMock, telemetryConfiguration!));
@@ -62,9 +62,9 @@ public class SerilogConfigureShould
         var loggerConfiguration = new LoggerConfiguration();
         var configurationMock   = new ConfigurationBuilder();
         configurationMock.AddInMemoryCollection();
-        var telemetryConfiguration = new TelemetryConfiguration();
+        using var telemetryConfiguration = new TelemetryConfiguration();
 
-        var result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
+        LoggerConfiguration result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
 
         result.ShouldNotBeNull();
     }
@@ -75,9 +75,9 @@ public class SerilogConfigureShould
         var loggerConfiguration = new LoggerConfiguration();
         var configurationMock   = new ConfigurationBuilder();
         configurationMock.AddInMemoryCollection();
-        var telemetryConfiguration = new TelemetryConfiguration();
+        using var telemetryConfiguration = new TelemetryConfiguration();
 
-        var result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
+        LoggerConfiguration result = loggerConfiguration.Configure(configurationMock.Build(), telemetryConfiguration);
 
         result.ShouldNotBeNull();
     }

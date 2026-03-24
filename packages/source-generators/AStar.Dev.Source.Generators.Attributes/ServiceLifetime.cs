@@ -3,4 +3,18 @@
 /// <summary>
 /// Specifies the lifetime of a service within a dependency injection container.
 /// </summary>
-public enum ServiceLifetime { Singleton, Scoped, Transient }
+public enum ServiceLifetime
+{
+    /// <summary>
+    ///
+    /// </summary>
+    Singleton,
+    /// <summary>
+    ///
+    /// </summary>
+    Scoped,
+    /// <summary>
+    ///
+    /// </summary>
+    Transient
+}

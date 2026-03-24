@@ -28,7 +28,7 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
     {
         unchecked
         {
-            var hash = 17;
+            int hash = 17;
             hash = (hash * 23) + (TypeName != null ? TypeName.GetHashCode() : 0);
             hash = (hash * 23) + (FullTypeName != null ? FullTypeName.GetHashCode() : 0);
             hash = (hash * 23) + (SectionName != null ? SectionName.GetHashCode() : 0);

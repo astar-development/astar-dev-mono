@@ -20,9 +20,9 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
         ServiceLifetime lifetime = ExtractLifetime(attr);
         INamedTypeSymbol? asType = ExtractAsType(attr);
-        var asSelf = ExtractAsSelf(attr);
+        bool asSelf = ExtractAsSelf(attr);
         INamedTypeSymbol? service = asType ?? InferServiceType(impl);
-        var ns = impl.ContainingNamespace.IsGlobalNamespace ? null : impl.ContainingNamespace.ToDisplayString();
+        string ns = (impl.ContainingNamespace.IsGlobalNamespace ? null : impl.ContainingNamespace.ToDisplayString()) ?? string.Empty;
 
         // Only skip if no service and not alsoAsSelf
         return service is null && !asSelf
@@ -36,9 +36,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
         );
     }
 
-    private static bool IsValidImplementationType(INamedTypeSymbol impl) => !impl.IsAbstract &&
-               impl.Arity == 0 &&
-               impl.DeclaredAccessibility == Accessibility.Public;
+    private static bool IsValidImplementationType(INamedTypeSymbol impl) => impl is { IsAbstract: false, Arity: 0, DeclaredAccessibility: Accessibility.Public };
 
     private static ServiceLifetime ExtractLifetime(AttributeData attr) => attr.ConstructorArguments.Length == 1 &&
                attr.ConstructorArguments[0].Value is int li
@@ -49,7 +47,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
     {
         foreach(KeyValuePair<string, TypedConstant> na in attr.NamedArguments)
         {
-            if(na.Key == "As" && na.Value.Value is INamedTypeSymbol ts)
+            if(na is { Key: "As", Value.Value: INamedTypeSymbol ts })
                 return ts;
         }
 
@@ -60,7 +58,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
     {
         foreach(KeyValuePair<string, TypedConstant> na in attr.NamedArguments)
         {
-            if(na.Key == "AsSelf" && na.Value.Value is bool b)
+            if(na is { Key: "AsSelf", Value.Value: bool b })
                 return b;
         }
 
@@ -74,8 +72,6 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
         return candidates.Length == 1 ? candidates[0] : null;
     }
 
-    private static bool IsEligibleServiceInterface(INamedTypeSymbol i) => i.DeclaredAccessibility == Accessibility.Public &&
-               i.TypeKind == TypeKind.Interface &&
-               i.Arity == 0 &&
-               i.ToDisplayString() != "System.IDisposable";
+    private static bool IsEligibleServiceInterface(INamedTypeSymbol i) => i is { DeclaredAccessibility: Accessibility.Public, TypeKind: TypeKind.Interface, Arity: 0 } &&
+                                                                          i.ToDisplayString() != "System.IDisposable";
 }

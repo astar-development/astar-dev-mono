@@ -26,7 +26,7 @@ public static class OptionLinqExtensions
         this Task<Option<T>>   task,
         Func<T, Task<TResult>> selector)
     {
-        var option = await task;
+        Option<T> option = await task;
 
         return option is Option<T>.Some some
                    ? new Option<TResult>.Some(await selector(some.Value))

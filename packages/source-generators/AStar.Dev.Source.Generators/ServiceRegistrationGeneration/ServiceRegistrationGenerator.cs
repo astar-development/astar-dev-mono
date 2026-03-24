@@ -27,9 +27,7 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
             .Where(static s => s is not null)!;
 
     private static bool IsClassCandidateForServiceRegistration(SyntaxNode node)
-        => node is ClassDeclarationSyntax c &&
-                       c.AttributeLists.Count > 0 &&
-                       c.TypeParameterList is null;
+        => node is ClassDeclarationSyntax { AttributeLists.Count: > 0, TypeParameterList: null };
 
     private static INamedTypeSymbol? GetDeclaredSymbol(GeneratorSyntaxContext syntaxCtx)
     {
@@ -60,7 +58,7 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
 
     private static void GenerateSource(SourceProductionContext spc, (Compilation Left, ImmutableArray<ServiceModel?> Right) pair)
     {
-        var code = ServiceCollectionCodeGenerator.Generate(pair.Right);
+        string code = ServiceCollectionCodeGenerator.Generate(pair.Right);
         spc.AddSource("GeneratedServiceCollectionExtensions.g.cs", code);
     }
 }

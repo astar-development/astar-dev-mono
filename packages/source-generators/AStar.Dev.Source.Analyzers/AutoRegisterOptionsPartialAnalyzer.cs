@@ -44,22 +44,29 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeType(SyntaxNodeAnalysisContext context)
     {
         if(context.Node is not TypeDeclarationSyntax typeDecl)
+        {
             return;
+        }
+
         INamedTypeSymbol? symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl, context.CancellationToken);
         if(symbol == null)
-            return;
-        foreach(AttributeData attr in symbol.GetAttributes())
         {
-            if(attr.AttributeClass?.ToDisplayString() == "AStar.Dev.Source.Generators.Attributes.AutoRegisterOptionsAttribute")
-            {
-                if(!typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
-                {
-                    var diag = Diagnostic.Create(Rule, typeDecl.Identifier.GetLocation(), symbol.Name);
-                    context.ReportDiagnostic(diag);
-                }
-
-                break;
-            }
+            return;
         }
+
+        if (!Enumerable.Any(symbol.GetAttributes(),
+                attr => attr.AttributeClass?.ToDisplayString() ==
+                        "AStar.Dev.Source.Generators.Attributes.AutoRegisterOptionsAttribute"))
+        {
+            return;
+        }
+
+        if (typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+        {
+            return;
+        }
+
+        var diag = Diagnostic.Create(Rule, typeDecl.Identifier.GetLocation(), symbol.Name);
+        context.ReportDiagnostic(diag);
     }
 }
