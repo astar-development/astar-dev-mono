@@ -1,4 +1,5 @@
-﻿using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
+﻿using AStar.Dev.Source.Generators.OptionsBindingGeneration;
+using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -24,7 +25,7 @@ namespace TestNamespace
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
 
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
+        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptions>()");
@@ -48,7 +49,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
+        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyStructOptions>()");
@@ -72,7 +73,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
+        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptionsWithField>()");
@@ -96,7 +97,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
+        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.MyOptionsWithBoth>()");
@@ -145,7 +146,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions"));
+        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("AutoOptionsRegistrationExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("services.AddOptions<TestNamespace.OptionsA>()");

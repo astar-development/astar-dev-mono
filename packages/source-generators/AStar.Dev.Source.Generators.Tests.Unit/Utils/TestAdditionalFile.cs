@@ -3,7 +3,8 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.Utils;
 
-public class TestAdditionalFile : AdditionalText
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1515", Justification = "Test helper intended for use in generator tests")]
+public sealed class TestAdditionalFile : AdditionalText
 {
     private readonly SourceText _text;
 
