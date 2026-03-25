@@ -2,6 +2,7 @@
     <Folder Name="/apps/" />
     <Folder Name="/apps/desktop/">
         <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
+        <Project Path="apps/desktop/AStar.Dev.OneDriveSync/AStar.Dev.OneDriveSync.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/infra/" />
@@ -12,6 +13,14 @@
         <Project Path="packages/aspnet/astar-dev-api-health-checks/AStar.Dev.Api.HealthChecks/AStar.Dev.Api.HealthChecks.csproj" />
     </Folder>
     <Folder Name="/packages/core/" />
+    <Folder Name="/packages/core/astar-dev-conflict-resolution/">
+        <Project Path="packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
+        <Project Path="packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution.Tests.Unit/AStar.Dev.Conflict.Resolution.Tests.Unit.csproj" />
+    </Folder>
+    <Folder Name="/packages/core/astar-dev-sync-engine/">
+        <Project Path="packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/AStar.Dev.Sync.Engine.csproj" />
+        <Project Path="packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine.Tests.Unit/AStar.Dev.Sync.Engine.Tests.Unit.csproj" />
+    </Folder>
     <Folder Name="/packages/core/functional/">
         <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
         <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
@@ -28,6 +37,12 @@
         <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting/AStar.Dev.Technical.Debt.Reporting.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+    </Folder>
+    <Folder Name="/packages/infra/">
+        <Folder Name="/packages/infra/astar-dev-onedrive-client/">
+            <Project Path="packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
+            <Project Path="packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client.Tests.Unit/AStar.Dev.OneDrive.Client.Tests.Unit.csproj" />
+        </Folder>
     </Folder>
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
