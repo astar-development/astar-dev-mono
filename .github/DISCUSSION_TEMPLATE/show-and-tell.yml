@@ -1,0 +1,9 @@
+
+title: "Show & Tell: <what you built>"
+labels: ["community"]
+body:
+  - type: textarea
+    id: showcase
+    attributes:
+      label: What did you build?
+      description: Share screenshots, links, and context.

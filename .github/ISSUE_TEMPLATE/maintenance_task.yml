@@ -1,0 +1,18 @@
+
+name: Maintenance Task
+description: Non-feature, non-bug task (cleanup, refactoring, CI work, etc.)
+labels: [maintenance]
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: Task Description
+      description: What maintenance task should be performed?
+    validations:
+      required: true
+  - type: textarea
+    id: affected
+    attributes:
+      label: Affected Area
+      description: Which part(s) of the repo does this involve?
+      placeholder: libs/*, tests/, build/, etc.

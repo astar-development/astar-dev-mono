@@ -1,0 +1,24 @@
+
+name: Feature Request
+description: Suggest an improvement or new capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What feature would you like?
+      description: Please describe the new functionality or enhancement.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this valuable?
+      description: Explain what problem it solves or enables.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Links, screenshots, or related ideas.
