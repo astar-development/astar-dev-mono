@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Spike 4: Trim compatibility
+    ════════════════════════════
+    This project deliberately enables the same trim/single-file settings used
+    in the production desktop app (apps/desktop/Directory.Build.props) so we
+    can discover trim warnings before the real app is built.
+
+    Run:
+      dotnet publish -r linux-x64 -c Release
+
+    PASS: no ILLink warnings, binary runs correctly
+    FAIL: trim warnings or runtime TypeLoadException / MissingMethodException
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>AStar.Dev.Spikes.TrimCompatibility</AssemblyName>
+    <RootNamespace>AStar.Dev.Spikes.TrimCompatibility</RootNamespace>
+    <!-- Override spikes Directory.Build.props — trim warnings ARE errors here -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPublishable>true</IsPublishable>
+  </PropertyGroup>
+
+  <!-- Mirror the production desktop publish settings -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Graph" />
+  </ItemGroup>
+</Project>

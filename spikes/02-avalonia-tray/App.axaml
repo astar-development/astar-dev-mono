@@ -1,0 +1,32 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStar.Dev.Spikes.AvaloniaTray.App"
+             RequestedThemeVariant="Default">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <!--
+        TrayIcon.Icons is an attached property on Application.
+        This is the Avalonia 11 API for system tray support.
+
+        NOTE ON LINUX:
+          GNOME requires the AppIndicator extension to display tray icons.
+          KDE Plasma supports tray icons natively.
+          Record which DEs work during the spike.
+    -->
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon ToolTipText="Spike: Avalonia Tray Test"
+                      Clicked="TrayIcon_Clicked">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Open" Click="OnOpen" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Quit" Click="OnQuit" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+</Application>
