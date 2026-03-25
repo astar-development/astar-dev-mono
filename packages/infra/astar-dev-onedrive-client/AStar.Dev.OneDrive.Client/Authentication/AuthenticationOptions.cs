@@ -15,6 +15,14 @@ public sealed record AuthenticationOptions
     public const string ConsumersTenant = "consumers";
 
     /// <summary>
+    ///     Sentinel account identifier used during initial application configuration,
+    ///     before any real Microsoft account has authenticated (AU-03).
+    ///     Consent decisions recorded under this ID apply machine-wide and cover
+    ///     the bootstrap window before the first interactive sign-in.
+    /// </summary>
+    public const string SystemAdminAccountId = "system-admin";
+
+    /// <summary>
     ///     The MSAL application (client) ID from the Azure app registration.
     /// </summary>
     public required string ClientId { get; init; }

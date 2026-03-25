@@ -18,6 +18,14 @@
                 Work and school accounts are explicitly excluded.
             </remarks>
         </member>
+        <member name="F:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.SystemAdminAccountId">
+            <summary>
+                Sentinel account identifier used during initial application configuration,
+                before any real Microsoft account has authenticated (AU-03).
+                Consent decisions recorded under this ID apply machine-wide and cover
+                the bootstrap window before the first interactive sign-in.
+            </summary>
+        </member>
         <member name="P:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.ClientId">
             <summary>
                 The MSAL application (client) ID from the Azure app registration.
@@ -193,8 +201,8 @@
                 Registers the MSAL token cache on an <see cref="T:Microsoft.Identity.Client.IPublicClientApplication"/>.
                 On platforms where the OS keychain is available the cache is secured by
                 the keychain.  When the keychain is unavailable (common on headless Linux),
-                explicit user consent is required before falling back to a machine-scoped
-                encrypted local file — tokens are never stored as plain text (AU-02, AU-03).
+                explicit user consent is required before falling back to an unencrypted local
+                file — the user is informed that the file offers no additional protection (AU-02, AU-03).
             </summary>
         </member>
         <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenCacheInitializer.#ctor(AStar.Dev.OneDrive.Client.Authentication.IConsentStore,AStar.Dev.OneDrive.Client.Authentication.IConsentPrompt)">
@@ -219,6 +227,9 @@
             <param name="options">Authentication options supplying cache path settings.</param>
             <param name="accountId">
                 The unique identifier of the account whose consent record is consulted.
+                Defaults to <see cref="F:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.SystemAdminAccountId"/> for use
+                during initial application configuration, before any real Microsoft account
+                has authenticated (AU-03).
             </param>
             <param name="cancellationToken">Cancellation token.</param>
             <exception cref="T:System.InvalidOperationException">

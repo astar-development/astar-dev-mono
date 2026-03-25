@@ -93,6 +93,21 @@ public class TokenCacheInitializerShould
     }
 
     [Fact]
+    public async Task UseSystemAdminAccountId_WhenNoAccountIdProvided()
+    {
+        Func<StorageCreationProperties, ITokenCache, Task> failingKeychain =
+            (_, _) => Task.FromException(new InvalidOperationException("Keychain unavailable."));
+        _consentStore.HasConsented(AuthenticationOptions.SystemAdminAccountId).Returns(false);
+        _consentPrompt.RequestConsentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+
+        var sut = new TokenCacheInitializer(_consentStore, _consentPrompt, failingKeychain);
+
+        await sut.InitializeAsync(_app, _options, cancellationToken: TestContext.Current.CancellationToken);
+
+        _consentStore.Received(1).RecordConsent(AuthenticationOptions.SystemAdminAccountId, true);
+    }
+
+    [Fact]
     public async Task RegisterInsecureCacheCallbacks_WhenConsentGrantedAndKeychainUnavailable()
     {
         Func<StorageCreationProperties, ITokenCache, Task> failingKeychain =
