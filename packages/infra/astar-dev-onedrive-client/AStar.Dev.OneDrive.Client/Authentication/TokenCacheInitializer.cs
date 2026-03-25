@@ -36,10 +36,7 @@ public sealed class TokenCacheInitializer
     ///     Overload that accepts an injectable keychain-registration delegate,
     ///     enabling the keychain path to be replaced in unit tests.
     /// </summary>
-    internal TokenCacheInitializer(
-        IConsentStore                                      consentStore,
-        IConsentPrompt                                     consentPrompt,
-        Func<StorageCreationProperties, ITokenCache, Task> registerKeychainCache)
+    internal TokenCacheInitializer(IConsentStore consentStore, IConsentPrompt consentPrompt, Func<StorageCreationProperties, ITokenCache, Task> registerKeychainCache)
     {
         _consentStore          = consentStore;
         _consentPrompt         = consentPrompt;
@@ -61,11 +58,7 @@ public sealed class TokenCacheInitializer
     ///     Thrown when the OS keychain is unavailable and the user declines
     ///     consent for the insecure fallback store.
     /// </exception>
-    public async Task InitializeAsync(
-        IPublicClientApplication app,
-        AuthenticationOptions    options,
-        string                   accountId,
-        CancellationToken        cancellationToken = default)
+    public async Task InitializeAsync(IPublicClientApplication app, AuthenticationOptions options, string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
@@ -99,11 +92,7 @@ public sealed class TokenCacheInitializer
         }
     }
 
-    private async Task RegisterInsecureCacheAsync(
-        IPublicClientApplication app,
-        AuthenticationOptions    options,
-        string                   accountId,
-        CancellationToken        cancellationToken)
+    private async Task RegisterInsecureCacheAsync(IPublicClientApplication app, AuthenticationOptions options, string accountId, CancellationToken cancellationToken)
     {
         if(!_consentStore.HasConsented(accountId))
         {
@@ -141,9 +130,7 @@ public sealed class TokenCacheInitializer
         });
     }
 
-    private static async Task RegisterViaHelperAsync(
-        StorageCreationProperties props,
-        ITokenCache               tokenCache)
+    private static async Task RegisterViaHelperAsync(StorageCreationProperties props, ITokenCache tokenCache)
     {
         var helper = await MsalCacheHelper.CreateAsync(props).ConfigureAwait(false);
         helper.RegisterCache(tokenCache);

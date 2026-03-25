@@ -20,9 +20,7 @@ public sealed class TokenManager : ITokenManager
         => _msal = msal;
 
     /// <inheritdoc />
-    public async Task<string> AcquireAccessTokenAsync(
-        IEnumerable<string> scopes,
-        CancellationToken   cancellationToken = default)
+    public async Task<string> AcquireAccessTokenAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default)
     {
         var scopeList = scopes as IReadOnlyList<string> ?? scopes.ToList();
         var accounts  = await _msal.GetAccountsAsync().ConfigureAwait(false);

@@ -15,9 +15,7 @@ public interface ITokenManager
     /// <param name="scopes">The OAuth2 scopes to request.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A valid access token string.</returns>
-    Task<string> AcquireAccessTokenAsync(
-        IEnumerable<string> scopes,
-        CancellationToken   cancellationToken = default);
+    Task<string> AcquireAccessTokenAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Signs out all cached accounts, clearing the local token cache.

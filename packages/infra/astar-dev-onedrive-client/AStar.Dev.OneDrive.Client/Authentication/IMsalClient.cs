@@ -23,10 +23,7 @@ public interface IMsalClient
     /// <exception cref="Microsoft.Identity.Client.MsalUiRequiredException">
     ///     Thrown when the cache does not contain a valid token and user interaction is required.
     /// </exception>
-    Task<string> AcquireTokenSilentAsync(
-        IEnumerable<string> scopes,
-        IAccount?           account,
-        CancellationToken   cancellationToken = default);
+    Task<string> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount? account, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Acquires an access token via interactive browser sign-in (AU-04).
@@ -34,9 +31,7 @@ public interface IMsalClient
     /// <param name="scopes">The requested OAuth2 scopes.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The access token string.</returns>
-    Task<string> AcquireTokenInteractiveAsync(
-        IEnumerable<string> scopes,
-        CancellationToken   cancellationToken = default);
+    Task<string> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Removes the specified account from the MSAL token cache.

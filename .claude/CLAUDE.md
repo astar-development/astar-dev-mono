@@ -110,8 +110,9 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 ### Conventions
 
 - **Commit messages**: Conventional Commits format — `feat(packages/core): ...`, `fix(apps/web/Portal.Blazor): ...`
-- **Branch names**: `feat/...`, `fix/...`, `release/x.y`; `main` is always deployable
+- **Branch names**: `feature/...`, `bug/...`, `doc/...`; `main` is always deployable
 - **Test projects**: Named `*.Tests` or `*.IntegrationTests` — automatically set `IsPackable=false`
+- **Method signatures**: Always single-line regardless of parameter count — `public void Foo(string a, int b, CancellationToken ct = default)`. Never split parameters across lines.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
 
 ## First-Time Setup

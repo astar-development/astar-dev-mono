@@ -23,10 +23,7 @@ public sealed class MsalClient : IMsalClient
         => _app.GetAccountsAsync();
 
     /// <inheritdoc />
-    public async Task<string> AcquireTokenSilentAsync(
-        IEnumerable<string> scopes,
-        IAccount?           account,
-        CancellationToken   cancellationToken = default)
+    public async Task<string> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount? account, CancellationToken cancellationToken = default)
     {
         var result = await _app.AcquireTokenSilent(scopes, account)
                                .ExecuteAsync(cancellationToken)
@@ -36,9 +33,7 @@ public sealed class MsalClient : IMsalClient
     }
 
     /// <inheritdoc />
-    public async Task<string> AcquireTokenInteractiveAsync(
-        IEnumerable<string> scopes,
-        CancellationToken   cancellationToken = default)
+    public async Task<string> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default)
     {
         var result = await _app.AcquireTokenInteractive(scopes)
                                .ExecuteAsync(cancellationToken)
