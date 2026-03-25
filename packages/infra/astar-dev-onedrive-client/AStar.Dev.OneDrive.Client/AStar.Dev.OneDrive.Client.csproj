@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Graph" />
     <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
   </ItemGroup>
 
 </Project>

@@ -4,5 +4,247 @@
         <name>AStar.Dev.OneDrive.Client</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions">
+            <summary>
+                Configuration for MSAL-based OneDrive authentication.
+            </summary>
+        </member>
+        <member name="F:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.ConsumersTenant">
+            <summary>
+                The Azure AD authority tenant for personal Microsoft accounts.
+            </summary>
+            <remarks>
+                Only the <c>consumers</c> tenant is supported (AU-01).
+                Work and school accounts are explicitly excluded.
+            </remarks>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.ClientId">
+            <summary>
+                The MSAL application (client) ID from the Azure app registration.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.TokenCacheDirectory">
+            <summary>
+                Directory in which the token cache file is stored (AU-02).
+                Defaults to <c>%LOCALAPPDATA%/AStar.Dev.OneDriveSync</c>.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions.TokenCacheFileName">
+            <summary>
+                Filename for the MSAL token cache (AU-02).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.FileConsentStore">
+            <summary>
+                JSON file-backed implementation of <see cref="T:AStar.Dev.OneDrive.Client.Authentication.IConsentStore"/>.
+                Consent decisions are written to <c>consent.json</c> inside the
+                supplied directory and persist across application restarts (AU-03).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.FileConsentStore.#ctor(System.String)">
+            <summary>
+                Initialises a new instance of <see cref="T:AStar.Dev.OneDrive.Client.Authentication.FileConsentStore"/>,
+                loading any previously persisted consent decisions from
+                <paramref name="directory"/>.
+            </summary>
+            <param name="directory">Directory in which <c>consent.json</c> is stored.</param>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.FileConsentStore.HasConsented(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.FileConsentStore.RecordConsent(System.String,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.IConsentPrompt">
+            <summary>
+                Abstraction for the dialog presented to the user before falling back to
+                the insecure local token-cache store when the OS keychain is unavailable (AU-03).
+            </summary>
+            <remarks>
+                Decoupling the prompt from the cache initialiser allows the UI layer to
+                supply a platform-appropriate dialog (Avalonia message box, console prompt, etc.)
+                while keeping the authentication logic independently testable.
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IConsentPrompt.RequestConsentAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+                Displays a consent dialog to the user explaining that the OS keychain
+                is unavailable and requesting permission to use an encrypted local
+                fallback store instead.
+            </summary>
+            <param name="message">The explanation to show the user.</param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>
+                <c>true</c> if the user grants consent; <c>false</c> if the user declines.
+            </returns>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.IConsentStore">
+            <summary>
+                Persists per-account user-consent decisions for the insecure local
+                token-cache fallback (AU-03).
+            </summary>
+            <remarks>
+                A consent decision is stored against the account's unique identifier so
+                that multiple Microsoft accounts on the same machine each have an
+                independent opt-in record.
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IConsentStore.HasConsented(System.String)">
+            <summary>
+                Returns <c>true</c> when the user associated with <paramref name="accountId"/>
+                has previously granted consent to use the insecure local cache fallback.
+            </summary>
+            <param name="accountId">The unique account identifier.</param>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IConsentStore.RecordConsent(System.String,System.Boolean)">
+            <summary>
+                Records the user's consent decision for <paramref name="accountId"/>.
+            </summary>
+            <param name="accountId">The unique account identifier.</param>
+            <param name="consented"><c>true</c> if the user granted consent; <c>false</c> if denied.</param>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.IMsalClient">
+            <summary>
+                Abstracts MSAL public-client operations to decouple application logic
+                from the MSAL builder API and enable unit testing.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IMsalClient.GetAccountsAsync">
+            <summary>
+                Returns all accounts currently held in the MSAL token cache.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IMsalClient.AcquireTokenSilentAsync(System.Collections.Generic.IEnumerable{System.String},Microsoft.Identity.Client.IAccount,System.Threading.CancellationToken)">
+            <summary>
+                Attempts to acquire an access token silently from the cache (AU-04).
+            </summary>
+            <param name="scopes">The requested OAuth2 scopes.</param>
+            <param name="account">The account hint; pass <c>null</c> to use any cached account.</param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>The access token string.</returns>
+            <exception cref="T:Microsoft.Identity.Client.MsalUiRequiredException">
+                Thrown when the cache does not contain a valid token and user interaction is required.
+            </exception>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IMsalClient.AcquireTokenInteractiveAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+                Acquires an access token via interactive browser sign-in (AU-04).
+            </summary>
+            <param name="scopes">The requested OAuth2 scopes.</param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>The access token string.</returns>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.IMsalClient.RemoveAccountAsync(Microsoft.Identity.Client.IAccount)">
+            <summary>
+                Removes the specified account from the MSAL token cache.
+            </summary>
+            <param name="account">The account to remove.</param>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.ITokenManager">
+            <summary>
+                Manages access-token acquisition for OneDrive API calls.
+                Tokens are refreshed silently whenever possible; user interaction
+                is requested only when the silent path fails (AU-04).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.ITokenManager.AcquireAccessTokenAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+                Returns a valid access token for the requested <paramref name="scopes"/>.
+                Attempts silent acquisition first; falls back to interactive sign-in
+                only when the cached token is absent or expired (AU-04).
+            </summary>
+            <param name="scopes">The OAuth2 scopes to request.</param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>A valid access token string.</returns>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.ITokenManager.SignOutAsync(System.Threading.CancellationToken)">
+            <summary>
+                Signs out all cached accounts, clearing the local token cache.
+            </summary>
+            <param name="cancellationToken">Cancellation token.</param>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.MsalClient">
+            <summary>
+                Default <see cref="T:AStar.Dev.OneDrive.Client.Authentication.IMsalClient"/> implementation that delegates to an
+                <see cref="T:Microsoft.Identity.Client.IPublicClientApplication"/> configured for personal Microsoft
+                accounts (<c>consumers</c> tenant, AU-01).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.MsalClient.#ctor(Microsoft.Identity.Client.IPublicClientApplication)">
+            <summary>
+                Initialises a new instance of <see cref="T:AStar.Dev.OneDrive.Client.Authentication.MsalClient"/> wrapping
+                the supplied <paramref name="app"/>.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.MsalClient.GetAccountsAsync">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.MsalClient.AcquireTokenSilentAsync(System.Collections.Generic.IEnumerable{System.String},Microsoft.Identity.Client.IAccount,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.MsalClient.AcquireTokenInteractiveAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.MsalClient.RemoveAccountAsync(Microsoft.Identity.Client.IAccount)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.TokenCacheInitializer">
+            <summary>
+                Registers the MSAL token cache on an <see cref="T:Microsoft.Identity.Client.IPublicClientApplication"/>.
+                On platforms where the OS keychain is available the cache is secured by
+                the keychain.  When the keychain is unavailable (common on headless Linux),
+                explicit user consent is required before falling back to a machine-scoped
+                encrypted local file — tokens are never stored as plain text (AU-02, AU-03).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenCacheInitializer.#ctor(AStar.Dev.OneDrive.Client.Authentication.IConsentStore,AStar.Dev.OneDrive.Client.Authentication.IConsentPrompt)">
+            <summary>
+                Production constructor: uses <see cref="T:Microsoft.Identity.Client.Extensions.Msal.MsalCacheHelper"/> to register the
+                OS-keychain-backed cache.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenCacheInitializer.#ctor(AStar.Dev.OneDrive.Client.Authentication.IConsentStore,AStar.Dev.OneDrive.Client.Authentication.IConsentPrompt,System.Func{Microsoft.Identity.Client.Extensions.Msal.StorageCreationProperties,Microsoft.Identity.Client.ITokenCache,System.Threading.Tasks.Task})">
+            <summary>
+                Overload that accepts an injectable keychain-registration delegate,
+                enabling the keychain path to be replaced in unit tests.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenCacheInitializer.InitializeAsync(Microsoft.Identity.Client.IPublicClientApplication,AStar.Dev.OneDrive.Client.Authentication.AuthenticationOptions,System.String,System.Threading.CancellationToken)">
+            <summary>
+                Registers the token cache on <paramref name="app"/>.
+                Tries the OS keychain first; on failure, gates the insecure fallback
+                behind explicit per-account user consent (AU-03).
+            </summary>
+            <param name="app">The MSAL public client application to configure.</param>
+            <param name="options">Authentication options supplying cache path settings.</param>
+            <param name="accountId">
+                The unique identifier of the account whose consent record is consulted.
+            </param>
+            <param name="cancellationToken">Cancellation token.</param>
+            <exception cref="T:System.InvalidOperationException">
+                Thrown when the OS keychain is unavailable and the user declines
+                consent for the insecure fallback store.
+            </exception>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Authentication.TokenManager">
+            <summary>
+                MSAL-backed implementation of <see cref="T:AStar.Dev.OneDrive.Client.Authentication.ITokenManager"/>.
+                Acquires tokens silently from the local cache (AU-02, AU-04) and only
+                initiates an interactive browser flow when the cache cannot satisfy the
+                request (AU-04).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenManager.#ctor(AStar.Dev.OneDrive.Client.Authentication.IMsalClient)">
+            <summary>
+                Initialises a new instance of <see cref="T:AStar.Dev.OneDrive.Client.Authentication.TokenManager"/>.
+            </summary>
+            <param name="msal">The MSAL client used to acquire tokens.</param>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenManager.AcquireAccessTokenAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Authentication.TokenManager.SignOutAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
     </members>
 </doc>
