@@ -11,6 +11,7 @@ public sealed class FileConsentStore : IConsentStore
 {
     private const string ConsentFileName = "consent.json";
 
+    private readonly Lock _lock = new();
     private readonly string _filePath;
     private Dictionary<string, bool> _consent;
 
@@ -31,7 +32,10 @@ public sealed class FileConsentStore : IConsentStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
 
-        return _consent.TryGetValue(accountId, out var consented) && consented;
+        lock(_lock)
+        {
+            return _consent.TryGetValue(accountId, out var consented) && consented;
+        }
     }
 
     /// <inheritdoc />
@@ -39,8 +43,11 @@ public sealed class FileConsentStore : IConsentStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
 
-        _consent[accountId] = consented;
-        Save();
+        lock(_lock)
+        {
+            _consent[accountId] = consented;
+            Save();
+        }
     }
 
     private Dictionary<string, bool> Load()

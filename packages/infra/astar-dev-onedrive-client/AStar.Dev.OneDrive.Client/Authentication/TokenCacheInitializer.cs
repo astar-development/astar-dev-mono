@@ -7,16 +7,16 @@ namespace AStar.Dev.OneDrive.Client.Authentication;
 ///     Registers the MSAL token cache on an <see cref="IPublicClientApplication"/>.
 ///     On platforms where the OS keychain is available the cache is secured by
 ///     the keychain.  When the keychain is unavailable (common on headless Linux),
-///     explicit user consent is required before falling back to a machine-scoped
-///     encrypted local file — tokens are never stored as plain text (AU-02, AU-03).
+///     explicit user consent is required before falling back to an unencrypted local
+///     file — the user is informed that the file offers no additional protection (AU-02, AU-03).
 /// </summary>
 public sealed class TokenCacheInitializer
 {
     private const string ConsentMessage =
         "The secure OS keychain is unavailable on this machine. " +
         "To avoid signing in every time the application starts, your authentication token " +
-        "can be stored in an encrypted local file. " +
-        "The token is protected with a machine-scoped key and is never stored as plain text. " +
+        "can be stored in a local file. " +
+        "Warning: this file is not encrypted and could be read by anyone with access to this machine. " +
         "Would you like to enable this?";
 
     private readonly IConsentStore _consentStore;
@@ -52,13 +52,16 @@ public sealed class TokenCacheInitializer
     /// <param name="options">Authentication options supplying cache path settings.</param>
     /// <param name="accountId">
     ///     The unique identifier of the account whose consent record is consulted.
+    ///     Defaults to <see cref="AuthenticationOptions.SystemAdminAccountId"/> for use
+    ///     during initial application configuration, before any real Microsoft account
+    ///     has authenticated (AU-03).
     /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="InvalidOperationException">
     ///     Thrown when the OS keychain is unavailable and the user declines
     ///     consent for the insecure fallback store.
     /// </exception>
-    public async Task InitializeAsync(IPublicClientApplication app, AuthenticationOptions options, string accountId, CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(IPublicClientApplication app, AuthenticationOptions options, string accountId = AuthenticationOptions.SystemAdminAccountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(options);
