@@ -29,19 +29,6 @@
         <Project Path="packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
     </Folder>
-    <Folder Name="/packages/infrastructure/" />
-    <Folder Name="/packages/infrastructure/astar-dev-infrastructure-filesdb/">
-        <Project Path="packages/infrastructure/astar-dev-infrastructure-filesdb/AStar.Dev.Infrastructure.FilesDb.Tests.Unit/AStar.Dev.Infrastructure.FilesDb.Tests.Unit.csproj" />
-        <Project Path="packages/infrastructure/astar-dev-infrastructure-filesdb/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
-    </Folder>
-    <Folder Name="/packages/infrastructure/astar-dev-infrastructure-usagedb/">
-        <Project Path="packages/infrastructure/astar-dev-infrastructure-usagedb/AStar.Dev.Infrastructure.UsageDb.Tests.Unit/AStar.Dev.Infrastructure.UsageDb.Tests.Unit.csproj" />
-        <Project Path="packages/infrastructure/astar-dev-infrastructure-usagedb/AStar.Dev.Infrastructure.UsageDb/AStar.Dev.Infrastructure.UsageDb.csproj" />
-    </Folder>
-    <Folder Name="/packages/infrastructure/astar-dev-infrastructure/">
-        <Project Path="packages/infrastructure/astar-dev-infrastructure/AStar.Dev.Infrastructure.Tests.Unit/AStar.Dev.Infrastructure.Tests.Unit.csproj" />
-        <Project Path="packages/infrastructure/astar-dev-infrastructure/AStar.Dev.Infrastructure/AStar.Dev.Infrastructure.csproj" />
-    </Folder>
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
         <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
