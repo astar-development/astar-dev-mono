@@ -28,6 +28,7 @@
 using Avalonia;
 using Microsoft.Graph;
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Extensions.Msal;
 
 // Verify the types are reachable after trimming
 Console.WriteLine("Checking that key types survived trimming...");
@@ -35,6 +36,10 @@ Console.WriteLine("Checking that key types survived trimming...");
 // MSAL
 var msalType = typeof(PublicClientApplicationBuilder);
 Console.WriteLine($"✓ MSAL:         {msalType.FullName}");
+
+// MSAL Extensions (token cache persistence)
+var msalExtType = typeof(MsalCacheHelper);
+Console.WriteLine($"✓ MSAL Ext:     {msalExtType.FullName}");
 
 // Microsoft.Graph
 var graphType = typeof(GraphServiceClient);
