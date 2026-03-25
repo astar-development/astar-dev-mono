@@ -1,0 +1,15 @@
+
+title: "Idea: <short summary>"
+labels: ["discussion", "enhancement"]
+body:
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the idea and use cases.
+      placeholder: |
+        Problem:
+        Proposal:
+        Alternatives:
+    validations:
+      required: true
