@@ -22,7 +22,7 @@
             </summary>
             <typeparam name="TCategoryName">The category name for the logger, typically derived from the type being logged.</typeparam>
         </member>
-        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.#ctor(Microsoft.Extensions.Logging.ILogger{`0},Microsoft.ApplicationInsights.TelemetryClient)">
+        <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.#ctor(Microsoft.Extensions.Logging.ILogger{`0})">
             <summary>
                 Provides an implementation of <see cref="T:AStar.Dev.Logging.Extensions.ILoggerAstar`1" /> that integrates application telemetry tracking
                 with structured logging for enhanced observability in A* applications.
@@ -39,25 +39,6 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Logging.Extensions.AStarLogger`1.Log``1(Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,``0,System.Exception,System.Func{``0,System.Exception,System.String})">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer">
-            <summary>
-                A telemetry initializer responsible for setting the Cloud Role Name
-                and Instrumentation Key in the telemetry context.
-            </summary>
-            <param name="roleOrApplicationName">The Role / Application Name to configure Application Insights with</param>
-            <param name="instrumentationKey">The Instrumentation Key to configure Application Insights with</param>
-        </member>
-        <member name="M:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer.#ctor(System.String,System.String)">
-            <summary>
-                A telemetry initializer responsible for setting the Cloud Role Name
-                and Instrumentation Key in the telemetry context.
-            </summary>
-            <param name="roleOrApplicationName">The Role / Application Name to configure Application Insights with</param>
-            <param name="instrumentationKey">The Instrumentation Key to configure Application Insights with</param>
-        </member>
-        <member name="M:AStar.Dev.Logging.Extensions.CloudRoleNameTelemetryInitializer.Initialize(Microsoft.ApplicationInsights.Channel.ITelemetry)">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Logging.Extensions.Configuration">

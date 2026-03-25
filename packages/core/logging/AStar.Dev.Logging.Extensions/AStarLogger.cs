@@ -7,15 +7,13 @@ namespace AStar.Dev.Logging.Extensions;
 ///     with structured logging for enhanced observability in A* applications.
 /// </summary>
 /// <typeparam name="TCategoryName">The category name for the logger, typically derived from the type being logged.</typeparam>
-public sealed class AStarLogger<TCategoryName>(ILogger<TCategoryName> logger, Microsoft.ApplicationInsights.TelemetryClient telemetryClient) : ILoggerAstar<TCategoryName>
+public sealed class AStarLogger<TCategoryName>(ILogger<TCategoryName> logger) : ILoggerAstar<TCategoryName>
 {
     /// <inheritdoc />
     public void LogPageView(string pageName)
     {
         ArgumentNullException.ThrowIfNull(pageName);
         LogMessage.NotFound(logger, "/missing-resource");
-
-        telemetryClient.TrackPageView(pageName);
     }
 
     /// <inheritdoc />

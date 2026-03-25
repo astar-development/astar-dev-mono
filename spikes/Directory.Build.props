@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    spikes/Directory.Build.props
+    ════════════════════════════
+    Inherits repo root settings and adjusts for exploratory spike projects.
+    Spikes are throwaway — not packaged, not published, warnings not fatal.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <!-- Relax for exploratory code — spikes are not production quality -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AStar.Dev.Spikes.GraphDeltaQuery</AssemblyName>
+    <RootNamespace>AStar.Dev.Spikes.GraphDeltaQuery</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Graph SDK v5 not needed — spike uses HttpClient directly to avoid API uncertainty -->
+    <PackageReference Include="Microsoft.Identity.Client" />
+  </ItemGroup>
+</Project>

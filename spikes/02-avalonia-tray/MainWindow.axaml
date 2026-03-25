@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AStar.Dev.Spikes.AvaloniaTray.MainWindow"
+        Title="Spike: Avalonia Tray"
+        Width="400" Height="200"
+        CanResize="False">
+
+    <StackPanel Margin="24" Spacing="12">
+        <TextBlock FontSize="16" FontWeight="Bold"
+                   Text="Spike 2 — Avalonia Tray on Linux" />
+        <TextBlock TextWrapping="Wrap"
+                   Text="Close this window. The app should remain alive in the system tray." />
+        <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                   Text="Right-click the tray icon for the context menu. Check the spike tick-list in Program.cs." />
+        <Button Content="Hide to Tray" Click="OnHide" HorizontalAlignment="Left" />
+    </StackPanel>
+</Window>
