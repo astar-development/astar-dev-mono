@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStar.Dev.OneDriveSync — Desktop app
+    ══════════════════════════════════════
+    Inherits OutputType=WinExe, IsPackable=false, IsPublishable=true,
+    self-contained/trimmed/single-file (Release), and all RIDs from
+    apps/desktop/Directory.Build.props.
+  -->
+
+  <PropertyGroup>
+    <AssemblyName>AStar.Dev.OneDriveSync</AssemblyName>
+    <RootNamespace>AStar.Dev.OneDriveSync</RootNamespace>
+    <Product>AStar Dev OneDrive Sync</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" Condition="Exists('Assets/')" />
+  </ItemGroup>
+
+</Project>
