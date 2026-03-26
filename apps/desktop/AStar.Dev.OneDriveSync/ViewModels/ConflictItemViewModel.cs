@@ -1,18 +1,20 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using AStar.Dev.OneDriveSync.Models;
+using AStar.Dev.Conflict.Resolution;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class ConflictItemViewModel : ReactiveObject
 {
+    private bool _isSelected;
     private bool _isExpanded;
     private bool _isPanelOpen;
     private bool _isResolved;
     private bool _isResolving;
     private ConflictPolicy? _selectedPolicy;
 
+    public Guid ConflictId { get; init; }
     public string FileName { get; init; } = string.Empty;
     public string RelativePath { get; init; } = string.Empty;
     public string LocalModifiedText { get; init; } = string.Empty;
@@ -27,6 +29,12 @@ public class ConflictItemViewModel : ReactiveObject
         new() { Policy = ConflictPolicy.KeepBoth,   Label = "Keep both",   Description = "Rename the conflicting copy and keep both files." },
         new() { Policy = ConflictPolicy.Skip,       Label = "Skip",        Description = "Defer this conflict — it will be queued for later." }
     ];
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
 
     public bool IsExpanded
     {
@@ -58,7 +66,7 @@ public class ConflictItemViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _selectedPolicy, value);
     }
 
-    public ICommand TogglePanelCommand { get; init; } = ReactiveCommand.Create(() => { });
-    public ICommand ResolveCommand { get; init; } = ReactiveCommand.Create(() => { });
-    public ICommand DismissCommand { get; init; } = ReactiveCommand.Create(() => { });
+    public ICommand TogglePanelCommand { get; set; } = ReactiveCommand.Create(() => { });
+    public ICommand ResolveCommand { get; set; } = ReactiveCommand.Create(() => { });
+    public ICommand DismissCommand { get; set; } = ReactiveCommand.Create(() => { });
 }

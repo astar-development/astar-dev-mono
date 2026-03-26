@@ -1,3 +1,4 @@
+using AStar.Dev.Conflict.Resolution;
 using AStar.Dev.OneDriveSync.Models;
 using AStar.Dev.OneDriveSync.ViewModels;
 using Avalonia.Controls;
@@ -43,5 +44,17 @@ public partial class ActivityView : UserControl
     {
         if(DataContext is ActivityViewModel vm)
             vm.SetFilterCommand.Execute(ActivityItemType.Error);
+    }
+
+    private void OnConflictCheckboxClick(object? sender, RoutedEventArgs e)
+    {
+        if(DataContext is ActivityViewModel vm)
+            vm.NotifySelectionChanged();
+    }
+
+    private void OnBulkPolicyClick(object? sender, RoutedEventArgs e)
+    {
+        if(sender is Button { Tag: ConflictPolicy policy } && DataContext is ActivityViewModel vm)
+            vm.BulkPolicy = policy;
     }
 }
