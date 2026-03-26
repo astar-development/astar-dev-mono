@@ -1,4 +1,4 @@
-using AStar.Dev.OneDriveSync.Models;
+using AStar.Dev.Conflict.Resolution;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.ViewModels;

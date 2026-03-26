@@ -114,6 +114,34 @@
 
                 </StackPanel>
 
+                <!-- Conflict toolbar (conflicts tab only) -->
+                <StackPanel Grid.Column="2"
+                            IsVisible="{Binding IsConflictsTabActive}"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center">
+
+                    <Button Content="{loc:Localize Activity_SelectAll}"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Command="{Binding SelectAllCommand}"/>
+
+                    <Button Content="{loc:Localize Activity_DeselectAll}"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Command="{Binding DeselectAllCommand}"/>
+
+                </StackPanel>
+
             </Grid>
         </Border>
 
@@ -204,10 +232,12 @@
             </Grid>
 
             <!-- Conflicts tab -->
-            <Grid IsVisible="{Binding IsConflictsTabActive}">
+            <Grid IsVisible="{Binding IsConflictsTabActive}"
+                  RowDefinitions="*,Auto">
 
                 <!-- Empty state -->
-                <StackPanel IsVisible="{Binding !HasConflicts}"
+                <StackPanel Grid.Row="0"
+                            IsVisible="{Binding !HasConflicts}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
@@ -222,7 +252,8 @@
                 </StackPanel>
 
                 <!-- Conflict list -->
-                <ScrollViewer IsVisible="{Binding HasConflicts}"
+                <ScrollViewer Grid.Row="0"
+                              IsVisible="{Binding HasConflicts}"
                               VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Conflicts}">
                         <ItemsControl.ItemTemplate>
@@ -235,10 +266,17 @@
                                             Padding="16,8"
                                             Background="{DynamicResource BackgroundPrimaryBrush}">
 
-                                        <Grid ColumnDefinitions="Auto,12,*,Auto,8,Auto">
+                                        <Grid ColumnDefinitions="Auto,8,Auto,12,*,Auto,8,Auto">
+
+                                            <!-- Checkbox for bulk selection -->
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsSelected}"
+                                                      IsVisible="{Binding !IsResolved}"
+                                                      VerticalAlignment="Center"
+                                                      Click="OnConflictCheckboxClick"/>
 
                                             <!-- Conflict icon -->
-                                            <Border Grid.Column="0"
+                                            <Border Grid.Column="2"
                                                     Width="28" Height="28"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Background="{DynamicResource BackgroundWarningBrush}"
@@ -251,7 +289,7 @@
                                             </Border>
 
                                             <!-- File info -->
-                                            <StackPanel Grid.Column="2"
+                                            <StackPanel Grid.Column="4"
                                                         VerticalAlignment="Center"
                                                         Spacing="2">
                                                 <TextBlock Text="{Binding FileName}"
@@ -265,7 +303,7 @@
                                             </StackPanel>
 
                                             <!-- Resolved badge -->
-                                            <Border Grid.Column="3"
+                                            <Border Grid.Column="5"
                                                     IsVisible="{Binding IsResolved}"
                                                     Background="{DynamicResource BackgroundSuccessBrush}"
                                                     CornerRadius="{StaticResource RadiusSm}"
@@ -277,7 +315,7 @@
                                             </Border>
 
                                             <!-- Expand button -->
-                                            <Button Grid.Column="5"
+                                            <Button Grid.Column="7"
                                                     Padding="8,4"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Background="Transparent"
@@ -304,6 +342,63 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <!-- Bulk action bar -->
+                <Border Grid.Row="1"
+                        IsVisible="{Binding HasAnySelected}"
+                        BorderThickness="0,1,0,0"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        Background="{DynamicResource BackgroundSecondaryBrush}"
+                        Padding="16,8">
+                    <Grid ColumnDefinitions="Auto,12,*,12,Auto">
+
+                        <TextBlock Grid.Column="0"
+                                   Text="{loc:Localize Activity_BulkActionLabel}"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+
+                        <!-- Bulk policy picker -->
+                        <ItemsControl Grid.Column="2"
+                                      ItemsSource="{Binding BulkPolicyOptions}"
+                                      VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:ConflictPolicyOption">
+                                    <Button Padding="10,5"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            Click="OnBulkPolicyClick"
+                                            Tag="{Binding Policy}"
+                                            ToolTip.Tip="{Binding Description}">
+                                        <Button.BorderBrush>
+                                            <SolidColorBrush Color="{Binding $parent[UserControl].((vm:ActivityViewModel)DataContext).BulkPolicy,
+                                                Converter={StaticResource BoolToAccentConverter}}"/>
+                                        </Button.BorderBrush>
+                                        <TextBlock Text="{Binding Label}"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Apply to selected button -->
+                        <Button Grid.Column="4"
+                                Content="{loc:Localize Activity_ApplyToSelected}"
+                                Padding="16,6"
+                                CornerRadius="{StaticResource RadiusMd}"
+                                Background="{DynamicResource TextAccentBrush}"
+                                Foreground="{DynamicResource TextOnAccentBrush}"
+                                BorderThickness="0"
+                                Command="{Binding ApplyToSelectedCommand}"/>
+
+                    </Grid>
+                </Border>
 
             </Grid>
 

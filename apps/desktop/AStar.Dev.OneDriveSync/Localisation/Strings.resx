@@ -123,6 +123,18 @@
   <data name="Activity_Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
+  <data name="Activity_SelectAll" xml:space="preserve">
+    <value>Select all</value>
+  </data>
+  <data name="Activity_DeselectAll" xml:space="preserve">
+    <value>Deselect all</value>
+  </data>
+  <data name="Activity_BulkActionLabel" xml:space="preserve">
+    <value>Apply to selected:</value>
+  </data>
+  <data name="Activity_ApplyToSelected" xml:space="preserve">
+    <value>Apply</value>
+  </data>
 
   <!-- ── Add account wizard ── -->
   <data name="Wizard_Title" xml:space="preserve">
