@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Input;
 using AStar.Dev.OneDriveSync.Models;
 using ReactiveUI;
@@ -24,7 +25,7 @@ public class ActivityViewModel : ReactiveObject
 
     public bool HasLogItems => FilteredLog.Count > 0;
     public bool HasConflicts => Conflicts.Count > 0;
-    public string ConflictBadgeText => Conflicts.Count.ToString();
+    public string ConflictBadgeText => Conflicts.Count.ToString(CultureInfo.InvariantCulture);
 
     public ObservableCollection<ActivityItemViewModel> FilteredLog { get; } = [];
     public ObservableCollection<ConflictItemViewModel> Conflicts { get; } = [];

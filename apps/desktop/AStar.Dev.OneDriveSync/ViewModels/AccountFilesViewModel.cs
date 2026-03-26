@@ -40,5 +40,7 @@ public class AccountFilesViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _loadError, value);
     }
 
+#pragma warning disable CA1822 // Mark members as static
     public Task ActivateAsync() => Task.CompletedTask;
+#pragma warning restore CA1822 // Mark members as static
 }
