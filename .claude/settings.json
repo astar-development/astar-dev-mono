@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(gh issue:*)",
+      "Bash(dotnet test:*)",
+      "Bash(git push:*)"
+    ]
+  },
   "hooks": {
     "Notification": [
       {
@@ -16,5 +23,5 @@
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 2
-  }     
+  }
 }
