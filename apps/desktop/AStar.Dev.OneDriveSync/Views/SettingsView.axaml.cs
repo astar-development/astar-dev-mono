@@ -41,6 +41,14 @@ public partial class SettingsView : UserControl
             vm.SyncIntervalMinutes = minutes;
     }
 
+    private void OnDebugLoggingToggle(object? sender, RoutedEventArgs e)
+    {
+        if(sender is not ToggleSwitch { Tag: string accountId, IsChecked: { } isChecked })
+            return;
+        if(DataContext is SettingsViewModel vm)
+            vm.SetAccountDebugLogging(accountId, isChecked);
+    }
+
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
     {
         if(sender is not Button { Tag: string accountId })

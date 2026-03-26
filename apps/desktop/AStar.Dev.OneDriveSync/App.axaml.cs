@@ -4,15 +4,19 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AStar.Dev.OneDriveSync.Localisation;
+using AStar.Dev.OneDriveSync.Logging;
 using AStar.Dev.OneDriveSync.Theming;
 using AStar.Dev.OneDriveSync.ViewModels;
 
 namespace AStar.Dev.OneDriveSync;
 
+#pragma warning disable CA1001 // Disposed via desktop.Exit handler in OnFrameworkInitializationCompleted
 public partial class App : Application
+#pragma warning restore CA1001
 {
     private ThemeService? _themeService;
     private LocalisationService? _localisationService;
+    private LoggingService? _loggingService;
 
     public override void Initialize()
     {
@@ -23,6 +27,7 @@ public partial class App : Application
                 "AStar.Dev.OneDriveSync.Localisation.Strings",
                 typeof(App).Assembly)),
             CultureInfo.GetCultureInfo("en-GB"));
+        _loggingService = new LoggingService();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -33,8 +38,10 @@ public partial class App : Application
             {
                 // All user-facing strings loaded from the localisation service (TI-03, TI-04)
                 Title       = _localisationService!.GetString("MainWindow_Title"),
-                DataContext = new MainWindowViewModel(_themeService!)
+                DataContext = new MainWindowViewModel(_themeService!, _loggingService!)
             };
+
+            desktop.Exit += (_, _) => _loggingService?.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();

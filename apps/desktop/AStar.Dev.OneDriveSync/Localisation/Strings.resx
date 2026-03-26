@@ -339,6 +339,12 @@
   <data name="Settings_BrowseButton" xml:space="preserve">
     <value>Browse ...</value>
   </data>
+  <data name="Settings_DebugLoggingLabel" xml:space="preserve">
+    <value>Debug logging</value>
+  </data>
+  <data name="Settings_DebugLoggingDescription" xml:space="preserve">
+    <value>When enabled, verbose log entries are captured for this account. Off = errors and warnings only.</value>
+  </data>
 
   <!-- ── Update notification dialog ── -->
   <data name="UpdateNotification_RequiredLabel" xml:space="preserve">

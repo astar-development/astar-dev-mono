@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using ReactiveUI;
+using AStar.Dev.OneDriveSync.Logging;
 using AStar.Dev.OneDriveSync.Theming;
 
 namespace AStar.Dev.OneDriveSync.ViewModels;
@@ -18,7 +19,7 @@ public class MainWindowViewModel : ReactiveObject
     private readonly SettingsViewModel _settingsVm;
     private readonly LogViewerViewModel _logViewerVm;
 
-    public MainWindowViewModel(IThemeService themeService)
+    public MainWindowViewModel(IThemeService themeService, LoggingService loggingService)
     {
         _themeService = themeService;
 
@@ -29,8 +30,8 @@ public class MainWindowViewModel : ReactiveObject
         _dashboardVm  = new DashboardViewModel();
         _filesVm      = new FilesViewModel();
         _activityVm   = new ActivityViewModel();
-        _settingsVm   = new SettingsViewModel();
-        _logViewerVm  = new LogViewerViewModel();
+        _settingsVm   = new SettingsViewModel(loggingService);
+        _logViewerVm  = new LogViewerViewModel(loggingService.Sink);
 
         NavigateCommand      = ReactiveCommand.Create<NavSection>(Navigate);
         AddAccountCommand    = ReactiveCommand.Create(OpenAddAccountWizard);
