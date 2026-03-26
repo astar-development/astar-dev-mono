@@ -86,6 +86,19 @@
     <value>Remove account</value>
   </data>
 
+  <data name="Accounts_RemoveTitle" xml:space="preserve">
+    <value>Remove account</value>
+  </data>
+  <data name="Accounts_RemoveMessage" xml:space="preserve">
+    <value>Would you like to keep or delete the local synced files?</value>
+  </data>
+  <data name="Accounts_RemoveKeep" xml:space="preserve">
+    <value>Keep files</value>
+  </data>
+  <data name="Accounts_RemoveDelete" xml:space="preserve">
+    <value>Delete files</value>
+  </data>
+
   <!-- ── Activity view ── -->
   <data name="Activity_LogTab" xml:space="preserve">
     <value>Activity log</value>

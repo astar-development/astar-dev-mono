@@ -1,4 +1,6 @@
+using AStar.Dev.OneDriveSync.Services;
 using AStar.Dev.OneDriveSync.Theming;
+using AStar.Dev.OneDriveSync.Logging;
 using AStar.Dev.OneDriveSync.ViewModels;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.ViewModels;
@@ -12,7 +14,14 @@ public class MainWindowViewModelShould
     public MainWindowViewModelShould()
     {
         _themeService.CurrentMode.Returns(ThemeMode.Auto);
-        _sut = new MainWindowViewModel(_themeService);
+
+        var loggingService = new LoggingService();
+        var accountStore = Substitute.For<IAccountStore>();
+        accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<Models.AccountRecord>>([]));
+        var authService = Substitute.For<IMsalAuthService>();
+        var folderService = Substitute.For<IOneDriveFolderService>();
+
+        _sut = new MainWindowViewModel(_themeService, loggingService, accountStore, authService, folderService);
     }
 
     [Fact]
