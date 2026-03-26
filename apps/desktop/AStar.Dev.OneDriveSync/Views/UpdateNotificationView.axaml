@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.UpdateNotificationView"
              x:DataType="vm:UpdateNotificationViewModel">
     <!--
@@ -61,7 +62,7 @@
                     CornerRadius="{StaticResource RadiusMd}"
                     Padding="12,8">
                 <StackPanel Spacing="4">
-                    <TextBlock Text="Update required"
+                    <TextBlock Text="{loc:Localize UpdateNotification_RequiredLabel}"
                                FontSize="{StaticResource FontSizeSm}"
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextWarningBrush}"/>
@@ -79,7 +80,7 @@
                     BorderThickness="1"
                     CornerRadius="{StaticResource RadiusMd}"
                     Padding="12,8">
-                <TextBlock Text="A sync is in progress. The update will be applied automatically when it completes."
+                <TextBlock Text="{loc:Localize UpdateNotification_SyncActiveMessage}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            TextWrapping="Wrap"/>
@@ -98,7 +99,7 @@
 
                 <!-- Defer button — hidden when forced (UP-04) -->
                 <Button Grid.Column="1"
-                        Content="Later"
+                        Content="{loc:Localize UpdateNotification_Later}"
                         Padding="12,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="Transparent"
@@ -114,7 +115,7 @@
                         Padding="16,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="{DynamicResource TextAccentBrush}"
-                        Foreground="White"
+                        Foreground="{DynamicResource TextOnAccentBrush}"
                         BorderThickness="0"
                         IsEnabled="{Binding !IsSyncActive}"
                         Command="{Binding InstallCommand}"/>

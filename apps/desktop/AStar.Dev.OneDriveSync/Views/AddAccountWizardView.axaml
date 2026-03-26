@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.AddAccountWizardView"
              x:DataType="vm:AddAccountWizardViewModel">
 
@@ -9,7 +10,7 @@
         <!-- Header: title + step indicators -->
         <Grid ColumnDefinitions="*,Auto">
             <TextBlock Grid.Column="0"
-                       Text="Add OneDrive account"
+                       Text="{loc:Localize Wizard_Title}"
                        FontSize="{StaticResource FontSizeXl}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"
@@ -43,12 +44,12 @@
         <!-- Step 1 — Sign in -->
         <StackPanel IsVisible="{Binding IsSignInStep}" Spacing="16">
 
-            <TextBlock Text="Sign in to your Microsoft account"
+            <TextBlock Text="{loc:Localize Wizard_SignInHeading}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        TextWrapping="Wrap"/>
 
-            <TextBlock Text="A browser window will open for you to sign in. Only personal Microsoft accounts are supported (Outlook, Hotmail, Live)."
+            <TextBlock Text="{loc:Localize Wizard_SignInDescription}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
@@ -60,8 +61,8 @@
                     BorderThickness="0"
                     Command="{Binding OpenBrowserCommand}"
                     IsEnabled="{Binding !IsWaitingForAuth}">
-                <TextBlock Text="Open browser to sign in"
-                           Foreground="White"
+                <TextBlock Text="{loc:Localize Wizard_OpenBrowserLabel}"
+                           Foreground="{DynamicResource TextOnAccentBrush}"
                            FontSize="{StaticResource FontSizeMd}"/>
             </Button>
 
@@ -82,11 +83,11 @@
         <!-- Step 2 — Select folders -->
         <StackPanel IsVisible="{Binding IsSelectFoldersStep}" Spacing="16">
 
-            <TextBlock Text="Which folders would you like to sync?"
+            <TextBlock Text="{loc:Localize Wizard_FolderSelectHeading}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-            <TextBlock Text="You can change this at any time from the Files section."
+            <TextBlock Text="{loc:Localize Wizard_FolderSelectDescription}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
@@ -123,7 +124,7 @@
                     Background="Transparent"
                     BorderThickness="0"
                     Command="{Binding SkipFoldersCommand}">
-                <TextBlock Text="Skip — I'll choose folders later"
+                <TextBlock Text="{loc:Localize Wizard_SkipFolders}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>
             </Button>
@@ -133,7 +134,7 @@
         <!-- Step 3 — Confirm -->
         <StackPanel IsVisible="{Binding IsConfirmStep}" Spacing="12">
 
-            <TextBlock Text="Ready to connect"
+            <TextBlock Text="{loc:Localize Wizard_ReviewHeading}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
 
@@ -145,7 +146,7 @@
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="120,*">
                         <TextBlock Grid.Column="0"
-                                   Text="Account"
+                                   Text="{loc:Localize Wizard_ReviewAccountLabel}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
@@ -155,7 +156,7 @@
                     </Grid>
                     <Grid ColumnDefinitions="120,*">
                         <TextBlock Grid.Column="0"
-                                   Text="Folders to sync"
+                                   Text="{loc:Localize Wizard_ReviewFoldersLabel}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
@@ -165,7 +166,7 @@
                     </Grid>
                     <Grid ColumnDefinitions="120,*">
                         <TextBlock Grid.Column="0"
-                                   Text="Sync folder"
+                                   Text="{loc:Localize Wizard_ReviewSyncFolderLabel}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
@@ -185,7 +186,7 @@
         <Grid ColumnDefinitions="Auto,*,Auto,8,Auto">
 
             <Button Grid.Column="0"
-                    Content="Back"
+                    Content="{loc:Localize Common_Back}"
                     Padding="12,6"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="Transparent"
@@ -195,7 +196,7 @@
                     Command="{Binding BackCommand}"/>
 
             <Button Grid.Column="2"
-                    Content="Cancel"
+                    Content="{loc:Localize Common_Cancel}"
                     Padding="12,6"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="Transparent"
@@ -208,7 +209,7 @@
                     Padding="16,6"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="{DynamicResource TextAccentBrush}"
-                    Foreground="White"
+                    Foreground="{DynamicResource TextOnAccentBrush}"
                     BorderThickness="0"
                     IsEnabled="{Binding CanGoNext}"
                     Command="{Binding NextCommand}"/>

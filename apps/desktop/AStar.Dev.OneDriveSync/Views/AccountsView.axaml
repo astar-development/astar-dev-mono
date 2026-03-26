@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
              xmlns:views="clr-namespace:AStar.Dev.OneDriveSync.Views"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.AccountsView"
              x:DataType="vm:AccountsViewModel">
 
@@ -26,12 +27,12 @@
                 </Canvas>
             </Viewbox>
 
-            <TextBlock Text="No accounts added yet"
+            <TextBlock Text="{loc:Localize Accounts_NoAccountsTitle}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
 
-            <TextBlock Text="Add a Microsoft personal account to get started."
+            <TextBlock Text="{loc:Localize Accounts_NoAccountsMessage}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"
@@ -44,12 +45,12 @@
                     Margin="0,8,0,0"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="{DynamicResource TextAccentBrush}"
-                    Foreground="White"
+                    Foreground="{DynamicResource TextOnAccentBrush}"
                     BorderThickness="0"
                     Command="{Binding AddAccountCommand}">
-                <TextBlock Text="Add account"
+                <TextBlock Text="{loc:Localize Accounts_AddAccount}"
                            FontSize="{StaticResource FontSizeMd}"
-                           Foreground="White"/>
+                           Foreground="{DynamicResource TextOnAccentBrush}"/>
             </Button>
 
         </StackPanel>
@@ -61,7 +62,7 @@
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="12">
 
-                <TextBlock Text="Connected accounts"
+                <TextBlock Text="{loc:Localize Accounts_ConnectedAccounts}"
                            FontSize="{StaticResource FontSizeXl}"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            Margin="0,0,0,8"/>
@@ -90,7 +91,7 @@
                                         <TextBlock Text="{Binding Initials}"
                                                    FontSize="{StaticResource FontSizeMd}"
                                                    FontWeight="Medium"
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource TextOnAccentBrush}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"/>
                                     </Border>
@@ -119,7 +120,7 @@
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Command="{Binding RemoveCommand}"
-                                            ToolTip.Tip="Remove account">
+                                            ToolTip.Tip="{loc:Localize Accounts_RemoveAccountTooltip}">
                                         <TextBlock Text="✕"
                                                    FontSize="{StaticResource FontSizeSm}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
@@ -145,7 +146,7 @@
                                    FontSize="{StaticResource FontSizeLg}"
                                    Foreground="{DynamicResource TextAccentBrush}"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Add another account"
+                        <TextBlock Text="{loc:Localize Accounts_AddAnotherAccount}"
                                    FontSize="{StaticResource FontSizeMd}"
                                    Foreground="{DynamicResource TextAccentBrush}"
                                    VerticalAlignment="Center"/>
@@ -158,7 +159,7 @@
         <!-- Wizard overlay -->
         <Grid Grid.Row="0"
               IsVisible="{Binding IsWizardVisible}"
-              Background="#80000000">
+              Background="{DynamicResource OverlayBackgroundBrush}">
             <Border Background="{DynamicResource BackgroundPrimaryBrush}"
                     BorderBrush="{DynamicResource BorderDefaultBrush}"
                     BorderThickness="1"

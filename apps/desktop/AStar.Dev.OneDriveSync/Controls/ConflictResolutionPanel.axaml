@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Controls.ConflictResolutionPanel"
              x:DataType="vm:ConflictItemViewModel">
 
@@ -22,7 +23,7 @@
                         CornerRadius="{StaticResource RadiusMd}"
                         Padding="12">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Local file"
+                        <TextBlock Text="{loc:Localize ConflictPanel_LocalFileLabel}"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                    FontWeight="Medium"/>
@@ -37,7 +38,7 @@
 
                 <!-- vs divider -->
                 <TextBlock Grid.Column="1"
-                           Text="vs"
+                           Text="{loc:Localize ConflictPanel_Vs}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            HorizontalAlignment="Center"
@@ -51,7 +52,7 @@
                         CornerRadius="{StaticResource RadiusMd}"
                         Padding="12">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Remote file"
+                        <TextBlock Text="{loc:Localize ConflictPanel_RemoteFileLabel}"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                    FontWeight="Medium"/>
@@ -68,7 +69,7 @@
 
             <!-- Policy picker -->
             <StackPanel Grid.Row="2" Spacing="6">
-                <TextBlock Text="Resolution"
+                <TextBlock Text="{loc:Localize ConflictPanel_ResolutionLabel}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            FontWeight="Medium"/>
@@ -104,14 +105,14 @@
             <Grid Grid.Row="4" ColumnDefinitions="*,Auto,8,Auto">
 
                 <TextBlock Grid.Column="0"
-                           Text="Resolving ..."
+                           Text="{loc:Localize ConflictPanel_Resolving}"
                            IsVisible="{Binding IsResolving}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            VerticalAlignment="Center"/>
 
                 <Button Grid.Column="1"
-                        Content="Dismiss"
+                        Content="{loc:Localize ConflictPanel_Dismiss}"
                         Padding="12,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="Transparent"
@@ -120,11 +121,11 @@
                         Command="{Binding DismissCommand}"/>
 
                 <Button Grid.Column="3"
-                        Content="Apply"
+                        Content="{loc:Localize ConflictPanel_Apply}"
                         Padding="16,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="{DynamicResource TextAccentBrush}"
-                        Foreground="White"
+                        Foreground="{DynamicResource TextOnAccentBrush}"
                         BorderThickness="0"
                         IsEnabled="{Binding !IsResolving}"
                         Command="{Binding ResolveCommand}"/>

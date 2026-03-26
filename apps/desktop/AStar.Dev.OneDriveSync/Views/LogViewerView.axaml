@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.LogViewerView"
              x:DataType="vm:LogViewerViewModel">
     <!--
@@ -19,11 +20,11 @@
                 Background="{DynamicResource BackgroundSecondaryBrush}">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                    <TextBlock Text="Log Viewer"
+                    <TextBlock Text="{loc:Localize LogViewer_Title}"
                                FontSize="{StaticResource FontSizeLg}"
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <TextBlock Text="All accounts · errors, warnings, and debug entries"
+                    <TextBlock Text="{loc:Localize LogViewer_Subtitle}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"/>
                 </StackPanel>
@@ -35,7 +36,7 @@
                         BorderThickness="0"
                         VerticalAlignment="Center"
                         Command="{Binding CloseCommand}"
-                        ToolTip.Tip="Close log viewer"/>
+                        ToolTip.Tip="{loc:Localize LogViewer_CloseTooltip}"/>
             </Grid>
         </Border>
 
@@ -50,7 +51,7 @@
                 <!-- Search box -->
                 <TextBox Grid.Column="0"
                          Text="{Binding SearchText}"
-                         Watermark="Filter log entries..."
+                         Watermark="{loc:Localize LogViewer_FilterWatermark}"
                          FontSize="{StaticResource FontSizeSm}"
                          CornerRadius="{StaticResource RadiusMd}"/>
 
@@ -58,7 +59,7 @@
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             Spacing="4">
-                    <Button Content="All"
+                    <Button Content="{loc:Localize LogViewer_FilterAll}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -66,7 +67,7 @@
                             BorderThickness="1"
                             FontSize="{StaticResource FontSizeXs}"
                             Command="{Binding ShowAllCommand}"/>
-                    <Button Content="⚠ Errors"
+                    <Button Content="{loc:Localize LogViewer_FilterErrors}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -74,7 +75,7 @@
                             BorderThickness="1"
                             FontSize="{StaticResource FontSizeXs}"
                             Command="{Binding ShowErrorsCommand}"/>
-                    <Button Content="Warnings"
+                    <Button Content="{loc:Localize LogViewer_FilterWarnings}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -82,7 +83,7 @@
                             BorderThickness="1"
                             FontSize="{StaticResource FontSizeXs}"
                             Command="{Binding ShowWarningsCommand}"/>
-                    <Button Content="Debug"
+                    <Button Content="{loc:Localize LogViewer_FilterDebug}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -94,7 +95,7 @@
 
                 <!-- Clear button -->
                 <Button Grid.Column="4"
-                        Content="Clear"
+                        Content="{loc:Localize LogViewer_Clear}"
                         Padding="8,3"
                         CornerRadius="{StaticResource RadiusSm}"
                         Background="Transparent"
@@ -113,11 +114,11 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="8">
-                <TextBlock Text="No log entries"
+                <TextBlock Text="{loc:Localize LogViewer_NoEntriesTitle}"
                            FontSize="{StaticResource FontSizeLg}"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Log entries will appear here once syncing begins."
+                <TextBlock Text="{loc:Localize LogViewer_NoEntriesMessage}"
                            FontSize="{StaticResource FontSizeMd}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            HorizontalAlignment="Center"/>

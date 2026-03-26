@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
              xmlns:controls="clr-namespace:AStar.Dev.OneDriveSync.Controls"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.ActivityView"
              x:DataType="vm:ActivityViewModel">
 
@@ -27,7 +28,7 @@
                             <SolidColorBrush Color="{Binding IsLogTabActive,
                                 Converter={StaticResource BoolToAccentConverter}}"/>
                         </Button.BorderBrush>
-                        <TextBlock Text="Activity log"
+                        <TextBlock Text="{loc:Localize Activity_LogTab}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </Button>
@@ -42,7 +43,7 @@
                                 Converter={StaticResource BoolToAccentConverter}}"/>
                         </Button.BorderBrush>
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="Conflicts"
+                            <TextBlock Text="{loc:Localize Activity_ConflictsTab}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <Border IsVisible="{Binding HasConflicts}"
@@ -51,7 +52,7 @@
                                     Padding="5,1">
                                 <TextBlock Text="{Binding ConflictBadgeText}"
                                            FontSize="{StaticResource FontSizeXs}"
-                                           Foreground="White"/>
+                                           Foreground="{DynamicResource TextOnAccentBrush}"/>
                             </Border>
                         </StackPanel>
                     </Button>
@@ -66,7 +67,7 @@
                             Margin="0,0,12,0"
                             VerticalAlignment="Center">
 
-                    <Button Content="All"
+                    <Button Content="{loc:Localize Activity_FilterAll}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -75,7 +76,7 @@
                             FontSize="{StaticResource FontSizeXs}"
                             Click="OnFilterAllClick"/>
 
-                    <Button Content="↓ downloads"
+                    <Button Content="{loc:Localize Activity_FilterDownloads}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -84,7 +85,7 @@
                             FontSize="{StaticResource FontSizeXs}"
                             Click="OnFilterDownloadsClick"/>
 
-                    <Button Content="↑ uploads"
+                    <Button Content="{loc:Localize Activity_FilterUploads}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -93,7 +94,7 @@
                             FontSize="{StaticResource FontSizeXs}"
                             Click="OnFilterUploadsClick"/>
 
-                    <Button Content="⚠ errors"
+                    <Button Content="{loc:Localize Activity_FilterErrors}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -102,7 +103,7 @@
                             FontSize="{StaticResource FontSizeXs}"
                             Click="OnFilterErrorsClick"/>
 
-                    <Button Content="Clear"
+                    <Button Content="{loc:Localize Activity_Clear}"
                             Padding="8,3"
                             CornerRadius="{StaticResource RadiusSm}"
                             Background="Transparent"
@@ -127,11 +128,11 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
-                    <TextBlock Text="No activity yet"
+                    <TextBlock Text="{loc:Localize Activity_NoActivityTitle}"
                                FontSize="{StaticResource FontSizeLg}"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="Sync activity will appear here."
+                    <TextBlock Text="{loc:Localize Activity_NoActivityMessage}"
                                FontSize="{StaticResource FontSizeMd}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -210,11 +211,11 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
-                    <TextBlock Text="No conflicts"
+                    <TextBlock Text="{loc:Localize Activity_NoConflictsTitle}"
                                FontSize="{StaticResource FontSizeLg}"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="Any sync conflicts will appear here for resolution."
+                    <TextBlock Text="{loc:Localize Activity_NoConflictsMessage}"
                                FontSize="{StaticResource FontSizeMd}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -270,7 +271,7 @@
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Padding="6,2"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="resolved"
+                                                <TextBlock Text="{loc:Localize Activity_Resolved}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextSuccessBrush}"/>
                                             </Border>

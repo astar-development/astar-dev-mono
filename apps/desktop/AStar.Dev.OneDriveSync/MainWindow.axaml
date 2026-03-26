@@ -6,6 +6,7 @@
         xmlns:controls="clr-namespace:AStar.Dev.OneDriveSync.Controls"
         xmlns:views="clr-namespace:AStar.Dev.OneDriveSync.Views"
         xmlns:local="clr-namespace:AStar.Dev.OneDriveSync"
+        xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
         mc:Ignorable="d"
         x:Class="AStar.Dev.OneDriveSync.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -86,7 +87,7 @@
                     <Border DockPanel.Dock="Top"
                             Height="{StaticResource IconRailWidth}"
                             Width="{StaticResource IconRailWidth}"
-                            ToolTip.Tip="OneDrive Sync">
+                            ToolTip.Tip="{loc:Localize MainWindow_AppTooltip}">
                         <Viewbox Width="22" Height="22">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="{DynamicResource TextAccentBrush}"
@@ -106,25 +107,25 @@
                                 Margin="0,8,0,0">
                         <controls:IconRailButton
                             IconData="{StaticResource IconDashboard}"
-                            TooltipLabel="Dashboard — all accounts overview"
+                            TooltipLabel="{loc:Localize Nav_DashboardTooltip}"
                             IsActive="{Binding IsDashboardActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Dashboard}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconFiles}"
-                            TooltipLabel="Files — browse and manage sync folders"
+                            TooltipLabel="{loc:Localize Nav_FilesTooltip}"
                             IsActive="{Binding IsFilesActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Files}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconActivity}"
-                            TooltipLabel="Activity — delta log and conflicts"
+                            TooltipLabel="{loc:Localize Nav_ActivityTooltip}"
                             IsActive="{Binding IsActivityActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Activity}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconAccounts}"
-                            TooltipLabel="Accounts — add or remove OneDrive accounts"
+                            TooltipLabel="{loc:Localize Nav_AccountsTooltip}"
                             IsActive="{Binding IsAccountsActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Accounts}"/>
@@ -136,7 +137,7 @@
                                 Margin="0,0,0,8">
                         <controls:IconRailButton
                             IconData="{StaticResource IconSettings}"
-                            TooltipLabel="Settings — theme, language and sync policy"
+                            TooltipLabel="{loc:Localize Nav_SettingsTooltip}"
                             IsActive="{Binding IsSettingsActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Settings}"/>
@@ -156,7 +157,7 @@
                     <Border DockPanel.Dock="Top"
                             Height="{StaticResource IconRailWidth}"
                             Padding="12,0">
-                        <TextBlock Text="Accounts"
+                        <TextBlock Text="{loc:Localize MainWindow_AccountsHeading}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    FontWeight="Medium"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
@@ -186,7 +187,7 @@
                                            FontSize="{StaticResource FontSizeLg}"
                                            Foreground="{DynamicResource TextAccentBrush}"
                                            VerticalAlignment="Center"/>
-                                <TextBlock Text="Add account"
+                                <TextBlock Text="{loc:Localize MainWindow_AddAccount}"
                                            FontSize="{StaticResource FontSizeSm}"
                                            Foreground="{DynamicResource TextAccentBrush}"
                                            VerticalAlignment="Center"/>
@@ -204,13 +205,13 @@
                                         HorizontalAlignment="Center"
                                         Margin="12,32,12,0"
                                         Spacing="6">
-                                <TextBlock Text="No accounts yet"
+                                <TextBlock Text="{loc:Localize MainWindow_NoAccountsTitle}"
                                            FontSize="{StaticResource FontSizeSm}"
                                            Foreground="{DynamicResource TextTertiaryBrush}"
                                            HorizontalAlignment="Center"
                                            TextWrapping="Wrap"
                                            TextAlignment="Center"/>
-                                <TextBlock Text="Add a Microsoft account to get started."
+                                <TextBlock Text="{loc:Localize MainWindow_NoAccountsMessage}"
                                            FontSize="{StaticResource FontSizeXs}"
                                            Foreground="{DynamicResource TextTertiaryBrush}"
                                            HorizontalAlignment="Center"
@@ -310,7 +311,7 @@
                 Height="{StaticResource StatusBarHeight}"
                 DataContext="{Binding StatusBar}">
             <TextBlock IsVisible="{Binding !HasAccount}"
-                       Text="No account selected"
+                       Text="{loc:Localize MainWindow_NoAccountSelected}"
                        FontSize="{StaticResource FontSizeXs}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        VerticalAlignment="Center"
