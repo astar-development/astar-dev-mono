@@ -9,7 +9,6 @@ public class MainWindowViewModel : ReactiveObject
 {
     private readonly IThemeService _themeService;
     private NavSection _activeSection = NavSection.Dashboard;
-    private object? _activeView;
     private bool _isLogViewerOpen;
 
     // Sub-ViewModels — created once and reused
@@ -56,8 +55,8 @@ public class MainWindowViewModel : ReactiveObject
 
     public object? ActiveView
     {
-        get => _activeView;
-        private set => this.RaiseAndSetIfChanged(ref _activeView, value);
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     // ── Commands ──────────────────────────────────────────────────────────

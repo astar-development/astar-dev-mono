@@ -6,11 +6,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class AccountFilesViewModel : ReactiveObject
 {
-    private bool _isActiveTab;
-    private bool _isLoading;
-    private bool _hasLoadError;
-    private string _loadError = string.Empty;
-
     public string AccountId { get; init; } = string.Empty;
     public string TabLabel { get; init; } = string.Empty;
     public Color AccentColor { get; init; }
@@ -18,27 +13,27 @@ public class AccountFilesViewModel : ReactiveObject
 
     public bool IsActiveTab
     {
-        get => _isActiveTab;
-        set => this.RaiseAndSetIfChanged(ref _isActiveTab, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsLoading
     {
-        get => _isLoading;
-        set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool HasLoadError
     {
-        get => _hasLoadError;
-        set => this.RaiseAndSetIfChanged(ref _hasLoadError, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public string LoadError
     {
-        get => _loadError;
-        set => this.RaiseAndSetIfChanged(ref _loadError, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
 #pragma warning disable CA1822 // Mark members as static
     public Task ActivateAsync() => Task.CompletedTask;

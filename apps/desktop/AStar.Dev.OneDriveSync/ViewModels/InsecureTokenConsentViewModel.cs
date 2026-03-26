@@ -5,14 +5,12 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class InsecureTokenConsentViewModel : ReactiveObject
 {
-    private bool _rememberDecision;
-
     public string AccountEmail { get; init; } = string.Empty;
 
     public bool RememberDecision
     {
-        get => _rememberDecision;
-        set => this.RaiseAndSetIfChanged(ref _rememberDecision, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ICommand AllowCommand { get; init; } = ReactiveCommand.Create(() => { });

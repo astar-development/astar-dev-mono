@@ -9,9 +9,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 public class SettingsViewModel : ReactiveObject
 {
     private readonly LoggingService _loggingService;
-    private AppTheme _theme = AppTheme.System;
-    private ConflictPolicy _defaultConflictPolicy = ConflictPolicy.Skip;
-    private int _syncIntervalMinutes = 60;
 
     public SettingsViewModel(LoggingService loggingService)
     {
@@ -20,21 +17,21 @@ public class SettingsViewModel : ReactiveObject
 
     public AppTheme Theme
     {
-        get => _theme;
-        set => this.RaiseAndSetIfChanged(ref _theme, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = AppTheme.System;
 
     public ConflictPolicy DefaultConflictPolicy
     {
-        get => _defaultConflictPolicy;
-        set => this.RaiseAndSetIfChanged(ref _defaultConflictPolicy, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = ConflictPolicy.Skip;
 
     public int SyncIntervalMinutes
     {
-        get => _syncIntervalMinutes;
-        set => this.RaiseAndSetIfChanged(ref _syncIntervalMinutes, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 60;
 
     public ObservableCollection<ConflictPolicyOption> PolicyOptions { get; } =
     [

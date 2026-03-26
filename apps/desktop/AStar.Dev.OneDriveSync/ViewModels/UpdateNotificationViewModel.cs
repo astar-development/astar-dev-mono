@@ -5,8 +5,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class UpdateNotificationViewModel : ReactiveObject
 {
-    private bool _isSyncActive;
-
     public string Title { get; init; } = "Update available";
     public string VersionText { get; init; } = string.Empty;
     public string BodyText { get; init; } = string.Empty;
@@ -18,8 +16,8 @@ public class UpdateNotificationViewModel : ReactiveObject
 
     public bool IsSyncActive
     {
-        get => _isSyncActive;
-        set => this.RaiseAndSetIfChanged(ref _isSyncActive, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ICommand InstallCommand { get; init; } = ReactiveCommand.Create(() => { });

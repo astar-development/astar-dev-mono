@@ -12,12 +12,10 @@ public class AccountCardViewModel : ReactiveObject
     public string Initials { get; init; } = string.Empty;
     public Color AccentColor { get; init; }
     public string LastSyncText { get; init; } = string.Empty;
-
-    private bool _isActive;
     public bool IsActive
     {
-        get => _isActive;
-        set => this.RaiseAndSetIfChanged(ref _isActive, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ICommand SelectCommand { get; init; } = ReactiveCommand.Create(() => { });

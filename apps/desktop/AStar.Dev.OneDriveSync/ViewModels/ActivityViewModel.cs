@@ -10,10 +10,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 public class ActivityViewModel : ReactiveObject
 {
     private readonly IConflictResolver _resolver;
-    private bool _isLogTabActive = true;
-    private bool _isConflictsTabActive;
-    private bool _hasAnySelected;
-    private ConflictPolicy? _bulkPolicy;
 
     public ActivityViewModel() : this(new ConflictResolver(new JsonConflictStore(GetDefaultStorePath())))
     {
@@ -43,14 +39,14 @@ public class ActivityViewModel : ReactiveObject
 
     public bool IsLogTabActive
     {
-        get => _isLogTabActive;
-        set => this.RaiseAndSetIfChanged(ref _isLogTabActive, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = true;
 
     public bool IsConflictsTabActive
     {
-        get => _isConflictsTabActive;
-        set => this.RaiseAndSetIfChanged(ref _isConflictsTabActive, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool HasLogItems => FilteredLog.Count > 0;
@@ -59,14 +55,14 @@ public class ActivityViewModel : ReactiveObject
 
     public bool HasAnySelected
     {
-        get => _hasAnySelected;
-        private set => this.RaiseAndSetIfChanged(ref _hasAnySelected, value);
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ConflictPolicy? BulkPolicy
     {
-        get => _bulkPolicy;
-        set => this.RaiseAndSetIfChanged(ref _bulkPolicy, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ObservableCollection<ActivityItemViewModel> FilteredLog { get; } = [];

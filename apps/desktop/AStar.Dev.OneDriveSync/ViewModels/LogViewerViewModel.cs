@@ -15,8 +15,6 @@ public class LogViewerViewModel : ReactiveObject
 {
     private readonly InMemoryLogSink _sink;
     private readonly List<LogEntryViewModel> _allEntries = [];
-    private string _searchText = string.Empty;
-    private string _selectedAccount = string.Empty;
     private LogEventLevel? _levelFilter;
 
     public LogViewerViewModel(InMemoryLogSink sink)
@@ -42,15 +40,15 @@ public class LogViewerViewModel : ReactiveObject
 
     public string SearchText
     {
-        get => _searchText;
-        set => this.RaiseAndSetIfChanged(ref _searchText, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     public string SelectedAccount
     {
-        get => _selectedAccount;
-        set => this.RaiseAndSetIfChanged(ref _selectedAccount, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     public ICommand CloseCommand { get; init; }
     public ICommand ShowAllCommand { get; init; }
@@ -99,9 +97,9 @@ public class LogViewerViewModel : ReactiveObject
     {
         if (_levelFilter is { } level && entry.LogLevel != level)
             return false;
-        if (!string.IsNullOrEmpty(_selectedAccount) && !string.Equals(entry.AccountLabel, _selectedAccount, StringComparison.Ordinal))
+        if (!string.IsNullOrEmpty(SelectedAccount) && !string.Equals(entry.AccountLabel, SelectedAccount, StringComparison.Ordinal))
             return false;
-        if (!string.IsNullOrWhiteSpace(_searchText) && !entry.Message.Contains(_searchText, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(SearchText) && !entry.Message.Contains(SearchText, StringComparison.OrdinalIgnoreCase))
             return false;
         return true;
     }
