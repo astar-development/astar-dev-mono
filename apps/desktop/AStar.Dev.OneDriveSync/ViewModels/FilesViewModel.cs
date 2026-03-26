@@ -1,0 +1,32 @@
+using System.Collections.ObjectModel;
+using ReactiveUI;
+
+namespace AStar.Dev.OneDriveSync.ViewModels;
+
+public class FilesViewModel : ReactiveObject
+{
+    private AccountFilesViewModel? _activeTab;
+
+    public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
+    public bool HasNoAccounts => Tabs.Count == 0;
+    public bool HasTabs => Tabs.Count > 0;
+
+    public AccountFilesViewModel? ActiveTab
+    {
+        get => _activeTab;
+        set => this.RaiseAndSetIfChanged(ref _activeTab, value);
+    }
+
+    public Task ActivateAccountAsync(string accountId)
+    {
+        var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
+        if(tab is null)
+            return Task.CompletedTask;
+
+        foreach(var t in Tabs)
+            t.IsActiveTab = t.AccountId == accountId;
+
+        ActiveTab = tab;
+        return tab.ActivateAsync();
+    }
+}

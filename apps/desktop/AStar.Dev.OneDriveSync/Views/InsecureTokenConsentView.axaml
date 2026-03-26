@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             x:Class="AStar.Dev.OneDriveSync.Views.InsecureTokenConsentView"
+             x:DataType="vm:InsecureTokenConsentViewModel">
+    <!--
+        AU-03: Shown when the OS keychain is unavailable on Linux.
+        User must explicitly opt in before the app falls back to a
+        machine-scoped encrypted local token store (never plaintext).
+        The user's decision is stored per account.
+    -->
+
+    <Border Background="{DynamicResource BackgroundPrimaryBrush}"
+            BorderBrush="{DynamicResource BorderDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource RadiusXl}"
+            Padding="28"
+            Width="460">
+
+        <StackPanel Spacing="20">
+
+            <!-- Header -->
+            <StackPanel Spacing="6">
+                <TextBlock Text="Secure storage unavailable"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="{Binding AccountEmail}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+            </StackPanel>
+
+            <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+            <!-- Explanation -->
+            <TextBlock Text="The OS keychain (Secret Service / KWallet) could not be accessed on this system. Your sign-in token must be stored locally."
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+
+            <!-- What the fallback actually does -->
+            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Padding="14">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="The fallback store:"
+                               FontSize="{StaticResource FontSizeSm}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="✓  Encrypted with a machine-scoped key"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Text="✓  Never stored as plaintext"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Text="✗  Less secure than the OS keychain"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Warning callout -->
+            <Border Background="{DynamicResource BackgroundWarningBrush}"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Padding="12,8">
+                <TextBlock Text="Only allow this if you trust this machine. Anyone with access to your account on this device may be able to use the stored token."
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextWarningBrush}"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <!-- Remember decision -->
+            <Grid ColumnDefinitions="Auto,8,*">
+                <CheckBox Grid.Column="0"
+                          IsChecked="{Binding RememberDecision}"
+                          VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2"
+                           Text="Remember this decision for this account"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,Auto,8,Auto">
+
+                <Button Grid.Column="1"
+                        Content="Cancel sign-in"
+                        Padding="12,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        Command="{Binding CancelCommand}"/>
+
+                <Button Grid.Column="3"
+                        Content="Allow and continue"
+                        Padding="16,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Command="{Binding AllowCommand}"/>
+
+            </Grid>
+
+        </StackPanel>
+    </Border>
+
+</UserControl>

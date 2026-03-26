@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             x:Class="AStar.Dev.OneDriveSync.Controls.ConflictResolutionPanel"
+             x:DataType="vm:ConflictItemViewModel">
+
+    <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="16,12">
+
+        <Grid RowDefinitions="Auto,12,Auto,12,Auto">
+
+            <!-- File comparison -->
+            <Grid Grid.Row="0" ColumnDefinitions="*,16,*">
+
+                <!-- Local version -->
+                <Border Grid.Column="0"
+                        Background="{DynamicResource BackgroundPrimaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Padding="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Local file"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   FontWeight="Medium"/>
+                        <TextBlock Text="{Binding LocalModifiedText}"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding LocalSizeText}"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- vs divider -->
+                <TextBlock Grid.Column="1"
+                           Text="vs"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+
+                <!-- Remote version -->
+                <Border Grid.Column="2"
+                        Background="{DynamicResource BackgroundPrimaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Padding="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Remote file"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                   FontWeight="Medium"/>
+                        <TextBlock Text="{Binding RemoteModifiedText}"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding RemoteSizeText}"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+            <!-- Policy picker -->
+            <StackPanel Grid.Row="2" Spacing="6">
+                <TextBlock Text="Resolution"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           FontWeight="Medium"/>
+
+                <ItemsControl ItemsSource="{Binding PolicyOptions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:ConflictPolicyOption">
+                            <Button Padding="10,5"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    Click="OnPolicyClick"
+                                    Tag="{Binding Policy}"
+                                    ToolTip.Tip="{Binding Description}">
+                                <Button.BorderBrush>
+                                    <SolidColorBrush Color="{Binding $parent[UserControl].((vm:ConflictItemViewModel)DataContext).SelectedPolicy,
+                                        Converter={StaticResource BoolToAccentConverter}}"/>
+                                </Button.BorderBrush>
+                                <TextBlock Text="{Binding Label}"
+                                           FontSize="{StaticResource FontSizeXs}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+            <!-- Action buttons -->
+            <Grid Grid.Row="4" ColumnDefinitions="*,Auto,8,Auto">
+
+                <TextBlock Grid.Column="0"
+                           Text="Resolving ..."
+                           IsVisible="{Binding IsResolving}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="1"
+                        Content="Dismiss"
+                        Padding="12,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        Command="{Binding DismissCommand}"/>
+
+                <Button Grid.Column="3"
+                        Content="Apply"
+                        Padding="16,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        IsEnabled="{Binding !IsResolving}"
+                        Command="{Binding ResolveCommand}"/>
+
+            </Grid>
+
+        </Grid>
+    </Border>
+
+</UserControl>

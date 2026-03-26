@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="AStar.Dev.OneDriveSync.Controls.IconRailButton"
+             x:Name="Root"
+             Width="{StaticResource IconRailWidth}"
+             Height="{StaticResource IconRailWidth}"
+             Cursor="Hand">
+
+    <UserControl.Styles>
+
+        <!-- Hover / pressed states on the inner button -->
+        <Style Selector="Button#RailBtn">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="BorderBrush"     Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="0"/>
+            <Setter Property="CornerRadius"    Value="{StaticResource RadiusMd}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button#RailBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}"/>
+        </Style>
+
+        <Style Selector="Button#RailBtn:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundActiveBrush}"/>
+        </Style>
+
+        <!-- Active state: icon tinted with accent colour -->
+        <Style Selector="Button#RailBtn.active PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextAccentBrush}"/>
+        </Style>
+
+        <Style Selector="PathIcon">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- Active left-edge indicator + button -->
+    <Grid Width="{StaticResource IconRailWidth}"
+          Height="{StaticResource IconRailWidth}">
+
+        <!-- Vertical accent bar (visible when active) -->
+        <Rectangle x:Name="ActiveBar"
+                   Width="3"
+                   Height="22"
+                   RadiusX="2" RadiusY="2"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Margin="0"
+                   Fill="{DynamicResource RailActiveIndicatorBrush}"
+                   IsVisible="False"/>
+
+        <Button x:Name="RailBtn"
+                Width="{StaticResource IconRailButtonSize}"
+                Height="{StaticResource IconRailButtonSize}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="RailBtnClick">
+
+            <ToolTip.Tip>
+                <ToolTip>
+                    <TextBlock x:Name="TooltipText"
+                               FontSize="{StaticResource FontSizeSm}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                </ToolTip>
+            </ToolTip.Tip>
+
+            <PathIcon x:Name="Icon"
+                      Width="{StaticResource IconSize}"
+                      Height="{StaticResource IconSize}"
+                      Data=""/>
+
+        </Button>
+
+    </Grid>
+
+</UserControl>
