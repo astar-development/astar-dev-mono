@@ -1,0 +1,88 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:AStar.Dev.OneDriveSync.old.Converters"
+             x:Class="AStar.Dev.OneDriveSync.old.App"
+             RequestedThemeVariant="Default">
+    <!--
+        RequestedThemeVariant="Default" = Auto: follows the OS setting (TI-01).
+        ThemeService.Apply() may override this at runtime for Light/Dark/Auto selection.
+    -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Theme-neutral design tokens: spacing, typography, accent colours (TI-02) -->
+                <ResourceInclude Source="/Themes/Base.axaml"/>
+                <!-- Semantic colour brushes — light/dark via ThemeDictionaries (TI-02) -->
+                <ResourceInclude Source="/Themes/ColourPalette.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <converters:SyncStateToForegroundConverter       x:Key="SyncStateToForegroundConverter"/>
+            <converters:BoolToAccentConverter                x:Key="BoolToAccentConverter"/>
+            <converters:StringNotEmptyConverter              x:Key="StringNotEmptyConverter"/>
+            <converters:DepthToIndentConverter               x:Key="DepthToIndentConverter"/>
+            <converters:SyncStateToBadgeBackgroundConverter  x:Key="SyncStateToBadgeBackgroundConverter"/>
+            <converters:SyncStateToBadgeForegroundConverter  x:Key="SyncStateToBadgeForegroundConverter"/>
+            <converters:BoolToExcludeIncludeLabelConverter   x:Key="BoolToExcludeIncludeLabelConverter"/>
+            <converters:BoolToExcludeIncludeTooltipConverter x:Key="BoolToExcludeIncludeTooltipConverter"/>
+            <converters:BoolToCollapseExpandConverter        x:Key="BoolToCollapseExpandConverter"/>
+            <converters:ConflictCountToColorConverter        x:Key="ConflictCountToColorConverter"/>
+            <converters:IntZeroToBoolConverter               x:Key="IntZeroToBoolConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme/>
+
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="$Default"/>
+            <Setter Property="FontSize"   Value="13"/>
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="Background"      Value="Transparent"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderSubtleBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius"    Value="{StaticResource RadiusMd}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}"/>
+        </Style>
+
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundActiveBrush}"/>
+        </Style>
+
+        <Style Selector="ScrollBar">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <Style Selector="ProgressBar">
+            <Setter Property="Background"   Value="{DynamicResource BackgroundTertiaryBrush}"/>
+            <Setter Property="CornerRadius" Value="1"/>
+        </Style>
+
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        </Style>
+
+        <Style Selector="ToolTip">
+            <Setter Property="Background"      Value="{DynamicResource BackgroundTertiaryBrush}"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius"    Value="{StaticResource RadiusSm}"/>
+            <Setter Property="Padding"         Value="8,5"/>
+            <Setter Property="FontSize"        Value="{StaticResource FontSizeSm}"/>
+        </Style>
+
+    </Application.Styles>
+</Application>

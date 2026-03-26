@@ -1,0 +1,250 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.old.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.old.Localisation"
+             x:Class="AStar.Dev.OneDriveSync.old.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  Padding="24,20">
+        <StackPanel Spacing="24" MaxWidth="640">
+
+            <!-- ── Appearance ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="{loc:Localize Settings_AppearanceHeading}"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Localize Settings_ThemeLabel}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{loc:Localize Settings_ThemeDescription}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="6"
+                                    VerticalAlignment="Center">
+                            <Button Content="{loc:Localize Settings_ThemeLight}"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeLightClick"/>
+                            <Button Content="{loc:Localize Settings_ThemeDark}"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeDarkClick"/>
+                            <Button Content="{loc:Localize Settings_ThemeSystem}"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeSystemClick"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- ── Sync policy ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="{loc:Localize Settings_SyncPolicyHeading}"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <!-- Default conflict policy -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{loc:Localize Settings_DefaultConflictLabel}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{loc:Localize Settings_DefaultConflictDescription}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding PolicyOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:ConflictPolicyOption">
+                                    <Button Padding="10,5"
+                                            Margin="0,0,6,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            ToolTip.Tip="{Binding Description}"
+                                            Click="OnPolicyClick"
+                                            Tag="{Binding Policy}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sync interval -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Localize Settings_SyncIntervalLabel}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{loc:Localize Settings_SyncIntervalDescription}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding IntervalOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:SyncIntervalOption">
+                                    <Button Padding="10,5"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Click="OnIntervalClick"
+                                            Tag="{Binding Minutes}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- ── Per-account settings ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="{loc:Localize Settings_AccountSyncPathsHeading}"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <TextBlock Text="{loc:Localize Settings_AccountSyncPathsDescription}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+
+                <ItemsControl ItemsSource="{Binding AccountSettings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:AccountSyncSettingsViewModel">
+                            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLg}"
+                                    Padding="16"
+                                    Margin="0,0,0,8">
+                                <StackPanel Spacing="12">
+
+                                    <!-- Account header -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding AccentColor}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding Email}"
+                                                   FontSize="{StaticResource FontSizeMd}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </StackPanel>
+
+                                    <!-- Local path -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{loc:Localize Settings_LocalSyncFolderLabel}"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                        <Grid ColumnDefinitions="*,8,Auto">
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding LocalSyncPath}"
+                                                     FontSize="{StaticResource FontSizeSm}"
+                                                     Watermark="{loc:Localize Settings_LocalSyncFolderWatermark}"
+                                                     CornerRadius="{StaticResource RadiusMd}"/>
+                                            <Button Grid.Column="2"
+                                                    Content="{loc:Localize Settings_BrowseButton}"
+                                                    Padding="10,6"
+                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeSm}"
+                                                    Click="OnBrowseClick"
+                                                    Tag="{Binding AccountId}"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- LG-01: Per-account debug logging toggle -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Localize Settings_DebugLoggingLabel}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            <TextBlock Text="{loc:Localize Settings_DebugLoggingDescription}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                                       Opacity="0.7"/>
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1"
+                                                      IsChecked="{Binding IsDebugLoggingEnabled}"
+                                                      VerticalAlignment="Center"
+                                                      OnContent=""
+                                                      OffContent=""
+                                                      Click="OnDebugLoggingToggle"
+                                                      Tag="{Binding AccountId}"/>
+                                    </Grid>
+
+                                    <!-- Save button -->
+                                    <Button Content="{loc:Localize Common_Save}"
+                                            HorizontalAlignment="Right"
+                                            Padding="14,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            Background="{DynamicResource TextAccentBrush}"
+                                            Foreground="{DynamicResource TextOnAccentBrush}"
+                                            BorderThickness="0"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Command="{Binding SaveCommand}"/>
+
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>
