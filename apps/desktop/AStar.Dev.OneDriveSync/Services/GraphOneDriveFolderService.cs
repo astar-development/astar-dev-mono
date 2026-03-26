@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -7,27 +8,41 @@ namespace AStar.Dev.OneDriveSync.Services;
 /// <summary>AM-03: Lists OneDrive folders via the Microsoft Graph API.</summary>
 public sealed class GraphOneDriveFolderService : IOneDriveFolderService
 {
-    public async Task<IReadOnlyList<OneDriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<OneDriveFolder>, string>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
     {
-        var client = CreateClient(accessToken);
-        var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
-        var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
+        try
+        {
+            var client = CreateClient(accessToken);
+            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
+            var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
 
-        var root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
-        var rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve the drive root item.");
+            var root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
+            var rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve the drive root item.");
 
-        var children = await client.Drives[driveId].Items[rootId].Children.GetAsync(cancellationToken: ct);
-        return MapDriveItems(children?.Value);
+            var children = await client.Drives[driveId].Items[rootId].Children.GetAsync(cancellationToken: ct);
+            return new Result<IReadOnlyList<OneDriveFolder>, string>.Ok(MapDriveItems(children?.Value));
+        }
+        catch (Exception ex)
+        {
+            return new Result<IReadOnlyList<OneDriveFolder>, string>.Error(ex.Message);
+        }
     }
 
-    public async Task<IReadOnlyList<OneDriveFolder>> GetChildFoldersAsync(string accessToken, string folderId, CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<OneDriveFolder>, string>> GetChildFoldersAsync(string accessToken, string folderId, CancellationToken ct = default)
     {
-        var client = CreateClient(accessToken);
-        var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
-        var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
+        try
+        {
+            var client = CreateClient(accessToken);
+            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
+            var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
 
-        var children = await client.Drives[driveId].Items[folderId].Children.GetAsync(cancellationToken: ct);
-        return MapDriveItems(children?.Value);
+            var children = await client.Drives[driveId].Items[folderId].Children.GetAsync(cancellationToken: ct);
+            return new Result<IReadOnlyList<OneDriveFolder>, string>.Ok(MapDriveItems(children?.Value));
+        }
+        catch (Exception ex)
+        {
+            return new Result<IReadOnlyList<OneDriveFolder>, string>.Error(ex.Message);
+        }
     }
 
     private static GraphServiceClient CreateClient(string accessToken) => new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));

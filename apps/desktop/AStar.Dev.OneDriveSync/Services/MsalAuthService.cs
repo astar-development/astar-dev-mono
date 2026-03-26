@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDriveSync.Services;
@@ -21,27 +22,44 @@ public sealed class MsalAuthService : IMsalAuthService
         _pca = builder.Build();
     }
 
-    public async Task<MsalAuthResult> SignInInteractiveAsync(CancellationToken ct = default)
+    public async Task<Result<MsalAuthResult, string>> SignInInteractiveAsync(CancellationToken ct = default)
     {
-        var result = await _pca.AcquireTokenInteractive(Scopes).WithUseEmbeddedWebView(false).ExecuteAsync(ct);
-        return new MsalAuthResult(result.Account.HomeAccountId.Identifier, result.Account.Username, result.Account.Username, result.AccessToken);
+        try
+        {
+            var result = await _pca.AcquireTokenInteractive(Scopes).WithUseEmbeddedWebView(false).ExecuteAsync(ct);
+            var authResult = new MsalAuthResult(result.Account.HomeAccountId.Identifier, result.Account.Username, result.Account.Username, result.AccessToken);
+            return new Result<MsalAuthResult, string>.Ok(authResult);
+        }
+        catch (OperationCanceledException)
+        {
+            return new Result<MsalAuthResult, string>.Error("Sign-in was cancelled.");
+        }
+        catch (MsalException ex)
+        {
+            return new Result<MsalAuthResult, string>.Error(ex.Message);
+        }
     }
 
     public async Task SignOutAsync(string accountId, CancellationToken ct = default)
     {
         var accounts = await _pca.GetAccountsAsync();
-        var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
-        if (account is not null)
-        {
-            await _pca.RemoveAsync(account);
-        }
+        accounts.FirstOrNone(a => a.HomeAccountId.Identifier == accountId)
+            .Tap(account => _pca.RemoveAsync(account));
     }
 
-    public async Task<string> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
+    public async Task<Result<string, string>> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
     {
         var accounts = await _pca.GetAccountsAsync();
-        var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId) ?? throw new InvalidOperationException($"Account {accountId} not found in MSAL cache.");
-        var result = await _pca.AcquireTokenSilent(Scopes, account).ExecuteAsync(ct);
-        return result.AccessToken;
+
+        return await accounts
+            .FirstOrNone(a => a.HomeAccountId.Identifier == accountId)
+            .ToResult(() => $"Account {accountId} not found in MSAL cache.")
+            .MatchAsync<Result<string, string>>(
+                async account =>
+                {
+                    var result = await _pca.AcquireTokenSilent(Scopes, account).ExecuteAsync(ct);
+                    return new Result<string, string>.Ok(result.AccessToken);
+                },
+                error => Task.FromResult<Result<string, string>>(new Result<string, string>.Error(error)));
     }
 }
