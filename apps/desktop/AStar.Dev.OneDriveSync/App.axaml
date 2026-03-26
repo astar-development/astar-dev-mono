@@ -1,7 +1,20 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="AStar.Dev.OneDriveSync.App">
+             x:Class="AStar.Dev.OneDriveSync.App"
+             RequestedThemeVariant="Default">
+    <!--
+        RequestedThemeVariant="Default" = Auto: follows the OS setting (TI-01).
+        ThemeService.Apply() may override this at runtime for Light/Dark/Auto selection.
+    -->
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- All custom colour tokens — no hardcoded colours anywhere else (TI-02) -->
+                <ResourceInclude Source="/Themes/ColourPalette.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

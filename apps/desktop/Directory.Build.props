@@ -47,7 +47,7 @@
     .NET runtime. End users don't need to install anything.
 
     Debug builds are framework-dependent (faster inner loop, smaller output). -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' != ''">
     <SelfContained>true</SelfContained>
 
     <!-- Trim unused code from the published bundle.

@@ -3,6 +3,7 @@
     <Folder Name="/apps/desktop/">
         <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
         <Project Path="apps/desktop/AStar.Dev.OneDriveSync/AStar.Dev.OneDriveSync.csproj" />
+        <Project Path="apps/desktop/AStar.Dev.OneDriveSync.Tests.Unit/AStar.Dev.OneDriveSync.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/infra/" />
