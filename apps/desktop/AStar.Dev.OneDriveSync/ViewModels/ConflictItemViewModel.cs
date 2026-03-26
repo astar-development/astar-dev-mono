@@ -7,13 +7,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class ConflictItemViewModel : ReactiveObject
 {
-    private bool _isSelected;
-    private bool _isExpanded;
-    private bool _isPanelOpen;
-    private bool _isResolved;
-    private bool _isResolving;
-    private ConflictPolicy? _selectedPolicy;
-
     public Guid ConflictId { get; init; }
     public string FileName { get; init; } = string.Empty;
     public string RelativePath { get; init; } = string.Empty;
@@ -32,38 +25,38 @@ public class ConflictItemViewModel : ReactiveObject
 
     public bool IsSelected
     {
-        get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsExpanded
     {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsPanelOpen
     {
-        get => _isPanelOpen;
-        set => this.RaiseAndSetIfChanged(ref _isPanelOpen, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsResolved
     {
-        get => _isResolved;
-        set => this.RaiseAndSetIfChanged(ref _isResolved, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsResolving
     {
-        get => _isResolving;
-        set => this.RaiseAndSetIfChanged(ref _isResolving, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ConflictPolicy? SelectedPolicy
     {
-        get => _selectedPolicy;
-        set => this.RaiseAndSetIfChanged(ref _selectedPolicy, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ICommand TogglePanelCommand { get; set; } = ReactiveCommand.Create(() => { });

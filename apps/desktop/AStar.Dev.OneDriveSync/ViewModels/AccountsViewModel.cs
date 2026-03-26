@@ -6,9 +6,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class AccountsViewModel : ReactiveObject
 {
-    private bool _isWizardVisible;
-    private AddAccountWizardViewModel? _wizard;
-
     public AccountsViewModel()
     {
         AddAccountCommand = ReactiveCommand.Create(OpenAddAccountWizard);
@@ -20,14 +17,14 @@ public class AccountsViewModel : ReactiveObject
 
     public bool IsWizardVisible
     {
-        get => _isWizardVisible;
-        set => this.RaiseAndSetIfChanged(ref _isWizardVisible, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public AddAccountWizardViewModel? Wizard
     {
-        get => _wizard;
-        set => this.RaiseAndSetIfChanged(ref _wizard, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public ICommand AddAccountCommand { get; }

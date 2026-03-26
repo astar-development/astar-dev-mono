@@ -7,9 +7,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 public class AddAccountWizardViewModel : ReactiveObject
 {
     private int _step = 1;
-    private bool _isWaitingForAuth;
-    private bool _isSignedIn;
-    private string _signInStatusText = string.Empty;
 
     public bool IsSignInStep       => _step == 1;
     public bool IsSelectFoldersStep => _step == 2;
@@ -24,21 +21,21 @@ public class AddAccountWizardViewModel : ReactiveObject
 
     public bool IsWaitingForAuth
     {
-        get => _isWaitingForAuth;
-        set => this.RaiseAndSetIfChanged(ref _isWaitingForAuth, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsSignedIn
     {
-        get => _isSignedIn;
-        set => this.RaiseAndSetIfChanged(ref _isSignedIn, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public string SignInStatusText
     {
-        get => _signInStatusText;
-        set => this.RaiseAndSetIfChanged(ref _signInStatusText, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     public ObservableCollection<WizardFolderItem> Folders { get; } = [];
 

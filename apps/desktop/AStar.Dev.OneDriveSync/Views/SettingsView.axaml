@@ -206,6 +206,26 @@
                                         </Grid>
                                     </StackPanel>
 
+                                    <!-- LG-01: Per-account debug logging toggle -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                            <TextBlock Text="{loc:Localize Settings_DebugLoggingLabel}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            <TextBlock Text="{loc:Localize Settings_DebugLoggingDescription}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                                       Opacity="0.7"/>
+                                        </StackPanel>
+                                        <ToggleSwitch Grid.Column="1"
+                                                      IsChecked="{Binding IsDebugLoggingEnabled}"
+                                                      VerticalAlignment="Center"
+                                                      OnContent=""
+                                                      OffContent=""
+                                                      Click="OnDebugLoggingToggle"
+                                                      Tag="{Binding AccountId}"/>
+                                    </Grid>
+
                                     <!-- Save button -->
                                     <Button Content="{loc:Localize Common_Save}"
                                             HorizontalAlignment="Right"

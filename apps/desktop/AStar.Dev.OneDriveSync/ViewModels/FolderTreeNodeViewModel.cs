@@ -7,10 +7,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class FolderTreeNodeViewModel : ReactiveObject
 {
-    private bool _isExpanded;
-    private bool _isIncluded = true;
-    private bool _isLoadingChildren;
-
     public string FolderId { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
     public int Depth { get; init; }
@@ -21,20 +17,20 @@ public class FolderTreeNodeViewModel : ReactiveObject
 
     public bool IsExpanded
     {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsIncluded
     {
-        get => _isIncluded;
-        set => this.RaiseAndSetIfChanged(ref _isIncluded, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = true;
 
     public bool IsLoadingChildren
     {
-        get => _isLoadingChildren;
-        set => this.RaiseAndSetIfChanged(ref _isLoadingChildren, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public string ExpanderGlyph => IsExpanded ? "▲" : "▶";

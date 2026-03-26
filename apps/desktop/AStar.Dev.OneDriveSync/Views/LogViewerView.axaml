@@ -46,7 +46,7 @@
                 BorderThickness="0,0,0,1"
                 BorderBrush="{DynamicResource BorderSubtleBrush}"
                 Background="{DynamicResource BackgroundSecondaryBrush}">
-            <Grid ColumnDefinitions="*,12,Auto,8,Auto">
+            <Grid ColumnDefinitions="*,12,Auto,8,Auto,8,Auto">
 
                 <!-- Search box -->
                 <TextBox Grid.Column="0"
@@ -55,8 +55,28 @@
                          FontSize="{StaticResource FontSizeSm}"
                          CornerRadius="{StaticResource RadiusMd}"/>
 
+                <!-- Account filter (LG-04) -->
+                <ComboBox Grid.Column="2"
+                          ItemsSource="{Binding AccountLabels}"
+                          SelectedItem="{Binding SelectedAccount}"
+                          MinWidth="120"
+                          FontSize="{StaticResource FontSizeSm}"
+                          CornerRadius="{StaticResource RadiusMd}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}">
+                                        <Binding />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
                 <!-- Level filter chips -->
-                <StackPanel Grid.Column="2"
+                <StackPanel Grid.Column="4"
                             Orientation="Horizontal"
                             Spacing="4">
                     <Button Content="{loc:Localize LogViewer_FilterAll}"
@@ -94,7 +114,7 @@
                 </StackPanel>
 
                 <!-- Clear button -->
-                <Button Grid.Column="4"
+                <Button Grid.Column="6"
                         Content="{loc:Localize LogViewer_Clear}"
                         Padding="8,3"
                         CornerRadius="{StaticResource RadiusSm}"

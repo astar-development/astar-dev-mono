@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.Conflict.Resolution;
+using AStar.Dev.OneDriveSync.Logging;
 using AStar.Dev.OneDriveSync.Models;
 using ReactiveUI;
 
@@ -7,27 +8,30 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class SettingsViewModel : ReactiveObject
 {
-    private AppTheme _theme = AppTheme.System;
-    private ConflictPolicy _defaultConflictPolicy = ConflictPolicy.Skip;
-    private int _syncIntervalMinutes = 60;
+    private readonly LoggingService _loggingService;
+
+    public SettingsViewModel(LoggingService loggingService)
+    {
+        _loggingService = loggingService;
+    }
 
     public AppTheme Theme
     {
-        get => _theme;
-        set => this.RaiseAndSetIfChanged(ref _theme, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = AppTheme.System;
 
     public ConflictPolicy DefaultConflictPolicy
     {
-        get => _defaultConflictPolicy;
-        set => this.RaiseAndSetIfChanged(ref _defaultConflictPolicy, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = ConflictPolicy.Skip;
 
     public int SyncIntervalMinutes
     {
-        get => _syncIntervalMinutes;
-        set => this.RaiseAndSetIfChanged(ref _syncIntervalMinutes, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 60;
 
     public ObservableCollection<ConflictPolicyOption> PolicyOptions { get; } =
     [
@@ -46,4 +50,8 @@ public class SettingsViewModel : ReactiveObject
     ];
 
     public ObservableCollection<AccountSyncSettingsViewModel> AccountSettings { get; } = [];
+
+    public void SetAccountDebugLogging(string accountId, bool enabled) => _loggingService.SetAccountDebugEnabled(accountId, enabled);
+
+    public bool IsAccountDebugLogging(string accountId) => _loggingService.IsAccountDebugEnabled(accountId);
 }

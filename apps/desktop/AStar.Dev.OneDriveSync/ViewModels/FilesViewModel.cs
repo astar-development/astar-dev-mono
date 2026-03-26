@@ -5,16 +5,14 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class FilesViewModel : ReactiveObject
 {
-    private AccountFilesViewModel? _activeTab;
-
     public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
     public bool HasNoAccounts => Tabs.Count == 0;
     public bool HasTabs => Tabs.Count > 0;
 
     public AccountFilesViewModel? ActiveTab
     {
-        get => _activeTab;
-        set => this.RaiseAndSetIfChanged(ref _activeTab, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public Task ActivateAccountAsync(string accountId)

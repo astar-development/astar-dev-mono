@@ -8,9 +8,6 @@ namespace AStar.Dev.OneDriveSync.ViewModels;
 
 public class DashboardAccountViewModel : ReactiveObject
 {
-    private bool _isExpanded;
-    private bool _isSyncing;
-
     public string AccountId { get; init; } = string.Empty;
     public string DisplayName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
@@ -26,14 +23,14 @@ public class DashboardAccountViewModel : ReactiveObject
 
     public bool IsExpanded
     {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public bool IsSyncing
     {
-        get => _isSyncing;
-        set => this.RaiseAndSetIfChanged(ref _isSyncing, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     public string ExpanderGlyph => IsExpanded ? "▲" : "▼";
