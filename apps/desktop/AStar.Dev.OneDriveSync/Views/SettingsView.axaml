@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
@@ -10,7 +11,7 @@
 
             <!-- ── Appearance ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Appearance"
+                <TextBlock Text="{loc:Localize Settings_AppearanceHeading}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -22,10 +23,10 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Theme"
+                            <TextBlock Text="{loc:Localize Settings_ThemeLabel}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Choose light, dark or follow the system setting."
+                            <TextBlock Text="{loc:Localize Settings_ThemeDescription}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -34,19 +35,19 @@
                                     Orientation="Horizontal"
                                     Spacing="6"
                                     VerticalAlignment="Center">
-                            <Button Content="Light"
+                            <Button Content="{loc:Localize Settings_ThemeLight}"
                                     Padding="12,6"
                                     CornerRadius="{StaticResource RadiusMd}"
                                     BorderThickness="1"
                                     FontSize="{StaticResource FontSizeSm}"
                                     Click="OnThemeLightClick"/>
-                            <Button Content="Dark"
+                            <Button Content="{loc:Localize Settings_ThemeDark}"
                                     Padding="12,6"
                                     CornerRadius="{StaticResource RadiusMd}"
                                     BorderThickness="1"
                                     FontSize="{StaticResource FontSizeSm}"
                                     Click="OnThemeDarkClick"/>
-                            <Button Content="System"
+                            <Button Content="{loc:Localize Settings_ThemeSystem}"
                                     Padding="12,6"
                                     CornerRadius="{StaticResource RadiusMd}"
                                     BorderThickness="1"
@@ -59,7 +60,7 @@
 
             <!-- ── Sync policy ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Sync policy"
+                <TextBlock Text="{loc:Localize Settings_SyncPolicyHeading}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -72,10 +73,10 @@
                         Padding="16">
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="2">
-                            <TextBlock Text="Default conflict resolution"
+                            <TextBlock Text="{loc:Localize Settings_DefaultConflictLabel}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Applied to new accounts and when no per-account policy is set."
+                            <TextBlock Text="{loc:Localize Settings_DefaultConflictDescription}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -113,10 +114,10 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Sync interval"
+                            <TextBlock Text="{loc:Localize Settings_SyncIntervalLabel}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="How often to automatically check for changes."
+                            <TextBlock Text="{loc:Localize Settings_SyncIntervalDescription}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -148,12 +149,12 @@
 
             <!-- ── Per-account settings ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Account sync paths"
+                <TextBlock Text="{loc:Localize Settings_AccountSyncPathsHeading}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
 
-                <TextBlock Text="Set the local folder where each account's files will be synced."
+                <TextBlock Text="{loc:Localize Settings_AccountSyncPathsDescription}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>
 
@@ -183,17 +184,17 @@
 
                                     <!-- Local path -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Local sync folder"
+                                        <TextBlock Text="{loc:Localize Settings_LocalSyncFolderLabel}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                                         <Grid ColumnDefinitions="*,8,Auto">
                                             <TextBox Grid.Column="0"
                                                      Text="{Binding LocalSyncPath}"
                                                      FontSize="{StaticResource FontSizeSm}"
-                                                     Watermark="e.g. ~/OneDrive/personal"
+                                                     Watermark="{loc:Localize Settings_LocalSyncFolderWatermark}"
                                                      CornerRadius="{StaticResource RadiusMd}"/>
                                             <Button Grid.Column="2"
-                                                    Content="Browse ..."
+                                                    Content="{loc:Localize Settings_BrowseButton}"
                                                     Padding="10,6"
                                                     CornerRadius="{StaticResource RadiusMd}"
                                                     Background="Transparent"
@@ -206,12 +207,12 @@
                                     </StackPanel>
 
                                     <!-- Save button -->
-                                    <Button Content="Save"
+                                    <Button Content="{loc:Localize Common_Save}"
                                             HorizontalAlignment="Right"
                                             Padding="14,6"
                                             CornerRadius="{StaticResource RadiusMd}"
                                             Background="{DynamicResource TextAccentBrush}"
-                                            Foreground="White"
+                                            Foreground="{DynamicResource TextOnAccentBrush}"
                                             BorderThickness="0"
                                             FontSize="{StaticResource FontSizeSm}"
                                             Command="{Binding SaveCommand}"/>

@@ -63,6 +63,12 @@
 
             <!-- Icon rail active indicator -->
             <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
+
+            <!-- Text on top of accent-coloured surfaces (e.g. primary buttons) -->
+            <SolidColorBrush x:Key="TextOnAccentBrush" Color="#FFFFFF"/>
+
+            <!-- Modal / wizard overlay scrim -->
+            <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#80000000"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
@@ -119,6 +125,12 @@
 
             <!-- Icon rail active indicator -->
             <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
+
+            <!-- Text on top of accent-coloured surfaces (e.g. primary buttons) -->
+            <SolidColorBrush x:Key="TextOnAccentBrush" Color="#FFFFFF"/>
+
+            <!-- Modal / wizard overlay scrim -->
+            <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#80000000"/>
         </ResourceDictionary>
 
     </ResourceDictionary.ThemeDictionaries>

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
              xmlns:controls="clr-namespace:AStar.Dev.OneDriveSync.Controls"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.FilesView"
              x:DataType="vm:FilesViewModel">
 
@@ -66,11 +67,11 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8">
-            <TextBlock Text="No accounts connected"
+            <TextBlock Text="{loc:Localize Files_NoAccountsTitle}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Add an account from the Accounts section."
+            <TextBlock Text="{loc:Localize Files_NoAccountsMessage}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"/>
@@ -95,7 +96,7 @@
                                              Width="200" Height="2"
                                              Foreground="{DynamicResource TextAccentBrush}"
                                              Background="Transparent"/>
-                                <TextBlock Text="Loading folders ..."
+                                <TextBlock Text="{loc:Localize Files_LoadingFolders}"
                                            FontSize="{StaticResource FontSizeSm}"
                                            Foreground="{DynamicResource TextTertiaryBrush}"
                                            HorizontalAlignment="Center"/>
@@ -106,7 +107,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Spacing="8">
-                                <TextBlock Text="Could not load folders"
+                                <TextBlock Text="{loc:Localize Files_CouldNotLoadFolders}"
                                            FontSize="{StaticResource FontSizeMd}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center"/>

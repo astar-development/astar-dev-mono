@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:loc="clr-namespace:AStar.Dev.OneDriveSync.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Views.DashboardView"
              x:DataType="vm:DashboardViewModel">
 
@@ -21,7 +22,7 @@
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="accounts"
+                    <TextBlock Text="{loc:Localize Dashboard_AccountsLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -37,7 +38,7 @@
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="folders synced"
+                    <TextBlock Text="{loc:Localize Dashboard_FoldersSyncedLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -57,7 +58,7 @@
                                 Converter={StaticResource ConflictCountToColorConverter}}"/>
                         </TextBlock.Foreground>
                     </TextBlock>
-                    <TextBlock Text="conflicts"
+                    <TextBlock Text="{loc:Localize Dashboard_ConflictsLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -74,7 +75,7 @@
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="overall status"
+                    <TextBlock Text="{loc:Localize Dashboard_OverallStatusLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -91,7 +92,7 @@
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="last sync"
+                    <TextBlock Text="{loc:Localize Dashboard_LastSyncLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -106,11 +107,11 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8">
-            <TextBlock Text="No accounts connected"
+            <TextBlock Text="{loc:Localize Dashboard_NoAccountsTitle}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Add an account to see your sync health here."
+            <TextBlock Text="{loc:Localize Dashboard_NoAccountsMessage}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"/>
@@ -183,7 +184,7 @@
                                         <StackPanel Grid.Column="4"
                                                     Orientation="Horizontal"
                                                     Spacing="6">
-                                            <Button Content="Sync now"
+                                            <Button Content="{loc:Localize Dashboard_SyncNow}"
                                                     Padding="10,4"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Background="Transparent"
@@ -214,7 +215,7 @@
                                     <!-- Storage + stats -->
                                     <StackPanel Grid.Column="0" Spacing="10">
 
-                                        <TextBlock Text="Storage"
+                                        <TextBlock Text="{loc:Localize Dashboard_StorageLabel}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                                    FontWeight="Medium"/>
@@ -241,7 +242,7 @@
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="folders"
+                                                <TextBlock Text="{loc:Localize Dashboard_FoldersLabel}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -250,7 +251,7 @@
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="conflicts"
+                                                <TextBlock Text="{loc:Localize Dashboard_ConflictsLabel}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -259,7 +260,7 @@
                                                            FontSize="{StaticResource FontSizeSm}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="last sync"
+                                                <TextBlock Text="{loc:Localize Dashboard_LastSyncLabel}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -276,12 +277,12 @@
                                     <!-- Recent activity -->
                                     <StackPanel Grid.Column="2" Spacing="6">
 
-                                        <TextBlock Text="Recent activity"
+                                        <TextBlock Text="{loc:Localize Dashboard_RecentActivityLabel}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                                    FontWeight="Medium"/>
 
-                                        <TextBlock Text="No recent activity"
+                                        <TextBlock Text="{loc:Localize Dashboard_NoRecentActivityLabel}"
                                                    IsVisible="{Binding RecentActivity.Count,
                                                        Converter={StaticResource IntZeroToBoolConverter}}"
                                                    FontSize="{StaticResource FontSizeXs}"

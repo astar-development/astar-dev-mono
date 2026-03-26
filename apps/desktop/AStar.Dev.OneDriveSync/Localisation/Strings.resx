@@ -14,7 +14,360 @@
   </resheader>
 
   <!-- en-GB: UK English is the MVP locale (TI-04) -->
+
+  <!-- ── Main window ── -->
   <data name="MainWindow_Title" xml:space="preserve">
     <value>AStar Dev OneDrive Sync</value>
   </data>
+  <data name="MainWindow_AppTooltip" xml:space="preserve">
+    <value>OneDrive Sync</value>
+  </data>
+  <data name="MainWindow_AccountsHeading" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="MainWindow_AddAccount" xml:space="preserve">
+    <value>Add account</value>
+  </data>
+  <data name="MainWindow_NoAccountsTitle" xml:space="preserve">
+    <value>No accounts yet</value>
+  </data>
+  <data name="MainWindow_NoAccountsMessage" xml:space="preserve">
+    <value>Add a Microsoft account to get started.</value>
+  </data>
+  <data name="MainWindow_NoAccountSelected" xml:space="preserve">
+    <value>No account selected</value>
+  </data>
+
+  <!-- ── Icon rail navigation tooltips ── -->
+  <data name="Nav_DashboardTooltip" xml:space="preserve">
+    <value>Dashboard — all accounts overview</value>
+  </data>
+  <data name="Nav_FilesTooltip" xml:space="preserve">
+    <value>Files — browse and manage sync folders</value>
+  </data>
+  <data name="Nav_ActivityTooltip" xml:space="preserve">
+    <value>Activity — delta log and conflicts</value>
+  </data>
+  <data name="Nav_AccountsTooltip" xml:space="preserve">
+    <value>Accounts — add or remove OneDrive accounts</value>
+  </data>
+  <data name="Nav_SettingsTooltip" xml:space="preserve">
+    <value>Settings — theme, language and sync policy</value>
+  </data>
+
+  <!-- ── Common / shared ── -->
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+
+  <!-- ── Accounts view ── -->
+  <data name="Accounts_NoAccountsTitle" xml:space="preserve">
+    <value>No accounts added yet</value>
+  </data>
+  <data name="Accounts_NoAccountsMessage" xml:space="preserve">
+    <value>Add a Microsoft personal account to get started.</value>
+  </data>
+  <data name="Accounts_AddAccount" xml:space="preserve">
+    <value>Add account</value>
+  </data>
+  <data name="Accounts_ConnectedAccounts" xml:space="preserve">
+    <value>Connected accounts</value>
+  </data>
+  <data name="Accounts_AddAnotherAccount" xml:space="preserve">
+    <value>Add another account</value>
+  </data>
+  <data name="Accounts_RemoveAccountTooltip" xml:space="preserve">
+    <value>Remove account</value>
+  </data>
+
+  <!-- ── Activity view ── -->
+  <data name="Activity_LogTab" xml:space="preserve">
+    <value>Activity log</value>
+  </data>
+  <data name="Activity_ConflictsTab" xml:space="preserve">
+    <value>Conflicts</value>
+  </data>
+  <data name="Activity_NoActivityTitle" xml:space="preserve">
+    <value>No activity yet</value>
+  </data>
+  <data name="Activity_NoActivityMessage" xml:space="preserve">
+    <value>Sync activity will appear here.</value>
+  </data>
+  <data name="Activity_NoConflictsTitle" xml:space="preserve">
+    <value>No conflicts</value>
+  </data>
+  <data name="Activity_NoConflictsMessage" xml:space="preserve">
+    <value>Any sync conflicts will appear here for resolution.</value>
+  </data>
+  <data name="Activity_Resolved" xml:space="preserve">
+    <value>resolved</value>
+  </data>
+  <data name="Activity_FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Activity_FilterDownloads" xml:space="preserve">
+    <value>↓ downloads</value>
+  </data>
+  <data name="Activity_FilterUploads" xml:space="preserve">
+    <value>↑ uploads</value>
+  </data>
+  <data name="Activity_FilterErrors" xml:space="preserve">
+    <value>⚠ errors</value>
+  </data>
+  <data name="Activity_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+
+  <!-- ── Add account wizard ── -->
+  <data name="Wizard_Title" xml:space="preserve">
+    <value>Add OneDrive account</value>
+  </data>
+  <data name="Wizard_SignInHeading" xml:space="preserve">
+    <value>Sign in to your Microsoft account</value>
+  </data>
+  <data name="Wizard_SignInDescription" xml:space="preserve">
+    <value>A browser window will open for you to sign in. Only personal Microsoft accounts are supported (Outlook, Hotmail, Live).</value>
+  </data>
+  <data name="Wizard_OpenBrowserLabel" xml:space="preserve">
+    <value>Open browser to sign in</value>
+  </data>
+  <data name="Wizard_FolderSelectHeading" xml:space="preserve">
+    <value>Which folders would you like to sync?</value>
+  </data>
+  <data name="Wizard_FolderSelectDescription" xml:space="preserve">
+    <value>You can change this at any time from the Files section.</value>
+  </data>
+  <data name="Wizard_SkipFolders" xml:space="preserve">
+    <value>Skip — I'll choose folders later</value>
+  </data>
+  <data name="Wizard_ReviewHeading" xml:space="preserve">
+    <value>Ready to connect</value>
+  </data>
+  <data name="Wizard_ReviewAccountLabel" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Wizard_ReviewFoldersLabel" xml:space="preserve">
+    <value>Folders to sync</value>
+  </data>
+  <data name="Wizard_ReviewSyncFolderLabel" xml:space="preserve">
+    <value>Sync folder</value>
+  </data>
+
+  <!-- ── Dashboard view ── -->
+  <data name="Dashboard_AccountsLabel" xml:space="preserve">
+    <value>accounts</value>
+  </data>
+  <data name="Dashboard_FoldersSyncedLabel" xml:space="preserve">
+    <value>folders synced</value>
+  </data>
+  <data name="Dashboard_ConflictsLabel" xml:space="preserve">
+    <value>conflicts</value>
+  </data>
+  <data name="Dashboard_OverallStatusLabel" xml:space="preserve">
+    <value>overall status</value>
+  </data>
+  <data name="Dashboard_LastSyncLabel" xml:space="preserve">
+    <value>last sync</value>
+  </data>
+  <data name="Dashboard_NoAccountsTitle" xml:space="preserve">
+    <value>No accounts connected</value>
+  </data>
+  <data name="Dashboard_NoAccountsMessage" xml:space="preserve">
+    <value>Add an account to see your sync health here.</value>
+  </data>
+  <data name="Dashboard_StorageLabel" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="Dashboard_FoldersLabel" xml:space="preserve">
+    <value>folders</value>
+  </data>
+  <data name="Dashboard_RecentActivityLabel" xml:space="preserve">
+    <value>Recent activity</value>
+  </data>
+  <data name="Dashboard_NoRecentActivityLabel" xml:space="preserve">
+    <value>No recent activity</value>
+  </data>
+  <data name="Dashboard_SyncNow" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+
+  <!-- ── Files view ── -->
+  <data name="Files_NoAccountsTitle" xml:space="preserve">
+    <value>No accounts connected</value>
+  </data>
+  <data name="Files_NoAccountsMessage" xml:space="preserve">
+    <value>Add an account from the Accounts section.</value>
+  </data>
+  <data name="Files_LoadingFolders" xml:space="preserve">
+    <value>Loading folders ...</value>
+  </data>
+  <data name="Files_CouldNotLoadFolders" xml:space="preserve">
+    <value>Could not load folders</value>
+  </data>
+
+  <!-- ── Insecure token consent dialog ── -->
+  <data name="InsecureConsent_Title" xml:space="preserve">
+    <value>Secure storage unavailable</value>
+  </data>
+  <data name="InsecureConsent_Description" xml:space="preserve">
+    <value>The OS keychain (Secret Service / KWallet) could not be accessed on this system. Your sign-in token must be stored locally.</value>
+  </data>
+  <data name="InsecureConsent_FallbackStoreLabel" xml:space="preserve">
+    <value>The fallback store:</value>
+  </data>
+  <data name="InsecureConsent_BulletEncrypted" xml:space="preserve">
+    <value>✓  Encrypted with a machine-scoped key</value>
+  </data>
+  <data name="InsecureConsent_BulletNoPlaintext" xml:space="preserve">
+    <value>✓  Never stored as plaintext</value>
+  </data>
+  <data name="InsecureConsent_BulletLessSecure" xml:space="preserve">
+    <value>✗  Less secure than the OS keychain</value>
+  </data>
+  <data name="InsecureConsent_Warning" xml:space="preserve">
+    <value>Only allow this if you trust this machine. Anyone with access to your account on this device may be able to use the stored token.</value>
+  </data>
+  <data name="InsecureConsent_RememberLabel" xml:space="preserve">
+    <value>Remember this decision for this account</value>
+  </data>
+  <data name="InsecureConsent_CancelSignIn" xml:space="preserve">
+    <value>Cancel sign-in</value>
+  </data>
+  <data name="InsecureConsent_AllowAndContinue" xml:space="preserve">
+    <value>Allow and continue</value>
+  </data>
+
+  <!-- ── Log viewer ── -->
+  <data name="LogViewer_Title" xml:space="preserve">
+    <value>Log Viewer</value>
+  </data>
+  <data name="LogViewer_Subtitle" xml:space="preserve">
+    <value>All accounts · errors, warnings, and debug entries</value>
+  </data>
+  <data name="LogViewer_NoEntriesTitle" xml:space="preserve">
+    <value>No log entries</value>
+  </data>
+  <data name="LogViewer_NoEntriesMessage" xml:space="preserve">
+    <value>Log entries will appear here once syncing begins.</value>
+  </data>
+  <data name="LogViewer_FilterAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="LogViewer_FilterErrors" xml:space="preserve">
+    <value>⚠ Errors</value>
+  </data>
+  <data name="LogViewer_FilterWarnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="LogViewer_FilterDebug" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="LogViewer_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="LogViewer_CloseTooltip" xml:space="preserve">
+    <value>Close log viewer</value>
+  </data>
+  <data name="LogViewer_FilterWatermark" xml:space="preserve">
+    <value>Filter log entries...</value>
+  </data>
+
+  <!-- ── Settings view ── -->
+  <data name="Settings_AppearanceHeading" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_ThemeLabel" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_ThemeDescription" xml:space="preserve">
+    <value>Choose light, dark or follow the system setting.</value>
+  </data>
+  <data name="Settings_ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Settings_ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="Settings_ThemeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Settings_SyncPolicyHeading" xml:space="preserve">
+    <value>Sync policy</value>
+  </data>
+  <data name="Settings_DefaultConflictLabel" xml:space="preserve">
+    <value>Default conflict resolution</value>
+  </data>
+  <data name="Settings_DefaultConflictDescription" xml:space="preserve">
+    <value>Applied to new accounts and when no per-account policy is set.</value>
+  </data>
+  <data name="Settings_SyncIntervalLabel" xml:space="preserve">
+    <value>Sync interval</value>
+  </data>
+  <data name="Settings_SyncIntervalDescription" xml:space="preserve">
+    <value>How often to automatically check for changes.</value>
+  </data>
+  <data name="Settings_AccountSyncPathsHeading" xml:space="preserve">
+    <value>Account sync paths</value>
+  </data>
+  <data name="Settings_AccountSyncPathsDescription" xml:space="preserve">
+    <value>Set the local folder where each account's files will be synced.</value>
+  </data>
+  <data name="Settings_LocalSyncFolderLabel" xml:space="preserve">
+    <value>Local sync folder</value>
+  </data>
+  <data name="Settings_LocalSyncFolderWatermark" xml:space="preserve">
+    <value>e.g. ~/OneDrive/personal</value>
+  </data>
+  <data name="Settings_BrowseButton" xml:space="preserve">
+    <value>Browse ...</value>
+  </data>
+
+  <!-- ── Update notification dialog ── -->
+  <data name="UpdateNotification_RequiredLabel" xml:space="preserve">
+    <value>Update required</value>
+  </data>
+  <data name="UpdateNotification_SyncActiveMessage" xml:space="preserve">
+    <value>A sync is in progress. The update will be applied automatically when it completes.</value>
+  </data>
+  <data name="UpdateNotification_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+
+  <!-- ── Conflict resolution panel ── -->
+  <data name="ConflictPanel_LocalFileLabel" xml:space="preserve">
+    <value>Local file</value>
+  </data>
+  <data name="ConflictPanel_Vs" xml:space="preserve">
+    <value>vs</value>
+  </data>
+  <data name="ConflictPanel_RemoteFileLabel" xml:space="preserve">
+    <value>Remote file</value>
+  </data>
+  <data name="ConflictPanel_ResolutionLabel" xml:space="preserve">
+    <value>Resolution</value>
+  </data>
+  <data name="ConflictPanel_Resolving" xml:space="preserve">
+    <value>Resolving ...</value>
+  </data>
+  <data name="ConflictPanel_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="ConflictPanel_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+
+  <!-- ── Folder tree control ── -->
+  <data name="FolderTree_OpenInFileManagerTooltip" xml:space="preserve">
+    <value>Open in file manager</value>
+  </data>
+  <data name="FolderTree_ViewFolderActivityTooltip" xml:space="preserve">
+    <value>View folder activity</value>
+  </data>
+
 </root>
