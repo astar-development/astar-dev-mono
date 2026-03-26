@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Services;
 using ReactiveUI;
 
@@ -118,52 +119,51 @@ public class AddAccountWizardViewModel : ReactiveObject
         SignInStatusText = "Waiting for browser sign-in\u2026";
         ErrorText = string.Empty;
 
-        try
+        var signInResult = await _authService.SignInInteractiveAsync(ct);
+
+        signInResult.Match(
+            onSuccess: authResult =>
+            {
+                _accessToken = authResult.AccessToken;
+                AccountId = authResult.AccountId;
+                ConfirmedEmail = authResult.Email;
+                LocalSyncPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "OneDrive", SanitiseAccountName(authResult.Email));
+                IsSignedIn = true;
+                SignInStatusText = $"Signed in as {authResult.Email}";
+                return true;
+            },
+            onFailure: error =>
+            {
+                SignInStatusText = "Sign-in failed.";
+                ErrorText = error;
+                return false;
+            });
+
+        if (IsSignedIn)
         {
-            var result = await _authService.SignInInteractiveAsync(ct);
-            _accessToken = result.AccessToken;
-            AccountId = result.AccountId;
-            ConfirmedEmail = result.Email;
-
-            var defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "OneDrive", SanitiseAccountName(result.Email));
-            LocalSyncPath = defaultPath;
-
-            IsSignedIn = true;
-            SignInStatusText = $"Signed in as {result.Email}";
-
             await LoadRootFoldersAsync(ct);
         }
-        catch (OperationCanceledException)
-        {
-            SignInStatusText = "Sign-in was cancelled.";
-        }
-        catch (Exception ex)
-        {
-            SignInStatusText = "Sign-in failed.";
-            ErrorText = ex.Message;
-        }
-        finally
-        {
-            IsWaitingForAuth = false;
-            RaiseStepChanged();
-        }
+
+        IsWaitingForAuth = false;
+        RaiseStepChanged();
     }
 
     private async Task LoadRootFoldersAsync(CancellationToken ct)
     {
-        try
-        {
-            var rootFolders = await _folderService.GetRootFoldersAsync(_accessToken, ct);
-            Folders.Clear();
-            foreach (var f in rootFolders)
+        var foldersResult = await _folderService.GetRootFoldersAsync(_accessToken, ct);
+
+        foldersResult.Match(
+            onSuccess: folders =>
             {
-                Folders.Add(new WizardFolderItem { FolderId = f.Id, Name = f.Name, IsSelected = true });
-            }
-        }
-        catch
-        {
-            // Folder loading is best-effort; user can skip or proceed with no selection.
-        }
+                Folders.Clear();
+                foreach (var f in folders)
+                {
+                    Folders.Add(new WizardFolderItem { FolderId = f.Id, Name = f.Name, IsSelected = true });
+                }
+
+                return true;
+            },
+            onFailure: _ => false);
     }
 
     private void SkipFolders()

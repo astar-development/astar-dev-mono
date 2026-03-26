@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Services;
 using AStar.Dev.OneDriveSync.ViewModels;
 
@@ -43,4 +44,17 @@ public class AddAccountWizardViewModelShould
     [Fact]
     public void ShowNextLabelAsNext_OnStep1()
         => _sut.NextLabel.ShouldBe("Next");
+
+    [Fact]
+    public void SetErrorText_WhenSignInFails()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<MsalAuthResult, string>>(new Result<MsalAuthResult, string>.Error("Auth failed")));
+        _folderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<IReadOnlyList<OneDriveFolder>, string>>(new Result<IReadOnlyList<OneDriveFolder>, string>.Ok([])));
+
+        ((ReactiveUI.ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit>)_sut.OpenBrowserCommand).Execute().Subscribe();
+        Thread.Sleep(200);
+
+        _sut.IsSignedIn.ShouldBeFalse();
+        _sut.ErrorText.ShouldBe("Auth failed");
+    }
 }

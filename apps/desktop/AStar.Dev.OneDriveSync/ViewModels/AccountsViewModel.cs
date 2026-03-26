@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Models;
 using AStar.Dev.OneDriveSync.Services;
 using Avalonia.Media;
@@ -79,21 +80,17 @@ public class AccountsViewModel : ReactiveObject
     public string? ValidateLocalSyncPath(string proposedPath, string? excludeAccountId = null)
     {
         var normalised = NormalisePath(proposedPath);
-        foreach (var record in _records)
-        {
-            if (record.AccountId == excludeAccountId)
-            {
-                continue;
-            }
 
-            var existing = NormalisePath(record.LocalSyncPath);
-            if (normalised.StartsWith(existing, StringComparison.OrdinalIgnoreCase) || existing.StartsWith(normalised, StringComparison.OrdinalIgnoreCase))
+        return _records
+            .Where(r => r.AccountId != excludeAccountId)
+            .FirstOrNone(r =>
             {
-                return $"Path overlaps with account '{record.Email}'. Each account must use a unique, non-overlapping folder.";
-            }
-        }
-
-        return null;
+                var existing = NormalisePath(r.LocalSyncPath);
+                return normalised.StartsWith(existing, StringComparison.OrdinalIgnoreCase) || existing.StartsWith(normalised, StringComparison.OrdinalIgnoreCase);
+            })
+            .Match(
+                onSome: overlapping => $"Path overlaps with account '{overlapping.Email}'. Each account must use a unique, non-overlapping folder.",
+                onNone: () => (string?)null);
     }
 
     public async Task LoadAccountsAsync(CancellationToken ct = default)
@@ -173,58 +170,38 @@ public class AccountsViewModel : ReactiveObject
     /// <summary>AM-08: Show keep/delete prompt before removing.</summary>
     private void PromptRemoveAccount(string accountId)
     {
-        var record = _records.FirstOrDefault(r => r.AccountId == accountId);
-        if (record is null)
-        {
-            return;
-        }
+        _records.FirstOrNone(r => r.AccountId == accountId)
+            .Tap(record =>
+            {
+                RemovePromptAccountEmail = record.Email;
 
-        RemovePromptAccountEmail = record.Email;
+                ConfirmRemoveKeepCommand = ReactiveCommand.Create(async () => await RemoveAccountAsync(accountId, deleteLocalFolder: false));
+                ConfirmRemoveDeleteCommand = ReactiveCommand.Create(async () => await RemoveAccountAsync(accountId, deleteLocalFolder: true));
+                CancelRemoveCommand = ReactiveCommand.Create(() => IsRemovePromptVisible = false);
 
-        ConfirmRemoveKeepCommand = ReactiveCommand.Create(async () => await RemoveAccountAsync(accountId, deleteLocalFolder: false));
-        ConfirmRemoveDeleteCommand = ReactiveCommand.Create(async () => await RemoveAccountAsync(accountId, deleteLocalFolder: true));
-        CancelRemoveCommand = ReactiveCommand.Create(() => IsRemovePromptVisible = false);
-
-        IsRemovePromptVisible = true;
+                IsRemovePromptVisible = true;
+            });
     }
 
     private async Task RemoveAccountAsync(string accountId, bool deleteLocalFolder)
     {
         IsRemovePromptVisible = false;
 
-        var record = _records.FirstOrDefault(r => r.AccountId == accountId);
-        if (record is null)
-        {
-            return;
-        }
-
-        if (deleteLocalFolder && Directory.Exists(record.LocalSyncPath))
-        {
-            try
+        _records.FirstOrNone(r => r.AccountId == accountId)
+            .Tap(record =>
             {
-                Directory.Delete(record.LocalSyncPath, recursive: true);
-            }
-            catch
-            {
-                // Best-effort deletion; user can manually clean up.
-            }
-        }
+                if (deleteLocalFolder && Directory.Exists(record.LocalSyncPath))
+                {
+                    Try.Run(() => { Directory.Delete(record.LocalSyncPath, recursive: true); return true; });
+                }
 
-        try
-        {
-            await _authService.SignOutAsync(accountId);
-        }
-        catch
-        {
-            // Best-effort sign out.
-        }
+                _records.Remove(record);
+            });
 
-        _records.Remove(record);
-        var card = Accounts.FirstOrDefault(c => c.AccountId == accountId);
-        if (card is not null)
-        {
-            Accounts.Remove(card);
-        }
+        await _authService.SignOutAsync(accountId);
+
+        Accounts.FirstOrNone(c => c.AccountId == accountId)
+            .Tap(card => Accounts.Remove(card));
 
         this.RaisePropertyChanged(nameof(HasAccounts));
         await PersistAsync();
