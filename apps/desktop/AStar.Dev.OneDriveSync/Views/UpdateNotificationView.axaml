@@ -1,0 +1,127 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             x:Class="AStar.Dev.OneDriveSync.Views.UpdateNotificationView"
+             x:DataType="vm:UpdateNotificationViewModel">
+    <!--
+        UP-01..UP-06: Update notification dialog.
+        Shown as an overlay when a new GitHub Release is available.
+        Forced update (UP-04) is shown with a mandatory countdown.
+    -->
+
+    <Border Background="{DynamicResource BackgroundPrimaryBrush}"
+            BorderBrush="{DynamicResource BorderDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource RadiusXl}"
+            Padding="28"
+            Width="420">
+
+        <StackPanel Spacing="20">
+
+            <!-- Header -->
+            <Grid ColumnDefinitions="Auto,*">
+                <!-- Cloud/update icon -->
+                <Viewbox Grid.Column="0"
+                         Width="32" Height="32"
+                         Margin="0,0,12,0"
+                         VerticalAlignment="Center">
+                    <Canvas Width="24" Height="24">
+                        <Path Fill="{DynamicResource TextAccentBrush}"
+                              Data="M19.35,10.04 C18.67,6.59 15.64,4 12,4
+                                    C9.11,4 6.6,5.64 5.35,8.04
+                                    C2.34,8.36 0,10.91 0,14
+                                    C0,17.31 2.69,20 6,20 H19
+                                    C21.76,20 24,17.76 24,15
+                                    C24,12.36 21.95,10.22 19.35,10.04 Z"/>
+                    </Canvas>
+                </Viewbox>
+
+                <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="{StaticResource FontSizeXl}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="{Binding VersionText}"
+                               FontSize="{StaticResource FontSizeSm}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"/>
+                </StackPanel>
+            </Grid>
+
+            <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+            <!-- Body text -->
+            <TextBlock Text="{Binding BodyText}"
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+
+            <!-- Forced-update countdown (UP-04) -->
+            <Border IsVisible="{Binding IsForcedUpdate}"
+                    Background="{DynamicResource BackgroundWarningBrush}"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Padding="12,8">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Update required"
+                               FontSize="{StaticResource FontSizeSm}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextWarningBrush}"/>
+                    <TextBlock Text="{Binding ForcedUpdateWarningText}"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextWarningBrush}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Active sync warning (UP-06) -->
+            <Border IsVisible="{Binding IsSyncActive}"
+                    Background="{DynamicResource BackgroundSecondaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Padding="12,8">
+                <TextBlock Text="A sync is in progress. The update will be applied automatically when it completes."
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <!-- Action buttons (UP-02) -->
+            <Grid ColumnDefinitions="*,Auto,8,Auto">
+
+                <!-- Re-prompt countdown (UP-03) -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding DeferCountdownText}"
+                           IsVisible="{Binding ShowDeferCountdown}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Defer button — hidden when forced (UP-04) -->
+                <Button Grid.Column="1"
+                        Content="Later"
+                        Padding="12,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        IsVisible="{Binding !IsForcedUpdate}"
+                        IsEnabled="{Binding !IsSyncActive}"
+                        Command="{Binding DeferCommand}"/>
+
+                <!-- Install button -->
+                <Button Grid.Column="3"
+                        Content="{Binding InstallButtonLabel}"
+                        Padding="16,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        IsEnabled="{Binding !IsSyncActive}"
+                        Command="{Binding InstallCommand}"/>
+
+            </Grid>
+
+        </StackPanel>
+    </Border>
+
+</UserControl>

@@ -1,0 +1,184 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
+             xmlns:views="clr-namespace:AStar.Dev.OneDriveSync.Views"
+             x:Class="AStar.Dev.OneDriveSync.Views.AccountsView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <Grid RowDefinitions="*">
+
+        <!-- Empty state -->
+        <StackPanel Grid.Row="0"
+                    IsVisible="{Binding !Accounts.HasAccounts}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="12">
+
+            <Viewbox Width="48" Height="48" HorizontalAlignment="Center">
+                <Canvas Width="24" Height="24">
+                    <Path Fill="{DynamicResource BorderDefaultBrush}"
+                          Data="M19.35,10.04 C18.67,6.59 15.64,4 12,4
+                                C9.11,4 6.6,5.64 5.35,8.04
+                                C2.34,8.36 0,10.91 0,14
+                                C0,17.31 2.69,20 6,20 H19
+                                C21.76,20 24,17.76 24,15
+                                C24,12.36 21.95,10.22 19.35,10.04 Z"/>
+                </Canvas>
+            </Viewbox>
+
+            <TextBlock Text="No accounts added yet"
+                       FontSize="{StaticResource FontSizeLg}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Add a Microsoft personal account to get started."
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       MaxWidth="280"/>
+
+            <Button HorizontalAlignment="Center"
+                    Padding="16,8"
+                    Margin="0,8,0,0"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="{DynamicResource TextAccentBrush}"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Command="{Binding AddAccountCommand}">
+                <TextBlock Text="Add account"
+                           FontSize="{StaticResource FontSizeMd}"
+                           Foreground="White"/>
+            </Button>
+
+        </StackPanel>
+
+        <!-- Account list -->
+        <ScrollViewer Grid.Row="0"
+                      IsVisible="{Binding Accounts.HasAccounts}"
+                      Padding="24"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+
+                <TextBlock Text="Connected accounts"
+                           FontSize="{StaticResource FontSizeXl}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Margin="0,0,0,8"/>
+
+                <ItemsControl ItemsSource="{Binding Accounts.Accounts}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:AccountCardViewModel">
+
+                            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLg}"
+                                    Padding="16"
+                                    Margin="0,0,0,4"
+                                    Cursor="Hand">
+
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                                    <!-- Avatar: initials circle -->
+                                    <Border Grid.Column="0"
+                                            Width="44" Height="44"
+                                            CornerRadius="22"
+                                            Margin="0,0,12,0"
+                                            VerticalAlignment="Center"
+                                            Background="{DynamicResource TextAccentBrush}">
+                                        <TextBlock Text="{Binding Initials}"
+                                                   FontSize="{StaticResource FontSizeMd}"
+                                                   FontWeight="Medium"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="2">
+                                        <TextBlock Text="{Binding DisplayName}"
+                                                   FontSize="{StaticResource FontSizeMd}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Email}"
+                                                   FontSize="{StaticResource FontSizeSm}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding LastSyncText}"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            VerticalAlignment="Center"
+                                            Padding="8,4"
+                                            CornerRadius="{StaticResource RadiusSm}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Command="{Binding RemoveCommand}"
+                                            ToolTip.Tip="Remove account">
+                                        <TextBlock Text="✕"
+                                                   FontSize="{StaticResource FontSizeSm}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                    </Button>
+
+                                </Grid>
+                            </Border>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button HorizontalAlignment="Left"
+                        Padding="12,6"
+                        Margin="0,8,0,0"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        Command="{Binding AddAccountCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="+"
+                                   FontSize="{StaticResource FontSizeLg}"
+                                   Foreground="{DynamicResource TextAccentBrush}"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="Add another account"
+                                   FontSize="{StaticResource FontSizeMd}"
+                                   Foreground="{DynamicResource TextAccentBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Wizard overlay -->
+        <Grid Grid.Row="0"
+              IsVisible="{Binding Accounts.IsWizardVisible}"
+              Background="#80000000">
+            <Border Background="{DynamicResource BackgroundPrimaryBrush}"
+                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusXl}"
+                    Padding="32"
+                    Width="480"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+                <ContentControl Content="{Binding Accounts.Wizard}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vm:AddAccountWizardViewModel">
+                            <views:AddAccountWizardView/>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+
+            </Border>
+        </Grid>
+
+    </Grid>
+
+</UserControl>
