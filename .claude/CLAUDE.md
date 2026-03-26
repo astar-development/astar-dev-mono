@@ -132,6 +132,15 @@ A PAT with `read:packages` scope is required. If `dotnet restore` fails with 401
 
 See @README.md for project overview and @package.json for available npm commands.
 
+## Definition of Done
+
+Before considering any coding task complete — including commits and PRs — always:
+
+1. `dotnet build` the affected project(s) and confirm zero errors and zero warnings
+2. `dotnet test` the affected test project(s) and confirm all tests pass
+
+Do not raise a PR or claim a task is finished until both steps pass locally.
+
 ## Additional Instructions
 
 - Git workflow: @docs/git-instructions.md
