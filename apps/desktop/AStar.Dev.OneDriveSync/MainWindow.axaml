@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:AStar.Dev.OneDriveSync.ViewModels"
         xmlns:controls="clr-namespace:AStar.Dev.OneDriveSync.Controls"
+        xmlns:views="clr-namespace:AStar.Dev.OneDriveSync.Views"
         xmlns:local="clr-namespace:AStar.Dev.OneDriveSync"
         mc:Ignorable="d"
         x:Class="AStar.Dev.OneDriveSync.MainWindow"
@@ -274,7 +275,28 @@
             <!-- Column 2 — Main content area -->
             <Grid Grid.Column="2"
                   Background="{DynamicResource BackgroundPrimaryBrush}">
-                <ContentControl Content="{Binding ActiveView}"/>
+                <ContentControl Content="{Binding ActiveView}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vm:DashboardViewModel">
+                            <views:DashboardView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:FilesViewModel">
+                            <views:FilesView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:ActivityViewModel">
+                            <views:ActivityView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:AccountsViewModel">
+                            <views:AccountsView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:SettingsViewModel">
+                            <views:SettingsView/>
+                        </DataTemplate>
+                        <DataTemplate DataType="vm:LogViewerViewModel">
+                            <views:LogViewerView/>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
             </Grid>
 
         </Grid>

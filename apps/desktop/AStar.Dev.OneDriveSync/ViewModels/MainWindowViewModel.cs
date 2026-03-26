@@ -1,7 +1,6 @@
 using System.Windows.Input;
 using ReactiveUI;
 using AStar.Dev.OneDriveSync.Theming;
-using AStar.Dev.OneDriveSync.Views;
 
 namespace AStar.Dev.OneDriveSync.ViewModels;
 
@@ -12,13 +11,12 @@ public class MainWindowViewModel : ReactiveObject
     private object? _activeView;
     private bool _isLogViewerOpen;
 
-    // Views — created once and reused
-    private readonly DashboardView _dashboardView;
-    private readonly FilesView _filesView;
-    private readonly ActivityView _activityView;
-    private readonly AccountsView _accountsView;
-    private readonly SettingsView _settingsView;
-    private readonly LogViewerView _logViewerView;
+    // Sub-ViewModels — created once and reused
+    private readonly DashboardViewModel _dashboardVm;
+    private readonly FilesViewModel _filesVm;
+    private readonly ActivityViewModel _activityVm;
+    private readonly SettingsViewModel _settingsVm;
+    private readonly LogViewerViewModel _logViewerVm;
 
     public MainWindowViewModel(IThemeService themeService)
     {
@@ -28,16 +26,17 @@ public class MainWindowViewModel : ReactiveObject
         Accounts  = new AccountsViewModel();
         StatusBar = new StatusBarViewModel();
 
-        _dashboardView  = new DashboardView  { DataContext = new DashboardViewModel() };
-        _filesView      = new FilesView      { DataContext = new FilesViewModel() };
-        _activityView   = new ActivityView   { DataContext = new ActivityViewModel() };
-        _accountsView   = new AccountsView   { DataContext = this };
-        _settingsView   = new SettingsView   { DataContext = new SettingsViewModel() };
-        _logViewerView  = new LogViewerView  { DataContext = new LogViewerViewModel() };
+        _dashboardVm  = new DashboardViewModel();
+        _filesVm      = new FilesViewModel();
+        _activityVm   = new ActivityViewModel();
+        _settingsVm   = new SettingsViewModel();
+        _logViewerVm  = new LogViewerViewModel();
 
-        NavigateCommand    = ReactiveCommand.Create<NavSection>(Navigate);
-        AddAccountCommand  = ReactiveCommand.Create(OpenAddAccountWizard);
+        NavigateCommand      = ReactiveCommand.Create<NavSection>(Navigate);
+        AddAccountCommand    = ReactiveCommand.Create(OpenAddAccountWizard);
         OpenLogViewerCommand = ReactiveCommand.Create(OpenLogViewer);
+
+        _selectedThemeOption = ThemeOptions.First(o => o.Mode == themeService.CurrentMode);
 
         // Start on Dashboard
         Navigate(NavSection.Dashboard);
@@ -92,12 +91,12 @@ public class MainWindowViewModel : ReactiveObject
 
         ActiveView = section switch
         {
-            NavSection.Dashboard => _dashboardView,
-            NavSection.Files     => _filesView,
-            NavSection.Activity  => _activityView,
-            NavSection.Accounts  => _accountsView,
-            NavSection.Settings  => _settingsView,
-            _                    => _dashboardView
+            NavSection.Dashboard => _dashboardVm,
+            NavSection.Files     => _filesVm,
+            NavSection.Activity  => _activityVm,
+            NavSection.Accounts  => (object)Accounts,
+            NavSection.Settings  => _settingsVm,
+            _                    => _dashboardVm
         };
 
         RaiseNavActiveChanged();
@@ -106,14 +105,13 @@ public class MainWindowViewModel : ReactiveObject
     private void OpenAddAccountWizard()
     {
         Navigate(NavSection.Accounts);
-        Accounts.IsWizardVisible = true;
-        Accounts.Wizard          = new AddAccountWizardViewModel();
+        Accounts.AddAccountCommand.Execute(null);
     }
 
     private void OpenLogViewer()
     {
         _isLogViewerOpen = true;
-        ActiveView       = _logViewerView;
+        ActiveView       = _logViewerVm;
         RaiseNavActiveChanged();
     }
 
