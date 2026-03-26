@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync;
 
@@ -15,5 +16,6 @@ internal static class Program
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
+            .UseReactiveUI()
             .LogToTrace();
 }

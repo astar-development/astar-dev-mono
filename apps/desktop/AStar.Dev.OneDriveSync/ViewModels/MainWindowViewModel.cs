@@ -1,7 +1,8 @@
 using System.Windows.Input;
-using ReactiveUI;
 using AStar.Dev.OneDriveSync.Logging;
+using AStar.Dev.OneDriveSync.Services;
 using AStar.Dev.OneDriveSync.Theming;
+using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.ViewModels;
 
@@ -18,12 +19,12 @@ public class MainWindowViewModel : ReactiveObject
     private readonly SettingsViewModel _settingsVm;
     private readonly LogViewerViewModel _logViewerVm;
 
-    public MainWindowViewModel(IThemeService themeService, LoggingService loggingService)
+    public MainWindowViewModel(IThemeService themeService, LoggingService loggingService, IAccountStore accountStore, IMsalAuthService authService, IOneDriveFolderService folderService)
     {
         _themeService = themeService;
 
         // Initialise sub-ViewModels
-        Accounts  = new AccountsViewModel();
+        Accounts  = new AccountsViewModel(accountStore, authService, folderService);
         StatusBar = new StatusBarViewModel();
 
         _dashboardVm  = new DashboardViewModel();
@@ -40,6 +41,9 @@ public class MainWindowViewModel : ReactiveObject
 
         // Start on Dashboard
         Navigate(NavSection.Dashboard);
+
+        // Load persisted accounts
+        _ = Accounts.LoadAccountsAsync();
     }
 
     // ── Sub-ViewModels ─────────────────────────────────────────────────────
