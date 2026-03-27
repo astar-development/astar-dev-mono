@@ -59,6 +59,37 @@ describe('theme', () => {
 })
 ```
 
+## Self-documenting tests
+
+**No comments — ever — inside `it` blocks or `describe` blocks.** This is non-negotiable:
+
+- The `it(...)` description IS the documentation. If a comment feels necessary, the description or a variable name is wrong — rename until the code reads plainly without it.
+- No `// Arrange`, `// Act`, `// Assert` label comments. The AAA structure is communicated by a **single blank line** between each phase. Nothing else.
+- If the intent of a test cannot be understood from its `it(...)` description, local variable names, and assertion alone, rewrite it until it can.
+
+## Test method style
+
+AAA phases separated by a single blank line — no label comments:
+
+```typescript
+it('returns the stored user when the id exists', async () => {
+  fetchUser.mockResolvedValue({ id: '1', name: 'Alice' })
+
+  const result = await getUser('1')
+
+  expect(result).toEqual({ id: '1', name: 'Alice' })
+})
+```
+
+Single-assertion tests need no blank lines at all when all three phases fit on one logical step:
+
+```typescript
+it('falls back to dark when no theme is saved', () => {
+  const { theme } = withSetup(useTheme)
+  expect(theme.value).toBe('dark')
+})
+```
+
 ## TDD commit sequence (per feature)
 
 ```
@@ -117,7 +148,9 @@ import ThemeSwitcher from "../../src/components/ThemeSwitcher.vue";
 describe("ThemeSwitcher", () => {
     it("emits the selected theme when a button is clicked", async () => {
         const wrapper = mount(ThemeSwitcher);
+
         await wrapper.find('[data-testid="theme-dark"]').trigger("click");
+
         expect(wrapper.emitted("theme-change")?.[0]).toEqual(["dark"]);
     });
 });
@@ -136,13 +169,17 @@ import { CartProvider, useCart } from '../../src/context/CartContext'
 describe('useCart', () => {
   it('throws when used outside CartProvider', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
     expect(() => render(<TestConsumer />)).toThrow('useCart must be used within CartProvider')
+
     consoleError.mockRestore()
   })
 
   it('adds a product to the cart', () => {
     render(<CartProvider><AddButton /><CartCount /></CartProvider>)
+
     fireEvent.click(screen.getByRole('button', { name: /add/i }))
+
     expect(screen.getByTestId('cart-count')).toHaveTextContent('1')
   })
 })
@@ -163,7 +200,9 @@ import { createApp } from "../../src/app";
 describe("GET /api/health", () => {
     it("returns 200 with status ok", async () => {
         const app = createApp();
+
         const response = await request(app).get("/api/health");
+
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({ status: "ok" });
     });
@@ -177,16 +216,13 @@ describe("GET /api/health", () => {
 ## Mocking
 
 ```typescript
-// Module mock — hoist to top of file, Vitest hoists vi.mock automatically
 vi.mock("../../src/api/userService", () => ({
     fetchUser: vi.fn<() => Promise<User>>(),
 }));
 
-// Typed spy
 const fetchUser = vi.mocked(userService.fetchUser);
 fetchUser.mockResolvedValue({ id: "1", name: "Alice" });
 
-// localStorage stub
 const getItem = vi.spyOn(Storage.prototype, "getItem").mockReturnValue("metal");
 ```
 
@@ -196,17 +232,23 @@ const getItem = vi.spyOn(Storage.prototype, "getItem").mockReturnValue("metal");
 
 ## Async tests
 
+Good — `await` the assertion:
+
 ```typescript
-// Good — await the assertion
 it("resolves with the fetched user", async () => {
     fetchUser.mockResolvedValue({ id: "1", name: "Alice" });
+
     const result = await getUser("1");
+
     expect(result).toEqual({ id: "1", name: "Alice" });
 });
+```
 
-// Bad — floating promise, test may pass vacuously
+Bad — floating promise, test may pass vacuously:
+
+```typescript
 it("resolves with the fetched user", () => {
-    expect(getUser("1")).resolves.toEqual({ id: "1", name: "Alice" }); // ← no await
+    expect(getUser("1")).resolves.toEqual({ id: "1", name: "Alice" }); // no await
 });
 ```
 
@@ -227,6 +269,8 @@ it("resolves with the fetched user", () => {
 - [ ] Test written before production code (verify via `git log` if in doubt)
 - [ ] All test files are `.test.ts` / `.test.tsx` — no `.test.js` / `.test.jsx`
 - [ ] `describe` / `it` used (not `test`)
+- [ ] No comments inside `it` or `describe` blocks — descriptions and variable names speak for themselves
+- [ ] AAA phases separated by a single blank line only — no `// Arrange` / `// Act` / `// Assert` labels
 - [ ] No `any` in test files
 - [ ] Mocks typed explicitly with `vi.fn<...>()`
 - [ ] `vi.resetAllMocks()` in `beforeEach` at the `describe` level

@@ -48,35 +48,52 @@ Use these features where they improve clarity; flag their absence where they wou
 - **Test class naming:** `[ClassUnderTest]Should` — e.g., `StringExtensionsShould`.
 - **Test class modifier:** `sealed` — always.
 - **File-scoped namespaces** — always.
+- **Return statement spacing** — every `return` statement must be preceded by a blank line. This applies to all test methods and test helpers without exception.
 - **Global usings** already configured: `Xunit`, `Shouldly`, `NSubstitute` — do not add explicit `using` statements for these.
 - **Package reference vs project reference:** use `<ProjectReference>` to the assembly under test, never `<PackageReference>` to its NuGet form during development.
 - **No version attributes in `.csproj`** — all NuGet versions live in `Directory.Packages.props`.
 - Test projects inherit `IsPackable=false` and `IsPublishable=false` automatically — do not set these.
 
+## Self-documenting tests
+
+**No comments — ever — inside test methods or test classes.** This is non-negotiable:
+
+- The test method name IS the documentation. If a comment feels necessary, the name or the variable is wrong — rename until the code reads plainly without it.
+- No `// Arrange`, `// Act`, `// Assert` label comments. The AAA structure is communicated by a **single blank line** between each phase. Nothing else.
+- No XML doc comments (`/// <summary>`) on test classes or test methods.
+- If the intent of a test cannot be understood from its name, local variable names, and assertion message alone, rewrite it until it can.
+
 ## Test method style
 
+Expression-bodied for trivial single-assertion tests:
+
 ```csharp
-// Simple: expression-bodied lambda
 [Fact]
 public void ReturnTrueWhenValueIsNull() =>
     ((string?)null).IsNull().ShouldBeTrue();
+```
 
-// Parameterised
+Parameterised with `[Theory]`:
+
+```csharp
 [Theory]
-[InlineData("no-ext",          false)]
-[InlineData("file.jpg",        true)]
+[InlineData("no-ext",   false)]
+[InlineData("file.jpg", true)]
 public void ReturnExpectedResultForIsImage(string input, bool expected) =>
     input.IsImage().ShouldBe(expected);
+```
 
-// Exception assertion (multi-line when setup is needed)
+Multi-phase tests — AAA separated by a single blank line, no label comments:
+
+```csharp
 [Fact]
 public void ThrowArgumentExceptionForUnknownEnumValue()
 {
     Action act = () => "Unknown".ParseEnum<SomeEnum>();
+
     act.ShouldThrow<ArgumentException>();
 }
 
-// NSubstitute substitute
 [Fact]
 public void CallRepositoryOnce()
 {
@@ -118,10 +135,14 @@ When reviewing existing or new tests, flag:
 
 - [ ] Test written before production code (verify via git log if in doubt)
 - [ ] Test class is `sealed` with `Should` suffix
+- [ ] No comments inside test methods or test classes — names and structure speak for themselves
+- [ ] AAA phases separated by a single blank line only — no `// Arrange` / `// Act` / `// Assert` labels
+- [ ] No XML doc comments on test classes or methods
 - [ ] Assertions use Shouldly, not `Assert.*`
 - [ ] No `Moq` or other mocking library imported
 - [ ] Mocks use `NSubstitute` `Received`/`DidNotReceive` for interaction verification
 - [ ] No `Thread.Sleep` or `Task.Delay` — use `TaskCompletionSource` or `ManualResetEventSlim` for async coordination
+- [ ] Every `return` statement is preceded by a blank line
 - [ ] `CancellationToken` threaded through all async test helpers
 - [ ] No `[Skip]` without an issue reference
 - [ ] Snapshot (`.approved.txt`) files committed alongside tests that use `ShouldMatchApproved`
