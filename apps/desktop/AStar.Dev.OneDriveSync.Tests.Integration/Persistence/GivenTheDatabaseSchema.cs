@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using AStar.Dev.OneDriveSync.Accounts;
 using AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
 using Microsoft.Data.Sqlite;
+using AStar.Dev.OneDriveSync.Features.Accounts;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 
@@ -34,7 +34,8 @@ public sealed class GivenTheDatabaseSchema
 
         Func<Task> act = async () =>
             await context.Database.ExecuteSqlRawAsync(
-                $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{Guid.NewGuid()}')",
+                "INSERT INTO test_fk_violation (id, account_id) VALUES ({0}, {1})",
+                (IEnumerable<object>)[Guid.NewGuid().ToString(), Guid.NewGuid().ToString()],
                 TestContext.Current.CancellationToken);
 
         await act.ShouldThrowAsync<SqliteException>();

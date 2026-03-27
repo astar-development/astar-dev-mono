@@ -16,7 +16,8 @@ public sealed class GivenAnAccountWithLinkedRows
         context.Accounts.Add(account);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{account.Id.ToString("D").ToUpperInvariant()}')",
+            "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
+            (IEnumerable<object>)[Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
         SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", account.Id, expected: 1);
 
@@ -38,10 +39,12 @@ public sealed class GivenAnAccountWithLinkedRows
         context.Accounts.AddRange(keptAccount, deletedAccount);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{keptAccount.Id.ToString("D").ToUpperInvariant()}')",
+            "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
+            (IEnumerable<object>)[Guid.NewGuid().ToString(), keptAccount.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
         await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{deletedAccount.Id.ToString("D").ToUpperInvariant()}')",
+            "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
+            (IEnumerable<object>)[Guid.NewGuid().ToString(), deletedAccount.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
 
         context.Accounts.Remove(deletedAccount);
