@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AStar.Dev.OneDriveSync.Features.Home.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/astar.ico"
+        Icon="avares://AStar.Dev.OneDriveSync/Assets/astar.ico"
         Title="AStar.Dev.OneDriveSync">
 
     <Design.DataContext>

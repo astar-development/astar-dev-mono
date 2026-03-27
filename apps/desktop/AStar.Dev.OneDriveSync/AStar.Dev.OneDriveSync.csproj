@@ -23,7 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
@@ -51,5 +50,13 @@
     <ProjectReference Include="../../../packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
     <ProjectReference Include="../../../packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets/astar.ico">
+      <Pack>true</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
 
 </Project>
