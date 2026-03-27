@@ -13,14 +13,6 @@ namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 ///     target for every other table.  Rotating, invalidating, or changing an account's
 ///     Microsoft identity detail must not alter the PK value that ties the account to all
 ///     its related data.
-///
-///     Note on Guid format: EF Core 10 stores <see cref="Guid" /> values as uppercase TEXT
-///     in SQLite.  Raw ADO.NET SQL uses <c>guid.ToString("D").ToUpperInvariant()</c> to match, because
-///     SQLite TEXT comparisons are case-sensitive.
-///
-///     Raw SQL strings are assigned to named variables before being passed to
-///     <c>ExecuteSqlRawAsync</c> to satisfy the EF1002 analyser, which fires only on
-///     inline interpolated string literals.
 /// </summary>
 public sealed class AccountGuidFkIndependenceShould
 {
@@ -85,9 +77,7 @@ public sealed class AccountGuidFkIndependenceShould
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var childId        = Guid.NewGuid().ToString();
-        var accountIdUpper = accountId.ToString("D").ToUpperInvariant();
-        var insertChildSql = $"INSERT INTO test_ms_id_child (id, account_id) VALUES ('{childId}', '{accountIdUpper}')";
+        var insertChildSql = $"INSERT INTO test_ms_id_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{accountId.ToString("D").ToUpperInvariant()}')";
         await context.Database.ExecuteSqlRawAsync(insertChildSql, TestContext.Current.CancellationToken);
 
         // Act — rotate the Microsoft account ID
@@ -97,10 +87,7 @@ public sealed class AccountGuidFkIndependenceShould
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Assert — child row still references the account via the unchanged Guid FK
-        using var cmd = factory.Connection.CreateCommand();
-        cmd.CommandText = $"SELECT COUNT(*) FROM test_ms_id_child WHERE account_id = '{accountIdUpper}'";
-        var count = (long?)cmd.ExecuteScalar();
-        count.ShouldBe(1);
+        SqliteAssert.ChildRowCount(factory.Connection, "test_ms_id_child", accountId, expected: 1);
     }
 
     [Fact]

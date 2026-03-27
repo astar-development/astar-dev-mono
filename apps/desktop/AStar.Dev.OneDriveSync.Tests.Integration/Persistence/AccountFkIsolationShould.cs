@@ -12,10 +12,6 @@ namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 ///     <c>Email</c>, <c>DisplayName</c>, and <c>MicrosoftAccountId</c> properties
 ///     exist only on the <see cref="Account" /> entity.  Any new entity added in future
 ///     stories that accidentally exposes PII columns will be caught immediately.
-///
-///     The FK-violation test uses <c>ExecuteSqlRawAsync</c> with SQL assigned to a named
-///     variable to satisfy the EF1002 analyser, which fires only on inline interpolated
-///     string literals passed directly to the method.
 /// </summary>
 public sealed class AccountFkIsolationShould
 {
@@ -106,9 +102,8 @@ public sealed class AccountFkIsolationShould
         await context.Database.ExecuteSqlRawAsync(createFkTestTableSql, TestContext.Current.CancellationToken);
 
         // Act
-        var bogusAccountId = Guid.NewGuid();
-        var insertSql      = $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{bogusAccountId}')";
-        Func<Task> act     = async () =>
+        var insertSql = $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{Guid.NewGuid()}')";
+        Func<Task> act = async () =>
             await context.Database.ExecuteSqlRawAsync(insertSql, TestContext.Current.CancellationToken);
 
         // Assert
