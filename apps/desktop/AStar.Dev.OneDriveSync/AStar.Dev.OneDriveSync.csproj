@@ -45,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
     <ProjectReference Include="../../../packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
     <ProjectReference Include="../../../packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/AStar.Dev.Sync.Engine.csproj" />
     <ProjectReference Include="../../../packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />

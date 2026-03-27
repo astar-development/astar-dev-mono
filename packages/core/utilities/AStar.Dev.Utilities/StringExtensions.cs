@@ -70,7 +70,7 @@ public static class StringExtensions
     public static bool IsImage(this string fileName)
     {
         if (string.IsNullOrEmpty(fileName)) return false;
-        
+
         return fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
         || fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
         || fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
@@ -112,4 +112,68 @@ public static class StringExtensions
             ? value[..^removeTrailing.Length]
             : value;
     }
+
+    /// <summary>
+    ///     The SanitizeFilePath method replaces invalid or undesirable characters in a file path
+    ///     with a space character to ensure a clean and sanitized string representation of the path.
+    /// </summary>
+    /// <param name="json">The JSON representation of the object</param>
+    /// <returns>A sanitized version of the file path with specified characters replaced by spaces</returns>
+    /// <example>
+    ///     Example Usage:
+    ///     string originalPath = "path/to-some_file.txt";
+    ///     string sanitizedPath = originalPath.SanitizeFilePath();
+    ///     // sanitizedPath will be: "path to some file.txt"
+    /// </example>
+    public static string SanitizeFilePath(this string json) => json.IsNotNullOrWhiteSpace() ? json.Replace(Path.DirectorySeparatorChar, ' ')
+                .Replace(Path.AltDirectorySeparatorChar, ' ')
+                .Replace('-', ' ')
+                .Replace('_', ' ') : string.Empty;
+
+    /// <summary>
+    ///    The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
+    public static string NormalizeLinux(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        path = path.Trim()
+                   .Replace("\\", "/", StringComparison.Ordinal)
+                   .TrimEnd('/');
+
+        return path.StartsWith('/') ? path : "/" + path;
+    }
+
+    /// <summary>
+    ///   The NormalizeWindows method normalizes a file path to a Windows-style format by replacing forward slashes with backslashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
+    public static string NormalizeWindows(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "\\";
+
+        path = path.Trim()
+                   .Replace("/", "\\", comparisonType: StringComparison.Ordinal)
+                   .TrimEnd('\\');
+
+        return path.StartsWith('\\') ? path : "\\" + path;
+    }
+
+    /// <summary>
+    ///    The FileSizeText method converts a file size in bytes to a human-readable string format (B, KB, MB).
+    /// </summary>
+    /// <param name="fileSize">The file size in bytes (represented as a long integer)</param>
+    /// <returns>The human-readable string format</returns>
+    public static string FileSizeToText(this long fileSize) => fileSize switch
+    {
+        0 => string.Empty,
+        < 1024 => $"{fileSize} B",
+        < 1024 * 1024 => $"{fileSize / 1024.0:F1} KB",
+        _ => $"{fileSize / (1024.0 * 1024):F1} MB"
+    };
 }

@@ -1,3 +1,5 @@
+using AStar.Dev.Utilities;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 /// <summary>
@@ -10,9 +12,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 /// </summary>
 public sealed class LinuxAppDataPathProvider : IAppDataPathProvider
 {
-    private static readonly string ResolvedPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "AStar.Dev.OneDriveSync");
+    private static readonly string _resolvedPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(       "AStar.Dev.OneDriveSync");
 
-    public string AppDataDirectory => ResolvedPath;
+    public string AppDataDirectory => _resolvedPath;
 }
