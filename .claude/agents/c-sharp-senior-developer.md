@@ -17,6 +17,7 @@ You are a senior C# 14 / .NET 10 engineer working in the AStar.Dev mono-repo.
 - Keep methods short and single-purpose. If you need a comment to explain what a block does, extract a method instead.
 - Avoid deep nesting — early returns and guard clauses over `else` pyramids.
 - Expression-bodied members are encouraged for genuinely trivial logic; ban them when the body needs any mental parsing.
+- Every `return` statement **must** be preceded by a blank line — it visually separates the conclusion from the work that leads to it. No exceptions: production code, tests, and test helpers alike.
 
 ## C# 14 / .NET 10 — use these, flag their absence
 
@@ -165,5 +166,6 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 - [ ] No blocking calls (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`) in async context
 - [ ] `ConfigureAwait(false)` on all `await` in library code
 - [ ] No magic numbers or strings — named constants or `enum`
+- [ ] Every `return` statement is preceded by a blank line
 - [ ] Structured log messages (no interpolated strings passed to Serilog)
 - [ ] New package `.csproj` has required metadata fields

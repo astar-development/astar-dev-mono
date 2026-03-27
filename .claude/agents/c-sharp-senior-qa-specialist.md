@@ -45,47 +45,77 @@ Use these features where they improve clarity; flag their absence where they wou
 ## Project and file conventions
 
 - **Test project naming:** `[Subject].Tests.Unit` for unit tests, `[Subject].Tests.Integration` for integration tests.
-- **Test class naming:** `[ClassUnderTest]Should` — e.g., `StringExtensionsShould`.
+- **Test class naming:** `Given[Context]` — the class names the business context or state under test, e.g., `GivenAnAccount`, `GivenANullString`, `GivenADatabaseReadyForSync`.
+- **Test method naming:** `when_[action]_then_[outcome]` in snake_case — e.g., `when_deleted_then_all_linked_rows_are_removed`.
 - **Test class modifier:** `sealed` — always.
 - **File-scoped namespaces** — always.
+- **Return statement spacing** — every `return` statement must be preceded by a blank line. This applies to all test methods and test helpers without exception.
 - **Global usings** already configured: `Xunit`, `Shouldly`, `NSubstitute` — do not add explicit `using` statements for these.
 - **Package reference vs project reference:** use `<ProjectReference>` to the assembly under test, never `<PackageReference>` to its NuGet form during development.
 - **No version attributes in `.csproj`** — all NuGet versions live in `Directory.Packages.props`.
 - Test projects inherit `IsPackable=false` and `IsPublishable=false` automatically — do not set these.
 
+## Self-documenting tests
+
+**No comments — ever — inside test methods or test classes.** This is non-negotiable:
+
+- The method name IS the documentation. If a comment feels necessary, the name or a variable is wrong — rename until the code reads plainly without it.
+- No `// Arrange`, `// Act`, `// Assert` label comments. The AAA structure is communicated by a **single blank line** between each phase. Nothing else.
+- No XML doc comments (`/// <summary>`) on test classes or test methods.
+- If the intent of a test cannot be understood from its name, local variable names, and assertion message alone, rewrite it until it can.
+
 ## Test method style
 
+Expression-bodied for trivial single-assertion tests:
+
 ```csharp
-// Simple: expression-bodied lambda
-[Fact]
-public void ReturnTrueWhenValueIsNull() =>
-    ((string?)null).IsNull().ShouldBeTrue();
-
-// Parameterised
-[Theory]
-[InlineData("no-ext",          false)]
-[InlineData("file.jpg",        true)]
-public void ReturnExpectedResultForIsImage(string input, bool expected) =>
-    input.IsImage().ShouldBe(expected);
-
-// Exception assertion (multi-line when setup is needed)
-[Fact]
-public void ThrowArgumentExceptionForUnknownEnumValue()
+public sealed class GivenANullString
 {
-    Action act = () => "Unknown".ParseEnum<SomeEnum>();
-    act.ShouldThrow<ArgumentException>();
+    [Fact]
+    public void when_checked_for_null_then_returns_true() =>
+        ((string?)null).IsNull().ShouldBeTrue();
+}
+```
+
+Parameterised with `[Theory]`:
+
+```csharp
+public sealed class GivenAFileName
+{
+    [Theory]
+    [InlineData("no-ext",   false)]
+    [InlineData("file.jpg", true)]
+    public void when_checked_for_image_extension_then_returns_expected_result(string input, bool expected) =>
+        input.IsImage().ShouldBe(expected);
+}
+```
+
+Multi-phase tests — AAA separated by a single blank line, no label comments:
+
+```csharp
+public sealed class GivenAnUnknownEnumValue
+{
+    [Fact]
+    public void when_parsed_then_throws_argument_exception()
+    {
+        Action act = () => "Unknown".ParseEnum<SomeEnum>();
+
+        act.ShouldThrow<ArgumentException>();
+    }
 }
 
-// NSubstitute substitute
-[Fact]
-public void CallRepositoryOnce()
+public sealed class GivenAServiceWithARepository
 {
-    var repo = Substitute.For<IRepository>();
-    var sut  = new MyService(repo);
+    [Fact]
+    public void when_work_is_done_then_the_repository_receives_exactly_one_save_call()
+    {
+        var repo = Substitute.For<IRepository>();
+        var sut  = new MyService(repo);
 
-    sut.DoWork();
+        sut.DoWork();
 
-    repo.Received(1).Save(Arg.Any<Entity>());
+        repo.Received(1).Save(Arg.Any<Entity>());
+    }
 }
 ```
 
@@ -117,7 +147,12 @@ Branch: `feature/short-description` off `main`. `main` must always be deployable
 When reviewing existing or new tests, flag:
 
 - [ ] Test written before production code (verify via git log if in doubt)
-- [ ] Test class is `sealed` with `Should` suffix
+- [ ] Test class is `sealed` with `Given` prefix — e.g., `GivenAnAccount`
+- [ ] Test method is snake_case with `when_…_then_…` structure
+- [ ] No comments inside test methods or test classes — names and structure speak for themselves
+- [ ] AAA phases separated by a single blank line only — no `// Arrange` / `// Act` / `// Assert` labels
+- [ ] No XML doc comments on test classes or methods
+- [ ] Every `return` statement is preceded by a blank line
 - [ ] Assertions use Shouldly, not `Assert.*`
 - [ ] No `Moq` or other mocking library imported
 - [ ] Mocks use `NSubstitute` `Received`/`DidNotReceive` for interaction verification
