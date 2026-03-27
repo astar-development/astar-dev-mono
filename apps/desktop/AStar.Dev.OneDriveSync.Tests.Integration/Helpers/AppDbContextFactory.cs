@@ -1,30 +1,15 @@
+using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
 
-/// <summary>
-///     Creates a disposable, schema-initialised <see cref="AppDbContext" /> backed by a
-///     SQLite in-memory database for integration tests.
-///
-///     Usage:
-///     <code>
-///     using var factory = AppDbContextFactory.Create();
-///     await using var context = await factory.CreateContextAsync();
-///     </code>
-///
-///     The underlying <see cref="SqliteConnection" /> is kept open for the lifetime of the
-///     factory so that the in-memory database persists across multiple context instances
-///     within the same test.
-/// </summary>
 internal sealed class AppDbContextFactory : IAsyncDisposable
 {
     private readonly SqliteConnection _connection;
 
     private AppDbContextFactory(SqliteConnection connection) => _connection = connection;
 
-    /// <summary>Creates a new factory with a fresh, schema-initialised in-memory database.</summary>
     public static AppDbContextFactory Create()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
@@ -33,12 +18,6 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
         return new AppDbContextFactory(connection);
     }
 
-    /// <summary>
-    ///     Builds an <see cref="AppDbContext" /> pointed at the shared in-memory connection,
-    ///     ensures the schema is created, and enables foreign-key enforcement.
-    ///     Each call returns a fresh context instance; all share the same database because
-    ///     they share the same connection.
-    /// </summary>
     public async Task<AppDbContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -47,19 +26,24 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
         var context = new AppDbContext(options);
         await context.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
-        await EnableForeignKeyEnforcementAsync(context, cancellationToken).ConfigureAwait(false);
+        await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
 
         return context;
     }
 
-    /// <summary>Returns the open <see cref="SqliteConnection" /> for raw-SQL assertions.</summary>
+    public static AppDbContext CreateForModelInspection()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite("DataSource=:memory:")
+            .Options;
+
+        return new AppDbContext(options);
+    }
+
     public SqliteConnection Connection => _connection;
 
     public async ValueTask DisposeAsync()
     {
         await _connection.DisposeAsync().ConfigureAwait(false);
     }
-
-    private static Task<int> EnableForeignKeyEnforcementAsync(AppDbContext context, CancellationToken cancellationToken) =>
-        context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken);
 }
