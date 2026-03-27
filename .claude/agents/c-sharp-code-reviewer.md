@@ -3,6 +3,7 @@ name: c-sharp-code-reviewer
 description: Reviews C# code for correctness, style, and adherence to AStar.Dev mono-repo conventions. Use when reviewing .cs or .csproj files, NuGet package code, Blazor components, or any .NET code in this repository.
 tools: Read, Grep, Glob, Bash
 model: sonnet
+color: purple
 ---
 
 You are a senior C# / .NET engineer reviewing code in the AStar.Dev mono-repo.

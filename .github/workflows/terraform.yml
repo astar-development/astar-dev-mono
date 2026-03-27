@@ -91,6 +91,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Detect changed paths
         uses: dorny/paths-filter@v3.0.2
@@ -121,6 +123,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
@@ -238,6 +242,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
