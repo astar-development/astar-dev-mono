@@ -37,7 +37,8 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
         context.Accounts.Add(account);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_ms_id_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{account.Id.ToString("D").ToUpperInvariant()}')",
+            "INSERT INTO test_ms_id_child (id, account_id) VALUES ({0}, {1})",
+            (IEnumerable<object>)[Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
 
         var loaded = await context.Accounts.FindAsync(new object?[] { account.Id }, TestContext.Current.CancellationToken);

@@ -1,4 +1,4 @@
-using AStar.Dev.OneDriveSync.Accounts;
+using AStar.Dev.OneDriveSync.Features.Accounts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -17,6 +17,10 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
     public void Configure(EntityTypeBuilder<Account> builder)
     {
         builder.HasKey(a => a.Id);
+
+        // Synthetic GUID — caller always provides the value; EF must never generate one.
+        builder.Property(a => a.Id)
+            .ValueGeneratedNever();
 
         builder.Property(a => a.DisplayName)
             .IsRequired()

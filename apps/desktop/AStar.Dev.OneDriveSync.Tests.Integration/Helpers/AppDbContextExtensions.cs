@@ -1,4 +1,4 @@
-using AStar.Dev.OneDriveSync.Accounts;
+using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +9,7 @@ internal static class AppDbContextExtensions
     public static async Task CreateStubChildTableAsync(this AppDbContext context, string tableName, bool cascadeOnDelete = true, CancellationToken cancellationToken = default)
     {
         var accountTableName = context.Model.FindEntityType(typeof(Account))!.GetTableName();
-        var onDelete         = cascadeOnDelete ? "ON DELETE CASCADE" : string.Empty;
+        var onDelete = cascadeOnDelete ? "ON DELETE CASCADE" : string.Empty;
 
         await context.Database.ExecuteSqlRawAsync($"""
             CREATE TABLE IF NOT EXISTS {tableName} (

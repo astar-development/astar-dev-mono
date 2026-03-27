@@ -1,5 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 
@@ -26,8 +27,9 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     {
         var pathProvider = Substitute.For<IAppDataPathProvider>();
         pathProvider.AppDataDirectory.Returns(_tempRoot);
+        var logger = Substitute.For<ILogger<DbBackupService>>();
 
-        return new DbBackupService(pathProvider);
+        return new DbBackupService(pathProvider, logger);
     }
 
     [Fact]
@@ -35,7 +37,7 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     {
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"), "SQLite placeholder", TestContext.Current.CancellationToken);
 
-        var result = await CreateSut().BackupAsync();
+        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
         File.Exists(Path.Combine(_tempRoot, "data.db.bak")).ShouldBeTrue();
@@ -44,7 +46,7 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     [Fact]
     public async Task when_the_database_file_is_absent_then_backup_returns_a_failure_result()
     {
-        var result = await CreateSut().BackupAsync();
+        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Result<bool, ErrorResponse>.Error>();
     }
@@ -55,7 +57,7 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"),     "current database content", TestContext.Current.CancellationToken);
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), "stale backup",             TestContext.Current.CancellationToken);
 
-        var result = await CreateSut().BackupAsync();
+        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
         var backupContent = await File.ReadAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), TestContext.Current.CancellationToken);

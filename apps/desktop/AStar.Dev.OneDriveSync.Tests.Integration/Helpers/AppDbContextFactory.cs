@@ -25,7 +25,9 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
             .Options;
 
         var context = new AppDbContext(options);
-        await context.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
+
+        // Use MigrateAsync — never EnsureCreatedAsync — to exercise the real migration path (S002 AC).
+        await context.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
         await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
 
         return context;

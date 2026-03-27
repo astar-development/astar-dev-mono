@@ -1,4 +1,5 @@
-using AStar.Dev.OneDriveSync.Accounts;
+using AStar.Dev.OneDriveSync.Features.Accounts;
+using AStar.Dev.OneDriveSync.Infrastructure.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
@@ -14,6 +15,14 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 {
     /// <summary>Accounts — the sole PII-bearing table.</summary>
     public DbSet<Account> Accounts => Set<Account>();
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // AC DB-01: all DateTimeOffset properties stored as Unix milliseconds via a single
+        // globally-registered converter — never duplicated per entity (DB-01).
+        configurationBuilder.Properties<DateTimeOffset>()
+            .HaveConversion<DateTimeOffsetToUnixMillisecondsConverter>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

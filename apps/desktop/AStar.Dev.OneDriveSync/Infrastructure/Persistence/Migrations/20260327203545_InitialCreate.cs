@@ -1,7 +1,4 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
-#nullable disable
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
 {
