@@ -1,0 +1,48 @@
+# S013 — Activity View
+
+**Phase:** MVP  
+**Area:** Features/Activity  
+**Spec refs:** Section 7 (Activity nav item)
+
+---
+
+## User Story
+
+As a user,  
+I want a live feed of the last 50 sync activity items (newest first) so I can quickly see what the app has been doing without opening the full log viewer.
+
+---
+
+## Acceptance Criteria
+
+- [ ] Activity view displays the last 50 items, newest first
+- [ ] Each activity item shows: timestamp (formatted per LO-07), account name, action type (Downloaded, Uploaded, Skipped, Conflict Detected, Error), file name/path
+- [ ] List updates in real time during an active sync — new items prepended; list truncated to 50 as items are added
+- [ ] No filter controls in MVP — all accounts shown together (account column differentiates entries)
+- [ ] Empty state: "No sync activity yet — start a sync to see activity here"
+- [ ] Activity feed is **ephemeral** — stored in memory only; cleared on app restart (not persisted to SQLite)
+- [ ] `IActivityFeedService` (singleton) publishes `IObservable<ActivityItem>` that `ActivityViewModel` subscribes to
+- [ ] Sync engine (S010) publishes to `IActivityFeedService` after each file operation
+
+### Tests
+- [ ] **Unit test**: `ActivityFeedService` — adding 51 items trims to 50; newest item is first
+- [ ] **Unit test**: `ActivityViewModel` — subscription to feed updates the `Items` observable collection
+- [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
+
+---
+
+## Technical Notes
+
+- `ActivityViewModel` is **scoped** (recreated on each navigation); subscribes to `IActivityFeedService` on activation
+- `ObservableCollection<ActivityItem>` updated on UI thread via `ObserveOn(RxApp.MainThreadScheduler)`
+- NF-02: list updates must not cause UI stutter — batch UI updates if > 5 items arrive per second
+- NF-16: `IActivityFeedService` methods return `Option<IReadOnlyList<ActivityItem>>`
+
+---
+
+## Dependencies
+
+- S001 (project scaffolding)
+- S003 (navigation shell — Activity nav item)
+- S005 (localisation — timestamp formatting)
+- S010 (sync engine — publishes activity events)
