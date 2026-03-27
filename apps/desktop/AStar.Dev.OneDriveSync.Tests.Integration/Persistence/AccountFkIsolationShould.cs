@@ -87,25 +87,29 @@ public sealed class AccountFkIsolationShould
         // Arrange — verify that a FK violation (non-existent account_id) is rejected
         // at the SQLite layer when FK enforcement is active.
         await using var factory = AppDbContextFactory.Create();
-        await using var context = await factory.CreateContextAsync();
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
         var accountTableName = context.Model
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        await context.Database.ExecuteSqlRawAsync($"""
+        // SQL assigned to variable to avoid EF1002 (ExecuteSqlRawAsync with inline interpolated string).
+        var createFkTestTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_fk_violation (
                 id          TEXT PRIMARY KEY NOT NULL,
                 account_id  TEXT NOT NULL
                     REFERENCES {accountTableName} (id)
             )
-            """);
+            """;
+        await context.Database.ExecuteSqlRawAsync(createFkTestTableSql, TestContext.Current.CancellationToken);
 
-        // Act — attempt to insert with a non-existent account_id (FK violation)
+        // Act — attempt to insert with a non-existent account_id (FK violation).
+        // Variable assignment avoids EF1002; TEXT-quoted GUIDs keep format consistent with
+        // the FK reference stored in the parent Accounts table.
         var bogusAccountId = Guid.NewGuid();
-        Func<Task> act = async () =>
-            await context.Database.ExecuteSqlRawAsync(
-                $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{bogusAccountId}')");
+        var insertSql      = $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{bogusAccountId}')";
+        Func<Task> act     = async () =>
+            await context.Database.ExecuteSqlRawAsync(insertSql, TestContext.Current.CancellationToken);
 
         // Assert — SQLite should reject the insert with a FK constraint failure
         await act.ShouldThrowAsync<Microsoft.Data.Sqlite.SqliteException>();

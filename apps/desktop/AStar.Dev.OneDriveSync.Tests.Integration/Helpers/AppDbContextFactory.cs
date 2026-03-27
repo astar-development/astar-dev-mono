@@ -29,6 +29,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
+
         return new AppDbContextFactory(connection);
     }
 
@@ -44,11 +45,11 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
             .Options;
 
         var context = new AppDbContext(options);
-        await context.Database.EnsureCreatedAsync(cancellationToken);
+        await context.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
 
         // SQLite does not enforce foreign-key constraints by default.
         // Enable them here so cascade-delete and FK-violation tests reflect real behaviour.
-        await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken);
+        await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
 
         return context;
     }
@@ -58,6 +59,6 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await _connection.DisposeAsync();
+        await _connection.DisposeAsync().ConfigureAwait(false);
     }
 }
