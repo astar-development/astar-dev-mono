@@ -2,6 +2,7 @@ using AStar.Dev.OneDriveSync.old.Models;
 using AStar.Dev.OneDriveSync.old.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using AStar.Dev.Conflict.Resolution;
 
 namespace AStar.Dev.OneDriveSync.old.Views;
 
