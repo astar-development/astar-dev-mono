@@ -11,6 +11,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
+    <NoWarn>$(NoWarn);EF1002</NoWarn>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <PackageId>AStar.Dev.OneDriveSync.Tests.Integration</PackageId>
