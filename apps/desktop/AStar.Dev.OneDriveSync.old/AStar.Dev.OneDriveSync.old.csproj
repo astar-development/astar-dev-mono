@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
+    <ProjectReference Include="../../../packages/core/astar-dev-conflict-resolution (1)/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
     <ProjectReference Include="../../../packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
   </ItemGroup>
 

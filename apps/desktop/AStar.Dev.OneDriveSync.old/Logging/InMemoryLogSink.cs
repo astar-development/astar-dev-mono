@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using Serilog.Core;
 using Serilog.Events;

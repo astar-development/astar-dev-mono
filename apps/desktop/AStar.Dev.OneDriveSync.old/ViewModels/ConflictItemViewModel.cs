@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using AStar.Dev.Conflict.Resolution;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.old.ViewModels;

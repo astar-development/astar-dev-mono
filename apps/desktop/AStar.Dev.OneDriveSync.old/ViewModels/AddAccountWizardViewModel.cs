@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.old.Services;
 using ReactiveUI;
 

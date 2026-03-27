@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>AStar Dev OneDrive Sync</Product>
+    <PackageId>AStar.Dev.OneDriveSync</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.ReactiveUI" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" >
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
+    <ProjectReference Include="../../../packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/AStar.Dev.Sync.Engine.csproj" />
+    <ProjectReference Include="../../../packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
+    <ProjectReference Include="../../../packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>
