@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
-using AStar.Dev.Conflict.Resolution;
 using AStar.Dev.OneDriveSync.old.Logging;
 using AStar.Dev.OneDriveSync.old.Models;
 using ReactiveUI;
+using AStar.Dev.Conflict.Resolution;
 
 namespace AStar.Dev.OneDriveSync.old.ViewModels;
 

@@ -1,5 +1,5 @@
-using AStar.Dev.Conflict.Resolution;
 using ReactiveUI;
+using AStar.Dev.Conflict.Resolution;
 
 namespace AStar.Dev.OneDriveSync.old.ViewModels;
 

@@ -1,4 +1,3 @@
-using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.old.Models;
 using AStar.Dev.OneDriveSync.old.Services;
 using AStar.Dev.OneDriveSync.old.ViewModels;
