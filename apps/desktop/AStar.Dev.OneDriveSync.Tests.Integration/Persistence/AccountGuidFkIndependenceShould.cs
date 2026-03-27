@@ -17,6 +17,10 @@ namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 ///     Note on Guid format: EF Core 10 stores <see cref="Guid" /> values as uppercase TEXT
 ///     in SQLite.  Raw ADO.NET SQL uses <c>guid.ToString("D").ToUpperInvariant()</c> to match, because
 ///     SQLite TEXT comparisons are case-sensitive.
+///
+///     Raw SQL strings are assigned to named variables before being passed to
+///     <c>ExecuteSqlRawAsync</c> to satisfy the EF1002 analyser, which fires only on
+///     inline interpolated string literals.
 /// </summary>
 public sealed class AccountGuidFkIndependenceShould
 {
@@ -62,7 +66,6 @@ public sealed class AccountGuidFkIndependenceShould
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        // SQL assigned to variable to avoid EF1002 (ExecuteSqlRawAsync with inline interpolated string).
         var createChildTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_ms_id_child (
                 id          TEXT PRIMARY KEY NOT NULL,
@@ -82,7 +85,6 @@ public sealed class AccountGuidFkIndependenceShould
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Uppercase to match EF Core's stored Guid TEXT format (SQLite TEXT is case-sensitive).
         var childId        = Guid.NewGuid().ToString();
         var accountIdUpper = accountId.ToString("D").ToUpperInvariant();
         var insertChildSql = $"INSERT INTO test_ms_id_child (id, account_id) VALUES ('{childId}', '{accountIdUpper}')";

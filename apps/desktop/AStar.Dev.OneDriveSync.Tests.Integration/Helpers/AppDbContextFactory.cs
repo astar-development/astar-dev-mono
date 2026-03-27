@@ -34,9 +34,12 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
     }
 
     /// <summary>
-    ///     Builds an <see cref="AppDbContext" /> pointed at the shared in-memory connection and
-    ///     ensures the schema is created.  Each call returns a fresh context instance; all share
-    ///     the same database because they share the same connection.
+    ///     Builds an <see cref="AppDbContext" /> pointed at the shared in-memory connection,
+    ///     ensures the schema is created, and enables foreign-key enforcement via
+    ///     <c>PRAGMA foreign_keys = ON</c> — SQLite disables FK constraints by default,
+    ///     so this is required for cascade-delete and FK-violation tests to reflect real
+    ///     database behaviour.  Each call returns a fresh context instance; all share the
+    ///     same database because they share the same connection.
     /// </summary>
     public async Task<AppDbContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
@@ -46,9 +49,6 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
         var context = new AppDbContext(options);
         await context.Database.EnsureCreatedAsync(cancellationToken).ConfigureAwait(false);
-
-        // SQLite does not enforce foreign-key constraints by default.
-        // Enable them here so cascade-delete and FK-violation tests reflect real behaviour.
         await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
 
         return context;

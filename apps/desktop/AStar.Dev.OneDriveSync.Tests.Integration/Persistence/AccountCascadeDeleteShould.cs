@@ -27,14 +27,10 @@ public sealed class AccountCascadeDeleteShould
         await using var factory = AppDbContextFactory.Create();
         await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        // Derive the real table name from the EF Core model so the test stays
-        // consistent even if the naming convention changes.
         var accountTableName = context.Model
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        // SQL is assigned to a variable to avoid EF1002 (ExecuteSqlRawAsync with inline
-        // interpolated string). The table name is safe — it comes from EF Core model metadata.
         var createChildTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_account_child (
                 id          TEXT PRIMARY KEY NOT NULL,
@@ -54,14 +50,11 @@ public sealed class AccountCascadeDeleteShould
         });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // EF Core 10 stores Guids as uppercase TEXT in SQLite.  Use ToUpper() so the FK
-        // constraint and the subsequent COUNT query both reference the same stored format.
         var childId           = Guid.NewGuid().ToString();
         var accountIdUpperSql = accountId.ToString("D").ToUpperInvariant();
         var insertChildSql    = $"INSERT INTO test_account_child (id, account_id) VALUES ('{childId}', '{accountIdUpperSql}')";
         await context.Database.ExecuteSqlRawAsync(insertChildSql, TestContext.Current.CancellationToken);
 
-        // Verify the child row exists before the delete
         using (var checkCmd = factory.Connection.CreateCommand())
         {
             checkCmd.CommandText = $"SELECT COUNT(*) FROM test_account_child WHERE account_id = '{accountIdUpperSql}'";
@@ -121,7 +114,6 @@ public sealed class AccountCascadeDeleteShould
             });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Uppercase to match EF Core's stored Guid TEXT format.
         var keptIdUpper    = keptAccountId.ToString("D").ToUpperInvariant();
         var deletedIdUpper = deletedAccountId.ToString("D").ToUpperInvariant();
         var insertKeptSql    = $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{keptIdUpper}')";

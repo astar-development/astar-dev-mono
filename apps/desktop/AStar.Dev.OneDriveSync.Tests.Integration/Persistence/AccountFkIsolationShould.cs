@@ -12,6 +12,10 @@ namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 ///     <c>Email</c>, <c>DisplayName</c>, and <c>MicrosoftAccountId</c> properties
 ///     exist only on the <see cref="Account" /> entity.  Any new entity added in future
 ///     stories that accidentally exposes PII columns will be caught immediately.
+///
+///     The FK-violation test uses <c>ExecuteSqlRawAsync</c> with SQL assigned to a named
+///     variable to satisfy the EF1002 analyser, which fires only on inline interpolated
+///     string literals passed directly to the method.
 /// </summary>
 public sealed class AccountFkIsolationShould
 {
@@ -84,8 +88,7 @@ public sealed class AccountFkIsolationShould
     [Fact]
     public async Task RejectInsertionOfRowWithInvalidAccountGuid()
     {
-        // Arrange — verify that a FK violation (non-existent account_id) is rejected
-        // at the SQLite layer when FK enforcement is active.
+        // Arrange
         await using var factory = AppDbContextFactory.Create();
         await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
@@ -93,7 +96,6 @@ public sealed class AccountFkIsolationShould
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        // SQL assigned to variable to avoid EF1002 (ExecuteSqlRawAsync with inline interpolated string).
         var createFkTestTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_fk_violation (
                 id          TEXT PRIMARY KEY NOT NULL,
@@ -103,15 +105,13 @@ public sealed class AccountFkIsolationShould
             """;
         await context.Database.ExecuteSqlRawAsync(createFkTestTableSql, TestContext.Current.CancellationToken);
 
-        // Act — attempt to insert with a non-existent account_id (FK violation).
-        // Variable assignment avoids EF1002; TEXT-quoted GUIDs keep format consistent with
-        // the FK reference stored in the parent Accounts table.
+        // Act
         var bogusAccountId = Guid.NewGuid();
         var insertSql      = $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{bogusAccountId}')";
         Func<Task> act     = async () =>
             await context.Database.ExecuteSqlRawAsync(insertSql, TestContext.Current.CancellationToken);
 
-        // Assert — SQLite should reject the insert with a FK constraint failure
+        // Assert
         await act.ShouldThrowAsync<Microsoft.Data.Sqlite.SqliteException>();
     }
 }
