@@ -2,6 +2,7 @@
     <Folder Name="/apps/" />
     <Folder Name="/apps/desktop/">
         <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
+        <Project Path="apps/desktop/AStar.Dev.OneDriveSync.Tests.Integration/AStar.Dev.OneDriveSync.Tests.Integration.csproj" />
         <Project Path="apps/desktop/AStar.Dev.OneDriveSync.Tests.Unit/AStar.Dev.OneDriveSync.Tests.Unit.csproj" />
         <Project Path="apps/desktop/AStar.Dev.OneDriveSync/AStar.Dev.OneDriveSync.csproj" />
         <Project Path="apps\desktop\AStar.Dev.OneDriveSync.old.Tests.Unit\AStar.Dev.OneDriveSync.old.Tests.Unit.csproj" />
