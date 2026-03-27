@@ -28,7 +28,7 @@
     <AvaloniaResource Remove="src/**/*.axaml"/>
     <None Remove="src/**"/>
     <EmbeddedResource Remove="src/**"/>
-    <None Update="Assets\astar.ico">
+    <None Update="Assets/astar.ico">
       <Pack>true</Pack>
       <PackagePath></PackagePath>
     </None>

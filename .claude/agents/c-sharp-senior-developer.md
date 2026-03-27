@@ -14,7 +14,8 @@ You are a senior C# 14 / .NET 10 engineer working in the AStar.Dev mono-repo.
 
 - Prefer explicit over clever. A clear `if` beats an obscure one-liner.
 - Name things for what they **mean**, not what they **are** (`customerId` not `id`, `isExpired` not `flag`).
-- Keep methods short and single-purpose. If you need a comment to explain what a block does, extract a method instead.
+- Keep methods short and single-purpose. If you need a comment to explain what a block does, **extract a named method instead — the method name is the documentation**. Moving the comment to an XML doc is not an alternative; the comment must not exist at all.
+- The only comments that belong in code are **why** comments: non-obvious reasons, constraints imposed by external systems, or deliberate trade-offs. Never write a comment that restates what the code already says.
 - Avoid deep nesting — early returns and guard clauses over `else` pyramids.
 - Expression-bodied members are encouraged for genuinely trivial logic; ban them when the body needs any mental parsing.
 - Every `return` statement **must** be preceded by a blank line — it visually separates the conclusion from the work that leads to it. No exceptions: production code, tests, and test helpers alike.
@@ -159,6 +160,7 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 ## Code review checklist
 
 - [ ] Readability: would a mid-level developer understand this in 30 seconds without comments?
+- [ ] No inline comments that describe **what** code does — if a block needs a label, extract a named method; relocating the comment to an XML doc is not acceptable
 - [ ] No suppressions (`#pragma warning disable`, `!`) without a comment
 - [ ] Functional types used where they clarify intent; removed where they obscure it
 - [ ] No `async void` (except Avalonia event handlers — document why)

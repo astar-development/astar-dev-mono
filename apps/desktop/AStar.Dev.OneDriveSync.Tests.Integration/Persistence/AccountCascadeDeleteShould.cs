@@ -20,25 +20,23 @@ public sealed class AccountCascadeDeleteShould
     {
         // Arrange
         await using var factory = AppDbContextFactory.Create();
-        await using var context = await factory.CreateContextAsync();
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        // Derive the real table name from the EF Core model so the test stays
-        // consistent even if the naming convention changes.
         var accountTableName = context.Model
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        // Create a test-only stub child table that holds a FK to the accounts table.
-        // This simulates any future entity that references Account via synthetic Guid FK.
-        await context.Database.ExecuteSqlRawAsync($"""
+        var createChildTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_account_child (
                 id          TEXT PRIMARY KEY NOT NULL,
                 account_id  TEXT NOT NULL
                     REFERENCES {accountTableName} (id) ON DELETE CASCADE
             )
-            """);
+            """;
+        await context.Database.ExecuteSqlRawAsync(createChildTableSql, TestContext.Current.CancellationToken);
 
-        var accountId = Guid.NewGuid();
+        var accountId      = Guid.NewGuid();
+        var accountIdUpper = accountId.ToString("D").ToUpperInvariant();
         context.Accounts.Add(new Account
         {
             Id                 = accountId,
@@ -46,30 +44,21 @@ public sealed class AccountCascadeDeleteShould
             Email              = "cascade@example.com",
             MicrosoftAccountId = "ms-cascade-001"
         });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var childId = Guid.NewGuid().ToString();
-        await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{childId}', '{accountId}')");
+        var insertChildSql = $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{accountIdUpper}')";
+        await context.Database.ExecuteSqlRawAsync(insertChildSql, TestContext.Current.CancellationToken);
 
-        // Verify the child row exists before the delete
-        using (var checkCmd = factory.Connection.CreateCommand())
-        {
-            checkCmd.CommandText = $"SELECT COUNT(*) FROM test_account_child WHERE account_id = '{accountId}'";
-            ((long?)checkCmd.ExecuteScalar()).ShouldBe(1);
-        }
+        SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", accountId, expected: 1);
 
         // Act
-        var account = await context.Accounts.FindAsync(accountId);
+        var account = await context.Accounts.FindAsync(new object?[] { accountId }, TestContext.Current.CancellationToken);
         account.ShouldNotBeNull();
         context.Accounts.Remove(account);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Assert — no orphaned rows
-        using var assertCmd = factory.Connection.CreateCommand();
-        assertCmd.CommandText = $"SELECT COUNT(*) FROM test_account_child WHERE account_id = '{accountId}'";
-        var remaining = (long?)assertCmd.ExecuteScalar();
-        remaining.ShouldBe(0);
+        // Assert
+        SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", accountId, expected: 0);
     }
 
     [Fact]
@@ -77,22 +66,25 @@ public sealed class AccountCascadeDeleteShould
     {
         // Arrange — two accounts, two child rows; only one account deleted
         await using var factory = AppDbContextFactory.Create();
-        await using var context = await factory.CreateContextAsync();
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
         var accountTableName = context.Model
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        await context.Database.ExecuteSqlRawAsync($"""
+        var createChildTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_account_child (
                 id          TEXT PRIMARY KEY NOT NULL,
                 account_id  TEXT NOT NULL
                     REFERENCES {accountTableName} (id) ON DELETE CASCADE
             )
-            """);
+            """;
+        await context.Database.ExecuteSqlRawAsync(createChildTableSql, TestContext.Current.CancellationToken);
 
         var keptAccountId    = Guid.NewGuid();
         var deletedAccountId = Guid.NewGuid();
+        var keptIdUpper      = keptAccountId.ToString("D").ToUpperInvariant();
+        var deletedIdUpper   = deletedAccountId.ToString("D").ToUpperInvariant();
 
         context.Accounts.AddRange(
             new Account
@@ -109,26 +101,21 @@ public sealed class AccountCascadeDeleteShould
                 Email              = "delete@example.com",
                 MicrosoftAccountId = "ms-delete-001"
             });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{keptAccountId}')");
-        await context.Database.ExecuteSqlRawAsync(
-            $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{deletedAccountId}')");
+        var insertKeptSql    = $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{keptIdUpper}')";
+        var insertDeletedSql = $"INSERT INTO test_account_child (id, account_id) VALUES ('{Guid.NewGuid()}', '{deletedIdUpper}')";
+        await context.Database.ExecuteSqlRawAsync(insertKeptSql,    TestContext.Current.CancellationToken);
+        await context.Database.ExecuteSqlRawAsync(insertDeletedSql, TestContext.Current.CancellationToken);
 
         // Act
-        var toDelete = await context.Accounts.FindAsync(deletedAccountId);
+        var toDelete = await context.Accounts.FindAsync(new object?[] { deletedAccountId }, TestContext.Current.CancellationToken);
         toDelete.ShouldNotBeNull();
         context.Accounts.Remove(toDelete);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Assert — the kept account's child row still exists; the deleted account's child is gone
-        using var cmd = factory.Connection.CreateCommand();
-        cmd.CommandText = $"SELECT COUNT(*) FROM test_account_child WHERE account_id = '{deletedAccountId}'";
-        ((long?)cmd.ExecuteScalar()).ShouldBe(0);
-
-        using var cmd2 = factory.Connection.CreateCommand();
-        cmd2.CommandText = $"SELECT COUNT(*) FROM test_account_child WHERE account_id = '{keptAccountId}'";
-        ((long?)cmd2.ExecuteScalar()).ShouldBe(1);
+        SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", deletedAccountId, expected: 0);
+        SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", keptAccountId,    expected: 1);
     }
 }

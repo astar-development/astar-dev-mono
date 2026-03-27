@@ -73,4 +73,24 @@ public sealed class StringExtensionsShould
     [InlineData("123456",                      true)]
     public void ContainTheIsNumberOnlyExtensionReturningTheExpectedResults(string fileName, bool expectedResponse) =>
         fileName.IsNumberOnly().ShouldBe(expectedResponse);
+
+
+    [Theory]
+    [InlineData("path/to-some_file.txt", "path to some file.txt")]
+    [InlineData("folder/sub-folder/file_name.txt", "folder sub folder file name.txt")]
+    [InlineData("already clean.txt", "already clean.txt")]
+    [InlineData("-_-", "   ")]
+    public void ContainTheSanitizeFilePathMethodWhichReturnsTheExpectedResult(string input, string expected) => input.SanitizeFilePath().ShouldBe(expected);
+
+    [Theory]
+    [InlineData(1, "1 B")]
+    [InlineData(1024, "1.0 KB")]
+    [InlineData(1024 * 1024, "1.0 MB")]
+    [InlineData(1024 * 1024 * 1024, "1024.0 MB")]
+    [InlineData(0, "")]
+    [InlineData(512, "512 B")]
+    [InlineData(1536, "1.5 KB")]
+    [InlineData(5 * 1024 * 1024, "5.0 MB")]
+    [InlineData((5 * 1024 * 1024) + (512 * 1024 * 1024), "517.0 MB")]
+    public void ConvertTheFileSizeToHumanReadableFormat(long fileSizeToConvert, string expected) => fileSizeToConvert.FileSizeToText().ShouldBe(expected);
 }

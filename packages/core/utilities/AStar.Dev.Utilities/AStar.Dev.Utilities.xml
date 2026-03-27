@@ -88,6 +88,23 @@
             <param name="obj">The object to convert to JSON</param>
             <returns>The JSON string of the object supplied</returns>
         </member>
+        <member name="T:AStar.Dev.Utilities.PathOperationExtensions">
+            <summary>
+                Provides extension methods for common path operations.
+            </summary> <remarks>
+                This class includes methods that enhance the functionality of string paths, such as safely combining multiple segments while preventing rooted paths from overriding the base path.
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.Utilities.PathOperationExtensions.CombinePath(System.String,System.String[])">
+            <summary>
+                Combines a base path with one or more relative segments while preventing rooted segments from overriding earlier parts.
+            </summary>
+            <param name="basePath">The starting path to append segments to.</param>
+            <param name="segments">The path segments to append. All segments must be relative.</param>
+            <returns>The combined path.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="basePath" /> or <paramref name="segments" /> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when any segment is rooted.</exception>
+        </member>
         <member name="T:AStar.Dev.Utilities.RegexExtensions">
             <summary>
             </summary>
@@ -246,6 +263,41 @@
             <param name="value">The raw string to potentially remove the trailing character from</param>
             <param name="removeTrailing">The character to remove from the end if it exists</param>
             <returns>The original or updated string</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.SanitizeFilePath(System.String)">
+            <summary>
+                The SanitizeFilePath method replaces invalid or undesirable characters in a file path
+                with a space character to ensure a clean and sanitized string representation of the path.
+            </summary>
+            <param name="json">The JSON representation of the object</param>
+            <returns>A sanitized version of the file path with specified characters replaced by spaces</returns>
+            <example>
+                Example Usage:
+                string originalPath = "path/to-some_file.txt";
+                string sanitizedPath = originalPath.SanitizeFilePath();
+                // sanitizedPath will be: "path to some file.txt"
+            </example>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.NormalizeLinux(System.String)">
+            <summary>
+               The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
+            </summary>
+            <param name="path">The file path to normalize</param>
+            <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.NormalizeWindows(System.String)">
+            <summary>
+              The NormalizeWindows method normalizes a file path to a Windows-style format by replacing forward slashes with backslashes,
+            </summary>
+            <param name="path">The file path to normalize</param>
+            <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.FileSizeToText(System.Int64)">
+            <summary>
+               The FileSizeText method converts a file size in bytes to a human-readable string format (B, KB, MB).
+            </summary>
+            <param name="fileSize">The file size in bytes (represented as a long integer)</param>
+            <returns>The human-readable string format</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.</summary>

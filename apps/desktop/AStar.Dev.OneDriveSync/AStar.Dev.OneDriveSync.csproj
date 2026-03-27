@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -10,8 +10,19 @@
     <PackageId>AStar.Dev.OneDriveSync</PackageId>
   </PropertyGroup>
 
+  <!--
+    NU1608: CentralPackageTransitivePinningEnabled pins Microsoft.CodeAnalysis.CSharp.Workspaces
+    to 5.0.0 (required by the source-generators project), which upgrades
+    Microsoft.CodeAnalysis.Workspaces.Common to 5.0.0.  Microsoft.EntityFrameworkCore.Design
+    transitively depends on Microsoft.CodeAnalysis.Workspaces.MSBuild 4.14.0, which declares an
+    exact-match constraint on Common = 4.14.0.  The upgraded version is runtime-compatible;
+    this is a design-time-only package (PrivateAssets=all) so there is no production impact.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
@@ -26,13 +37,27 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
     <ProjectReference Include="../../../packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
     <ProjectReference Include="../../../packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/AStar.Dev.Sync.Engine.csproj" />
     <ProjectReference Include="../../../packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
     <ProjectReference Include="../../../packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets/astar.ico">
+      <Pack>true</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
 
 </Project>

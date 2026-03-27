@@ -22,7 +22,7 @@ public sealed class DbBackupServiceShould
         Directory.CreateDirectory(TempRoot);
         var dataFile   = Path.Combine(TempRoot, "data.db");
         var backupFile = Path.Combine(TempRoot, "data.db.bak");
-        await File.WriteAllTextAsync(dataFile, "SQLite placeholder");
+        await File.WriteAllTextAsync(dataFile, "SQLite placeholder", TestContext.Current.CancellationToken);
 
         try
         {
@@ -76,8 +76,8 @@ public sealed class DbBackupServiceShould
         Directory.CreateDirectory(TempRoot);
         var dataFile   = Path.Combine(TempRoot, "data.db");
         var backupFile = Path.Combine(TempRoot, "data.db.bak");
-        await File.WriteAllTextAsync(dataFile,   "current database content");
-        await File.WriteAllTextAsync(backupFile, "stale backup");
+        await File.WriteAllTextAsync(dataFile,   "current database content", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(backupFile, "stale backup",             TestContext.Current.CancellationToken);
 
         try
         {
@@ -91,7 +91,7 @@ public sealed class DbBackupServiceShould
 
             // Assert — success and .bak now matches current data.db
             result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
-            var backupContent = await File.ReadAllTextAsync(backupFile);
+            var backupContent = await File.ReadAllTextAsync(backupFile, TestContext.Current.CancellationToken);
             backupContent.ShouldBe("current database content");
         }
         finally

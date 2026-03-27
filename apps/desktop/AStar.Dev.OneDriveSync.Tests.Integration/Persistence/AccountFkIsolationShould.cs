@@ -84,30 +84,29 @@ public sealed class AccountFkIsolationShould
     [Fact]
     public async Task RejectInsertionOfRowWithInvalidAccountGuid()
     {
-        // Arrange — verify that a FK violation (non-existent account_id) is rejected
-        // at the SQLite layer when FK enforcement is active.
+        // Arrange
         await using var factory = AppDbContextFactory.Create();
-        await using var context = await factory.CreateContextAsync();
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
         var accountTableName = context.Model
             .FindEntityType(typeof(Account))!
             .GetTableName();
 
-        await context.Database.ExecuteSqlRawAsync($"""
+        var createFkTestTableSql = $"""
             CREATE TABLE IF NOT EXISTS test_fk_violation (
                 id          TEXT PRIMARY KEY NOT NULL,
                 account_id  TEXT NOT NULL
                     REFERENCES {accountTableName} (id)
             )
-            """);
+            """;
+        await context.Database.ExecuteSqlRawAsync(createFkTestTableSql, TestContext.Current.CancellationToken);
 
-        // Act — attempt to insert with a non-existent account_id (FK violation)
-        var bogusAccountId = Guid.NewGuid();
+        // Act
+        var insertSql = $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{Guid.NewGuid()}')";
         Func<Task> act = async () =>
-            await context.Database.ExecuteSqlRawAsync(
-                $"INSERT INTO test_fk_violation (id, account_id) VALUES ('{Guid.NewGuid()}', '{bogusAccountId}')");
+            await context.Database.ExecuteSqlRawAsync(insertSql, TestContext.Current.CancellationToken);
 
-        // Assert — SQLite should reject the insert with a FK constraint failure
+        // Assert
         await act.ShouldThrowAsync<Microsoft.Data.Sqlite.SqliteException>();
     }
 }
