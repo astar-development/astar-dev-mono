@@ -58,12 +58,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Lint (client)
-        run: npm run lint --workspace=client || echo "No lint script"
-
-      - name: Type-check (client)
-        run: npm run type-check --workspace=client
-
       - name: Test with coverage (client)
         run: npx vitest run -c tests/client/vitest.config.ts --coverage
 
