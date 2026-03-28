@@ -9,58 +9,89 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="avares://AStar.Dev.OneDriveSync/Assets/astar.ico"
         Title="AStar OneDrive Sync"
-        MinWidth="900" MinHeight="600">
+        MinWidth="900" MinHeight="600"
+        Background="{DynamicResource BackgroundPrimaryBrush}">
 
-    <Grid RowDefinitions="Auto,*" ColumnDefinitions="200,*">
+    <Grid RowDefinitions="Auto,*">
 
-        <!-- Startup error banner — spans the full width above both columns -->
-        <Border Grid.Row="0" Grid.ColumnSpan="2"
+        <!-- Startup error banner — spans the full width above all columns -->
+        <Border Grid.Row="0"
                 Background="#C0392B"
                 Padding="12,8"
                 IsVisible="{Binding HasStartupError}">
             <TextBlock Text="{Binding StartupErrorMessage}"
                        Foreground="White"
-                       FontWeight="SemiBold" />
+                       FontWeight="SemiBold"/>
         </Border>
 
-        <!-- Navigation rail -->
-        <Border Grid.Row="1" Grid.Column="0"
-                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-                BorderThickness="0,0,1,0"
-                IsEnabled="{Binding IsNavEnabled}">
-            <ItemsControl ItemsSource="{Binding NavItems}" Margin="0,8">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="shell:NavItemViewModel">
-                        <Button Content="{Binding Label}"
-                                IsEnabled="{Binding IsFeatureEnabled}"
-                                ToolTip.Tip="{Binding Tooltip}"
-                                Command="{Binding NavigateCommand}"
-                                CommandParameter="{Binding Section}"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Margin="4,2"
-                                Padding="12,8" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Border>
+        <!-- Working area: icon rail + content -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
 
-        <!-- Content area -->
-        <Grid Grid.Row="1" Grid.Column="1">
+            <!-- Icon rail -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource BackgroundRailBrush}"
+                    BorderThickness="0,0,1,0"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    Width="{StaticResource IconRailWidth}"
+                    IsEnabled="{Binding IsNavEnabled}">
+                <DockPanel LastChildFill="False">
 
-            <!-- Loading overlay — visible while startup tasks are running -->
-            <StackPanel IsVisible="{Binding IsLoading}"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Spacing="12">
-                <ProgressBar IsIndeterminate="True" Width="240" />
-                <TextBlock Text="Initialising…"
-                           HorizontalAlignment="Center" />
-            </StackPanel>
+                    <!-- Top nav section: Dashboard, Accounts, Activity, Conflicts, Log Viewer -->
+                    <ItemsControl DockPanel.Dock="Top"
+                                  ItemsSource="{Binding TopNavItems}"
+                                  Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="shell:NavItemViewModel">
+                                <shell:IconRailButton
+                                    IconPath="{Binding IconPath}"
+                                    IsActive="{Binding IsActive}"
+                                    IsEnabled="{Binding IsFeatureEnabled}"
+                                    TooltipLabel="{Binding Tooltip}"
+                                    Command="{Binding NavigateCommand}"
+                                    CommandParameter="{Binding Section}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-            <!-- Active feature view — visible once startup completes -->
-            <ContentControl Content="{Binding ActiveView}"
-                            IsVisible="{Binding IsNavEnabled}" />
+                    <!-- Bottom nav section: Settings, Help, About -->
+                    <ItemsControl DockPanel.Dock="Bottom"
+                                  ItemsSource="{Binding BottomNavItems}"
+                                  Margin="0,0,0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="shell:NavItemViewModel">
+                                <shell:IconRailButton
+                                    IconPath="{Binding IconPath}"
+                                    IsActive="{Binding IsActive}"
+                                    IsEnabled="{Binding IsFeatureEnabled}"
+                                    TooltipLabel="{Binding Tooltip}"
+                                    Command="{Binding NavigateCommand}"
+                                    CommandParameter="{Binding Section}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </DockPanel>
+            </Border>
+
+            <!-- Content area -->
+            <Grid Grid.Column="1">
+
+                <!-- Loading overlay — visible while startup tasks are running -->
+                <StackPanel IsVisible="{Binding IsLoading}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="12">
+                    <ProgressBar IsIndeterminate="True" Width="240"/>
+                    <TextBlock Text="Initialising…"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Active feature view — visible once startup completes -->
+                <ContentControl Content="{Binding ActiveView}"
+                                IsVisible="{Binding IsNavEnabled}"/>
+
+            </Grid>
+
         </Grid>
 
     </Grid>
