@@ -1,0 +1,83 @@
+# ════════════════════════════════════════════════════════════════════════════
+# AStar Web-coverage-pages.yml
+# Triggers on push to main touching the AStar Web app.
+# Re-runs tests to collect coverage and publishes reports to GitHub Pages.
+# Note: workflow_run triggers are not recognised by GitHub Pages environment
+# protection rules; a direct push trigger is required.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: AStar Web Coverage Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/astar-dev-web/**'
+      - '.github/workflows/astar-web-coverage-pages.yml'
+
+concurrency:
+  group: astar-coverage-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  publish:
+    name: Build coverage site
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: apps/web/astar-dev-web
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test with coverage (client)
+        run: npx vitest run -c tests/client/vitest.config.ts --coverage
+
+      - name: Test with coverage (server)
+        run: npx vitest run -c tests/server/vitest.config.ts --coverage || echo "No server tests"
+
+      - name: Prepare coverage site
+        run: |
+          mkdir coverage-site
+          cp -r client/coverage coverage-site/client
+          cp -r server/coverage coverage-site/server || true
+
+      - name: Upload coverage artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/astar-dev-web/coverage-site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: publish
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+
+    steps:
+
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
