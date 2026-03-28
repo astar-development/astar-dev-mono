@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="AStar.Dev.OneDriveSync.Infrastructure.Shell.IconRailButton">
+             x:Class="AStar.Dev.OneDriveSync.Infrastructure.Shell.IconRailButton"
+             Cursor="Hand">
 
     <UserControl.Styles>
 
@@ -38,17 +39,6 @@
                     <BrushTransition Property="Foreground" Duration="0:0:0.12"/>
                 </Transitions>
             </Setter>
-        </Style>
-
-        <!-- Default cursor for the interactive rail button (via style so :disabled can override) -->
-        <Style Selector="UserControl">
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-
-        <!-- Disabled state: dim icon and reset cursor (NF-15) -->
-        <Style Selector="UserControl:disabled">
-            <Setter Property="Opacity" Value="0.38"/>
-            <Setter Property="Cursor"  Value="Arrow"/>
         </Style>
 
     </UserControl.Styles>

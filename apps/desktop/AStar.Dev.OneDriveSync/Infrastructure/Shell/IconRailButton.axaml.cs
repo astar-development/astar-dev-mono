@@ -56,10 +56,14 @@ public partial class IconRailButton : UserControl
     public IconRailButton()
     {
         InitializeComponent();
+        _ = IsEnabledProperty.Changed.AddClassHandler<IconRailButton>(OnIsEnabledChanged);
         _ = IsActiveProperty.Changed.AddClassHandler<IconRailButton>(OnIsActiveChanged);
         _ = IconPathProperty.Changed.AddClassHandler<IconRailButton>(OnIconPathChanged);
         _ = TooltipLabelProperty.Changed.AddClassHandler<IconRailButton>(OnTooltipChanged);
     }
+
+    private static void OnIsEnabledChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
+        => sender.Opacity = e.GetNewValue<bool>() ? 1.0 : 0.38;
 
     private static void OnIsActiveChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
     {

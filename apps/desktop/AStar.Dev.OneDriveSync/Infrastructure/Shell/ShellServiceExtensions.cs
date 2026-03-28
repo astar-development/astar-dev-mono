@@ -16,7 +16,7 @@ internal static class ShellServiceExtensions
     internal static IServiceCollection AddShell(this IServiceCollection services)
     {
         var featureAvailability = new FeatureAvailabilityService();
-        RegisterStubFeatures(featureAvailability);
+        RegisterAvailableFeatures(featureAvailability);
 
         services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         services.AddSingleton<INavigationService, NavigationService>();
@@ -36,15 +36,8 @@ internal static class ShellServiceExtensions
         return services;
     }
 
-    private static void RegisterStubFeatures(FeatureAvailabilityService service)
-    {
-        service.Register(NavSection.Dashboard);
-        service.Register(NavSection.Accounts);
-        service.Register(NavSection.Activity);
-        service.Register(NavSection.Conflicts);
-        service.Register(NavSection.LogViewer);
-        service.Register(NavSection.Settings);
-        service.Register(NavSection.Help);
-        service.Register(NavSection.About);
-    }
+    // Only Dashboard is a complete feature at this stage; all other sections are registered
+    // by their owning feature story (NF-15: unimplemented features must appear disabled).
+    private static void RegisterAvailableFeatures(FeatureAvailabilityService service)
+        => service.Register(NavSection.Dashboard);
 }

@@ -21,7 +21,7 @@ So that the app feels responsive from the first moment and I always know where I
 - [x] `Infrastructure/Shell/NavigationService.cs` + `INavigationService` handles view switching without code-behind logic in `MainWindowViewModel`
 - [x] Each nav item activates the correct feature view (stubbed views acceptable at this stage — they will be replaced by feature stories)
 - [x] `MainWindowViewModel` owns nav selection state; `MainWindow.axaml.cs` contains only Avalonia lifecycle hooks
-- [x] **NF-15**: Nav items for unimplemented features are **disabled** (not hidden) until the owning feature story is complete — enabled state is controlled via a `IFeatureAvailabilityService`
+- [ ] **NF-15**: Nav items for unimplemented features are **disabled** (not hidden) until the owning feature story is complete — enabled state is controlled via a `IFeatureAvailabilityService`
 
 ### Startup Loading State (AL-02)
 - [x] UI is visible immediately on launch with a loading indicator
