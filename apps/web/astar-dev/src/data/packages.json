@@ -1,0 +1,46 @@
+{
+  "featured": [
+    "AStar.Dev.Utilities",
+    "AStar.Dev.Logging.Extensions",
+    "AStar.Dev.Functional.Extensions"
+  ],
+  "categories": [
+    {
+      "name": "Core Utilities",
+      "description": "Foundational patterns and extension methods for .NET projects",
+      "packages": [
+        "AStar.Dev.Utilities",
+        "AStar.Dev.Functional.Extensions",
+        "AStar.Dev.Technical.Debt.Reporting"
+      ]
+    },
+    {
+      "name": "Infrastructure & Observability",
+      "description": "Logging, health checks, and infrastructure cross-cutting concerns",
+      "packages": [
+        "AStar.Dev.Logging.Extensions",
+        "AStar.Dev.Api.HealthChecks",
+        "AStar.Dev.Infrastructure",
+        "AStar.Dev.Infrastructure.FilesDb"
+      ]
+    },
+    {
+      "name": "ASP.NET & API Clients",
+      "description": "Extensions and SDK clients for ASP.NET Core and HTTP APIs",
+      "packages": [
+        "AStar.Dev.AspNet.Extensions",
+        "AStar.Dev.Api.Usage.Sdk",
+        "AStar.Dev.Api.Client.Sdk.Shared"
+      ]
+    },
+    {
+      "name": "Testing Helpers",
+      "description": "Test utilities for unit and integration testing in .NET",
+      "packages": [
+        "AStar.Dev.Test.Helpers.Unit",
+        "AStar.Dev.Test.Helpers.Minimal.Api",
+        "AStar.Dev.Test.DbContext.Helpers"
+      ]
+    }
+  ]
+}

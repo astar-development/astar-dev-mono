@@ -1,0 +1,55 @@
+---
+interface Props {
+  variant: 'available' | 'contributor';
+}
+const { variant } = Astro.props;
+
+const config = {
+  available: {
+    label: 'Available for contracts',
+    icon: `<circle cx="5" cy="5" r="3.5" fill="currentColor"/>`,
+    viewBox: '0 0 10 10',
+  },
+  contributor: {
+    label: 'Open source contributor',
+    icon: `<path d="M5 1 L6.5 3.5 L9.5 4 L7.25 6.25 L7.8 9.25 L5 7.75 L2.2 9.25 L2.75 6.25 L0.5 4 L3.5 3.5 Z" fill="currentColor"/>`,
+    viewBox: '0 0 10 10',
+  },
+} as const;
+
+const { label, icon, viewBox } = config[variant];
+---
+
+<span class="badge">
+  <svg
+    width="10"
+    height="10"
+    viewBox={viewBox}
+    aria-hidden="true"
+    focusable="false"
+    class="badge-icon"
+  >
+    <Fragment set:html={icon} />
+  </svg>
+  {label}
+</span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--badge-text);
+    transition: background-color 0.25s, border-color 0.25s, color 0.25s;
+  }
+
+  .badge-icon {
+    flex-shrink: 0;
+  }
+</style>

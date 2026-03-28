@@ -1,0 +1,178 @@
+---
+import CopyButton from './CopyButton.vue';
+import type { PackageData } from '../lib/nuget';
+import { formatDownloads } from '../lib/nuget';
+
+interface Props {
+  pkg: PackageData;
+}
+const { pkg } = Astro.props;
+const installCommand = `dotnet add package ${pkg.id}`;
+const nugetUrl = `https://www.nuget.org/packages/${pkg.id}`;
+const formattedDownloads = formatDownloads(pkg.totalDownloads);
+---
+
+<article class="package-card">
+  <div class="top-row">
+    <h3 class="package-name">{pkg.id}</h3>
+    <span class="nuget-badge" aria-label="NuGet package">NuGet</span>
+  </div>
+
+  <p class="description">{pkg.description}</p>
+
+  <div class="data-row" aria-label="Package metadata">
+    <span class="meta-item">
+      <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M6 0L7.5 4.5H12L8.25 7.25L9.75 12L6 9.25L2.25 12L3.75 7.25L0 4.5H4.5Z"/>
+      </svg>
+      v{pkg.version}
+    </span>
+    <span class="meta-item">
+      <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M6 8L2 4H4.5V0H7.5V4H10L6 8ZM0 10H12V12H0V10Z"/>
+      </svg>
+      {formattedDownloads} downloads
+    </span>
+  </div>
+
+  <div class="install-block">
+    <p class="sr-only">Install command for {pkg.id}</p>
+    <pre class="install-pre"><code class="install-code">{installCommand}</code></pre>
+    <CopyButton client:visible text={installCommand} packageId={pkg.id} />
+  </div>
+
+  <div class="card-footer">
+    <a
+      href={nugetUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="nuget-link"
+    >
+      View on NuGet.org&nbsp;&#8599;
+      <span class="sr-only">(opens in new tab)</span>
+    </a>
+  </div>
+</article>
+
+<style>
+  .package-card {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .package-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.25s;
+  }
+
+  .nuget-badge {
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-left: 8px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  .description {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .data-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    transition: color 0.25s;
+  }
+
+  .install-block {
+    position: relative;
+    margin-bottom: 16px;
+  }
+
+  .install-pre {
+    background: var(--terminal-bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    padding-right: 44px; /* room for copy button */
+    margin: 0;
+    overflow: auto;
+    transition: background-color 0.25s;
+  }
+
+  .install-code {
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    color: var(--terminal-text);
+    white-space: pre;
+    display: block;
+    transition: color 0.25s;
+  }
+
+  .card-footer {
+    display: flex;
+    gap: 16px;
+    margin-top: auto;
+  }
+
+  .nuget-link {
+    color: var(--accent);
+    font-size: 0.82rem;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nuget-link:hover {
+    text-decoration: underline;
+  }
+
+  .nuget-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+// No props — content is static for Phase 1
+---
+
+<section class="cta-section" aria-labelledby="cta-heading">
+  <div class="section-container">
+    <div class="cta-inner">
+      <p class="eyebrow">READY TO TALK?</p>
+      <h2 id="cta-heading">Interested in working together?</h2>
+      <p class="body-text">
+        Whether you have a specific project in mind or just want to explore
+        what&rsquo;s possible &mdash; let&rsquo;s have a conversation.
+      </p>
+      <a href="/contact" class="btn btn-primary cta-btn">Get in touch</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-section {
+    background: var(--surface-base);
+    transition: background-color 0.25s;
+  }
+
+  .section-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cta-inner {
+    max-width: 680px;
+    width: 100%;
+    border-left: 3px solid var(--cta-border-left);
+    border-radius: 0 4px 4px 0;
+    background: var(--surface-raised);
+    padding: 28px 32px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .eyebrow {
+    text-transform: uppercase;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  h2 {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: 700;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .body-text {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 8px;
+    line-height: 1.65;
+    transition: color 0.25s;
+  }
+
+  .cta-btn {
+    margin-top: 20px;
+  }
+
+  /* btn styles from global.css */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    text-decoration: none;
+    border: 2px solid transparent;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border-color: var(--btn-primary-bg);
+    transition: background-color 0.25s, border-color 0.25s, transform 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary:hover {
+      transform: none;
+    }
+  }
+</style>
