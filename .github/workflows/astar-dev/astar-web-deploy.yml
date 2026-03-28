@@ -1,14 +1,14 @@
 # ════════════════════════════════════════════════════════════════════════════
-# vue-deploy.yml
-# Fires when vue-ci completes successfully on main.
-# Builds, packages, and deploys the Vue/Express app to Azure Web App astar-dev.
+# astar-web-deploy.yml
+# Fires when astar-web-ci completes successfully on main.
+# Builds, packages, and deploys the AStar Web app to Azure Web App astar-dev.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: Vue Deploy
+name: AStar Web Deploy
 
 on:
   workflow_run:
-    workflows: ['Vue CI']
+    workflows: ['AStar Web CI']
     branches: [main]
     types: [completed]
 
@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: vue-deploy-${{ github.ref }}
+  group: astar-dev-web-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -32,7 +32,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     defaults:
       run:
-        working-directory: apps/web/astar-dev-vue
+        working-directory: apps/web/astar-dev-web
 
     steps:
 
@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-vue/package-lock.json
+          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -66,7 +66,7 @@ jobs:
 
       - name: Install production dependencies
         run: npm install --omit=dev
-        working-directory: apps/web/astar-dev-vue/deploy
+        working-directory: apps/web/astar-dev-web/deploy
 
       - name: Deploy to Azure Web App
         id: deploy
@@ -74,7 +74,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
-          package: apps/web/astar-dev-vue/deploy/
+          package: apps/web/astar-dev-web/deploy/
 
       - name: Wait for app to warm up
         run: sleep 15
