@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/web/astar-dev-web
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -50,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: mutation-report
-          path: apps/web/astar-dev-web/client/reports/mutation
+          path: apps/web/astar-dev/client/reports/mutation
           retention-days: 7

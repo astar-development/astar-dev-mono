@@ -12,7 +12,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'apps/web/astar-dev-web/**'
+      - 'apps/web/astar-dev/**'
       - '.github/workflows/astar-web-coverage-pages.yml'
 
 concurrency:
@@ -32,7 +32,7 @@ jobs:
       contents: read
     defaults:
       run:
-        working-directory: apps/web/astar-dev-web
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -64,7 +64,7 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/web/astar-dev-web/coverage-site
+          path: apps/web/astar-dev/coverage-site
 
   deploy:
     name: Deploy to GitHub Pages

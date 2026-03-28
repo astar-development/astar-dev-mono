@@ -1,22 +1,23 @@
 # ════════════════════════════════════════════════════════════════════════════
-# astar-web-deploy.yml
-# Fires when astar-web-ci completes successfully on main.
-# Builds, packages, and deploys the AStar Web app to Azure Web App astar-dev.
+# astar-dev-deploy.yml
+# Fires when AStar.Dev CI completes successfully on main.
+# Builds and deploys the static + SSR output to Azure Web App astar-dev.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: AStar Web Deploy
+name: AStar.Dev Deploy
 
 on:
   workflow_run:
-    workflows: ['AStar Web CI']
+    workflows: ['AStar.Dev CI']
     branches: [main]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: astar-dev-web-deploy-${{ github.ref }}
+  group: astar-dev-deploy-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -27,12 +28,12 @@ env:
 jobs:
 
   deploy:
-    name: Deploy to Azure
+    name: Build & Deploy to Azure
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     defaults:
       run:
-        working-directory: apps/web/astar-dev-web
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -44,29 +45,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build client
-        run: npm run build --workspace=client
-
-      - name: Build server
-        run: npm run build --workspace=server
-
-      - name: Prepare deployment package
-        run: |
-          mkdir deploy
-          cp -r server/dist deploy/dist
-          cp server/package.json deploy/
-          mkdir -p deploy/client/dist
-          cp -r client/dist/. deploy/client/dist/
-          find deploy -maxdepth 4 -type f | sort
-
-      - name: Install production dependencies
-        run: npm install --omit=dev
-        working-directory: apps/web/astar-dev-web/deploy
+      - name: Build
+        run: npm run build
 
       - name: Deploy to Azure Web App
         id: deploy
@@ -74,14 +59,14 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
-          package: apps/web/astar-dev-web/deploy/
+          package: apps/web/astar-dev/dist
 
       - name: Wait for app to warm up
         run: sleep 15
 
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astardevelopment.co.uk/api/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astar.dev)
           if [ "$STATUS" != "200" ]; then
             echo "Health check failed with status $STATUS"
             exit 1

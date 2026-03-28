@@ -36,7 +36,7 @@
 
 ## 1. Problem Statement
 
-The current site at `apps/web/astar-dev-web` is a placeholder single-page Vue 3 application with fictional content, a broken theme system (themes only apply to the hero section), a non-functional contact form, empty smoke tests, and no SEO support (the Vue SPA sends an empty `<div>` to search engine crawlers). It cannot serve its intended purpose: attracting engineering leaders and hiring managers to contact the site owner about professional opportunities.
+The current site at `apps/web/astar-dev` is a placeholder single-page Vue 3 application with fictional content, a broken theme system (themes only apply to the hero section), a non-functional contact form, empty smoke tests, and no SEO support (the Vue SPA sends an empty `<div>` to search engine crawlers). It cannot serve its intended purpose: attracting engineering leaders and hiring managers to contact the site owner about professional opportunities.
 
 The site must be rebuilt as a production-grade, SEO-friendly, multi-page professional portfolio and consultancy website that showcases real skills, real NuGet packages, and real (anonymised) project experience.
 
@@ -236,7 +236,7 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 - Mobile-responsive layout
 - Lighthouse mobile ≥ 90
 - GitHub Actions CI/CD to Azure Web App
-- Rename folder from `apps/web/astar-dev-web` to `apps/web/astar-dev`
+- Rename folder from `apps/web/astar-dev` to `apps/web/astar-dev`
 
 **Exit criteria:**
 
@@ -851,7 +851,7 @@ All interactive elements (buttons, links, form controls) must have a minimum tou
 
 ### Folder Rename
 
-`apps/web/astar-dev-web` → `apps/web/astar-dev`
+`apps/web/astar-dev` → `apps/web/astar-dev`
 
 ### Files Removed
 
