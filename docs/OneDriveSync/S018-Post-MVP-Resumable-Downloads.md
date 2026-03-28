@@ -24,6 +24,13 @@ So that I don't waste bandwidth retrying large files after transient network dro
 
 ---
 
+## Implementation Constraints
+
+- All `await` calls in `IFileDownloader` and its implementation must use `ConfigureAwait(false)`. This is a package-level component; omitting `ConfigureAwait(false)` causes deadlocks when called from any synchronisation-context-bearing thread (e.g., Avalonia's UI thread) that is waiting synchronously.
+- The `byteOffset` parameter added to `DownloadAsync()` must be **optional with a default of `0`** to preserve backward compatibility with all existing call sites. The interface change must not require callers to update their signatures.
+
+---
+
 ## Dependencies
 
 - S009 (OneDrive Client — `IFileDownloader`)

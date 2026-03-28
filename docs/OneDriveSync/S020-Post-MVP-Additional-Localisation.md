@@ -24,6 +24,13 @@ So that I can use it comfortably without relying on English.
 
 ---
 
+## Implementation Constraints
+
+- Changing `CultureInfo.CurrentUICulture` must happen **on the UI thread** — use `Dispatcher.UIThread.Post(() => CultureInfo.CurrentUICulture = newCulture)` from any save path that originates on a background thread. Setting the culture from a background thread causes resource lookups to use the stale culture on the next UI frame.
+- The locale change notification mechanism is defined in S005 (`ILocaleService` observable). This story must not introduce a parallel notification path — add only new `.resx` files and locale registration. Any structural change to the notification mechanism is an S005 concern.
+
+---
+
 ## Dependencies
 
 - S005 (localisation foundation — infrastructure must support adding locales without code changes)

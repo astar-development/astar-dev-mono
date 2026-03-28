@@ -55,6 +55,15 @@ So that I can diagnose issues without being overwhelmed by technical output (Cas
 
 ---
 
+## Implementation Constraints
+
+- `InMemoryLogSink` is called from the Serilog pipeline on arbitrary background threads. The internal ring buffer **must** be a `ConcurrentQueue<LogEntry>` (or guarded by `SemaphoreSlim`) — never a plain `List<T>` with a `lock`, which causes deadlocks when the sink is called from an async context.
+- Notifications from `InMemoryLogSink` to `LogViewerViewModel` must use `ObserveOn(RxApp.MainThreadScheduler)` before binding to any UI-bound property.
+- `x:DataType` is mandatory on every `DataTemplate` in `LogViewerView.axaml`. With `AvaloniaUseCompiledBindingsByDefault=true`, a missing `x:DataType` produces no error — bindings silently produce no output.
+- Register the Log Viewer nav item in `ShellServiceExtensions` only when this story ships (NF-15); until then the nav item remains disabled.
+
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

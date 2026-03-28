@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDriveSync.Features.About"
+             x:Class="AStar.Dev.OneDriveSync.Features.About.AboutView"
+             x:DataType="vm:AboutViewModel">
+    <TextBlock Text="About — coming soon"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+</UserControl>

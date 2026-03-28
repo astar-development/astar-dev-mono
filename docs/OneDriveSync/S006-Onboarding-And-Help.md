@@ -59,6 +59,15 @@ So that I can get started confidently without reading external documentation.
 
 ---
 
+## Implementation Constraints
+
+- **`x:DataType` required on all DataTemplates** — `AvaloniaUseCompiledBindingsByDefault=true` is global; every `DataTemplate` in onboarding views must carry `x:DataType` or the build will produce compiled-binding errors.
+- **Wizard VM is transient, resolved via factory** — `OnboardingViewModel` is scoped (one per activation); it must be resolved via a `Func<OnboardingViewModel>` factory registered in DI, not via `IServiceProvider.GetRequiredService<>()` directly in code-behind. Direct `GetRequiredService<>()` on a transient returns a new instance but bypasses lifetime validation.
+- **Dialogs via Avalonia dialog API** — the Power User confirmation dialog must use Avalonia's dialog infrastructure (e.g. a `UserControl`-based dialog or the `MessageBoxManager` from the Avalonia community toolkit). `System.Windows.MessageBox` and `WinRT.MessageDialog` are platform-only and will not compile cross-platform.
+- **`UserControl.Styles` scope** — any new custom `UserControl` controls in this story that need to style their own root element's state (hover, disabled, focus) must handle it via `AddClassHandler` in code-behind, not via `Style Selector="UserControl:disabled"` inside `UserControl.Styles`. See S003 retrospective.
+- **Register Help nav item** — `ShellServiceExtensions.RegisterAvailableFeatures()` must call `service.Register(NavSection.Help)` when this story ships.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)
