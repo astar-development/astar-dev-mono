@@ -1,0 +1,266 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import PackageCard from '../components/PackageCard.astro';
+import CaseStudyTeaser from '../components/CaseStudyTeaser.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import { getFeaturedPackages } from '../lib/nuget';
+import packagesData from '../data/packages.json';
+
+const featuredPackages = await getFeaturedPackages(packagesData.featured);
+
+// ── Service definitions ────────────────────────────────────────────────────
+const services = [
+  {
+    title: 'Fullstack Development',
+    description:
+      'End-to-end feature delivery across .NET backends and modern frontends, with tests from the start.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <path d="M8 21h8M12 17v4"/>
+      <path d="M7 8l3 3-3 3M13 14h4"/>
+    </svg>`,
+  },
+  {
+    title: 'Architecture Design',
+    description:
+      'Clear boundaries, explicit contracts, and decision records that outlast the engagement.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>`,
+  },
+  {
+    title: 'Backend Development',
+    description:
+      'Performant, observable .NET services — APIs, workers, and integrations built to production standard.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="4" rx="1"/>
+      <rect x="2" y="10" width="20" height="4" rx="1"/>
+      <rect x="2" y="17" width="20" height="4" rx="1"/>
+      <circle cx="6" cy="5" r="0.5" fill="currentColor"/>
+      <circle cx="6" cy="12" r="0.5" fill="currentColor"/>
+      <circle cx="6" cy="19" r="0.5" fill="currentColor"/>
+    </svg>`,
+  },
+  {
+    title: 'Code Reviews',
+    description:
+      'Structured feedback that improves the code and develops the team. Not a bottleneck — a signal.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="M21 21l-4.35-4.35"/>
+      <path d="M8 11h6M11 8v6"/>
+    </svg>`,
+  },
+  {
+    title: 'Mentoring',
+    description:
+      'One-to-one and team mentoring grounded in real patterns, not theory.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="8" r="4"/>
+      <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/>
+      <path d="M16 14l2 2 4-4"/>
+    </svg>`,
+  },
+];
+
+// ── Case study teasers (placeholder — Phase 2 will link to real pages) ─────
+const caseStudies = [
+  {
+    title: 'Enterprise Integration Overhaul',
+    summary:
+      'Reduced message-processing latency by 60% across a distributed .NET 8 pipeline serving 50M+ daily events.',
+    techStack: ['.NET 8', 'Azure Service Bus', 'SQL Server', 'OpenTelemetry'],
+  },
+  {
+    title: 'Distributed Pipeline Rebuild',
+    summary:
+      'Replaced a fragile monolithic batch process with an event-driven architecture, cutting deployment risk and halving on-call incidents.',
+    techStack: ['.NET 7', 'Azure Functions', 'Cosmos DB', 'Application Insights'],
+  },
+];
+---
+
+<BaseLayout title="Home" description="Senior .NET Engineer & Architect — architecture, pipelines, observability, and open source packages.">
+
+  <Hero />
+
+  <hr class="section-divider" />
+
+  <!-- Services section -->
+  <section id="services" aria-labelledby="services-heading" class="section section--raised">
+    <div class="section-container">
+      <div class="section-head">
+        <h2 id="services-heading">What I offer</h2>
+        <p class="section-subtitle">
+          Concrete outcomes for real teams. Typically 2&ndash;12 weeks, shaped around your constraints.
+        </p>
+      </div>
+      <div class="services-grid">
+        {services.map((s) => (
+          <ServiceCard title={s.title} description={s.description} icon={s.icon} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Featured NuGet Packages section -->
+  <section aria-labelledby="packages-heading" class="section section--base">
+    <div class="section-container">
+      <div class="section-head packages-head">
+        <div>
+          <h2 id="packages-heading">Open Source Packages</h2>
+          <p class="section-subtitle">Production-tested patterns, published on NuGet.</p>
+        </div>
+        <a href="/packages" class="view-all-link">View all packages &rarr;</a>
+      </div>
+      <div class="packages-grid">
+        {featuredPackages.map((pkg) => (
+          <PackageCard pkg={pkg} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <!-- Case Study Teasers section -->
+  <section aria-labelledby="work-heading" class="section section--raised">
+    <div class="section-container">
+      <div class="section-head">
+        <h2 id="work-heading">Selected Work</h2>
+        <p class="section-subtitle">Anonymised case studies from real engagements &mdash; publishing soon.</p>
+      </div>
+      <div class="case-studies-list">
+        {caseStudies.map((cs) => (
+          <CaseStudyTeaser
+            title={cs.title}
+            summary={cs.summary}
+            techStack={cs.techStack}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-divider" />
+
+  <CtaBanner />
+
+</BaseLayout>
+
+<style>
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--section-border);
+    margin: 0;
+  }
+
+  .section {
+    transition: background-color 0.25s;
+  }
+
+  .section--base {
+    background: var(--surface-base);
+  }
+
+  .section--raised {
+    background: var(--surface-raised);
+  }
+
+  .section-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+  }
+
+  .section-head {
+    margin-bottom: 36px;
+  }
+
+  .section-head h2 {
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: color 0.25s;
+  }
+
+  .section-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: color 0.25s;
+  }
+
+  /* Packages head: h2+subtitle on left, view-all link on right */
+  .packages-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .view-all-link {
+    flex-shrink: 0;
+    color: var(--accent);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  .view-all-link:hover {
+    text-decoration: underline;
+  }
+
+  .view-all-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Grids */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .case-studies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  @media (max-width: 1023px) {
+    .services-grid,
+    .packages-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .packages-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .services-grid,
+    .packages-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

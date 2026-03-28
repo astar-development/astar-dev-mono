@@ -1,0 +1,75 @@
+---
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import CookieConsent from '../components/CookieConsent.vue';
+import '../styles/themes.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'Senior .NET Engineer & Architect — architecture, pipelines, observability, and open source packages.',
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://astar.dev');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- No-flash theme script: must be inline, before stylesheets, synchronous -->
+    <script is:inline>
+      (function () {
+        var valid = ['dark', 'light', 'metal', 'polished'];
+        var stored;
+        try { stored = localStorage.getItem('theme'); } catch (_) {}
+        var theme = valid.indexOf(stored) !== -1 ? stored : 'dark';
+        document.documentElement.className = 'theme-' + theme;
+      })();
+    </script>
+
+    <title>{title} | AStar Development</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl.toString()} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={`${title} | AStar Development`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl.toString()} />
+
+    <!-- Favicon placeholder (replace with real assets) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+
+  <body>
+    <!-- Skip to main content (first focusable element — WCAG 2.4.1) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <Nav />
+
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <CookieConsent client:load />
+  </body>
+</html>
+
+<style is:global>
+  /* Smooth theme transition on all tokenised properties */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.25s;
+    transition-timing-function: ease;
+  }
+</style>
