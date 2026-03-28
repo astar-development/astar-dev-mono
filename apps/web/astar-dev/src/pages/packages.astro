@@ -1,0 +1,206 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PackageCard from '../components/PackageCard.astro';
+import { getPackageData } from '../lib/nuget';
+import packagesData from '../data/packages.json';
+
+const categories = await Promise.all(
+  packagesData.categories.map(async (category) => {
+    const packages = await Promise.all(
+      category.packages.map((id) => getPackageData(id))
+    );
+    return { ...category, packages };
+  })
+);
+
+const totalCount = categories.reduce((sum, c) => sum + c.packages.length, 0);
+---
+
+<BaseLayout
+  title="NuGet Packages"
+  description="Open source .NET packages published on NuGet — production-tested utilities, infrastructure helpers, and testing tools."
+>
+  <div class="page-container">
+
+    <header class="page-header">
+      <h1>Open Source Packages</h1>
+      <p class="page-intro">
+        {totalCount} packages published on NuGet.org — production-tested utilities, infrastructure
+        helpers, and testing tools for .NET projects.
+      </p>
+    </header>
+
+    <!-- Jump-to-category navigation -->
+    <nav aria-label="Jump to package category" class="category-nav">
+      <ul class="category-nav-list" role="list">
+        {categories.map((cat) => {
+          const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          return (
+            <li>
+              <a href={`#${slug}`} class="category-nav-link">
+                {cat.name}
+                <span class="category-count" aria-label={`${cat.packages.length} packages`}>
+                  {cat.packages.length}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+
+    <!-- Package categories -->
+    {categories.map((cat) => {
+      const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return (
+        <section id={slug} aria-labelledby={`${slug}-heading`} class="category-section">
+          <div class="category-header">
+            <h2 id={`${slug}-heading`} class="category-title">{cat.name}</h2>
+            <p class="category-description">{cat.description}</p>
+          </div>
+          <div class="packages-grid">
+            {cat.packages.map((pkg) => (
+              <PackageCard pkg={pkg} />
+            ))}
+          </div>
+        </section>
+      );
+    })}
+
+  </div>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px 80px;
+  }
+
+  .page-header {
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .page-intro {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 640px;
+    transition: color 0.25s;
+  }
+
+  /* Jump-to-category nav */
+  .category-nav {
+    margin-bottom: 56px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--section-border);
+  }
+
+  .category-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .category-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-decoration: none;
+    background: var(--surface-raised);
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  }
+
+  .category-nav-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .category-nav-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 999px;
+  }
+
+  .category-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    color: var(--badge-text);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* Category sections */
+  .category-section {
+    margin-bottom: 64px;
+  }
+
+  .category-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .category-header {
+    margin-bottom: 28px;
+  }
+
+  .category-title {
+    font-size: clamp(1.15rem, 2vw, 1.4rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+    transition: color 0.25s;
+  }
+
+  .category-description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    transition: color 0.25s;
+  }
+
+  .packages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1023px) {
+    .packages-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .packages-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .category-nav-list {
+      gap: 6px;
+    }
+  }
+</style>
