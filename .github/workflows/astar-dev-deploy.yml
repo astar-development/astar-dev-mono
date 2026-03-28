@@ -1,0 +1,74 @@
+# ════════════════════════════════════════════════════════════════════════════
+# astar-dev-deploy.yml
+# Fires when AStar.Dev CI completes successfully on main.
+# Builds and deploys the static + SSR output to Azure Web App astar-dev.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: AStar.Dev Deploy
+
+on:
+  workflow_run:
+    workflows: ['AStar.Dev CI']
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: astar-dev-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: astar-dev
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  deploy:
+    name: Build & Deploy to Azure
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    defaults:
+      run:
+        working-directory: apps/web/astar-dev
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Azure Web App
+        id: deploy
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
+          package: apps/web/astar-dev/dist
+
+      - name: Wait for app to warm up
+        run: sleep 15
+
+      - name: Health check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astar.dev)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Health check passed"
