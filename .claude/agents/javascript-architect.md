@@ -28,11 +28,11 @@ Architecture is the art of eliminating accidental complexity. If a decision make
 
 ## App inventory and roles
 
-| Directory                       | Framework                   | Purpose                              |
-| ------------------------------- | --------------------------- | ------------------------------------ |
-| `apps/web/astar-dev-web/client` | Vue 3 + TypeScript + Vite 5 | Main marketing / portal SPA          |
-| `apps/web/astar-dev-web/server` | Express 4 + TypeScript      | BFF / API gateway for the Vue client |
-| `apps/web/fab4kids`             | React 19 (migrating to TS)  | Consumer product — React-specific UX |
+| Directory                   | Framework                   | Purpose                              |
+| --------------------------- | --------------------------- | ------------------------------------ |
+| `apps/web/astar-dev/client` | Vue 3 + TypeScript + Vite 5 | Main marketing / portal SPA          |
+| `apps/web/astar-dev/server` | Express 4 + TypeScript      | BFF / API gateway for the Vue client |
+| `apps/web/fab4kids`         | React 19 (migrating to TS)  | Consumer product — React-specific UX |
 
 Apps must never import from each other. Shared logic lives in a package or is duplicated if the duplication is genuinely cheaper than the coupling.
 
@@ -64,7 +64,7 @@ Otherwise, keep the code in the owning app. Premature extraction creates version
 
 ```
 apps/web/fab4kids         ─┐
-apps/web/astar-dev-web     ─┤──► packages/js/shared-types  (types only, no runtime deps)
+apps/web/astar-dev     ─┤──► packages/js/shared-types  (types only, no runtime deps)
                             └──► packages/js/[util-name]   (framework-agnostic utilities)
 ```
 

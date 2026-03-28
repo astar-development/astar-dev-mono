@@ -12,14 +12,14 @@ on:
       - main
       - 'release/**'
     paths:
-      - 'apps/web/astar-dev-web/**'
+      - 'apps/web/astar-dev/**'
       - '.github/workflows/astar-web-ci.yml'
   pull_request:
     branches:
       - main
       - 'release/**'
     paths:
-      - 'apps/web/astar-dev-web/**'
+      - 'apps/web/astar-dev/**'
       - '.github/workflows/astar-web-ci.yml'
   workflow_dispatch:
 
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/web/astar-dev-web
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: client-coverage
-          path: apps/web/astar-dev-web/client/coverage
+          path: apps/web/astar-dev/client/coverage
           retention-days: 7
 
       - name: Build + type-check server
@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: server-coverage
-          path: apps/web/astar-dev-web/server/coverage
+          path: apps/web/astar-dev/server/coverage
           retention-days: 7
 
       - name: Build client
@@ -95,6 +95,6 @@ jobs:
         with:
           name: build-artifacts
           path: |
-            apps/web/astar-dev-web/client/dist
-            apps/web/astar-dev-web/server/dist
+            apps/web/astar-dev/client/dist
+            apps/web/astar-dev/server/dist
           retention-days: 7

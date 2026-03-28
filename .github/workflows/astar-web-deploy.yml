@@ -32,7 +32,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     defaults:
       run:
-        working-directory: apps/web/astar-dev-web
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -66,7 +66,7 @@ jobs:
 
       - name: Install production dependencies
         run: npm install --omit=dev
-        working-directory: apps/web/astar-dev-web/deploy
+        working-directory: apps/web/astar-dev/deploy
 
       - name: Deploy to Azure Web App
         id: deploy
@@ -74,7 +74,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
-          package: apps/web/astar-dev-web/deploy/
+          package: apps/web/astar-dev/deploy/
 
       - name: Wait for app to warm up
         run: sleep 15
