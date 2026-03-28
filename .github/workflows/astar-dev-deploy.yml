@@ -58,7 +58,9 @@ jobs:
           mkdir deploy
           cp -r dist/client deploy/client
           cp -r dist/server deploy/server
-          echo '{"name":"astar-dev","version":"0.0.1","private":true,"scripts":{"start":"node server/entry.mjs"},"engines":{"node":">=20.0.0"}}' > deploy/package.json
+          cp package-lock.json deploy/package-lock.json
+          jq '.scripts = {"start": "node server/entry.mjs"}' package.json > deploy/package.json
+          cd deploy && npm ci --omit=dev && rm package-lock.json
 
       - name: Deploy to Azure Web App
         id: deploy
