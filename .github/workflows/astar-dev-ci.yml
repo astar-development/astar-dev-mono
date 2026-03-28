@@ -2,7 +2,7 @@
 # astar-dev-ci.yml
 # Triggers on any push or PR that touches the astar-dev Astro site or this
 # workflow. Installs dependencies and builds the site.
-# A successful run on main triggers astar-dev-deploy.yml.
+# A successful run on main triggers astar-dev-deploy.yml
 # ════════════════════════════════════════════════════════════════════════════
 
 name: AStar.Dev CI
