@@ -59,6 +59,14 @@ So that I never have to log in again unless my password changes or I revoke acce
 
 ---
 
+## Implementation Constraints
+
+- **`ConfigureAwait(false)` on all `await` calls** — `IMsalClient`, `ITokenManager`, and `IConsentStore` are library-layer types; every `await` must use `.ConfigureAwait(false)` to avoid capturing the Avalonia `SynchronizationContext` and risk deadlocking the UI thread.
+- **MSAL browser flow off the UI thread** — `AcquireTokenInteractive` must not be called on the Avalonia UI thread. Dispatch to a background thread via `Task.Run`, then marshal the result back to the UI thread via `.ObserveOn(RxApp.MainThreadScheduler)` before updating bound properties.
+- **Auth state observable subscribers use `ObserveOn`** — any ViewModel subscribing to `IAuthStateService.AccountAuthStateChanged` must call `.ObserveOn(RxApp.MainThreadScheduler)` before mutating any property or collection, as the observable fires from the token-refresh background thread.
+- **Dispose subscriptions explicitly** — auth state subscriptions stored in ViewModels must be disposed on VM deactivation (store the `IDisposable` from `.Subscribe()` and call `.Dispose()` in the relevant lifecycle hook) to prevent memory leaks across account add/remove cycles.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding — `AStar.Dev.OneDrive.Client` package)

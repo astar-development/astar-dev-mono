@@ -67,6 +67,14 @@ So that the sync engine and account management feature have a reliable, mockable
 
 ---
 
+## Implementation Constraints
+
+- **`ConfigureAwait(false)` on all `await` calls** — this is a library package with no UI dependency; every `await` must use `.ConfigureAwait(false)` to avoid capturing any calling `SynchronizationContext`.
+- **`System.IO.Abstractions` for all file I/O** — never call `System.IO.File`, `System.IO.Directory`, or `System.IO.Path` directly; route through the abstraction for testability. A direct `System.IO` call is a test-isolation bug.
+- **No `new HttpClient()`** — `GraphServiceClient` must be created via `IGraphClientFactory`; a directly-instantiated `HttpClient` exhausts sockets under repeated construction and is flagged by the `HttpClientFactory` Roslyn analyser.
+- **`IProgress<long>` called from background thread** — `IProgress<long>` implementations are invoked from the download/upload thread; do not assume UI thread inside the `Report` callback. The desktop app's progress handler must marshal to `RxApp.MainThreadScheduler`.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding — package exists)

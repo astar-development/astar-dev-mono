@@ -78,6 +78,17 @@ So that I can manage which accounts are synced and where their files are stored 
 
 ---
 
+## Implementation Constraints
+
+- **`x:DataType` required on all DataTemplates** — the account list, folder tree, and wizard step views all use `ItemsControl` or `TreeView` with DataTemplates; every DataTemplate must declare `x:DataType` or it will produce a compiled-binding failure with `AvaloniaUseCompiledBindingsByDefault=true`.
+- **Avalonia `TreeView` lazy loading** — Avalonia's `TreeView` uses `ItemsSource` for the root and `TreeViewItem.ItemsSource` for children. Lazy child loading requires each folder VM to expose an observable/command triggered by `IsExpanded`, not a recursive eager fetch on construction.
+- **`ObservableCollection` updates on UI thread** — auth state and account list changes originate from background threads; every `.Subscribe()` that mutates an `ObservableCollection` or a reactive property must call `.ObserveOn(RxApp.MainThreadScheduler)` first.
+- **Wizard VM resolved via factory** — `AddAccountWizardViewModel` is transient; register and inject `Func<AddAccountWizardViewModel>` rather than resolving directly from `IServiceProvider` in code-behind.
+- **Folder picker via `StorageProvider`** — use `TopLevel.GetTopLevel(this)!.StorageProvider.OpenFolderPickerAsync()` for the local sync folder selection; `FolderBrowserDialog` is Windows-only and will not compile on Linux.
+- **Dialogs via Avalonia dialog API** — confirmation dialogs (non-empty folder warning, account removal confirmation) must use Avalonia's dialog infrastructure; no `MessageBox.Show()`.
+- **Register Accounts nav item** — `ShellServiceExtensions.RegisterAvailableFeatures()` must call `service.Register(NavSection.Accounts)` when this story ships.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

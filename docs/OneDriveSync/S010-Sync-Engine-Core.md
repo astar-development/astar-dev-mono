@@ -107,6 +107,15 @@ So that my files stay in sync without manual effort and I always know what's hap
 
 ---
 
+## Implementation Constraints
+
+- **`ConfigureAwait(false)` on all `await` calls** — the sync engine is a package with no UI dependency; every `await` must use `.ConfigureAwait(false)`.
+- **`IAsyncEnumerable` — never materialise** — the delta file list must remain as `IAsyncEnumerable<DeltaItem>` through the entire pipeline. Calling `.ToListAsync()` or `.ToArrayAsync()` on the full result defeats NF-03 (memory stability) and is a bug.
+- **No UI thread access in the engine** — the sync engine must not reference `RxApp.MainThreadScheduler` or `Dispatcher.UIThread`. Publish scheduler-agnostic observables; the desktop app layer (S012) applies `.ObserveOn(RxApp.MainThreadScheduler)` at the subscription site.
+- **`SemaphoreSlim` for async concurrency** — `SyncGate` and the transfer slot manager must use `SemaphoreSlim`; `lock`/`Monitor` are not awaitable and will deadlock if `await` is called while holding them.
+- **`CancellationToken` propagated to every `await`** — every async call in the engine must accept and forward the `CancellationToken` from `IAppLifetime.ApplicationStopping`. An `await` without a cancellation token is a shutdown-correctness bug.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

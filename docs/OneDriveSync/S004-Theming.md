@@ -54,6 +54,15 @@ So that the app looks comfortable in my environment and respects my OS preferenc
 
 ---
 
+## Implementation Constraints
+
+- **`DynamicResource` everywhere** — every colour/brush reference in AXAML must use `DynamicResource`, never `StaticResource`. `StaticResource` resolves once at load time and will not respond to runtime theme switches. Any `StaticResource` pointing to a theme brush is a silent bug.
+- **Resource dictionary swap on UI thread** — swapping a custom resource dictionary at runtime (`Application.Current.Resources.MergedDictionaries`) must happen on the Avalonia UI thread. Use `Dispatcher.UIThread.Post()` if triggered from a settings save callback.
+- **`ObserveOn(RxApp.MainThreadScheduler)` for theme observable** — `IThemeService` publishes an observable; all subscribers that mutate bound properties must call `.ObserveOn(RxApp.MainThreadScheduler)` before `.Subscribe()`.
+- **Apply before window shown** — the stored theme must be read and applied in `App.axaml.cs` before `desktop.MainWindow` is assigned, to prevent a flash of the wrong theme on startup.
+- **Register Settings nav item** — `ShellServiceExtensions.RegisterAvailableFeatures()` must call `service.Register(NavSection.Settings)` when this story ships; Settings is the primary surface for theme selection.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)
