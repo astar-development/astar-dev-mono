@@ -9,5 +9,5 @@ export default defineConfig({
   integrations: [vue()],
   adapter: node({ mode: 'standalone' }),
   output: 'static',
-  site: 'https://astar.dev',
+  site: 'https://astardevelopment.co.uk',
 });
