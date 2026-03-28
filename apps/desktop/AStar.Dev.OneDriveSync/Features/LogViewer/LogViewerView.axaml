@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDriveSync.Features.LogViewer"
+             x:Class="AStar.Dev.OneDriveSync.Features.LogViewer.LogViewerView"
+             x:DataType="vm:LogViewerViewModel">
+    <TextBlock Text="LogViewer — coming soon"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+</UserControl>

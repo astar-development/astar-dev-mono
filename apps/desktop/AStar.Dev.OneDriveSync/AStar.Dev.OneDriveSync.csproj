@@ -3,6 +3,11 @@
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!--
+      AllowUnsafeBlocks: required by LibraryImportAttribute's source-generated P/Invoke
+      marshaling code in Program.cs (ShowAlreadyRunningMessage → MessageBoxW).
+    -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -65,5 +70,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Expose internal members to the unit test project so lifecycle methods
+         (CompleteStartup, SetStartupError) are testable without making them public. -->
+    <InternalsVisibleTo Include="AStar.Dev.OneDriveSync.Tests.Unit" />
+  </ItemGroup>
 
 </Project>
