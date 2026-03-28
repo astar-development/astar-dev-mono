@@ -53,13 +53,20 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r dist/client deploy/client
+          cp -r dist/server deploy/server
+          echo '{"name":"astar-dev","version":"0.0.1","private":true,"scripts":{"start":"node server/entry.mjs"},"engines":{"node":">=20.0.0"}}' > deploy/package.json
+
       - name: Deploy to Azure Web App
         id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_ASTAR }}
-          package: apps/web/astar-dev/dist
+          package: apps/web/astar-dev/deploy
 
       - name: Wait for app to warm up
         run: sleep 15
