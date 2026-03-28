@@ -16,6 +16,9 @@ const {
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://astar.dev');
+
+// App Insights connection string — optional; omitted if env var not set
+const appInsightsConnString = import.meta.env.PUBLIC_APPINSIGHTS_CONNECTION_STRING ?? '';
 ---
 
 <!doctype html>
@@ -47,6 +50,9 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://astar.de
 
     <!-- Favicon placeholder (replace with real assets) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Named slot for page-specific head elements (e.g. blog OG tags) -->
+    <slot name="head" />
   </head>
 
   <body>
@@ -62,6 +68,51 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? 'https://astar.de
     <Footer />
 
     <CookieConsent client:load />
+
+    <!-- Cookie preferences reset + App Insights conditional loader -->
+    <script is:inline define:vars={{ appInsightsConnString }}>
+      (function () {
+        var CONSENT_KEY = 'cookie-consent';
+
+        // Wire up the footer "Cookie preferences" button
+        document.addEventListener('click', function (e) {
+          if (e.target && e.target.id === 'js-cookie-pref') {
+            try { localStorage.removeItem(CONSENT_KEY); } catch (_) {}
+            window.location.reload();
+          }
+        });
+
+        // Load App Insights only when the user has accepted analytics cookies
+        function loadAppInsights() {
+          if (!appInsightsConnString) return;
+          var script = document.createElement('script');
+          script.src = 'https://js.monitor.azure.com/scripts/b/ai.2.min.js';
+          script.onload = function () {
+            var ai = window.appInsights || (window.appInsights = {});
+            ai.config = { connectionString: appInsightsConnString, disableCookiesUsage: false, enableAutoRouteTracking: false };
+            if (window.Microsoft && window.Microsoft.ApplicationInsights) {
+              var sdk = new window.Microsoft.ApplicationInsights.ApplicationInsights({ config: ai.config });
+              sdk.loadAppInsights();
+              sdk.trackPageView();
+              window.appInsights = sdk;
+            }
+          };
+          document.head.appendChild(script);
+        }
+
+        // Check current consent state
+        try {
+          var stored = localStorage.getItem(CONSENT_KEY);
+          if (stored) {
+            var prefs = JSON.parse(stored);
+            if (prefs && prefs.analytics === true) loadAppInsights();
+          }
+        } catch (_) {}
+
+        // Also listen for consent events dispatched by CookieConsent.vue
+        window.addEventListener('cookie-consent-accepted', loadAppInsights);
+      })();
+    </script>
   </body>
 </html>
 
