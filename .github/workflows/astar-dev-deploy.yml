@@ -73,7 +73,7 @@ jobs:
 
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astar.dev)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://astardevelopment.co.uk/)
           if [ "$STATUS" != "200" ]; then
             echo "Health check failed with status $STATUS"
             exit 1
