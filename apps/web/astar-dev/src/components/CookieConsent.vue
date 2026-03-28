@@ -18,6 +18,7 @@ function accept() {
   persist({ analytics: true });
   liveText.value = 'Cookie preferences saved';
   visible.value = false;
+  window.dispatchEvent(new Event('cookie-consent-accepted'));
 }
 
 function decline() {

@@ -36,7 +36,7 @@
 
 ## 1. Problem Statement
 
-The current site at `apps/web/astar-dev-vue` is a placeholder single-page Vue 3 application with fictional content, a broken theme system (themes only apply to the hero section), a non-functional contact form, empty smoke tests, and no SEO support (the Vue SPA sends an empty `<div>` to search engine crawlers). It cannot serve its intended purpose: attracting engineering leaders and hiring managers to contact the site owner about professional opportunities.
+The current site at `apps/web/astar-dev-web` is a placeholder single-page Vue 3 application with fictional content, a broken theme system (themes only apply to the hero section), a non-functional contact form, empty smoke tests, and no SEO support (the Vue SPA sends an empty `<div>` to search engine crawlers). It cannot serve its intended purpose: attracting engineering leaders and hiring managers to contact the site owner about professional opportunities.
 
 The site must be rebuilt as a production-grade, SEO-friendly, multi-page professional portfolio and consultancy website that showcases real skills, real NuGet packages, and real (anonymised) project experience.
 
@@ -44,14 +44,14 @@ The site must be rebuilt as a production-grade, SEO-friendly, multi-page profess
 
 ## 2. Goals & Success Metrics
 
-| Goal | Metric | Target |
-|------|--------|--------|
-| Attract professional opportunities | Contact form submissions per month | ≥ 1 (from zero today) |
-| Search engine discoverability | Google indexing of all public pages | 100% of pages indexed within 30 days of launch |
-| Fast load experience on budget hosting | Lighthouse mobile performance score | ≥ 90 |
-| Accessible to all users | WCAG 2.1 AA compliance | All pages, all themes pass automated + manual audit |
-| Minimise cold-start impact | Time-to-first-byte on cold Azure Web App | < 3 seconds |
-| Professional credibility | NuGet packages displayed with live metadata | All curated packages render with accurate version/download data |
+| Goal                                   | Metric                                      | Target                                                          |
+| -------------------------------------- | ------------------------------------------- | --------------------------------------------------------------- |
+| Attract professional opportunities     | Contact form submissions per month          | ≥ 1 (from zero today)                                           |
+| Search engine discoverability          | Google indexing of all public pages         | 100% of pages indexed within 30 days of launch                  |
+| Fast load experience on budget hosting | Lighthouse mobile performance score         | ≥ 90                                                            |
+| Accessible to all users                | WCAG 2.1 AA compliance                      | All pages, all themes pass automated + manual audit             |
+| Minimise cold-start impact             | Time-to-first-byte on cold Azure Web App    | < 3 seconds                                                     |
+| Professional credibility               | NuGet packages displayed with live metadata | All curated packages render with accurate version/download data |
 
 ---
 
@@ -117,15 +117,15 @@ On mobile, the nav collapses into a hamburger menu.
 
 **Why Astro over Vue SPA, React, or Next.js:**
 
-| Criterion | Vue SPA (current) | Next.js | Astro |
-|-----------|-------------------|---------|-------|
-| SEO (server-rendered HTML) | ✗ Empty div | ✓ SSR | ✓ Static + SSR hybrid |
-| Cold-start on Azure Web App | N/A (static files) | Slow (Node.js SSR) | Fast (static pages, minimal JS) |
-| Markdown blog support | Manual setup | MDX plugin | Built-in (native `.md`/`.mdx` collections) |
-| JS shipped to browser | Full Vue runtime (~50KB+) | Full React runtime (~80KB+) | Zero JS by default; opt-in per component |
-| Build-time data fetching | Manual | `getStaticProps` | Native `getStaticPaths` + `fetch` |
-| Learning curve from Vue | New framework | New framework | Can use Vue components inside Astro |
-| Lighthouse score potential | ~70-80 (SPA hydration) | ~80-85 (hydration overhead) | ~95-100 (zero JS by default) |
+| Criterion                   | Vue SPA (current)         | Next.js                     | Astro                                      |
+| --------------------------- | ------------------------- | --------------------------- | ------------------------------------------ |
+| SEO (server-rendered HTML)  | ✗ Empty div               | ✓ SSR                       | ✓ Static + SSR hybrid                      |
+| Cold-start on Azure Web App | N/A (static files)        | Slow (Node.js SSR)          | Fast (static pages, minimal JS)            |
+| Markdown blog support       | Manual setup              | MDX plugin                  | Built-in (native `.md`/`.mdx` collections) |
+| JS shipped to browser       | Full Vue runtime (~50KB+) | Full React runtime (~80KB+) | Zero JS by default; opt-in per component   |
+| Build-time data fetching    | Manual                    | `getStaticProps`            | Native `getStaticPaths` + `fetch`          |
+| Learning curve from Vue     | New framework             | New framework               | Can use Vue components inside Astro        |
+| Lighthouse score potential  | ~70-80 (SPA hydration)    | ~80-85 (hydration overhead) | ~95-100 (zero JS by default)               |
 
 **Key advantage:** Astro ships **zero client-side JavaScript by default**. Interactive components (theme switcher, contact form) opt in to hydration with `client:load` or `client:visible` directives. This means:
 
@@ -192,9 +192,9 @@ apps/web/astar-dev/
 
 Astro supports server-side API routes for the small amount of backend logic needed:
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/contact` | POST | Receives contact form submission, validates, sends via SendGrid |
+| Endpoint       | Method | Purpose                                                         |
+| -------------- | ------ | --------------------------------------------------------------- |
+| `/api/contact` | POST   | Receives contact form submission, validates, sends via SendGrid |
 
 **The existing Express server (`server/`) is replaced entirely by Astro's built-in capabilities.** No separate Node.js server is needed.
 
@@ -202,14 +202,14 @@ Astro supports server-side API routes for the small amount of backend logic need
 
 ## 6. Hosting & Deployment
 
-| Setting | Value |
-|---------|-------|
-| **Host** | Azure Web App (existing, B1 tier, with custom domain) |
-| **Runtime** | Node.js LTS |
-| **Build output** | Astro SSG (static HTML) with SSR opt-in for `/api/contact` endpoint only |
-| **CI/CD** | GitHub Actions — build on push to `main`, deploy to Azure Web App |
-| **Custom domain** | Existing domain purchased from Microsoft — retain as-is |
-| **SSL** | Azure-managed certificate (free with custom domain on Web App) |
+| Setting           | Value                                                                    |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Host**          | Azure Web App (existing, B1 tier, with custom domain)                    |
+| **Runtime**       | Node.js LTS                                                              |
+| **Build output**  | Astro SSG (static HTML) with SSR opt-in for `/api/contact` endpoint only |
+| **CI/CD**         | GitHub Actions — build on push to `main`, deploy to Azure Web App        |
+| **Custom domain** | Existing domain purchased from Microsoft — retain as-is                  |
+| **SSL**           | Azure-managed certificate (free with custom domain on Web App)           |
 
 ### Astro Output Mode
 
@@ -236,7 +236,7 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 - Mobile-responsive layout
 - Lighthouse mobile ≥ 90
 - GitHub Actions CI/CD to Azure Web App
-- Rename folder from `apps/web/astar-dev-vue` to `apps/web/astar-dev`
+- Rename folder from `apps/web/astar-dev-web` to `apps/web/astar-dev`
 
 **Exit criteria:**
 
@@ -343,50 +343,50 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 #### Layout (top to bottom)
 
 1. **Hero section**
-   - Logo (theme-appropriate variant)
-   - Headline: Professional on dark/light themes; personality-driven on metal/polished themes
-   - Subtitle: 1-2 sentences summarising who you are and what you do
-   - Eyebrow text (e.g., skill tags: TDD, Clean Architecture, Observability)
-   - CTA buttons: "Explore services" (anchor to services section), "Get in touch" (links to `/contact`)
+    - Logo (theme-appropriate variant)
+    - Headline: Professional on dark/light themes; personality-driven on metal/polished themes
+    - Subtitle: 1-2 sentences summarising who you are and what you do
+    - Eyebrow text (e.g., skill tags: TDD, Clean Architecture, Observability)
+    - CTA buttons: "Explore services" (anchor to services section), "Get in touch" (links to `/contact`)
 
 2. **Services section**
-   - Heading: contextual (e.g., "What I offer")
-   - 5 service cards in a responsive grid:
-     - Fullstack Development
-     - Mentoring
-     - Code Reviews
-     - Architecture Design
-     - Backend Development
-   - Each card: title, short description (2-3 sentences)
+    - Heading: contextual (e.g., "What I offer")
+    - 5 service cards in a responsive grid:
+        - Fullstack Development
+        - Mentoring
+        - Code Reviews
+        - Architecture Design
+        - Backend Development
+    - Each card: title, short description (2-3 sentences)
 
 3. **Featured NuGet Packages section**
-   - Heading (e.g., "Open Source Packages")
-   - 3-5 package cards (subset of curated list)
-   - Each card: package name, short description, latest version, download count, install command
-   - "View all packages →" link to `/packages`
+    - Heading (e.g., "Open Source Packages")
+    - 3-5 package cards (subset of curated list)
+    - Each card: package name, short description, latest version, download count, install command
+    - "View all packages →" link to `/packages`
 
 4. **Case Study Highlights section**
-   - Heading (e.g., "Selected Work")
-   - 2-3 teaser cards linking to full case study pages
-   - Each card: project title, one-sentence summary, tech stack tags
-   - Links to `/case-studies/[slug]`
+    - Heading (e.g., "Selected Work")
+    - 2-3 teaser cards linking to full case study pages
+    - Each card: project title, one-sentence summary, tech stack tags
+    - Links to `/case-studies/[slug]`
 
 5. **Call-to-Action banner**
-   - Short prompt (e.g., "Interested in working together?")
-   - Button linking to `/contact`
+    - Short prompt (e.g., "Interested in working together?")
+    - Button linking to `/contact`
 
 6. **Footer**
-   - Copyright notice
-   - Links: Privacy Policy, GitHub, NuGet
-   - Site attribution
+    - Copyright notice
+    - Links: Privacy Policy, GitHub, NuGet
+    - Site attribution
 
 #### Copy Variants by Theme
 
-| Element | Dark / Light | Metal | Polished |
-|---------|-------------|-------|----------|
+| Element  | Dark / Light                                             | Metal                                                               | Polished                                                                 |
+| -------- | -------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Headline | Professional (e.g., "Senior .NET Developer & Architect") | Personality-driven (e.g., "Production systems that play at volume") | Personality-driven (e.g., "Precision-engineered .NET, polished to ship") |
-| Subtitle | Straightforward summary of skills and services | Band-energy metaphor | K-pop precision metaphor |
-| Eyebrow | Skill keywords | "VOLUME // ELEVEN" | "PRECISION // POLISH" |
+| Subtitle | Straightforward summary of skills and services           | Band-energy metaphor                                                | K-pop precision metaphor                                                 |
+| Eyebrow  | Skill keywords                                           | "VOLUME // ELEVEN"                                                  | "PRECISION // POLISH"                                                    |
 
 ### 8.2 Packages Page (`/packages`)
 
@@ -401,11 +401,11 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 - Heading
 - Optional tag filter bar (horizontal pills/chips)
 - Post cards in a single-column or two-column list:
-  - Title (links to post)
-  - Date (formatted, e.g., "28 March 2026")
-  - Summary / excerpt (from frontmatter)
-  - Tags (pill badges)
-  - Estimated reading time
+    - Title (links to post)
+    - Date (formatted, e.g., "28 March 2026")
+    - Summary / excerpt (from frontmatter)
+    - Tags (pill badges)
+    - Estimated reading time
 - Posts ordered by date descending
 - Drafts excluded
 
@@ -414,10 +414,10 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 - Title
 - Date, reading time, tags
 - Markdown-rendered content with:
-  - Headings, paragraphs, lists, blockquotes
-  - Code blocks with syntax highlighting (Shiki)
-  - Images (if included)
-  - Links
+    - Headings, paragraphs, lists, blockquotes
+    - Code blocks with syntax highlighting (Shiki)
+    - Images (if included)
+    - Links
 - "Back to blog" navigation link
 - Open Graph / Twitter Card meta tags
 
@@ -430,21 +430,21 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 
 - Title
 - Structured sections:
-  - **The Problem** — context and pain points (anonymised client)
-  - **The Approach** — what was done, methodology, decisions
-  - **The Outcome** — measurable results, improvements
-  - **Tech Stack** — technologies used (displayed as tags/pills)
+    - **The Problem** — context and pain points (anonymised client)
+    - **The Approach** — what was done, methodology, decisions
+    - **The Outcome** — measurable results, improvements
+    - **Tech Stack** — technologies used (displayed as tags/pills)
 - "Back to case studies" navigation link
 
 ### 8.7 Contact Page (`/contact`)
 
 - Heading and short intro (e.g., "Let's talk about your next project")
 - Form fields:
-  - Name (required, text)
-  - Email (required, email validation)
-  - Message (required, textarea)
-  - "Send me a copy of this message" (optional, checkbox)
-  - Honeypot field (hidden, `aria-hidden="true"`, `tabindex="-1"`)
+    - Name (required, text)
+    - Email (required, email validation)
+    - Message (required, textarea)
+    - "Send me a copy of this message" (optional, checkbox)
+    - Honeypot field (hidden, `aria-hidden="true"`, `tabindex="-1"`)
 - Submit button
 - Success state: green confirmation message, form resets
 - Error state: red error message with guidance
@@ -453,13 +453,13 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 ### 8.8 Privacy Policy (`/privacy`)
 
 - Static page covering:
-  - What data is collected (contact form submissions: name, email, message)
-  - Analytics data collected (Azure Application Insights — anonymised usage data)
-  - Cookie usage (theme preference in `localStorage`, App Insights cookies, consent cookie)
-  - Data retention policy
-  - User rights under UK GDPR (access, rectification, erasure, portability)
-  - Contact details for data-related requests
-  - Last updated date
+    - What data is collected (contact form submissions: name, email, message)
+    - Analytics data collected (Azure Application Insights — anonymised usage data)
+    - Cookie usage (theme preference in `localStorage`, App Insights cookies, consent cookie)
+    - Data retention policy
+    - User rights under UK GDPR (access, rectification, erasure, portability)
+    - Contact details for data-related requests
+    - Last updated date
 
 ---
 
@@ -467,12 +467,12 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 
 ### Themes
 
-| Theme | Default? | CSS Class | Personality |
-|-------|----------|-----------|-------------|
-| Dark | ✓ (first visit) | `theme-dark` | Professional, clean, dark background |
-| Light | | `theme-light` | Professional, clean, light background |
-| Metal | | `theme-metal` | High-energy, bold, Metallica-inspired |
-| Polished | | `theme-polished` | Refined, precise, BlackPink-inspired |
+| Theme    | Default?        | CSS Class        | Personality                           |
+| -------- | --------------- | ---------------- | ------------------------------------- |
+| Dark     | ✓ (first visit) | `theme-dark`     | Professional, clean, dark background  |
+| Light    |                 | `theme-light`    | Professional, clean, light background |
+| Metal    |                 | `theme-metal`    | High-energy, bold, Metallica-inspired |
+| Polished |                 | `theme-polished` | Refined, precise, BlackPink-inspired  |
 
 ### Implementation
 
@@ -520,11 +520,11 @@ Blog posts live in `src/content/blog/` as `.md` files.
 
 ```yaml
 ---
-title: "Post title"           # Required, string
-date: 2026-03-28              # Required, date (ISO 8601)
-summary: "A short excerpt"    # Required, string (used on listing page and Open Graph)
-tags: ["dotnet", "tdd"]       # Required, string array
-draft: false                  # Optional, boolean, default false
+title: "Post title" # Required, string
+date: 2026-03-28 # Required, date (ISO 8601)
+summary: "A short excerpt" # Required, string (used on listing page and Open Graph)
+tags: ["dotnet", "tdd"] # Required, string array
+draft: false # Optional, boolean, default false
 ---
 ```
 
@@ -553,19 +553,19 @@ A curated list of NuGet package IDs is maintained in `src/data/packages.json`:
 
 ```json
 {
-  "featured": ["AStar.Dev.Package.One", "AStar.Dev.Package.Two", "AStar.Dev.Package.Three"],
-  "categories": [
-    {
-      "name": "Data Access",
-      "description": "Packages for database and data layer concerns",
-      "packages": ["AStar.Dev.Package.One", "AStar.Dev.Package.Four"]
-    },
-    {
-      "name": "HTTP & APIs",
-      "description": "HTTP clients, middleware, and API utilities",
-      "packages": ["AStar.Dev.Package.Two", "AStar.Dev.Package.Five"]
-    }
-  ]
+    "featured": ["AStar.Dev.Package.One", "AStar.Dev.Package.Two", "AStar.Dev.Package.Three"],
+    "categories": [
+        {
+            "name": "Data Access",
+            "description": "Packages for database and data layer concerns",
+            "packages": ["AStar.Dev.Package.One", "AStar.Dev.Package.Four"]
+        },
+        {
+            "name": "HTTP & APIs",
+            "description": "HTTP clients, middleware, and API utilities",
+            "packages": ["AStar.Dev.Package.Two", "AStar.Dev.Package.Five"]
+        }
+    ]
 }
 ```
 
@@ -624,12 +624,12 @@ User fills form → Client-side validation → POST /api/contact
 
 **Client-side (immediate feedback):**
 
-| Field | Rule |
-|-------|------|
-| Name | Required, non-empty after trim, max 200 characters |
-| Email | Required, valid email format |
-| Message | Required, non-empty after trim, min 10 characters, max 5000 characters |
-| Honeypot | Must be empty |
+| Field    | Rule                                                                   |
+| -------- | ---------------------------------------------------------------------- |
+| Name     | Required, non-empty after trim, max 200 characters                     |
+| Email    | Required, valid email format                                           |
+| Message  | Required, non-empty after trim, min 10 characters, max 5000 characters |
+| Honeypot | Must be empty                                                          |
 
 **Server-side (re-validate everything):**
 
@@ -654,13 +654,13 @@ User fills form → Client-side validation → POST /api/contact
 
 ### Error Handling
 
-| Scenario | User sees | Logged |
-|----------|-----------|--------|
-| Validation failure | Specific field errors | No (client-side) |
-| Honeypot triggered | "Thank you" (fake success) | Yes (warning) |
-| Rate limit exceeded | "Too many requests, please try again later" | Yes (warning) |
+| Scenario             | User sees                                                | Logged                          |
+| -------------------- | -------------------------------------------------------- | ------------------------------- |
+| Validation failure   | Specific field errors                                    | No (client-side)                |
+| Honeypot triggered   | "Thank you" (fake success)                               | Yes (warning)                   |
+| Rate limit exceeded  | "Too many requests, please try again later"              | Yes (warning)                   |
 | SendGrid API failure | "Something went wrong. Please email [address] directly." | Yes (error + SendGrid response) |
-| Unknown server error | "Something went wrong. Please try again later." | Yes (error + stack trace) |
+| Unknown server error | "Something went wrong. Please try again later."          | Yes (error + stack trace)       |
 
 ---
 
@@ -713,12 +713,12 @@ Must cover (see Section 8.8 for full outline):
 
 ### Data Processing
 
-| Data | Purpose | Lawful Basis | Retention |
-|------|---------|-------------|-----------|
-| Contact form (name, email, message) | Respond to enquiry | Legitimate interest | Deleted after enquiry resolved or 12 months, whichever is sooner |
-| Analytics (page views, performance) | Improve site | Consent (cookie banner) | App Insights default (90 days) |
-| Theme preference | User experience | Functional necessity | Indefinite (localStorage, user can clear) |
-| Cookie consent choice | Legal compliance | Legal obligation | Indefinite (localStorage, user can change) |
+| Data                                | Purpose            | Lawful Basis            | Retention                                                        |
+| ----------------------------------- | ------------------ | ----------------------- | ---------------------------------------------------------------- |
+| Contact form (name, email, message) | Respond to enquiry | Legitimate interest     | Deleted after enquiry resolved or 12 months, whichever is sooner |
+| Analytics (page views, performance) | Improve site       | Consent (cookie banner) | App Insights default (90 days)                                   |
+| Theme preference                    | User experience    | Functional necessity    | Indefinite (localStorage, user can clear)                        |
+| Cookie consent choice               | Legal compliance   | Legal obligation        | Indefinite (localStorage, user can change)                       |
 
 ---
 
@@ -728,21 +728,21 @@ Must cover (see Section 8.8 for full outline):
 
 All pages, across all four themes, must meet WCAG 2.1 Level AA. Key criteria:
 
-| WCAG Criterion | Requirement | Applies To |
-|----------------|------------|------------|
-| 1.1.1 Non-text Content | All images have meaningful `alt` text or are marked decorative | All pages |
-| 1.3.1 Info and Relationships | Semantic HTML: headings in order, lists for lists, forms with labels | All pages |
-| 1.4.3 Contrast (Minimum) | Text contrast ≥ 4.5:1 (normal) / ≥ 3:1 (large) | All themes |
-| 1.4.11 Non-text Contrast | UI components and borders ≥ 3:1 | All themes |
-| 2.1.1 Keyboard | All interactive elements reachable and operable via keyboard | Nav, forms, theme switcher |
-| 2.4.1 Bypass Blocks | Skip-to-content link | All pages |
-| 2.4.2 Page Titled | Unique, descriptive `<title>` per page | All pages |
-| 2.4.4 Link Purpose | Link text describes destination (no "click here") | All pages |
-| 2.4.7 Focus Visible | Visible focus indicator on all interactive elements | All themes |
-| 3.1.1 Language of Page | `lang="en"` on `<html>` | All pages |
-| 3.3.1 Error Identification | Form errors identified and described in text | Contact form |
-| 3.3.2 Labels or Instructions | All form fields have visible labels | Contact form |
-| 4.1.2 Name, Role, Value | ARIA attributes where semantic HTML is insufficient | Theme switcher, mobile nav |
+| WCAG Criterion               | Requirement                                                          | Applies To                 |
+| ---------------------------- | -------------------------------------------------------------------- | -------------------------- |
+| 1.1.1 Non-text Content       | All images have meaningful `alt` text or are marked decorative       | All pages                  |
+| 1.3.1 Info and Relationships | Semantic HTML: headings in order, lists for lists, forms with labels | All pages                  |
+| 1.4.3 Contrast (Minimum)     | Text contrast ≥ 4.5:1 (normal) / ≥ 3:1 (large)                       | All themes                 |
+| 1.4.11 Non-text Contrast     | UI components and borders ≥ 3:1                                      | All themes                 |
+| 2.1.1 Keyboard               | All interactive elements reachable and operable via keyboard         | Nav, forms, theme switcher |
+| 2.4.1 Bypass Blocks          | Skip-to-content link                                                 | All pages                  |
+| 2.4.2 Page Titled            | Unique, descriptive `<title>` per page                               | All pages                  |
+| 2.4.4 Link Purpose           | Link text describes destination (no "click here")                    | All pages                  |
+| 2.4.7 Focus Visible          | Visible focus indicator on all interactive elements                  | All themes                 |
+| 3.1.1 Language of Page       | `lang="en"` on `<html>`                                              | All pages                  |
+| 3.3.1 Error Identification   | Form errors identified and described in text                         | Contact form               |
+| 3.3.2 Labels or Instructions | All form fields have visible labels                                  | Contact form               |
+| 4.1.2 Name, Role, Value      | ARIA attributes where semantic HTML is insufficient                  | Theme switcher, mobile nav |
 
 ### Testing
 
@@ -755,17 +755,17 @@ All pages, across all four themes, must meet WCAG 2.1 Level AA. Key criteria:
 
 ### Targets
 
-| Metric | Target | Tool |
-|--------|--------|------|
-| Lighthouse Performance (mobile) | ≥ 90 | Lighthouse CI |
-| Lighthouse Accessibility (mobile) | ≥ 90 | Lighthouse CI |
-| Lighthouse Best Practices | ≥ 90 | Lighthouse CI |
-| Lighthouse SEO | ≥ 90 | Lighthouse CI |
-| First Contentful Paint (3G) | < 2.0s | Lighthouse |
-| Largest Contentful Paint (3G) | < 2.5s | Lighthouse |
-| Cumulative Layout Shift | < 0.1 | Lighthouse |
-| Total page weight (home) | < 500KB (transferred) | DevTools |
-| JavaScript shipped (home) | < 50KB (transferred) | DevTools |
+| Metric                            | Target                | Tool          |
+| --------------------------------- | --------------------- | ------------- |
+| Lighthouse Performance (mobile)   | ≥ 90                  | Lighthouse CI |
+| Lighthouse Accessibility (mobile) | ≥ 90                  | Lighthouse CI |
+| Lighthouse Best Practices         | ≥ 90                  | Lighthouse CI |
+| Lighthouse SEO                    | ≥ 90                  | Lighthouse CI |
+| First Contentful Paint (3G)       | < 2.0s                | Lighthouse    |
+| Largest Contentful Paint (3G)     | < 2.5s                | Lighthouse    |
+| Cumulative Layout Shift           | < 0.1                 | Lighthouse    |
+| Total page weight (home)          | < 500KB (transferred) | DevTools      |
+| JavaScript shipped (home)         | < 50KB (transferred)  | DevTools      |
 
 ### How Astro Achieves This
 
@@ -781,24 +781,24 @@ All pages, across all four themes, must meet WCAG 2.1 Level AA. Key criteria:
 
 ### Breakpoints
 
-| Name | Width | Target |
-|------|-------|--------|
-| Mobile | < 640px | Phones |
-| Tablet | 640px – 1024px | Tablets, small laptops |
-| Desktop | > 1024px | Laptops, desktops |
+| Name    | Width          | Target                 |
+| ------- | -------------- | ---------------------- |
+| Mobile  | < 640px        | Phones                 |
+| Tablet  | 640px – 1024px | Tablets, small laptops |
+| Desktop | > 1024px       | Laptops, desktops      |
 
 ### Key Responsive Behaviours
 
-| Component | Mobile | Tablet | Desktop |
-|-----------|--------|--------|---------|
-| Navigation | Hamburger menu | Hamburger or horizontal | Horizontal bar |
-| Hero | Stacked, full-width | Stacked, constrained | As designed |
-| Service cards | Single column | 2 columns | 3 or 5 columns (flexible grid) |
-| Package cards | Single column | 2 columns | 3 columns |
-| Case study cards | Single column | 2 columns | 2-3 columns |
-| Contact form | Full-width, stacked | 2-column (text + form) | 2-column |
-| Blog listing | Single column | Single or 2 columns | 2 columns |
-| Footer | Stacked links | Horizontal | Horizontal |
+| Component        | Mobile              | Tablet                  | Desktop                        |
+| ---------------- | ------------------- | ----------------------- | ------------------------------ |
+| Navigation       | Hamburger menu      | Hamburger or horizontal | Horizontal bar                 |
+| Hero             | Stacked, full-width | Stacked, constrained    | As designed                    |
+| Service cards    | Single column       | 2 columns               | 3 or 5 columns (flexible grid) |
+| Package cards    | Single column       | 2 columns               | 3 columns                      |
+| Case study cards | Single column       | 2 columns               | 2-3 columns                    |
+| Contact form     | Full-width, stacked | 2-column (text + form)  | 2-column                       |
+| Blog listing     | Single column       | Single or 2 columns     | 2 columns                      |
+| Footer           | Stacked links       | Horizontal              | Horizontal                     |
 
 ### Touch Targets
 
@@ -808,18 +808,18 @@ All interactive elements (buttons, links, form controls) must have a minimum tou
 
 ## 18. Non-Functional Requirements
 
-| Requirement | Specification |
-|-------------|--------------|
-| **Browser support** | Latest 2 versions of Chrome, Firefox, Safari, Edge. No IE11. |
-| **Build time** | < 60 seconds for full production build |
-| **Zero-downtime deploys** | GitHub Actions deploys to Azure Web App with slot swap or rolling update |
-| **Error handling** | No stack traces or internal details exposed to users in production |
-| **Security headers** | CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy (configured via Astro middleware or Azure Web App config) |
-| **Sitemap** | Auto-generated `sitemap.xml` via `@astrojs/sitemap` integration |
-| **robots.txt** | Allow all crawlers, reference sitemap |
-| **Open Graph tags** | All pages have `og:title`, `og:description`, `og:image`, `og:url` |
-| **Favicon** | Properly configured with multiple sizes (Astro handles this) |
-| **404 page** | Custom styled 404 page matching the active theme |
+| Requirement               | Specification                                                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Browser support**       | Latest 2 versions of Chrome, Firefox, Safari, Edge. No IE11.                                                            |
+| **Build time**            | < 60 seconds for full production build                                                                                  |
+| **Zero-downtime deploys** | GitHub Actions deploys to Azure Web App with slot swap or rolling update                                                |
+| **Error handling**        | No stack traces or internal details exposed to users in production                                                      |
+| **Security headers**      | CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy (configured via Astro middleware or Azure Web App config) |
+| **Sitemap**               | Auto-generated `sitemap.xml` via `@astrojs/sitemap` integration                                                         |
+| **robots.txt**            | Allow all crawlers, reference sitemap                                                                                   |
+| **Open Graph tags**       | All pages have `og:title`, `og:description`, `og:image`, `og:url`                                                       |
+| **Favicon**               | Properly configured with multiple sizes (Astro handles this)                                                            |
+| **404 page**              | Custom styled 404 page matching the active theme                                                                        |
 
 ---
 
@@ -827,12 +827,12 @@ All interactive elements (buttons, links, form controls) must have a minimum tou
 
 ### Environment Variables
 
-| Variable | Where Used | Stored In | Example |
-|----------|-----------|-----------|---------|
-| `SENDGRID_API_KEY` | Server (API route) | Azure App Settings, `.env` locally | `SG.xxxx` |
-| `CONTACT_EMAIL` | Server (API route) | Azure App Settings, `.env` locally | `hello@example.com` |
-| `PUBLIC_APPINSIGHTS_CONNECTION_STRING` | Client (browser) | Azure App Settings, `.env` locally | `InstrumentationKey=xxx;...` |
-| `SITE_URL` | Build (sitemap, OG tags) | Azure App Settings, `.env` locally | `https://yourdomain.com` |
+| Variable                               | Where Used               | Stored In                          | Example                      |
+| -------------------------------------- | ------------------------ | ---------------------------------- | ---------------------------- |
+| `SENDGRID_API_KEY`                     | Server (API route)       | Azure App Settings, `.env` locally | `SG.xxxx`                    |
+| `CONTACT_EMAIL`                        | Server (API route)       | Azure App Settings, `.env` locally | `hello@example.com`          |
+| `PUBLIC_APPINSIGHTS_CONNECTION_STRING` | Client (browser)         | Azure App Settings, `.env` locally | `InstrumentationKey=xxx;...` |
+| `SITE_URL`                             | Build (sitemap, OG tags) | Azure App Settings, `.env` locally | `https://yourdomain.com`     |
 
 ### Local Development
 
@@ -851,7 +851,7 @@ All interactive elements (buttons, links, form controls) must have a minimum tou
 
 ### Folder Rename
 
-`apps/web/astar-dev-vue` → `apps/web/astar-dev`
+`apps/web/astar-dev-web` → `apps/web/astar-dev`
 
 ### Files Removed
 
@@ -879,16 +879,16 @@ The entire existing codebase is replaced. Key removals:
 
 ## 21. Risks & Assumptions
 
-| # | Risk / Assumption | Type | Impact | Mitigation |
-|---|-------------------|------|--------|------------|
-| 1 | **Confirmed:** Azure Web App is on B1 tier, which supports Node.js SSR and "Always On" (currently off to save cost). Cold-start on B1 is typically 2-4s. | Resolved | Only `/api/contact` hits Node.js; all other pages are static. Cold-start only affects first contact form submission after idle period. Consider enabling the Azure health check ping to mitigate. | N/A — confirmed |
-| 2 | **Assumption:** SendGrid free tier (100 emails/day) is sufficient | Assumption | Low — site is unlikely to receive 100 contact submissions per day | Monitor usage; upgrade if needed |
-| 3 | **Risk:** NuGet API is unavailable during build | Risk | Build uses stale data or fails | Build-time cache with fallback (see Section 11) |
-| 4 | **Assumption:** Custom domain can remain on Azure Web App regardless of hosting changes | Assumption | Medium — domain was purchased from Microsoft | Verify domain DNS configuration before any hosting changes |
-| 5 | **Risk:** Theme colour palettes may not all pass WCAG 2.1 AA after audit | Risk | Requires palette adjustments that may alter the visual identity of metal/polished themes | Audit early in Phase 1; adjust specific shades while preserving the overall feel |
-| 6 | **Assumption:** Blog content will be authored by the site owner directly in Markdown via git commits | Assumption | Low — this is the agreed workflow | If the workflow proves too cumbersome, a lightweight CMS (e.g., Tina) can be added later without re-architecting |
-| 7 | **Risk:** Astro's Vue integration may have limitations for complex interactive components | Risk | Low — only 3 components need hydration (theme switcher, contact form, cookie consent) | These are simple components; Astro's Vue integration is mature for this scope |
-| 8 | **Assumption:** The site owner will provide real content (services descriptions, case studies, curated package list) before each phase launches | Assumption | Phases blocked if content is not ready | Content templates provided in the spec; can launch with placeholder content and iterate |
+| #   | Risk / Assumption                                                                                                                                        | Type       | Impact                                                                                                                                                                                            | Mitigation                                                                                                       |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | **Confirmed:** Azure Web App is on B1 tier, which supports Node.js SSR and "Always On" (currently off to save cost). Cold-start on B1 is typically 2-4s. | Resolved   | Only `/api/contact` hits Node.js; all other pages are static. Cold-start only affects first contact form submission after idle period. Consider enabling the Azure health check ping to mitigate. | N/A — confirmed                                                                                                  |
+| 2   | **Assumption:** SendGrid free tier (100 emails/day) is sufficient                                                                                        | Assumption | Low — site is unlikely to receive 100 contact submissions per day                                                                                                                                 | Monitor usage; upgrade if needed                                                                                 |
+| 3   | **Risk:** NuGet API is unavailable during build                                                                                                          | Risk       | Build uses stale data or fails                                                                                                                                                                    | Build-time cache with fallback (see Section 11)                                                                  |
+| 4   | **Assumption:** Custom domain can remain on Azure Web App regardless of hosting changes                                                                  | Assumption | Medium — domain was purchased from Microsoft                                                                                                                                                      | Verify domain DNS configuration before any hosting changes                                                       |
+| 5   | **Risk:** Theme colour palettes may not all pass WCAG 2.1 AA after audit                                                                                 | Risk       | Requires palette adjustments that may alter the visual identity of metal/polished themes                                                                                                          | Audit early in Phase 1; adjust specific shades while preserving the overall feel                                 |
+| 6   | **Assumption:** Blog content will be authored by the site owner directly in Markdown via git commits                                                     | Assumption | Low — this is the agreed workflow                                                                                                                                                                 | If the workflow proves too cumbersome, a lightweight CMS (e.g., Tina) can be added later without re-architecting |
+| 7   | **Risk:** Astro's Vue integration may have limitations for complex interactive components                                                                | Risk       | Low — only 3 components need hydration (theme switcher, contact form, cookie consent)                                                                                                             | These are simple components; Astro's Vue integration is mature for this scope                                    |
+| 8   | **Assumption:** The site owner will provide real content (services descriptions, case studies, curated package list) before each phase launches          | Assumption | Phases blocked if content is not ready                                                                                                                                                            | Content templates provided in the spec; can launch with placeholder content and iterate                          |
 
 ---
 
@@ -903,4 +903,4 @@ The entire existing codebase is replaced. Key removals:
 
 ---
 
-*End of specification.*
+_End of specification._

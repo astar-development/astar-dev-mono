@@ -28,11 +28,11 @@ Architecture is the art of eliminating accidental complexity. If a decision make
 
 ## App inventory and roles
 
-| Directory | Framework | Purpose |
-|---|---|---|
-| `apps/web/astar-dev-vue/client` | Vue 3 + TypeScript + Vite 5 | Main marketing / portal SPA |
-| `apps/web/astar-dev-vue/server` | Express 4 + TypeScript | BFF / API gateway for the Vue client |
-| `apps/web/fab4kids` | React 19 (migrating to TS) | Consumer product — React-specific UX |
+| Directory                       | Framework                   | Purpose                              |
+| ------------------------------- | --------------------------- | ------------------------------------ |
+| `apps/web/astar-dev-web/client` | Vue 3 + TypeScript + Vite 5 | Main marketing / portal SPA          |
+| `apps/web/astar-dev-web/server` | Express 4 + TypeScript      | BFF / API gateway for the Vue client |
+| `apps/web/fab4kids`             | React 19 (migrating to TS)  | Consumer product — React-specific UX |
 
 Apps must never import from each other. Shared logic lives in a package or is duplicated if the duplication is genuinely cheaper than the coupling.
 
@@ -64,7 +64,7 @@ Otherwise, keep the code in the owning app. Premature extraction creates version
 
 ```
 apps/web/fab4kids         ─┐
-apps/web/astar-dev-vue     ─┤──► packages/js/shared-types  (types only, no runtime deps)
+apps/web/astar-dev-web     ─┤──► packages/js/shared-types  (types only, no runtime deps)
                             └──► packages/js/[util-name]   (framework-agnostic utilities)
 ```
 
@@ -80,10 +80,10 @@ apps/web/astar-dev-vue     ─┤──► packages/js/shared-types  (types only
 - The server validates incoming request bodies with **Zod** schemas that are derived from or consistent with the shared types. Never trust `req.body` without validation.
 - API routes are versioned from day one: `/api/v1/...`. Adding a `/v2/` route is cheaper than a breaking migration.
 - HTTP error responses follow a single envelope:
-  ```typescript
-  type ApiError = { status: number; code: string; message: string; details?: unknown };
-  ```
-  Define this in shared-types; the server serialises it; the client deserialises it with a typed error handler.
+    ```typescript
+    type ApiError = { status: number; code: string; message: string; details?: unknown };
+    ```
+    Define this in shared-types; the server serialises it; the client deserialises it with a typed error handler.
 - **No direct database access from the Vue client** — all data flows through the Express BFF, even if it feels like indirection.
 
 ---
@@ -94,23 +94,23 @@ Scale state management to actual complexity. Promote only when the threshold is 
 
 ### Vue 3 (`astar-dev-vue/client`)
 
-| Scale | Solution |
-|---|---|
-| Component-local | `ref` / `reactive` inside the component |
-| Shared within a feature (2–3 components) | Composable (`use[Feature].ts`) returned from a parent and passed via `provide`/`inject` |
-| Cross-feature / cross-route | **Promote to Pinia store** — one store per domain concept |
-| Server cache + background sync | **Promote to TanStack Query** (Vue Query) if fetch-heavy; otherwise Pinia with manual refresh |
+| Scale                                    | Solution                                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Component-local                          | `ref` / `reactive` inside the component                                                       |
+| Shared within a feature (2–3 components) | Composable (`use[Feature].ts`) returned from a parent and passed via `provide`/`inject`       |
+| Cross-feature / cross-route              | **Promote to Pinia store** — one store per domain concept                                     |
+| Server cache + background sync           | **Promote to TanStack Query** (Vue Query) if fetch-heavy; otherwise Pinia with manual refresh |
 
 Promote to Pinia when: ≥3 unrelated component trees read the same composable, OR state must survive route navigation.
 
 ### React 19 (`fab4kids`)
 
-| Scale | Solution |
-|---|---|
-| Component-local | `useState` / `useReducer` |
-| Shared within a feature | `useContext` + custom hook with null-guard |
-| Cross-feature / global | **Promote to Zustand** — one slice per domain concept |
-| Async / server state | **React 19 `use()` hook** inside `<Suspense>` for new code; wrap legacy fetches in `useEffect` until migrated |
+| Scale                   | Solution                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Component-local         | `useState` / `useReducer`                                                                                     |
+| Shared within a feature | `useContext` + custom hook with null-guard                                                                    |
+| Cross-feature / global  | **Promote to Zustand** — one slice per domain concept                                                         |
+| Async / server state    | **React 19 `use()` hook** inside `<Suspense>` for new code; wrap legacy fetches in `useEffect` until migrated |
 
 Promote to Zustand when: ≥3 unrelated component trees need the same state, OR state must survive unmount.
 
@@ -167,9 +167,9 @@ Webpack is not used in this repo. Do not introduce it — Vite covers all curren
 
 - **Global error boundary** at the app root in React (`ErrorBoundary` component); `onErrorCaptured` at the root layout in Vue.
 - All `fetch`/Axios/`ky` calls are wrapped in a typed result helper that never throws:
-  ```typescript
-  type FetchResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
-  ```
+    ```typescript
+    type FetchResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
+    ```
 - Components receive `FetchResult` and pattern-match on `ok` — no `try/catch` in component code.
 - Unhandled promise rejections are caught by the global handler and logged — never silently swallowed.
 

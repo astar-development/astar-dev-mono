@@ -68,19 +68,21 @@ const services = [
   },
 ];
 
-// ── Case study teasers (placeholder — Phase 2 will link to real pages) ─────
+// ── Case study teasers ────────────────────────────────────────────────────
 const caseStudies = [
   {
     title: 'Enterprise Integration Overhaul',
     summary:
       'Reduced message-processing latency by 60% across a distributed .NET 8 pipeline serving 50M+ daily events.',
     techStack: ['.NET 8', 'Azure Service Bus', 'SQL Server', 'OpenTelemetry'],
+    slug: 'enterprise-integration-overhaul',
   },
   {
     title: 'Distributed Pipeline Rebuild',
     summary:
       'Replaced a fragile monolithic batch process with an event-driven architecture, cutting deployment risk and halving on-call incidents.',
     techStack: ['.NET 7', 'Azure Functions', 'Cosmos DB', 'Application Insights'],
+    slug: 'distributed-pipeline-rebuild',
   },
 ];
 ---
@@ -135,7 +137,7 @@ const caseStudies = [
     <div class="section-container">
       <div class="section-head">
         <h2 id="work-heading">Selected Work</h2>
-        <p class="section-subtitle">Anonymised case studies from real engagements &mdash; publishing soon.</p>
+        <p class="section-subtitle">Anonymised case studies from real client engagements.</p>
       </div>
       <div class="case-studies-list">
         {caseStudies.map((cs) => (
@@ -143,6 +145,7 @@ const caseStudies = [
             title={cs.title}
             summary={cs.summary}
             techStack={cs.techStack}
+            slug={cs.slug}
           />
         ))}
       </div>

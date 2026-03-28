@@ -8,7 +8,10 @@ const year = new Date().getFullYear();
   <div class="footer-inner">
     <p class="copy">&copy; {year} AStar Development. All rights reserved.</p>
 
-    <a href="/privacy" class="privacy-link">Privacy Policy</a>
+    <div class="footer-links">
+      <a href="/privacy" class="footer-link">Privacy Policy</a>
+      <button type="button" class="footer-link cookie-pref-btn" id="js-cookie-pref">Cookie preferences</button>
+    </div>
 
     <div class="icon-links">
       <a
@@ -61,18 +64,30 @@ const year = new Date().getFullYear();
     transition: color 0.25s;
   }
 
-  .privacy-link {
+  .footer-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
     color: var(--text-muted);
     font-size: 0.83rem;
     text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
     transition: color 0.25s;
   }
 
-  .privacy-link:hover {
+  .footer-link:hover {
     color: var(--text);
   }
 
-  .privacy-link:focus-visible {
+  .footer-link:focus-visible {
     outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
     border-radius: 2px;

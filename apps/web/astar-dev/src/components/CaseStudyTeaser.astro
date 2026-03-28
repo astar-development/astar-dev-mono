@@ -3,31 +3,71 @@ interface Props {
   title: string;
   summary: string;
   techStack: string[];
+  slug?: string;
 }
-const { title, summary, techStack } = Astro.props;
+const { title, summary, techStack, slug } = Astro.props;
 ---
 
-<article class="teaser">
-  <div class="teaser-text">
-    <span class="content-type-pill">Case Study</span>
-    <h3>{title}</h3>
-    <p class="summary">{summary}</p>
-    <span class="coming-soon" aria-label="Full case study coming soon">
-      Full case study coming soon
-    </span>
-  </div>
+{slug ? (
+  <a href={`/case-studies/${slug}`} class="teaser-link">
+    <article class="teaser">
+      <div class="teaser-text">
+        <span class="content-type-pill">Case Study</span>
+        <h3>{title}</h3>
+        <p class="summary">{summary}</p>
+        <span class="read-link">Read case study &rarr;</span>
+      </div>
 
-  <div class="teaser-stack">
-    <p class="stack-label">Tech Stack</p>
-    <ul class="stack-tags" role="list">
-      {techStack.map((tag) => (
-        <li class="stack-tag">{tag}</li>
-      ))}
-    </ul>
-  </div>
-</article>
+      <div class="teaser-stack">
+        <p class="stack-label">Tech Stack</p>
+        <ul class="stack-tags" role="list">
+          {techStack.map((tag) => (
+            <li class="stack-tag">{tag}</li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  </a>
+) : (
+  <article class="teaser">
+    <div class="teaser-text">
+      <span class="content-type-pill">Case Study</span>
+      <h3>{title}</h3>
+      <p class="summary">{summary}</p>
+      <span class="coming-soon" aria-label="Full case study coming soon">
+        Full case study coming soon
+      </span>
+    </div>
+
+    <div class="teaser-stack">
+      <p class="stack-label">Tech Stack</p>
+      <ul class="stack-tags" role="list">
+        {techStack.map((tag) => (
+          <li class="stack-tag">{tag}</li>
+        ))}
+      </ul>
+    </div>
+  </article>
+)}
 
 <style>
+  .teaser-link {
+    display: block;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: border-color 0.25s;
+  }
+
+  .teaser-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 12px;
+  }
+
+  .teaser-link:hover .teaser {
+    border-color: var(--accent);
+  }
+
   .teaser {
     background: var(--surface-base);
     border: 1px solid var(--border);
@@ -75,6 +115,12 @@ const { title, summary, techStack } = Astro.props;
     font-size: 0.85rem;
     cursor: default;
     pointer-events: none;
+    transition: color 0.25s;
+  }
+
+  .read-link {
+    color: var(--accent);
+    font-size: 0.85rem;
     transition: color 0.25s;
   }
 

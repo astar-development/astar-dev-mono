@@ -1,0 +1,143 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  summary: string;
+  techStack: string[];
+}
+
+const { title, summary, techStack } = Astro.props;
+---
+
+<BaseLayout title={title} description={summary}>
+  <div class="reading-column">
+    <a href="/case-studies" class="back-link">&larr; Back to case studies</a>
+
+    <span class="content-type-pill">Case Study</span>
+
+    <h1>{title}</h1>
+
+    <p class="summary">{summary}</p>
+
+    <div class="tech-stack">
+      <ul class="stack-tags" role="list">
+        {techStack.map((tag) => (
+          <li class="stack-tag">{tag}</li>
+        ))}
+      </ul>
+    </div>
+
+    <hr class="content-divider" />
+
+    <article class="case-study-content">
+      <slot />
+    </article>
+
+    <hr class="content-divider" />
+
+    <a href="/case-studies" class="back-link">&larr; Back to case studies</a>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .case-study-content h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 32px;
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .case-study-content p {
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 16px;
+    transition: color 0.25s;
+  }
+</style>
+
+<style>
+  .reading-column {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: var(--accent);
+    font-size: 0.9rem;
+    text-decoration: none;
+    margin-bottom: 24px;
+    transition: color 0.25s;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .back-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .content-type-pill {
+    display: inline-block;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-bottom: 16px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .summary {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    transition: color 0.25s;
+  }
+
+  .tech-stack {
+    margin-bottom: 24px;
+  }
+
+  .stack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .stack-tag {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 3px 10px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  .content-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+    transition: border-color 0.25s;
+  }
+</style>

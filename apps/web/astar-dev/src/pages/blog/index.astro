@@ -1,0 +1,64 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogTagFilter from '../../components/BlogTagFilter.vue';
+import { calculateReadingTime } from '../../lib/reading-time';
+
+const isDev = import.meta.env.DEV;
+
+const allPosts = await getCollection('blog', ({ data }) => isDev || !data.draft);
+
+const posts = allPosts
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .map((entry) => ({
+    slug: entry.slug,
+    title: entry.data.title,
+    date: entry.data.date.toISOString(),
+    summary: entry.data.summary,
+    tags: entry.data.tags,
+    readingTime: calculateReadingTime(entry.body),
+  }));
+---
+
+<BaseLayout
+  title="Blog"
+  description="Writing on .NET engineering, architecture, testing, and open source development."
+>
+  <div class="page-container">
+    <header class="page-header">
+      <h1>Blog</h1>
+      <p class="page-intro">
+        Writing on .NET engineering, architecture, testing, and open source development.
+      </p>
+    </header>
+
+    <BlogTagFilter client:load posts={posts} />
+  </div>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 64px 24px 80px;
+  }
+
+  .page-header {
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .page-intro {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    transition: color 0.25s;
+  }
+</style>

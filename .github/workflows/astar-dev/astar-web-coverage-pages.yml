@@ -1,22 +1,22 @@
 # ════════════════════════════════════════════════════════════════════════════
-# vue-coverage-pages.yml
-# Triggers on push to main touching the Vue app.
+# AStar Web-coverage-pages.yml
+# Triggers on push to main touching the AStar Web app.
 # Re-runs tests to collect coverage and publishes reports to GitHub Pages.
 # Note: workflow_run triggers are not recognised by GitHub Pages environment
 # protection rules; a direct push trigger is required.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: Vue Coverage Pages
+name: AStar Web Coverage Pages
 
 on:
   push:
     branches: [main]
     paths:
-      - 'apps/web/astar-dev-vue/**'
-      - '.github/workflows/vue-coverage-pages.yml'
+      - 'apps/web/astar-dev-web/**'
+      - '.github/workflows/astar-web-coverage-pages.yml'
 
 concurrency:
-  group: vue-coverage-pages-${{ github.ref }}
+  group: astar-coverage-pages-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -32,7 +32,7 @@ jobs:
       contents: read
     defaults:
       run:
-        working-directory: apps/web/astar-dev-vue
+        working-directory: apps/web/astar-dev-web
 
     steps:
 
@@ -44,7 +44,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-vue/package-lock.json
+          cache-dependency-path: apps/web/astar-dev-web/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -64,7 +64,7 @@ jobs:
       - name: Upload coverage artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/web/astar-dev-vue/coverage-site
+          path: apps/web/astar-dev-web/coverage-site
 
   deploy:
     name: Deploy to GitHub Pages
