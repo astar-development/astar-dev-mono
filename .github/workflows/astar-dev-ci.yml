@@ -17,12 +17,14 @@ on:
     paths:
       - 'apps/web/astar-dev/**'
       - '.github/workflows/astar-dev-ci.yml'
+      - '.github/workflows/astar-dev-deploy.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'apps/web/astar-dev/**'
       - '.github/workflows/astar-dev-ci.yml'
+      - '.github/workflows/astar-dev-deploy.yml'
   workflow_dispatch:
 
 permissions:

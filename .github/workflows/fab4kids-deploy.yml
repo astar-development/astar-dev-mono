@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'apps/web/fab4kids/**'
+      - '.github/workflows/fab4kids-deploy.yml'
   workflow_dispatch:
 
 jobs:
