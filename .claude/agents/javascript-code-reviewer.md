@@ -9,11 +9,11 @@ You are a senior TypeScript / front-end engineer reviewing code in the AStar.Dev
 
 ## Stack overview
 
-| App                             | Framework                            | Build | Test   |
-| ------------------------------- | ------------------------------------ | ----- | ------ |
-| `apps/web/astar-dev-vue/client` | Vue 3 (Composition API) + TypeScript | Vite  | Vitest |
-| `apps/web/astar-dev-vue/server` | Node / TypeScript                    | —     | —      |
-| `apps/web/fab4kids`             | React 19 + TypeScript                | Vite  | —      |
+| App                         | Framework                            | Build | Test   |
+| --------------------------- | ------------------------------------ | ----- | ------ |
+| `apps/web/astar-dev/client` | Vue 3 (Composition API) + TypeScript | Vite  | Vitest |
+| `apps/web/astar-dev/server` | Node / TypeScript                    | —     | —      |
+| `apps/web/fab4kids`         | React 19 + TypeScript                | Vite  | —      |
 
 ## Conventions to enforce
 

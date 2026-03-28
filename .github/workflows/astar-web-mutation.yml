@@ -1,9 +1,9 @@
 # ════════════════════════════════════════════════════════════════════════════
-# vue-mutation.yml
-# Manual trigger only. Runs Stryker mutation testing against the Vue client.
+# astar-web-mutation.yml
+# Manual trigger only. Runs Stryker mutation testing against the AStar Web client.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: Vue Mutation Testing
+name: AStar Web Mutation Testing
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: vue-mutation-${{ github.ref }}
+  group: astar-web-mutation-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/web/astar-dev-vue
+        working-directory: apps/web/astar-dev
 
     steps:
 
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: apps/web/astar-dev-vue/package-lock.json
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -50,5 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         with:
           name: mutation-report
-          path: apps/web/astar-dev-vue/client/reports/mutation
+          path: apps/web/astar-dev/client/reports/mutation
           retention-days: 7

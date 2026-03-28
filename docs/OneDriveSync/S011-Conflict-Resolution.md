@@ -72,6 +72,15 @@ So that I have full control over which version of each file is kept.
 
 ---
 
+## Implementation Constraints
+
+- **`ObserveOn(RxApp.MainThreadScheduler)` for badge count** — `IConflictStore.ConflictQueueChanged` fires from the sync engine's background thread; `ConflictsViewModel` must call `.ObserveOn(RxApp.MainThreadScheduler)` before updating any bound property or collection.
+- **`x:DataType` required on conflict list DataTemplate** — conflict row DataTemplates must declare `x:DataType="local:ConflictItemViewModel"` or the build will fail under `AvaloniaUseCompiledBindingsByDefault=true`.
+- **Badge count on `NavItemViewModel`** — displaying a live badge on the nav rail icon requires adding a reactive `BadgeCount` property (using the `field` keyword + `RaiseAndSetIfChanged`) to `NavItemViewModel` and a corresponding visual element in `IconRailButton.axaml`. This is a structural extension to the S003 shell; coordinate with the shell owner before implementing.
+- **`ObservableCollection` checkbox state** — "Select All" toggling via `foreach` over a large collection will fire one `CollectionChanged` per item. Use `SuppressNotifications` / batch update pattern to avoid per-item layout passes causing UI stutter (NF-02).
+- **Register Conflicts nav item** — `ShellServiceExtensions.RegisterAvailableFeatures()` must call `service.Register(NavSection.Conflicts)` when this story ships.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

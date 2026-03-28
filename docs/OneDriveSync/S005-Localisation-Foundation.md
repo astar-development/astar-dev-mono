@@ -52,6 +52,13 @@ So that the app is internationalisation-ready from day one and users get locale-
 
 ---
 
+## Implementation Constraints
+
+- **No native `.resx` runtime-switching in Avalonia** — Avalonia has no built-in markup extension that re-evaluates `.resx` strings when the locale changes. A custom `{loc:Localize Key}` markup extension is required; it must subscribe to `ILocalisationService.LocaleChanged` and raise `INotifyPropertyChanged` on the containing binding so every string updates in place without navigation. All strings bound via plain `{Binding}` or `{x:Static}` will not update on locale change.
+- **`CultureInfo` set on UI thread** — `CultureInfo.CurrentUICulture` and `CultureInfo.CurrentCulture` must be set on the Avalonia UI thread; call `Dispatcher.UIThread.Post()` if the locale change originates from a background thread.
+- **`x:DataType` on locale selector DataTemplate** — any `ItemsControl` or dropdown listing available locales must declare `x:DataType`; missing it causes a silent binding failure with `AvaloniaUseCompiledBindingsByDefault=true`.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

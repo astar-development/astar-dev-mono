@@ -40,6 +40,16 @@ I want a live feed of the last 50 sync activity items (newest first) so I can qu
 
 ---
 
+## Implementation Constraints
+
+- `ObserveOn(RxApp.MainThreadScheduler)` is **required** on every observable chain that feeds `ObservableCollection<ActivityItem>`. Mutating an `ObservableCollection<T>` from a background thread throws immediately at runtime with no compile-time warning.
+- Prepending to `ObservableCollection<T>` via `Insert(0, item)` causes an O(n) index shift on every insert. For the 50-item cap this is acceptable; do not increase the cap without re-evaluating this approach.
+- Batch UI updates when items arrive at high frequency: buffer with `Observable.Buffer(TimeSpan.FromMilliseconds(200))` and apply the batch in one `foreach`; never call `Insert` per item from a high-frequency stream (NF-02).
+- `ActivityViewModel` is scoped — a new subscription is created on each navigation. Dispose the subscription in `Dispose()` or `OnNavigatedFrom()`; failing to do so causes `IActivityFeedService` to hold a reference to the previous dead VM and duplicate items to arrive on the next navigation.
+- Register the Activity nav item in `ShellServiceExtensions` only when this story ships (NF-15); until then the nav item remains disabled.
+
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

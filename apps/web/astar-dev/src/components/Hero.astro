@@ -1,0 +1,326 @@
+---
+import StatusBadge from './StatusBadge.astro';
+
+const availableForContracts = import.meta.env.PUBLIC_AVAILABLE_FOR_CONTRACTS !== 'false';
+
+// Illustrative terminal package — update to the most recognisable published package
+const terminalPackage = 'AStar.Dev.Utilities';
+const terminalVersion = '1.6.8';
+---
+
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero-container">
+
+    <!-- Left column: text block -->
+    <div class="hero-text">
+      <!-- Status badges -->
+      <div class="hero-badges">
+        {availableForContracts && (
+          <StatusBadge variant="available" />
+        )}
+        <StatusBadge variant="contributor" />
+      </div>
+
+      <!-- Dark / Light copy -->
+      <div class="theme-copy theme-copy--dark-light">
+        <h1 id="hero-heading">Senior .NET Engineer &amp; Architect</h1>
+        <p class="subtitle">
+          I design and build production-grade .NET systems &mdash; architecture, pipelines,
+          observability, and the team patterns that make them last. Available for contracts
+          and consultancy engagements.
+        </p>
+        <div class="skill-tags" aria-label="Key skills">
+          <span class="skill-tag">TDD</span>
+          <span class="skill-tag">Clean Architecture</span>
+          <span class="skill-tag">Observability</span>
+          <span class="skill-tag">CI/CD</span>
+          <span class="skill-tag">.NET 9</span>
+        </div>
+      </div>
+
+      <!-- Metal copy -->
+      <div class="theme-copy theme-copy--metal">
+        <h1 id="hero-heading-metal" aria-hidden="true">Production systems that play at volume</h1>
+        <p class="subtitle">
+          High-throughput .NET at the centre &mdash; architecture, pipelines, and the
+          engineering discipline to keep it alive at ELEVEN.
+        </p>
+        <p class="eyebrow-tag" aria-label="Theme: Volume Eleven">VOLUME // ELEVEN</p>
+      </div>
+
+      <!-- Polished copy -->
+      <div class="theme-copy theme-copy--polished">
+        <h1 id="hero-heading-polished" aria-hidden="true">Precision-engineered .NET, polished to ship</h1>
+        <p class="subtitle">
+          Every interface deliberate. Every abstraction earned. Systems that hold their
+          shape under pressure, and look the part doing it.
+        </p>
+        <p class="eyebrow-tag" aria-label="Theme: Precision Polish">PRECISION // POLISH</p>
+      </div>
+
+      <!-- CTA buttons — same for all themes -->
+      <div class="hero-cta">
+        <a href="#services" class="btn btn-primary">View my services</a>
+        <a href="/contact" class="btn btn-secondary">Get in touch</a>
+      </div>
+    </div>
+
+    <!-- Right column: terminal panel (hidden on mobile < 768px) -->
+    <div class="hero-terminal" aria-label="Terminal panel" role="img">
+      <p class="sr-only">
+        Example: installing an AStar.Dev NuGet package via the .NET CLI
+      </p>
+      <div class="terminal-window">
+        <!-- Traffic-light bar -->
+        <div class="terminal-titlebar" aria-hidden="true">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-amber"></span>
+          <span class="dot dot-green"></span>
+        </div>
+
+        <!-- Terminal content -->
+        <pre class="terminal-body"><code><span class="t-accent">$ dotnet add package {terminalPackage}</span>
+
+  <span class="t-muted">Determining projects to restore...</span>
+  <span class="t-muted">info :</span> Adding PackageReference for
+         <span class="t-text">'{terminalPackage}'</span> to project.
+  <span class="t-muted">info :</span> Restoring packages...
+  <span class="t-muted">info :</span> Package <span class="t-text">'{terminalPackage}'</span> is
+         compatible with all frameworks.
+
+  <span class="t-accent">Build succeeded.</span>
+  Package added: <span class="t-text">{terminalPackage} v{terminalVersion}</span>
+  <span class="t-accent">✓</span>  <span class="t-muted">0 Warning(s)   0 Error(s)</span>
+</code></pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: var(--surface-base);
+    border-bottom: 1px solid var(--section-border);
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .hero-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  /* --- Text block --- */
+  .hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  /* Theme-dependent copy show/hide */
+  .theme-copy {
+    display: none;
+  }
+
+  :global(.theme-dark) .theme-copy--dark-light,
+  :global(.theme-light) .theme-copy--dark-light {
+    display: block;
+  }
+
+  :global(.theme-metal) .theme-copy--metal {
+    display: block;
+  }
+
+  :global(.theme-polished) .theme-copy--polished {
+    display: block;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 16px;
+    transition: color 0.25s;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    transition: color 0.25s;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .skill-tag {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    border-radius: 999px;
+    padding: 4px 12px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  .eyebrow-tag {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    transition: color 0.25s;
+  }
+
+  /* CTA buttons */
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.15s ease, background-color 0.25s, border-color 0.25s, color 0.25s;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border: 2px solid var(--btn-primary-bg);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn:hover {
+      transform: none;
+    }
+  }
+
+  /* --- Terminal panel --- */
+  .hero-terminal {
+    display: flex;
+    justify-content: center;
+  }
+
+  .terminal-window {
+    background: var(--terminal-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0;
+    width: 100%;
+    overflow: hidden;
+    transition: background-color 0.25s;
+  }
+
+  .terminal-titlebar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 12px 16px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0.6;
+    display: inline-block;
+  }
+
+  .dot-red   { background: #ff5f57; }
+  .dot-amber { background: #febc2e; }
+  .dot-green { background: #28c840; }
+
+  .terminal-body {
+    margin: 0;
+    padding: 20px 24px;
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .terminal-body code {
+    display: block;
+    white-space: pre;
+  }
+
+  .t-accent { color: var(--terminal-accent); }
+  .t-muted  { color: var(--text-muted); }
+  .t-text   { color: var(--terminal-text); }
+
+  /* --- Responsive --- */
+  @media (max-width: 1023px) {
+    .hero-container {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-terminal {
+      justify-content: center;
+    }
+
+    .terminal-window {
+      max-width: 80%;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-terminal {
+      display: none;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

@@ -1,0 +1,64 @@
+# ════════════════════════════════════════════════════════════════════════════
+# astar-dev-ci.yml
+# Triggers on any push or PR that touches the astar-dev Astro site or this
+# workflow. Installs dependencies and builds the site.
+# A successful run on main triggers astar-dev-deploy.yml.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: AStar.Dev CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'bug/**'
+      - 'doc/**'
+    paths:
+      - 'apps/web/astar-dev/**'
+      - '.github/workflows/astar-dev-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/astar-dev/**'
+      - '.github/workflows/astar-dev-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: astar-dev-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  ci:
+    name: Build & type-check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web/astar-dev
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/astar-dev/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build

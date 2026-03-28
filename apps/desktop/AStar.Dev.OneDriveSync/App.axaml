@@ -3,11 +3,19 @@
              x:Class="AStar.Dev.OneDriveSync.App"
              xmlns:local="using:AStar.Dev.OneDriveSync.Infrastructure"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://AStar.Dev.OneDriveSync/Infrastructure/Shell/Themes/Base.axaml"/>
+                <ResourceInclude Source="avares://AStar.Dev.OneDriveSync/Infrastructure/Shell/Themes/ColourPalette.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 
     <Application.Styles>
         <FluentTheme />

@@ -55,6 +55,15 @@ So that the app behaves and looks the way I prefer.
 
 ---
 
+## Implementation Constraints
+
+- The Power User confirmation dialog must use the Avalonia dialog API (`ShowDialog<T>`) — never `System.Windows.MessageBox` or any platform-native dialog. The parent `Window` reference must be injected or resolved via a `IWindowService` abstraction so `SettingsViewModel` remains testable without a live UI.
+- User type change must propagate reactively to all subscribed ViewModels. Every subscriber must call `ObserveOn(RxApp.MainThreadScheduler)` before mutating any UI-bound property; failing to do so causes cross-thread `ObservableCollection` exceptions that are difficult to reproduce.
+- `x:DataType` is mandatory on every `DataTemplate` in `SettingsView.axaml`; compiled bindings will silently fail without it.
+- Register the Settings nav item in `ShellServiceExtensions` only when this story ships (NF-15); until then the nav item remains disabled.
+
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

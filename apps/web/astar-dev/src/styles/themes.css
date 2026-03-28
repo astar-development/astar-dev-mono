@@ -1,0 +1,196 @@
+/* =============================================================================
+   THEME DEFINITIONS
+   All colour tokens are declared here. No hard-coded colours anywhere else.
+   Themes are applied as a class on <html>: .theme-dark | .theme-light |
+   .theme-metal | .theme-polished
+   ============================================================================= */
+
+/* --------------------------------------------------------------------------- */
+/* DARK (default)                                                               */
+/* Professional, clean, dark background. Teal accent.                          */
+/* --------------------------------------------------------------------------- */
+.theme-dark {
+  /* Surfaces */
+  --surface-base:   #08131f;
+  --surface-raised: #102233;
+  --nav-bg:         #102233;
+  --footer-bg:      #091a2b;
+  --terminal-bg:    #0a1a2a;
+
+  /* Text */
+  --text:           #e8f1fa;
+  --text-muted:     #8da2b7;
+  --text-inverse:   #08131f;
+  --terminal-text:  #d5e3f0;
+  --terminal-accent:#2dd4bf;
+
+  /* Accent */
+  --accent:         #2dd4bf;
+
+  /* Borders */
+  --border:         #2a3f55;
+  --nav-border:     #2a3f55;
+  --section-border: #1e3347;
+
+  /* Interactive */
+  --focus-ring:          #2dd4bf;
+  --active-indicator:    #2dd4bf;
+  --btn-primary-bg:      #2dd4bf;
+  --btn-primary-text:    #08131f;
+  --copy-btn-hover-bg:   rgba(45, 212, 191, 0.10);
+  --cta-border-left:     #2dd4bf;
+
+  /* Badges */
+  --badge-bg:     rgba(45, 212, 191, 0.12);
+  --badge-border: rgba(45, 212, 191, 0.40);
+  --badge-text:   #2dd4bf;
+
+  /* Legacy aliases (referenced in global.css transitions) */
+  --background:   var(--surface-base);
+  --panel-bg:     var(--surface-raised);
+  --panel-border: var(--border);
+  --hover-glow:   rgba(45, 212, 191, 0.40);
+}
+
+/* --------------------------------------------------------------------------- */
+/* LIGHT                                                                        */
+/* Professional, clean, light background. Blue accent.                         */
+/* --------------------------------------------------------------------------- */
+.theme-light {
+  /* Surfaces */
+  --surface-base:   #ffffff;
+  --surface-raised: #f5f5f5;
+  --nav-bg:         #ffffff;
+  --footer-bg:      #f0f0f0;
+  --terminal-bg:    #1a1a2e;
+
+  /* Text */
+  --text:           #1a1a1a;
+  --text-muted:     #6b7280;
+  --text-inverse:   #ffffff;
+  --terminal-text:  #c9d6e3;
+  --terminal-accent:#4cc9f0;
+
+  /* Accent */
+  --accent:         #0066cc;
+
+  /* Borders */
+  --border:         #cccccc;
+  --nav-border:     #e5e7eb;
+  --section-border: #e5e7eb;
+
+  /* Interactive */
+  --focus-ring:          #0066cc;
+  --active-indicator:    #0066cc;
+  --btn-primary-bg:      #0066cc;
+  --btn-primary-text:    #ffffff;
+  --copy-btn-hover-bg:   rgba(0, 102, 204, 0.08);
+  --cta-border-left:     #0066cc;
+
+  /* Badges */
+  --badge-bg:     rgba(0, 102, 204, 0.10);
+  --badge-border: rgba(0, 102, 204, 0.35);
+  --badge-text:   #0055aa;
+
+  /* Legacy aliases */
+  --background:   var(--surface-base);
+  --panel-bg:     var(--surface-raised);
+  --panel-border: var(--border);
+  --hover-glow:   rgba(0, 102, 204, 0.25);
+}
+
+/* --------------------------------------------------------------------------- */
+/* METAL — Volume = Eleven                                                      */
+/* High-energy, bold, electric-blue accent on pure black.                      */
+/* Derived from dark; more extreme contrast, Metallica-inspired.               */
+/* --------------------------------------------------------------------------- */
+.theme-metal {
+  /* Surfaces */
+  --surface-base:   #000000;
+  --surface-raised: #0a0f18;
+  --nav-bg:         #0a0f18;
+  --footer-bg:      #020508;
+  --terminal-bg:    #050a14;
+
+  /* Text */
+  --text:           #e0eaff;
+  --text-muted:     #7a8fa8;
+  --text-inverse:   #000000;
+  --terminal-text:  #c8dff0;
+  --terminal-accent:#4cc3ff;
+
+  /* Accent */
+  --accent:         #4cc3ff;
+
+  /* Borders */
+  --border:         #1f2a3a;
+  --nav-border:     #1f2a3a;
+  --section-border: #141e2a;
+
+  /* Interactive */
+  --focus-ring:          #4cc3ff;
+  --active-indicator:    #4cc3ff;
+  --btn-primary-bg:      #4cc3ff;
+  --btn-primary-text:    #000000;
+  --copy-btn-hover-bg:   rgba(76, 195, 255, 0.10);
+  --cta-border-left:     #4cc3ff;
+
+  /* Badges */
+  --badge-bg:     rgba(76, 195, 255, 0.12);
+  --badge-border: rgba(76, 195, 255, 0.40);
+  --badge-text:   #4cc3ff;
+
+  /* Legacy aliases */
+  --background:   var(--surface-base);
+  --panel-bg:     var(--surface-raised);
+  --panel-border: var(--border);
+  --hover-glow:   rgba(76, 195, 255, 0.50);
+}
+
+/* --------------------------------------------------------------------------- */
+/* POLISHED — Precision // Polish                                               */
+/* Refined, precise, hot-pink accent on white. BlackPink-inspired.             */
+/* Derived from light; more characterful borders and surfaces.                 */
+/* --------------------------------------------------------------------------- */
+.theme-polished {
+  /* Surfaces */
+  --surface-base:   #ffffff;
+  --surface-raised: #fff0f7;
+  --nav-bg:         #ffffff;
+  --footer-bg:      #fff0f7;
+  --terminal-bg:    #1a0a1e;
+
+  /* Text */
+  --text:           #111111;
+  --text-muted:     #6b5070;
+  --text-inverse:   #ffffff;
+  --terminal-text:  #f0d6e8;
+  --terminal-accent:#ff2daa;
+
+  /* Accent */
+  --accent:         #ff2daa;
+
+  /* Borders */
+  --border:         #ffb7e5;
+  --nav-border:     #ffb7e5;
+  --section-border: #ffe0f5;
+
+  /* Interactive */
+  --focus-ring:          #ff2daa;
+  --active-indicator:    #ff2daa;
+  --btn-primary-bg:      #ff2daa;
+  --btn-primary-text:    #111111;
+  --copy-btn-hover-bg:   rgba(255, 45, 170, 0.08);
+  --cta-border-left:     #ff2daa;
+
+  /* Badges */
+  --badge-bg:     rgba(255, 45, 170, 0.10);
+  --badge-border: rgba(255, 45, 170, 0.35);
+  --badge-text:   #c41d7f;
+
+  /* Legacy aliases */
+  --background:   var(--surface-base);
+  --panel-bg:     var(--surface-raised);
+  --panel-border: var(--border);
+  --hover-glow:   rgba(255, 45, 170, 0.35);
+}

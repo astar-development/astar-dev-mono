@@ -25,6 +25,13 @@ So that the app is usable regardless of ability.
 
 ---
 
+## Implementation Constraints
+
+- `AutomationProperties.Name` is an Avalonia **attached property** — set it directly on each control element (e.g., `<Button AutomationProperties.Name="Close account"/>`). It cannot be applied reliably via a `Control.Styles` selector because the Avalonia styles scoping rules mean the property may not reach the intended element.
+- Focus ring styling for custom controls (`IconRailButton` and any others introduced in this story) must **not** use `UserControl.Styles` selectors targeting the root control — they will be silently ignored (same scoping trap documented in S003 NF-15). Implement a `FocusAdornerTemplate` on the control template, or use `FocusAdorner` via `KeyboardNavigation` attached properties.
+
+---
+
 ## Dependencies
 
 - S004 (theming — extensible resource dictionary pattern)

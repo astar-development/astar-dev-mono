@@ -1,0 +1,246 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const lastUpdated = '28 March 2026';
+---
+
+<BaseLayout
+  title="Privacy Policy"
+  description="How AStar Development collects, uses, and protects your data in accordance with UK GDPR."
+>
+  <div class="privacy-container">
+    <h1>Privacy Policy</h1>
+    <p class="last-updated">Last updated: {lastUpdated}</p>
+
+    <section aria-labelledby="what-we-collect">
+      <h2 id="what-we-collect">What data we collect</h2>
+      <p>
+        When you use the contact form on this website, we collect the following
+        information you provide:
+      </p>
+      <ul>
+        <li>Your name</li>
+        <li>Your email address</li>
+        <li>The content of your message</li>
+      </ul>
+      <p>
+        We do not collect any data beyond what you voluntarily submit through the
+        contact form. We do not collect payment information.
+      </p>
+    </section>
+
+    <section aria-labelledby="how-it-is-used">
+      <h2 id="how-it-is-used">How it is used</h2>
+      <p>
+        The information you provide through the contact form is used solely to
+        respond to your enquiry. We do not sell, rent, or share your personal
+        data with third parties for marketing purposes.
+      </p>
+      <p>
+        If you opt in to receiving a copy of your message, your email address is
+        used to send that copy via our email service provider (SendGrid, operated
+        by Twilio). SendGrid processes your data as a data processor on our behalf.
+        Their privacy policy is available at
+        <a
+          href="https://www.twilio.com/en-us/legal/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >twilio.com/en-us/legal/privacy<span class="sr-only"> (opens in new tab)</span></a>.
+      </p>
+    </section>
+
+    <section aria-labelledby="cookies">
+      <h2 id="cookies">Cookies</h2>
+      <p>This website uses two types of storage in your browser:</p>
+      <ul>
+        <li>
+          <strong>Theme preference</strong> — stored in <code>localStorage</code>
+          under the key <code>theme</code>. This is a functional preference (it
+          controls the visual appearance of the site) and does not require consent
+          under UK GDPR. It is never transmitted to the server.
+        </li>
+        <li>
+          <strong>Cookie consent preference</strong> — stored in
+          <code>localStorage</code> under the key <code>cookie-consent</code>.
+          This records whether you have accepted or declined analytics cookies so
+          the banner is not shown on every visit.
+        </li>
+        <li>
+          <strong>Analytics cookies</strong> — only set if you accept analytics
+          via the consent banner. See the Analytics section below.
+        </li>
+      </ul>
+      <p>
+        We do not use advertising cookies, tracking pixels, or any third-party
+        marketing cookies.
+      </p>
+    </section>
+
+    <section aria-labelledby="analytics">
+      <h2 id="analytics">Analytics (Azure Application Insights)</h2>
+      <p>
+        If you accept analytics via the cookie consent banner, this website uses
+        Azure Application Insights (operated by Microsoft) to collect anonymised
+        usage data including:
+      </p>
+      <ul>
+        <li>Pages visited and time spent</li>
+        <li>General geographic region (country / city, not precise location)</li>
+        <li>Browser type and operating system</li>
+        <li>Referrer URL</li>
+      </ul>
+      <p>
+        IP addresses are anonymised before storage. This data is used to
+        understand how the site is being used and to improve it. Microsoft&rsquo;s
+        privacy policy is available at
+        <a
+          href="https://privacy.microsoft.com/en-gb/privacystatement"
+          target="_blank"
+          rel="noopener noreferrer"
+        >privacy.microsoft.com<span class="sr-only"> (opens in new tab)</span></a>.
+      </p>
+      <p>
+        If you decline analytics, Application Insights is not initialised and no
+        analytics data is collected during your visit.
+      </p>
+    </section>
+
+    <section aria-labelledby="your-rights">
+      <h2 id="your-rights">Your rights under UK GDPR</h2>
+      <p>Under UK data protection law, you have the following rights:</p>
+      <ul>
+        <li><strong>Right of access</strong> — you may request a copy of the personal data we hold about you.</li>
+        <li><strong>Right to rectification</strong> — you may ask us to correct inaccurate data.</li>
+        <li><strong>Right to erasure</strong> — you may ask us to delete your personal data where there is no legitimate reason for us to continue holding it.</li>
+        <li><strong>Right to data portability</strong> — you may request that we provide your data in a commonly used, machine-readable format.</li>
+        <li><strong>Right to object</strong> — you may object to our processing of your personal data in certain circumstances.</li>
+      </ul>
+      <p>
+        To exercise any of these rights, please contact us using the details below.
+        We will respond within one calendar month.
+      </p>
+    </section>
+
+    <section aria-labelledby="data-retention">
+      <h2 id="data-retention">Data retention</h2>
+      <p>
+        Contact form submissions are retained for up to 12 months from the date
+        of receipt, after which they are deleted. Analytics data is retained for
+        90 days in Azure Application Insights.
+      </p>
+    </section>
+
+    <section aria-labelledby="contact-data">
+      <h2 id="contact-data">Contact for data requests</h2>
+      <p>
+        For any data-related requests or questions about this privacy policy,
+        please use the contact form on this website at
+        <a href="/contact">/contact</a>.
+      </p>
+      <p>
+        If you are not satisfied with our response, you have the right to lodge a
+        complaint with the UK Information Commissioner&rsquo;s Office (ICO) at
+        <a
+          href="https://ico.org.uk"
+          target="_blank"
+          rel="noopener noreferrer"
+        >ico.org.uk<span class="sr-only"> (opens in new tab)</span></a>.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .privacy-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 24px;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .last-updated {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 48px;
+    transition: color 0.25s;
+  }
+
+  section {
+    margin-bottom: 40px;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--section-border);
+    transition: color 0.25s, border-color 0.25s;
+  }
+
+  p {
+    color: var(--text);
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  ul {
+    margin: 8px 0 12px 0;
+    padding-left: 24px;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: underline;
+    transition: color 0.2s;
+  }
+
+  a:hover {
+    opacity: 0.8;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  code {
+    font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.88em;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

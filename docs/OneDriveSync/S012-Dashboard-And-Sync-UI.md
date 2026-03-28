@@ -70,6 +70,16 @@ So that I always know the current sync state of every account at a glance.
 
 ---
 
+## Implementation Constraints
+
+- **`ObserveOn(RxApp.MainThreadScheduler)` for all progress subscriptions** — `IObservable<SyncProgress>` and `IObservable<SyncStateChanged>` originate from the sync engine's background thread; subscribing without `.ObserveOn(RxApp.MainThreadScheduler)` mutates bound properties off the UI thread and causes "called from wrong thread" errors.
+- **`ProgressBar.Value` must bind to `double`** — `ProgressBar.Value` is a `double`-typed property; `PercentComplete` on the VM must be `double`, not `int`. A type mismatch produces a binding warning that becomes an error under `TreatWarningsAsErrors=true`.
+- **Dialogs via Avalonia dialog API** — multi-account sync confirmation, delta-token expiry prompt, and resume-failed dialogs must use Avalonia's dialog infrastructure; no `MessageBox.Show()`.
+- **`x:DataType` required on account card DataTemplate** — dashboard account cards use an `ItemsControl` DataTemplate; must declare `x:DataType`.
+- **Dispose subscriptions on deactivation** — `DashboardViewModel` is singleton but subscriptions to per-sync observables must be scoped to the active sync lifetime, not the VM lifetime, to prevent stale progress from a previous sync appearing after a new one starts.
+- **Dashboard is already registered** — `NavSection.Dashboard` is registered in S003's `RegisterAvailableFeatures()`; do not add a duplicate registration call.
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

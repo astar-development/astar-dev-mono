@@ -1,0 +1,191 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const entries = await getCollection('case-studies');
+---
+
+<BaseLayout
+  title="Case Studies"
+  description="Anonymised case studies from real client engagements."
+>
+  <div class="page-container">
+    <div class="page-head">
+      <h1>Selected Work</h1>
+      <p class="intro">Anonymised case studies from real client engagements.</p>
+    </div>
+
+    <ul class="case-studies-list" role="list">
+      {entries.map((entry) => (
+        <li>
+          <a href={`/case-studies/${entry.slug}`} class="card-link">
+            <article class="card">
+              <div class="card-text">
+                <span class="content-type-pill">Case Study</span>
+                <h2>{entry.data.title}</h2>
+                <p class="summary">{entry.data.summary}</p>
+                <span class="read-link">Read case study &rarr;</span>
+              </div>
+
+              <div class="card-stack">
+                <p class="stack-label">Tech Stack</p>
+                <ul class="stack-tags" role="list">
+                  {entry.data.techStack.map((tag) => (
+                    <li class="stack-tag">{tag}</li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .page-container {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 64px 24px;
+  }
+
+  .page-head {
+    margin-bottom: 36px;
+  }
+
+  h1 {
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: color 0.25s;
+  }
+
+  .intro {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: color 0.25s;
+  }
+
+  .case-studies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .card-link {
+    display: block;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: border-color 0.25s;
+  }
+
+  .card-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 12px;
+  }
+
+  .card-link:hover .card {
+    border-color: var(--accent);
+  }
+
+  .card {
+    background: var(--surface-base);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    gap: 32px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .card-text {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .content-type-pill {
+    display: inline-block;
+    align-self: flex-start;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .summary {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    transition: color 0.25s;
+  }
+
+  .read-link {
+    color: var(--accent);
+    font-size: 0.85rem;
+    transition: color 0.25s;
+  }
+
+  .card-stack {
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stack-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.25s;
+  }
+
+  .stack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .stack-tag {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 3px 10px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  @media (max-width: 767px) {
+    .card {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card-text,
+    .card-stack {
+      flex: none;
+    }
+  }
+</style>

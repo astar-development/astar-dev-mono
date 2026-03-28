@@ -1,0 +1,172 @@
+---
+interface Props {
+  title: string;
+  summary: string;
+  techStack: string[];
+  slug?: string;
+}
+const { title, summary, techStack, slug } = Astro.props;
+---
+
+{slug ? (
+  <a href={`/case-studies/${slug}`} class="teaser-link">
+    <article class="teaser">
+      <div class="teaser-text">
+        <span class="content-type-pill">Case Study</span>
+        <h3>{title}</h3>
+        <p class="summary">{summary}</p>
+        <span class="read-link">Read case study &rarr;</span>
+      </div>
+
+      <div class="teaser-stack">
+        <p class="stack-label">Tech Stack</p>
+        <ul class="stack-tags" role="list">
+          {techStack.map((tag) => (
+            <li class="stack-tag">{tag}</li>
+          ))}
+        </ul>
+      </div>
+    </article>
+  </a>
+) : (
+  <article class="teaser">
+    <div class="teaser-text">
+      <span class="content-type-pill">Case Study</span>
+      <h3>{title}</h3>
+      <p class="summary">{summary}</p>
+      <span class="coming-soon" aria-label="Full case study coming soon">
+        Full case study coming soon
+      </span>
+    </div>
+
+    <div class="teaser-stack">
+      <p class="stack-label">Tech Stack</p>
+      <ul class="stack-tags" role="list">
+        {techStack.map((tag) => (
+          <li class="stack-tag">{tag}</li>
+        ))}
+      </ul>
+    </div>
+  </article>
+)}
+
+<style>
+  .teaser-link {
+    display: block;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: border-color 0.25s;
+  }
+
+  .teaser-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 12px;
+  }
+
+  .teaser-link:hover .teaser {
+    border-color: var(--accent);
+  }
+
+  .teaser {
+    background: var(--surface-base);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    gap: 32px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .teaser-text {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .content-type-pill {
+    display: inline-block;
+    align-self: flex-start;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    border-radius: 999px;
+    padding: 2px 8px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: color 0.25s;
+  }
+
+  .summary {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    transition: color 0.25s;
+  }
+
+  .coming-soon {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: default;
+    pointer-events: none;
+    transition: color 0.25s;
+  }
+
+  .read-link {
+    color: var(--accent);
+    font-size: 0.85rem;
+    transition: color 0.25s;
+  }
+
+  .teaser-stack {
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stack-label {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.25s;
+  }
+
+  .stack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .stack-tag {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 3px 10px;
+    transition: border-color 0.25s, color 0.25s;
+  }
+
+  @media (max-width: 767px) {
+    .teaser {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .teaser-text,
+    .teaser-stack {
+      flex: none;
+    }
+  }
+</style>

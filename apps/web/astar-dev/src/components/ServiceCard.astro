@@ -1,0 +1,53 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  icon: string;
+}
+const { title, description, icon } = Astro.props;
+---
+
+<article class="service-card">
+  <div class="icon" aria-hidden="true">
+    <Fragment set:html={icon} />
+  </div>
+  <h3>{title}</h3>
+  <p>{description}</p>
+</article>
+
+<style>
+  .service-card {
+    background: var(--surface-base);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    transition: background-color 0.25s, border-color 0.25s;
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .icon :global(svg) {
+    width: 24px;
+    height: 24px;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    transition: color 0.25s;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    transition: color 0.25s;
+  }
+</style>

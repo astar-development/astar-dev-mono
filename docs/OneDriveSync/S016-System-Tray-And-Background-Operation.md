@@ -58,6 +58,15 @@ So that I can set-and-forget without keeping the window open.
 
 ---
 
+## Implementation Constraints
+
+- `Application.Current.ShutdownMode` **must** be set to `ShutdownMode.OnExplicitShutdown` in `App.axaml` (or programmatically before the first window close). Without this, closing the main window exits the process regardless of any tray intercept logic.
+- The `Closing` event handler in `MainWindow.axaml.cs` that intercepts window close to minimise to tray must be `async void` — this is a permitted Avalonia exception because framework event handlers do not support `Task`-returning signatures. Add the comment: `// Avalonia event handler — async void required`.
+- `TrayIcon` must be created on the UI thread. Initialise it inside `OnFrameworkInitializationCompleted()` in `App.axaml.cs`; never construct it from a background thread or a singleton constructor.
+- The `CancellationTokenSource` used to signal graceful shutdown when the user selects "Quit" must be disposed after cancellation; use a `using` declaration to guarantee disposal.
+
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)

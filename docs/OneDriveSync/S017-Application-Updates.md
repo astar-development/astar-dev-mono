@@ -64,6 +64,15 @@ So that I stay on a supported version without the app surprising me mid-task.
 
 ---
 
+## Implementation Constraints
+
+- All observables carrying update state that feed UI-bound properties must use `ObserveOn(RxApp.MainThreadScheduler)` — update check results arrive on a background thread.
+- Use `IHttpClientFactory` exclusively — never `new HttpClient()`. The factory is registered at startup; a bare `HttpClient` will not carry the Polly resilience pipeline and leaks sockets.
+- Force update mode blocks navigation by setting a shell lock-down flag (e.g., `IsNavEnabled = false` on `MainWindowViewModel` via `IShellStateService`). Do **not** repurpose `IFeatureAvailabilityService` for this purpose — that service controls feature availability, not shell lock-down state. Mixing the two semantics makes both harder to reason about.
+- Register the About nav item in `ShellServiceExtensions` only when this story ships (NF-15); until then the nav item remains disabled.
+
+---
+
 ## Dependencies
 
 - S001 (project scaffolding)
