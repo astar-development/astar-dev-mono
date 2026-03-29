@@ -13,8 +13,8 @@ public sealed class DatabaseMigrationStartupTask(IServiceProvider services) : IS
     public async Task RunAsync(CancellationToken ct)
     {
         // AppDbContext is scoped — create a scope so it is disposed correctly after migration
-        await using var scope     = services.CreateAsyncScope();
-        var             dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using AsyncServiceScope scope     = services.CreateAsyncScope();
+        AppDbContext dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.Database.MigrateAsync(ct).ConfigureAwait(false);
     }

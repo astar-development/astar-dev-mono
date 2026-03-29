@@ -19,7 +19,7 @@ public class LocalisationServiceShould
     [Fact]
     public void ReturnLocalisedString_ForKnownKey()
     {
-        _provider.GetString("MainWindow_Title", _culture).Returns("AStar Dev OneDrive Sync");
+        _ = _provider.GetString("MainWindow_Title", _culture).Returns("AStar Dev OneDrive Sync");
 
         _sut.GetString("MainWindow_Title").ShouldBe("AStar Dev OneDrive Sync");
     }
@@ -27,7 +27,7 @@ public class LocalisationServiceShould
     [Fact]
     public void ReturnKey_WhenStringNotFound()
     {
-        _provider.GetString("MissingKey", _culture).Returns((string?)null);
+        _ = _provider.GetString("MissingKey", _culture).Returns((string?)null);
 
         _sut.GetString("MissingKey").ShouldBe("MissingKey");
     }
@@ -35,10 +35,10 @@ public class LocalisationServiceShould
     [Fact]
     public void PassCultureToProvider_WhenGettingString()
     {
-        _provider.GetString(Arg.Any<string>(), Arg.Any<CultureInfo>()).Returns("value");
+        _ = _provider.GetString(Arg.Any<string>(), Arg.Any<CultureInfo>()).Returns("value");
 
-        _sut.GetString("AnyKey");
+        _ = _sut.GetString("AnyKey");
 
-        _provider.Received(1).GetString("AnyKey", _culture);
+        _ = _provider.Received(1).GetString("AnyKey", _culture);
     }
 }

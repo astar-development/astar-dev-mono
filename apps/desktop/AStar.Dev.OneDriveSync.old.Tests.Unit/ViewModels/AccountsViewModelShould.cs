@@ -14,7 +14,7 @@ public class AccountsViewModelShould
 
     public AccountsViewModelShould()
     {
-        _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([]));
+        _ = _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([]));
         _sut = new AccountsViewModel(_accountStore, _authService, _folderService);
     }
 
@@ -25,7 +25,7 @@ public class AccountsViewModelShould
     [Fact]
     public async Task LoadPersistedAccounts()
     {
-        _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "test@example.com", DisplayName = "Test User", LocalSyncPath = "/home/test/OneDrive/test" }]));
+        _ = _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "test@example.com", DisplayName = "Test User", LocalSyncPath = "/home/test/OneDrive/test" }]));
 
         await _sut.LoadAccountsAsync(TestContext.Current.CancellationToken);
 
@@ -40,24 +40,24 @@ public class AccountsViewModelShould
         _sut.AddAccountCommand.Execute(null);
 
         _sut.IsWizardVisible.ShouldBeTrue();
-        _sut.Wizard.ShouldNotBeNull();
+        _ = _sut.Wizard.ShouldNotBeNull();
     }
 
     [Fact]
     public async Task RejectOverlappingLocalSyncPaths()
     {
-        _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1" }]));
+        _ = _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1" }]));
         await _sut.LoadAccountsAsync(TestContext.Current.CancellationToken);
 
         var error = _sut.ValidateLocalSyncPath("/home/test/OneDrive/user1/subfolder");
-        error.ShouldNotBeNull();
+        _ = error.ShouldNotBeNull();
         error.ShouldContain("overlaps");
     }
 
     [Fact]
     public async Task AllowNonOverlappingLocalSyncPaths()
     {
-        _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1" }]));
+        _ = _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1" }]));
         await _sut.LoadAccountsAsync(TestContext.Current.CancellationToken);
 
         var error = _sut.ValidateLocalSyncPath("/home/test/OneDrive/user2");
@@ -67,11 +67,11 @@ public class AccountsViewModelShould
     [Fact]
     public async Task RejectParentPathOverlap()
     {
-        _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1/subfolder" }]));
+        _ = _accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountRecord>>([new AccountRecord { AccountId = "a1", Email = "user1@example.com", LocalSyncPath = "/home/test/OneDrive/user1/subfolder" }]));
         await _sut.LoadAccountsAsync(TestContext.Current.CancellationToken);
 
         var error = _sut.ValidateLocalSyncPath("/home/test/OneDrive/user1");
-        error.ShouldNotBeNull();
+        _ = error.ShouldNotBeNull();
         error.ShouldContain("overlaps");
     }
 }

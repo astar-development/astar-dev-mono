@@ -26,8 +26,8 @@ public class LogViewerViewModel : ReactiveObject
         ClearCommand = ReactiveCommand.Create(ClearEntries);
         CloseCommand = ReactiveCommand.Create(() => { });
 
-        this.WhenAnyValue(x => x.SearchText).Subscribe(_ => ApplyFilters());
-        this.WhenAnyValue(x => x.SelectedAccount).Subscribe(_ => ApplyFilters());
+        _ = this.WhenAnyValue(x => x.SearchText).Subscribe(_ => ApplyFilters());
+        _ = this.WhenAnyValue(x => x.SelectedAccount).Subscribe(_ => ApplyFilters());
     }
 
     public ObservableCollection<LogEntryViewModel> FilteredEntries { get; } = [];
@@ -56,7 +56,7 @@ public class LogViewerViewModel : ReactiveObject
 
     private void OnLogEventReceived(LogEvent logEvent)
     {
-        var entry = ToViewModel(logEvent);
+        LogEntryViewModel entry = ToViewModel(logEvent);
         Dispatcher.UIThread.Post(() =>
         {
             _allEntries.Add(entry);
@@ -84,7 +84,7 @@ public class LogViewerViewModel : ReactiveObject
     private void ApplyFilters()
     {
         FilteredEntries.Clear();
-        foreach (var entry in _allEntries.Where(PassesFilter))
+        foreach (LogEntryViewModel? entry in _allEntries.Where(PassesFilter))
             FilteredEntries.Add(entry);
         this.RaisePropertyChanged(nameof(HasEntries));
         this.RaisePropertyChanged(nameof(EntryCountText));
@@ -103,7 +103,7 @@ public class LogViewerViewModel : ReactiveObject
 
     private static LogEntryViewModel ToViewModel(LogEvent logEvent)
     {
-        var account = logEvent.Properties.TryGetValue("AccountId", out var accountProp) ? accountProp.ToString().Trim('"') : string.Empty;
+        var account = logEvent.Properties.TryGetValue("AccountId", out LogEventPropertyValue? accountProp) ? accountProp.ToString().Trim('"') : string.Empty;
         var message = PiiSanitiser.Sanitise(logEvent.RenderMessage(System.Globalization.CultureInfo.InvariantCulture));
 
         return new LogEntryViewModel

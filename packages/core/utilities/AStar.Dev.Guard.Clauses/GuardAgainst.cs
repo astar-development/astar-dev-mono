@@ -22,10 +22,7 @@ public static class GuardAgainst
     /// <exception cref="ArgumentNullException">
     ///     Thrown when the object is, in fact, null.
     /// </exception>
-    public static T Null<T>(T objectToCheck)
-    {
-        return objectToCheck is null ? throw new ArgumentNullException(nameof(objectToCheck)) : objectToCheck;
-    }
+    public static T Null<T>(T objectToCheck) => objectToCheck is null ? throw new ArgumentNullException(nameof(objectToCheck)) : objectToCheck;
 
     /// <summary>
     ///
@@ -33,8 +30,5 @@ public static class GuardAgainst
     /// <param name="objectToCheck"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static INumber<T> Negative<T>(T objectToCheck) where T : INumber<T>
-    {
-        return objectToCheck < T.Zero ? throw new ArgumentOutOfRangeException(nameof(objectToCheck)) : objectToCheck;
-    }
+    public static INumber<T> Negative<T>(T objectToCheck) where T : INumber<T> => objectToCheck < T.Zero ? throw new ArgumentOutOfRangeException(nameof(objectToCheck)) : objectToCheck;
 }

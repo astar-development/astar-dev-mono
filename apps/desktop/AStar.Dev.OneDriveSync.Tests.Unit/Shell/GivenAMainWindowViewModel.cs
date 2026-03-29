@@ -29,11 +29,11 @@ public sealed class GivenAMainWindowViewModel
     public void when_navigate_is_invoked_then_the_active_view_is_updated(NavSection section)
     {
         var expectedView = new TestViewModel();
-        _featureAvailability.IsAvailable(section).Returns(true);
-        _navigationService.ResolveView(section).Returns(expectedView);
+        _ = _featureAvailability.IsAvailable(section).Returns(true);
+        _ = _navigationService.ResolveView(section).Returns(expectedView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         sut.ActiveView.ShouldBe(expectedView);
     }
@@ -50,11 +50,11 @@ public sealed class GivenAMainWindowViewModel
     public void when_navigate_is_invoked_then_the_selected_section_is_updated(NavSection section)
     {
         var expectedView = new TestViewModel();
-        _featureAvailability.IsAvailable(section).Returns(true);
-        _navigationService.ResolveView(section).Returns(expectedView);
+        _ = _featureAvailability.IsAvailable(section).Returns(true);
+        _ = _navigationService.ResolveView(section).Returns(expectedView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         sut.SelectedSection.ShouldBe(section);
     }
@@ -70,13 +70,13 @@ public sealed class GivenAMainWindowViewModel
     [InlineData(NavSection.About)]
     public void when_navigate_is_invoked_then_the_target_nav_item_becomes_active(NavSection section)
     {
-        _featureAvailability.IsAvailable(section).Returns(true);
-        _navigationService.ResolveView(section).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(section).Returns(true);
+        _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe();
 
-        var targetItem = sut.NavItems.Single(i => i.Section == section);
+        NavItemViewModel targetItem = sut.NavItems.Single(i => i.Section == section);
 
         targetItem.IsActive.ShouldBeTrue();
     }
@@ -92,13 +92,13 @@ public sealed class GivenAMainWindowViewModel
     [InlineData(NavSection.About)]
     public void when_navigate_is_invoked_then_all_other_nav_items_become_inactive(NavSection section)
     {
-        _featureAvailability.IsAvailable(section).Returns(true);
-        _navigationService.ResolveView(section).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(section).Returns(true);
+        _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe();
 
-        var inactiveItems = sut.NavItems.Where(i => i.Section != section);
+        IEnumerable<NavItemViewModel> inactiveItems = sut.NavItems.Where(i => i.Section != section);
 
         inactiveItems.ShouldAllBe(i => !i.IsActive);
     }
@@ -107,15 +107,15 @@ public sealed class GivenAMainWindowViewModel
     public void when_navigate_is_invoked_for_a_disabled_feature_then_the_active_view_does_not_change()
     {
         var dashboardView = new TestViewModel();
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
-        var viewBeforeAttempt = sut.ActiveView;
+        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
+        ViewModelBase? viewBeforeAttempt = sut.ActiveView;
 
-        sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
 
         sut.ActiveView.ShouldBe(viewBeforeAttempt);
     }
@@ -123,14 +123,14 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_navigate_is_invoked_for_a_disabled_feature_then_the_selected_section_does_not_change()
     {
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
 
-        sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
 
         sut.SelectedSection.ShouldBe(NavSection.Dashboard);
     }
@@ -154,8 +154,8 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_startup_completes_then_is_loading_becomes_false()
     {
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         sut.CompleteStartup();
@@ -166,8 +166,8 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_startup_completes_then_is_nav_enabled_becomes_true()
     {
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         sut.CompleteStartup();
@@ -179,8 +179,8 @@ public sealed class GivenAMainWindowViewModel
     public void when_startup_completes_then_the_dashboard_view_is_active()
     {
         var dashboardView = new TestViewModel();
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         sut.CompleteStartup();
@@ -191,8 +191,8 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_startup_completes_then_the_dashboard_nav_item_is_active()
     {
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
-        _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         sut.CompleteStartup();
@@ -265,7 +265,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_a_feature_is_available_then_its_nav_item_is_enabled()
     {
-        _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
+        _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
 
@@ -275,10 +275,10 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_a_feature_is_unavailable_then_its_nav_item_is_disabled_with_a_tooltip()
     {
-        _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
+        _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        var accountsItem = sut.NavItems.Single(i => i.Section == NavSection.Accounts);
+        NavItemViewModel accountsItem = sut.NavItems.Single(i => i.Section == NavSection.Accounts);
 
         accountsItem.IsFeatureEnabled.ShouldBeFalse();
         accountsItem.Tooltip.ShouldContain("Coming soon");

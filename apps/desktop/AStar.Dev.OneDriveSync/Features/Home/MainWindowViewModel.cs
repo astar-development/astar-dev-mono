@@ -38,7 +38,7 @@ public partial class MainWindowViewModel : ViewModelBase
         get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(IsNavEnabled));
         }
     } = true;
@@ -62,7 +62,7 @@ public partial class MainWindowViewModel : ViewModelBase
         get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(HasStartupError));
         }
     }
@@ -95,7 +95,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void UpdateActiveNavItem(NavSection activeSection)
     {
-        foreach (var item in _allNavItems)
+        foreach (NavItemViewModel item in _allNavItems)
             item.IsActive = item.Section == activeSection;
     }
 

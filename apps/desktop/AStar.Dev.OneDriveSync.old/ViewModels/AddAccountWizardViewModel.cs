@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.old.Services;
 using ReactiveUI;
 
@@ -118,9 +119,9 @@ public class AddAccountWizardViewModel : ReactiveObject
         SignInStatusText = "Waiting for browser sign-in\u2026";
         ErrorText = string.Empty;
 
-        var signInResult = await _authService.SignInInteractiveAsync(ct);
+        Result<MsalAuthResult, string> signInResult = await _authService.SignInInteractiveAsync(ct);
 
-        signInResult.Match(
+        _ = signInResult.Match(
             onSuccess: authResult =>
             {
                 _accessToken = authResult.AccessToken;
@@ -149,13 +150,13 @@ public class AddAccountWizardViewModel : ReactiveObject
 
     private async Task LoadRootFoldersAsync(CancellationToken ct)
     {
-        var foldersResult = await _folderService.GetRootFoldersAsync(_accessToken, ct);
+        Result<IReadOnlyList<OneDriveFolder>, string> foldersResult = await _folderService.GetRootFoldersAsync(_accessToken, ct);
 
-        foldersResult.Match(
+        _ = foldersResult.Match(
             onSuccess: folders =>
             {
                 Folders.Clear();
-                foreach (var f in folders)
+                foreach (OneDriveFolder f in folders)
                 {
                     Folders.Add(new WizardFolderItem { FolderId = f.Id, Name = f.Name, IsSelected = true });
                 }
@@ -167,7 +168,7 @@ public class AddAccountWizardViewModel : ReactiveObject
 
     private void SkipFolders()
     {
-        foreach (var f in Folders)
+        foreach (WizardFolderItem f in Folders)
         {
             f.IsSelected = true;
         }

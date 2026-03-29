@@ -16,21 +16,21 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        builder.HasKey(a => a.Id);
+        _ = builder.HasKey(a => a.Id);
 
         // Synthetic GUID — caller always provides the value; EF must never generate one.
-        builder.Property(a => a.Id)
+        _ = builder.Property(a => a.Id)
             .ValueGeneratedNever();
 
-        builder.Property(a => a.DisplayName)
+        _ = builder.Property(a => a.DisplayName)
             .IsRequired()
             .HasMaxLength(256);
 
-        builder.Property(a => a.Email)
+        _ = builder.Property(a => a.Email)
             .IsRequired()
             .HasMaxLength(320);
 
-        builder.Property(a => a.MicrosoftAccountId)
+        _ = builder.Property(a => a.MicrosoftAccountId)
             .IsRequired()
             .HasMaxLength(128);
     }

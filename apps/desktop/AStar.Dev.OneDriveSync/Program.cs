@@ -37,7 +37,7 @@ sealed partial class Program
     private static void ShowAlreadyRunningMessage()
     {
         if (OperatingSystem.IsWindows())
-            MessageBoxW(nint.Zero, AlreadyRunningMessage, AlreadyRunningTitle, 0x00000040u);
+            _ = MessageBoxW(nint.Zero, AlreadyRunningMessage, AlreadyRunningTitle, 0x00000040u);
     }
 
     // P/Invoke required: Avalonia is not yet initialised at this call site,

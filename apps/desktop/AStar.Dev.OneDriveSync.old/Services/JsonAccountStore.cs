@@ -13,7 +13,7 @@ public sealed class JsonAccountStore : IAccountStore
     public JsonAccountStore()
     {
         var appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AStar.Dev.OneDriveSync.old");
-        Directory.CreateDirectory(appData);
+        _ = Directory.CreateDirectory(appData);
         _filePath = Path.Combine(appData, "accounts.json");
     }
 
@@ -24,14 +24,14 @@ public sealed class JsonAccountStore : IAccountStore
             return [];
         }
 
-        await using var stream = File.OpenRead(_filePath);
-        var accounts = await JsonSerializer.DeserializeAsync<List<AccountRecord>>(stream, JsonOptions, ct);
+        await using FileStream stream = File.OpenRead(_filePath);
+        List<AccountRecord>? accounts = await JsonSerializer.DeserializeAsync<List<AccountRecord>>(stream, JsonOptions, ct);
         return accounts ?? [];
     }
 
     public async Task SaveAsync(IReadOnlyList<AccountRecord> accounts, CancellationToken ct = default)
     {
-        await using var stream = File.Create(_filePath);
+        await using FileStream stream = File.Create(_filePath);
         await JsonSerializer.SerializeAsync(stream, accounts, JsonOptions, ct);
     }
 }

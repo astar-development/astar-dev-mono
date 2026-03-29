@@ -17,11 +17,11 @@ public class FilesViewModel : ReactiveObject
 
     public Task ActivateAccountAsync(string accountId)
     {
-        var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
+        AccountFilesViewModel? tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
         if(tab is null)
             return Task.CompletedTask;
 
-        foreach(var t in Tabs)
+        foreach(AccountFilesViewModel t in Tabs)
             t.IsActiveTab = t.AccountId == accountId;
 
         ActiveTab = tab;

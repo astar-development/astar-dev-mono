@@ -43,7 +43,7 @@ public partial class App : Application, IDisposable
 
         DisableAvaloniaDataAnnotationValidation();
 
-        var viewModel  = _services.GetRequiredService<MainWindowViewModel>();
+        MainWindowViewModel viewModel  = _services.GetRequiredService<MainWindowViewModel>();
         var mainWindow = new MainWindow { DataContext = viewModel };
 
         desktop.MainWindow = mainWindow;
@@ -66,13 +66,13 @@ public partial class App : Application, IDisposable
 
     private async Task RunStartupTasksAsync(MainWindowViewModel viewModel, CancellationToken ct)
     {
-        var services     = _services!;
-        var logger       = services.GetRequiredService<ILogger<App>>();
-        var orchestrator = services.GetRequiredService<StartupOrchestrator>();
+        ServiceProvider services     = _services!;
+        ILogger<App> logger       = services.GetRequiredService<ILogger<App>>();
+        StartupOrchestrator orchestrator = services.GetRequiredService<StartupOrchestrator>();
 
         LogAppStarting(logger, AppVersion);
 
-        var results = await orchestrator.RunAsync(ct).ConfigureAwait(false);
+        IReadOnlyList<StartupTaskResult> results = await orchestrator.RunAsync(ct).ConfigureAwait(false);
 
         if (MigrationFailed(results))
             NotifyDatabaseCorrupt(viewModel);
@@ -83,13 +83,11 @@ public partial class App : Application, IDisposable
     private static bool MigrationFailed(IReadOnlyList<StartupTaskResult> results) =>
         results.Any(r => r.TaskName == DatabaseMigrationStartupTask.TaskName && !r.Succeeded);
 
-    private static void NotifyDatabaseCorrupt(MainWindowViewModel viewModel)
-    {
+    private static void NotifyDatabaseCorrupt(MainWindowViewModel viewModel) =>
         // EH-08: recovery dialog ("Database corrupt — Start Fresh?") is deferred to the
         // error-handling feature story; surface a banner as a placeholder.
         viewModel.SetStartupError(
             "Database is corrupt. Please restart and choose 'Start Fresh' when prompted.");
-    }
 
     private static ServiceProvider BuildServiceProvider()
     {
@@ -98,7 +96,7 @@ public partial class App : Application, IDisposable
             "AStar.Dev.OneDriveSync",
             "logs");
 
-        Directory.CreateDirectory(logDirectory);
+        _ = Directory.CreateDirectory(logDirectory);
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
@@ -113,22 +111,22 @@ public partial class App : Application, IDisposable
 
         var services = new ServiceCollection();
 
-        services.AddLogging(logging => logging.AddSerilog(dispose: true));
-        services.AddPersistence();
-        services.AddShell();
-        services.AddStartupTasks();
+        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
+        _ = services.AddPersistence();
+        _ = services.AddShell();
+        _ = services.AddStartupTasks();
 
         return services.BuildServiceProvider();
     }
 
     private static void DisableAvaloniaDataAnnotationValidation()
     {
-        var dataValidationPluginsToRemove =
+        DataAnnotationsValidationPlugin[] dataValidationPluginsToRemove =
             BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-        foreach (var plugin in dataValidationPluginsToRemove)
+        foreach (DataAnnotationsValidationPlugin? plugin in dataValidationPluginsToRemove)
         {
-            BindingPlugins.DataValidators.Remove(plugin);
+            _ = BindingPlugins.DataValidators.Remove(plugin);
         }
     }
 

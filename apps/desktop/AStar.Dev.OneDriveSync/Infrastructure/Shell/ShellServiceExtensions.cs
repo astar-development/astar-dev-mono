@@ -18,20 +18,20 @@ internal static class ShellServiceExtensions
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
 
-        services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
-        services.AddSingleton<INavigationService, NavigationService>();
+        _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
+        _ = services.AddSingleton<INavigationService, NavigationService>();
 
         // Stub feature view models — singletons so each section retains state across navigations
-        services.AddSingleton<DashboardViewModel>();
-        services.AddSingleton<AccountsViewModel>();
-        services.AddSingleton<ActivityViewModel>();
-        services.AddSingleton<ConflictsViewModel>();
-        services.AddSingleton<LogViewerViewModel>();
-        services.AddSingleton<SettingsViewModel>();
-        services.AddSingleton<HelpViewModel>();
-        services.AddSingleton<AboutViewModel>();
+        _ = services.AddSingleton<DashboardViewModel>();
+        _ = services.AddSingleton<AccountsViewModel>();
+        _ = services.AddSingleton<ActivityViewModel>();
+        _ = services.AddSingleton<ConflictsViewModel>();
+        _ = services.AddSingleton<LogViewerViewModel>();
+        _ = services.AddSingleton<SettingsViewModel>();
+        _ = services.AddSingleton<HelpViewModel>();
+        _ = services.AddSingleton<AboutViewModel>();
 
-        services.AddSingleton<MainWindowViewModel>();
+        _ = services.AddSingleton<MainWindowViewModel>();
 
         return services;
     }

@@ -14,8 +14,7 @@ internal sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactor
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        // Design-time only: a local file path so migration scaffolding can introspect the schema.
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=design-time.db")
             .Options;
 

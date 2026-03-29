@@ -13,10 +13,7 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
     private void OnLight(object? sender, RoutedEventArgs e)
         => (Application.Current as App)?.SetTheme(ThemeVariant.Light);

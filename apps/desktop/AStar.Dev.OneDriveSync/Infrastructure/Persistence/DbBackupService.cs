@@ -34,8 +34,8 @@ public sealed partial class DbBackupService(
 
         var backupFilePath = Path.Combine(pathProvider.AppDataDirectory, BackupFileName);
 
-        await using var source      = File.OpenRead(dataFilePath);
-        await using var destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
+        await using FileStream source      = File.OpenRead(dataFilePath);
+        await using FileStream destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
         await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
 
         LogBackupComplete(logger, backupFilePath);

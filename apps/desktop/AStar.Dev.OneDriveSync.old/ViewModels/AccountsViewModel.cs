@@ -95,12 +95,12 @@ public class AccountsViewModel : ReactiveObject
 
     public async Task LoadAccountsAsync(CancellationToken ct = default)
     {
-        var records = await _accountStore.LoadAsync(ct);
+        IReadOnlyList<AccountRecord> records = await _accountStore.LoadAsync(ct);
         _records.Clear();
         _records.AddRange(records);
 
         Accounts.Clear();
-        foreach (var r in records)
+        foreach (AccountRecord r in records)
         {
             Accounts.Add(CreateCard(r));
         }
@@ -152,7 +152,7 @@ public class AccountsViewModel : ReactiveObject
 
     private AccountCardViewModel CreateCard(AccountRecord record)
     {
-        var accentColor = AccentPalette[Accounts.Count % AccentPalette.Length];
+        Color accentColor = AccentPalette[Accounts.Count % AccentPalette.Length];
         var initials = GetInitials(record.DisplayName, record.Email);
 
         return new AccountCardViewModel
@@ -168,9 +168,7 @@ public class AccountsViewModel : ReactiveObject
     }
 
     /// <summary>AM-08: Show keep/delete prompt before removing.</summary>
-    private void PromptRemoveAccount(string accountId)
-    {
-        _records.FirstOrNone(r => r.AccountId == accountId)
+    private void PromptRemoveAccount(string accountId) => _ = _records.FirstOrNone(r => r.AccountId == accountId)
             .Tap(record =>
             {
                 RemovePromptAccountEmail = record.Email;
@@ -181,26 +179,25 @@ public class AccountsViewModel : ReactiveObject
 
                 IsRemovePromptVisible = true;
             });
-    }
 
     private async Task RemoveAccountAsync(string accountId, bool deleteLocalFolder)
     {
         IsRemovePromptVisible = false;
 
-        _records.FirstOrNone(r => r.AccountId == accountId)
+        _ = _records.FirstOrNone(r => r.AccountId == accountId)
             .Tap(record =>
             {
                 if (deleteLocalFolder && Directory.Exists(record.LocalSyncPath))
                 {
-                    Try.Run(() => { Directory.Delete(record.LocalSyncPath, recursive: true); return true; });
+                    _ = Try.Run(() => { Directory.Delete(record.LocalSyncPath, recursive: true); return true; });
                 }
 
-                _records.Remove(record);
+                _ = _records.Remove(record);
             });
 
         await _authService.SignOutAsync(accountId);
 
-        Accounts.FirstOrNone(c => c.AccountId == accountId)
+        _ = Accounts.FirstOrNone(c => c.AccountId == accountId)
             .Tap(card => Accounts.Remove(card));
 
         this.RaisePropertyChanged(nameof(HasAccounts));

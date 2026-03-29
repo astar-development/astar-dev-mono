@@ -12,14 +12,14 @@ public sealed class GraphOneDriveFolderService : IOneDriveFolderService
     {
         try
         {
-            var client = CreateClient(accessToken);
-            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
+            GraphServiceClient client = CreateClient(accessToken);
+            Drive? drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
             var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
 
-            var root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
+            DriveItem? root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
             var rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve the drive root item.");
 
-            var children = await client.Drives[driveId].Items[rootId].Children.GetAsync(cancellationToken: ct);
+            DriveItemCollectionResponse? children = await client.Drives[driveId].Items[rootId].Children.GetAsync(cancellationToken: ct);
             return new Result<IReadOnlyList<OneDriveFolder>, string>.Ok(MapDriveItems(children?.Value));
         }
         catch (Exception ex)
@@ -32,11 +32,11 @@ public sealed class GraphOneDriveFolderService : IOneDriveFolderService
     {
         try
         {
-            var client = CreateClient(accessToken);
-            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
+            GraphServiceClient client = CreateClient(accessToken);
+            Drive? drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
             var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve the user's default drive.");
 
-            var children = await client.Drives[driveId].Items[folderId].Children.GetAsync(cancellationToken: ct);
+            DriveItemCollectionResponse? children = await client.Drives[driveId].Items[folderId].Children.GetAsync(cancellationToken: ct);
             return new Result<IReadOnlyList<OneDriveFolder>, string>.Ok(MapDriveItems(children?.Value));
         }
         catch (Exception ex)

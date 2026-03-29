@@ -11,7 +11,7 @@ internal static class AppDbContextExtensions
         var accountTableName = context.Model.FindEntityType(typeof(Account))!.GetTableName();
         var onDelete = cascadeOnDelete ? "ON DELETE CASCADE" : string.Empty;
 
-        await context.Database.ExecuteSqlRawAsync($"""
+        _ = await context.Database.ExecuteSqlRawAsync($"""
             CREATE TABLE IF NOT EXISTS {tableName} (
                 id          TEXT PRIMARY KEY NOT NULL,
                 account_id  TEXT NOT NULL
