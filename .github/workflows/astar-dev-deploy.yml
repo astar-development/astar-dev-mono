@@ -53,14 +53,24 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          echo "=== dist/client ==="
+          ls dist/client
+          echo "=== dist/server ==="
+          ls dist/server
+          test -f dist/server/entry.mjs || (echo "ERROR: dist/server/entry.mjs not found" && exit 1)
+
       - name: Prepare deployment package
         run: |
           mkdir deploy
           cp -r dist/client deploy/client
           cp -r dist/server deploy/server
           cp package-lock.json deploy/package-lock.json
-          jq '.scripts = {"start": "node server/entry.mjs"}' package.json > deploy/package.json
+          jq '.scripts = {"start": "PORT=${PORT:-8080} HOST=0.0.0.0 node server/entry.mjs"}' package.json > deploy/package.json
           cd deploy && npm ci --omit=dev && rm package-lock.json
+          echo "=== deploy/node_modules package count ==="
+          ls node_modules | wc -l
 
       - name: Deploy to Azure Web App
         id: deploy
