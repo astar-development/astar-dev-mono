@@ -4,21 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Mono-repo containing all AStar Development products: **Blazor** web apps, **Next.js** web apps, **Avalonia** desktop apps, and ~50 published **NuGet packages**. Solution file: `MonoRepo.slnx`.
+Mono-repo containing all AStar Development products: **Blazor** web apps, **astro** web apps, **Avalonia** desktop apps, and ~50 published **NuGet packages**. Solution file: `MonoRepo.slnx`.
 
 ## Build Commands
 
 ```bash
-# Restore all .NET dependencies
 dotnet restore
 
-# Build all projects (Debug)
 dotnet build
 
-# Build release
 dotnet build --configuration Release
 
-# Build a specific project
 dotnet build packages/core/[PackageName]
 dotnet build apps/web/[AppName].Blazor
 
@@ -29,13 +25,10 @@ dotnet clean && dotnet build
 ## Test Commands
 
 ```bash
-# Run all tests
 dotnet test
 
-# Run tests for a specific project
 dotnet test tests/[ProjectName].Tests
 
-# Run with coverage
 dotnet test --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 ```
 
@@ -44,13 +37,10 @@ Coverage reports are written to `TestResults/`.
 ## Running Applications
 
 ```bash
-# Blazor app
 dotnet run --project apps/web/[AppName].Blazor
 
-# Avalonia desktop app
 dotnet run --project apps/desktop/[AppName].Desktop
 
-# Next.js app
 cd apps/web/[appname]-next && npm run dev
 ```
 
