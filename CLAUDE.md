@@ -141,6 +141,18 @@ A PAT with `read:packages` scope is required. If `dotnet restore` fails with 401
 
 See @README.md for project overview and @package.json for available npm commands.
 
+## Before Starting Any Task
+
+These two steps are **mandatory** before writing a single line of code. No exceptions, including spikes.
+
+1. **Branch first** — run `git branch` to confirm you are not on `main`. If you are, create a feature branch immediately:
+   ```bash
+   git checkout -b feature/short-description
+   ```
+   Branch naming: `feature/...`, `bug/...`, `doc/...`. Never commit directly to `main`. See @docs/git-instructions.md.
+
+2. **Tests first (TDD)** — every coding task requires a test project. Write a failing test before writing any production code. Follow the red → green → refactor commit sequence defined in @.claude/agents/c-sharp-senior-qa-specialist.md (C#) or @.claude/agents/javascript-senior-qa-specialist.md (JavaScript/TypeScript).
+
 ## Definition of Done
 
 Before considering any coding task complete — including commits and PRs — always:

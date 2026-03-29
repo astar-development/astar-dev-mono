@@ -145,14 +145,15 @@
   </ItemGroup>
   <ItemGroup Label="Avalonia desktop">
     <!--
-      All Avalonia packages must share the same version — CPM enforces this.
+      Avalonia core packages target 11.3.12. Avalonia.ReactiveUI follows its own
+      release cadence — 11.3.8 is the latest build that aligns with ReactiveUI 20.x.
     -->
     <PackageVersion Include="Avalonia" Version="11.3.12" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.2.3" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.3.12" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.2.3" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.12" />
-    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.2.3" />
+    <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.12" />
     <PackageVersion Include="ReactiveUI" Version="20.1.1" />
     <PackageVersion Include="ReactiveUI.Fody" Version="20.1.1" />
