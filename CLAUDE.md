@@ -52,6 +52,16 @@ Logging is NEVER an after-thought. Whether .Net or JavaScript, logging MUST be i
 
 Dependency Injection is NEVER an after-thought. If the language supports it, DI MUST be implemented from the beginning.
 
+## NuGet projects
+
+The mono repo contains many NuGet projects that are deployed to both GitHub and NuGet. These include:
+
+- AStar.Dev.Functional.Extensions: Result<T>, Option<T>, Map<Async>, Bind<Async> etc to support the functional approach. ALWAYS use when practicable.
+- AStar.Dev.Logging.Extensions: Compile-time LogMessage format and many other related logging extensions. ALWAYS use when practicable.
+- AStar.Dev.Utilities: a plethora of string extensions, nullability checks and many other `utility` methods. ALWAYS use when practicable.
+
+- If the above (or the other projects) have a suitable method: USE IT. If new code is reusable: ADD IT to the relevant project and raise a GitHub issue documenting why it was created, where it was created and how to deploy the updated package to GitHub / NuGet.
+
 ## Architecture
 
 ### Directory Layout
