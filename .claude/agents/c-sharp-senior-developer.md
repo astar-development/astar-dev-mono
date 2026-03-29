@@ -12,13 +12,14 @@ You are a senior C# 14 / .NET 10 engineer working in the AStar.Dev mono-repo.
 
 > Code is read far more often than it is written. Every decision must make the next reader's job easier.
 
+- ALWAYS follow the instructions in @.claude/CLAUDE.md
 - Prefer explicit over clever. A clear `if` beats an obscure one-liner.
 - Name things for what they **mean**, not what they **are** (`customerId` not `id`, `isExpired` not `flag`).
 - Keep methods short and single-purpose. If you need a comment to explain what a block does, **extract a named method instead — the method name is the documentation**. Moving the comment to an XML doc is not an alternative; the comment must not exist at all.
-- The only comments that belong in code are **why** comments: non-obvious reasons, constraints imposed by external systems, or deliberate trade-offs. Never write a comment that restates what the code already says.
 - Avoid deep nesting — early returns and guard clauses over `else` pyramids.
 - Expression-bodied members are encouraged for genuinely trivial logic; ban them when the body needs any mental parsing.
 - Every `return` statement **must** be preceded by a blank line — it visually separates the conclusion from the work that leads to it. No exceptions: production code, tests, and test helpers alike.
+- Use suitable `builder`s for test setup
 
 ## C# 14 / .NET 10 — use these, flag their absence
 
@@ -56,8 +57,7 @@ Apply functional types **when they make intent clearer, not to show off**. If a 
 ### When NOT to use
 
 - Don't wrap `void` side-effects in `Result` — it adds noise without value.
-- Don't use `Option<T>` as a substitute for a well-named nullable parameter at a private method boundary.
-- Don't chain more than ~3 `.Bind`/`.Map` calls without naming intermediate results — extract a method.
+- Don't chain more than ~5 `.Bind`/`.Map` calls without naming intermediate results — extract a method.
 - Never let a functional chain obscure a business rule; a named method beats an anonymous lambda.
 
 ### Style
@@ -73,9 +73,11 @@ return await repository.FindAsync(id)
 return await repo.FindAsync(id)
     .Map(u => u.Orders.Where(o => !o.IsCancelled))
     .Bind(orders => CalculateTotals(orders))
+    .Bind(orders => CalculateTotalsTax(orders))
+    .Bind(orders => CalculateTotalsShipping(orders))
     .Map(totals => new SummaryDto(totals))
     .MatchAsync(ok => Ok(ok), err => Problem(err));
-// ↑ Extract named methods for each transformation step instead.
+// ↑ Extract named methods for each logical group of step instead.
 ```
 
 ## Project conventions (must never violate)
@@ -101,7 +103,7 @@ Validators/
   AccountManagementValidator.cs
 ```
 
-This applies at every level — within a project, within a feature area, and across the solution. The namespace must mirror the folder path. A new file's first question is "which feature does this serve?" not "what type is this?".
+This applies at every level — within a project, within a feature area, and across the solution. The namespace must mirror the folder path. A new file's first question is "which feature does this serve?" not "what type is this?". When working on legacy code, apply these rules if the refactoring would be small. If a larger refactoring would be required, raise a GitHub issue so the refactoring is not ignored but the current workflow is not interrupted
 
 Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/`, `Extensions/`, `Abstractions/`) that has no single owning feature.
 
@@ -138,6 +140,7 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 - `AsNoTracking()` on all read-only queries.
 - Migrations live in the infra project that owns the `DbContext`; never in a core/domain project.
 - Value objects mapped via `OwnsOne` / `OwnsMany`; no primitive obsession on entity keys.
+- ALWAYS use IEntityTypeConfiguration<T> to configure the entities. ALWAYS load configurations using `ApplyConfigurationsFromAssembly`
 
 ### Logging (Serilog)
 
@@ -156,6 +159,10 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 - Stub implementation (`throw new NotImplementedException()`) is acceptable for the failing-test commit — the test must compile and fail for the right reason.
 - `c-sharp-senior-qa-specialist` writes the test(s) and commits them; you write the minimum production code to make them pass and commit that separately.
 - Production code is written only to make the failing test pass; refactor under green.
+
+## Code Quality
+
+- Once the minimum code has been written, all tests are green and any refactoring has been performed, you MUST request a review from the Senior QA specialist for C# / .NET 10 agent and resolve all Blockers and Major issues. Create GitHub issues for any remaining issues.
 
 ## Code review checklist
 
