@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════════════════
 # astar-dev-deploy.yml
 # Fires when AStar.Dev CI completes successfully on main.
-# Builds and deploys the static + SSR output to Azure Web App astar-dev.
+# Builds and deploys the static + SSR output to Azure Web App astar-dev..
 # ════════════════════════════════════════════════════════════════════════════
 
 name: AStar.Dev Deploy
