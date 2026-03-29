@@ -1,3 +1,4 @@
+using System.Reflection;
 using AStar.Dev.OneDriveSync.old.Models;
 using AStar.Dev.OneDriveSync.old.Services;
 
@@ -13,11 +14,11 @@ public sealed class JsonAccountStoreShould : IDisposable
     public JsonAccountStoreShould()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), $"astar-test-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_tempDir);
+        _ = Directory.CreateDirectory(_tempDir);
         _filePath = Path.Combine(_tempDir, "accounts.json");
 
         _sut = new JsonAccountStore();
-        var field = typeof(JsonAccountStore).GetField("_filePath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
+        FieldInfo field = typeof(JsonAccountStore).GetField("_filePath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
         field.SetValue(_sut, _filePath);
     }
 
@@ -34,7 +35,7 @@ public sealed class JsonAccountStoreShould : IDisposable
     [Fact]
     public async Task ReturnEmptyList_WhenFileDoesNotExist()
     {
-        var accounts = await _sut.LoadAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<AccountRecord> accounts = await _sut.LoadAsync(TestContext.Current.CancellationToken);
         accounts.ShouldBeEmpty();
     }
 
@@ -55,7 +56,7 @@ public sealed class JsonAccountStoreShould : IDisposable
         };
 
         await _sut.SaveAsync(accounts, TestContext.Current.CancellationToken);
-        var loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<AccountRecord> loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
         loaded.Count.ShouldBe(1);
         loaded[0].AccountId.ShouldBe("a1");

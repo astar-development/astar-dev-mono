@@ -6,9 +6,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
     public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => _ = migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -19,15 +17,11 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    _ = table.PrimaryKey("PK_Accounts", x => x.Id);
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => _ = migrationBuilder.DropTable(
                 name: "Accounts");
-        }
     }
 }

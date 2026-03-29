@@ -14,15 +14,15 @@ internal static class PersistenceServiceExtensions
     /// </summary>
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
-        services.AddSingleton<IAppDataPathProvider, LocalAppDataPathProvider>();
-        services.AddSingleton<IDbBackupService, DbBackupService>();
+        _ = services.AddSingleton<IAppDataPathProvider, LocalAppDataPathProvider>();
+        _ = services.AddSingleton<IDbBackupService, DbBackupService>();
 
-        services.AddDbContext<AppDbContext>((sp, options) =>
+        _ = services.AddDbContext<AppDbContext>((sp, options) =>
         {
-            var pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
-            Directory.CreateDirectory(pathProvider.AppDataDirectory);
+            IAppDataPathProvider pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
+            _ = Directory.CreateDirectory(pathProvider.AppDataDirectory);
             var dbPath = Path.Combine(pathProvider.AppDataDirectory, "data.db");
-            options.UseSqlite($"DataSource={dbPath}");
+            _ = options.UseSqlite($"DataSource={dbPath}");
         });
 
         return services;

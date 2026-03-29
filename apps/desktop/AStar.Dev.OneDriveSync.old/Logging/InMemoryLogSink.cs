@@ -20,7 +20,7 @@ public sealed class InMemoryLogSink : ILogEventSink
     {
         _events.Enqueue(logEvent);
         while (_events.Count > _maxCapacity)
-            _events.TryDequeue(out _);
+            _ = _events.TryDequeue(out _);
 
         LogEventReceived?.Invoke(logEvent);
     }

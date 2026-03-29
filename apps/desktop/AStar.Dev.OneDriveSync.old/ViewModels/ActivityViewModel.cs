@@ -93,14 +93,11 @@ public class ActivityViewModel : ReactiveObject
         }
     }
 
-    public void NotifySelectionChanged()
-    {
-        HasAnySelected = Conflicts.Any(c => c.IsSelected && !c.IsResolved);
-    }
+    public void NotifySelectionChanged() => HasAnySelected = Conflicts.Any(c => c.IsSelected && !c.IsResolved);
 
     private void SelectAll()
     {
-        foreach (var conflict in Conflicts)
+        foreach (ConflictItemViewModel conflict in Conflicts)
         {
             if (!conflict.IsResolved)
             {
@@ -113,7 +110,7 @@ public class ActivityViewModel : ReactiveObject
 
     private void DeselectAll()
     {
-        foreach (var conflict in Conflicts)
+        foreach (ConflictItemViewModel conflict in Conflicts)
         {
             conflict.IsSelected = false;
         }
@@ -140,7 +137,7 @@ public class ActivityViewModel : ReactiveObject
 
         var resolvedIds = await _resolver.ResolveAsync(selectedIds, policy).ConfigureAwait(true);
 
-        foreach (var conflict in Conflicts)
+        foreach (ConflictItemViewModel conflict in Conflicts)
         {
             if (resolvedIds.Contains(conflict.ConflictId))
             {
@@ -192,7 +189,7 @@ public class ActivityViewModel : ReactiveObject
             vm.IsResolving = true;
             var resolvedIds = await _resolver.ResolveAsync([vm.ConflictId], policy).ConfigureAwait(true);
 
-            foreach (var conflict in Conflicts)
+            foreach (ConflictItemViewModel conflict in Conflicts)
             {
                 if (resolvedIds.Contains(conflict.ConflictId))
                 {
@@ -208,16 +205,13 @@ public class ActivityViewModel : ReactiveObject
         return vm;
     }
 
-    private static string FormatBytes(long bytes)
+    private static string FormatBytes(long bytes) => bytes switch
     {
-        return bytes switch
-        {
-            < 1024 => $"{bytes} B",
-            < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
-            < 1024 * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
-            _ => $"{bytes / (1024.0 * 1024 * 1024):F1} GB"
-        };
-    }
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
+        < 1024 * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
+        _ => $"{bytes / (1024.0 * 1024 * 1024):F1} GB"
+    };
 
     private static string GetDefaultStorePath()
     {

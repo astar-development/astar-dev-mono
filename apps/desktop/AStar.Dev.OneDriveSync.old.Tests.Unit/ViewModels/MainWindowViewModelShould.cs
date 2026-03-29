@@ -13,13 +13,13 @@ public class MainWindowViewModelShould
 
     public MainWindowViewModelShould()
     {
-        _themeService.CurrentMode.Returns(ThemeMode.Auto);
+        _ = _themeService.CurrentMode.Returns(ThemeMode.Auto);
 
         var loggingService = new LoggingService();
-        var accountStore = Substitute.For<IAccountStore>();
-        accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<Models.AccountRecord>>([]));
-        var authService = Substitute.For<IMsalAuthService>();
-        var folderService = Substitute.For<IOneDriveFolderService>();
+        IAccountStore accountStore = Substitute.For<IAccountStore>();
+        _ = accountStore.LoadAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<Models.AccountRecord>>([]));
+        IMsalAuthService authService = Substitute.For<IMsalAuthService>();
+        IOneDriveFolderService folderService = Substitute.For<IOneDriveFolderService>();
 
         _sut = new MainWindowViewModel(_themeService, loggingService, accountStore, authService, folderService);
     }
@@ -29,11 +29,8 @@ public class MainWindowViewModelShould
         => _sut.ThemeOptions.Count.ShouldBe(3);
 
     [Fact]
-    public void ExposeOptionsWithCorrectDisplayNames()
-    {
-        _sut.ThemeOptions.Select(o => o.DisplayName)
+    public void ExposeOptionsWithCorrectDisplayNames() => _sut.ThemeOptions.Select(o => o.DisplayName)
             .ShouldBe(["Light", "Dark", "System"], ignoreOrder: false);
-    }
 
     [Fact]
     public void SelectOptionMatchingCurrentMode_OnConstruction()
@@ -42,7 +39,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void ApplyNewTheme_WhenOptionChanged()
     {
-        var darkOption = _sut.ThemeOptions.First(o => o.Mode == ThemeMode.Dark);
+        ThemeOption darkOption = _sut.ThemeOptions.First(o => o.Mode == ThemeMode.Dark);
 
         _sut.SelectedThemeOption = darkOption;
 

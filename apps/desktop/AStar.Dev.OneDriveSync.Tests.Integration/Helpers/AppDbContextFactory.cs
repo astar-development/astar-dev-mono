@@ -20,7 +20,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
     public async Task<AppDbContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(_connection)
             .Options;
 
@@ -28,14 +28,14 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
         // Use MigrateAsync — never EnsureCreatedAsync — to exercise the real migration path (S002 AC).
         await context.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-        await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
+        _ = await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON", cancellationToken).ConfigureAwait(false);
 
         return context;
     }
 
     public static AppDbContext CreateForModelInspection()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=:memory:")
             .Options;
 
@@ -44,8 +44,5 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
     public SqliteConnection Connection => _connection;
 
-    public async ValueTask DisposeAsync()
-    {
-        await _connection.DisposeAsync().ConfigureAwait(false);
-    }
+    public async ValueTask DisposeAsync() => await _connection.DisposeAsync().ConfigureAwait(false);
 }

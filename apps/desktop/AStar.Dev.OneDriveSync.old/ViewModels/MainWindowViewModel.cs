@@ -82,7 +82,7 @@ public class MainWindowViewModel : ReactiveObject
         get => _selectedThemeOption;
         set
         {
-            this.RaiseAndSetIfChanged(ref _selectedThemeOption, value);
+            _ = this.RaiseAndSetIfChanged(ref _selectedThemeOption, value);
             _themeService.Apply(value.Mode);
         }
     }

@@ -12,7 +12,7 @@ public sealed class MsalAuthService : IMsalAuthService
 
     public MsalAuthService(string clientId, string? redirectUri = null)
     {
-        var builder = PublicClientApplicationBuilder.Create(clientId).WithAuthority(AadAuthorityAudience.PersonalMicrosoftAccount).WithDefaultRedirectUri();
+        PublicClientApplicationBuilder builder = PublicClientApplicationBuilder.Create(clientId).WithAuthority(AadAuthorityAudience.PersonalMicrosoftAccount).WithDefaultRedirectUri();
 
         if (!string.IsNullOrEmpty(redirectUri))
         {
@@ -26,7 +26,7 @@ public sealed class MsalAuthService : IMsalAuthService
     {
         try
         {
-            var result = await _pca.AcquireTokenInteractive(Scopes).WithUseEmbeddedWebView(false).ExecuteAsync(ct);
+            AuthenticationResult result = await _pca.AcquireTokenInteractive(Scopes).WithUseEmbeddedWebView(false).ExecuteAsync(ct);
             var authResult = new MsalAuthResult(result.Account.HomeAccountId.Identifier, result.Account.Username, result.Account.Username, result.AccessToken);
             return new Result<MsalAuthResult, string>.Ok(authResult);
         }
@@ -42,14 +42,14 @@ public sealed class MsalAuthService : IMsalAuthService
 
     public async Task SignOutAsync(string accountId, CancellationToken ct = default)
     {
-        var accounts = await _pca.GetAccountsAsync();
-        accounts.FirstOrNone(a => a.HomeAccountId.Identifier == accountId)
+        IEnumerable<IAccount> accounts = await _pca.GetAccountsAsync();
+        _ = accounts.FirstOrNone(a => a.HomeAccountId.Identifier == accountId)
             .Tap(account => _pca.RemoveAsync(account));
     }
 
     public async Task<Result<string, string>> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
     {
-        var accounts = await _pca.GetAccountsAsync();
+        IEnumerable<IAccount> accounts = await _pca.GetAccountsAsync();
 
         return await accounts
             .FirstOrNone(a => a.HomeAccountId.Identifier == accountId)
@@ -57,7 +57,7 @@ public sealed class MsalAuthService : IMsalAuthService
             .MatchAsync<Result<string, string>>(
                 async account =>
                 {
-                    var result = await _pca.AcquireTokenSilent(Scopes, account).ExecuteAsync(ct);
+                    AuthenticationResult result = await _pca.AcquireTokenSilent(Scopes, account).ExecuteAsync(ct);
                     return new Result<string, string>.Ok(result.AccessToken);
                 },
                 error => Task.FromResult<Result<string, string>>(new Result<string, string>.Error(error)));

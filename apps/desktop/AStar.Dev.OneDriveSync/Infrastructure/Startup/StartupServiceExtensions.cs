@@ -6,10 +6,10 @@ internal static class StartupServiceExtensions
 {
     internal static IServiceCollection AddStartupTasks(this IServiceCollection services)
     {
-        services.AddTransient<IStartupTask, DatabaseMigrationStartupTask>();
-        services.AddTransient<IStartupTask, TokenValidationStartupTask>();
-        services.AddTransient<IStartupTask, SyncStateRecoveryStartupTask>();
-        services.AddSingleton<StartupOrchestrator>();
+        _ = services.AddTransient<IStartupTask, DatabaseMigrationStartupTask>();
+        _ = services.AddTransient<IStartupTask, TokenValidationStartupTask>();
+        _ = services.AddTransient<IStartupTask, SyncStateRecoveryStartupTask>();
+        _ = services.AddSingleton<StartupOrchestrator>();
 
         return services;
     }

@@ -11,7 +11,7 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
 
     public ValueTask InitializeAsync()
     {
-        Directory.CreateDirectory(_tempRoot);
+        _ = Directory.CreateDirectory(_tempRoot);
 
         return ValueTask.CompletedTask;
     }
@@ -25,9 +25,9 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
 
     private DbBackupService CreateSut()
     {
-        var pathProvider = Substitute.For<IAppDataPathProvider>();
-        pathProvider.AppDataDirectory.Returns(_tempRoot);
-        var logger = Substitute.For<ILogger<DbBackupService>>();
+        IAppDataPathProvider pathProvider = Substitute.For<IAppDataPathProvider>();
+        _ = pathProvider.AppDataDirectory.Returns(_tempRoot);
+        ILogger<DbBackupService> logger = Substitute.For<ILogger<DbBackupService>>();
 
         return new DbBackupService(pathProvider, logger);
     }
@@ -37,18 +37,18 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     {
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"), "SQLite placeholder", TestContext.Current.CancellationToken);
 
-        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
+        Result<bool, ErrorResponse> result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
+        _ = result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
         File.Exists(Path.Combine(_tempRoot, "data.db.bak")).ShouldBeTrue();
     }
 
     [Fact]
     public async Task when_the_database_file_is_absent_then_backup_returns_a_failure_result()
     {
-        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
+        Result<bool, ErrorResponse> result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<bool, ErrorResponse>.Error>();
+        _ = result.ShouldBeOfType<Result<bool, ErrorResponse>.Error>();
     }
 
     [Fact]
@@ -57,9 +57,9 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"),     "current database content", TestContext.Current.CancellationToken);
         await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), "stale backup",             TestContext.Current.CancellationToken);
 
-        var result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
+        Result<bool, ErrorResponse> result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
+        _ = result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
         var backupContent = await File.ReadAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), TestContext.Current.CancellationToken);
         backupContent.ShouldBe("current database content");
     }

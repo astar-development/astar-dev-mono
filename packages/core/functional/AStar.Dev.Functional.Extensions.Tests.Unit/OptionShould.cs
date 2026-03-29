@@ -153,7 +153,7 @@ public class OptionShould
 
         Option<string> option = value;
 
-        option.ShouldBeOfType<Option<string>.Some>();
+        _ = option.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)option).Value.ShouldBe("test");
     }
 
@@ -164,7 +164,7 @@ public class OptionShould
 
         Option<string> option = value!;
 
-        option.ShouldBeOfType<Option<string>.None>();
+        _ = option.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class OptionShould
 
         var option = value.ToOption();
 
-        option.ShouldBeOfType<Option<string>.Some>();
+        _ = option.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)option).Value.ShouldBe("test");
     }
 
@@ -207,7 +207,7 @@ public class OptionShould
 
         var option = value!.ToOption();
 
-        option.ShouldBeOfType<Option<string>.None>();
+        _ = option.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class OptionShould
 
         var option = value.ToOption(x => x > 0);
 
-        option.ShouldBeOfType<Option<int>.Some>();
+        _ = option.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)option).Value.ShouldBe(42);
     }
 
@@ -228,7 +228,7 @@ public class OptionShould
 
         var option = value.ToOption(x => x < 0);
 
-        option.ShouldBeOfType<Option<int>.None>();
+        _ = option.ShouldBeOfType<Option<int>.None>();
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class OptionShould
 
         var option = value.ToOption();
 
-        option.ShouldBeOfType<Option<int>.Some>();
+        _ = option.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)option).Value.ShouldBe(42);
     }
 
@@ -249,7 +249,7 @@ public class OptionShould
 
         var option = value.ToOption();
 
-        option.ShouldBeOfType<Option<int>.None>();
+        _ = option.ShouldBeOfType<Option<int>.None>();
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public class OptionShould
 
         Option<string> result = option.Map(x => x.ToString());
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
@@ -270,7 +270,7 @@ public class OptionShould
 
         Option<string> result = option.Map(x => x.ToString());
 
-        result.ShouldBeOfType<Option<string>.None>();
+        _ = result.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -280,7 +280,7 @@ public class OptionShould
 
         Option<string> result = option.Bind(x => Option.Some(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
@@ -291,7 +291,7 @@ public class OptionShould
 
         Option<string> result = option.Bind(x => Option.Some(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.None>();
+        _ = result.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -301,7 +301,7 @@ public class OptionShould
 
         Option<string> result = option.Bind(_ => Option.None<string>());
 
-        result.ShouldBeOfType<Option<string>.None>();
+        _ = result.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -311,7 +311,7 @@ public class OptionShould
 
         var result = option.ToResult(() => "Error");
 
-        result.ShouldBeOfType<Result<int, string>.Ok>();
+        _ = result.ShouldBeOfType<Result<int, string>.Ok>();
         ((Result<int, string>.Ok)result).Value.ShouldBe(42);
     }
 
@@ -322,7 +322,7 @@ public class OptionShould
 
         var result = option.ToResult(() => "Error Message");
 
-        result.ShouldBeOfType<Result<int, string>.Error>();
+        _ = result.ShouldBeOfType<Result<int, string>.Error>();
         ((Result<int, string>.Error)result).Reason.ShouldBe("Error Message");
     }
 
@@ -333,7 +333,7 @@ public class OptionShould
 
         int? result = option.ToNullable();
 
-        result.ShouldNotBeNull();
+        _ = result.ShouldNotBeNull();
         result.ShouldBe(42);
     }
 
@@ -570,7 +570,7 @@ public class OptionShould
 
         Option<int> result = option.Filter(x => x > 0);
 
-        result.ShouldBeOfType<Option<int>.Some>();
+        _ = result.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)result).Value.ShouldBe(42);
     }
 
@@ -581,7 +581,7 @@ public class OptionShould
 
         Option<int> result = option.Filter(x => x < 0);
 
-        result.ShouldBeOfType<Option<int>.None>();
+        _ = result.ShouldBeOfType<Option<int>.None>();
     }
 
     [Fact]
@@ -688,7 +688,7 @@ public class OptionShould
 
         Option<string> result = await option.MapAsync(x => Task.FromResult(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
@@ -699,28 +699,28 @@ public class OptionShould
 
         Option<string> result = await option.MapAsync(x => Task.FromResult(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.None>();
+        _ = result.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
     public async Task MapAsyncWithTaskOption()
     {
-        var optionTask = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.MapAsync(x => x.ToString());
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
     [Fact]
     public async Task MapAsyncWithTaskOptionAndAsyncMapper()
     {
-        var optionTask = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.MapAsync(x => Task.FromResult(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
@@ -731,7 +731,7 @@ public class OptionShould
 
         Option<string> result = await option.BindAsync(x => Task.FromResult(Option.Some(x.ToString())));
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
@@ -742,7 +742,7 @@ public class OptionShould
 
         Option<string> result = await option.BindAsync(x => Task.FromResult(Option.Some(x.ToString())));
 
-        result.ShouldBeOfType<Option<string>.None>();
+        _ = result.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -752,7 +752,7 @@ public class OptionShould
 
         Result<int, string> result = await option.ToResultAsync(() => Task.FromResult("Error"));
 
-        result.ShouldBeOfType<Result<int, string>.Ok>();
+        _ = result.ShouldBeOfType<Result<int, string>.Ok>();
         ((Result<int, string>.Ok)result).Value.ShouldBe(42);
     }
 
@@ -763,7 +763,7 @@ public class OptionShould
 
         Result<int, string> result = await option.ToResultAsync(() => Task.FromResult("Error"));
 
-        result.ShouldBeOfType<Result<int, string>.Error>();
+        _ = result.ShouldBeOfType<Result<int, string>.Error>();
         ((Result<int, string>.Error)result).Reason.ShouldBe("Error");
     }
 
@@ -841,40 +841,40 @@ public class OptionShould
     [Fact]
     public async Task BindAsyncWithTaskOptionAndSyncBinder()
     {
-        var optionTask = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.BindAsync(x => Option.Some(x.ToString()));
 
-        result.ShouldBeOfType<Option<string>.Some>();
+        _ = result.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)result).Value.ShouldBe("42");
     }
 
     [Fact]
     public async Task ToResultAsyncWithTaskOptionAndSyncErrorFactory()
     {
-        var optionTask = Task.FromResult(Option.None<int>());
+        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
 
         Result<int, string> result = await optionTask.ToResultAsync(() => "Error");
 
-        result.ShouldBeOfType<Result<int, string>.Error>();
+        _ = result.ShouldBeOfType<Result<int, string>.Error>();
         ((Result<int, string>.Error)result).Reason.ShouldBe("Error");
     }
 
     [Fact]
     public async Task ToResultAsyncWithTaskOptionAndAsyncErrorFactory()
     {
-        var optionTask = Task.FromResult(Option.None<int>());
+        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
 
         Result<int, string> result = await optionTask.ToResultAsync(() => Task.FromResult("Error"));
 
-        result.ShouldBeOfType<Result<int, string>.Error>();
+        _ = result.ShouldBeOfType<Result<int, string>.Error>();
         ((Result<int, string>.Error)result).Reason.ShouldBe("Error");
     }
 
     [Fact]
     public async Task TapAsyncWithTaskOptionAndSyncAction()
     {
-        var optionTask         = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask         = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
         int capturedValue      = 0;
 
@@ -886,14 +886,14 @@ public class OptionShould
 
         sideEffectExecuted.ShouldBeTrue();
         capturedValue.ShouldBe(42);
-        result.ShouldBeOfType<Option<int>.Some>();
+        _ = result.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)result).Value.ShouldBe(42);
     }
 
     [Fact]
     public async Task TapAsyncWithTaskOptionAndAsyncAction()
     {
-        var optionTask         = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask         = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
         int capturedValue      = 0;
 
@@ -907,14 +907,14 @@ public class OptionShould
 
         sideEffectExecuted.ShouldBeTrue();
         capturedValue.ShouldBe(42);
-        result.ShouldBeOfType<Option<int>.Some>();
+        _ = result.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)result).Value.ShouldBe(42);
     }
 
     [Fact]
     public async Task OrElseAsyncWithTaskOptionAndSyncFallback()
     {
-        var optionTask = Task.FromResult(Option.None<int>());
+        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
 
         int result = await optionTask.OrElseAsync(-1);
 
@@ -924,7 +924,7 @@ public class OptionShould
     [Fact]
     public async Task OrElseAsyncWithTaskOptionAndAsyncFallback()
     {
-        var optionTask     = Task.FromResult(Option.None<int>());
+        Task<Option<int>> optionTask     = Task.FromResult(Option.None<int>());
         bool fallbackCalled = false;
 
         int result = await optionTask.OrElseAsync(() =>
@@ -941,7 +941,7 @@ public class OptionShould
     [Fact]
     public async Task ReturnSomeValueWithTaskOrElseAsyncWhenOptionIsSome()
     {
-        var optionTask     = Task.FromResult(Option.Some(42));
+        Task<Option<int>> optionTask     = Task.FromResult(Option.Some(42));
         bool fallbackCalled = false;
 
         int result = await optionTask.OrElseAsync(() =>
@@ -962,7 +962,7 @@ public class OptionShould
 
         var option = value.ToOption();
 
-        option.ShouldBeOfType<Option<string>.Some>();
+        _ = option.ShouldBeOfType<Option<string>.Some>();
         ((Option<string>.Some)option).Value.ShouldBe("test");
     }
 
@@ -973,7 +973,7 @@ public class OptionShould
 
         var option = value.ToOption();
 
-        option.ShouldBeOfType<Option<int>.None>();
+        _ = option.ShouldBeOfType<Option<int>.None>();
     }
 
     [Fact]
@@ -1014,6 +1014,6 @@ public class OptionShould
 
         Option<int> result = option.Filter(x => x > 0);
 
-        result.ShouldBeOfType<Option<int>.None>();
+        _ = result.ShouldBeOfType<Option<int>.None>();
     }
 }

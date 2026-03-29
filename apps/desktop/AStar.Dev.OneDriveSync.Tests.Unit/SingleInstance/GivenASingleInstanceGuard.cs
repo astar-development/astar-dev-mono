@@ -10,7 +10,7 @@ public sealed class GivenASingleInstanceGuard
         var mutexName = UniqueMutexName();
         using var sut = new SingleInstanceGuard(mutexName);
 
-        var result = sut.TryAcquire();
+        SingleInstanceResult result = sut.TryAcquire();
 
         result.ShouldBe(SingleInstanceResult.Acquired);
     }
@@ -30,7 +30,7 @@ public sealed class GivenASingleInstanceGuard
         var holderThread = new Thread(() =>
         {
             using var first = new SingleInstanceGuard(mutexName);
-            first.TryAcquire();
+            _ = first.TryAcquire();
             firstAcquired.Set();
             checkDone.Wait(); // hold the mutex until the second thread has finished checking
         });
@@ -58,11 +58,11 @@ public sealed class GivenASingleInstanceGuard
 
         using (var first = new SingleInstanceGuard(mutexName))
         {
-            first.TryAcquire();
+            _ = first.TryAcquire();
         }
 
         using var second = new SingleInstanceGuard(mutexName);
-        var result = second.TryAcquire();
+        SingleInstanceResult result = second.TryAcquire();
 
         result.ShouldBe(SingleInstanceResult.Acquired);
     }

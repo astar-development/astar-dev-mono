@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Mono-repo containing all AStar Development products: **Blazor** web apps, **astro** web apps, **Avalonia** desktop apps, and ~50 published **NuGet packages**. Solution file: `MonoRepo.slnx`.
+Mono-repo containing all AStar Development products: **Blazor** web apps, **astro** web apps, **Avalonia** desktop apps, and ~25 published **NuGet packages**. Solution file: `MonoRepo.slnx`.
 
 ## Build Commands
 
@@ -12,7 +12,7 @@ Mono-repo containing all AStar Development products: **Blazor** web apps, **astr
 dotnet restore
 
 dotnet build
-
+or
 dotnet build --configuration Release
 
 dotnet build packages/core/[PackageName]
@@ -41,8 +41,26 @@ dotnet run --project apps/web/[AppName].Blazor
 
 dotnet run --project apps/desktop/[AppName].Desktop
 
-cd apps/web/[appname]-next && npm run dev
+cd apps/web/[appname] && npm run dev
 ```
+
+## Logging
+
+Logging is NEVER an after-thought. Whether .Net or JavaScript, logging MUST be implemented from day one. Refer to the @.claude/agents/c-sharp-senior-developer.md for all .Net Projects or @.claude/agents/javascript-senior-developer.md.md for JavaScript projects for additional logging information. ALL Logging MUST be sent to Azure Application Insights unless otherwise instructed. Where applicable, use the AStar.Dev.Logging.Extensions (specifically the `LogMessage` class) to use compile-time logging templates. If a suitable template does not exist, ADD IT. Avoid `logger.Log...` wherever possible. There is currently no JavaScript equivalent but logging must still be performed.
+
+## Dependency Injection
+
+Dependency Injection is NEVER an after-thought. If the language supports it, DI MUST be implemented from the beginning.
+
+## NuGet projects
+
+The mono repo contains many NuGet projects that are deployed to both GitHub and NuGet. These include:
+
+- AStar.Dev.Functional.Extensions: Result<T>, Option<T>, Map<Async>, Bind<Async> etc to support the functional approach. ALWAYS use when practicable.
+- AStar.Dev.Logging.Extensions: Compile-time LogMessage format and many other related logging extensions. ALWAYS use when practicable.
+- AStar.Dev.Utilities: a plethora of string extensions, nullability checks and many other `utility` methods. ALWAYS use when practicable.
+
+- If the above (or the other projects) have a suitable method: USE IT. If new code is reusable: ADD IT to the relevant project and raise a GitHub issue documenting why it was created, where it was created and how to deploy the updated package to GitHub / NuGet.
 
 ## Architecture
 
@@ -87,15 +105,15 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - Published to both GitHub Packages and NuGet.org via CI
 - Symbol packages (`.snupkg`) are published alongside `.nupkg`
 - **Do not run `dotnet pack` / `dotnet nuget push` manually for releases** — use the tag workflow
-- During local development, prefer `<ProjectReference>` over `<PackageReference>` to avoid publish cycles
+- During local development, use `<ProjectReference>` instead of `<PackageReference>` to avoid publish cycles
 
 ### CI/CD Workflows
 
-| Workflow | Trigger |
-|----------|---------|
-| `dotnet-ci.yml` | Push/PR touching `.cs`, `.csproj`, `*.slnx`, MSBuild config |
-| `nuget-publish.yml` | Push of a `v*` tag |
-| `infra-deploy.yml` | Push/PR touching `infra/**` |
+| Workflow            | Trigger                                                     |
+| ------------------- | ----------------------------------------------------------- |
+| `dotnet-ci.yml`     | Push/PR touching `.cs`, `.csproj`, `*.slnx`, MSBuild config |
+| `nuget-publish.yml` | Push of a `v*` tag                                          |
+| `infra-deploy.yml`  | Push/PR touching `infra/**`                                 |
 
 ### Conventions
 
@@ -104,6 +122,7 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - **Test projects**: Named `*.Tests` or `*.IntegrationTests` — automatically set `IsPackable=false`
 - **Method signatures**: Always single-line regardless of parameter count — `public void Foo(string a, int b, CancellationToken ct = default)`. Never split parameters across lines.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
+- **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/avscrpt-code-style.md for .Net projects for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
 
 ## First-Time Setup
 
@@ -128,6 +147,9 @@ Before considering any coding task complete — including commits and PRs — al
 
 1. `dotnet build` the affected project(s) and confirm zero errors and zero warnings
 2. `dotnet test` the affected test project(s) and confirm all tests pass
+3. Request a review from the @.claude/agents/c-sharp-senior-qa-specialist.md for all .Net Projects or @.claude/agents/javascript-senior-qa-specialist.md for JavaScript projects
+4. Resolve ALL `Blocker` and `Major` issues the QA agent reports. Raise GitHub issues for all other issues so they can be addressed later.
+5. Repeat the QA loop until there are no `Blocker` or `Major` isues from the original code or any updates.
 
 Do not raise a PR or claim a task is finished until both steps pass locally.
 

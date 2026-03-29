@@ -20,7 +20,7 @@ public sealed class LoggingService : IDisposable
     public LoggingService()
     {
         LogDirectory = GetPlatformLogDirectory();
-        Directory.CreateDirectory(LogDirectory);
+        _ = Directory.CreateDirectory(LogDirectory);
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
@@ -32,19 +32,13 @@ public sealed class LoggingService : IDisposable
 
     public void SetAccountDebugEnabled(string accountId, bool enabled)
     {
-        var sw = _accountSwitches.GetOrAdd(accountId, _ => new LoggingLevelSwitch(LogEventLevel.Warning));
+        LoggingLevelSwitch sw = _accountSwitches.GetOrAdd(accountId, _ => new LoggingLevelSwitch(LogEventLevel.Warning));
         sw.MinimumLevel = enabled ? LogEventLevel.Verbose : LogEventLevel.Warning;
     }
 
-    public bool IsAccountDebugEnabled(string accountId)
-    {
-        return _accountSwitches.TryGetValue(accountId, out var sw) && sw.MinimumLevel <= LogEventLevel.Debug;
-    }
+    public bool IsAccountDebugEnabled(string accountId) => _accountSwitches.TryGetValue(accountId, out LoggingLevelSwitch? sw) && sw.MinimumLevel <= LogEventLevel.Debug;
 
-    public void Dispose()
-    {
-        Log.CloseAndFlush();
-    }
+    public void Dispose() => Log.CloseAndFlush();
 
     private static string GetPlatformLogDirectory()
     {

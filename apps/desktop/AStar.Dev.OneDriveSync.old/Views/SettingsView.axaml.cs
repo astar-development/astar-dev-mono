@@ -56,7 +56,7 @@ public partial class SettingsView : UserControl
         if(DataContext is not SettingsViewModel vm)
             return;
 
-        var account = vm.AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
+        AccountSyncSettingsViewModel? account = vm.AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
         if(account is null)
             return;
 

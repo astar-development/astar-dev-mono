@@ -17,18 +17,13 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<Account> Accounts => Set<Account>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-    {
-        // AC DB-01: all DateTimeOffset properties stored as Unix milliseconds via a single
-        // globally-registered converter — never duplicated per entity (DB-01).
-        configurationBuilder.Properties<DateTimeOffset>()
+        => _ = configurationBuilder.Properties<DateTimeOffset>()
             .HaveConversion<DateTimeOffsetToUnixMillisecondsConverter>();
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // AC DB-02: configurations applied from assembly; no inline entity setup.
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }
