@@ -21,7 +21,6 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         _ = services.AddSingleton<INavigationService, NavigationService>();
 
-        // Stub feature view models — singletons so each section retains state across navigations
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<AccountsViewModel>();
         _ = services.AddSingleton<ActivityViewModel>();

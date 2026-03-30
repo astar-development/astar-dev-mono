@@ -48,7 +48,6 @@ public partial class App : Application, IDisposable
 
         desktop.MainWindow = mainWindow;
 
-        // Cancel startup tasks cleanly when the user closes the window
         desktop.ShutdownRequested += (_, _) => _appLifetimeCts.Cancel();
 
         base.OnFrameworkInitializationCompleted();
@@ -84,12 +83,24 @@ public partial class App : Application, IDisposable
         results.Any(r => r.TaskName == DatabaseMigrationStartupTask.TaskName && !r.Succeeded);
 
     private static void NotifyDatabaseCorrupt(MainWindowViewModel viewModel) =>
-        // EH-08: recovery dialog ("Database corrupt — Start Fresh?") is deferred to the
-        // error-handling feature story; surface a banner as a placeholder.
         viewModel.SetStartupError(
             "Database is corrupt. Please restart and choose 'Start Fresh' when prompted.");
 
     private static ServiceProvider BuildServiceProvider()
+    {
+        ConfigureSerilog();
+
+        var services = new ServiceCollection();
+
+        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
+        _ = services.AddPersistence();
+        _ = services.AddShell();
+        _ = services.AddStartupTasks();
+
+        return services.BuildServiceProvider();
+    }
+
+    private static void ConfigureSerilog()
     {
         var logDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -108,15 +119,6 @@ public partial class App : Application, IDisposable
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 14)
             .CreateLogger();
-
-        var services = new ServiceCollection();
-
-        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
-        _ = services.AddPersistence();
-        _ = services.AddShell();
-        _ = services.AddStartupTasks();
-
-        return services.BuildServiceProvider();
     }
 
     private static void DisableAvaloniaDataAnnotationValidation()
