@@ -1,15 +1,14 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-// Disambiguate ILogger: both Serilog and Microsoft.Extensions.Logging declare ILogger.
-// All usages in this file intend the MEL interface.
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Startup;
 
-public sealed partial class DatabaseMigrationStartupTask(IServiceProvider services, ILogger<DatabaseMigrationStartupTask> logger) : IStartupTask
+public sealed partial class DatabaseMigrationStartupTask(IServiceProvider services, ILogger<DatabaseMigrationStartupTask> logger, IFileSystem fileSystem, ISpecialFolderResolver folderResolver) : IStartupTask
 {
     public const string TaskName = "DatabaseMigration";
 
@@ -21,8 +20,8 @@ public sealed partial class DatabaseMigrationStartupTask(IServiceProvider servic
     public async Task RunAsync(CancellationToken ct)
     {
         await using var scope       = services.CreateAsyncScope();
-        var          pathProvider = scope.ServiceProvider.GetRequiredService<IAppDataPathProvider>();
-        var                  dbContext    = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var             pathProvider = scope.ServiceProvider.GetRequiredService<IAppDataPathProvider>();
+        var             dbContext    = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         MigrateFromLegacyPathIfNeeded(pathProvider);
 
@@ -35,21 +34,21 @@ public sealed partial class DatabaseMigrationStartupTask(IServiceProvider servic
 
     private void MigrateFromLegacyPathIfNeeded(IAppDataPathProvider pathProvider)
     {
-        string newDbPath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
+        string newDbPath = fileSystem.Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
 
-        if (File.Exists(newDbPath))
+        if (fileSystem.File.Exists(newDbPath))
             return;
 
-        string legacyDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        string legacyDirectory = fileSystem.Path.Combine(
+            folderResolver.GetLocalApplicationDataPath(),
             LegacyAppDataFolder);
-        string legacyDbPath = Path.Combine(legacyDirectory, DatabaseFileName);
+        string legacyDbPath = fileSystem.Path.Combine(legacyDirectory, DatabaseFileName);
 
-        if (!File.Exists(legacyDbPath))
+        if (!fileSystem.File.Exists(legacyDbPath))
             return;
 
-        _ = Directory.CreateDirectory(pathProvider.AppDataDirectory);
-        File.Copy(legacyDbPath, newDbPath);
+        _ = fileSystem.Directory.CreateDirectory(pathProvider.AppDataDirectory);
+        fileSystem.File.Copy(legacyDbPath, newDbPath);
         LogLegacyDatabaseMigrated(logger, legacyDbPath, newDbPath);
     }
 
