@@ -22,7 +22,7 @@ public sealed partial class DbBackupService(
     /// <inheritdoc />
     public async Task<Result<bool, ErrorResponse>> BackupAsync(CancellationToken cancellationToken = default)
     {
-        var dataFilePath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
+        string dataFilePath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
 
         if (!File.Exists(dataFilePath))
         {
@@ -32,10 +32,10 @@ public sealed partial class DbBackupService(
                 new ErrorResponse($"Database file not found at '{dataFilePath}'. Cannot create backup."));
         }
 
-        var backupFilePath = Path.Combine(pathProvider.AppDataDirectory, BackupFileName);
+        string backupFilePath = Path.Combine(pathProvider.AppDataDirectory, BackupFileName);
 
-        await using FileStream source = File.OpenRead(dataFilePath);
-        await using FileStream destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
+        await using var source = File.OpenRead(dataFilePath);
+        await using var destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
         await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
 
         LogBackupComplete(logger, backupFilePath);

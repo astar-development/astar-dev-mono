@@ -11,18 +11,18 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
     public async Task when_microsoft_account_id_changes_then_the_synthetic_guid_is_unchanged()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        Account account = new AccountBuilder().WithMicrosoftAccountId("original-ms-id").Build();
+        var account = new AccountBuilder().WithMicrosoftAccountId("original-ms-id").Build();
         _ = context.Accounts.Add(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
-        Guid originalGuid = account.Id;
+        var originalGuid = account.Id;
 
-        Account? loaded = await context.Accounts.FindAsync(new object?[] { originalGuid }, TestContext.Current.CancellationToken);
+        var loaded = await context.Accounts.FindAsync([originalGuid], TestContext.Current.CancellationToken);
         loaded!.MicrosoftAccountId = "rotated-ms-id";
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        Account? reloaded = await context.Accounts.FindAsync(new object?[] { originalGuid }, TestContext.Current.CancellationToken);
+        var reloaded = await context.Accounts.FindAsync([originalGuid], TestContext.Current.CancellationToken);
         _ = reloaded.ShouldNotBeNull();
         reloaded.Id.ShouldBe(originalGuid);
         reloaded.MicrosoftAccountId.ShouldBe("rotated-ms-id");
@@ -32,10 +32,10 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
     public async Task when_microsoft_account_id_changes_then_linked_child_rows_remain_intact()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
         await context.CreateStubChildTableAsync("test_ms_id_child", cancellationToken: TestContext.Current.CancellationToken);
 
-        Account account = new AccountBuilder().WithMicrosoftAccountId("ms-original").Build();
+        var account = new AccountBuilder().WithMicrosoftAccountId("ms-original").Build();
         _ = context.Accounts.Add(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
@@ -43,7 +43,7 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
             (IEnumerable<object>)[Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
 
-        Account? loaded = await context.Accounts.FindAsync(new object?[] { account.Id }, TestContext.Current.CancellationToken);
+        var loaded = await context.Accounts.FindAsync([account.Id], TestContext.Current.CancellationToken);
         loaded!.MicrosoftAccountId = "ms-rotated";
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -54,16 +54,16 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
     public async Task when_two_accounts_share_the_same_microsoft_account_id_then_each_has_a_distinct_guid()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        Account firstAccount  = new AccountBuilder().WithMicrosoftAccountId("shared-ms-id").Build();
-        Account secondAccount = new AccountBuilder().WithMicrosoftAccountId("shared-ms-id").Build();
+        var firstAccount  = new AccountBuilder().WithMicrosoftAccountId("shared-ms-id").Build();
+        var secondAccount = new AccountBuilder().WithMicrosoftAccountId("shared-ms-id").Build();
         context.Accounts.AddRange(firstAccount, secondAccount);
 
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        Account? first  = await context.Accounts.FindAsync(new object?[] { firstAccount.Id  }, TestContext.Current.CancellationToken);
-        Account? second = await context.Accounts.FindAsync(new object?[] { secondAccount.Id }, TestContext.Current.CancellationToken);
+        var first  = await context.Accounts.FindAsync([firstAccount.Id], TestContext.Current.CancellationToken);
+        var second = await context.Accounts.FindAsync([secondAccount.Id], TestContext.Current.CancellationToken);
         _ = first.ShouldNotBeNull();
         _ = second.ShouldNotBeNull();
         first.Id.ShouldNotBe(second.Id);

@@ -17,14 +17,14 @@ namespace TestNamespace
     public readonly partial record struct MyId { }
 }";
 
-        CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
+        var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
+        var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Int32 Id)");
@@ -40,14 +40,14 @@ namespace TestNamespace
     public readonly partial record struct MyId { }
 }";
 
-        CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
+        var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
+        var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.String Id)");
@@ -63,14 +63,14 @@ namespace TestNamespace
     public readonly partial record struct MyId { }
 }";
 
-        CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
+        var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
+        var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id)");
@@ -86,14 +86,14 @@ namespace TestNamespace
     public readonly partial record struct MyId { }
 }";
 
-        CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
+        var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
+        var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
         generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id);");
@@ -109,14 +109,14 @@ namespace TestNamespace
     public partial struct MyId { }
 }";
 
-        CSharpCompilation compilation = CompilationHelpers.CreateCompilation(input);
+        var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
+        var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        GeneratedSourceResult generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeTrue();
     }
 }

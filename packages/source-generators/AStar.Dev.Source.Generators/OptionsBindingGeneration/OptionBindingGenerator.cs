@@ -19,7 +19,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValueProvider<ImmutableArray<OptionsTypeInfo?>> optionsTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+        var optionsTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
             AttrFqn,
             static (node, _) => node is ClassDeclarationSyntax or StructDeclarationSyntax,
             static (ctx, _) => GetOptionsTypeInfo(ctx)
@@ -28,7 +28,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(optionsTypes, static (spc, types) =>
         {
             var validTypes = new List<OptionsTypeInfo>();
-            foreach(OptionsTypeInfo? info in types)
+            foreach(var info in types)
             {
                 if(info == null)
                     continue;
@@ -66,7 +66,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         string? ns = typeSymbol.ContainingNamespace?.ToDisplayString();
         string fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
         string? sectionName = null;
-        AttributeData? attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
+        var attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
         if(attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
         {
             sectionName = s;
@@ -77,7 +77,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             var attrSyntax = ctx.Attributes[0].ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
             if(attrSyntax?.ArgumentList?.Arguments.Count > 0)
             {
-                ExpressionSyntax expr = attrSyntax.ArgumentList.Arguments[0].Expression;
+                var expr = attrSyntax.ArgumentList.Arguments[0].Expression;
                 if(expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
             }
         }
@@ -89,7 +89,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 
     private static OptionsTypeInfo? ExtractSectionNameFromMembers(GeneratorAttributeSyntaxContext ctx, INamedTypeSymbol typeSymbol, string? sectionName, string typeName, string fullTypeName)
     {
-        foreach(ISymbol member in typeSymbol.GetMembers())
+        foreach(var member in typeSymbol.GetMembers())
         {
             if(member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
                field.ConstantValue is not string val || string.IsNullOrWhiteSpace(val))

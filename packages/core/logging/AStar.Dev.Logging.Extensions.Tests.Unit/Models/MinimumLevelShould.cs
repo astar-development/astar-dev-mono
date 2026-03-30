@@ -51,7 +51,7 @@ public class MinimumLevelShould
     {
         var minimumLevel = new MinimumLevel();
 
-        Override overrideInstance = minimumLevel.Override;
+        var overrideInstance = minimumLevel.Override;
 
         Assert.Equal(string.Empty, overrideInstance.MicrosoftAspNetCore);
         Assert.Equal(string.Empty, overrideInstance.SystemNetHttp);

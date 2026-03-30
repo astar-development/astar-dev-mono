@@ -11,10 +11,10 @@ public class HealthCheckExtensionsShould
     [Fact]
     public void ConfigureTheHealthCheckEndpoints()
     {
-        WebApplicationBuilder webApplication = WebApplication.CreateBuilder();
+        var webApplication = WebApplication.CreateBuilder();
         webApplication.Services.AddHealthChecks();
 
-        WebApplication sut = webApplication.Build().ConfigureHealthCheckEndpoints();
+        var sut = webApplication.Build().ConfigureHealthCheckEndpoints();
 
         sut.Services.GetServices<HealthCheckService>().Count().ShouldBe(1);
     }

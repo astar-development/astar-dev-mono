@@ -21,9 +21,9 @@ public static class PathOperationExtensions
     /// <exception cref="ArgumentException">Thrown when any segment is rooted.</exception>
     public static string CombinePath(this string basePath, params string[] segments)
     {
-        var combined = basePath;
+        string combined = basePath;
 
-        foreach(var segment in segments.Where(s => s is not null))
+        foreach(string? segment in segments.Where(s => s is not null))
         {
             if(Path.IsPathRooted(segment))
             {

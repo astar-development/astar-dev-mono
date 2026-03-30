@@ -32,7 +32,7 @@ public static class EncryptionExtensions
         aesAlg.IV  = Encoding.UTF8.GetBytes(iv  ?? Iv);
 
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
-        ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+        var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
 #pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
         using var msEncrypt = new MemoryStream();
@@ -66,7 +66,7 @@ public static class EncryptionExtensions
         aesAlg.Key = Encoding.UTF8.GetBytes(key ?? Key);
         aesAlg.IV  = Encoding.UTF8.GetBytes(iv  ?? Iv);
 
-        ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+        var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
         using var msDecrypt = new MemoryStream(Convert.FromBase64String(encryptedText));
 

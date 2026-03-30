@@ -85,7 +85,7 @@ public class FormatterOptionsShould
     {
         var options = new FormatterOptions();
 
-        JsonWriterOptions result = options.JsonWriterOptions;
+        var result = options.JsonWriterOptions;
 
         Assert.NotNull(result);
     }

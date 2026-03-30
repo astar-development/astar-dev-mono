@@ -16,10 +16,10 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
         if(!IsValidImplementationType(impl))
             return null;
 
-        ServiceLifetime lifetime = ExtractLifetime(attr);
-        INamedTypeSymbol? asType = ExtractAsType(attr);
+        var lifetime = ExtractLifetime(attr);
+        var asType = ExtractAsType(attr);
         bool asSelf = ExtractAsSelf(attr);
-        INamedTypeSymbol? service = asType ?? InferServiceType(impl);
+        var service = asType ?? InferServiceType(impl);
         string ns = (impl.ContainingNamespace.IsGlobalNamespace ? null : impl.ContainingNamespace.ToDisplayString()) ?? string.Empty;
 
         // Only skip if no service and not alsoAsSelf
@@ -43,7 +43,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     private static INamedTypeSymbol? ExtractAsType(AttributeData attr)
     {
-        foreach(KeyValuePair<string, TypedConstant> na in attr.NamedArguments)
+        foreach(var na in attr.NamedArguments)
         {
             if(na is { Key: "As", Value.Value: INamedTypeSymbol ts })
                 return ts;
@@ -54,7 +54,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     private static bool ExtractAsSelf(AttributeData attr)
     {
-        foreach(KeyValuePair<string, TypedConstant> na in attr.NamedArguments)
+        foreach(var na in attr.NamedArguments)
         {
             if(na is { Key: "AsSelf", Value.Value: bool b })
                 return b;

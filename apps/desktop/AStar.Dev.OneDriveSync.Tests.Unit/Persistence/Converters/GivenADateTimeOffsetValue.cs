@@ -20,7 +20,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var dto = new DateTimeOffset(2024, 6, 15, 12, 0, 0, TimeSpan.FromHours(offsetHours) + TimeSpan.FromMinutes(offsetMinutes));
 
-        var result = (long)Sut.ConvertToProvider(dto)!;
+        long result = (long)Sut.ConvertToProvider(dto)!;
 
         result.ShouldBe(dto.ToUnixTimeMilliseconds());
     }
@@ -30,7 +30,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var dto = new DateTimeOffset(2024, 3, 15, 10, 30, 45, 123, TimeSpan.Zero);
 
-        var result = (long)Sut.ConvertToProvider(dto)!;
+        long result = (long)Sut.ConvertToProvider(dto)!;
 
         result.ShouldBe(dto.ToUnixTimeMilliseconds());
         (result % 1000).ShouldBe(123L);

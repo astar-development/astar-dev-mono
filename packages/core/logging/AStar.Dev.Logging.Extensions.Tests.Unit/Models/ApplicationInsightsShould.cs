@@ -22,7 +22,7 @@ public class ApplicationInsightsShould
     {
         var applicationInsights = new ApplicationInsights();
 
-        LogLevel logLevel = applicationInsights.LogLevel;
+        var logLevel = applicationInsights.LogLevel;
 
         logLevel.Default.ShouldBe(string.Empty);
         logLevel.MicrosoftAspNetCore.ShouldBe(string.Empty);

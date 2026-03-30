@@ -7,10 +7,10 @@ public sealed class GivenASingleInstanceGuard
     [Fact]
     public void when_no_instance_is_running_then_acquire_succeeds()
     {
-        var mutexName = UniqueMutexName();
+        string mutexName = UniqueMutexName();
         using var sut = new SingleInstanceGuard(mutexName);
 
-        SingleInstanceResult result = sut.TryAcquire();
+        var result = sut.TryAcquire();
 
         result.ShouldBe(SingleInstanceResult.Acquired);
     }
@@ -18,7 +18,7 @@ public sealed class GivenASingleInstanceGuard
     [Fact]
     public void when_an_instance_is_already_running_then_acquire_returns_already_running()
     {
-        var mutexName    = UniqueMutexName();
+        string mutexName    = UniqueMutexName();
         using var firstAcquired = new ManualResetEventSlim();
         using var checkDone     = new ManualResetEventSlim();
         SingleInstanceResult secondResult = default;
@@ -54,7 +54,7 @@ public sealed class GivenASingleInstanceGuard
     [Fact]
     public void when_the_first_instance_is_disposed_then_a_new_instance_can_acquire()
     {
-        var mutexName = UniqueMutexName();
+        string mutexName = UniqueMutexName();
 
         using (var first = new SingleInstanceGuard(mutexName))
         {
@@ -62,7 +62,7 @@ public sealed class GivenASingleInstanceGuard
         }
 
         using var second = new SingleInstanceGuard(mutexName);
-        SingleInstanceResult result = second.TryAcquire();
+        var result = second.TryAcquire();
 
         result.ShouldBe(SingleInstanceResult.Acquired);
     }

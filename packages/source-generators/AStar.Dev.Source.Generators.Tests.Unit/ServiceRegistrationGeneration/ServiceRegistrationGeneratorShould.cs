@@ -30,7 +30,7 @@ namespace AStar.Dev.Source.Generators.Attributes
 
     private static CSharpCompilation CreateCompilation(string input)
     {
-        PortableExecutableReference diReference = MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location);
+        var diReference = MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location);
         return CSharpCompilation.Create("TestAssembly",
             [
                 CSharpSyntaxTree.ParseText(AttributeSource),
@@ -58,12 +58,12 @@ namespace TestNamespace
     public class Foo : IFoo { }
 }
 ";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string text = generated.SourceText.ToString();
 
@@ -95,12 +95,12 @@ namespace TestNamespace
     [AutoRegisterService(ServiceLifetime.Singleton)]
     public class Foo : IFoo { }
 }";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string text = generated.SourceText.ToString();
 
@@ -132,12 +132,12 @@ namespace TestNamespace
     [AutoRegisterService(AsSelf = true)]
     public class Foo : IFoo { }
 }";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string text = generated.SourceText.ToString();
 
@@ -172,12 +172,12 @@ namespace TestNamespace
     [AutoRegisterService(As = typeof(IBar))]
     public class Foo : IFoo, IBar { }
 }";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string text = generated.SourceText.ToString();
 
@@ -208,12 +208,12 @@ namespace TestNamespace
     public class Foo { }
 }
 ";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string text = generated.SourceText.ToString();
 
@@ -252,12 +252,12 @@ namespace TestNamespace
     public class GenericFoo<T> : IFoo { }
 }
 ";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
         // All candidates are filtered out (abstract, internal, generic), so no source should be generated
         generated.Equals(default(GeneratedSourceResult)).ShouldBeTrue();
@@ -272,12 +272,12 @@ namespace TestNamespace
 
     public class Foo : IFoo { }
 }";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
         if(!generated.Equals(default(GeneratedSourceResult)))
         {
@@ -301,12 +301,12 @@ namespace TestNamespace
     { }
 }
 ";
-        CSharpCompilation compilation = CreateCompilation(input);
+        var compilation = CreateCompilation(input);
         var generator = new ServiceRegistrationGenerator();
         CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
-        GeneratorDriverRunResult result = driver.GetRunResult();
-        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
         if(!generated.Equals(default(GeneratedSourceResult)))
         {

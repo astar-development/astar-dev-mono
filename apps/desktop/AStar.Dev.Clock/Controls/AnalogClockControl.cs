@@ -42,16 +42,16 @@ public class AnalogClockControl : Control
     {
         base.Render(context);
 
-        Rect bounds = Bounds;
-        Point center = bounds.Center;
+        var bounds = Bounds;
+        var center = bounds.Center;
         double radius = Math.Min(bounds.Width, bounds.Height) * 0.45;
 
         // Theme-aware brushes
         bool isDark = ActualThemeVariant == ThemeVariant.Dark
                      || Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
-        IBrush foreground = Foreground ?? (isDark ? Brushes.White : Brushes.Black);
+        var foreground = Foreground ?? (isDark ? Brushes.White : Brushes.Black);
 
-        SolidColorBrush faceBrush = isDark ? new SolidColorBrush(Color.FromUInt32(0xFF22252A)) : new SolidColorBrush(Color.FromUInt32(0xFFFFFFFF));
+        var faceBrush = isDark ? new SolidColorBrush(Color.FromUInt32(0xFF22252A)) : new SolidColorBrush(Color.FromUInt32(0xFFFFFFFF));
         var facePen = new Pen(isDark ? new SolidColorBrush(Color.FromUInt32(0xFF444A52)) : new SolidColorBrush(Color.FromUInt32(0xFFCCCCCC)), 2);
         var tickPen = new Pen(foreground, 2);
         var minorTickPen = new Pen(foreground);
@@ -77,7 +77,7 @@ public class AnalogClockControl : Control
         double numberRadius = radius * 0.66;
         var numberTypeface = new Typeface(Typeface.Default.FontFamily, FontStyle.Normal, FontWeight.SemiBold);
         double numberSize = Math.Max(10, radius * 0.12); // scale with control size, clamp to a readable minimum
-        CultureInfo culture = CultureInfo.CurrentUICulture;
+        var culture = CultureInfo.CurrentUICulture;
         const FlowDirection flow = FlowDirection.LeftToRight;
         for (int h = 1; h <= 12; h++)
         {
@@ -99,7 +99,7 @@ public class AnalogClockControl : Control
         }
 
         // Current time
-        DateTime now = DateTime.Now;
+        var now = DateTime.Now;
         double sec = now.Second + now.Millisecond / 1000.0;
         double min = now.Minute + sec / 60.0;
         double hour = now.Hour % 12 + min / 60.0;

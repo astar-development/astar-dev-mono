@@ -6,10 +6,10 @@ internal static class SqliteAssert
 {
     public static void ChildRowCount(SqliteConnection connection, string tableName, Guid accountId, long expected)
     {
-        using SqliteCommand cmd = connection.CreateCommand();
+        using var cmd = connection.CreateCommand();
         cmd.CommandText = $"SELECT COUNT(*) FROM {tableName} WHERE account_id = $accountId";
         _ = cmd.Parameters.AddWithValue("$accountId", accountId.ToString("D").ToUpperInvariant());
-        var actual = (long?)cmd.ExecuteScalar();
+        long? actual = (long?)cmd.ExecuteScalar();
 
         actual.ShouldBe(expected);
     }

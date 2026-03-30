@@ -95,7 +95,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void UpdateActiveNavItem(NavSection activeSection)
     {
-        foreach (NavItemViewModel item in _allNavItems)
+        foreach (var item in _allNavItems)
             item.IsActive = item.Section == activeSection;
     }
 
@@ -113,7 +113,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private NavItemViewModel CreateNavItem(NavSection section, string label, string iconPath)
     {
-        var isEnabled = _featureAvailability.IsAvailable(section);
+        bool isEnabled = _featureAvailability.IsAvailable(section);
 
         return new NavItemViewModel
         {

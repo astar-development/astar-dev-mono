@@ -17,12 +17,9 @@ public static class ResultExtensions
     /// <param name="onSuccess"></param>
     /// <param name="onFailure"></param>
     /// <returns></returns>
-    public static async Task<TResult> MatchAsync<TSuccess, TError, TResult>(
-        this Task<Result<TSuccess, TError>> resultTask,
-        Func<TSuccess, Task<TResult>>       onSuccess,
-        Func<TError, Task<TResult>>         onFailure)
+    public static async Task<TResult> MatchAsync<TSuccess, TError, TResult>(this Task<Result<TSuccess, TError>> resultTask, Func<TSuccess, Task<TResult>> onSuccess, Func<TError, Task<TResult>> onFailure)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.Match(onSuccess, onFailure);
     }
@@ -36,12 +33,9 @@ public static class ResultExtensions
     /// <param name="onSuccess"></param>
     /// <param name="onFailure"></param>
     /// <returns></returns>
-    public static async Task<TResult> MatchAsync<TSuccess, TError, TResult>(
-        this Task<Result<TSuccess, TError>> resultTask,
-        Func<TSuccess, TResult>             onSuccess,
-        Func<TError, TResult>               onFailure)
+    public static async Task<TResult> MatchAsync<TSuccess, TError, TResult>(this Task<Result<TSuccess, TError>> resultTask, Func<TSuccess, TResult> onSuccess,Func<TError, TResult> onFailure)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return result.Match(onSuccess, onFailure);
     }
@@ -58,9 +52,7 @@ public static class ResultExtensions
     ///     A new <see cref="Result{TNew, TError}" /> containing the mapped success value if present,
     ///     or the original error if unsuccessful.
     /// </returns>
-    public static Result<TNew, TError> Map<TSuccess, TError, TNew>(
-        this Result<TSuccess, TError> result,
-        Func<TSuccess, TNew>          map) =>
+    public static Result<TNew, TError> Map<TSuccess, TError, TNew>(this Result<TSuccess, TError> result, Func<TSuccess, TNew> map) =>
         result.Match<Result<TNew, TError>>(
                                            ok => new Result<TNew, TError>.Ok(map(ok)),
                                            err => new Result<TNew, TError>.Error(err)
@@ -78,9 +70,7 @@ public static class ResultExtensions
     ///     A task representing a new <see cref="Result{TNew, TError}" /> containing the mapped success value if present,
     ///     or the original error if unsuccessful.
     /// </returns>
-    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(
-        this Result<TSuccess, TError> result,
-        Func<TSuccess, Task<TNew>>    mapAsync) =>
+    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(this Result<TSuccess, TError> result, Func<TSuccess, Task<TNew>> mapAsync) =>
         await result.MatchAsync<Result<TNew, TError>>(
                                                       async ok => new Result<TNew, TError>.Ok(await mapAsync(ok)),
                                                       err => new Result<TNew, TError>.Error(err)
@@ -98,9 +88,7 @@ public static class ResultExtensions
     ///     A task representing a new <see cref="Result{TNew, TError}" /> containing the mapped success value if present,
     ///     or the original error if unsuccessful.
     /// </returns>
-    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(
-        this Task<Result<TSuccess, TError>> resultTask,
-        Func<TSuccess, TNew>                map) =>
+    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(this Task<Result<TSuccess, TError>> resultTask, Func<TSuccess, TNew> map) =>
         (await resultTask).Map(map);
 
     /// <summary>
@@ -115,11 +103,9 @@ public static class ResultExtensions
     ///     A task representing a new <see cref="Result{TNew, TError}" /> containing the mapped success value if present,
     ///     or the original error if unsuccessful.
     /// </returns>
-    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(
-        this Task<Result<TSuccess, TError>> resultTask,
-        Func<TSuccess, Task<TNew>>          mapAsync)
+    public static async Task<Result<TNew, TError>> MapAsync<TSuccess, TError, TNew>(this Task<Result<TSuccess, TError>> resultTask, Func<TSuccess, Task<TNew>> mapAsync)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.MapAsync(mapAsync);
     }
@@ -136,13 +122,11 @@ public static class ResultExtensions
     ///     A new <see cref="Result{TSuccess, TNewError}" /> containing the original success value if present,
     ///     or the mapped error if unsuccessful.
     /// </returns>
-    public static Result<TSuccess, TNewError> MapFailure<TSuccess, TError, TNewError>(
-        this Result<TSuccess, TError> result,
-        Func<TError, TNewError>       mapError) =>
-        result.Match<Result<TSuccess, TNewError>>(
-                                                  ok => new Result<TSuccess, TNewError>.Ok(ok),
-                                                  err => new Result<TSuccess, TNewError>.Error(mapError(err))
-                                                 );
+    public static Result<TSuccess, TNewError> MapFailure<TSuccess, TError, TNewError>(this Result<TSuccess, TError> result, Func<TError, TNewError> mapError)
+        => result.Match<Result<TSuccess, TNewError>>(
+                                                        ok => new Result<TSuccess, TNewError>.Ok(ok),
+                                                        err => new Result<TSuccess, TNewError>.Error(mapError(err))
+                                                    );
 
     /// <summary>
     ///     Asynchronously transforms the error value of a <see cref="Result{TSuccess, TError}" /> using the specified mapping function.
@@ -156,13 +140,11 @@ public static class ResultExtensions
     ///     A task representing a new <see cref="Result{TSuccess, TNewError}" /> containing the original success value if present,
     ///     or the mapped error if unsuccessful.
     /// </returns>
-    public static async Task<Result<TSuccess, TNewError>> MapFailureAsync<TSuccess, TError, TNewError>(
-        this Result<TSuccess, TError> result,
-        Func<TError, Task<TNewError>> mapErrorAsync) =>
-        await result.MatchAsync<Result<TSuccess, TNewError>>(
-                                                             ok => new Result<TSuccess, TNewError>.Ok(ok),
-                                                             async err => new Result<TSuccess, TNewError>.Error(await mapErrorAsync(err))
-                                                            );
+    public static async Task<Result<TSuccess, TNewError>> MapFailureAsync<TSuccess, TError, TNewError>(this Result<TSuccess, TError> result, Func<TError, Task<TNewError>> mapErrorAsync)
+        => await result.MatchAsync<Result<TSuccess, TNewError>>(
+                                                                    ok => new Result<TSuccess, TNewError>.Ok(ok),
+                                                                    async err => new Result<TSuccess, TNewError>.Error(await mapErrorAsync(err))
+                                                               );
 
     /// <summary>
     ///     Asynchronously transforms the error value of a <see cref="Result{TSuccess, TError}" /> using the specified mapping function.
@@ -197,7 +179,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>> resultTask,
         Func<TError, Task<TNewError>>       mapErrorAsync)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.MapFailureAsync(mapErrorAsync);
     }
@@ -275,7 +257,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>>        resultTask,
         Func<TSuccess, Task<Result<TNew, TError>>> bindAsync)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.BindAsync(bindAsync);
     }
@@ -364,7 +346,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>> resultTask,
         Func<TSuccess, Task>                actionAsync)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.TapAsync(actionAsync);
     }
@@ -384,7 +366,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>> resultTask,
         Action<TSuccess>                    action)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return result.Tap(action);
     }
@@ -427,7 +409,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>> resultTask,
         Action<TError>                      action)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return result.TapError(action);
     }
@@ -447,7 +429,7 @@ public static class ResultExtensions
         this Task<Result<TSuccess, TError>> resultTask,
         Func<TError, Task>                  actionAsync)
     {
-        Result<TSuccess, TError> result = await resultTask;
+        var result = await resultTask;
 
         return await result.TapErrorAsync(actionAsync);
     }

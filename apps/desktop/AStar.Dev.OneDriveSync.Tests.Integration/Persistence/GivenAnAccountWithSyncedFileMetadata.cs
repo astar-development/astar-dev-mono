@@ -10,9 +10,9 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
     public async Task when_the_account_is_deleted_then_all_synced_file_metadata_rows_are_removed()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        Account account = new AccountBuilder().Build();
+        var account = new AccountBuilder().Build();
         _ = context.Accounts.Add(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -23,7 +23,7 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         _ = context.Accounts.Remove(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var remainingRows = context.SyncedFileMetadata
+        int remainingRows = context.SyncedFileMetadata
             .Where(m => m.AccountId == account.Id)
             .Count();
 
@@ -34,10 +34,10 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
     public async Task when_one_of_many_accounts_is_deleted_then_only_its_metadata_rows_are_removed()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        Account keptAccount    = new AccountBuilder().Build();
-        Account deletedAccount = new AccountBuilder().Build();
+        var keptAccount    = new AccountBuilder().Build();
+        var deletedAccount = new AccountBuilder().Build();
         context.Accounts.AddRange(keptAccount, deletedAccount);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -63,16 +63,16 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
     public async Task when_am12_flag_is_disabled_then_existing_metadata_rows_are_retained()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
-        Account account = new AccountBuilder().Build();
+        var account = new AccountBuilder().Build();
         _ = context.Accounts.Add(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         context.SyncedFileMetadata.Add(BuildMetadataRow(account.Id, "important/file.docx"));
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var rowCount = context.SyncedFileMetadata
+        int rowCount = context.SyncedFileMetadata
             .Where(m => m.AccountId == account.Id)
             .Count();
 

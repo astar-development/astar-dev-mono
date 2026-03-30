@@ -9,7 +9,7 @@ namespace AStar.Dev.Api.HealthChecks;
 /// </summary>
 public static class HealthCheckExtensions
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
                                                                           {
                                                                               WriteIndented          = true,
                                                                               DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -58,7 +58,7 @@ public static class HealthCheckExtensions
     {
         httpContext.Response.ContentType = "application/json; charset=utf-8";
 
-        IEnumerable<HealthStatusResponse> dependencyHealthChecks = healthReport.Entries.Select(static entry => new HealthStatusResponse
+        var dependencyHealthChecks = healthReport.Entries.Select(static entry => new HealthStatusResponse
                                                                                  {
                                                                                      Name        = entry.Key,
                                                                                      Description = entry.Value.Description,
@@ -76,7 +76,7 @@ public static class HealthCheckExtensions
                                       DependencyHealthChecks                = dependencyHealthChecks
                                   };
 
-        string responseString = JsonSerializer.Serialize(healthCheckResponse, JsonSerializerOptions);
+        string responseString = JsonSerializer.Serialize(healthCheckResponse, _jsonSerializerOptions);
 
         return httpContext.Response.WriteAsync(responseString);
     }
