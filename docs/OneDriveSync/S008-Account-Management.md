@@ -2,7 +2,7 @@
 
 **Phase:** MVP  
 **Area:** Features/AccountManagement  
-**Spec refs:** AM-01 to AM-11, Section 7 (Accounts nav item)
+**Spec refs:** AM-01 to AM-15, Section 7 (Accounts nav item)
 
 ---
 
@@ -47,7 +47,7 @@ So that I can manage which accounts are synced and where their files are stored 
 
 ### File Metadata Flag (AM-12–AM-15)
 - [ ] "Store file metadata in database" toggle: default OFF, Power User only, hidden from Casual users (AM-12)
-- [ ] When flag is ON, after each sync run the app writes one `SyncedFileMetadata` row per synced file (name, relative path, size, SHA-256 checksum, last-modified UTC, created UTC) (AM-13)
+- [ ] When flag is ON, after each sync run the app writes one `SyncedFileMetadata` row per synced file (OneDrive item ID, relative path, file name, size, SHA-256 checksum, last-modified UTC, created UTC) (AM-13)
 - [ ] When flag is enabled on an account with an existing sync, an immediate backfill is triggered; backfill progress is displayed in the account settings panel (AM-14)
 - [ ] When flag is disabled, existing `SyncedFileMetadata` rows are retained indefinitely — no automatic deletion (AM-15)
 
