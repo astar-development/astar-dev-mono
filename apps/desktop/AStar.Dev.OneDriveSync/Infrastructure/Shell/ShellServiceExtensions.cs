@@ -17,6 +17,7 @@ internal static class ShellServiceExtensions
     {
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
+        featureAvailability.Freeze();
 
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         _ = services.AddSingleton<INavigationService, NavigationService>();
