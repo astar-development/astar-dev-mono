@@ -36,12 +36,38 @@ public sealed class GivenAFeatureAvailabilityService
     }
 
     [Fact]
-    public void when_a_section_is_registered_twice_then_it_is_still_available()
+    public void when_a_section_is_registered_twice_then_it_is_availabl_and_no_error_is_thrown()
     {
         var sut = new FeatureAvailabilityService();
         sut.Register(NavSection.Dashboard);
-        sut.Register(NavSection.Dashboard);
 
-        sut.IsAvailable(NavSection.Dashboard).ShouldBeTrue();
+        Action act = () => sut.Register(NavSection.Dashboard);
+
+        sut.IsAvailable(NavSection.Dashboard);
+        act.ShouldNotThrow();
+    }
+
+    [Theory]
+    [InlineData(NavSection.Dashboard)]
+    [InlineData(NavSection.Accounts)]
+    public void when_freeze_is_called_then_registered_sections_remain_available(NavSection section)
+    {
+        var sut = new FeatureAvailabilityService();
+        sut.Register(section);
+
+        sut.Freeze();
+
+        sut.IsAvailable(section).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_register_is_called_after_freeze_then_throws_invalid_operation_exception()
+    {
+        var sut = new FeatureAvailabilityService();
+        sut.Freeze();
+
+        Action act = () => sut.Register(NavSection.Dashboard);
+
+        act.ShouldThrow<InvalidOperationException>();
     }
 }
