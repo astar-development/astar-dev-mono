@@ -124,23 +124,8 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - **Comments**: Never add comments that restate what the code already says — in any file type (`.cs`, `.csproj`, `.axaml`, config files, etc.). Only write a comment when the *reason* behind a decision is not derivable from the code itself.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
 - **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/javascript-code-style.md for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
-
-## First-Time Setup
-
-GitHub Packages authentication (one-time, writes to `~/.nuget/NuGet/NuGet.Config`):
-
-```bash
-dotnet nuget add source \
-  --username YOUR_GITHUB_USERNAME \
-  --password YOUR_PAT_TOKEN \
-  --store-password-in-clear-text \
-  --name github \
-  "https://nuget.pkg.github.com/astar.development/index.json"
-```
-
-A PAT with `read:packages` scope is required. If `dotnet restore` fails with 401, the PAT has expired — re-run this command with a fresh token.
-
-See @README.md for project overview and @package.json for available npm commands.
+- **XML Comments**: include for public methods / properties
+    - Classes that implement an interface should rely on interface documentation, not class-level docs. Use `<inheritdoc />` where supported.
 
 ## Before Starting Any Task
 
