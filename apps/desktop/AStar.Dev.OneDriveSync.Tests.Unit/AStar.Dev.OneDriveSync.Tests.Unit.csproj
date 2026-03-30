@@ -9,7 +9,6 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <PackageId>AStar.Dev.OneDriveSync.Tests.Unit</PackageId>
   </PropertyGroup>

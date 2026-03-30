@@ -12,7 +12,6 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <NoWarn>$(NoWarn);EF1002</NoWarn>
-    <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <PackageId>AStar.Dev.OneDriveSync.Tests.Integration</PackageId>
   </PropertyGroup>
@@ -21,7 +20,9 @@
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="JetBrains.Annotations" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp">
