@@ -107,3 +107,9 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Use Shouldly for more readable and expressive assertions in tests.
 - Use NSubstitute for mocking dependencies in tests. Avoid mocking when possible; prefer using real instances or test doubles.
 - Never add XML documentation or comments to test classes or test methods.
+
+
+## Utilities
+
+- The AStar.Dev.Utilities project has a plethora of helpers. Use them when suitable.
+    - e.g.: rather than `Path.Combine("Directory1", "Directory2", "Directory3")` use: `"Directory1".CombinePaths("Directory2", "Directory3")` - it will not silently drop parameters, unlike Path.Combine.

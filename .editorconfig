@@ -223,7 +223,8 @@ dotnet_naming_symbols.async_method_symbols.applicable_kinds        = method
 dotnet_naming_symbols.async_method_symbols.required_modifiers      = async
 
 dotnet_naming_style.end_async_style.required_suffix               = Async
-dotnet_naming_style.end_async_style.capitalization                 = pascal_case
+dotnet_naming_style.end_async_style.capitalization                = pascal_case
+dotnet_diagnostic.IDE0011.severity                                = when_multiline
 
 
 # ── Razor / Blazor ────────────────────────────────────────────────────────────
