@@ -15,24 +15,24 @@ So that all subsequent stories have a compilable, standards-compliant foundation
 
 ## Acceptance Criteria
 
-- [x] `apps/desktop/AStar.Dev.OneDriveSync/` — Avalonia desktop app project exists and builds
-- [x] `packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/` — class library exists and builds
-- [x] `packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/` — class library exists and builds
-- [x] `packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/` — class library exists and builds
-- [x] Corresponding unit test projects exist alongside each package:
+- [ ] `apps/desktop/AStar.Dev.OneDriveSync/` — Avalonia desktop app project exists and builds
+- [ ] `packages/core/astar-dev-sync-engine/AStar.Dev.Sync.Engine/` — class library exists and builds
+- [ ] `packages/core/astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/` — class library exists and builds
+- [ ] `packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/` — class library exists and builds
+- [ ] Corresponding unit test projects exist alongside each package:
     - `AStar.Dev.Sync.Engine.Tests.Unit`
     - `AStar.Dev.Conflict.Resolution.Tests.Unit`
     - `AStar.Dev.OneDrive.Client.Tests.Unit`
-- [x] All projects inherit from `Directory.Build.props` (no duplicate `TargetFramework`, `Nullable`, `TreatWarningsAsErrors`)
-- [x] All package `.csproj` files include `Description`, `PackageTags`, and `PackageLicenseExpression` (required by `Directory.Build.targets` validation)
-- [x] All projects are added to `MonoRepo.slnx`
-- [x] Desktop app references `AStar.Dev.Sync.Engine`, `AStar.Dev.Conflict.Resolution`, and `AStar.Dev.OneDrive.Client` via `<ProjectReference>`
-- [x] `AStar.Dev.Sync.Engine` references `AStar.Dev.OneDrive.Client` — no other cross-package references
-- [x] `AStar.Dev.OneDrive.Client` references `AStar.Dev.Sync.Engine` — **not permitted** (would be cyclic); dependency direction enforced
-- [x] `dotnet build` from repo root produces zero errors and zero warnings
-- [x] `dotnet test` from repo root shows all (empty) test projects discovered with 0 failures
-- [x] Feature-slice folder structure scaffolded as per spec section 9 (empty folders/placeholder files acceptable at this stage)
-- [x] `NF-13`: No "group by type" top-level folders (`ViewModels/`, `Services/`, `Models/`) — features live under `Features/`, infrastructure under `Infrastructure/`
+- [ ] All projects inherit from `Directory.Build.props` (no duplicate `TargetFramework`, `Nullable`, `TreatWarningsAsErrors`)
+- [ ] All package `.csproj` files include `Description`, `PackageTags`, and `PackageLicenseExpression` (required by `Directory.Build.targets` validation)
+- [ ] All projects are added to `MonoRepo.slnx`
+- [ ] Desktop app references `AStar.Dev.Sync.Engine`, `AStar.Dev.Conflict.Resolution`, and `AStar.Dev.OneDrive.Client` via `<ProjectReference>`
+- [ ] `AStar.Dev.Sync.Engine` references `AStar.Dev.OneDrive.Client` — no other cross-package references
+- [ ] `AStar.Dev.OneDrive.Client` references `AStar.Dev.Sync.Engine` — **not permitted** (would be cyclic); dependency direction enforced
+- [ ] `dotnet build` from repo root produces zero errors and zero warnings
+- [ ] `dotnet test` from repo root shows all (empty) test projects discovered with 0 failures
+- [ ] Feature-slice folder structure scaffolded as per spec section 9 (empty folders/placeholder files acceptable at this stage)
+- [ ] `NF-13`: No "group by type" top-level folders (`ViewModels/`, `Services/`, `Models/`) — features live under `Features/`, infrastructure under `Infrastructure/`
 
 ---
 

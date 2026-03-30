@@ -11,13 +11,13 @@
 | #    | Story                                                                                          | Dependencies                       | Spec Refs                                  | Completed |
 | ---- | ---------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------ | --------- |
 | S001 | [Project Scaffolding & Solution Structure](S001-Project-Scaffolding-And-Solution-Structure.md) | None                               | Section 9                                  | ✅        |
-| S002 | [Database Foundation (SQLite / EF Core / Migrations)](S002-Database-Foundation.md)             | S001                               | Section 8, DB-01–03, EH-07–08              |           |
+| S002 | [Database Foundation (SQLite / EF Core / Migrations)](S002-Database-Foundation.md)             | S001                               | Section 8, DB-01–07, AM-12–15, EH-07–08, NF-17 |           |
 | S003 | [Navigation Shell & Application Lifecycle](S003-Navigation-Shell-And-App-Lifecycle.md)         | S001, S002                         | Section 7, AL-01–02, NF-15                 |           |
 | S004 | [Theming (Light / Dark / Auto)](S004-Theming.md)                                               | S001, S002, S003                   | TH-01–06                                   |           |
 | S005 | [Localisation Foundation](S005-Localisation-Foundation.md)                                     | S001, S002, S003                   | LO-01–07                                   |           |
 | S006 | [Onboarding & Help](S006-Onboarding-And-Help.md)                                               | S001, S002, S003, S005             | OH-01–06, Section 5                        |           |
 | S007 | [Authentication & Token Management](S007-Authentication-And-Token-Management.md)               | S001, S002                         | AU-01–05, NF-06                            |           |
-| S008 | [Account Management](S008-Account-Management.md)                                               | S001, S002, S003, S005, S006, S007 | AM-01–11                                   |           |
+| S008 | [Account Management](S008-Account-Management.md)                                               | S001, S002, S003, S005, S006, S007 | AM-01–15                                   |           |
 | S009 | [OneDrive Client Package](S009-OneDrive-Client-Package.md)                                     | S001, S007                         | Section 9, SE-09, SE-10, SE-12, AM-03      |           |
 | S010 | [Sync Engine Core](S010-Sync-Engine-Core.md)                                                   | S001, S002, S007, S009             | SE-01–15, EH-01–08, NF-01–05               |           |
 | S011 | [Conflict Resolution](S011-Conflict-Resolution.md)                                             | S001, S002, S003, S005, S010       | CR-01–08, NF-04–05                         |           |
@@ -94,7 +94,7 @@ S010 is the highest-risk story given its scope — if you want to de-risk early,
 | Section                     | Requirements        | Story                    |
 | --------------------------- | ------------------- | ------------------------ |
 | 6.1 Onboarding & Help       | OH-01–06            | S006                     |
-| 6.2 Account Management      | AM-01–11            | S008                     |
+| 6.2 Account Management      | AM-01–15            | S008 (AM-12–15 schema in S002) |
 | 6.3 Sync Engine             | SE-01–15 (MVP)      | S010, S012               |
 | 6.3 Sync Engine             | SE-16 (Post-MVP)    | S018                     |
 | 6.4 Conflict Resolution     | CR-01–08            | S011                     |
@@ -108,6 +108,6 @@ S010 is the highest-risk story given its scope — if you want to de-risk early,
 | 6.11 Localisation           | LO-01–07 (MVP)      | S005                     |
 | 6.11 Localisation           | LO-08 (Post-MVP)    | S020                     |
 | 6.12 Logging                | LG-01–07 (MVP)      | S014                     |
-| Section 8 Data Architecture | DB-01–03            | S002                     |
+| Section 8 Data Architecture | DB-01–07, NF-17     | S002                     |
 | Navigation Shell            | Section 7           | S003                     |
 | OneDrive Client             | Section 9           | S009                     |

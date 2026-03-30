@@ -2,7 +2,7 @@
 
 **Phase:** MVP
 **Area:** Foundation
-**Spec refs:** Section 8 (Data Architecture), DB-01, DB-02, DB-03, DB-04, DB-05, DB-07, EH-07, EH-08, NF-17
+**Spec refs:** Section 8 (Data Architecture), AM-12, AM-13, AM-14, AM-15, DB-01, DB-02, DB-03, DB-04, DB-05, DB-06, DB-07, EH-07, EH-08, NF-17
 
 ---
 
@@ -43,6 +43,22 @@ So that all features have a reliable, schema-versioned persistence layer from th
 - [ ] All `DateTimeOffset` properties stored as Unix milliseconds (`long`) via EF Core value converters
 - [ ] Value converter implemented once and reused — not duplicated per entity
 
+### File Metadata Table (AM-12–AM-15, DB-06)
+
+- [ ] `SyncedFileMetadata` entity defined with the following columns:
+    - `Id` — `long` (auto-increment PK)
+    - `AccountId` — `Guid` (FK → `Account.Id`; cascade delete)
+    - `RemoteItemId` — `string` (OneDrive item ID)
+    - `RelativePath` — `string` (path relative to the account's local sync root)
+    - `FileName` — `string`
+    - `FileSizeBytes` — `long`
+    - `Sha256Checksum` — `string` (hex-encoded)
+    - `LastModifiedUtc` — `long` (Unix milliseconds — consistent with DB-01)
+    - `CreatedUtc` — `long` (Unix milliseconds)
+- [ ] `IEntityTypeConfiguration<SyncedFileMetadata>` in `Infrastructure/Persistence/Configurations/`
+- [ ] FK cascade delete configured: deleting an `Account` removes all `SyncedFileMetadata` rows for that account (DB-06)
+- [ ] When the per-account AM-12 flag is disabled, existing `SyncedFileMetadata` rows are **retained** — no automatic deletion (DB-06)
+
 ### Pre-Sync Backup (EH-07)
 
 - [ ] `IDbBackupService` interface defined; implementation copies `file-data.db` to `file-data.db.bak` before any sync mutation begins
@@ -56,16 +72,18 @@ So that all features have a reliable, schema-versioned persistence layer from th
 ### Data Integrity Tests
 
 - [ ] **Integration test**: account deletion removes all rows referencing that account across every table; no orphaned rows remain
+- [ ] **Integration test**: account deletion removes all `SyncedFileMetadata` rows for that account (cascade delete)
 - [ ] **Integration test**: inserting a row into any non-Account table with a real email/name instead of a synthetic `Guid` FK fails at the schema level
 - [ ] **Integration test**: the synthetic account `Guid` FK is independent of any Microsoft account detail (changing `MicrosoftAccountId` does not affect FK relationships)
 - [ ] **Unit test**: `DateTimeOffset` round-trip via value converter preserves UTC offset
+- [ ] **Unit test**: file metadata is only written to `SyncedFileMetadata` when the per-account AM-12 flag is ON
 - [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
 
 ---
 
 ## Technical Notes
 
-- `IAppDataPathProvider` returns `~/.local/share/AStar.Dev.OneDriveSync/` on Linux; Windows/macOS paths handled for future-proofing but not tested in MVP
+- `IAppDataPathProvider` returns `~/.local/share/astar-dev/` on Linux; `%LOCALAPPDATA%\astar-dev\` on Windows; `~/Library/Application Support/astar-dev/` on macOS — the `astar-dev/` directory is shared across all AStar.Dev applications (DB-04)
 - EF Core `UseSnakeCaseNamingConvention()` is optional but must be consistent — choose and document in code
 - Logging: DB migration success/failure logged at `Information`/`Error` respectively (NF-00)
 - `Result<T>` from `AStar.Dev.Functional.Extensions` used in `IDbBackupService` return type (NF-16)

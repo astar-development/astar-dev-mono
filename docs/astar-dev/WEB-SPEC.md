@@ -897,8 +897,8 @@ The entire existing codebase is replaced. Key removals:
 - [ ] **What is the custom domain?** Needed for sitemap, OG tags, and `SITE_URL` configuration. — Owner: stakeholder
 - [ ] **Which specific NuGet packages should be in the curated list and how should they be categorised?** A first draft of `packages.json` is needed before Phase 4. — Owner: stakeholder
 - [ ] **What SendGrid sender identity / from-address should be used?** SendGrid requires a verified sender. — Owner: stakeholder (after creating SendGrid account)
-- [x] **Are the existing logo assets (`astar.png`, `metal-logo.png`, `polished-logo.png`) final, or should new assets be created?** — Resolved: existing assets are fine for launch; new branding is out of budget.
-- [x] **What is the Azure Web App plan tier?** — Resolved: B1 tier. Supports Node.js SSR, "Always On" available but currently off.
+- [ ] **Are the existing logo assets (`astar.png`, `metal-logo.png`, `polished-logo.png`) final, or should new assets be created?** — Resolved: existing assets are fine for launch; new branding is out of budget.
+- [ ] **What is the Azure Web App plan tier?** — Resolved: B1 tier. Supports Node.js SSR, "Always On" available but currently off.
 - [ ] **Should the GitHub Actions workflow be a new file or replace the existing `azure-deploy.yml` referenced in the README?** — Owner: stakeholder + developer
 
 ---
