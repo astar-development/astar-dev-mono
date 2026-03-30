@@ -19,6 +19,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     /// <summary>File metadata for accounts with AM-12 enabled.</summary>
     public DbSet<SyncedFileMetadata> SyncedFileMetadata => Set<SyncedFileMetadata>();
 
+    /// <summary>Single-row application settings (theme, locale, user type).</summary>
+    public DbSet<AppSettings> AppSettings => Set<AppSettings>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         => _ = configurationBuilder.Properties<DateTimeOffset>()
             .HaveConversion<DateTimeOffsetToUnixMillisecondsConverter>();

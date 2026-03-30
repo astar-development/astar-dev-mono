@@ -1,0 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Configurations;
+
+internal sealed class AppSettingsConfiguration : IEntityTypeConfiguration<AppSettings>
+{
+    public void Configure(EntityTypeBuilder<AppSettings> builder)
+    {
+        _ = builder.ToTable("AppSettings");
+        _ = builder.HasKey(s => s.Id);
+        _ = builder.Property(s => s.Id).ValueGeneratedNever();
+        _ = builder.Property(s => s.ThemeMode).IsRequired().HasMaxLength(20);
+    }
+}
