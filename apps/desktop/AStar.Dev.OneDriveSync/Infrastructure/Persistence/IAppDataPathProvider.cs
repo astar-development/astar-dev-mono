@@ -8,8 +8,8 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 public interface IAppDataPathProvider
 {
     /// <summary>
-    ///     Absolute path to the directory that holds the application's persistent data files.
-    ///     Example (Linux): <c>~/.local/share/AStar.Dev.OneDriveSync/</c>
+    ///     Absolute path to the shared AStar.Dev application data directory.
+    ///     Example (Linux): <c>~/.local/share/astar-dev/</c>
     /// </summary>
     string AppDataDirectory { get; }
 }

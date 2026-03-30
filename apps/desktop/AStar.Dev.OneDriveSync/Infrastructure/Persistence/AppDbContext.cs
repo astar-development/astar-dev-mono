@@ -16,6 +16,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     /// <summary>Accounts — the sole PII-bearing table.</summary>
     public DbSet<Account> Accounts => Set<Account>();
 
+    /// <summary>File metadata for accounts with AM-12 enabled.</summary>
+    public DbSet<SyncedFileMetadata> SyncedFileMetadata => Set<SyncedFileMetadata>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         => _ = configurationBuilder.Properties<DateTimeOffset>()
             .HaveConversion<DateTimeOffsetToUnixMillisecondsConverter>();
