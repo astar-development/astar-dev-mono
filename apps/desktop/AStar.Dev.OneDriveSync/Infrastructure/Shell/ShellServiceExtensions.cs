@@ -36,8 +36,6 @@ internal static class ShellServiceExtensions
         return services;
     }
 
-    // Only Dashboard is a complete feature at this stage; all other sections are registered
-    // by their owning feature story (NF-15: unimplemented features must appear disabled).
     private static void RegisterAvailableFeatures(FeatureAvailabilityService service)
         => service.Register(NavSection.Dashboard);
 }
