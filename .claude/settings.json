@@ -5,7 +5,9 @@
       "Bash(dotnet test:*)",
       "Bash(git push:*)",
       "Bash(git -C /home/jbarden/repos/astar-dev-mono push -u origin feature/s003-review-fixes)",
-      "Bash(dotnet ef:*)"
+      "Bash(dotnet ef:*)",
+      "Bash(git -C /home/jbarden/repos/astar-dev-mono branch --list)",
+      "Bash(git -C /home/jbarden/repos/astar-dev-mono checkout -b feature/frozen-set-feature-availability-90)"
     ]
   },
   "hooks": {
