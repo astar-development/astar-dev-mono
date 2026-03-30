@@ -30,11 +30,11 @@ public sealed class SyncedFileMetadata
     /// <summary>SHA-256 checksum of the file content (hex-encoded).</summary>
     public string Sha256Checksum { get; set; } = string.Empty;
 
-    /// <summary>Last-modified timestamp stored as Unix milliseconds (DB-01).</summary>
-    public long LastModifiedUtc { get; set; }
+    /// <summary>Last-modified timestamp; stored as Unix milliseconds in the database via value converter (DB-01).</summary>
+    public DateTimeOffset LastModifiedUtc { get; set; }
 
-    /// <summary>Created timestamp stored as Unix milliseconds (DB-01).</summary>
-    public long CreatedUtc { get; set; }
+    /// <summary>Created timestamp; stored as Unix milliseconds in the database via value converter (DB-01).</summary>
+    public DateTimeOffset CreatedUtc { get; set; }
 
     /// <summary>Navigation property to the owning account.</summary>
     public Account Account { get; init; } = null!;

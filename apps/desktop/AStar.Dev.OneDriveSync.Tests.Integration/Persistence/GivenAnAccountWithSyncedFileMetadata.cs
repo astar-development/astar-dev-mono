@@ -79,8 +79,36 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         rowCount.ShouldBe(1);
     }
 
-    private static SyncedFileMetadata BuildMetadataRow(Guid accountId, string relativePath) =>
-        new()
+    [Fact]
+    public async Task when_synced_file_metadata_is_persisted_then_timestamp_properties_round_trip_to_millisecond_precision()
+    {
+        var knownTimestamp = new DateTimeOffset(2025, 6, 15, 10, 30, 45, 123, TimeSpan.Zero);
+
+        await using var factory = AppDbContextFactory.Create();
+        await using var writeContext = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+
+        var account = new AccountBuilder().Build();
+        _ = writeContext.Accounts.Add(account);
+        _ = await writeContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        writeContext.SyncedFileMetadata.Add(BuildMetadataRow(account.Id, "docs/report.pdf", knownTimestamp));
+        _ = await writeContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await using var readContext = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+
+        var retrieved = readContext.SyncedFileMetadata
+            .Where(m => m.AccountId == account.Id)
+            .Single();
+
+        retrieved.LastModifiedUtc.ToUnixTimeMilliseconds().ShouldBe(knownTimestamp.ToUnixTimeMilliseconds());
+        retrieved.CreatedUtc.ToUnixTimeMilliseconds().ShouldBe(knownTimestamp.ToUnixTimeMilliseconds());
+    }
+
+    private static SyncedFileMetadata BuildMetadataRow(Guid accountId, string relativePath, DateTimeOffset? timestamp = null)
+    {
+        var ts = timestamp ?? DateTimeOffset.UtcNow;
+
+        return new()
         {
             AccountId       = accountId,
             RemoteItemId    = Guid.NewGuid().ToString(),
@@ -88,7 +116,8 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
             FileName        = Path.GetFileName(relativePath),
             FileSizeBytes   = 1024,
             Sha256Checksum  = new string('a', 64),
-            LastModifiedUtc = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-            CreatedUtc      = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            LastModifiedUtc = ts,
+            CreatedUtc      = ts
         };
+    }
 }
