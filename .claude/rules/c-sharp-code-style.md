@@ -1,8 +1,8 @@
 ---
 paths:
-  - "apps/**/*.cs"
-  - "packages/**/*.cs"
-  - "tests/**/*.cs"
+    - "apps/**/*.cs"
+    - "packages/**/*.cs"
+    - "tests/**/*.cs"
 ---
 
 Coding standards and style guidelines / preferences for C# files in this repository that AI must follow.
@@ -42,6 +42,12 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Avoid deep nesting; use early returns and guard clauses.
 - Do not use regions or #pragma to hide code; refactor instead.
 - Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
+
+## Primitive Obsession
+
+- Don't use string / GUID etc for domain concepts - create a specific type:
+    - Id should be strongly-typed - use AStar.Dev.Source.Generators / AStar.Dev.Source.Generators.Attributes to standardise the generation. The Id CAN be a string / GUID but the property MUST be strongly typed.
+    - File info / Directory info should NOT be represented as a string. Either use the Testably abstraction or create a specific type (i.e. when only 3-5 properties are required)
 
 ## Immutability
 
