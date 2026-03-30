@@ -44,4 +44,28 @@ public sealed class GivenAFeatureAvailabilityService
 
         sut.IsAvailable(NavSection.Dashboard).ShouldBeTrue();
     }
+
+    [Theory]
+    [InlineData(NavSection.Dashboard)]
+    [InlineData(NavSection.Accounts)]
+    public void when_freeze_is_called_then_registered_sections_remain_available(NavSection section)
+    {
+        var sut = new FeatureAvailabilityService();
+        sut.Register(section);
+
+        sut.Freeze();
+
+        sut.IsAvailable(section).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_register_is_called_after_freeze_then_throws_invalid_operation_exception()
+    {
+        var sut = new FeatureAvailabilityService();
+        sut.Freeze();
+
+        Action act = () => sut.Register(NavSection.Dashboard);
+
+        act.ShouldThrow<InvalidOperationException>();
+    }
 }
