@@ -52,7 +52,7 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        INamedTypeSymbol? symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl, context.CancellationToken);
+        var symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl, context.CancellationToken);
         if(symbol == null)
         {
             return;

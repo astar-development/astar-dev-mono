@@ -15,7 +15,7 @@ public static partial class StrongIdModelExtensions
         if(attr?.ConstructorArguments.Length != 1)
             return "System.Guid";
 
-        TypedConstant tc = attr.ConstructorArguments[0];
+        var tc = attr.ConstructorArguments[0];
         if(tc.Kind == TypedConstantKind.Type)
         {
             if(tc.Value is ITypeSymbol typeSymbol)

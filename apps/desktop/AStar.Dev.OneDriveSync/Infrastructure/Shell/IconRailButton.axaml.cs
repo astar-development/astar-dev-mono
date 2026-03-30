@@ -67,7 +67,7 @@ public partial class IconRailButton : UserControl
 
     private static void OnIsActiveChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
     {
-        var active = e.GetNewValue<bool>();
+        bool active = e.GetNewValue<bool>();
         sender.ActiveBar.IsVisible = active;
 
         if (active)
@@ -78,7 +78,7 @@ public partial class IconRailButton : UserControl
 
     private static void OnIconPathChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
     {
-        var path = e.GetNewValue<string>();
+        string path = e.GetNewValue<string>();
         sender.Icon.Data = string.IsNullOrEmpty(path) ? null : Geometry.Parse(path);
     }
 

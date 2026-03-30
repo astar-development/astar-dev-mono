@@ -9,7 +9,7 @@ public class AStarEventIdsShould
         const int    expectedId   = 1000;
         const string expectedName = "Page view";
 
-        EventId eventId = AStarEventIds.PageView;
+        var eventId = AStarEventIds.PageView;
 
         eventId.Id.ShouldBe(expectedId);
         eventId.Name.ShouldBe(expectedName);

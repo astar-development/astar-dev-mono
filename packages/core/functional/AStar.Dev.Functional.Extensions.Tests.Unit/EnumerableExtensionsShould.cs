@@ -7,7 +7,7 @@ public class EnumerableExtensionsShould
     {
         var list = new List<string> { "apple", "banana", "cherry" };
 
-        Option<string> result = list.FirstOrNone(s => s.StartsWith('b'));
+        var result = list.FirstOrNone(s => s.StartsWith('b'));
 
         _ = result.ShouldBeOfType<Option<string>.Some>();
         var some = result as Option<string>.Some;
@@ -19,7 +19,7 @@ public class EnumerableExtensionsShould
     {
         var list = new List<int> { 1, 2, 3 };
 
-        Option<int> result = list.FirstOrNone(n => n > 10);
+        var result = list.FirstOrNone(n => n > 10);
 
         _ = result.ShouldBeOfType<Option<int>.None>();
     }
@@ -29,7 +29,7 @@ public class EnumerableExtensionsShould
     {
         var list = new List<int>();
 
-        Option<int> result = list.FirstOrNone(n => n == 0);
+        var result = list.FirstOrNone(n => n == 0);
 
         _ = result.ShouldBeOfType<Option<int>.None>();
     }
@@ -39,9 +39,9 @@ public class EnumerableExtensionsShould
     {
         var list = new List<int> { 2, 4, 6 };
 
-        Option<int> result = list.FirstOrNone(n => n % 2 == 0);
+        var result = list.FirstOrNone(n => n % 2 == 0);
 
-        Option<int>.Some some = result.ShouldBeOfType<Option<int>.Some>();
+        var some = result.ShouldBeOfType<Option<int>.Some>();
         some.Value.ShouldBe(2);
     }
 }

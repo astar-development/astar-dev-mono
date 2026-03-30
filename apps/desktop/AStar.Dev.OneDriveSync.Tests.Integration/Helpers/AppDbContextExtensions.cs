@@ -8,8 +8,8 @@ internal static class AppDbContextExtensions
 {
     public static async Task CreateStubChildTableAsync(this AppDbContext context, string tableName, bool cascadeOnDelete = true, CancellationToken cancellationToken = default)
     {
-        var accountTableName = context.Model.FindEntityType(typeof(Account))!.GetTableName();
-        var onDelete = cascadeOnDelete ? "ON DELETE CASCADE" : string.Empty;
+        string? accountTableName = context.Model.FindEntityType(typeof(Account))!.GetTableName();
+        string onDelete = cascadeOnDelete ? "ON DELETE CASCADE" : string.Empty;
 
         _ = await context.Database.ExecuteSqlRawAsync($"""
             CREATE TABLE IF NOT EXISTS {tableName} (

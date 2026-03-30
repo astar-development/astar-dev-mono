@@ -19,7 +19,7 @@ public class SerilogShould
     public void SetTheEnrichPropertyToTheProvidedValues()
     {
         var serilog       = new Extensions.Models.Serilog();
-        string[] testEnrichers = new[] { "Enricher1", "Enricher2" };
+        string[] testEnrichers = ["Enricher1", "Enricher2"];
 
         serilog.Enrich = testEnrichers;
 
@@ -31,7 +31,7 @@ public class SerilogShould
     {
         var serilog = new Extensions.Models.Serilog();
 
-        WriteTo[] writeTo = serilog.WriteTo;
+        var writeTo = serilog.WriteTo;
 
         writeTo.ToJson().ShouldMatchApproved();
     }
@@ -41,7 +41,7 @@ public class SerilogShould
     {
         var serilog = new Extensions.Models.Serilog();
 
-        WriteTo[] writeToConfigs = new[] { new WriteTo { Name = "Console", Args = new() { ServerUrl = "http://localhost" } }, new WriteTo { Name = "File", Args = new() { ServerUrl = "C:\\Logs" } } };
+        WriteTo[] writeToConfigs = [new WriteTo { Name = "Console", Args = new() { ServerUrl = "http://localhost" } }, new WriteTo { Name = "File", Args = new() { ServerUrl = "C:\\Logs" } }];
 
         serilog.WriteTo = writeToConfigs;
 

@@ -10,8 +10,8 @@ internal static class ServiceCollectionCodeGenerator
         if (items.Count == 0)
             return null;
 
-        IEnumerable<string> registrations = BuildServiceRegistrations(items);
-        ServiceModel item = items[0];
+        var registrations = BuildServiceRegistrations(items);
+        var item = items[0];
 
         return BuildSourceFile(registrations, item?.Namespace ?? "AStar.Dev");
     }
@@ -20,7 +20,7 @@ internal static class ServiceCollectionCodeGenerator
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach(ServiceModel model in items)
+        foreach(var model in items)
         {
             foreach(string? registration in CreateRegistrationsForModel(model).Where(seen.Add))
             {

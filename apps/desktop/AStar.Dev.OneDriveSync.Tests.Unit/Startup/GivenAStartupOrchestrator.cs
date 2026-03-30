@@ -18,7 +18,7 @@ public sealed class GivenAStartupOrchestrator
         taskB.RunAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var sut = new StartupOrchestrator([taskA, taskB], _logger);
 
-        IReadOnlyList<StartupTaskResult> results = await sut.RunAsync(CancellationToken.None);
+        var results = await sut.RunAsync(CancellationToken.None);
 
         results.ShouldAllBe(r => r.Succeeded);
     }
@@ -32,7 +32,7 @@ public sealed class GivenAStartupOrchestrator
                    .Returns<Task>(_ => Task.FromException(new InvalidOperationException("boom")));
         var sut = new StartupOrchestrator([failingTask], _logger);
 
-        IReadOnlyList<StartupTaskResult> results = await sut.RunAsync(CancellationToken.None);
+        var results = await sut.RunAsync(CancellationToken.None);
 
         results.Single().Succeeded.ShouldBeFalse();
     }
@@ -47,7 +47,7 @@ public sealed class GivenAStartupOrchestrator
                    .Returns<Task>(_ => Task.FromException(expectedException));
         var sut = new StartupOrchestrator([failingTask], _logger);
 
-        IReadOnlyList<StartupTaskResult> results = await sut.RunAsync(CancellationToken.None);
+        var results = await sut.RunAsync(CancellationToken.None);
 
         results.Single().Error.ShouldBe(expectedException);
     }
@@ -68,7 +68,7 @@ public sealed class GivenAStartupOrchestrator
     [Fact]
     public async Task when_multiple_tasks_are_registered_then_a_result_is_returned_for_each()
     {
-        IStartupTask[] tasks = Enumerable.Range(1, 5).Select(i =>
+        var tasks = Enumerable.Range(1, 5).Select(i =>
         {
             var t = Substitute.For<IStartupTask>();
             t.Name.Returns($"Task{i}");
@@ -78,7 +78,7 @@ public sealed class GivenAStartupOrchestrator
         }).ToArray();
         var sut = new StartupOrchestrator(tasks, _logger);
 
-        IReadOnlyList<StartupTaskResult> results = await sut.RunAsync(CancellationToken.None);
+        var results = await sut.RunAsync(CancellationToken.None);
 
         results.Count.ShouldBe(5);
     }

@@ -18,10 +18,10 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
     /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<INamedTypeSymbol?> classSyntax = CreateClassSyntaxProvider(context);
-        IncrementalValuesProvider<(INamedTypeSymbol sym, AttributeData? attr)> services = CreateServicesProvider(classSyntax);
-        IncrementalValuesProvider<ServiceModel?> serviceModels = CreateServiceModelsProvider(services);
-        IncrementalValueProvider<(Compilation Left, ImmutableArray<ServiceModel?> Right)> combined = context.CompilationProvider.Combine(serviceModels.Collect());
+        var classSyntax = CreateClassSyntaxProvider(context);
+        var services = CreateServicesProvider(classSyntax);
+        var serviceModels = CreateServiceModelsProvider(services);
+        var combined = context.CompilationProvider.Combine(serviceModels.Collect());
 
         context.RegisterSourceOutput(combined, GenerateSource);
     }
@@ -55,7 +55,7 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
     private static IncrementalValuesProvider<ServiceModel?> CreateServiceModelsProvider(
         IncrementalValuesProvider<(INamedTypeSymbol sym, AttributeData? attr)> services)
     {
-        IncrementalValuesProvider<ServiceModel?> result = services
+        var result = services
             .Select(static (t, _) => ServiceModel.TryCreate(t.sym, t.attr!))
             .Where(static m => m is not null)!;
 

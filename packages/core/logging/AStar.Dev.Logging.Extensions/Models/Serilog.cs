@@ -16,7 +16,7 @@ public sealed class Serilog
     ///     A collection of targets where log events are written during logging.
     ///     Each element in the array specifies the name of the sink and its associated arguments.
     /// </summary>
-    public WriteTo[] WriteTo { get; set; } = new WriteTo[] { new() { Args = new() { ServerUrl = "http://seq:5341" }, Name = "Seq" } };
+    public WriteTo[] WriteTo { get; set; } = [new() { Args = new() { ServerUrl = "http://seq:5341" }, Name = "Seq" }];
 
     /// <summary>
     ///     Configures the minimum logging levels for log events.

@@ -11,10 +11,10 @@ public sealed class GivenAnAccountWithLinkedRows
     public async Task when_the_account_is_deleted_then_all_linked_rows_are_removed()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
         await context.CreateStubChildTableAsync("test_account_child", cancellationToken: TestContext.Current.CancellationToken);
 
-        Account account = new AccountBuilder().Build();
+        var account = new AccountBuilder().Build();
         _ = context.Accounts.Add(account);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
@@ -33,11 +33,11 @@ public sealed class GivenAnAccountWithLinkedRows
     public async Task when_one_of_many_accounts_is_deleted_then_only_its_linked_rows_are_removed()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
         await context.CreateStubChildTableAsync("test_account_child", cancellationToken: TestContext.Current.CancellationToken);
 
-        Account keptAccount    = new AccountBuilder().Build();
-        Account deletedAccount = new AccountBuilder().Build();
+        var keptAccount    = new AccountBuilder().Build();
+        var deletedAccount = new AccountBuilder().Build();
         context.Accounts.AddRange(keptAccount, deletedAccount);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(

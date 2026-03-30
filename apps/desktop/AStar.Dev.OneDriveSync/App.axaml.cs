@@ -15,13 +15,14 @@ using Serilog.Events;
 // Disambiguate ILogger: both Serilog and Microsoft.Extensions.Logging declare ILogger.
 // All usages in this file intend the MEL interface.
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDriveSync;
 
 public partial class App : Application, IDisposable
 {
     // Cached at startup so the log call does not invoke reflection each time
-    private static readonly string AppVersion =
+    private static readonly string _appVersion =
         typeof(App).Assembly.GetName().Version?.ToString() ?? "unknown";
 
     private ServiceProvider?         _services;
@@ -43,7 +44,7 @@ public partial class App : Application, IDisposable
 
         DisableAvaloniaDataAnnotationValidation();
 
-        MainWindowViewModel viewModel  = _services.GetRequiredService<MainWindowViewModel>();
+        var viewModel  = _services.GetRequiredService<MainWindowViewModel>();
         var mainWindow = new MainWindow { DataContext = viewModel };
 
         desktop.MainWindow = mainWindow;
@@ -65,13 +66,13 @@ public partial class App : Application, IDisposable
 
     private async Task RunStartupTasksAsync(MainWindowViewModel viewModel, CancellationToken ct)
     {
-        ServiceProvider services     = _services!;
-        ILogger<App> logger       = services.GetRequiredService<ILogger<App>>();
-        StartupOrchestrator orchestrator = services.GetRequiredService<StartupOrchestrator>();
+        var services     = _services!;
+        var logger       = services.GetRequiredService<ILogger<App>>();
+        var orchestrator = services.GetRequiredService<StartupOrchestrator>();
 
-        LogAppStarting(logger, AppVersion);
+        LogAppStarting(logger, _appVersion);
 
-        IReadOnlyList<StartupTaskResult> results = await orchestrator.RunAsync(ct).ConfigureAwait(false);
+        var results = await orchestrator.RunAsync(ct).ConfigureAwait(false);
 
         if (MigrationFailed(results))
             NotifyDatabaseCorrupt(viewModel);
@@ -102,10 +103,7 @@ public partial class App : Application, IDisposable
 
     private static void ConfigureSerilog()
     {
-        var logDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "AStar.Dev.OneDriveSync",
-            "logs");
+        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath("AStar.Dev.OneDriveSync", "logs");
 
         _ = Directory.CreateDirectory(logDirectory);
 
@@ -123,10 +121,9 @@ public partial class App : Application, IDisposable
 
     private static void DisableAvaloniaDataAnnotationValidation()
     {
-        DataAnnotationsValidationPlugin[] dataValidationPluginsToRemove =
-            BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+        var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-        foreach (DataAnnotationsValidationPlugin? plugin in dataValidationPluginsToRemove)
+        foreach (var plugin in dataValidationPluginsToRemove)
         {
             _ = BindingPlugins.DataValidators.Remove(plugin);
         }

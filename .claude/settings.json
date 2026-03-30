@@ -3,7 +3,8 @@
     "allow": [
       "Bash(gh issue:*)",
       "Bash(dotnet test:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git -C /home/jbarden/repos/astar-dev-mono push -u origin feature/s003-review-fixes)"
     ]
   },
   "hooks": {

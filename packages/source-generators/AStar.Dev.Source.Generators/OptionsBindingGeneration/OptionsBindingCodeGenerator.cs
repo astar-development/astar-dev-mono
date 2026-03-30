@@ -17,7 +17,7 @@ internal static class OptionsBindingCodeGenerator
         _ = sb.AppendLine("    {");
         _ = sb.AppendLine("        public static IServiceCollection AddAutoRegisteredOptions(this IServiceCollection services, IConfiguration configuration)");
         _ = sb.AppendLine("        {");
-        foreach(OptionsTypeInfo info in types) _ = sb.AppendLine($"            services.AddOptions<{info.FullTypeName}>()\n                .Bind(configuration.GetSection(\"{EscapeString(info.SectionName)}\"))\n                .ValidateDataAnnotations()\n                .ValidateOnStart();");
+        foreach(var info in types) _ = sb.AppendLine($"            services.AddOptions<{info.FullTypeName}>()\n                .Bind(configuration.GetSection(\"{EscapeString(info.SectionName)}\"))\n                .ValidateDataAnnotations()\n                .ValidateOnStart();");
 
         _ = sb.AppendLine("            return services;");
         _ = sb.AppendLine("        }");

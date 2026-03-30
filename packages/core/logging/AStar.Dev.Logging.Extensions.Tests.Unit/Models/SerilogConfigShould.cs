@@ -23,8 +23,8 @@ public class SerilogConfigShould
 
         var serilog = new Extensions.Models.Serilog
                       {
-                          Enrich       = new[] { "ThreadId", "MachineName" },
-                          WriteTo      = new[] { new WriteTo { Name                                              = "File", Args             = new() { ServerUrl = "http://localhost" } } },
+                          Enrich       = ["ThreadId", "MachineName"],
+                          WriteTo      = [new WriteTo { Name                                              = "File", Args             = new() { ServerUrl = "http://localhost" } }],
                           MinimumLevel = new() { Default = "Information", Override = new() { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Error", AStar = "Debug" } }
                       };
 

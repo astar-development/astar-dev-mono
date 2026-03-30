@@ -19,9 +19,9 @@ internal static class PersistenceServiceExtensions
 
         _ = services.AddDbContext<AppDbContext>((sp, options) =>
         {
-            IAppDataPathProvider pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
+            var pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
             _ = Directory.CreateDirectory(pathProvider.AppDataDirectory);
-            var dbPath = Path.Combine(pathProvider.AppDataDirectory, "file-data.db");
+            string dbPath = Path.Combine(pathProvider.AppDataDirectory, "file-data.db");
             _ = options.UseSqlite($"DataSource={dbPath}");
         });
 

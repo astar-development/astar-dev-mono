@@ -10,8 +10,8 @@ public sealed partial class StartupOrchestrator(IEnumerable<IStartupTask> tasks,
 
         LogOrchestratorStarting(logger, taskList.Count);
 
-        IEnumerable<Task<StartupTaskResult>> resultTasks = taskList.Select(task => ExecuteTaskAsync(task, ct));
-        StartupTaskResult[] results     = await Task.WhenAll(resultTasks).ConfigureAwait(false);
+        var resultTasks = taskList.Select(task => ExecuteTaskAsync(task, ct));
+        var results     = await Task.WhenAll(resultTasks).ConfigureAwait(false);
 
         return results;
     }

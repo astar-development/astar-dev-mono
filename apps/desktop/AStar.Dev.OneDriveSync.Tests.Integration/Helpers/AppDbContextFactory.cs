@@ -20,7 +20,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
     public async Task<AppDbContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
-        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(_connection)
             .Options;
 
@@ -35,7 +35,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
 
     public static AppDbContext CreateForModelInspection()
     {
-        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=:memory:")
             .Options;
 

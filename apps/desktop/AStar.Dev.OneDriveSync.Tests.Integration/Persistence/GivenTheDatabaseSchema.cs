@@ -14,7 +14,7 @@ public sealed class GivenTheDatabaseSchema
     [InlineData("MicrosoftAccountId")]
     public void when_inspected_then_pii_column_is_confined_to_the_account_entity_type(string piiColumnName)
     {
-        using AppDbContext context = AppDbContextFactory.CreateForModelInspection();
+        using var context = AppDbContextFactory.CreateForModelInspection();
 
         var violatingTypes = context.Model
             .GetEntityTypes()
@@ -30,7 +30,7 @@ public sealed class GivenTheDatabaseSchema
     public async Task when_a_row_references_a_non_existent_account_then_the_database_rejects_the_insert()
     {
         await using var factory = AppDbContextFactory.Create();
-        await using AppDbContext context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
+        await using var context = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
         await context.CreateStubChildTableAsync("test_fk_violation", cascadeOnDelete: false, cancellationToken: TestContext.Current.CancellationToken);
 
         Func<Task> act = async () =>

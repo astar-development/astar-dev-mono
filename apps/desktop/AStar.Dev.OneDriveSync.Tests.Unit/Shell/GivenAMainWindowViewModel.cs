@@ -76,7 +76,7 @@ public sealed class GivenAMainWindowViewModel
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
-        NavItemViewModel targetItem = sut.NavItems.Single(i => i.Section == section);
+        var targetItem = sut.NavItems.Single(i => i.Section == section);
 
         targetItem.IsActive.ShouldBeTrue();
     }
@@ -98,7 +98,7 @@ public sealed class GivenAMainWindowViewModel
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
-        IEnumerable<NavItemViewModel> inactiveItems = sut.NavItems.Where(i => i.Section != section);
+        var inactiveItems = sut.NavItems.Where(i => i.Section != section);
 
         inactiveItems.ShouldAllBe(i => !i.IsActive);
     }
@@ -113,7 +113,7 @@ public sealed class GivenAMainWindowViewModel
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
         _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
-        ViewModelBase? viewBeforeAttempt = sut.ActiveView;
+        var viewBeforeAttempt = sut.ActiveView;
 
         _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
 
@@ -278,7 +278,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability);
-        NavItemViewModel accountsItem = sut.NavItems.Single(i => i.Section == NavSection.Accounts);
+        var accountsItem = sut.NavItems.Single(i => i.Section == NavSection.Accounts);
 
         accountsItem.IsFeatureEnabled.ShouldBeFalse();
         accountsItem.Tooltip.ShouldContain("Coming soon");

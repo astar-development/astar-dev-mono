@@ -14,7 +14,7 @@ internal sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactor
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite("DataSource=design-time.db")
             .Options;
 

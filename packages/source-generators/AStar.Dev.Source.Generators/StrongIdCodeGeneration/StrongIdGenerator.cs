@@ -21,7 +21,7 @@ public class StrongIdGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Find all readonly partial record structs with attributes
-        IncrementalValueProvider<ImmutableArray<RecordDeclarationSyntax>> recordStructs = context.SyntaxProvider
+        var recordStructs = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is RecordDeclarationSyntax rec && rec.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword),
                 transform: static (ctx, _) => (RecordDeclarationSyntax)ctx.Node)
@@ -32,19 +32,19 @@ public class StrongIdGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(context.CompilationProvider.Combine(recordStructs), static (spc, source) =>
         {
-            (Compilation? compilation, ImmutableArray<RecordDeclarationSyntax> structs) = source;
+            (var compilation, var structs) = source;
             // Cache attribute symbol lookup
-            INamedTypeSymbol? strongIdAttrSymbol = compilation.GetTypeByMetadataName("AStar.Dev.Source.Generators.Attributes.StrongIdAttribute");
+            var strongIdAttrSymbol = compilation.GetTypeByMetadataName("AStar.Dev.Source.Generators.Attributes.StrongIdAttribute");
             if(strongIdAttrSymbol == null)
                 return;
 
-            foreach(RecordDeclarationSyntax? recordStruct in structs)
+            foreach(var recordStruct in structs)
             {
-                SemanticModel model = compilation.GetSemanticModel(recordStruct.SyntaxTree);
+                var model = compilation.GetSemanticModel(recordStruct.SyntaxTree);
                 if(model.GetDeclaredSymbol(recordStruct) is not INamedTypeSymbol symbol)
                     continue;
 
-                AttributeData? attr = symbol.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, strongIdAttrSymbol));
+                var attr = symbol.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, strongIdAttrSymbol));
                 if(attr == null)
                     continue;
 

@@ -20,9 +20,9 @@ public sealed partial class DatabaseMigrationStartupTask(IServiceProvider servic
 
     public async Task RunAsync(CancellationToken ct)
     {
-        await using AsyncServiceScope scope       = services.CreateAsyncScope();
-        IAppDataPathProvider          pathProvider = scope.ServiceProvider.GetRequiredService<IAppDataPathProvider>();
-        AppDbContext                  dbContext    = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var scope       = services.CreateAsyncScope();
+        var          pathProvider = scope.ServiceProvider.GetRequiredService<IAppDataPathProvider>();
+        var                  dbContext    = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         MigrateFromLegacyPathIfNeeded(pathProvider);
 
@@ -35,15 +35,15 @@ public sealed partial class DatabaseMigrationStartupTask(IServiceProvider servic
 
     private void MigrateFromLegacyPathIfNeeded(IAppDataPathProvider pathProvider)
     {
-        var newDbPath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
+        string newDbPath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
 
         if (File.Exists(newDbPath))
             return;
 
-        var legacyDirectory = Path.Combine(
+        string legacyDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             LegacyAppDataFolder);
-        var legacyDbPath = Path.Combine(legacyDirectory, DatabaseFileName);
+        string legacyDbPath = Path.Combine(legacyDirectory, DatabaseFileName);
 
         if (!File.Exists(legacyDbPath))
             return;
