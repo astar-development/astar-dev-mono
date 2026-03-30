@@ -70,4 +70,15 @@ public sealed class GivenAFeatureAvailabilityService
 
         act.ShouldThrow<InvalidOperationException>();
     }
+
+    [Fact]
+    public void when_freeze_is_called_then_unregistered_sections_remain_unavailable()
+    {
+        var sut = new FeatureAvailabilityService();
+        sut.Register(NavSection.Dashboard);
+
+        sut.Freeze();
+
+        sut.IsAvailable(NavSection.Accounts).ShouldBeFalse();
+    }
 }

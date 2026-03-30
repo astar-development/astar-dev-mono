@@ -7,7 +7,10 @@ public sealed class FeatureAvailabilityService : IFeatureAvailabilityService
     private readonly HashSet<NavSection> _pendingSections = [];
     private FrozenSet<NavSection>? _frozenSections;
 
-    public bool IsAvailable(NavSection section) => (_frozenSections ?? (IReadOnlySet<NavSection>)_pendingSections).Contains(section);
+    public bool IsAvailable(NavSection section)
+        => _frozenSections is not null
+            ? _frozenSections.Contains(section)
+            : _pendingSections.Contains(section);
 
     public void Freeze() => _frozenSections = _pendingSections.ToFrozenSet();
 
