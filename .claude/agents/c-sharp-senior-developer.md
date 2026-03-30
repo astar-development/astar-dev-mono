@@ -119,7 +119,22 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 ### Dependency injection
 
 - Primary constructors for injection; no field declarations unless the type is used in an expression-bodied member where `this.` would be ambiguous.
+- **Exception — ReactiveUI ViewModels**: `ReactiveCommand.CreateFromTask(InstanceMethod)` must be assigned in a constructor body after `this` is available. Property initializers in primary constructors cannot capture `this`. Use an explicit constructor with `private readonly` fields in this case. This is not a violation of the primary-constructor rule and must not be flagged by the QA agent.
 - Register dependencies in extension methods on `IServiceCollection`, one file per feature area.
+
+### Avalonia XAML (compiled bindings)
+
+- All Avalonia apps in this repo set `AvaloniaUseCompiledBindingsByDefault=true`. Every XAML view that contains bindings **must** declare `x:DataType` referencing its ViewModel:
+  ```xml
+  <Window xmlns:vm="clr-namespace:MyApp.MyFeature"
+          x:DataType="vm:MyFeatureViewModel" ...>
+  ```
+- Omitting `x:DataType` causes `AVLN2100` build errors. Every new AXAML file must include this declaration before adding any `{Binding ...}` expressions.
+
+### Avalonia DI lifetimes
+
+- In Avalonia desktop apps there is no HTTP request scope. Register `DbContext` as `Transient` (or use a factory pattern). Register ViewModels as `Transient`.
+- Do not use `AddScoped` outside a web host — on the generic host it maps to application lifetime, making it effectively a singleton. This is almost never the desired behaviour for `DbContext` or ViewModels.
 
 ### MediatR (commands / queries / events)
 
