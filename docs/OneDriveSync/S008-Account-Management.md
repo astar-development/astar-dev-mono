@@ -40,10 +40,16 @@ So that I can manage which accounts are synced and where their files are stored 
 - [ ] At sync trigger time (not at configuration time), if the local sync folder's drive/mount is unavailable → sync fails with a clear user-visible message and a log entry at `Error` level
 - [ ] The failure is reported per-account on the Dashboard
 
-### Per-Account Settings — Power User Only (AM-05)
-- [ ] Power User sees: sync interval selector (5/15/30/60 min), concurrency slider (1–10, default 5), local sync path field, debug logging toggle
+### Per-Account Settings — Power User Only (AM-05, AM-12)
+- [ ] Power User sees: sync interval selector (5/15/30/60 min), concurrency slider (1–10, default 5), local sync path field, debug logging toggle, "Store file metadata in database" toggle
 - [ ] Casual user sees none of these — they are **hidden** (not disabled) in Casual mode
 - [ ] Settings changes persist to SQLite immediately on save
+
+### File Metadata Flag (AM-12–AM-15)
+- [ ] "Store file metadata in database" toggle: default OFF, Power User only, hidden from Casual users (AM-12)
+- [ ] When flag is ON, after each sync run the app writes one `SyncedFileMetadata` row per synced file (name, relative path, size, SHA-256 checksum, last-modified UTC, created UTC) (AM-13)
+- [ ] When flag is enabled on an account with an existing sync, an immediate backfill is triggered; backfill progress is displayed in the account settings panel (AM-14)
+- [ ] When flag is disabled, existing `SyncedFileMetadata` rows are retained indefinitely — no automatic deletion (AM-15)
 
 ### Remove Account (AM-08, AM-09)
 - [ ] Remove account prompts: "Keep local files" or "Delete local files" — two explicit choices; no silent default

@@ -8,7 +8,7 @@ using MelILogger = Microsoft.Extensions.Logging.ILogger;
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 /// <summary>
-///     Copies <c>data.db</c> to <c>data.db.bak</c> before any sync mutation begins (AC EH-07).
+///     Copies <c>file-data.db</c> to <c>file-data.db.bak</c> before any sync mutation begins (AC EH-07).
 ///
 ///     The backup is triggered on explicit call only — never on construction, never periodically.
 /// </summary>
@@ -16,8 +16,8 @@ public sealed partial class DbBackupService(
     IAppDataPathProvider pathProvider,
     ILogger<DbBackupService> logger) : IDbBackupService
 {
-    private const string DatabaseFileName = "data.db";
-    private const string BackupFileName   = "data.db.bak";
+    private const string DatabaseFileName = "file-data.db";
+    private const string BackupFileName = "file-data.db.bak";
 
     /// <inheritdoc />
     public async Task<Result<bool, ErrorResponse>> BackupAsync(CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public sealed partial class DbBackupService(
 
         var backupFilePath = Path.Combine(pathProvider.AppDataDirectory, BackupFileName);
 
-        await using FileStream source      = File.OpenRead(dataFilePath);
+        await using FileStream source = File.OpenRead(dataFilePath);
         await using FileStream destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
         await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
 
