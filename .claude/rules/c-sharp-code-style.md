@@ -99,8 +99,8 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 
 ## Test Classes
 
-- Name test classes with the suffix `Should` (e.g., `OrderServiceShould`).
-- Organize test methods using the `<Action><Result>[<Exception>]` naming convention (e.g., `ReturnCorrectSumWhenMultipleItemsExist`). This pattern helps clarify the action being tested, the expected result, and any exceptions that may be thrown.
+- Name test classes with the `Given` prefix to describe the context under test (e.g., `GivenAnAccount`, `GivenANullString`, `GivenADatabaseReadyForSync`). This matches the `c-sharp-senior-qa-specialist` convention.
+- Name test methods using the `when_[action]_then_[outcome]` snake_case convention (e.g., `when_deleted_then_all_linked_rows_are_removed`). This matches the `c-sharp-senior-qa-specialist` convention.
 - Use the Arrange-Act-Assert (AAA) pattern within test methods to structure the code clearly. Divide the method into three distinct sections: setup (Arrange), execution (Act), and verification (Assert). Do not comment these sections; the structure should be clear from the code itself. Separate these sections with a single blank line for readability.
 - Use test data builders to create complex test objects, enhancing readability and maintainability of tests.
 - Avoid logic in test methods; keep tests simple and focused on behavior verification.

@@ -122,7 +122,7 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - **Test projects**: Named `*.Tests` or `*.IntegrationTests` — automatically set `IsPackable=false`
 - **Method signatures**: Always single-line regardless of parameter count — `public void Foo(string a, int b, CancellationToken ct = default)`. Never split parameters across lines.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
-- **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/avscrpt-code-style.md for .Net projects for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
+- **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/javascript-code-style.md for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
 
 ## First-Time Setup
 
