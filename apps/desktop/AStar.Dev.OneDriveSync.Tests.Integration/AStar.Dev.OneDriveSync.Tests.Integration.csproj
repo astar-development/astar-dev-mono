@@ -12,8 +12,6 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <NoWarn>$(NoWarn);EF1002</NoWarn>
-    <!-- Override: apps/desktop/Directory.Build.props sets IsPublishable=true for all desktop projects.
-         Test projects must not be published. -->
     <IsPublishable>false</IsPublishable>
     <PackageId>AStar.Dev.OneDriveSync.Tests.Integration</PackageId>
   </PropertyGroup>
