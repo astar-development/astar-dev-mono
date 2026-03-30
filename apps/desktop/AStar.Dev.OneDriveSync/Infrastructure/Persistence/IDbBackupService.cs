@@ -11,14 +11,14 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 public interface IDbBackupService
 {
     /// <summary>
-    ///     Copies <c>data.db</c> to <c>data.db.bak</c> in the application data directory.
+    ///     Copies <c>file-data.db</c> to <c>file-data.db.bak</c> in the application data directory.
     /// </summary>
     /// <param name="cancellationToken">
     ///     Token used to cancel the file-copy operation mid-stream.
     /// </param>
     /// <returns>
     ///     <see cref="Result{TSuccess,TError}.Ok" /> wrapping <see langword="true" /> on success,
-    ///     or <see cref="Result{TSuccess,TError}.Error" /> if <c>data.db</c> does not exist.
+    ///     or <see cref="Result{TSuccess,TError}.Error" /> if <c>file-data.db</c> does not exist.
     /// </returns>
     Task<Result<bool, ErrorResponse>> BackupAsync(CancellationToken cancellationToken = default);
 }

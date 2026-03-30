@@ -35,12 +35,12 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     [Fact]
     public async Task when_backup_is_requested_then_a_dot_bak_file_is_created_alongside_the_database()
     {
-        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"), "SQLite placeholder", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "file-data.db"), "SQLite placeholder", TestContext.Current.CancellationToken);
 
         Result<bool, ErrorResponse> result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
-        File.Exists(Path.Combine(_tempRoot, "data.db.bak")).ShouldBeTrue();
+        File.Exists(Path.Combine(_tempRoot, "file-data.db.bak")).ShouldBeTrue();
     }
 
     [Fact]
@@ -54,13 +54,13 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     [Fact]
     public async Task when_a_stale_backup_exists_then_it_is_replaced_with_the_current_database()
     {
-        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db"),     "current database content", TestContext.Current.CancellationToken);
-        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), "stale backup",             TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "file-data.db"), "current database content", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_tempRoot, "file-data.db.bak"), "stale backup", TestContext.Current.CancellationToken);
 
         Result<bool, ErrorResponse> result = await CreateSut().BackupAsync(TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
-        var backupContent = await File.ReadAllTextAsync(Path.Combine(_tempRoot, "data.db.bak"), TestContext.Current.CancellationToken);
+        var backupContent = await File.ReadAllTextAsync(Path.Combine(_tempRoot, "file-data.db.bak"), TestContext.Current.CancellationToken);
         backupContent.ShouldBe("current database content");
     }
 
@@ -69,6 +69,6 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
     {
         _ = CreateSut();
 
-        File.Exists(Path.Combine(_tempRoot, "data.db.bak")).ShouldBeFalse();
+        File.Exists(Path.Combine(_tempRoot, "file-data.db.bak")).ShouldBeFalse();
     }
 }

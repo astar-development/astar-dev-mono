@@ -59,13 +59,14 @@ This is a **fresh build** — the previous implementation (`AStar.Dev.OneDriveSy
 
 A global app setting determines the UI complexity surface: **Casual** or **Power User**.
 
-| Aspect                    | Casual                          | Power User                  |
-| ------------------------- | ------------------------------- | --------------------------- |
-| Concurrency settings      | Hidden (default of 5 applies)   | Editable (1–10)             |
-| Debug logging toggle      | Hidden                          | Visible per account         |
-| Log Viewer detail         | Friendly errors/warnings only   | Full verbose Serilog output |
-| Sync interval             | Hidden (default 60 min applies) | Editable from fixed list    |
-| Advanced account settings | Hidden                          | Visible                     |
+| Aspect                          | Casual                          | Power User                  |
+| ------------------------------- | ------------------------------- | --------------------------- |
+| Concurrency settings            | Hidden (default of 5 applies)   | Editable (1–10)             |
+| Debug logging toggle            | Hidden                          | Visible per account         |
+| Log Viewer detail               | Friendly errors/warnings only   | Full verbose Serilog output |
+| Sync interval                   | Hidden (default 60 min applies) | Editable from fixed list    |
+| Advanced account settings       | Hidden                          | Visible                     |
+| Store file metadata in database | Hidden (OFF, not editable)      | Editable per account        |
 
 ### Setting the User Type
 
@@ -91,19 +92,23 @@ A global app setting determines the UI complexity surface: **Casual** or **Power
 
 ### 6.2 Account Management
 
-| ID    | Requirement                                                                                                                                     | Phase |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| AM-01 | Add a personal Microsoft account via MSAL OAuth (system browser)                                                                                | MVP   |
-| AM-02 | 3-step add-account wizard: (1) authenticate, (2) optionally select folders, (3) confirm                                                         | MVP   |
-| AM-03 | Wizard step 2 shows root OneDrive folders; UI allows expanding to arbitrary depth for subfolder selection                                       | MVP   |
-| AM-04 | Folder selection editable from the Accounts view after wizard                                                                                   | MVP   |
-| AM-05 | Per-account settings (Power User only): sync interval, concurrency (1–10, default 5), local sync path, debug logging toggle                     | MVP   |
-| AM-06 | Each account must have a unique, non-overlapping local sync folder; the UI must prevent overlapping folder selection                            | MVP   |
-| AM-07 | Platform-specific default local sync folder set on add (e.g., `~/OneDrive/<account>/`); editable                                                | MVP   |
-| AM-08 | Remove account prompts user: keep or delete local synced folder                                                                                 | MVP   |
-| AM-09 | Account removal is **blocked** while a sync is active for that account. User must cancel the sync first                                         | MVP   |
-| AM-10 | Local sync folder validation: if the selected folder is not empty, warn the user that conflicts may occur on first sync; allow them to continue | MVP   |
-| AM-11 | If the local sync folder is on an unmounted/unavailable drive when a sync triggers, the sync fails with a clear message and log entry           | MVP   |
+| ID    | Requirement                                                                                                                                                                                                                                                      | Phase |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| AM-01 | Add a personal Microsoft account via MSAL OAuth (system browser)                                                                                                                                                                                                 | MVP   |
+| AM-02 | 3-step add-account wizard: (1) authenticate, (2) optionally select folders, (3) confirm                                                                                                                                                                          | MVP   |
+| AM-03 | Wizard step 2 shows root OneDrive folders; UI allows expanding to arbitrary depth for subfolder selection                                                                                                                                                        | MVP   |
+| AM-04 | Folder selection editable from the Accounts view after wizard                                                                                                                                                                                                    | MVP   |
+| AM-05 | Per-account settings (Power User only): sync interval, concurrency (1–10, default 5), local sync path, debug logging toggle, store file metadata in database                                                                                                     | MVP   |
+| AM-06 | Each account must have a unique, non-overlapping local sync folder; the UI must prevent overlapping folder selection                                                                                                                                             | MVP   |
+| AM-07 | Platform-specific default local sync folder set on add (e.g., `~/OneDrive/<account>/`); editable                                                                                                                                                                 | MVP   |
+| AM-08 | Remove account prompts user: keep or delete local synced folder                                                                                                                                                                                                  | MVP   |
+| AM-09 | Account removal is **blocked** while a sync is active for that account. User must cancel the sync first                                                                                                                                                          | MVP   |
+| AM-10 | Local sync folder validation: if the selected folder is not empty, warn the user that conflicts may occur on first sync; allow them to continue                                                                                                                  | MVP   |
+| AM-11 | If the local sync folder is on an unmounted/unavailable drive when a sync triggers, the sync fails with a clear message and log entry                                                                                                                            | MVP   |
+| AM-12 | Per-account "Store file metadata in database" flag: default OFF, visible and editable by Power Users only, hidden from Casual Users                                                                                                                              | MVP   |
+| AM-13 | When AM-12 flag is ON, metadata for every file in the account's synced folders (file name, relative path, file size, SHA-256 checksum, last-modified timestamp, created timestamp) is written to the shared database after each sync run                         | MVP   |
+| AM-14 | When AM-12 flag is enabled on an account that has already completed at least one sync, the app immediately triggers a backfill: it reads each locally-synced file and populates the metadata table. Backfill progress is displayed in the account settings panel | MVP   |
+| AM-15 | When AM-12 flag is disabled, existing file metadata rows for that account are retained in the database indefinitely. No automatic deletion occurs                                                                                                                | MVP   |
 
 ### 6.3 Sync Engine
 
@@ -269,14 +274,16 @@ All data is stored in a single SQLite database managed by EF Core with migration
 
 **Key design decisions:**
 
-| Decision               | Detail                                                                                                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Database location      | Platform-appropriate app data path (e.g., `~/.local/share/AStar.Dev.OneDriveSync/data.db`)                                             |
-| Schema management      | EF Core migrations; `Database.MigrateAsync()` called at startup                                                                        |
-| Entity configuration   | `IEntityTypeConfiguration<T>` per entity in `Configurations/` folders; `ApplyConfigurationsFromAssembly` in `OnModelCreating`          |
-| Design-time factory    | `IDesignTimeDbContextFactory<T>` provided for `dotnet ef` tooling                                                                      |
-| DateTimeOffset storage | All `DateTimeOffset` columns stored as Unix milliseconds (`long`) via EF Core value converters — enables server-side sorting/filtering |
-| `EnsureCreatedAsync`   | **Not used** — bypasses migration history                                                                                              |
+| Decision               | Detail                                                                                                                                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Database location      | Shared AStar.Dev app data path: `~/.local/share/astar-dev/file-data.db` (Linux); `%LOCALAPPDATA%\astar-dev\file-data.db` (Windows); `~/Library/Application Support/astar-dev/file-data.db` (macOS). The `astar-dev/` directory is created by the app at startup if it does not exist |
+| Concurrent access      | WAL mode (`PRAGMA journal_mode=WAL`) enabled at startup to support multi-writer access from other AStar.Dev applications                                                                                                                                                             |
+| First-launch migration | On first launch after upgrade, if a database exists at the old OneDriveSync-specific path (`~/.local/share/AStar.Dev.OneDriveSync/file-data.db`), the app copies it to the new shared location before running `MigrateAsync()`. The old file is left in place (not deleted)          |
+| Schema management      | EF Core migrations; `Database.MigrateAsync()` called at startup                                                                                                                                                                                                                      |
+| Entity configuration   | `IEntityTypeConfiguration<T>` per entity in `Configurations/` folders; `ApplyConfigurationsFromAssembly` in `OnModelCreating`                                                                                                                                                        |
+| Design-time factory    | `IDesignTimeDbContextFactory<T>` provided for `dotnet ef` tooling                                                                                                                                                                                                                    |
+| DateTimeOffset storage | All `DateTimeOffset` columns stored as Unix milliseconds (`long`) via EF Core value converters — enables server-side sorting/filtering                                                                                                                                               |
+| `EnsureCreatedAsync`   | **Not used** — bypasses migration history                                                                                                                                                                                                                                            |
 
 ### Account Identifier Strategy
 
@@ -292,6 +299,27 @@ All data is stored in a single SQLite database managed by EF Core with migration
 | Integration      | Inserting data into any non-Account table with a real email, name, or Microsoft ID instead of the synthetic ID **fails** (schema enforcement) |
 | Unit/Integration | No PII (name, email, Microsoft account ID) exists in any table other than the Accounts table                                                  |
 | Integration      | The synthetic account ID used in foreign keys is independent of any Microsoft account detail                                                  |
+| Integration      | Account deletion removes all `SyncedFileMetadata` rows for that account (cascade delete)                                                      |
+| Unit             | File metadata is only written to `SyncedFileMetadata` when the per-account AM-12 flag is ON                                                   |
+| Integration      | Backfill populates metadata for all locally-synced files when the AM-12 flag is turned on for an existing account                             |
+
+### File Metadata Table (per-account flag — AM-12)
+
+When the "Store file metadata in database" flag is enabled for an account, a `SyncedFileMetadata` table stores one row per file in the account's synced folders.
+
+| Column          | Type                       | Notes                                          |
+| --------------- | -------------------------- | ---------------------------------------------- |
+| Id              | `long` (auto-increment PK) |                                                |
+| AccountId       | `Guid` (FK → Accounts)     | Synthetic account ID — no PII                  |
+| RemoteItemId    | `string`                   | OneDrive item ID                               |
+| RelativePath    | `string`                   | Path relative to the account's local sync root |
+| FileName        | `string`                   |                                                |
+| FileSizeBytes   | `long`                     |                                                |
+| Sha256Checksum  | `string`                   | Hex-encoded                                    |
+| LastModifiedUtc | `long`                     | Unix milliseconds (consistent with DB-01)      |
+| CreatedUtc      | `long`                     | Unix milliseconds                              |
+
+When the flag is disabled, rows are retained (not deleted). The `AccountId` FK cascade-delete ensures all rows are removed if the account itself is deleted.
 
 ---
 
@@ -502,6 +530,7 @@ Features/
 | NF-14 | Use of DevAM.LemonShark (or similar) to mock OneDrive / EntraID responses where practicable                                                                                  |
 | NF-15 | The app UI must NOT allow the user to select a feature that has not been implemented. It should be disabled or hidden until implemented.                                     |
 | NF-16 | Functional Paradigms MUST be used wherever practicable. Use AStar.Dev.Functional.Extensions: Result<T>, Option<T>, Match<Async> etc. If there is no suitable method, add it. |
+| NF-17 | The shared SQLite database operates in WAL mode (`PRAGMA journal_mode=WAL`) to permit concurrent reads and writes from multiple AStar.Dev applications without contention    |
 
 ---
 
@@ -540,29 +569,33 @@ The existing `apps/desktop/Directory.Build.props` configures all 6 RIDs (`win-x6
 
 All decisions are incorporated into the requirements above. This table is retained for traceability.
 
-| ID    | Decision                                     | Resolution                                                                                      |
-| ----- | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| OD-01 | "Keep Both" datetime format                  | UTC `yyyy-MM-ddTHHmmssZ` — see CR-04                                                            |
-| OD-02 | Conflict resolution selection model          | Checkbox per conflict; subset or Select All; strategy applies to all checked — see CR-06, CR-07 |
-| OD-03 | Quota exceeded during upload                 | Error surfaced to user; manual resolution; no automatic retry                                   |
-| OD-04 | Include shared OneDrive folders?             | No — excluded from scope                                                                        |
-| OD-05 | Update distribution mechanism                | GitHub Releases with manual download — see UP-01, UP-02                                         |
-| OD-06 | Maximum file size                            | No app-level limit; follow OneDrive API limits (250 GB chunked)                                 |
-| OD-07 | Insecure token fallback — opt-in or warning? | Opt-in consent dialog; decision stored per account — see AU-03                                  |
-| OD-08 | Linux packaging format for MVP               | AppImage — self-contained single-file aligns with existing build config                         |
-| OD-09 | "Sync Now" scope                             | Per account; concurrent sync on same account rejected — see SE-03, SE-06                        |
-| OD-10 | Database architecture                        | Single SQLite DB with synthetic account ID; PII contained to Accounts table only                |
-| OD-11 | File system watching                         | Not in MVP — changes detected at sync time only (KISS; 300–500k files would exhaust inotify)    |
-| OD-12 | Network failure during sync                  | Exponential backoff then mark interrupted — see EH-01                                           |
-| OD-13 | App user type scope                          | App-level (not per-account); set during onboarding; editable in Settings                        |
-| OD-14 | Multiple app instances                       | Blocked — show message and exit (MVP); bring to foreground (Post-MVP)                           |
-| OD-15 | Downgrade path                               | Unsupported in MVP — re-add accounts if downgrade needed                                        |
-| OD-16 | "Last synced" display format                 | Hybrid — relative for < 1 hour, absolute for older                                              |
-| OD-17 | Default concurrency                          | 5 (changed from 8 in previous spec)                                                             |
-| OD-18 | Special files (symlinks, .git, etc.)         | Skipped, logged, user informed post-sync                                                        |
-| DB-01 | DateTime storage type in SQLite              | `DateTimeOffset` as Unix milliseconds (`long`) via EF Core value converters                     |
-| DB-02 | EF Core entity configuration pattern         | `IEntityTypeConfiguration<T>` per entity; `ApplyConfigurationsFromAssembly`                     |
-| DB-03 | Schema initialisation at startup             | `Database.MigrateAsync()` at startup; `IDesignTimeDbContextFactory<T>` for tooling              |
+| ID    | Decision                                     | Resolution                                                                                                                                                                             |
+| ----- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OD-01 | "Keep Both" datetime format                  | UTC `yyyy-MM-ddTHHmmssZ` — see CR-04                                                                                                                                                   |
+| OD-02 | Conflict resolution selection model          | Checkbox per conflict; subset or Select All; strategy applies to all checked — see CR-06, CR-07                                                                                        |
+| OD-03 | Quota exceeded during upload                 | Error surfaced to user; manual resolution; no automatic retry                                                                                                                          |
+| OD-04 | Include shared OneDrive folders?             | No — excluded from scope                                                                                                                                                               |
+| OD-05 | Update distribution mechanism                | GitHub Releases with manual download — see UP-01, UP-02                                                                                                                                |
+| OD-06 | Maximum file size                            | No app-level limit; follow OneDrive API limits (250 GB chunked)                                                                                                                        |
+| OD-07 | Insecure token fallback — opt-in or warning? | Opt-in consent dialog; decision stored per account — see AU-03                                                                                                                         |
+| OD-08 | Linux packaging format for MVP               | AppImage — self-contained single-file aligns with existing build config                                                                                                                |
+| OD-09 | "Sync Now" scope                             | Per account; concurrent sync on same account rejected — see SE-03, SE-06                                                                                                               |
+| OD-10 | Database architecture                        | Single SQLite DB at `~/.local/share/astar-dev/file-data.db` (shared across AStar.Dev apps); WAL mode for concurrent access; synthetic account ID; PII contained to Accounts table only |
+| OD-11 | File system watching                         | Not in MVP — changes detected at sync time only (KISS; 300–500k files would exhaust inotify)                                                                                           |
+| OD-12 | Network failure during sync                  | Exponential backoff then mark interrupted — see EH-01                                                                                                                                  |
+| OD-13 | App user type scope                          | App-level (not per-account); set during onboarding; editable in Settings                                                                                                               |
+| OD-14 | Multiple app instances                       | Blocked — show message and exit (MVP); bring to foreground (Post-MVP)                                                                                                                  |
+| OD-15 | Downgrade path                               | Unsupported in MVP — re-add accounts if downgrade needed                                                                                                                               |
+| OD-16 | "Last synced" display format                 | Hybrid — relative for < 1 hour, absolute for older                                                                                                                                     |
+| OD-17 | Default concurrency                          | 5 (changed from 8 in previous spec)                                                                                                                                                    |
+| OD-18 | Special files (symlinks, .git, etc.)         | Skipped, logged, user informed post-sync                                                                                                                                               |
+| DB-01 | DateTime storage type in SQLite              | `DateTimeOffset` as Unix milliseconds (`long`) via EF Core value converters                                                                                                            |
+| DB-02 | EF Core entity configuration pattern         | `IEntityTypeConfiguration<T>` per entity; `ApplyConfigurationsFromAssembly`                                                                                                            |
+| DB-03 | Schema initialisation at startup             | `Database.MigrateAsync()` at startup; `IDesignTimeDbContextFactory<T>` for tooling                                                                                                     |
+| DB-04 | Database folder                              | `astar-dev/` shared folder in platform app-data path; created at startup if absent; consistent cross-platform conventions                                                              |
+| DB-05 | Concurrent database access                   | WAL mode enabled at startup; external AStar.Dev apps may be readers or writers                                                                                                         |
+| DB-06 | File metadata on flag disable                | Existing `SyncedFileMetadata` rows retained indefinitely when AM-12 flag is disabled; no automatic cleanup                                                                             |
+| DB-07 | First-launch DB migration                    | Copy old path (`~/.local/share/AStar.Dev.OneDriveSync/file-data.db`) to new shared path; leave old file in place; run `MigrateAsync()` against new path                                |
 
 ---
 
@@ -580,30 +613,32 @@ All decisions are incorporated into the requirements above. This table is retain
 
 ## 15. Post-MVP Roadmap
 
-| Area              | Item                                                                              |
-| ----------------- | --------------------------------------------------------------------------------- |
-| **Platforms**     | Windows packaging and release                                                     |
-| **Platforms**     | macOS packaging and release                                                       |
-| **Sync**          | Resumable downloads via range requests (SE-16)                                    |
-| **Sync**          | Bandwidth throttling per account                                                  |
-| **Sync**          | Per-file sync progress UI                                                         |
-| **Accounts**      | Entra ID / work account support                                                   |
-| **Settings**      | "Reset to Defaults" option                                                        |
-| **Settings**      | Configurable minimum free space threshold (EH-09)                                 |
-| **Notifications** | Configurable notification granularity per account (ST-06)                         |
-| **Theming**       | Accessible colour schemes — high contrast, colour-blind-friendly (TH-07)          |
-| **Theming**       | Additional custom themes beyond Light/Dark/Auto (TH-08)                           |
-| **Theming**       | Custom accent colour selection (TH-09)                                            |
-| **Localisation**  | Additional locale translations (LO-08)                                            |
-| **Accessibility** | Full keyboard-only operation for all interactions (including folder tree, wizard) |
-| **Accessibility** | Screen reader support via AT-SPI2 / Orca (NF-12)                                  |
-| **Updates**       | Scheduled update checks — not just at startup (UP-07)                             |
-| **Updates**       | Self-updating AppImage — download, replace, restart (UP-08)                       |
-| **Lifecycle**     | Bring existing instance to foreground on second launch attempt (AL-03)            |
-| **Privacy**       | Expand PII masking to include file paths/names in logs and DB (LG-08)             |
-| **Privacy**       | Formal GDPR data export / full data deletion beyond account removal               |
-| **Log Viewer**    | Discuss with users: graduated access beyond Casual/Power binary                   |
-| **Downgrade**     | Professional downgrade path (rollback DB migrations safely)                       |
+| Area              | Item                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| **Platforms**     | Windows packaging and release                                                              |
+| **Platforms**     | macOS packaging and release                                                                |
+| **Sync**          | Resumable downloads via range requests (SE-16)                                             |
+| **Sync**          | Bandwidth throttling per account                                                           |
+| **Sync**          | Per-file sync progress UI                                                                  |
+| **Accounts**      | Entra ID / work account support                                                            |
+| **Settings**      | "Reset to Defaults" option                                                                 |
+| **Settings**      | Configurable minimum free space threshold (EH-09)                                          |
+| **Notifications** | Configurable notification granularity per account (ST-06)                                  |
+| **Theming**       | Accessible colour schemes — high contrast, colour-blind-friendly (TH-07)                   |
+| **Theming**       | Additional custom themes beyond Light/Dark/Auto (TH-08)                                    |
+| **Theming**       | Custom accent colour selection (TH-09)                                                     |
+| **Localisation**  | Additional locale translations (LO-08)                                                     |
+| **Accessibility** | Full keyboard-only operation for all interactions (including folder tree, wizard)          |
+| **Accessibility** | Screen reader support via AT-SPI2 / Orca (NF-12)                                           |
+| **Updates**       | Scheduled update checks — not just at startup (UP-07)                                      |
+| **Updates**       | Self-updating AppImage — download, replace, restart (UP-08)                                |
+| **Lifecycle**     | Bring existing instance to foreground on second launch attempt (AL-03)                     |
+| **Privacy**       | Expand PII masking to include file paths/names in logs and DB (LG-08)                      |
+| **Privacy**       | Formal GDPR data export / full data deletion beyond account removal                        |
+| **Log Viewer**    | Discuss with users: graduated access beyond Casual/Power binary                            |
+| **Downgrade**     | Professional downgrade path (rollback DB migrations safely)                                |
+| **Privacy**       | Option to purge stored file metadata per account (companion to AM-15)                      |
+| **Database**      | Expose a read-only schema contract / versioned view layer for external AStar.Dev consumers |
 
 ---
 
