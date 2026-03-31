@@ -51,7 +51,9 @@ public sealed partial class GivenNoHardcodedColoursInAxamlFiles
         while (dir is not null)
         {
             if (dir.GetFiles("*.slnx").Length > 0)
+            {
                 return Path.Combine(dir.FullName, "apps", "desktop", "AStar.Dev.OneDriveSync");
+            }
 
             dir = dir.Parent;
         }

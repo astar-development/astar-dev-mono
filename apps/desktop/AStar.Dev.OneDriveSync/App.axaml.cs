@@ -7,6 +7,7 @@ using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
 using AStar.Dev.OneDriveSync.Infrastructure.Startup;
+using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -43,6 +44,9 @@ public partial class App : Application, IDisposable
         }
 
         DisableAvaloniaDataAnnotationValidation();
+
+        var themeService = _services.GetRequiredService<IThemeService>();
+        await themeService.InitialiseAsync(_appLifetimeCts.Token).ConfigureAwait(false);
 
         var viewModel  = _services.GetRequiredService<MainWindowViewModel>();
         var mainWindow = new MainWindow { DataContext = viewModel };

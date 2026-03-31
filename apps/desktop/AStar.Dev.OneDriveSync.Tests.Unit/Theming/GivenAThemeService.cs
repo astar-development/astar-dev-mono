@@ -137,6 +137,71 @@ public sealed class GivenAThemeService
     }
 
     [Fact]
+    public async Task when_initialised_with_stored_dark_theme_then_applies_dark_variant()
+    {
+        var stored = new AppSettings { Id = AppSettings.SingletonId, ThemeMode = nameof(ThemeMode.Dark) };
+        _ = _settingsRepository.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AppSettings?, ErrorResponse>.Ok(stored));
+        var sut = new ThemeService(_settingsRepository, _themeAdapter, _platformProvider, _logger);
+
+        _ = await sut.InitialiseAsync(TestContext.Current.CancellationToken);
+
+        _themeAdapter.Received(1).Apply(ThemeVariant.Dark);
+    }
+
+    [Fact]
+    public async Task when_initialised_with_stored_light_theme_then_applies_light_variant()
+    {
+        var stored = new AppSettings { Id = AppSettings.SingletonId, ThemeMode = nameof(ThemeMode.Light) };
+        _ = _settingsRepository.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AppSettings?, ErrorResponse>.Ok(stored));
+        var sut = new ThemeService(_settingsRepository, _themeAdapter, _platformProvider, _logger);
+
+        _ = await sut.InitialiseAsync(TestContext.Current.CancellationToken);
+
+        _themeAdapter.Received(1).Apply(ThemeVariant.Light);
+    }
+
+    [Fact]
+    public async Task when_initialised_with_no_stored_settings_then_falls_back_to_auto_and_consults_platform()
+    {
+        _ = _settingsRepository.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AppSettings?, ErrorResponse>.Ok(null));
+        _ = _platformProvider.IsDarkMode.Returns(false);
+        var sut = new ThemeService(_settingsRepository, _themeAdapter, _platformProvider, _logger);
+
+        _ = await sut.InitialiseAsync(TestContext.Current.CancellationToken);
+
+        _themeAdapter.Received().Apply(ThemeVariant.Light);
+    }
+
+    [Fact]
+    public async Task when_initialised_and_repository_returns_error_then_falls_back_to_auto()
+    {
+        _ = _settingsRepository.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AppSettings?, ErrorResponse>.Error(new ErrorResponse("db error")));
+        _ = _platformProvider.IsDarkMode.Returns(true);
+        var sut = new ThemeService(_settingsRepository, _themeAdapter, _platformProvider, _logger);
+
+        _ = await sut.InitialiseAsync(TestContext.Current.CancellationToken);
+
+        _themeAdapter.Received().Apply(ThemeVariant.Dark);
+    }
+
+    [Fact]
+    public async Task when_initialised_with_stored_dark_theme_then_current_mode_is_dark()
+    {
+        var stored = new AppSettings { Id = AppSettings.SingletonId, ThemeMode = nameof(ThemeMode.Dark) };
+        _ = _settingsRepository.GetAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AppSettings?, ErrorResponse>.Ok(stored));
+        var sut = new ThemeService(_settingsRepository, _themeAdapter, _platformProvider, _logger);
+
+        _ = await sut.InitialiseAsync(TestContext.Current.CancellationToken);
+
+        sut.CurrentMode.ShouldBe(ThemeMode.Dark);
+    }
+
+    [Fact]
     public async Task when_switching_from_auto_to_dark_then_platform_subscription_is_cancelled()
     {
         var darkModeSubject = new Subject<bool>();

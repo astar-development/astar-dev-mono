@@ -17,14 +17,17 @@ internal static class PersistenceServiceExtensions
         _ = services.AddSingleton<IAppDataPathProvider, LocalAppDataPathProvider>();
         _ = services.AddSingleton<IDbBackupService, DbBackupService>();
 
-        _ = services.AddDbContext<AppDbContext>((sp, options) =>
-        {
-            var pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
-            _ = Directory.CreateDirectory(pathProvider.AppDataDirectory);
-            string dbPath = Path.Combine(pathProvider.AppDataDirectory, "file-data.db");
-            _ = options.UseSqlite($"DataSource={dbPath}");
-        });
+        _ = services.AddDbContext<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
+        _ = services.AddDbContextFactory<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
 
         return services;
+    }
+
+    private static void ConfigureOptions(IServiceProvider sp, DbContextOptionsBuilder options)
+    {
+        var pathProvider = sp.GetRequiredService<IAppDataPathProvider>();
+        _ = Directory.CreateDirectory(pathProvider.AppDataDirectory);
+        string dbPath = Path.Combine(pathProvider.AppDataDirectory, "file-data.db");
+        _ = options.UseSqlite($"DataSource={dbPath}");
     }
 }

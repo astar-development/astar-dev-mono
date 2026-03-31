@@ -7,6 +7,7 @@ using AStar.Dev.OneDriveSync.Features.Help;
 using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using AStar.Dev.OneDriveSync.Features.Settings;
+using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;
@@ -15,6 +16,8 @@ internal static class ShellServiceExtensions
 {
     internal static IServiceCollection AddShell(this IServiceCollection services)
     {
+        _ = services.AddTheming();
+
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
         featureAvailability.Freeze();
@@ -37,5 +40,8 @@ internal static class ShellServiceExtensions
     }
 
     private static void RegisterAvailableFeatures(FeatureAvailabilityService service)
-        => service.Register(NavSection.Dashboard);
+    {
+        service.Register(NavSection.Dashboard);
+        service.Register(NavSection.Settings);
+    }
 }
