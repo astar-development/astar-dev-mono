@@ -2,9 +2,9 @@ using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
-internal sealed class UserTypeService(AppDbContext dbContext) : IUserTypeService
+internal sealed class UserTypeService(IAppDbContext dbContext) : IUserTypeService
 {
-    private readonly AppDbContext _dbContext = dbContext;
+    private readonly IAppDbContext _dbContext = dbContext;
     private UserType _currentUserType;
     private bool _initialized;
 
