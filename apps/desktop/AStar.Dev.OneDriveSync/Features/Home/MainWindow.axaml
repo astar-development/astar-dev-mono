@@ -16,11 +16,11 @@
 
         <!-- Startup error banner — spans the full width above all columns -->
         <Border Grid.Row="0"
-                Background="#C0392B"
+                Background="{DynamicResource BackgroundErrorBrush}"
                 Padding="12,8"
                 IsVisible="{Binding HasStartupError}">
             <TextBlock Text="{Binding StartupErrorMessage}"
-                       Foreground="White"
+                       Foreground="{DynamicResource TextOnErrorBrush}"
                        FontWeight="SemiBold"/>
         </Border>
 

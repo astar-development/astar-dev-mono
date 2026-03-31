@@ -53,6 +53,9 @@
             <SolidColorBrush x:Key="BackgroundSuccessBrush" Color="#EAF3DE"/>
             <SolidColorBrush x:Key="TextSuccessBrush"       Color="#27500A"/>
 
+            <SolidColorBrush x:Key="BackgroundErrorBrush" Color="#C0392B"/>
+            <SolidColorBrush x:Key="TextOnErrorBrush"    Color="#FFFFFF"/>
+
             <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
             <SolidColorBrush x:Key="TextOnAccentBrush"        Color="#FFFFFF"/>
             <SolidColorBrush x:Key="OverlayBackgroundBrush"   Color="#80000000"/>
@@ -101,6 +104,9 @@
             <SolidColorBrush x:Key="TextWarningBrush"       Color="#FAC775"/>
             <SolidColorBrush x:Key="BackgroundSuccessBrush" Color="#173404"/>
             <SolidColorBrush x:Key="TextSuccessBrush"       Color="#C0DD97"/>
+
+            <SolidColorBrush x:Key="BackgroundErrorBrush" Color="#C0392B"/>
+            <SolidColorBrush x:Key="TextOnErrorBrush"    Color="#FFFFFF"/>
 
             <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
             <SolidColorBrush x:Key="TextOnAccentBrush"        Color="#FFFFFF"/>
