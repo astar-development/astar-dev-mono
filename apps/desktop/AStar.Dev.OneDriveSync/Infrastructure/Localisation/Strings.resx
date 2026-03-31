@@ -113,5 +113,29 @@
   <data name="LogViewer_ComingSoon" xml:space="preserve">
     <value>Log Viewer — coming soon</value>
   </data>
+  <data name="Onboarding_Welcome" xml:space="preserve">
+    <value>Welcome to OneDrive Sync</value>
+  </data>
+  <data name="Onboarding_Description" xml:space="preserve">
+    <value>Keep your OneDrive files in sync with your computer. Choose account settings below to get started.</value>
+  </data>
+  <data name="Onboarding_UserType" xml:space="preserve">
+    <value>User Type</value>
+  </data>
+  <data name="Onboarding_Casual" xml:space="preserve">
+    <value>Casual (default, simple settings)</value>
+  </data>
+  <data name="Onboarding_PowerUser" xml:space="preserve">
+    <value>Power User (advanced settings &amp; tuning)</value>
+  </data>
+  <data name="Onboarding_AddAccount" xml:space="preserve">
+    <value>Add my first account</value>
+  </data>
+  <data name="Onboarding_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="Onboarding_Help" xml:space="preserve">
+    <value>Help &amp; Documentation</value>
+  </data>
 
 </root>

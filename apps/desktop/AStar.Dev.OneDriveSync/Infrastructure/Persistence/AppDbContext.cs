@@ -11,7 +11,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 ///     <see cref="ModelBuilder.ApplyConfigurationsFromAssembly" /> — no inline
 ///     <c>modelBuilder.Entity&lt;T&gt;()</c> calls (AC DB-02).
 /// </summary>
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options), IAppDbContext
 {
     /// <summary>Accounts — the sole PII-bearing table.</summary>
     public DbSet<Account> Accounts => Set<Account>();

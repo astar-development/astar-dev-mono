@@ -20,6 +20,8 @@ internal static class PersistenceServiceExtensions
         _ = services.AddDbContext<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
         _ = services.AddDbContextFactory<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
 
+        _ = services.AddSingleton<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
         return services;
     }
 

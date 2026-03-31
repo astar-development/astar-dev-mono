@@ -1,3 +1,5 @@
+using AStar.Dev.OneDriveSync.Features.Onboarding;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 /// <summary>
@@ -17,4 +19,7 @@ public sealed class AppSettings
 
     /// <summary>BCP-47 locale code (e.g. <c>en-GB</c>). Defaults to <c>en-GB</c> (the only MVP locale).</summary>
     public string Locale { get; set; } = "en-GB";
+
+    /// <summary>User type preference: Casual or PowerUser (OH-04, AM-05).</summary>
+    public string UserType { get; set; } = "Casual";
 }

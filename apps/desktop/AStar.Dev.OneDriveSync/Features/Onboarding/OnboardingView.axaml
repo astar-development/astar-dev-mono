@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:DataType="local:OnboardingViewModel"
+             xmlns:local="using:AStar.Dev.OneDriveSync.Features.Onboarding"
+             xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
+             x:Class="AStar.Dev.OneDriveSync.Features.Onboarding.OnboardingView">
+    <Border Padding="24">
+        <StackPanel Spacing="16">
+            <TextBlock Text="{loc:Localise Onboarding_Welcome}" FontSize="24" FontWeight="Bold" />
+
+            <TextBlock Text="{loc:Localise Onboarding_Description}"
+                       TextWrapping="Wrap" />
+
+            <!-- User Type Selection -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="{loc:Localise Onboarding_UserType}" FontWeight="Bold" />
+
+                <StackPanel Spacing="8">
+                    <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_Casual}" />
+                    <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_PowerUser}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Action Buttons -->
+            <StackPanel Spacing="12" Margin="0,24,0,0">
+                <Button Content="{loc:Localise Onboarding_AddAccount}" />
+                <Button Content="{loc:Localise Onboarding_Skip}" />
+            </StackPanel>
+
+            <!-- Help Link -->
+            <StackPanel HorizontalAlignment="Center" Margin="0,24,0,0">
+                <Button Content="{loc:Localise Onboarding_Help}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
