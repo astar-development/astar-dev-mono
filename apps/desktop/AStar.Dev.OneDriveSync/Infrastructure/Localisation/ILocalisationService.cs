@@ -8,8 +8,8 @@ public interface ILocalisationService
     /// <summary>The BCP-47 locale code currently active (e.g. <c>en-GB</c>).</summary>
     string CurrentLocale { get; }
 
-    /// <summary>All locales supported in the current build.</summary>
-    IReadOnlyList<string> SupportedLocales { get; }
+    /// <summary>All locales supported in the current build; built once at startup and never mutated.</summary>
+    IReadOnlySet<string> SupportedLocales { get; }
 
     /// <summary>Returns the localised string for <paramref name="key" />, or the key itself if not found.</summary>
     string GetString(string key);

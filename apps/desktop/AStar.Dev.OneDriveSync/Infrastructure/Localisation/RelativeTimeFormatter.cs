@@ -16,11 +16,13 @@ internal sealed class RelativeTimeFormatter(ILocalisationService localisationSer
         return FormatAbsolute(timestamp, now);
     }
 
-    private static string FormatRelative(TimeSpan diff)
+    private string FormatRelative(TimeSpan diff)
     {
         var minutes = Math.Max(1, (int)diff.TotalMinutes);
 
-        return minutes == 1 ? "1 minute ago" : $"{minutes} minutes ago";
+        return minutes == 1
+            ? localisationService.GetString("RelativeTimeFormatter_OneMinuteAgo")
+            : string.Format(CultureInfo.InvariantCulture, localisationService.GetString("RelativeTimeFormatter_MinutesAgo"), minutes);
     }
 
     private string FormatAbsolute(DateTimeOffset timestamp, DateTimeOffset now)

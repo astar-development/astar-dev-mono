@@ -10,6 +10,8 @@ public sealed class GivenARelativeTimeFormatter
     public GivenARelativeTimeFormatter()
     {
         _localisationService.CurrentLocale.Returns("en-GB");
+        _localisationService.GetString("RelativeTimeFormatter_OneMinuteAgo").Returns("1 minute ago");
+        _localisationService.GetString("RelativeTimeFormatter_MinutesAgo").Returns("{0} minutes ago");
         _sut = new RelativeTimeFormatter(_localisationService);
     }
 
@@ -77,5 +79,16 @@ public sealed class GivenARelativeTimeFormatter
         var result = _sut.Format(timestamp, now);
 
         result.ShouldBe("25 Mar at 09:15");
+    }
+
+    [Fact]
+    public void when_timestamp_is_in_the_future_then_returns_one_minute_ago()
+    {
+        var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
+        var timestamp = now.AddMinutes(5);
+
+        var result = _sut.Format(timestamp, now);
+
+        result.ShouldBe("1 minute ago");
     }
 }

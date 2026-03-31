@@ -4,8 +4,9 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 
 /// <summary>
 ///     INPC wrapper around a single localised string key.  Subscribed to
-///     <see cref="ILocalisationService.LocaleChanged" /> so that any binding pointing
-///     at <see cref="Value" /> updates automatically when the locale changes.
+///     <see cref="ILocalisationService.LocaleChanged" /> via a <see cref="WeakReference{T}" />
+///     so that the source can be garbage-collected when the binding is released, preventing the
+///     singleton service from rooting orphaned instances indefinitely.
 /// </summary>
 internal sealed class LocalisedStringSource : INotifyPropertyChanged
 {
@@ -16,7 +17,13 @@ internal sealed class LocalisedStringSource : INotifyPropertyChanged
     {
         _key     = key;
         _service = service;
-        _service.LocaleChanged += OnLocaleChanged;
+
+        var weakSelf = new WeakReference<LocalisedStringSource>(this);
+        service.LocaleChanged += (_, _) =>
+        {
+            if (weakSelf.TryGetTarget(out var target))
+                target.PropertyChanged?.Invoke(target, new PropertyChangedEventArgs(nameof(Value)));
+        };
     }
 
     /// <summary>The current localised value for the bound key.</summary>
@@ -24,7 +31,4 @@ internal sealed class LocalisedStringSource : INotifyPropertyChanged
 
     /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnLocaleChanged(object? sender, EventArgs e) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
 }

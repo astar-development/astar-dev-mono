@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 using System.Resources;
 using AStar.Dev.Functional.Extensions;
@@ -23,7 +24,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
     public string CurrentLocale => _currentCulture.Name;
 
     /// <inheritdoc />
-    public IReadOnlyList<string> SupportedLocales { get; } = ["en-GB"];
+    public IReadOnlySet<string> SupportedLocales { get; } = FrozenSet.Create("en-GB");
 
     /// <inheritdoc />
     public event EventHandler? LocaleChanged;
@@ -38,10 +39,22 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
 
         var locale = result is Result<AppSettings?, ErrorResponse>.Ok ok && ok.Value?.Locale is { } persisted
             ? persisted
-            : "en-GB";
+            : ResolveFirstLaunchLocale();
 
         ApplyLocale(locale);
         LogLocaleInitialised(logger, locale);
+    }
+
+    private string ResolveFirstLaunchLocale()
+    {
+        var osLocale = CultureInfo.CurrentUICulture.Name;
+
+        if (SupportedLocales.Contains(osLocale))
+            return osLocale;
+
+        LogOsLocaleNotSupported(logger, osLocale);
+
+        return "en-GB";
     }
 
     /// <inheritdoc />
@@ -88,4 +101,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Locale changed to {Locale}")]
     private static partial void LogLocaleChanged(MelILogger logger, string locale);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "OS locale {OsLocale} is not supported; applying en-GB silently")]
+    private static partial void LogOsLocaleNotSupported(MelILogger logger, string osLocale);
 }

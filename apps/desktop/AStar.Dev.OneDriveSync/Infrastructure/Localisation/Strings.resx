@@ -39,12 +39,20 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
 
-  <!-- Main Window -->
   <data name="MainWindow_Title" xml:space="preserve">
     <value>AStar Dev OneDrive Sync</value>
   </data>
   <data name="MainWindow_Loading" xml:space="preserve">
     <value>Initialising…</value>
+  </data>
+  <data name="Errors_DatabaseCorrupt" xml:space="preserve">
+    <value>Database is corrupt. Please restart and choose 'Start Fresh' when prompted.</value>
+  </data>
+  <data name="RelativeTimeFormatter_OneMinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+  </data>
+  <data name="RelativeTimeFormatter_MinutesAgo" xml:space="preserve">
+    <value>{0} minutes ago</value>
   </data>
 
   <!-- Settings -->
@@ -57,8 +65,6 @@
   <data name="Settings_LocaleLabel" xml:space="preserve">
     <value>Language</value>
   </data>
-
-  <!-- Navigation labels -->
   <data name="Nav_Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>
@@ -86,8 +92,6 @@
   <data name="Nav_ComingSoonSuffix" xml:space="preserve">
     <value>— Coming soon</value>
   </data>
-
-  <!-- Feature placeholder views -->
   <data name="Dashboard_ComingSoon" xml:space="preserve">
     <value>Dashboard — coming soon</value>
   </data>

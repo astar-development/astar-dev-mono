@@ -40,7 +40,7 @@ public sealed class SettingsViewModel : ViewModelBase
     public ReadOnlyCollection<ThemeMode> ThemeModes { get; }
 
     /// <summary>Supported locale codes exposed for the locale selector dropdown.</summary>
-    public IReadOnlyList<string> SupportedLocales { get; }
+    public IReadOnlySet<string> SupportedLocales { get; }
 
     /// <summary>The currently selected theme mode; changing it immediately applies and persists the theme.</summary>
     public ThemeMode SelectedTheme
