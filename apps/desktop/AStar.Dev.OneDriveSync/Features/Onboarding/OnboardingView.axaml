@@ -2,32 +2,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:DataType="local:OnboardingViewModel"
              xmlns:local="using:AStar.Dev.OneDriveSync.Features.Onboarding"
+             xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Onboarding.OnboardingView">
     <StackPanel Spacing="16" Padding="24">
-        <TextBlock Text="Welcome to OneDrive Sync" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="{loc:Localise Onboarding_Welcome}" FontSize="24" FontWeight="Bold" />
         
-        <TextBlock Text="Keep your OneDrive files in sync with your computer. Choose account settings below to get started."
+        <TextBlock Text="{loc:Localise Onboarding_Description}"
                    TextWrapping="Wrap" />
         
         <!-- User Type Selection -->
         <StackPanel Spacing="12">
-            <TextBlock Text="User Type" FontWeight="Bold" />
+            <TextBlock Text="{loc:Localise Onboarding_UserType}" FontWeight="Bold" />
             
             <StackPanel Spacing="8">
-                <RadioButton GroupName="UserType" Content="Casual (default, simple settings)" />
-                <RadioButton GroupName="UserType" Content="Power User (advanced settings &amp; tuning)" />
+                <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_Casual}" />
+                <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_PowerUser}" />
             </StackPanel>
         </StackPanel>
         
         <!-- Action Buttons -->
         <StackPanel Spacing="12" Margin="0,24,0,0">
-            <Button Content="Add my first account" />
-            <Button Content="Skip" />
+            <Button Content="{loc:Localise Onboarding_AddAccount}" />
+            <Button Content="{loc:Localise Onboarding_Skip}" />
         </StackPanel>
         
         <!-- Help Link -->
         <StackPanel HorizontalAlignment="Center" Margin="0,24,0,0">
-            <Button Content="Help &amp; Documentation" />
+            <Button Content="{loc:Localise Onboarding_Help}" />
         </StackPanel>
     </StackPanel>
 </UserControl>
