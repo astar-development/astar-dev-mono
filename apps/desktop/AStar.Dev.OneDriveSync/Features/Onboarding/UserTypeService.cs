@@ -1,8 +1,23 @@
+using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
+
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
-public sealed class UserTypeService
+internal sealed class UserTypeService(AppDbContext dbContext) : IUserTypeService
 {
-    public UserType CurrentUserType { get; private set; } = UserType.Casual;
+    private readonly AppDbContext _dbContext = dbContext;
+    private UserType _currentUserType;
+    private bool _initialized;
+
+    public UserType CurrentUserType
+    {
+        get
+        {
+            if (!_initialized)
+                LoadUserType();
+
+            return _currentUserType;
+        }
+    }
 
     public event EventHandler<EventArgs>? ConfirmationRequested;
 
@@ -10,7 +25,9 @@ public sealed class UserTypeService
 
     public void SetUserType(UserType userType)
     {
-        CurrentUserType = userType;
+        _currentUserType = userType;
+        _initialized = true;
+        PersistUserType();
     }
 
     public void RequestUserTypeChange(UserType userType)
@@ -22,7 +39,7 @@ public sealed class UserTypeService
         }
         else if (userType == UserType.Casual)
         {
-            CurrentUserType = userType;
+            SetUserType(userType);
         }
     }
 
@@ -30,7 +47,34 @@ public sealed class UserTypeService
     {
         if (accepted)
         {
-            CurrentUserType = _pendingUserType;
+            SetUserType(_pendingUserType);
+        }
+    }
+
+    private void LoadUserType()
+    {
+        var settings = _dbContext.AppSettings.FirstOrDefault();
+
+        if (settings != null && Enum.TryParse<UserType>(settings.UserType, out var userType))
+        {
+            _currentUserType = userType;
+        }
+        else
+        {
+            _currentUserType = UserType.Casual;
+        }
+
+        _initialized = true;
+    }
+
+    private void PersistUserType()
+    {
+        var settings = _dbContext.AppSettings.FirstOrDefault();
+
+        if (settings != null)
+        {
+            settings.UserType = _currentUserType.ToString();
+            _ = _dbContext.SaveChanges();
         }
     }
 }
