@@ -125,10 +125,10 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 ### Avalonia XAML (compiled bindings)
 
 - All Avalonia apps in this repo set `AvaloniaUseCompiledBindingsByDefault=true`. Every XAML view that contains bindings **must** declare `x:DataType` referencing its ViewModel:
-  ```xml
-  <Window xmlns:vm="clr-namespace:MyApp.MyFeature"
-          x:DataType="vm:MyFeatureViewModel" ...>
-  ```
+    ```xml
+    <Window xmlns:vm="clr-namespace:MyApp.MyFeature"
+            x:DataType="vm:MyFeatureViewModel" ...>
+    ```
 - Omitting `x:DataType` causes `AVLN2100` build errors. Every new AXAML file must include this declaration before adding any `{Binding ...}` expressions.
 
 ### Avalonia DI lifetimes
@@ -193,3 +193,4 @@ Legitimate exceptions: genuinely cross-cutting infrastructure (e.g. `Middleware/
 - [ ] Every `return` statement is preceded by a blank line
 - [ ] Structured log messages (no interpolated strings passed to Serilog)
 - [ ] New package `.csproj` has required metadata fields
+- [ ] When implementing a User Story (or similar), with a checklist, have the items been marked as done?

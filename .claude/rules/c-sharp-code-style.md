@@ -15,6 +15,7 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - **Constants**: CONSTANT_CASE or PascalCase
 - Use meaningful names that clearly convey purpose; avoid abbreviations unless widely understood
 - Use `nameof()` for parameter names in exceptions and logging
+- NEVER use single-letter variable names except for loop indices (e.g., `i`, `j`, `k`).
 
 ## Namespaces
 
@@ -107,7 +108,6 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Use Shouldly for more readable and expressive assertions in tests.
 - Use NSubstitute for mocking dependencies in tests. Avoid mocking when possible; prefer using real instances or test doubles.
 - Never add XML documentation or comments to test classes or test methods.
-
 
 ## Utilities
 

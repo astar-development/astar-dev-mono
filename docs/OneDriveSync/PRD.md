@@ -601,12 +601,12 @@ All decisions are incorporated into the requirements above. This table is retain
 
 ## 14. Assumptions to Validate (Technical Spikes)
 
-1. Microsoft Graph delta query is sufficient for incremental sync and detects remote folder renames - CONFIRED
-2. Avalonia 11.3.12 supports system tray on KDE Plasma 43+ via a community package - CONFIRED
-3. MSAL public client flow works on Fedora Linux without a local HTTP redirect server (or one is trivial to add) - CONFIRED
-4. MSAL and Graph SDK are trim-compatible with the existing self-contained build config - CONFIRED
-5. SQLite via EF Core is performant for conflict queue, sync state, and delta tokens at scale (300 - CONFIRED–500k files)
-6. "Personal Microsoft account" = `consumers` tenant — no multi-tenant requirements - CONFIRED
+1. Microsoft Graph delta query is sufficient for incremental sync and detects remote folder renames - CONFIRMED
+2. Avalonia 11.3.12 supports system tray on KDE Plasma 43+ via a community package - CONFIRMED
+3. MSAL public client flow works on Fedora Linux without a local HTTP redirect server (or one is trivial to add) - CONFIRMED
+4. MSAL and Graph SDK are trim-compatible with the existing self-contained build config - CONFIRMED
+5. SQLite via EF Core is performant for conflict queue, sync state, and delta tokens at scale (300 - CONFIRMED–500k files)
+6. "Personal Microsoft account" = `consumers` tenant — no multi-tenant requirements - CONFIRMED
 7. AppImage can register for OS autostart via `.desktop` file without root access
 
 ---
