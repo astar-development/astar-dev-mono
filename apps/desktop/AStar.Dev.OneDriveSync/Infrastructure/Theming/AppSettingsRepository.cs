@@ -17,7 +17,7 @@ internal sealed partial class AppSettingsRepository(IDbContextFactory<AppDbConte
         {
             await using var ctx = await contextFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
             var settings = await ctx.AppSettings.FindAsync([AppSettings.SingletonId], ct).ConfigureAwait(false);
-            LogSettingsLoaded(logger, settings?.ThemeMode ?? "(none)");
+            LogSettingsLoaded(logger, settings?.ThemeMode ?? "(none)", settings?.Locale ?? "(none)");
 
             return new Result<AppSettings?, ErrorResponse>.Ok(settings);
         }
@@ -40,10 +40,13 @@ internal sealed partial class AppSettingsRepository(IDbContextFactory<AppDbConte
             if (existing is null)
                 ctx.AppSettings.Add(settings);
             else
+            {
                 existing.ThemeMode = settings.ThemeMode;
+                existing.Locale    = settings.Locale;
+            }
 
             _ = await ctx.SaveChangesAsync(ct).ConfigureAwait(false);
-            LogSettingsSaved(logger, settings.ThemeMode);
+            LogSettingsSaved(logger, settings.ThemeMode, settings.Locale);
 
             return new Result<AppSettings, ErrorResponse>.Ok(settings);
         }
@@ -55,14 +58,14 @@ internal sealed partial class AppSettingsRepository(IDbContextFactory<AppDbConte
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "App settings loaded — ThemeMode={ThemeMode}")]
-    private static partial void LogSettingsLoaded(MelILogger logger, string themeMode);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "App settings loaded — ThemeMode={ThemeMode}, Locale={Locale}")]
+    private static partial void LogSettingsLoaded(MelILogger logger, string themeMode, string locale);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to load app settings")]
     private static partial void LogSettingsLoadFailed(MelILogger logger, Exception ex);
 
-    [LoggerMessage(Level = LogLevel.Debug, Message = "App settings saved — ThemeMode={ThemeMode}")]
-    private static partial void LogSettingsSaved(MelILogger logger, string themeMode);
+    [LoggerMessage(Level = LogLevel.Debug, Message = "App settings saved — ThemeMode={ThemeMode}, Locale={Locale}")]
+    private static partial void LogSettingsSaved(MelILogger logger, string themeMode, string locale);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Failed to save app settings")]
     private static partial void LogSettingsSaveFailed(MelILogger logger, Exception ex);

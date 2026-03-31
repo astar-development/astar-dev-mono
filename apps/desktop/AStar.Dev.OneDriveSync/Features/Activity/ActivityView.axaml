@@ -1,9 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AStar.Dev.OneDriveSync.Features.Activity"
+             xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Activity.ActivityView"
              x:DataType="vm:ActivityViewModel">
-    <TextBlock Text="Activity — coming soon"
+    <TextBlock Text="{loc:Localise Activity_ComingSoon}"
                HorizontalAlignment="Center"
                VerticalAlignment="Center" />
 </UserControl>

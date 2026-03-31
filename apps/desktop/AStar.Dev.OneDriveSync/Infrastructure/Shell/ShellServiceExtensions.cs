@@ -7,6 +7,7 @@ using AStar.Dev.OneDriveSync.Features.Help;
 using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using AStar.Dev.OneDriveSync.Features.Settings;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,7 @@ internal static class ShellServiceExtensions
 {
     internal static IServiceCollection AddShell(this IServiceCollection services)
     {
+        _ = services.AddLocalisation();
         _ = services.AddTheming();
 
         var featureAvailability = new FeatureAvailabilityService();

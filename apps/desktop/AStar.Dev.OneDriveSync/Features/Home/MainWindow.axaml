@@ -2,13 +2,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AStar.Dev.OneDriveSync.Features.Home"
         xmlns:shell="using:AStar.Dev.OneDriveSync.Infrastructure.Shell"
+        xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
         x:Class="AStar.Dev.OneDriveSync.Features.Home.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="avares://AStar.Dev.OneDriveSync/Assets/astar.ico"
-        Title="AStar OneDrive Sync"
+        Title="{loc:Localise MainWindow_Title}"
         MinWidth="900" MinHeight="600"
         Background="{DynamicResource BackgroundPrimaryBrush}">
 
@@ -82,7 +83,7 @@
                             VerticalAlignment="Center"
                             Spacing="12">
                     <ProgressBar IsIndeterminate="True" Width="240"/>
-                    <TextBlock Text="Initialising…"
+                    <TextBlock Text="{loc:Localise MainWindow_Loading}"
                                HorizontalAlignment="Center"/>
                 </StackPanel>
 

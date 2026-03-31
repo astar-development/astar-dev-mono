@@ -7,6 +7,7 @@ using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
 using AStar.Dev.OneDriveSync.Infrastructure.Startup;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,10 @@ public partial class App : Application, IDisposable
 
         var themeService = _services.GetRequiredService<IThemeService>();
         await themeService.InitialiseAsync(_appLifetimeCts.Token).ConfigureAwait(false);
+
+        var localisationService = _services.GetRequiredService<ILocalisationService>();
+        await localisationService.InitialiseAsync(_appLifetimeCts.Token).ConfigureAwait(false);
+        LocalisationServiceLocator.Instance = localisationService;
 
         var viewModel  = _services.GetRequiredService<MainWindowViewModel>();
         var mainWindow = new MainWindow { DataContext = viewModel };
