@@ -1,5 +1,6 @@
 using AStar.Dev.OneDriveSync.Infrastructure;
 using System.Reactive;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
 using ReactiveUI;
 
@@ -9,6 +10,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly INavigationService          _navigationService;
     private readonly IFeatureAvailabilityService _featureAvailability;
+    private readonly ILocalisationService        _localisationService;
     private readonly IReadOnlyList<NavItemViewModel> _allNavItems;
 
     // Material Design 24x24 icon paths (viewBox 0 0 24 24)
@@ -21,10 +23,11 @@ public partial class MainWindowViewModel : ViewModelBase
     private const string HelpIconPath      = "M11,18 H13 V16 H11 V18 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z M12,6 C9.79,6 8,7.79 8,10 H10 C10,8.9 10.9,8 12,8 C13.1,8 14,8.9 14,10 C14,12 11,11.75 11,15 H13 C13,12.75 16,12.5 16,10 C16,7.79 14.21,6 12,6 Z";
     private const string AboutIconPath     = "M11,17 H13 V11 H11 V17 Z M11,9 H13 V7 H11 V9 Z M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M12,20 C7.59,20 4,16.41 4,12 C4,7.59 7.59,4 12,4 C16.41,4 20,7.59 20,12 C20,16.41 16.41,20 12,20 Z";
 
-    public MainWindowViewModel(INavigationService navigationService, IFeatureAvailabilityService featureAvailability)
+    public MainWindowViewModel(INavigationService navigationService, IFeatureAvailabilityService featureAvailability, ILocalisationService localisationService)
     {
         _navigationService   = navigationService;
         _featureAvailability = featureAvailability;
+        _localisationService = localisationService;
 
         NavigateCommand = ReactiveCommand.Create<NavSection>(Navigate);
         _allNavItems    = BuildNavItems();
@@ -101,26 +104,28 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private IReadOnlyList<NavItemViewModel> BuildNavItems() =>
     [
-        CreateNavItem(NavSection.Dashboard, "Dashboard", DashboardIconPath),
-        CreateNavItem(NavSection.Accounts,  "Accounts",  AccountsIconPath),
-        CreateNavItem(NavSection.Activity,  "Activity",  ActivityIconPath),
-        CreateNavItem(NavSection.Conflicts, "Conflicts", ConflictsIconPath),
-        CreateNavItem(NavSection.LogViewer, "Log Viewer",LogViewerIconPath),
-        CreateNavItem(NavSection.Settings,  "Settings",  SettingsIconPath),
-        CreateNavItem(NavSection.Help,      "Help",      HelpIconPath),
-        CreateNavItem(NavSection.About,     "About",     AboutIconPath),
+        CreateNavItem(NavSection.Dashboard, "Nav_Dashboard", DashboardIconPath),
+        CreateNavItem(NavSection.Accounts,  "Nav_Accounts",  AccountsIconPath),
+        CreateNavItem(NavSection.Activity,  "Nav_Activity",  ActivityIconPath),
+        CreateNavItem(NavSection.Conflicts, "Nav_Conflicts", ConflictsIconPath),
+        CreateNavItem(NavSection.LogViewer, "Nav_LogViewer", LogViewerIconPath),
+        CreateNavItem(NavSection.Settings,  "Nav_Settings",  SettingsIconPath),
+        CreateNavItem(NavSection.Help,      "Nav_Help",      HelpIconPath),
+        CreateNavItem(NavSection.About,     "Nav_About",     AboutIconPath),
     ];
 
-    private NavItemViewModel CreateNavItem(NavSection section, string label, string iconPath)
+    private NavItemViewModel CreateNavItem(NavSection section, string labelKey, string iconPath)
     {
-        bool isEnabled = _featureAvailability.IsAvailable(section);
+        bool   isEnabled    = _featureAvailability.IsAvailable(section);
+        string label        = _localisationService.GetString(labelKey);
+        string comingSoon   = _localisationService.GetString("Nav_ComingSoonSuffix");
 
         return new NavItemViewModel
         {
             Section          = section,
             Label            = label,
             IsFeatureEnabled = isEnabled,
-            Tooltip          = isEnabled ? label : $"{label} — Coming soon",
+            Tooltip          = isEnabled ? label : $"{label} {comingSoon}",
             NavigateCommand  = NavigateCommand,
             IconPath         = iconPath,
         };

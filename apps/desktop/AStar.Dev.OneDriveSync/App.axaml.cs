@@ -7,6 +7,7 @@ using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
 using AStar.Dev.OneDriveSync.Infrastructure.Startup;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,10 @@ public partial class App : Application, IDisposable
         var themeService = _services.GetRequiredService<IThemeService>();
         await themeService.InitialiseAsync(_appLifetimeCts.Token).ConfigureAwait(false);
 
+        var localisationService = _services.GetRequiredService<ILocalisationService>();
+        await localisationService.InitialiseAsync(_appLifetimeCts.Token).ConfigureAwait(false);
+        LocalisationServiceLocator.Instance = localisationService;
+
         var viewModel  = _services.GetRequiredService<MainWindowViewModel>();
         var mainWindow = new MainWindow { DataContext = viewModel };
 
@@ -70,26 +75,23 @@ public partial class App : Application, IDisposable
 
     private async Task RunStartupTasksAsync(MainWindowViewModel viewModel, CancellationToken ct)
     {
-        var services     = _services!;
-        var logger       = services.GetRequiredService<ILogger<App>>();
-        var orchestrator = services.GetRequiredService<StartupOrchestrator>();
+        var services             = _services!;
+        var logger               = services.GetRequiredService<ILogger<App>>();
+        var orchestrator         = services.GetRequiredService<StartupOrchestrator>();
+        var localisationService  = services.GetRequiredService<ILocalisationService>();
 
         LogAppStarting(logger, _appVersion);
 
         var results = await orchestrator.RunAsync(ct).ConfigureAwait(false);
 
         if (MigrationFailed(results))
-            NotifyDatabaseCorrupt(viewModel);
+            viewModel.SetStartupError(localisationService.GetString("Errors_DatabaseCorrupt"));
 
         viewModel.CompleteStartup();
     }
 
     private static bool MigrationFailed(IReadOnlyList<StartupTaskResult> results) =>
         results.Any(r => r.TaskName == DatabaseMigrationStartupTask.TaskName && !r.Succeeded);
-
-    private static void NotifyDatabaseCorrupt(MainWindowViewModel viewModel) =>
-        viewModel.SetStartupError(
-            "Database is corrupt. Please restart and choose 'Start Fresh' when prompted.");
 
     private static ServiceProvider BuildServiceProvider()
     {

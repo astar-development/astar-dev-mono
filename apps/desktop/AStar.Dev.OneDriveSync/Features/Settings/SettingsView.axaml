@@ -2,12 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AStar.Dev.OneDriveSync.Features.Settings"
              xmlns:theming="using:AStar.Dev.OneDriveSync.Infrastructure.Theming"
+             xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Settings.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
     <StackPanel Margin="24" Spacing="16" MaxWidth="480" HorizontalAlignment="Left">
 
-        <TextBlock Text="Settings"
+        <TextBlock Text="{loc:Localise Settings_Heading}"
                    FontSize="{StaticResource FontSizeLg}"
                    FontWeight="SemiBold"
                    Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -15,7 +16,7 @@
         <Separator Background="{DynamicResource BorderSubtleBrush}" Height="1"/>
 
         <StackPanel Spacing="8">
-            <TextBlock Text="Theme"
+            <TextBlock Text="{loc:Localise Settings_ThemeLabel}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
 
@@ -30,6 +31,18 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Localise Settings_LocaleLabel}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <ComboBox ItemsSource="{Binding SupportedLocales}"
+                      SelectedItem="{Binding SelectedLocale}"
+                      MinWidth="200"
+                      Foreground="{DynamicResource TextPrimaryBrush}"
+                      Background="{DynamicResource BackgroundSecondaryBrush}"/>
         </StackPanel>
 
     </StackPanel>
