@@ -6,26 +6,26 @@
              x:Class="AStar.Dev.OneDriveSync.Features.Onboarding.OnboardingView">
     <StackPanel Spacing="16" Padding="24">
         <TextBlock Text="{loc:Localise Onboarding_Welcome}" FontSize="24" FontWeight="Bold" />
-        
+
         <TextBlock Text="{loc:Localise Onboarding_Description}"
                    TextWrapping="Wrap" />
-        
+
         <!-- User Type Selection -->
         <StackPanel Spacing="12">
             <TextBlock Text="{loc:Localise Onboarding_UserType}" FontWeight="Bold" />
-            
+
             <StackPanel Spacing="8">
                 <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_Casual}" />
                 <RadioButton GroupName="UserType" Content="{loc:Localise Onboarding_PowerUser}" />
             </StackPanel>
         </StackPanel>
-        
+
         <!-- Action Buttons -->
         <StackPanel Spacing="12" Margin="0,24,0,0">
             <Button Content="{loc:Localise Onboarding_AddAccount}" />
             <Button Content="{loc:Localise Onboarding_Skip}" />
         </StackPanel>
-        
+
         <!-- Help Link -->
         <StackPanel HorizontalAlignment="Center" Margin="0,24,0,0">
             <Button Content="{loc:Localise Onboarding_Help}" />
