@@ -6,6 +6,7 @@ using AStar.Dev.OneDriveSync.Features.Dashboard;
 using AStar.Dev.OneDriveSync.Features.Help;
 using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
+using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Features.Settings;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
@@ -27,12 +28,16 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         _ = services.AddSingleton<INavigationService, NavigationService>();
 
+        _ = services.AddSingleton<IAccountRepository, AccountRepository>();
+        _ = services.AddSingleton<IUserTypeService, UserTypeService>();
+
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<AccountsViewModel>();
         _ = services.AddSingleton<ActivityViewModel>();
         _ = services.AddSingleton<ConflictsViewModel>();
         _ = services.AddSingleton<LogViewerViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
+        _ = services.AddSingleton<OnboardingViewModel>();
         _ = services.AddSingleton<HelpViewModel>();
         _ = services.AddSingleton<AboutViewModel>();
 
@@ -45,5 +50,6 @@ internal static class ShellServiceExtensions
     {
         service.Register(NavSection.Dashboard);
         service.Register(NavSection.Settings);
+        service.Register(NavSection.Help);
     }
 }
