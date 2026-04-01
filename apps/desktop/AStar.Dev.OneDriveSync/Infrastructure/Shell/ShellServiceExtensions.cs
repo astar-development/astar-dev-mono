@@ -31,17 +31,17 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
         _ = services.AddSingleton<IUserTypeService, UserTypeService>();
 
-        _ = services.AddSingleton<DashboardViewModel>();
-        _ = services.AddSingleton<AccountsViewModel>();
-        _ = services.AddSingleton<ActivityViewModel>();
-        _ = services.AddSingleton<ConflictsViewModel>();
-        _ = services.AddSingleton<LogViewerViewModel>();
-        _ = services.AddSingleton<SettingsViewModel>();
-        _ = services.AddSingleton<OnboardingViewModel>();
-        _ = services.AddSingleton<HelpViewModel>();
-        _ = services.AddSingleton<AboutViewModel>();
+        _ = services.AddTransient<DashboardViewModel>();
+        _ = services.AddTransient<AccountsViewModel>();
+        _ = services.AddTransient<ActivityViewModel>();
+        _ = services.AddTransient<ConflictsViewModel>();
+        _ = services.AddTransient<LogViewerViewModel>();
+        _ = services.AddTransient<SettingsViewModel>();
+        _ = services.AddTransient(sp => OnboardingViewModel.CreateAsync(sp.GetRequiredService<IAccountRepository>()).GetAwaiter().GetResult());
+        _ = services.AddTransient<HelpViewModel>();
+        _ = services.AddTransient<AboutViewModel>();
 
-        _ = services.AddSingleton<MainWindowViewModel>();
+        _ = services.AddTransient<MainWindowViewModel>();
 
         return services;
     }

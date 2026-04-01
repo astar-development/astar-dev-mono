@@ -72,8 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Expose internal members to the unit test project so lifecycle methods
-         (CompleteStartup, SetStartupError) are testable without making them public. -->
     <InternalsVisibleTo Include="AStar.Dev.OneDriveSync.Tests.Unit" />
     <InternalsVisibleTo Include="AStar.Dev.OneDriveSync.Tests.Integration" />
   </ItemGroup>

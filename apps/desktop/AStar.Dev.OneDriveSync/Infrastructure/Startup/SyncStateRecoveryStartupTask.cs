@@ -6,6 +6,5 @@ public sealed class SyncStateRecoveryStartupTask : IStartupTask
 
     string IStartupTask.Name => TaskName;
 
-    // Stub — sync state recovery will be implemented by the sync-engine feature story
     public Task RunAsync(CancellationToken ct) => Task.CompletedTask;
 }
