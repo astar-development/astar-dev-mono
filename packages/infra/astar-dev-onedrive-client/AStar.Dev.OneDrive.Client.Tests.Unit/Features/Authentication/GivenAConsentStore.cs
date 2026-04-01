@@ -8,79 +8,63 @@ public sealed class GivenAConsentStore
     private readonly ConsentStore _consentStore = new();
 
     [Fact]
-    public async Task WhenGetConsentDecisionAsync_ForUnknownAccount_ThenReturnsNone()
+    public async Task when_get_consent_decision_async_for_unknown_account_then_returns_none()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
 
-        // Act
         var result = await _consentStore.GetConsentDecisionAsync(accountId);
 
-        // Assert
         result.Match(
             onSome: _ => throw new Xunit.Sdk.XunitException("Should be None"),
             onNone: () => { });
     }
 
     [Fact]
-    public async Task WhenSetConsentDecisionAsync_ThenCanRetrieveIt()
+    public async Task when_set_consent_decision_async_then_can_retrieve_it()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
 
-        // Act
         var setResult = await _consentStore.SetConsentDecisionAsync(accountId, true);
         var getResult = await _consentStore.GetConsentDecisionAsync(accountId);
 
-        // Assert
         setResult.Match(
             onSuccess: _ => { },
             onFailure: e => throw new Xunit.Sdk.XunitException($"Set failed: {e}"));
-
         getResult.Match(
             onSome: consented => consented.ShouldBeTrue(),
             onNone: () => throw new Xunit.Sdk.XunitException("Should be Some(true)"));
     }
 
     [Fact]
-    public async Task WhenSetConsentDecisionAsync_WithFalse_ThenCanRetrieveIt()
+    public async Task when_set_consent_decision_async_with_false_then_can_retrieve_it()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
 
-        // Act
         var setResult = await _consentStore.SetConsentDecisionAsync(accountId, false);
         var getResult = await _consentStore.GetConsentDecisionAsync(accountId);
 
-        // Assert
         setResult.Match(
             onSuccess: _ => { },
             onFailure: e => throw new Xunit.Sdk.XunitException($"Set failed: {e}"));
-
         getResult.Match(
             onSome: consented => consented.ShouldBeFalse(),
             onNone: () => throw new Xunit.Sdk.XunitException("Should be Some(false)"));
     }
 
     [Fact]
-    public async Task WhenSetConsentDecisionAsync_MultipleAccounts_ThenAreIndependent()
+    public async Task when_set_consent_decision_async_multiple_accounts_then_are_independent()
     {
-        // Arrange
         var account1 = Guid.NewGuid();
         var account2 = Guid.NewGuid();
-
-        // Act
         await _consentStore.SetConsentDecisionAsync(account1, true);
         await _consentStore.SetConsentDecisionAsync(account2, false);
 
         var result1 = await _consentStore.GetConsentDecisionAsync(account1);
         var result2 = await _consentStore.GetConsentDecisionAsync(account2);
 
-        // Assert
         result1.Match(
             onSome: c => c.ShouldBeTrue(),
             onNone: () => throw new Xunit.Sdk.XunitException("Account1 missing"));
-
         result2.Match(
             onSome: c => c.ShouldBeFalse(),
             onNone: () => throw new Xunit.Sdk.XunitException("Account2 missing"));

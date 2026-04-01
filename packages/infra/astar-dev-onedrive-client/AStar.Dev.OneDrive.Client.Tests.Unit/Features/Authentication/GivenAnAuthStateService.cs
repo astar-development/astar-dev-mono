@@ -7,17 +7,14 @@ public sealed class GivenAnAuthStateService
     private readonly AuthStateService _authStateService = new();
 
     [Fact]
-    public void WhenPublishAuthStateChange_ThenObservableEmitsChange()
+    public void when_publish_auth_state_change_then_observable_emits_change()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
         var changes = new List<(Guid, AccountAuthState)>();
         var subscription = _authStateService.AccountAuthStateChanged.Subscribe(change => changes.Add(change));
 
-        // Act
         _authStateService.PublishAuthStateChange(accountId, AccountAuthState.AuthRequired);
 
-        // Assert
         changes.Count.ShouldBe(1);
         changes[0].Item1.ShouldBe(accountId);
         changes[0].Item2.ShouldBe(AccountAuthState.AuthRequired);
@@ -26,19 +23,16 @@ public sealed class GivenAnAuthStateService
     }
 
     [Fact]
-    public void WhenPublishMultipleChanges_ThenObservableEmitsAll()
+    public void when_publish_multiple_changes_then_observable_emits_all()
     {
-        // Arrange
         var account1 = Guid.NewGuid();
         var account2 = Guid.NewGuid();
         var changes = new List<(Guid, AccountAuthState)>();
         var subscription = _authStateService.AccountAuthStateChanged.Subscribe(change => changes.Add(change));
 
-        // Act
         _authStateService.PublishAuthStateChange(account1, AccountAuthState.AuthRequired);
         _authStateService.PublishAuthStateChange(account2, AccountAuthState.Authenticated);
 
-        // Assert
         changes.Count.ShouldBe(2);
         changes[0].Item1.ShouldBe(account1);
         changes[0].Item2.ShouldBe(AccountAuthState.AuthRequired);
@@ -49,9 +43,8 @@ public sealed class GivenAnAuthStateService
     }
 
     [Fact]
-    public void WhenMultipleSubscribers_ThenBothReceiveNotifications()
+    public void when_multiple_subscribers_then_both_receive_notifications()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
         var changes1 = new List<(Guid, AccountAuthState)>();
         var changes2 = new List<(Guid, AccountAuthState)>();
@@ -59,10 +52,8 @@ public sealed class GivenAnAuthStateService
         var sub1 = _authStateService.AccountAuthStateChanged.Subscribe(c => changes1.Add(c));
         var sub2 = _authStateService.AccountAuthStateChanged.Subscribe(c => changes2.Add(c));
 
-        // Act
         _authStateService.PublishAuthStateChange(accountId, AccountAuthState.AuthRequired);
 
-        // Assert
         changes1.Count.ShouldBe(1);
         changes2.Count.ShouldBe(1);
         changes1[0].ShouldBe(changes2[0]);
