@@ -22,6 +22,12 @@
     <PackageReference Include="Microsoft.Graph" />
     <PackageReference Include="Microsoft.Identity.Client" />
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    <PackageReference Include="ReactiveUI" />
+    <PackageReference Include="System.Reactive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

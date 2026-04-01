@@ -21,4 +21,10 @@ public sealed class Account
 
     /// <summary>Microsoft identity token (PII — Account table only).</summary>
     public string MicrosoftAccountId { get; set; } = string.Empty;
+
+    /// <summary>Auth state: Authenticated or AuthRequired (AU-05).</summary>
+    public string AuthState { get; set; } = "Authenticated";
+
+    /// <summary>Timestamp of user's consent decision for insecure token fallback storage, if given (AU-02, AU-03).</summary>
+    public DateTimeOffset? ConsentDecisionMadeAt { get; set; }
 }

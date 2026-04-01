@@ -4,5 +4,141 @@
         <name>AStar.Dev.OneDrive.Client</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken">
+            <summary>
+                Represents an OAuth access token with expiration details.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken.#ctor(System.String,System.DateTimeOffset)">
+            <summary>
+                Represents an OAuth access token with expiration details.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken.IsExpired">
+            <summary>Check if token has expired.</summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken.IsExpiringSoon">
+            <summary>Check if token is expiring soon (within 5 minutes).</summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.AccountAuthState">
+            <summary>
+                Represents the authentication state of an account (AU-05).
+            </summary>
+        </member>
+        <member name="F:AStar.Dev.OneDrive.Client.Features.Authentication.AccountAuthState.Authenticated">
+            <summary>Account has valid tokens; syncs can proceed.</summary>
+        </member>
+        <member name="F:AStar.Dev.OneDrive.Client.Features.Authentication.AccountAuthState.AuthRequired">
+            <summary>Token refresh failed; user must re-authenticate via browser.</summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.AuthStateService">
+            <summary>
+                Observable auth state service (AU-05).
+                Publishes account auth state transitions for UI subscribers.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.ConsentStore">
+            <summary>
+                In-memory consent store for tokens (AU-02, AU-03).
+                Desktop app will override with database-backed implementation.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.IAuthStateService">
+            <summary>
+                Publishes auth state transitions for UI subscribers (AU-05).
+                Observables fire from background threads; subscribers must use <c>ObserveOn(RxApp.MainThreadScheduler)</c>.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Features.Authentication.IAuthStateService.AccountAuthStateChanged">
+            <summary>
+                Observable fired whenever an account's auth state changes (e.g. token refresh fails).
+                Fires from the token-refresh background thread; subscribers must marshal to UI thread.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.IAuthStateService.PublishAuthStateChange(System.Guid,AStar.Dev.OneDrive.Client.Features.Authentication.AccountAuthState)">
+            <summary>
+                Publish an auth state transition.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.IConsentStore">
+            <summary>
+                Records and retrieves per-account consent decisions for insecure token fallback storage (AU-02, AU-03, NF-06).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.IConsentStore.GetConsentDecisionAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+                Check if user has already made a consent decision for this account.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.IConsentStore.SetConsentDecisionAsync(System.Guid,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+                Record user's consent decision (allow or deny insecure fallback token storage).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.IMsalClient">
+            <summary>
+                Abstraction over MSAL (Microsoft Authentication Library) for OAuth flows (AU-01).
+                All implementations must use <c>ConfigureAwait(false)</c> on all <c>await</c> calls.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.IMsalClient.AcquireTokenInteractiveAsync(System.Threading.CancellationToken)">
+            <summary>
+                Acquire an access token via the system browser interactive flow (AU-01).
+                Scopes requested: Files.ReadWrite, offline_access.
+                Must not be called on the Avalonia UI thread — dispatch via <c>Task.Run</c>.
+            </summary>
+            <returns>Access token and refresh token (if offline_access granted).</returns>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.IMsalClient.AcquireTokenSilentAsync(System.Threading.CancellationToken)">
+            <summary>
+                Attempt silent token refresh using cached tokens (AU-04).
+                Never throws on failure — returns <see cref="T:AStar.Dev.Functional.Extensions.Result`2"/> with failure instead.
+            </summary>
+            <returns><c>Success</c> if refresh succeeded; <c>Failure</c> if user auth required or network error.</returns>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.ITokenManager">
+            <summary>
+                Manages OAuth token lifecycle: acquisition, refresh, persistence, and failure handling (AU-02, AU-04, AU-05, NF-06).
+                Scoped per account — each account has its own token state machine.
+                All methods return <c>Result&lt;T, string&gt;</c> or <c>Option&lt;T&gt;</c> (NF-16).
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.Features.Authentication.ITokenManager.AccountId">
+            <summary>
+                Account ID this token manager is bound to.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.ITokenManager.GetTokenSilentlyAsync(System.Threading.CancellationToken)">
+            <summary>
+                Get a valid access token, attempting silent refresh if needed (AU-04).
+                Returns <c>Failure</c> if refresh fails or user must re-authenticate.
+            </summary>
+            <remarks>
+                On failure, the auth state transitions to <c>AuthRequired</c> and
+                <see cref="P:AStar.Dev.OneDrive.Client.Features.Authentication.IAuthStateService.AccountAuthStateChanged" /> is published.
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.ITokenManager.PersistTokenAsync(AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken,System.String,System.Threading.CancellationToken)">
+            <summary>
+                Persist a newly-acquired access token (e.g. after interactive auth flow).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.ITokenManager.ClearTokenAsync(System.Threading.CancellationToken)">
+            <summary>
+                Clear all stored tokens for this account (e.g. on logout).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.MsalClient">
+            <summary>
+                MSAL client implementation (AU-01).
+                Handles system browser OAuth flow for consumers tenant only.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.TokenManager">
+            <summary>
+                Token manager implementation (AU-02, AU-04, AU-05).
+                Scoped per account. Handles silent refresh and token persistence.
+            </summary>
+        </member>
     </members>
 </doc>
