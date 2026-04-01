@@ -34,7 +34,7 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Keep methods short; ideally under 20 lines.
 - Use meaningful names for classes and methods that clearly convey their purpose.
 - Put all method / constructor overloads together in the same order as their parameters.
-- Put all method / constructor parameters on one line when possible; otherwise, wrap parameters to multiple lines but avoid 1 parameter per line.
+- Always single-line method / constructor signatures regardless of parameter count. Never split parameters across lines.
 - Use expression-bodied members for simple methods and properties.
 - Keep method and constructor parameters to a minimum (ideally <5 parameters); prefer using parameter objects when multiple parameters are needed.
 - Avoid long parameter lists; consider using the Builder pattern for complex object construction.
@@ -43,6 +43,7 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Avoid deep nesting; use early returns and guard clauses.
 - Do not use regions or #pragma to hide code; refactor instead.
 - Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
+- Every `return` statement must be preceded by a blank line. No exceptions.
 
 ## Primitive Obsession
 
