@@ -1,6 +1,5 @@
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
-using NSubstitute;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Onboarding;
 
@@ -12,7 +11,7 @@ public sealed class GivenNoAccountsInDatabase
         var accountRepository = Substitute.For<IAccountRepository>();
         accountRepository.HasAnyAsync().Returns(false);
 
-        var sut = new OnboardingViewModel(accountRepository);
+        var sut = await OnboardingViewModel.CreateAsync(accountRepository, TestContext.Current.CancellationToken);
 
         sut.ShouldShowOnboarding.ShouldBeTrue();
     }
@@ -23,7 +22,7 @@ public sealed class GivenNoAccountsInDatabase
         var accountRepository = Substitute.For<IAccountRepository>();
         accountRepository.HasAnyAsync().Returns(true);
 
-        var sut = new OnboardingViewModel(accountRepository);
+        var sut = await OnboardingViewModel.CreateAsync(accountRepository, TestContext.Current.CancellationToken);
 
         sut.ShouldShowOnboarding.ShouldBeFalse();
     }

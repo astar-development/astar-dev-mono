@@ -1,10 +1,10 @@
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
-internal sealed class UserTypeService(IAppDbContext dbContext) : IUserTypeService
+internal sealed class UserTypeService(IDbContextFactory<AppDbContext> contextFactory) : IUserTypeService
 {
-    private readonly IAppDbContext _dbContext = dbContext;
     private UserType _currentUserType;
     private bool _initialized;
 
@@ -53,28 +53,25 @@ internal sealed class UserTypeService(IAppDbContext dbContext) : IUserTypeServic
 
     private void LoadUserType()
     {
-        var settings = _dbContext.AppSettings.FirstOrDefault();
+        using var ctx = contextFactory.CreateDbContext();
+        var settings = ctx.AppSettings.FirstOrDefault();
 
-        if (settings != null && Enum.TryParse<UserType>(settings.UserType, out var userType))
-        {
-            _currentUserType = userType;
-        }
-        else
-        {
-            _currentUserType = UserType.Casual;
-        }
+        _currentUserType = settings != null && Enum.TryParse<UserType>(settings.UserType, out var userType)
+            ? userType
+            : UserType.Casual;
 
         _initialized = true;
     }
 
     private void PersistUserType()
     {
-        var settings = _dbContext.AppSettings.FirstOrDefault();
+        using var ctx = contextFactory.CreateDbContext();
+        var settings = ctx.AppSettings.FirstOrDefault();
 
-        if (settings != null)
-        {
-            settings.UserType = _currentUserType.ToString();
-            _ = _dbContext.SaveChanges();
-        }
+        if (settings is null)
+            return;
+
+        settings.UserType = _currentUserType.ToString();
+        _ = ctx.SaveChanges();
     }
 }
