@@ -107,6 +107,10 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - **Do not run `dotnet pack` / `dotnet nuget push` manually for releases** — use the tag workflow
 - During local development, use `<ProjectReference>` instead of `<PackageReference>` to avoid publish cycles
 
+### C# / .NET Patterns
+
+For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions), see @.claude/agents/c-sharp-senior-developer.md.
+
 ### CI/CD Workflows
 
 | Workflow            | Trigger                                                     |
