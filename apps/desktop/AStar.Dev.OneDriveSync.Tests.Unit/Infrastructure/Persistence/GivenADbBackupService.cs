@@ -26,7 +26,7 @@ public sealed class GivenADbBackupService
 
         var sut = new DbBackupService(pathProvider, logger, fileSystem);
 
-        var result = await sut.BackupAsync();
+        var result = await sut.BackupAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Result<bool, ErrorResponse>.Error>();
     }
@@ -41,14 +41,14 @@ public sealed class GivenADbBackupService
         pathProvider.AppDataDirectory.Returns(AppDataDirectory);
         fileSystem.File.Exists(DatabaseFilePath).Returns(true);
 
-        var sourceStream = new MemoryStream([1, 2, 3]);
-        var destStream   = new MemoryStream();
+        var sourceStream = Substitute.For<FileSystemStream>(new MemoryStream([1, 2, 3]), DatabaseFilePath, false);
+        var destStream   = Substitute.For<FileSystemStream>(new MemoryStream(), BackupFilePath, false);
         fileSystem.File.OpenRead(DatabaseFilePath).Returns(sourceStream);
         fileSystem.File.Open(BackupFilePath, FileMode.Create, FileAccess.Write).Returns(destStream);
 
         var sut = new DbBackupService(pathProvider, logger, fileSystem);
 
-        var result = await sut.BackupAsync();
+        var result = await sut.BackupAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Result<bool, ErrorResponse>.Ok>();
     }
@@ -63,14 +63,14 @@ public sealed class GivenADbBackupService
         pathProvider.AppDataDirectory.Returns(AppDataDirectory);
         fileSystem.File.Exists(DatabaseFilePath).Returns(true);
 
-        var sourceStream = new MemoryStream([1, 2, 3]);
-        var destStream   = new MemoryStream();
+        var sourceStream = Substitute.For<FileSystemStream>(new MemoryStream([1, 2, 3]), DatabaseFilePath, false);
+        var destStream   = Substitute.For<FileSystemStream>(new MemoryStream(), BackupFilePath, false);
         fileSystem.File.OpenRead(DatabaseFilePath).Returns(sourceStream);
         fileSystem.File.Open(BackupFilePath, FileMode.Create, FileAccess.Write).Returns(destStream);
 
         var sut = new DbBackupService(pathProvider, logger, fileSystem);
 
-        _ = await sut.BackupAsync();
+        _ = await sut.BackupAsync(TestContext.Current.CancellationToken);
 
         fileSystem.File.Received(1).Open(BackupFilePath, FileMode.Create, FileAccess.Write);
     }

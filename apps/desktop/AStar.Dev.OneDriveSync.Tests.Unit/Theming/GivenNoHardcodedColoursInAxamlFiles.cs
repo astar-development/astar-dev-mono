@@ -12,8 +12,10 @@ public sealed partial class GivenNoHardcodedColoursInAxamlFiles
     [Fact]
     public void when_all_axaml_files_are_scanned_then_none_contain_hardcoded_colour_values()
     {
-        var violations = Directory
-            .EnumerateFiles(_axamlRoot, "*.axaml", SearchOption.AllDirectories)
+        var axamlFiles = Directory.EnumerateFiles(_axamlRoot, "*.axaml", SearchOption.AllDirectories).ToList();
+        axamlFiles.ShouldNotBeEmpty("no .axaml files found — check FindAxamlRoot()");
+
+        var violations = axamlFiles
             .SelectMany(file => ScanFile(file))
             .ToList();
 

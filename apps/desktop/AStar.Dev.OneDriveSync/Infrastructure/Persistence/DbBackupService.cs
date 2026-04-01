@@ -1,8 +1,7 @@
+using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using Microsoft.Extensions.Logging;
 
-// Disambiguate ILogger: both Serilog and Microsoft.Extensions.Logging declare ILogger.
-// All usages in this file intend the MEL interface.
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
@@ -12,9 +11,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 ///
 ///     The backup is triggered on explicit call only — never on construction, never periodically.
 /// </summary>
-public sealed partial class DbBackupService(
-    IAppDataPathProvider pathProvider,
-    ILogger<DbBackupService> logger) : IDbBackupService
+public sealed partial class DbBackupService(IAppDataPathProvider pathProvider, ILogger<DbBackupService> logger, IFileSystem fileSystem) : IDbBackupService
 {
     private const string DatabaseFileName = "file-data.db";
     private const string BackupFileName = "file-data.db.bak";
@@ -24,7 +21,7 @@ public sealed partial class DbBackupService(
     {
         string dataFilePath = Path.Combine(pathProvider.AppDataDirectory, DatabaseFileName);
 
-        if (!File.Exists(dataFilePath))
+        if (!fileSystem.File.Exists(dataFilePath))
         {
             LogBackupFileMissing(logger, dataFilePath);
 
@@ -34,8 +31,8 @@ public sealed partial class DbBackupService(
 
         string backupFilePath = Path.Combine(pathProvider.AppDataDirectory, BackupFileName);
 
-        await using var source = File.OpenRead(dataFilePath);
-        await using var destination = File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
+        await using var source = fileSystem.File.OpenRead(dataFilePath);
+        await using var destination = fileSystem.File.Open(backupFilePath, FileMode.Create, FileAccess.Write);
         await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
 
         LogBackupComplete(logger, backupFilePath);
@@ -43,7 +40,6 @@ public sealed partial class DbBackupService(
         return new Result<bool, ErrorResponse>.Ok(true);
     }
 
-    // Source-generated log methods — zero-allocation, structured, CA1848-compliant.
     [LoggerMessage(Level = LogLevel.Error, Message = "Backup failed: database file not found at '{Path}'")]
     private static partial void LogBackupFileMissing(MelILogger logger, string path);
 

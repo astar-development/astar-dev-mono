@@ -43,6 +43,7 @@ internal sealed partial class AppSettingsRepository(IDbContextFactory<AppDbConte
             {
                 existing.ThemeMode = settings.ThemeMode;
                 existing.Locale    = settings.Locale;
+                existing.UserType  = settings.UserType;
             }
 
             _ = await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

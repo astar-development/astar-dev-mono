@@ -30,8 +30,8 @@ internal sealed class RelativeTimeFormatter(ILocalisationService localisationSer
         var culture = CultureInfo.GetCultureInfo(localisationService.CurrentLocale);
 
         if (timestamp.Date == now.Date)
-            return $"Today at {timestamp.ToString("HH:mm", culture)}";
+            return localisationService.GetString("RelativeTimeFormatter_TodayAt") + timestamp.ToString("HH:mm", culture);
 
-        return $"{timestamp.ToString("d MMM", culture)} at {timestamp.ToString("HH:mm", culture)}";
+        return timestamp.ToString("d MMM", culture) + localisationService.GetString("RelativeTimeFormatter_DateAt") + timestamp.ToString("HH:mm", culture);
     }
 }

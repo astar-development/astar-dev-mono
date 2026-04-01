@@ -14,8 +14,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
-// Disambiguate ILogger: both Serilog and Microsoft.Extensions.Logging declare ILogger.
-// All usages in this file intend the MEL interface.
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 using AStar.Dev.Utilities;
 

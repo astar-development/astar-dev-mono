@@ -3,19 +3,19 @@ using AStar.Dev.OneDriveSync.Infrastructure;
 
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
-public sealed class OnboardingViewModel(IAccountRepository accountRepository) : ViewModelBase
+public sealed class OnboardingViewModel : ViewModelBase
 {
-    private readonly IAccountRepository _accountRepository = accountRepository;
-    private bool? _shouldShowOnboarding;
+    private bool _shouldShowOnboarding;
 
-    public bool ShouldShowOnboarding
+    private OnboardingViewModel() { }
+
+    public bool ShouldShowOnboarding => _shouldShowOnboarding;
+
+    public static async Task<OnboardingViewModel> CreateAsync(IAccountRepository accountRepository, CancellationToken ct = default)
     {
-        get
-        {
-            _shouldShowOnboarding ??= !_accountRepository.HasAnyAsync().GetAwaiter().GetResult();
+        var vm = new OnboardingViewModel();
+        vm._shouldShowOnboarding = !await accountRepository.HasAnyAsync().ConfigureAwait(false);
 
-            return _shouldShowOnboarding.Value;
-        }
+        return vm;
     }
 }
-
