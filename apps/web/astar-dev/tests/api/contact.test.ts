@@ -8,6 +8,13 @@ function uniqueIp(): string {
 
 const mockRequest = vi.fn<() => Promise<unknown>>()
 
+vi.mock('../../src/lib/telemetry', () => ({
+  trackTrace: vi.fn(),
+  trackWarning: vi.fn(),
+  trackException: vi.fn(),
+  trackEvent: vi.fn(),
+}))
+
 vi.mock('node-mailjet', () => ({
   default: {
     apiConnect: vi.fn<() => { post: (resource: string, options: unknown) => { request: typeof mockRequest } }>(() => ({
