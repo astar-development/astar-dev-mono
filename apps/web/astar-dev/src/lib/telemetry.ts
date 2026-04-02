@@ -10,28 +10,28 @@ const Severity = {
   Critical: 4 as SeverityLevel,
 };
 
-let client: appInsights.TelemetryClient | null = null;
-
-function getClient(): appInsights.TelemetryClient | null {
-  if (client !== null) {
-    return client;
-  }
-
+function initClient(): appInsights.TelemetryClient | null {
   const connectionString = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
   if (typeof connectionString !== 'string' || connectionString.length === 0) {
     return null;
   }
 
-  appInsights
-    .setup(connectionString)
-    .setAutoCollectRequests(false)
-    .setAutoCollectExceptions(true)
-    .setAutoCollectDependencies(true)
-    .setAutoCollectConsole(false)
-    .start();
+  if (!appInsights.defaultClient) {
+    appInsights
+      .setup(connectionString)
+      .setAutoCollectRequests(false)
+      .setAutoCollectExceptions(true)
+      .setAutoCollectDependencies(true)
+      .setAutoCollectConsole(false)
+      .start();
+  }
 
-  client = appInsights.defaultClient;
+  return appInsights.defaultClient;
+}
 
+const client: appInsights.TelemetryClient | null = initClient();
+
+function getClient(): appInsights.TelemetryClient | null {
   return client;
 }
 
