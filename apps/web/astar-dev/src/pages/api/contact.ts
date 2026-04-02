@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import sgMail from '@sendgrid/mail';
+import Mailjet from 'node-mailjet';
 
 export const prerender = false;
 
@@ -27,7 +27,7 @@ type ValidationError = { field: string; message: string };
 // ---------------------------------------------------------------------------
 
 const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const rateLimitMap = new Map<string, RateLimitEntry>();
 
 function checkRateLimit(ip: string): boolean {
@@ -36,14 +36,17 @@ function checkRateLimit(ip: string): boolean {
 
   if (entry === undefined || now > entry.resetAt) {
     rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+
     return true;
   }
 
   if (entry.count >= RATE_LIMIT_MAX) {
+
     return false;
   }
 
   entry.count += 1;
+
   return true;
 }
 
@@ -84,59 +87,8 @@ function validateBody(body: ContactBody): ValidationError[] {
 }
 
 // ---------------------------------------------------------------------------
-// SendGrid helpers
+// Mailjet helpers
 // ---------------------------------------------------------------------------
-
-function buildOwnerEmail(name: string, email: string, message: string, to: string, from: string): sgMail.MailDataRequired {
-  const timestamp = new Date().toISOString();
-  return {
-    to,
-    from,
-    subject: `[AStar.Dev Contact] Message from ${name}`,
-    text: [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      `Timestamp: ${timestamp}`,
-      '',
-      'Message:',
-      message,
-    ].join('\n'),
-    html: [
-      `<p><strong>Name:</strong> ${escapeHtml(name)}</p>`,
-      `<p><strong>Email:</strong> ${escapeHtml(email)}</p>`,
-      `<p><strong>Timestamp:</strong> ${timestamp}</p>`,
-      `<hr />`,
-      `<p><strong>Message:</strong></p>`,
-      `<p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>`,
-    ].join('\n'),
-  };
-}
-
-function buildCopyEmail(name: string, email: string, message: string, from: string): sgMail.MailDataRequired {
-  return {
-    to: email,
-    from,
-    subject: 'Copy of your message to AStar Development',
-    text: [
-      `Hi ${name},`,
-      '',
-      'This is a copy of the message you sent to AStar Development.',
-      '',
-      'We will be in touch as soon as possible.',
-      '',
-      '---',
-      '',
-      message,
-    ].join('\n'),
-    html: [
-      `<p>Hi ${escapeHtml(name)},</p>`,
-      `<p>This is a copy of the message you sent to AStar Development.</p>`,
-      `<p>We will be in touch as soon as possible.</p>`,
-      `<hr />`,
-      `<p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>`,
-    ].join('\n'),
-  };
-}
 
 function escapeHtml(text: string): string {
   return text
@@ -147,12 +99,54 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
+interface MailjetMessage {
+  From: { Email: string; Name: string };
+  To: [{ Email: string; Name: string }];
+  Subject: string;
+  TextPart: string;
+  HTMLPart: string;
+}
+
+function buildOwnerMessage(name: string, email: string, message: string, to: string, from: string): MailjetMessage {
+  const timestamp = new Date().toISOString();
+
+  return {
+    From: { Email: from, Name: 'AStar Development' },
+    To: [{ Email: to, Name: 'AStar Development' }],
+    Subject: `[AStar.Dev Contact] Message from ${name}`,
+    TextPart: [`Name: ${name}`, `Email: ${email}`, `Timestamp: ${timestamp}`, '', 'Message:', message].join('\n'),
+    HTMLPart: [
+      `<p><strong>Name:</strong> ${escapeHtml(name)}</p>`,
+      `<p><strong>Email:</strong> ${escapeHtml(email)}</p>`,
+      `<p><strong>Timestamp:</strong> ${timestamp}</p>`,
+      `<hr />`,
+      `<p><strong>Message:</strong></p>`,
+      `<p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>`,
+    ].join('\n'),
+  };
+}
+
+function buildCopyMessage(name: string, email: string, message: string, from: string): MailjetMessage {
+  return {
+    From: { Email: from, Name: 'AStar Development' },
+    To: [{ Email: email, Name: name }],
+    Subject: 'Copy of your message to AStar Development',
+    TextPart: [`Hi ${name},`, '', 'This is a copy of the message you sent to AStar Development.', '', 'We will be in touch as soon as possible.', '', '---', '', message].join('\n'),
+    HTMLPart: [
+      `<p>Hi ${escapeHtml(name)},</p>`,
+      `<p>This is a copy of the message you sent to AStar Development.</p>`,
+      `<p>We will be in touch as soon as possible.</p>`,
+      `<hr />`,
+      `<p>${escapeHtml(message).replace(/\n/g, '<br />')}</p>`,
+    ].join('\n'),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
 
 export const POST: APIRoute = async ({ request }) => {
-  // Body size check — reject payloads >= 10KB
   const contentLength = request.headers.get('content-length');
   if (contentLength !== null && parseInt(contentLength, 10) >= 10_240) {
     return new Response(JSON.stringify({ errors: [{ field: '', message: 'Request body too large.' }] }), {
@@ -161,7 +155,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  // IP-based rate limiting
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     request.headers.get('x-real-ip') ??
@@ -169,13 +162,13 @@ export const POST: APIRoute = async ({ request }) => {
 
   if (!checkRateLimit(ip)) {
     console.warn(`[contact] Rate limit exceeded for IP: ${ip}`);
+
     return new Response(JSON.stringify({ message: 'Too many requests. Please try again in 15 minutes.' }), {
       status: 429,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Retry-After': '900' },
     });
   }
 
-  // Parse body
   let body: ContactBody;
   try {
     const raw: unknown = await request.json();
@@ -193,17 +186,16 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
-  // Honeypot check — silent success, no email sent
   const website = typeof body.website === 'string' ? body.website : '';
   if (website.length > 0) {
     console.warn(`[contact] Honeypot triggered from IP: ${ip}`);
+
     return new Response(JSON.stringify({ message: 'Thank you for your message.' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Server-side validation
   const errors = validateBody(body);
   if (errors.length > 0) {
     return new Response(JSON.stringify({ errors }), {
@@ -217,13 +209,14 @@ export const POST: APIRoute = async ({ request }) => {
   const message = (body.message as string).trim();
   const sendCopy = body.sendCopy === true;
 
-  // Read environment variables
-  const apiKey = import.meta.env.SENDGRID_API_KEY;
+  const apiKey = import.meta.env.MJ_APIKEY_PUBLIC;
+  const apiSecret = import.meta.env.MJ_APIKEY_PRIVATE;
   const contactEmail = import.meta.env.CONTACT_EMAIL;
-  const fromEmail = import.meta.env.SENDGRID_FROM_EMAIL;
+  const fromEmail = import.meta.env.MAILJET_FROM_EMAIL;
 
-  if (typeof apiKey !== 'string' || apiKey.length === 0) {
-    console.error('[contact] SENDGRID_API_KEY is not configured');
+  if (typeof apiKey !== 'string' || apiKey.length === 0 || typeof apiSecret !== 'string' || apiSecret.length === 0) {
+    console.error('[contact] MJ_APIKEY_PUBLIC or MJ_APIKEY_PRIVATE is not configured');
+
     return new Response(JSON.stringify({ message: `Something went wrong. Please email ${contactEmail ?? 'us'} directly.` }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -231,33 +224,31 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (typeof contactEmail !== 'string' || contactEmail.length === 0 || typeof fromEmail !== 'string' || fromEmail.length === 0) {
-    console.error('[contact] CONTACT_EMAIL or SENDGRID_FROM_EMAIL is not configured');
+    console.error('[contact] CONTACT_EMAIL or MAILJET_FROM_EMAIL is not configured');
+
     return new Response(JSON.stringify({ message: 'Something went wrong. Please try again later.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Send via SendGrid
   try {
-    sgMail.setApiKey(apiKey);
+    const client = Mailjet.apiConnect(apiKey, apiSecret);
 
-    const messages: sgMail.MailDataRequired[] = [
-      buildOwnerEmail(name, email, message, contactEmail, fromEmail),
-    ];
-
+    const messages: MailjetMessage[] = [buildOwnerMessage(name, email, message, contactEmail, fromEmail)];
     if (sendCopy) {
-      messages.push(buildCopyEmail(name, email, message, fromEmail));
+      messages.push(buildCopyMessage(name, email, message, fromEmail));
     }
 
-    await sgMail.send(messages.length === 1 ? messages[0] : messages);
+    await client.post('send', { version: 'v3.1' }).request({ Messages: messages });
 
     return new Response(JSON.stringify({ message: 'Thank you for your message. We will be in touch soon.' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
-    console.error('[contact] SendGrid error:', err);
+    console.error('[contact] Mailjet error:', err);
+
     return new Response(JSON.stringify({ message: `Something went wrong. Please email ${contactEmail} directly.` }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
