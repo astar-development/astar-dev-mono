@@ -21,20 +21,20 @@ See @.claude/rules/c-sharp-code-style.md for naming, classes, immutability, reco
 
 ## C# 14 / .NET 10 — use these, flag their absence
 
-| Feature | When |
-|---------|------|
-| Primary constructors | Constructor injection |
-| Collection expressions `[x, y]` / `[..src, z]` | Replacing `new List<T> { }`, `new[] { }` |
-| `field` keyword | Semi-auto properties needing one customised accessor |
-| `params ReadOnlySpan<T>` | Helpers formerly using `params T[]` |
-| `required` properties | DTOs and builders |
-| `nameof` + `ArgumentNullException.ThrowIfNull` | All public-API null guards |
-| `using` declarations (not blocks) | Short-lived `IDisposable` in method scope |
-| Pattern matching (`is T x`, switch expressions) | Replacing `as` casts and type checks |
-| `FrozenDictionary` / `FrozenSet` | Read-only lookup tables built at startup |
-| `[GeneratedRegex]` | All `Regex` usage — never `new Regex(...)` |
-| `await foreach` | Async streams (`IAsyncEnumerable<T>`) |
-| `ConfigureAwait(false)` | All `await` in library/package code |
+| Feature                                         | When                                                 |
+| ----------------------------------------------- | ---------------------------------------------------- |
+| Primary constructors                            | Constructor injection                                |
+| Collection expressions `[x, y]` / `[..src, z]`  | Replacing `new List<T> { }`, `new[] { }`             |
+| `field` keyword                                 | Semi-auto properties needing one customised accessor |
+| `params ReadOnlySpan<T>`                        | Helpers formerly using `params T[]`                  |
+| `required` properties                           | DTOs and builders                                    |
+| `nameof` + `ArgumentNullException.ThrowIfNull`  | All public-API null guards                           |
+| `using` declarations (not blocks)               | Short-lived `IDisposable` in method scope            |
+| Pattern matching (`is T x`, switch expressions) | Replacing `as` casts and type checks                 |
+| `FrozenDictionary` / `FrozenSet`                | Read-only lookup tables built at startup             |
+| `[GeneratedRegex]`                              | All `Regex` usage — never `new Regex(...)`           |
+| `await foreach`                                 | Async streams (`IAsyncEnumerable<T>`)                |
+| `ConfigureAwait(false)`                         | All `await` in library/package code                  |
 
 File-scoped namespaces and implicit usings are global — never add redundant `using` for `Xunit`, `Shouldly`, or `NSubstitute`.
 
@@ -42,12 +42,12 @@ File-scoped namespaces and implicit usings are global — never add redundant `u
 
 Use when they make intent clearer, not to show off. Imperative beats an obscure chain.
 
-| Scenario | Use |
-|----------|-----|
-| Can succeed or fail with a meaningful error | `Result<T>` |
-| Value may or may not be present | `Option<T>` |
-| Branch on success/failure | `.Match` / `.MatchAsync` |
-| Chain operations that each can fail | `.Bind` / `.Map` |
+| Scenario                                    | Use                      |
+| ------------------------------------------- | ------------------------ |
+| Can succeed or fail with a meaningful error | `Result<T>`              |
+| Value may or may not be present             | `Option<T>`              |
+| Branch on success/failure                   | `.Match` / `.MatchAsync` |
+| Chain operations that each can fail         | `.Bind` / `.Map`         |
 
 - Don't wrap `void` side-effects in `Result`.
 - Don't chain more than ~5 `.Bind`/`.Map` without naming intermediate results — extract a method.
@@ -145,7 +145,7 @@ Omitting it causes `AVLN2100` build errors.
 - [ ] `CancellationToken` propagated through all async chains
 - [ ] No blocking calls (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`) in async context
 - [ ] `ConfigureAwait(false)` on all `await` in library code
-- [ ] No magic numbers or strings
+- [ ] NO magic strings / numbers etc; use constants or enums.
 - [ ] Every `return` preceded by a blank line
 - [ ] Structured log messages (no interpolated strings to Serilog)
 - [ ] New package `.csproj` has required metadata fields

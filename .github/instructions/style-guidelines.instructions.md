@@ -73,7 +73,8 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Use `var` when the type is obvious from the right-hand side; otherwise use explicit types for clarity.
 - Use `const` for compile-time constants.
 - Use `static readonly` for runtime constants.
-- Avoid magic strings and numbers; use constants or enums instead.
+- NO magic strings / numbers etc; use constants or enums instead.
+
 
 ## Collections and Data Structures
 
