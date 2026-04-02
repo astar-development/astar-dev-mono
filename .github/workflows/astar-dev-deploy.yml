@@ -52,6 +52,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          PUBLIC_APPINSIGHTS_CONNECTION_STRING: ${{ secrets.APPINSIGHTS_CONNECTION_STRING }}
 
       - name: Verify build output
         run: |
