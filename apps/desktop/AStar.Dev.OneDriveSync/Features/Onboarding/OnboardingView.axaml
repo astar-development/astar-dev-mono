@@ -23,7 +23,7 @@
 
             <!-- Action Buttons -->
             <StackPanel Spacing="12" Margin="0,24,0,0">
-                <Button Content="{loc:Localise Onboarding_AddAccount}" />
+                <Button Content="{loc:Localise Onboarding_AddAccount}" Command="{Binding AddAccountCommand}" />
                 <Button Content="{loc:Localise Onboarding_Skip}" />
             </StackPanel>
 

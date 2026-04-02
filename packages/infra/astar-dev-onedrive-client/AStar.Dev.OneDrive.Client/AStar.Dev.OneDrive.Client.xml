@@ -140,5 +140,72 @@
                 Scoped per account. Handles silent refresh and token persistence.
             </summary>
         </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.IOneDriveFolderService">
+            <summary>
+                Fetches OneDrive folder metadata from the Graph API (AM-03, AM-04).
+                All methods return <see cref="T:AStar.Dev.Functional.Extensions.Result`2"/> — callers never see Graph exceptions.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.IOneDriveFolderService.GetRootFoldersAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+                Returns the root-level folders for the authenticated user's OneDrive.
+                Call with the access token acquired by <c>IMsalClient.AcquireTokenInteractiveAsync</c>.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.IOneDriveFolderService.GetChildFoldersAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+                Returns the direct child folders of the specified <paramref name="folderId"/>.
+                Used for lazy tree expansion (AM-03).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolder">
+            <summary>
+                Represents a folder in OneDrive returned from the Graph API (AM-03).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolder.#ctor(System.String,System.String,System.String,System.Boolean)">
+            <summary>
+                Represents a folder in OneDrive returned from the Graph API (AM-03).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolderFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolder"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolderFactory.Create(System.String,System.String,System.String,System.Boolean)">
+            <summary>Creates a new <see cref="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolder"/>.</summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.OneDriveFolderService">
+            <summary>
+                Graph API implementation of <see cref="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.IOneDriveFolderService"/> (AM-03, AM-04).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.OneDriveClientOptions">
+            <summary>
+                Configuration options for the OneDrive Client package.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.OneDriveClientOptions.AzureClientId">
+            <summary>The Azure App Registration client ID for the consumers tenant.</summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.OneDriveClientOptions.RedirectUri">
+            <summary>Redirect URI registered in the Azure portal (local loopback or <c>urn:ietf:wg:oauth:2.0:oob</c>).</summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.OneDriveClientOptionsFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.OneDrive.Client.OneDriveClientOptions"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.OneDriveClientOptionsFactory.Create(System.String,System.Uri)">
+            <summary>Creates a new <see cref="T:AStar.Dev.OneDrive.Client.OneDriveClientOptions"/> instance.</summary>
+        </member>
+        <member name="T:AStar.Dev.OneDrive.Client.OneDriveClientServiceExtensions">
+            <summary>
+                Registers <c>AStar.Dev.OneDrive.Client</c> services with the DI container.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.OneDriveClientServiceExtensions.AddOneDriveClient(Microsoft.Extensions.DependencyInjection.IServiceCollection,AStar.Dev.OneDrive.Client.OneDriveClientOptions)">
+            <summary>
+                Adds MSAL authentication, token management, consent storage, auth state
+                notifications, and OneDrive folder browsing to <paramref name="services" />.
+            </summary>
+        </member>
     </members>
 </doc>

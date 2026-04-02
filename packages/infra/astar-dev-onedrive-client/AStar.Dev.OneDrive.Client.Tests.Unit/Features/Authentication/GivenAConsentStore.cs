@@ -12,11 +12,9 @@ public sealed class GivenAConsentStore
     {
         var accountId = Guid.NewGuid();
 
-        var result = await _consentStore.GetConsentDecisionAsync(accountId);
+        var result = await _consentStore.GetConsentDecisionAsync(accountId, TestContext.Current.CancellationToken);
 
-        result.Match(
-            onSome: _ => throw new Xunit.Sdk.XunitException("Should be None"),
-            onNone: () => { });
+        result.ShouldBeOfType<Option<bool>.None>();
     }
 
     [Fact]
@@ -24,15 +22,11 @@ public sealed class GivenAConsentStore
     {
         var accountId = Guid.NewGuid();
 
-        var setResult = await _consentStore.SetConsentDecisionAsync(accountId, true);
-        var getResult = await _consentStore.GetConsentDecisionAsync(accountId);
+        var setResult = await _consentStore.SetConsentDecisionAsync(accountId, true, TestContext.Current.CancellationToken);
+        var getResult = await _consentStore.GetConsentDecisionAsync(accountId, TestContext.Current.CancellationToken);
 
-        setResult.Match(
-            onSuccess: _ => { },
-            onFailure: e => throw new Xunit.Sdk.XunitException($"Set failed: {e}"));
-        getResult.Match(
-            onSome: consented => consented.ShouldBeTrue(),
-            onNone: () => throw new Xunit.Sdk.XunitException("Should be Some(true)"));
+        setResult.ShouldBeOfType<Result<bool, string>.Ok>();
+        getResult.ShouldBeOfType<Option<bool>.Some>().Value.ShouldBeTrue();
     }
 
     [Fact]
@@ -40,15 +34,11 @@ public sealed class GivenAConsentStore
     {
         var accountId = Guid.NewGuid();
 
-        var setResult = await _consentStore.SetConsentDecisionAsync(accountId, false);
-        var getResult = await _consentStore.GetConsentDecisionAsync(accountId);
+        var setResult = await _consentStore.SetConsentDecisionAsync(accountId, false, TestContext.Current.CancellationToken);
+        var getResult = await _consentStore.GetConsentDecisionAsync(accountId, TestContext.Current.CancellationToken);
 
-        setResult.Match(
-            onSuccess: _ => { },
-            onFailure: e => throw new Xunit.Sdk.XunitException($"Set failed: {e}"));
-        getResult.Match(
-            onSome: consented => consented.ShouldBeFalse(),
-            onNone: () => throw new Xunit.Sdk.XunitException("Should be Some(false)"));
+        setResult.ShouldBeOfType<Result<bool, string>.Ok>();
+        getResult.ShouldBeOfType<Option<bool>.Some>().Value.ShouldBeFalse();
     }
 
     [Fact]
@@ -56,17 +46,13 @@ public sealed class GivenAConsentStore
     {
         var account1 = Guid.NewGuid();
         var account2 = Guid.NewGuid();
-        await _consentStore.SetConsentDecisionAsync(account1, true);
-        await _consentStore.SetConsentDecisionAsync(account2, false);
+        await _consentStore.SetConsentDecisionAsync(account1, true, TestContext.Current.CancellationToken);
+        await _consentStore.SetConsentDecisionAsync(account2, false, TestContext.Current.CancellationToken);
 
-        var result1 = await _consentStore.GetConsentDecisionAsync(account1);
-        var result2 = await _consentStore.GetConsentDecisionAsync(account2);
+        var result1 = await _consentStore.GetConsentDecisionAsync(account1, TestContext.Current.CancellationToken);
+        var result2 = await _consentStore.GetConsentDecisionAsync(account2, TestContext.Current.CancellationToken);
 
-        result1.Match(
-            onSome: c => c.ShouldBeTrue(),
-            onNone: () => throw new Xunit.Sdk.XunitException("Account1 missing"));
-        result2.Match(
-            onSome: c => c.ShouldBeFalse(),
-            onNone: () => throw new Xunit.Sdk.XunitException("Account2 missing"));
+        result1.ShouldBeOfType<Option<bool>.Some>().Value.ShouldBeTrue();
+        result2.ShouldBeOfType<Option<bool>.Some>().Value.ShouldBeFalse();
     }
 }

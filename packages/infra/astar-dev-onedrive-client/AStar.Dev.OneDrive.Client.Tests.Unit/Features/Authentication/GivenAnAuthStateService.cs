@@ -2,9 +2,11 @@ using AStar.Dev.OneDrive.Client.Features.Authentication;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Features.Authentication;
 
-public sealed class GivenAnAuthStateService
+public sealed class GivenAnAuthStateService : IDisposable
 {
     private readonly AuthStateService _authStateService = new();
+
+    public void Dispose() => _authStateService.Dispose();
 
     [Fact]
     public void when_publish_auth_state_change_then_observable_emits_change()

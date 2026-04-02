@@ -27,4 +27,22 @@ public sealed class Account
 
     /// <summary>Timestamp of user's consent decision for insecure token fallback storage, if given (AU-02, AU-03).</summary>
     public DateTimeOffset? ConsentDecisionMadeAt { get; set; }
+
+    /// <summary>Absolute path to the local folder where this account's files are synced (AM-07).</summary>
+    public string LocalSyncPath { get; set; } = string.Empty;
+
+    /// <summary>Sync interval in minutes — Power User only (AM-05); default 15.</summary>
+    public int SyncIntervalMinutes { get; set; } = 15;
+
+    /// <summary>Max parallel transfer threads — Power User only (AM-05); range 1–10, default 5.</summary>
+    public int ConcurrencyLimit { get; set; } = 5;
+
+    /// <summary>Whether file metadata is written to the database after each sync (AM-12).</summary>
+    public bool StoreFileMetadata { get; set; }
+
+    /// <summary>UTC timestamp of the most recent completed sync run; null if never synced.</summary>
+    public DateTimeOffset? LastSyncedAt { get; set; }
+
+    /// <summary>True while a sync is actively running for this account (AM-08).</summary>
+    public bool IsSyncActive { get; set; }
 }

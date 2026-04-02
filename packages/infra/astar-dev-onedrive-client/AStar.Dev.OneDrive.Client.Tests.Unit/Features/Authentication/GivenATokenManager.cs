@@ -3,12 +3,14 @@ using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Features.Authentication;
 
-public sealed class GivenATokenManager
+public sealed class GivenATokenManager : IDisposable
 {
     private readonly Guid _accountId = Guid.NewGuid();
     private readonly IMsalClient _msalClient = Substitute.For<IMsalClient>();
-    private readonly IAuthStateService _authStateService = new AuthStateService();
+    private readonly AuthStateService _authStateService = new();
     private TokenManager _tokenManager = null!;
+
+    public void Dispose() => _authStateService.Dispose();
 
     private void SetUp() => _tokenManager = new TokenManager(_accountId, _msalClient, _authStateService);
 
@@ -16,15 +18,12 @@ public sealed class GivenATokenManager
     public async Task when_get_token_silently_async_and_msal_returns_expired_token_then_returns_failure()
     {
         SetUp();
-        var expiredToken = new AccessToken("old_token", DateTimeOffset.UtcNow.AddHours(-1));
-        _msalClient.AcquireTokenSilentAsync(CancellationToken.None)
+        _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("Token expired")));
 
-        var result = await _tokenManager.GetTokenSilentlyAsync();
+        var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
-        result.Match(
-            onSuccess: _ => throw new Xunit.Sdk.XunitException("Should have failed"),
-            onFailure: error => error.ShouldBe("Token expired"));
+        result.ShouldBeOfType<Result<AccessToken, string>.Error>().Reason.ShouldBe("Token expired");
     }
 
     [Fact]
@@ -32,18 +31,14 @@ public sealed class GivenATokenManager
     {
         SetUp();
         var validToken = new AccessToken("valid_token", DateTimeOffset.UtcNow.AddHours(1));
-        _msalClient.AcquireTokenSilentAsync(CancellationToken.None)
+        _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Ok(validToken)));
 
-        var result = await _tokenManager.GetTokenSilentlyAsync();
+        var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
-        result.Match(
-            onSuccess: token =>
-            {
-                token.Token.ShouldBe("valid_token");
-                token.IsExpired.ShouldBeFalse();
-            },
-            onFailure: _ => throw new Xunit.Sdk.XunitException("Should have succeeded"));
+        var token = result.ShouldBeOfType<Result<AccessToken, string>.Ok>().Value;
+        token.Token.ShouldBe("valid_token");
+        token.IsExpired.ShouldBeFalse();
     }
 
     [Fact]
@@ -53,19 +48,15 @@ public sealed class GivenATokenManager
         var stateChanges = new List<(Guid, AccountAuthState)>();
         var subscription = _authStateService.AccountAuthStateChanged.Subscribe(change => stateChanges.Add(change));
 
-        _msalClient.AcquireTokenSilentAsync(CancellationToken.None)
+        _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("Auth required")));
 
-        var result = await _tokenManager.GetTokenSilentlyAsync();
+        var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
-        result.Match(
-            onSuccess: _ => throw new Xunit.Sdk.XunitException("Should have failed"),
-            onFailure: _ =>
-            {
-                stateChanges.Count.ShouldBe(1);
-                stateChanges[0].Item1.ShouldBe(_accountId);
-                stateChanges[0].Item2.ShouldBe(AccountAuthState.AuthRequired);
-            });
+        result.ShouldBeOfType<Result<AccessToken, string>.Error>();
+        stateChanges.Count.ShouldBe(1);
+        stateChanges[0].Item1.ShouldBe(_accountId);
+        stateChanges[0].Item2.ShouldBe(AccountAuthState.AuthRequired);
 
         subscription.Dispose();
     }
@@ -76,15 +67,11 @@ public sealed class GivenATokenManager
         SetUp();
         var token = new AccessToken("new_token", DateTimeOffset.UtcNow.AddHours(1));
 
-        var persistResult = await _tokenManager.PersistTokenAsync(token, null);
-        var getResult = await _tokenManager.GetTokenSilentlyAsync();
+        var persistResult = await _tokenManager.PersistTokenAsync(token, null, TestContext.Current.CancellationToken);
+        await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
-        persistResult.Match(
-            onSuccess: _ => { },
-            onFailure: e => throw new Xunit.Sdk.XunitException($"Persist failed: {e}"));
-
-        // Mock should not be called if token is cached and not expiring
-        _msalClient.Received(0).AcquireTokenSilentAsync(Arg.Any<CancellationToken>());
+        persistResult.ShouldBeOfType<Result<bool, string>.Ok>();
+        _ = _msalClient.Received(0).AcquireTokenSilentAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -92,15 +79,14 @@ public sealed class GivenATokenManager
     {
         SetUp();
         var token = new AccessToken("new_token", DateTimeOffset.UtcNow.AddHours(1));
-        await _tokenManager.PersistTokenAsync(token, null);
+        _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("No cached token")));
+        await _tokenManager.PersistTokenAsync(token, null, TestContext.Current.CancellationToken);
 
-        var clearResult = await _tokenManager.ClearTokenAsync();
-        var getResult = await _tokenManager.GetTokenSilentlyAsync();
+        var clearResult = await _tokenManager.ClearTokenAsync(TestContext.Current.CancellationToken);
+        await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
-        clearResult.Match(
-            onSuccess: _ => { },
-            onFailure: e => throw new Xunit.Sdk.XunitException($"Clear failed: {e}"));
-
-        await _msalClient.Received(1).AcquireTokenSilentAsync(Arg.Any<CancellationToken>());
+        clearResult.ShouldBeOfType<Result<bool, string>.Ok>();
+        _ = await _msalClient.Received(1).AcquireTokenSilentAsync(Arg.Any<CancellationToken>());
     }
 }

@@ -98,6 +98,83 @@
   <data name="Accounts_ComingSoon" xml:space="preserve">
     <value>Accounts — coming soon</value>
   </data>
+  <data name="Accounts_Heading" xml:space="preserve">
+    <value>Accounts</value>
+  </data>
+  <data name="Accounts_AddAccount" xml:space="preserve">
+    <value>Add account</value>
+  </data>
+  <data name="Accounts_AuthRequired" xml:space="preserve">
+    <value>Re-authentication required</value>
+  </data>
+  <data name="Accounts_SyncNow" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+  <data name="Accounts_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Accounts_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="Accounts_RemoveBlocked" xml:space="preserve">
+    <value>Please cancel the active sync before removing this account</value>
+  </data>
+  <data name="Accounts_NeverSynced" xml:space="preserve">
+    <value>Never synced</value>
+  </data>
+
+  <!-- Add Account Wizard -->
+  <data name="Wizard_Step" xml:space="preserve">
+    <value>Step</value>
+  </data>
+  <data name="Wizard_Of" xml:space="preserve">
+    <value>of</value>
+  </data>
+  <data name="Wizard_StepOf" xml:space="preserve">
+    <value>Step</value>
+  </data>
+  <data name="Wizard_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Wizard_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Wizard_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Wizard_Finish" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="Wizard_Step1_Heading" xml:space="preserve">
+    <value>Sign in to Microsoft</value>
+  </data>
+  <data name="Wizard_Step1_Description" xml:space="preserve">
+    <value>Your browser will open so you can sign in to your Microsoft personal account. Only personal accounts are supported.</value>
+  </data>
+  <data name="Wizard_Step1_SignIn" xml:space="preserve">
+    <value>Sign in with browser…</value>
+  </data>
+  <data name="Wizard_Step2_Heading" xml:space="preserve">
+    <value>Select folders to sync</value>
+  </data>
+  <data name="Wizard_Step2_Description" xml:space="preserve">
+    <value>Choose which OneDrive folders to sync to your computer. All folders are selected by default.</value>
+  </data>
+  <data name="Wizard_Step2_LoadFolders" xml:space="preserve">
+    <value>Load folders</value>
+  </data>
+  <data name="Wizard_Step3_Heading" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Wizard_Step3_Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Wizard_Step3_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Wizard_Step3_LocalPath" xml:space="preserve">
+    <value>Sync folder</value>
+  </data>
   <data name="Activity_ComingSoon" xml:space="preserve">
     <value>Activity — coming soon</value>
   </data>
