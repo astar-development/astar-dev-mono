@@ -1,5 +1,7 @@
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
+using AStar.Dev.OneDriveSync.Infrastructure.Shell;
+using NSubstitute;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Onboarding;
 
@@ -9,9 +11,10 @@ public sealed class GivenNoAccountsInDatabase
     public async Task when_onboarding_view_model_is_created_then_should_show_onboarding_is_true()
     {
         var accountRepository = Substitute.For<IAccountRepository>();
-        accountRepository.HasAnyAsync().Returns(false);
+        var shellNavigator    = Substitute.For<IShellNavigator>();
+        accountRepository.HasAnyAsync(Arg.Any<CancellationToken>()).Returns(false);
 
-        var sut = await OnboardingViewModel.CreateAsync(accountRepository, TestContext.Current.CancellationToken);
+        var sut = new OnboardingViewModel(accountRepository, shellNavigator);
 
         sut.ShouldShowOnboarding.ShouldBeTrue();
     }
@@ -20,9 +23,10 @@ public sealed class GivenNoAccountsInDatabase
     public async Task when_one_or_more_accounts_exist_then_should_show_onboarding_is_false()
     {
         var accountRepository = Substitute.For<IAccountRepository>();
-        accountRepository.HasAnyAsync().Returns(true);
+        var shellNavigator    = Substitute.For<IShellNavigator>();
+        accountRepository.HasAnyAsync(Arg.Any<CancellationToken>()).Returns(true);
 
-        var sut = await OnboardingViewModel.CreateAsync(accountRepository, TestContext.Current.CancellationToken);
+        var sut = new OnboardingViewModel(accountRepository, shellNavigator);
 
         sut.ShouldShowOnboarding.ShouldBeFalse();
     }

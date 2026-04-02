@@ -86,7 +86,6 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
-    <PackageVersion Include="ReactiveUI.Fody" Version="19.5.41" />
   </ItemGroup>
   <ItemGroup Label="Logging">
     <!--
@@ -156,6 +155,7 @@
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.12" />
     <PackageVersion Include="ReactiveUI" Version="20.1.1" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
+    <PackageVersion Include="ReactiveUI.Fody" Version="19.5.41" />
   </ItemGroup>
 
   <ItemGroup Label="Blazor and web">

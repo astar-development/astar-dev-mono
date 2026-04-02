@@ -16,6 +16,7 @@ using Serilog.Events;
 
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 using AStar.Dev.Utilities;
+using AStar.Dev.OneDrive.Client;
 
 namespace AStar.Dev.OneDriveSync;
 
@@ -99,10 +100,18 @@ public partial class App : Application, IDisposable
 
         _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
         _ = services.AddPersistence();
-        _ = services.AddShell();
+        _ = services.AddShell(BuildOneDriveClientOptions());
         _ = services.AddStartupTasks();
 
         return services.BuildServiceProvider();
+    }
+
+    private static OneDriveClientOptions BuildOneDriveClientOptions()
+    {
+        var clientId     = Environment.GetEnvironmentVariable("ONEDRIVEYNC_AZURE_CLIENT_ID") ?? string.Empty;
+        var redirectUri  = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
+
+        return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
     }
 
     private static void ConfigureSerilog()

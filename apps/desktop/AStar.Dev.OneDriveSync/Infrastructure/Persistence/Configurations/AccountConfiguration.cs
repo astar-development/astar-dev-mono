@@ -16,22 +16,43 @@ internal sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        _ = builder.HasKey(a => a.Id);
+        _ = builder.HasKey(account => account.Id);
 
-        // Synthetic GUID — caller always provides the value; EF must never generate one.
-        _ = builder.Property(a => a.Id)
+        _ = builder.Property(account => account.Id)
             .ValueGeneratedNever();
 
-        _ = builder.Property(a => a.DisplayName)
+        _ = builder.Property(account => account.DisplayName)
             .IsRequired()
             .HasMaxLength(256);
 
-        _ = builder.Property(a => a.Email)
+        _ = builder.Property(account => account.Email)
             .IsRequired()
             .HasMaxLength(320);
 
-        _ = builder.Property(a => a.MicrosoftAccountId)
+        _ = builder.Property(account => account.MicrosoftAccountId)
             .IsRequired()
             .HasMaxLength(128);
+
+        _ = builder.Property(account => account.AuthState)
+            .IsRequired()
+            .HasMaxLength(32)
+            .HasDefaultValue("Authenticated");
+
+        _ = builder.Property(account => account.LocalSyncPath)
+            .IsRequired()
+            .HasMaxLength(4096)
+            .HasDefaultValue(string.Empty);
+
+        _ = builder.Property(account => account.SyncIntervalMinutes)
+            .HasDefaultValue(15);
+
+        _ = builder.Property(account => account.ConcurrencyLimit)
+            .HasDefaultValue(5);
+
+        _ = builder.Property(account => account.StoreFileMetadata)
+            .HasDefaultValue(false);
+
+        _ = builder.Property(account => account.IsSyncActive)
+            .HasDefaultValue(false);
     }
 }

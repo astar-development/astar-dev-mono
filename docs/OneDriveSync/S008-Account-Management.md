@@ -17,20 +17,20 @@ So that I can manage which accounts are synced and where their files are stored 
 ## Acceptance Criteria
 
 ### Add Account Wizard — 3 Steps (AM-01, AM-02)
-- [ ] Step 1 — Authenticate: triggers MSAL browser flow (delegates to S007); displays spinner while waiting; shows error if auth fails with a retry option
-- [ ] Step 2 — Folder Selection: shows root OneDrive folders fetched from Graph; tree is expandable to arbitrary depth; multi-select supported; "Select All" option (AM-03); default is "all folders selected"
-- [ ] Step 3 — Confirm: summary of account, selected folders, and default local sync path; "Back" and "Finish" buttons
-- [ ] Wizard navigation: "Next"/"Back" between steps; "Cancel" at any step dismisses without saving
+- [x] Step 1 — Authenticate: triggers MSAL browser flow (delegates to S007); displays spinner while waiting; shows error if auth fails with a retry option
+- [x] Step 2 — Folder Selection: shows root OneDrive folders fetched from Graph; tree is expandable to arbitrary depth; multi-select supported; "Select All" option (AM-03); default is "all folders selected"
+- [x] Step 3 — Confirm: summary of account, selected folders, and default local sync path; "Back" and "Finish" buttons
+- [x] Wizard navigation: "Next"/"Back" between steps; "Cancel" at any step dismisses without saving
 
 ### Folder Selection (AM-03, AM-04)
-- [ ] Wizard step 2 fetches folders from OneDrive via `IOneDriveFolderService` (in `AStar.Dev.OneDrive.Client`)
+- [x] Wizard step 2 fetches folders from OneDrive via `IOneDriveFolderService` (in `AStar.Dev.OneDrive.Client`)
 - [ ] Folder selection is editable from the Accounts view after wizard completion (not only during wizard)
-- [ ] `IOneDriveFolderService` interface in `packages/infra/astar-dev-onedrive-client/Features/FolderBrowsing/`
+- [x] `IOneDriveFolderService` interface in `packages/infra/astar-dev-onedrive-client/Features/FolderBrowsing/`
 
 ### Local Sync Path (AM-07, AM-06)
-- [ ] Default local path set on wizard completion: `~/OneDrive/<account-display-name>/` — editable before finishing
-- [ ] Each account must have a unique, non-overlapping local folder; wizard and settings UI both prevent overlapping selection
-- [ ] Overlap check: if the selected path is a prefix of, or contained within, another account's path → blocked with a clear message
+- [x] Default local path set on wizard completion: `~/OneDrive/<account-display-name>/` — editable before finishing
+- [x] Each account must have a unique, non-overlapping local folder; wizard and settings UI both prevent overlapping selection
+- [x] Overlap check: if the selected path is a prefix of, or contained within, another account's path → blocked with a clear message
 
 ### Non-Empty Folder Warning (AM-10)
 - [ ] If the selected local sync folder is not empty, warn: "This folder already contains files — conflicts may occur on first sync. Continue?" — two buttons: Continue / Choose Different Folder
@@ -53,23 +53,23 @@ So that I can manage which accounts are synced and where their files are stored 
 
 ### Remove Account (AM-08, AM-09)
 - [ ] Remove account prompts: "Keep local files" or "Delete local files" — two explicit choices; no silent default
-- [ ] Removal is **blocked** while a sync is active for that account; user shown: "Please cancel the active sync before removing this account"
-- [ ] On removal: account row deleted from DB (cascade deletes all related rows per S002 schema)
+- [x] Removal is **blocked** while a sync is active for that account; user shown: "Please cancel the active sync before removing this account"
+- [x] On removal: account row deleted from DB (cascade deletes all related rows per S002 schema)
 - [ ] If "Delete local files" chosen: local folder deleted recursively with a second confirmation ("This will permanently delete X files from your computer")
 
 ### Accounts View (Section 7)
-- [ ] Accounts view shows all configured accounts with: display name, email (masked to `a***@example.com` for display), auth status badge, last-synced timestamp, "Sync Now" button, "Settings" button, "Remove" button
-- [ ] Auth failure badge wired to `IAuthStateService` from S007
-- [ ] Last-synced formatted per LO-07 (`IRelativeTimeFormatter`)
+- [x] Accounts view shows all configured accounts with: display name, email (masked to `a***@example.com` for display), auth status badge, last-synced timestamp, "Sync Now" button, "Settings" button, "Remove" button
+- [x] Auth failure badge wired to `IAuthStateService` from S007
+- [x] Last-synced formatted per LO-07 (`IRelativeTimeFormatter`)
 
 ### Tests
-- [ ] **Unit test**: `AddAccountWizardViewModel` — step progression; cannot advance from Step 1 until auth succeeds
-- [ ] **Unit test**: overlap detection — overlapping paths return `Failure`; non-overlapping return `Success`
+- [x] **Unit test**: `AddAccountWizardViewModel` — step progression; cannot advance from Step 1 until auth succeeds
+- [x] **Unit test**: overlap detection — overlapping paths return `Failure`; non-overlapping return `Success`
 - [ ] **Unit test**: non-empty folder warning — empty folder → no warning; non-empty → warning emitted
-- [ ] **Unit test**: removal blocked when sync active; allowed when idle
-- [ ] **Integration test**: account added, persisted, and retrieved correctly from SQLite
-- [ ] **Integration test**: account removed — all cascade-deleted rows confirmed absent
-- [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
+- [x] **Unit test**: removal blocked when sync active; allowed when idle
+- [x] **Integration test**: account added, persisted, and retrieved correctly from SQLite
+- [x] **Integration test**: account removed — all cascade-deleted rows confirmed absent
+- [x] `dotnet build` zero errors/warnings; `dotnet test` all pass
 
 ---
 

@@ -12,6 +12,7 @@ public sealed class GivenAMainWindowViewModel
     private readonly INavigationService          _navigationService   = Substitute.For<INavigationService>();
     private readonly IFeatureAvailabilityService _featureAvailability = Substitute.For<IFeatureAvailabilityService>();
     private readonly ILocalisationService        _localisationService = Substitute.For<ILocalisationService>();
+    private readonly IShellNavigator             _shellNavigator      = Substitute.For<IShellNavigator>();
 
     public GivenAMainWindowViewModel()
     {
@@ -36,7 +37,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(section).Returns(true);
         _ = _navigationService.ResolveView(section).Returns(expectedView);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         sut.ActiveView.ShouldBe(expectedView);
@@ -57,7 +58,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(section).Returns(true);
         _ = _navigationService.ResolveView(section).Returns(expectedView);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         sut.SelectedSection.ShouldBe(section);
@@ -77,7 +78,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(section).Returns(true);
         _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         var targetItem = sut.NavItems.Single(i => i.Section == section);
@@ -99,7 +100,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(section).Returns(true);
         _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(section).Subscribe();
 
         var inactiveItems = sut.NavItems.Where(i => i.Section != section);
@@ -115,7 +116,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
         var viewBeforeAttempt = sut.ActiveView;
 
@@ -131,7 +132,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
 
         _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
@@ -142,7 +143,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_is_loading_is_true()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.IsLoading.ShouldBeTrue();
     }
@@ -150,7 +151,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_is_nav_enabled_is_false()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.IsNavEnabled.ShouldBeFalse();
     }
@@ -161,7 +162,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.CompleteStartup();
 
         sut.IsLoading.ShouldBeFalse();
@@ -173,7 +174,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.CompleteStartup();
 
         sut.IsNavEnabled.ShouldBeTrue();
@@ -186,7 +187,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.CompleteStartup();
 
         sut.ActiveView.ShouldBe(dashboardView);
@@ -198,7 +199,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.CompleteStartup();
 
         sut.NavItems[0].IsActive.ShouldBeTrue();
@@ -207,7 +208,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_a_startup_error_is_set_then_has_startup_error_is_true()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.SetStartupError("Database is corrupt.");
 
         sut.HasStartupError.ShouldBeTrue();
@@ -217,7 +218,7 @@ public sealed class GivenAMainWindowViewModel
     public void when_a_startup_error_is_set_then_the_error_message_is_stored()
     {
         const string errorMessage = "Database is corrupt.";
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         sut.SetStartupError(errorMessage);
 
         sut.StartupErrorMessage.ShouldBe(errorMessage);
@@ -226,7 +227,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_eight_nav_items_are_present()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.NavItems.Count.ShouldBe(8);
     }
@@ -234,7 +235,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_nav_items_appear_in_spec_order()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.NavItems[0].Section.ShouldBe(NavSection.Dashboard);
         sut.NavItems[1].Section.ShouldBe(NavSection.Accounts);
@@ -249,7 +250,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_top_nav_items_are_the_first_five_sections()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.TopNavItems.Count.ShouldBe(5);
         sut.TopNavItems[0].Section.ShouldBe(NavSection.Dashboard);
@@ -259,7 +260,7 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public void when_the_view_model_is_created_then_bottom_nav_items_are_the_last_three_sections()
     {
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.BottomNavItems.Count.ShouldBe(3);
         sut.BottomNavItems[0].Section.ShouldBe(NavSection.Settings);
@@ -271,7 +272,7 @@ public sealed class GivenAMainWindowViewModel
     {
         _ = _featureAvailability.IsAvailable(NavSection.Dashboard).Returns(true);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
 
         sut.NavItems[0].IsFeatureEnabled.ShouldBeTrue();
     }
@@ -281,7 +282,7 @@ public sealed class GivenAMainWindowViewModel
     {
         _ = _featureAvailability.IsAvailable(NavSection.Accounts).Returns(false);
 
-        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService);
+        var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
         var accountsItem = sut.NavItems.Single(i => i.Section == NavSection.Accounts);
 
         accountsItem.IsFeatureEnabled.ShouldBeFalse();

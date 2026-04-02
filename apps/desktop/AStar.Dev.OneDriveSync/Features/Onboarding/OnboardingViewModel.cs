@@ -1,21 +1,23 @@
+using System.Reactive;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Infrastructure;
+using AStar.Dev.OneDriveSync.Infrastructure.Shell;
+using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
 public sealed class OnboardingViewModel : ViewModelBase
 {
-    private bool _shouldShowOnboarding;
+    private readonly IAccountRepository _accountRepository;
 
-    private OnboardingViewModel() { }
-
-    public bool ShouldShowOnboarding => _shouldShowOnboarding;
-
-    public static async Task<OnboardingViewModel> CreateAsync(IAccountRepository accountRepository, CancellationToken ct = default)
+    public OnboardingViewModel(IAccountRepository accountRepository, IShellNavigator shellNavigator)
     {
-        var vm = new OnboardingViewModel();
-        vm._shouldShowOnboarding = !await accountRepository.HasAnyAsync().ConfigureAwait(false);
+        _accountRepository = accountRepository;
 
-        return vm;
+        AddAccountCommand = ReactiveCommand.Create(() => shellNavigator.Navigate(NavSection.Accounts));
     }
+
+    public async Task<bool> ShouldShowOnboarding() => !await _accountRepository.HasAnyAsync().ConfigureAwait(false);
+
+    public ReactiveCommand<Unit, Unit> AddAccountCommand { get; }
 }

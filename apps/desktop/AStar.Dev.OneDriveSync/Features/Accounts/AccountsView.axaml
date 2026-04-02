@@ -4,7 +4,98 @@
              xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Accounts.AccountsView"
              x:DataType="vm:AccountsViewModel">
-    <TextBlock Text="{loc:Localise Accounts_ComingSoon}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="24,16,24,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{loc:Localise Accounts_Heading}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        Content="{loc:Localise Accounts_AddAccount}"
+                        Command="{Binding ShowWizardCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- Account list -->
+        <ScrollViewer Grid.Row="1" Padding="24,0">
+            <ItemsControl ItemsSource="{Binding Accounts}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:AccountRowViewModel">
+                        <Border Margin="0,0,0,8"
+                                Padding="16"
+                                CornerRadius="8"
+                                BorderThickness="1">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+
+                                <!-- Account info -->
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
+                                        <Border CornerRadius="4"
+                                                Padding="4,1"
+                                                IsVisible="{Binding IsAuthRequired}">
+                                            <TextBlock Text="{loc:Localise Accounts_AuthRequired}"
+                                                       FontSize="11" />
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding MaskedEmail}"
+                                               Opacity="0.7"
+                                               FontSize="13" />
+                                    <TextBlock Text="{Binding LastSynced}"
+                                               IsVisible="{Binding LastSynced, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                               Opacity="0.6"
+                                               FontSize="12" />
+                                </StackPanel>
+
+                                <!-- Sync Now -->
+                                <Button Grid.Column="1"
+                                        Content="{loc:Localise Accounts_SyncNow}"
+                                        Command="{Binding SyncNowCommand}"
+                                        Margin="8,0,0,0" />
+
+                                <!-- Settings placeholder -->
+                                <Button Grid.Column="2"
+                                        Content="{loc:Localise Accounts_Settings}"
+                                        Margin="8,0,0,0" />
+
+                                <!-- Remove -->
+                                <Button Grid.Column="3"
+                                        Content="{loc:Localise Accounts_Remove}"
+                                        Command="{Binding RemoveCommand}"
+                                        IsEnabled="{Binding CanRemove}"
+                                        Margin="8,0,0,0" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Wizard overlay -->
+        <Border Grid.Row="0"
+                Grid.RowSpan="3"
+                IsVisible="{Binding IsWizardOpen}"
+                Background="{DynamicResource OverlayBackgroundBrush}">
+            <Border MaxWidth="640"
+                    MaxHeight="520"
+                    CornerRadius="12"
+                    Padding="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                <ContentControl Content="{Binding ActiveWizard}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vm:AddAccountWizardViewModel">
+                            <vm:AddAccountWizardView />
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </Border>
+        </Border>
+
+    </Grid>
 </UserControl>

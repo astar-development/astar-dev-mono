@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDriveSync.Features.Accounts"
+             xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
+             x:Class="AStar.Dev.OneDriveSync.Features.Accounts.AddAccountWizardView"
+             x:DataType="vm:AddAccountWizardViewModel">
+
+    <Border Padding="24">
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <!-- Step indicator -->
+            <TextBlock Grid.Row="0"
+                       Opacity="0.6"
+                       FontSize="13"
+                       Margin="0,0,0,16">
+                <Run Text="{loc:Localise Wizard_Step}" />
+                <Run Text="{Binding CurrentStep}" />
+                <Run Text="{loc:Localise Wizard_Of}" />
+                <Run Text="3" />
+            </TextBlock>
+
+            <!-- Step content -->
+            <Panel Grid.Row="1">
+
+                <!-- Step 1: Authenticate -->
+                <StackPanel Spacing="16" IsVisible="{Binding IsStep1}">
+                    <TextBlock Text="{loc:Localise Wizard_Step1_Heading}" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="{loc:Localise Wizard_Step1_Description}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               Foreground="Red"
+                               TextWrapping="Wrap" />
+                    <Button Content="{loc:Localise Wizard_Step1_SignIn}"
+                            Command="{Binding AuthenticateCommand}"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <!-- Step 2: Folder Selection -->
+                <Grid RowDefinitions="Auto,*" IsVisible="{Binding IsStep2}">
+                    <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,8">
+                        <TextBlock Text="{loc:Localise Wizard_Step2_Heading}" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="{loc:Localise Wizard_Step2_Description}" TextWrapping="Wrap" />
+                        <Button Content="{loc:Localise Wizard_Step2_LoadFolders}"
+                                Command="{Binding LoadFoldersCommand}" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <TreeView ItemsSource="{Binding AvailableFolders}">
+                            <TreeView.ItemTemplate>
+                                <TreeDataTemplate DataType="vm:OneDriveFolderViewModel"
+                                                  ItemsSource="{Binding Children}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <CheckBox IsChecked="{Binding IsSelected}" />
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </TreeDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- Step 3: Confirm -->
+                <StackPanel Spacing="12" IsVisible="{Binding IsStep3}">
+                    <TextBlock Text="{loc:Localise Wizard_Step3_Heading}" FontSize="18" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Localise Wizard_Step3_Account}" FontWeight="SemiBold" Margin="0,0,12,8" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AccountDisplayName}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Localise Wizard_Step3_Email}" FontWeight="SemiBold" Margin="0,0,12,8" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccountEmail}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Localise Wizard_Step3_LocalPath}" FontWeight="SemiBold" Margin="0,0,12,0" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding LocalSyncPath}" />
+                    </Grid>
+                </StackPanel>
+
+            </Panel>
+
+            <!-- Navigation buttons -->
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,16,0,0">
+                <Button Grid.Column="0"
+                        Content="{loc:Localise Wizard_Cancel}"
+                        Command="{Binding CancelCommand}" />
+                <Button Grid.Column="2"
+                        Content="{loc:Localise Wizard_Back}"
+                        Command="{Binding BackCommand}"
+                        IsEnabled="{Binding IsNotStep1}"
+                        Margin="0,0,8,0" />
+                <Button Grid.Column="3"
+                        Content="{loc:Localise Wizard_Next}"
+                        Command="{Binding AdvanceCommand}"
+                        IsEnabled="{Binding CanAdvance}"
+                        IsVisible="{Binding IsNotStep3}"
+                        Margin="0,0,8,0" />
+                <Button Grid.Column="4"
+                        Content="{loc:Localise Wizard_Finish}"
+                        Command="{Binding FinishCommand}"
+                        IsVisible="{Binding IsStep3}" />
+            </Grid>
+
+        </Grid>
+    </Border>
+</UserControl>
