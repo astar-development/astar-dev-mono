@@ -1,0 +1,19 @@
+<svg width="512" height="256" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="256" fill="black"/>
+
+  <!-- Flat gold star -->
+  <polygon
+    points="130,60 150,115 210,115 160,150 180,210 130,175 80,210 100,150 50,115 110,115"
+    fill="#D4AF37"
+  />
+
+  <!-- Text -->
+  <text x="260" y="150"
+        font-family="Segoe UI, sans-serif"
+        font-size="90"
+        fill="#D4AF37"
+        font-weight="600"
+        letter-spacing="2">
+    AStar
+  </text>
+</svg>

@@ -4,8 +4,5 @@ namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
 public partial class OnboardingView : UserControl
 {
-    public OnboardingView()
-    {
-        InitializeComponent();
-    }
+    public OnboardingView() => InitializeComponent();
 }
