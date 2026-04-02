@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import Mailjet from 'node-mailjet';
+import { trackTrace, trackWarning, trackException, trackEvent } from '../../lib/telemetry';
 
 export const prerender = false;
 
@@ -149,6 +150,8 @@ function buildCopyMessage(name: string, email: string, message: string, from: st
 export const POST: APIRoute = async ({ request }) => {
   const contentLength = request.headers.get('content-length');
   if (contentLength !== null && parseInt(contentLength, 10) >= 10_240) {
+    trackWarning('contact/request-too-large', { contentLength });
+
     return new Response(JSON.stringify({ errors: [{ field: '', message: 'Request body too large.' }] }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
@@ -161,7 +164,7 @@ export const POST: APIRoute = async ({ request }) => {
     'unknown';
 
   if (!checkRateLimit(ip)) {
-    console.warn(`[contact] Rate limit exceeded for IP: ${ip}`);
+    trackWarning('contact/rate-limit-exceeded', { ip });
 
     return new Response(JSON.stringify({ message: 'Too many requests. Please try again in 15 minutes.' }), {
       status: 429,
@@ -173,6 +176,8 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const raw: unknown = await request.json();
     if (typeof raw !== 'object' || raw === null) {
+      trackWarning('contact/invalid-body', { ip, reason: 'not-an-object' });
+
       return new Response(JSON.stringify({ errors: [{ field: '', message: 'Invalid request body.' }] }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -180,6 +185,8 @@ export const POST: APIRoute = async ({ request }) => {
     }
     body = raw as ContactBody;
   } catch {
+    trackWarning('contact/invalid-body', { ip, reason: 'parse-error' });
+
     return new Response(JSON.stringify({ errors: [{ field: '', message: 'Invalid request body.' }] }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
@@ -188,7 +195,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const website = typeof body.website === 'string' ? body.website : '';
   if (website.length > 0) {
-    console.warn(`[contact] Honeypot triggered from IP: ${ip}`);
+    trackWarning('contact/honeypot-triggered', { ip });
 
     return new Response(JSON.stringify({ message: 'Thank you for your message.' }), {
       status: 200,
@@ -198,6 +205,8 @@ export const POST: APIRoute = async ({ request }) => {
 
   const errors = validateBody(body);
   if (errors.length > 0) {
+    trackTrace('contact/validation-failed', { ip, fields: errors.map((e) => e.field).join(',') });
+
     return new Response(JSON.stringify({ errors }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
@@ -215,7 +224,7 @@ export const POST: APIRoute = async ({ request }) => {
   const fromEmail = import.meta.env.MAILJET_FROM_EMAIL;
 
   if (typeof apiKey !== 'string' || apiKey.length === 0 || typeof apiSecret !== 'string' || apiSecret.length === 0) {
-    console.error('[contact] MJ_APIKEY_PUBLIC or MJ_APIKEY_PRIVATE is not configured');
+    trackException(new Error('contact/missing-mailjet-credentials: MJ_APIKEY_PUBLIC or MJ_APIKEY_PRIVATE is not configured'));
 
     return new Response(JSON.stringify({ message: `Something went wrong. Please email ${contactEmail ?? 'us'} directly.` }), {
       status: 500,
@@ -224,7 +233,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   if (typeof contactEmail !== 'string' || contactEmail.length === 0 || typeof fromEmail !== 'string' || fromEmail.length === 0) {
-    console.error('[contact] CONTACT_EMAIL or MAILJET_FROM_EMAIL is not configured');
+    trackException(new Error('contact/missing-email-config: CONTACT_EMAIL or MAILJET_FROM_EMAIL is not configured'));
 
     return new Response(JSON.stringify({ message: 'Something went wrong. Please try again later.' }), {
       status: 500,
@@ -233,6 +242,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    trackTrace('contact/send-start', { ip, sendCopy: String(sendCopy), messageLength: String(message.length) });
+
     const client = Mailjet.apiConnect(apiKey, apiSecret);
 
     const messages: MailjetMessage[] = [buildOwnerMessage(name, email, message, contactEmail, fromEmail)];
@@ -242,12 +253,15 @@ export const POST: APIRoute = async ({ request }) => {
 
     await client.post('send', { version: 'v3.1' }).request({ Messages: messages });
 
+    trackEvent('contact/send-success', { ip, sendCopy: String(sendCopy), messageCount: String(messages.length) });
+
     return new Response(JSON.stringify({ message: 'Thank you for your message. We will be in touch soon.' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: unknown) {
-    console.error('[contact] Mailjet error:', err);
+    const error = err instanceof Error ? err : new Error(String(err));
+    trackException(error, { ip, sendCopy: String(sendCopy), context: 'contact/send-failed' });
 
     return new Response(JSON.stringify({ message: `Something went wrong. Please email ${contactEmail} directly.` }), {
       status: 500,
