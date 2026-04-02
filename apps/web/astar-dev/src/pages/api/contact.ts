@@ -218,10 +218,10 @@ export const POST: APIRoute = async ({ request }) => {
   const message = (body.message as string).trim();
   const sendCopy = body.sendCopy === true;
 
-  const apiKey = import.meta.env.MJ_APIKEY_PUBLIC;
-  const apiSecret = import.meta.env.MJ_APIKEY_PRIVATE;
-  const contactEmail = import.meta.env.CONTACT_EMAIL;
-  const fromEmail = import.meta.env.MAILJET_FROM_EMAIL;
+  const apiKey = process.env.MJ_APIKEY_PUBLIC;
+  const apiSecret = process.env.MJ_APIKEY_PRIVATE;
+  const contactEmail = process.env.CONTACT_EMAIL;
+  const fromEmail = process.env.MAILJET_FROM_EMAIL;
 
   if (typeof apiKey !== 'string' || apiKey.length === 0 || typeof apiSecret !== 'string' || apiSecret.length === 0) {
     trackException(new Error('contact/missing-mailjet-credentials: MJ_APIKEY_PUBLIC or MJ_APIKEY_PRIVATE is not configured'));
