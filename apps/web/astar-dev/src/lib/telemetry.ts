@@ -17,7 +17,7 @@ function getClient(): appInsights.TelemetryClient | null {
     return client;
   }
 
-  const connectionString = import.meta.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
+  const connectionString = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
   if (typeof connectionString !== 'string' || connectionString.length === 0) {
     return null;
   }
