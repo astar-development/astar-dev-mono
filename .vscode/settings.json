@@ -108,20 +108,5 @@
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "cSpell.language": "en-GB",
-  "cSpell.words": [
-    "Astar",
-    "Avalonia",
-    "axaml",
-    "Blazor",
-    "dorny",
-    "Isnt",
-    "NOLOGO",
-    "OPTOUT",
-    "Parameterised",
-    "Serilog",
-    "Shouldly",
-    "slnx",
-    "testsettings",
-    "XMLDOC"
-  ]
+  "cSpell.words": ["Astar", "Avalonia", "axaml", "Blazor", "dorny", "Isnt", "NOLOGO", "OPTOUT", "Parameterised", "SENDGRID", "Serilog", "Shouldly", "slnx", "testsettings", "XMLDOC"]
 }
