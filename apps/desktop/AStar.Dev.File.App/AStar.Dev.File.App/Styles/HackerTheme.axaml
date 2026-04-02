@@ -1,0 +1,120 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Styles.Resources>
+        <Color x:Key="HackerGreenColor">#00FF41</Color>
+        <Color x:Key="HackerDimGreenColor">#007020</Color>
+        <Color x:Key="HackerBackgroundColor">#0D0D0D</Color>
+        <Color x:Key="HackerSurfaceColor">#111111</Color>
+        <Color x:Key="HackerSurfaceAltColor">#0A0A0A</Color>
+        <Color x:Key="HackerHighlightColor">#003300</Color>
+
+        <SolidColorBrush x:Key="HackerGreen" Color="{StaticResource HackerGreenColor}" />
+        <SolidColorBrush x:Key="HackerDimGreen" Color="{StaticResource HackerDimGreenColor}" />
+        <SolidColorBrush x:Key="HackerBackground" Color="{StaticResource HackerBackgroundColor}" />
+        <SolidColorBrush x:Key="HackerSurface" Color="{StaticResource HackerSurfaceColor}" />
+        <SolidColorBrush x:Key="HackerSurfaceAlt" Color="{StaticResource HackerSurfaceAltColor}" />
+        <SolidColorBrush x:Key="HackerHighlight" Color="{StaticResource HackerHighlightColor}" />
+        <FontFamily x:Key="HackerFont">Courier New,Courier,monospace</FontFamily>
+    </Styles.Resources>
+
+    <!-- Window -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource HackerBackground}" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+        <Setter Property="FontSize" Value="13" />
+    </Style>
+
+    <!-- TextBlock -->
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+    </Style>
+
+    <!-- TextBox -->
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="{StaticResource HackerSurface}" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="BorderBrush" Value="{StaticResource HackerGreen}" />
+        <Setter Property="CaretBrush" Value="{StaticResource HackerGreen}" />
+        <Setter Property="SelectionBrush" Value="{StaticResource HackerHighlight}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+    </Style>
+
+    <!-- Button base -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{StaticResource HackerSurface}" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="BorderBrush" Value="{StaticResource HackerGreen}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HackerHighlight}" />
+    </Style>
+
+    <Style Selector="Button:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HackerDimGreen}" />
+    </Style>
+
+    <Style Selector="Button:disabled /template/ ContentPresenter">
+        <Setter Property="Opacity" Value="0.35" />
+    </Style>
+
+    <!-- ListBox -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="{StaticResource HackerBackground}" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+    </Style>
+
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource HackerHighlight}" />
+    </Style>
+
+    <!-- DataGrid -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="{StaticResource HackerBackground}" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+        <Setter Property="GridLinesVisibility" Value="All" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource HackerDimGreen}" />
+        <Setter Property="VerticalGridLinesBrush" Value="{StaticResource HackerDimGreen}" />
+        <Setter Property="RowBackground" Value="{StaticResource HackerSurface}" />
+        <Setter Property="BorderBrush" Value="{StaticResource HackerGreen}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="#001A00" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="BorderBrush" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+        <Setter Property="Padding" Value="8,4" />
+    </Style>
+
+    <Style Selector="DataGridRow:selected">
+        <Setter Property="Background" Value="{StaticResource HackerHighlight}" />
+    </Style>
+
+    <Style Selector="DataGridCell">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource HackerGreen}" />
+        <Setter Property="FontFamily" Value="{StaticResource HackerFont}" />
+    </Style>
+
+    <!-- ScrollBar -->
+    <Style Selector="ScrollBar /template/ Thumb">
+        <Setter Property="Background" Value="{StaticResource HackerDimGreen}" />
+    </Style>
+
+    <Style Selector="ScrollBar /template/ Border">
+        <Setter Property="Background" Value="{StaticResource HackerBackground}" />
+    </Style>
+
+</Styles>
