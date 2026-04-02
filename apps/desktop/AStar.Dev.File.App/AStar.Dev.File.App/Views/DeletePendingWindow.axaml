@@ -1,0 +1,141 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AStar.Dev.File.App.ViewModels"
+        xmlns:converters="using:AStar.Dev.File.App.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="600"
+        x:Class="AStar.Dev.File.App.Views.DeletePendingWindow"
+        x:DataType="vm:DeletePendingViewModel"
+        Title="[ DELETE PENDING FILES ]"
+        MinWidth="1000"
+        MinHeight="500"
+        Width="1200"
+        Height="600">
+
+    <Window.Resources>
+        <converters:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter" />
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Header -->
+        <Border DockPanel.Dock="Top"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{StaticResource HackerGreen}"
+                Height="50"
+                Padding="12,0">
+            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                <TextBlock Grid.Column="0"
+                           Text="[ PENDING DELETION ]"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="{Binding PendingDeleteCount, StringFormat='[{0} FILES]'}"
+                               VerticalAlignment="Center" />
+                    <Button Content="[DELETE ALL]"
+                            Command="{Binding DeleteAllCommand}"
+                            IsEnabled="{Binding !IsDeleting}"
+                            Padding="8,4" />
+                    <Button Content="[CLEAR MARKINGS]"
+                            Command="{Binding ClearMarkingsCommand}"
+                            IsEnabled="{Binding !IsDeleting}"
+                            Padding="8,4" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Status message -->
+        <Border DockPanel.Dock="Top"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{StaticResource HackerDimGreen}"
+                Height="26"
+                Padding="8,0"
+                IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="{Binding StatusMessage}"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource HackerGreen}" />
+        </Border>
+
+        <!-- Main content -->
+        <DataGrid x:Name="FileDataGrid"
+                  ItemsSource="{Binding PendingDeleteFiles}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserSortColumns="True">
+            <DataGrid.Columns>
+
+                <!-- Thumbnail -->
+                <DataGridTemplateColumn Header="PREVIEW" Width="140" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:ScannedFileDisplayItem">
+                            <Button Command="{Binding DataContext.ViewFileCommand, ElementName=FileDataGrid}"
+                                    CommandParameter="{Binding}"
+                                    Padding="0"
+                                    Background="Transparent"
+                                    BorderThickness="0">
+                                <Panel Width="128" Height="128" Margin="4">
+                                    <Border Background="{StaticResource HackerSurface}"
+                                            BorderBrush="{StaticResource HackerDimGreen}"
+                                            BorderThickness="1"
+                                            Width="128" Height="128">
+                                        <TextBlock Text="{Binding Extension}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="10" />
+                                    </Border>
+                                    <Image Source="{Binding FullPath, Converter={StaticResource FilePathToBitmapConverter}}"
+                                           Width="128" Height="128"
+                                           Stretch="UniformToFill"
+                                           IsVisible="{Binding IsImage}" />
+                                </Panel>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="FILE NAME"
+                                   Binding="{Binding FileName}"
+                                   Width="300" />
+                <DataGridTextColumn Header="FOLDER"
+                                   Binding="{Binding FolderPath}"
+                                   Width="*" />
+                <DataGridTextColumn Header="SIZE"
+                                   Binding="{Binding FormattedSize}"
+                                   SortMemberPath="SizeInBytes"
+                                   Width="90" />
+                <DataGridTextColumn Header="TYPE"
+                                   Binding="{Binding FileType}"
+                                   Width="110" />
+
+                <!-- Actions -->
+                <DataGridTemplateColumn Header="ACTIONS" Width="160" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="4"
+                                        VerticalAlignment="Center"
+                                        Margin="4,0">
+                                <Button Content="[VIEW]"
+                                        Command="{Binding DataContext.ViewFileCommand, ElementName=FileDataGrid}"
+                                        CommandParameter="{Binding}"
+                                        Padding="6,2" />
+                                <Button Content="[UNMARK]"
+                                        Command="{Binding #FileDataGrid.DataContext.TogglePendingDeleteCommand}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding !#FileDataGrid.DataContext.IsDeleting}"
+                                        Padding="6,2" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+
+</Window>

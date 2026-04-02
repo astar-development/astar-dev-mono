@@ -13,11 +13,11 @@
 - [2. Component Inventory](#2-component-inventory)
 - [3. Persistent Navigation Bar](#3-persistent-navigation-bar)
 - [4. Home Page](#4-home-page)
-  - [4.1 Hero Section](#41-hero-section)
-  - [4.2 Services Section](#42-services-section)
-  - [4.3 Featured NuGet Packages Section](#43-featured-nuget-packages-section)
-  - [4.4 Case Study Teasers Section](#44-case-study-teasers-section)
-  - [4.5 CTA Banner Section](#45-cta-banner-section)
+    - [4.1 Hero Section](#41-hero-section)
+    - [4.2 Services Section](#42-services-section)
+    - [4.3 Featured NuGet Packages Section](#43-featured-nuget-packages-section)
+    - [4.4 Case Study Teasers Section](#44-case-study-teasers-section)
+    - [4.5 CTA Banner Section](#45-cta-banner-section)
 - [5. Footer](#5-footer)
 - [6. Privacy Policy Page](#6-privacy-policy-page)
 - [7. Cookie Consent Banner](#7-cookie-consent-banner)
@@ -31,29 +31,29 @@
 
 The existing `theme.css` uses hard-coded hex values in scoped component CSS. All colours must move to CSS custom properties before any component work begins. The following tokens are **additions** to the existing set and must be declared inside both `.theme-dark` and `.theme-light` in `src/styles/themes.css`.
 
-| Token | Dark value | Light value | Purpose |
-|---|---|---|---|
-| `--surface-raised` | `#102233` *(existing `--panel-bg`)* | `#f5f5f5` *(existing `--panel-bg`)* | Alternating section background, card background |
-| `--surface-base` | `#08131f` *(existing `--background`)* | `#ffffff` *(existing `--background`)* | Primary section background |
-| `--text-muted` | `#8da2b7` | `#6b7280` | Secondary text, metadata rows |
-| `--text-inverse` | `#08131f` | `#ffffff` | Text on filled accent buttons |
-| `--border` | `#2a3f55` *(existing `--panel-border`)* | `#cccccc` *(existing `--panel-border`)* | Unified border token name |
-| `--terminal-bg` | `#0a1a2a` | `#1a1a2e` | Code panel background — intentionally dark in both themes |
-| `--terminal-text` | `#d5e3f0` | `#c9d6e3` | Code panel body text |
-| `--terminal-accent` | `#2dd4bf` | `#4cc9f0` | Highlighted tokens inside the code panel |
-| `--focus-ring` | `#2dd4bf` | `#0066cc` | Consistent focus indicator colour |
-| `--btn-primary-bg` | `#2dd4bf` | `#0066cc` | Solid CTA button background |
-| `--btn-primary-text` | `#08131f` | `#ffffff` | Solid CTA button label |
-| `--badge-bg` | `rgba(45, 212, 191, 0.12)` | `rgba(0, 102, 204, 0.10)` | Status badge background |
-| `--badge-border` | `rgba(45, 212, 191, 0.40)` | `rgba(0, 102, 204, 0.35)` | Status badge border |
-| `--badge-text` | `#2dd4bf` | `#0055aa` | Status badge label — see contrast note below |
-| `--cta-border-left` | `#2dd4bf` | `#0066cc` | CTA inset-box left accent border |
-| `--active-indicator` | `#2dd4bf` | `#0066cc` | Nav active-page underline |
-| `--nav-bg` | `#102233` | `#ffffff` | Nav bar background |
-| `--nav-border` | `#2a3f55` | `#e5e7eb` | Nav bar bottom border |
-| `--section-border` | `#1e3347` | `#e5e7eb` | Between-section `1px` rule |
-| `--footer-bg` | `#091a2b` | `#f0f0f0` | Footer background — one step deeper than `--surface-raised` |
-| `--copy-btn-hover-bg` | `rgba(45, 212, 191, 0.10)` | `rgba(0, 102, 204, 0.08)` | Copy command button hover state |
+| Token                 | Dark value                              | Light value                             | Purpose                                                     |
+| --------------------- | --------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| `--surface-raised`    | `#102233` _(existing `--panel-bg`)_     | `#f5f5f5` _(existing `--panel-bg`)_     | Alternating section background, card background             |
+| `--surface-base`      | `#08131f` _(existing `--background`)_   | `#ffffff` _(existing `--background`)_   | Primary section background                                  |
+| `--text-muted`        | `#8da2b7`                               | `#6b7280`                               | Secondary text, metadata rows                               |
+| `--text-inverse`      | `#08131f`                               | `#ffffff`                               | Text on filled accent buttons                               |
+| `--border`            | `#2a3f55` _(existing `--panel-border`)_ | `#cccccc` _(existing `--panel-border`)_ | Unified border token name                                   |
+| `--terminal-bg`       | `#0a1a2a`                               | `#1a1a2e`                               | Code panel background — intentionally dark in both themes   |
+| `--terminal-text`     | `#d5e3f0`                               | `#c9d6e3`                               | Code panel body text                                        |
+| `--terminal-accent`   | `#2dd4bf`                               | `#4cc9f0`                               | Highlighted tokens inside the code panel                    |
+| `--focus-ring`        | `#2dd4bf`                               | `#0066cc`                               | Consistent focus indicator colour                           |
+| `--btn-primary-bg`    | `#2dd4bf`                               | `#0066cc`                               | Solid CTA button background                                 |
+| `--btn-primary-text`  | `#08131f`                               | `#ffffff`                               | Solid CTA button label                                      |
+| `--badge-bg`          | `rgba(45, 212, 191, 0.12)`              | `rgba(0, 102, 204, 0.10)`               | Status badge background                                     |
+| `--badge-border`      | `rgba(45, 212, 191, 0.40)`              | `rgba(0, 102, 204, 0.35)`               | Status badge border                                         |
+| `--badge-text`        | `#2dd4bf`                               | `#0055aa`                               | Status badge label — see contrast note below                |
+| `--cta-border-left`   | `#2dd4bf`                               | `#0066cc`                               | CTA inset-box left accent border                            |
+| `--active-indicator`  | `#2dd4bf`                               | `#0066cc`                               | Nav active-page underline                                   |
+| `--nav-bg`            | `#102233`                               | `#ffffff`                               | Nav bar background                                          |
+| `--nav-border`        | `#2a3f55`                               | `#e5e7eb`                               | Nav bar bottom border                                       |
+| `--section-border`    | `#1e3347`                               | `#e5e7eb`                               | Between-section `1px` rule                                  |
+| `--footer-bg`         | `#091a2b`                               | `#f0f0f0`                               | Footer background — one step deeper than `--surface-raised` |
+| `--copy-btn-hover-bg` | `rgba(45, 212, 191, 0.10)`              | `rgba(0, 102, 204, 0.08)`               | Copy command button hover state                             |
 
 ### Contrast Notes
 
@@ -67,21 +67,21 @@ The existing `theme.css` uses hard-coded hex values in scoped component CSS. All
 
 ## 2. Component Inventory
 
-| Component | File type | Hydration directive | Reason for client boundary |
-|---|---|---|---|
-| `Nav.astro` | Astro static | None | Links are static HTML |
-| `ThemeSwitcher.vue` | Vue interactive | `client:load` | Reads/writes `localStorage`, toggles `<html>` class |
-| `MobileMenu.vue` | Vue interactive | `client:load` | Controls open/closed drawer state |
-| `Hero.astro` | Astro static | None | Purely markup and CSS |
-| `StatusBadge.astro` | Astro static | None | Informational display only |
-| `ServiceCard.astro` | Astro static | None | No interaction |
-| `PackageCard.astro` | Astro static | None | Shell is static; copy button is a nested client component |
-| `CopyButton.vue` | Vue interactive | `client:visible` | Clipboard API; hydrates only when scrolled into view |
-| `CaseStudyTeaser.astro` | Astro static | None | Placeholder content, no interaction in Phase 1 |
-| `CtaBanner.astro` | Astro static | None | Static markup |
-| `Footer.astro` | Astro static | None | Static markup |
-| `CookieConsent.vue` | Vue interactive | `client:load` | Reads/writes `localStorage`, conditionally renders |
-| `BaseLayout.astro` | Astro layout | None | Wraps interactive children; contains no-flash theme script |
+| Component               | File type       | Hydration directive | Reason for client boundary                                 |
+| ----------------------- | --------------- | ------------------- | ---------------------------------------------------------- |
+| `Nav.astro`             | Astro static    | None                | Links are static HTML                                      |
+| `ThemeSwitcher.vue`     | Vue interactive | `client:load`       | Reads/writes `localStorage`, toggles `<html>` class        |
+| `MobileMenu.vue`        | Vue interactive | `client:load`       | Controls open/closed drawer state                          |
+| `Hero.astro`            | Astro static    | None                | Purely markup and CSS                                      |
+| `StatusBadge.astro`     | Astro static    | None                | Informational display only                                 |
+| `ServiceCard.astro`     | Astro static    | None                | No interaction                                             |
+| `PackageCard.astro`     | Astro static    | None                | Shell is static; copy button is a nested client component  |
+| `CopyButton.vue`        | Vue interactive | `client:visible`    | Clipboard API; hydrates only when scrolled into view       |
+| `CaseStudyTeaser.astro` | Astro static    | None                | Placeholder content, no interaction in Phase 1             |
+| `CtaBanner.astro`       | Astro static    | None                | Static markup                                              |
+| `Footer.astro`          | Astro static    | None                | Static markup                                              |
+| `CookieConsent.vue`     | Vue interactive | `client:load`       | Reads/writes `localStorage`, conditionally renders         |
+| `BaseLayout.astro`      | Astro layout    | None                | Wraps interactive children; contains no-flash theme script |
 
 ---
 
@@ -104,7 +104,7 @@ A single horizontal bar spanning the full viewport width. Three zones within a `
 - The entire brand group is wrapped in `<a href="/">`.
 - **Note:** The brand identity moves from the hero topbar (where it lived in the Vue site) into this persistent nav — it is always visible regardless of scroll position.
 
-#### Centre Zone — Page Links *(desktop only)*
+#### Centre Zone — Page Links _(desktop only)_
 
 Links: Home · Packages · Blog · Case Studies · Contact
 
@@ -131,22 +131,22 @@ Links: Home · Packages · Blog · Case Studies · Contact
 
 ### Nav Bar Container Styles
 
-| Property | Value |
-|---|---|
-| Background | `--nav-bg` |
-| Bottom border | `1px solid --nav-border` |
-| Position | `sticky`, `top: 0`, `z-index: 100` |
-| Height | `64px` desktop / `56px` mobile |
-| Transition | `background 0.25s, border-color 0.25s` |
+| Property      | Value                                  |
+| ------------- | -------------------------------------- |
+| Background    | `--nav-bg`                             |
+| Bottom border | `1px solid --nav-border`               |
+| Position      | `sticky`, `top: 0`, `z-index: 100`     |
+| Height        | `64px` desktop / `56px` mobile         |
+| Transition    | `background 0.25s, border-color 0.25s` |
 
 ### States
 
-| State | Description |
-|---|---|
-| Default | As described above |
-| Active page | `--active-indicator` bottom border on the current link |
+| State            | Description                                               |
+| ---------------- | --------------------------------------------------------- |
+| Default          | As described above                                        |
+| Active page      | `--active-indicator` bottom border on the current link    |
 | Mobile menu open | Drawer visible, scrim overlay, hamburger becomes × button |
-| Theme switching | All CSS custom property consumers transition at `0.25s` |
+| Theme switching  | All CSS custom property consumers transition at `0.25s`   |
 
 ### Accessibility Notes
 
@@ -195,11 +195,11 @@ All sections share a `1120px` max-width centred container with `24px` horizontal
 
 Two-column split on desktop (≥ 1024px): left column ~55% width, right column ~45%, `gap: 48px`. Single centred container, `max-width: 1120px`.
 
-| Viewport | Layout |
-|---|---|
-| ≥ 1024px | Two-column split, 55 / 45 |
+| Viewport     | Layout                                                                     |
+| ------------ | -------------------------------------------------------------------------- |
+| ≥ 1024px     | Two-column split, 55 / 45                                                  |
 | 768px–1023px | Single column; terminal panel centred at ~80% width beneath the text block |
-| < 768px | Single column; terminal panel hidden entirely |
+| < 768px      | Single column; terminal panel hidden entirely                              |
 
 The terminal panel is decorative context — hiding it on mobile loses no essential content.
 
@@ -216,55 +216,55 @@ Two `StatusBadge.astro` components, `display: inline-flex`, `gap: 8px`.
 
 Each badge:
 
-| Property | Value |
-|---|---|
-| Background | `--badge-bg` |
-| Border | `1px solid --badge-border` |
-| Border radius | `999px` |
-| Padding | `4px 10px` |
-| Font size | `0.75rem` |
-| Font weight | `600` |
-| Color | `--badge-text` |
+| Property      | Value                      |
+| ------------- | -------------------------- |
+| Background    | `--badge-bg`               |
+| Border        | `1px solid --badge-border` |
+| Border radius | `999px`                    |
+| Padding       | `4px 10px`                 |
+| Font size     | `0.75rem`                  |
+| Font weight   | `600`                      |
+| Color         | `--badge-text`             |
 
 The bullet and diamond are decorative inline SVGs, `aria-hidden="true"`. The badge `<span>` elements are purely informational — no interactive role.
 
 **2. H1 Headline**
 
-| Property | Value |
-|---|---|
-| Font size | `clamp(2rem, 4vw, 3.2rem)` |
-| Font weight | `700` |
-| Line height | `1.15` |
-| Color | `--text` |
-| Alignment | Left |
-| Max lines | 2 |
+| Property    | Value                      |
+| ----------- | -------------------------- |
+| Font size   | `clamp(2rem, 4vw, 3.2rem)` |
+| Font weight | `700`                      |
+| Line height | `1.15`                     |
+| Color       | `--text`                   |
+| Alignment   | Left                       |
+| Max lines   | 2                          |
 
 Copy (dark / light themes): **"Senior .NET Engineer & Architect"**
 
 **3. Subtitle Paragraph**
 
-| Property | Value |
-|---|---|
-| Font size | `1rem` |
-| Line height | `1.7` |
-| Color | `--text-muted` |
-| Margin top | `16px` |
-| Max sentences | 2 |
+| Property      | Value          |
+| ------------- | -------------- |
+| Font size     | `1rem`         |
+| Line height   | `1.7`          |
+| Color         | `--text-muted` |
+| Margin top    | `16px`         |
+| Max sentences | 2              |
 
-Example copy: *"I design and build production-grade .NET systems — architecture, pipelines, observability, and the team patterns that make them last. Available for contracts and consultancy engagements."*
+Example copy: _"I design and build production-grade .NET systems — architecture, pipelines, observability, and the team patterns that make them last. Available for contracts and consultancy engagements."_
 
 **4. Skill Tags Row**
 
 3–5 pill-shaped informational tags, `display: flex`, `flex-wrap: wrap`, `gap: 8px`, `margin-top: 24px`.
 
-| Property | Value |
-|---|---|
-| Border | `1px solid --border` |
-| Background | `transparent` |
-| Color | `--text-muted` |
-| Font size | `0.78rem` |
-| Border radius | `999px` |
-| Padding | `4px 12px` |
+| Property      | Value                |
+| ------------- | -------------------- |
+| Border        | `1px solid --border` |
+| Background    | `transparent`        |
+| Color         | `--text-muted`       |
+| Font size     | `0.78rem`            |
+| Border radius | `999px`              |
+| Padding       | `4px 12px`           |
 
 Tags are static `<span>` elements — not interactive filters. Example set: `TDD` · `Clean Architecture` · `Observability` · `CI/CD` · `.NET 9`
 
@@ -274,31 +274,31 @@ Tags are static `<span>` elements — not interactive filters. Example set: `TDD
 
 **Primary button** — "View my services", links to `#services`:
 
-| Property | Value |
-|---|---|
-| Background | `--btn-primary-bg` |
-| Color | `--btn-primary-text` |
-| Border | `2px solid --btn-primary-bg` |
-| Border radius | `8px` *(rectangular with rounded corners — signals primary action more clearly than a pill)* |
-| Padding | `12px 24px` |
-| Font weight | `600` |
-| Font size | `0.9rem` |
-| Hover | `transform: translateY(-1px)` |
+| Property      | Value                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| Background    | `--btn-primary-bg`                                                                           |
+| Color         | `--btn-primary-text`                                                                         |
+| Border        | `2px solid --btn-primary-bg`                                                                 |
+| Border radius | `8px` _(rectangular with rounded corners — signals primary action more clearly than a pill)_ |
+| Padding       | `12px 24px`                                                                                  |
+| Font weight   | `600`                                                                                        |
+| Font size     | `0.9rem`                                                                                     |
+| Hover         | `transform: translateY(-1px)`                                                                |
 
 **Secondary button** — "Get in touch", links to `/contact`:
 
-| Property | Value |
-|---|---|
-| Background | `transparent` |
-| Color | `--text` |
-| Border | `1px solid --border` |
-| Border radius | `8px` |
-| Padding | `12px 24px` |
-| Font weight | `600` |
-| Font size | `0.9rem` |
-| Hover border | `--accent` |
-| Hover color | `--accent` |
-| Hover transform | `translateY(-1px)` |
+| Property        | Value                |
+| --------------- | -------------------- |
+| Background      | `transparent`        |
+| Color           | `--text`             |
+| Border          | `1px solid --border` |
+| Border radius   | `8px`                |
+| Padding         | `12px 24px`          |
+| Font weight     | `600`                |
+| Font size       | `0.9rem`             |
+| Hover border    | `--accent`           |
+| Hover color     | `--accent`           |
+| Hover transform | `translateY(-1px)`   |
 
 > Both buttons: `transition: transform 0.15s ease`. Remove the transform entirely under `prefers-reduced-motion: reduce`.
 
@@ -308,15 +308,15 @@ A stylised static code block mimicking a terminal session. Purely presentational
 
 **Container:**
 
-| Property | Value |
-|---|---|
-| Background | `--terminal-bg` |
-| Border | `1px solid rgba(255, 255, 255, 0.08)` *(subtle — `--terminal-bg` is dark in both themes)* |
-| Border radius | `12px` |
-| Padding | `20px 24px` |
-| Font family | `ui-monospace, 'Cascadia Code', 'Fira Code', monospace` *(system stack — no web font load, consistent with Lighthouse ≥ 90 target)* |
-| Font size | `0.82rem` |
-| Line height | `1.6` |
+| Property      | Value                                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Background    | `--terminal-bg`                                                                                                                     |
+| Border        | `1px solid rgba(255, 255, 255, 0.08)` _(subtle — `--terminal-bg` is dark in both themes)_                                           |
+| Border radius | `12px`                                                                                                                              |
+| Padding       | `20px 24px`                                                                                                                         |
+| Font family   | `ui-monospace, 'Cascadia Code', 'Fira Code', monospace` _(system stack — no web font load, consistent with Lighthouse ≥ 90 target)_ |
+| Font size     | `0.82rem`                                                                                                                           |
+| Line height   | `1.6`                                                                                                                               |
 
 **Traffic-light bar** (top of panel, `aria-hidden="true"`):
 
@@ -341,22 +341,20 @@ $ dotnet add package AStar.Dev.Core
 
 **Token colour mapping inside the panel:**
 
-| Text | Colour token |
-|---|---|
+| Text                        | Colour token        |
+| --------------------------- | ------------------- |
 | `$` prompt and command text | `--terminal-accent` |
-| `info :` labels | `--text-muted` |
-| "Build succeeded." and `✓` | `--terminal-accent` |
-| "0 Warning(s)  0 Error(s)" | `--text-muted` |
-| Package name and version | `--terminal-text` |
+| `info :` labels             | `--text-muted`      |
+| "Build succeeded." and `✓`  | `--terminal-accent` |
+| "0 Warning(s) 0 Error(s)"   | `--text-muted`      |
+| Package name and version    | `--terminal-text`   |
 
 **Screen reader treatment:**
 
 The terminal content is meaningful (it demonstrates a real package install), so it should **not** be `aria-hidden`. Place a visually hidden caption immediately before the panel:
 
 ```html
-<p class="sr-only">
-  Example: installing an AStar.Dev NuGet package via the .NET CLI
-</p>
+<p class="sr-only">Example: installing an AStar.Dev NuGet package via the .NET CLI</p>
 ```
 
 **Light theme note:** In light theme, `--terminal-bg` is `#1a1a2e` — a deep navy-purple, creating a deliberate dark island on the white page. Do not use a light-coloured terminal panel in light theme; the contrast between the white page and the dark panel is a feature, not a bug.
@@ -376,22 +374,22 @@ The terminal content is meaningful (it demonstrates a real package install), so 
 
 #### Grid
 
-| Viewport | Columns |
-|---|---|
-| ≥ 1024px | 3 columns |
+| Viewport     | Columns   |
+| ------------ | --------- |
+| ≥ 1024px     | 3 columns |
 | 768px–1023px | 2 columns |
-| < 768px | 1 column |
+| < 768px      | 1 column  |
 
 5 cards total. On a 3-column desktop grid, the layout is 3 + 2 — the bottom row has two cards in the first two columns, leaving the third column empty. This is intentional and more readable than forcing 5 cards into an irregular layout.
 
 #### `ServiceCard.astro` Anatomy
 
-| Property | Value |
-|---|---|
-| Background | `--surface-base` |
-| Border | `1px solid --border` |
-| Border radius | `12px` |
-| Padding | `20px 24px` |
+| Property      | Value                |
+| ------------- | -------------------- |
+| Background    | `--surface-base`     |
+| Border        | `1px solid --border` |
+| Border radius | `12px`               |
+| Padding       | `20px 24px`          |
 
 Card contents (top to bottom):
 
@@ -403,13 +401,13 @@ No links or buttons on service cards in Phase 1 — purely informational.
 
 #### The Five Services
 
-| # | Title | Description | Icon (Phosphor / Heroicons) |
-|---|---|---|---|
-| 1 | Fullstack Development | End-to-end feature delivery across .NET backends and modern frontends, with tests from the start. | Layers icon |
-| 2 | Architecture Design | Clear boundaries, explicit contracts, and decision records that outlast the engagement. | Blueprint / grid icon |
-| 3 | Backend Development | Performant, observable .NET services — APIs, workers, and integrations built to production standard. | Server stack icon |
-| 4 | Code Reviews | Structured feedback that improves the code and develops the team. Not a bottleneck — a signal. | Magnifying glass over code icon |
-| 5 | Mentoring | One-to-one and team mentoring grounded in real patterns, not theory. | Person with speech bubble icon |
+| #   | Title                 | Description                                                                                          | Icon (Phosphor / Heroicons)     |
+| --- | --------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 1   | Fullstack Development | End-to-end feature delivery across .NET backends and modern frontends, with tests from the start.    | Layers icon                     |
+| 2   | Architecture Design   | Clear boundaries, explicit contracts, and decision records that outlast the engagement.              | Blueprint / grid icon           |
+| 3   | Backend Development   | Performant, observable .NET services — APIs, workers, and integrations built to production standard. | Server stack icon               |
+| 4   | Code Reviews          | Structured feedback that improves the code and develops the team. Not a bottleneck — a signal.       | Magnifying glass over code icon |
+| 5   | Mentoring             | One-to-one and team mentoring grounded in real patterns, not theory.                                 | Person with speech bubble icon  |
 
 > Copy above is illustrative. Stakeholder should confirm before Phase 1 ships — these descriptions are the primary credibility signal for Persona 1 (Engineering Leader).
 
@@ -428,22 +426,22 @@ No links or buttons on service cards in Phase 1 — purely informational.
 
 #### Grid
 
-| Viewport | Columns |
-|---|---|
-| ≥ 1024px | 3 columns |
+| Viewport     | Columns   |
+| ------------ | --------- |
+| ≥ 1024px     | 3 columns |
 | 768px–1023px | 2 columns |
-| < 768px | 1 column |
+| < 768px      | 1 column  |
 
 3–5 cards (a curated subset; the full list is Phase 4). Metadata fetched from the NuGet v3 API at build time.
 
 #### `PackageCard.astro` Anatomy
 
-| Property | Value |
-|---|---|
-| Background | `--surface-raised` *(inverse of service cards — provides visual lift on the `--surface-base` section)* |
-| Border | `1px solid --border` |
-| Border radius | `12px` |
-| Padding | `20px 24px` |
+| Property      | Value                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| Background    | `--surface-raised` _(inverse of service cards — provides visual lift on the `--surface-base` section)_ |
+| Border        | `1px solid --border`                                                                                   |
+| Border radius | `12px`                                                                                                 |
+| Padding       | `20px 24px`                                                                                            |
 
 Card contents (top to bottom):
 
@@ -456,22 +454,22 @@ Card contents (top to bottom):
 
 **3. Data row** — `display: flex`, `gap: 16px`, `margin-top: 12px`
 
-| Item | Format | Style |
-|---|---|---|
-| Version | `v2.3.1` prefixed with a package icon (8px SVG, `aria-hidden`) | `--text-muted`, `font-size: 0.78rem` |
+| Item      | Format                                                                          | Style                                |
+| --------- | ------------------------------------------------------------------------------- | ------------------------------------ |
+| Version   | `v2.3.1` prefixed with a package icon (8px SVG, `aria-hidden`)                  | `--text-muted`, `font-size: 0.78rem` |
 | Downloads | `14,200 downloads` prefixed with a download arrow icon (8px SVG, `aria-hidden`) | `--text-muted`, `font-size: 0.78rem` |
 
 **4. Install command block** — a `<pre><code>` block
 
-| Property | Value |
-|---|---|
-| Background | `--terminal-bg` |
-| Border radius | `8px` |
-| Padding | `10px 14px` |
-| Font size | `0.78rem` |
-| Color | `--terminal-text` |
-| Margin top | `12px` |
-| Overflow | `auto` |
+| Property      | Value             |
+| ------------- | ----------------- |
+| Background    | `--terminal-bg`   |
+| Border radius | `8px`             |
+| Padding       | `10px 14px`       |
+| Font size     | `0.78rem`         |
+| Color         | `--terminal-text` |
+| Margin top    | `12px`            |
+| Overflow      | `auto`            |
 
 Content: `dotnet add package [PackageName]`
 
@@ -479,12 +477,12 @@ The block is `position: relative` to contain the absolutely positioned `CopyButt
 
 **5. `CopyButton.vue`** — top-right corner of the install command block, `position: absolute`, `top: 8px`, `right: 8px`
 
-| State | Description |
-|---|---|
-| Default | Clipboard icon, `16px`, `color: --text-muted` |
-| Hover | `color: --accent`, `background: --copy-btn-hover-bg`, `border-radius: 4px` |
-| Active (copied) | Checkmark icon, `color: --terminal-accent`, `aria-label="Copied!"` |
-| After 2 seconds | Reverts to default state |
+| State           | Description                                                                |
+| --------------- | -------------------------------------------------------------------------- |
+| Default         | Clipboard icon, `16px`, `color: --text-muted`                              |
+| Hover           | `color: --accent`, `background: --copy-btn-hover-bg`, `border-radius: 4px` |
+| Active (copied) | Checkmark icon, `color: --terminal-accent`, `aria-label="Copied!"`         |
+| After 2 seconds | Reverts to default state                                                   |
 
 The button has `aria-label="Copy install command"`. An `aria-live="polite"` region (elsewhere in the card) announces "Copied to clipboard" to screen readers. Hydration: `client:visible` — only activates when the card scrolls into view. If `navigator.clipboard` is unavailable (non-secure context), the button hides itself rather than breaking.
 
@@ -510,25 +508,25 @@ In Phase 1, real case study content does not exist. This section renders a delib
 
 2 cards, stacked vertically (full-width horizontal layout).
 
-| Property | Value |
-|---|---|
-| Background | `--surface-base` |
-| Border | `1px solid --border` |
-| Border radius | `12px` |
-| Padding | `24px 28px` |
-| Layout | `display: flex`, `gap: 32px` on desktop; stacked on mobile |
+| Property      | Value                                                      |
+| ------------- | ---------------------------------------------------------- |
+| Background    | `--surface-base`                                           |
+| Border        | `1px solid --border`                                       |
+| Border radius | `12px`                                                     |
+| Padding       | `24px 28px`                                                |
+| Layout        | `display: flex`, `gap: 32px` on desktop; stacked on mobile |
 
 **Left section (~60% width) — Text content:**
 
 1. Content-type pill: "Case Study" — `border: 1px solid --border`, `color: --text-muted`, `font-size: 0.72rem`, `border-radius: 999px`, `padding: 2px 8px`. Establishes content type clearly.
-2. `<h3>` title — `font-size: 1.1rem`, `font-weight: 600`, `color: --text`. Placeholder titles (credible and anonymised): "Enterprise Integration Overhaul" / "Distributed Pipeline Rebuild".
-3. `<p>` one-sentence summary with a real metric, e.g. *"Reduced message-processing latency by 60% across a distributed .NET 8 pipeline serving 50M+ daily events."* — `color: --text-muted`, `font-size: 0.9rem`, `margin-top: 8px`.
+2. `<h3>` title — `font-size: 1.1rem`, `font-weight: 600`, `color: --text`. Placeholder titles (credible and anonymised): "Global Affiliate System" / "Distributed Pipeline Rebuild".
+3. `<p>` one-sentence summary with a real metric, e.g. _"Historical record, automated registration for new accounts. Award Winner"_ — `color: --text-muted`, `font-size: 0.9rem`, `margin-top: 8px`.
 4. "Full case study coming soon" — `color: --text-muted`, `font-size: 0.85rem`, `cursor: default`, `pointer-events: none`. Visually present but non-interactive.
 
 **Right section (~40% width) — Tech Stack:**
 
 - "Tech Stack" label — `color: --text-muted`, `font-size: 0.72rem`, `margin-bottom: 8px`
-- 3–5 tech tag pills: e.g. `.NET 8` · `Azure Service Bus` · `SQL Server` · `OpenTelemetry`
+- 3–5 tech tag pills: e.g. `.NET 2-5` · `Azure App Services` · `SQL Server` · `Application Insights`
 
 Tag style: `border: 1px solid --border`, `background: transparent`, `color: --text-muted`, `font-size: 0.75rem`, `border-radius: 999px`, `padding: 3px 10px`
 
@@ -546,13 +544,13 @@ No bottom border — the footer follows immediately and provides visual closure.
 
 A centred inset container — not full-bleed, not a floating card.
 
-| Property | Value |
-|---|---|
-| Max width | `680px`, centred |
-| Border left | `3px solid --cta-border-left` |
-| Border radius | `0 4px 4px 0` *(left side is flush with the border; right side has a subtle radius)* |
-| Background | `--surface-raised` |
-| Padding | `28px 32px` |
+| Property      | Value                                                                                |
+| ------------- | ------------------------------------------------------------------------------------ |
+| Max width     | `680px`, centred                                                                     |
+| Border left   | `3px solid --cta-border-left`                                                        |
+| Border radius | `0 4px 4px 0` _(left side is flush with the border; right side has a subtle radius)_ |
+| Background    | `--surface-raised`                                                                   |
+| Padding       | `28px 32px`                                                                          |
 
 #### Content (top to bottom)
 
@@ -569,22 +567,22 @@ A centred inset container — not full-bleed, not a floating card.
 
 ### Container
 
-| Property | Value |
-|---|---|
-| Background | `--footer-bg` |
+| Property   | Value                        |
+| ---------- | ---------------------------- |
+| Background | `--footer-bg`                |
 | Border top | `1px solid --section-border` |
-| Padding | `24px` |
-| Landmark | `<footer>` |
+| Padding    | `24px`                       |
+| Landmark   | `<footer>`                   |
 
 ### Layout
 
 Single row on desktop (`display: flex`, `justify-content: space-between`, `align-items: center`); three stacked rows on mobile.
 
-| Zone | Content | Style |
-|---|---|---|
-| Left | `© 2026 AStar Development. All rights reserved.` | `color: --text-muted`, `font-size: 0.83rem` |
-| Centre | Privacy Policy link (`href="/privacy"`) | `color: --text-muted`, `font-size: 0.83rem`; hover: `color: --text` |
-| Right | GitHub icon link + NuGet icon link | Inline SVGs, `20px`, `color: --text-muted`; hover: `color: --accent`; `gap: 16px` |
+| Zone   | Content                                          | Style                                                                             |
+| ------ | ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Left   | `© 2026 AStar Development. All rights reserved.` | `color: --text-muted`, `font-size: 0.83rem`                                       |
+| Centre | Privacy Policy link (`href="/privacy"`)          | `color: --text-muted`, `font-size: 0.83rem`; hover: `color: --text`               |
+| Right  | GitHub icon link + NuGet icon link               | Inline SVGs, `20px`, `color: --text-muted`; hover: `color: --accent`; `gap: 16px` |
 
 No `aria-label` on the `<footer>` element — there is only one footer landmark per page, so it is unambiguous.
 
@@ -606,13 +604,13 @@ Purely static Astro page. Zero JavaScript. No client components.
 
 `BaseLayout.astro` wrapper (nav + footer). A single centred reading column:
 
-| Property | Value |
-|---|---|
-| Max width | `720px` |
-| Horizontal padding | `24px` |
-| Body font size | `1rem` |
-| Body line height | `1.75` *(generous — legal text benefits from breathing room)* |
-| Body color | `--text` |
+| Property           | Value                                                         |
+| ------------------ | ------------------------------------------------------------- |
+| Max width          | `720px`                                                       |
+| Horizontal padding | `24px`                                                        |
+| Body font size     | `1rem`                                                        |
+| Body line height   | `1.75` _(generous — legal text benefits from breathing room)_ |
+| Body color         | `--text`                                                      |
 
 ### Page Structure
 
@@ -655,13 +653,13 @@ UK GDPR compliance. Appears on first visit. Stores user preference in `localStor
 
 Fixed to the **bottom of the viewport**, full width, `z-index: 200` (above nav at `z-index: 100`).
 
-| Property | Value |
-|---|---|
-| Background | `--nav-bg` |
-| Border top | `1px solid --border` |
-| Padding | `16px 24px` |
-| Inner container | `max-width: 1120px`, centred |
-| Inner layout | `display: flex`, `align-items: center`, `justify-content: space-between`, `flex-wrap: wrap`, `gap: 16px` |
+| Property        | Value                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| Background      | `--nav-bg`                                                                                               |
+| Border top      | `1px solid --border`                                                                                     |
+| Padding         | `16px 24px`                                                                                              |
+| Inner container | `max-width: 1120px`, centred                                                                             |
+| Inner layout    | `display: flex`, `align-items: center`, `justify-content: space-between`, `flex-wrap: wrap`, `gap: 16px` |
 
 ### Content
 
@@ -676,12 +674,12 @@ Fixed to the **bottom of the viewport**, full width, `z-index: 200` (above nav a
 
 ### Behaviour
 
-| Event | Action |
-|---|---|
-| First page load (no stored preference) | Banner renders and is visible |
-| "Accept" clicked | Stores `{ analytics: true }` in `localStorage['cookie-consent']`; banner unmounts; App Insights initialises |
-| "Decline" clicked | Stores `{ analytics: false }` in `localStorage['cookie-consent']`; banner unmounts; App Insights does **not** initialise |
-| Subsequent page loads | `localStorage['cookie-consent']` exists; banner never renders; analytics state applied from stored value |
+| Event                                  | Action                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| First page load (no stored preference) | Banner renders and is visible                                                                                            |
+| "Accept" clicked                       | Stores `{ analytics: true }` in `localStorage['cookie-consent']`; banner unmounts; App Insights initialises              |
+| "Decline" clicked                      | Stores `{ analytics: false }` in `localStorage['cookie-consent']`; banner unmounts; App Insights does **not** initialise |
+| Subsequent page loads                  | `localStorage['cookie-consent']` exists; banner never renders; analytics state applied from stored value                 |
 
 > Theme preference is stored separately under `localStorage['theme']` — it is a UX preference, not analytics data, and does not require consent.
 
@@ -696,12 +694,12 @@ Fixed to the **bottom of the viewport**, full width, `z-index: 200` (above nav a
 
 ## 8. Responsive Behaviour Summary
 
-| Viewport | Nav | Hero | Card grids | Terminal panel |
-|---|---|---|---|---|
-| 320px | Hamburger drawer | Single column, no terminal | 1 column | Hidden |
-| 768px | Hamburger drawer | Single column, terminal below text at ~80% width | 2 columns | Visible, reduced |
-| 1024px | Full links + theme switcher | Two-column split, 55 / 45 | 3 columns | Full size |
-| 1440px | Full links + theme switcher | Two-column split, 55 / 45, wider gap | 3 columns | Full size |
+| Viewport | Nav                         | Hero                                             | Card grids | Terminal panel   |
+| -------- | --------------------------- | ------------------------------------------------ | ---------- | ---------------- |
+| 320px    | Hamburger drawer            | Single column, no terminal                       | 1 column   | Hidden           |
+| 768px    | Hamburger drawer            | Single column, terminal below text at ~80% width | 2 columns  | Visible, reduced |
+| 1024px   | Full links + theme switcher | Two-column split, 55 / 45                        | 3 columns  | Full size        |
+| 1440px   | Full links + theme switcher | Two-column split, 55 / 45, wider gap             | 3 columns  | Full size        |
 
 **Shared constraints:**
 

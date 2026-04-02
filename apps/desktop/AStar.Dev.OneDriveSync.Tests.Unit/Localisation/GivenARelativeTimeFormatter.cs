@@ -12,6 +12,8 @@ public sealed class GivenARelativeTimeFormatter
         _localisationService.CurrentLocale.Returns("en-GB");
         _localisationService.GetString("RelativeTimeFormatter_OneMinuteAgo").Returns("1 minute ago");
         _localisationService.GetString("RelativeTimeFormatter_MinutesAgo").Returns("{0} minutes ago");
+        _localisationService.GetString("RelativeTimeFormatter_TodayAt").Returns("Today at ");
+        _localisationService.GetString("RelativeTimeFormatter_DateAt").Returns(" at ");
         _sut = new RelativeTimeFormatter(_localisationService);
     }
 

@@ -7,7 +7,13 @@
       "Bash(git -C /home/jbarden/repos/astar-dev-mono push -u origin feature/s003-review-fixes)",
       "Bash(dotnet ef:*)",
       "Bash(git -C /home/jbarden/repos/astar-dev-mono branch --list)",
-      "Bash(git -C /home/jbarden/repos/astar-dev-mono checkout -b feature/frozen-set-feature-availability-90)"
+      "Bash(git -C /home/jbarden/repos/astar-dev-mono checkout -b feature/frozen-set-feature-availability-90)",
+      "Bash(dotnet fsi:*)",
+      "Read(//home/jbarden/.nuget/packages/testableio.system.io.abstractions.wrappers/22.0.16/lib/net9.0/**)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vitest:*)"
     ]
   },
   "hooks": {

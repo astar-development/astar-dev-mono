@@ -1,0 +1,103 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AStar.Dev.File.App.ViewModels"
+        xmlns:converters="using:AStar.Dev.File.App.Converters"
+        x:Class="AStar.Dev.File.App.Views.ViewWindow"
+        x:DataType="vm:ViewWindowViewModel"
+        Title="{Binding File.FileName}"
+        Width="{Binding WindowWidth}"
+        Height="{Binding WindowHeight}"
+        WindowStartupLocation="CenterScreen"
+        CanResize="True">
+
+    <Window.Resources>
+        <converters:FilePathToBitmapConverter x:Key="FilePathToBitmapConverter" />
+    </Window.Resources>
+
+    <Grid ColumnDefinitions="*,300">
+
+        <!-- Left: image or fallback badge -->
+        <Panel Grid.Column="0" Background="{StaticResource HackerBackground}">
+
+            <!-- Fallback: extension badge (non-image files or load failure) -->
+            <Border Background="{StaticResource HackerSurface}"
+                    BorderBrush="{StaticResource HackerDimGreen}"
+                    BorderThickness="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="24"
+                    IsVisible="{Binding !File.IsImage}">
+                <TextBlock Text="{Binding File.Extension}"
+                           FontSize="64"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource HackerGreen}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Image -->
+            <Image Source="{Binding File.FullPath, Converter={StaticResource FilePathToBitmapConverter}}"
+                   Width="{Binding ImageDisplayWidth}"
+                   Height="{Binding ImageDisplayHeight}"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding File.IsImage}" />
+
+        </Panel>
+
+        <!-- Right: details panel -->
+        <DockPanel Grid.Column="1"
+                   Margin="0"
+                   Background="{StaticResource HackerSurface}">
+
+            <Button DockPanel.Dock="Bottom"
+                    Content="[ CLOSE ]"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="8"
+                    Click="OnCloseClick" />
+
+            <Border DockPanel.Dock="Top"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="{StaticResource HackerDimGreen}"
+                    Padding="12,8">
+                <TextBlock Text="[ FILE DETAILS ]"
+                           FontWeight="Bold" />
+            </Border>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="2" Margin="12,8">
+
+                    <TextBlock Text="FILE NAME" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.FileName}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                    <TextBlock Text="FOLDER" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.FolderPath}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                    <TextBlock Text="FULL PATH" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.FullPath}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                    <TextBlock Text="TYPE" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.FileType}" Margin="0,0,0,10" />
+
+                    <TextBlock Text="EXTENSION" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.Extension}" Margin="0,0,0,10" />
+
+                    <TextBlock Text="SIZE" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.FormattedSize}" Margin="0,0,0,10" />
+
+                    <TextBlock Text="LAST MODIFIED" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.LastModified}" Margin="0,0,0,10" />
+
+                    <TextBlock Text="LAST VIEWED" FontWeight="Bold" FontSize="10" Foreground="{StaticResource HackerDimGreen}" />
+                    <TextBlock Text="{Binding File.LastViewed}" Margin="0,0,0,10" />
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </DockPanel>
+
+    </Grid>
+
+</Window>

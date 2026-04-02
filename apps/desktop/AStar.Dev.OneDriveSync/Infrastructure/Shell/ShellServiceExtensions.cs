@@ -51,7 +51,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<HelpViewModel>();
         _ = services.AddSingleton<AboutViewModel>();
 
-        _ = services.AddSingleton<MainWindowViewModel>();
+        _ = services.AddTransient<MainWindowViewModel>();
 
         return services;
     }

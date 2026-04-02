@@ -9,7 +9,6 @@ namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 public sealed class OnboardingViewModel : ViewModelBase
 {
     private readonly IAccountRepository _accountRepository;
-    private bool? _shouldShowOnboarding;
 
     public OnboardingViewModel(IAccountRepository accountRepository, IShellNavigator shellNavigator)
     {
@@ -18,15 +17,7 @@ public sealed class OnboardingViewModel : ViewModelBase
         AddAccountCommand = ReactiveCommand.Create(() => shellNavigator.Navigate(NavSection.Accounts));
     }
 
-    public bool ShouldShowOnboarding
-    {
-        get
-        {
-            _shouldShowOnboarding ??= !_accountRepository.HasAnyAsync().GetAwaiter().GetResult();
-
-            return _shouldShowOnboarding.Value;
-        }
-    }
+    public async Task<bool> ShouldShowOnboarding() => !await _accountRepository.HasAnyAsync().ConfigureAwait(false);
 
     public ReactiveCommand<Unit, Unit> AddAccountCommand { get; }
 }

@@ -54,6 +54,12 @@
   <data name="RelativeTimeFormatter_MinutesAgo" xml:space="preserve">
     <value>{0} minutes ago</value>
   </data>
+  <data name="RelativeTimeFormatter_TodayAt" xml:space="preserve">
+    <value>Today at </value>
+  </data>
+  <data name="RelativeTimeFormatter_DateAt" xml:space="preserve">
+    <value> at </value>
+  </data>
 
   <!-- Settings -->
   <data name="Settings_Heading" xml:space="preserve">

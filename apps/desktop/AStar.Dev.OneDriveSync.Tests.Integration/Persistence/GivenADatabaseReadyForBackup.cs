@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ public sealed class GivenADatabaseReadyForBackup : IAsyncLifetime
         _ = pathProvider.AppDataDirectory.Returns(_tempRoot);
         var logger = Substitute.For<ILogger<DbBackupService>>();
 
-        return new DbBackupService(pathProvider, logger);
+        return new DbBackupService(pathProvider, logger, new FileSystem());
     }
 
     [Fact]

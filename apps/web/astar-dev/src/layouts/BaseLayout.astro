@@ -82,35 +82,51 @@ const appInsightsConnString = import.meta.env.PUBLIC_APPINSIGHTS_CONNECTION_STRI
           }
         });
 
-        // Load App Insights only when the user has accepted analytics cookies
-        function loadAppInsights() {
+        var appInsightsLoading = false;
+
+        function loadAppInsights(withCookies) {
           if (!appInsightsConnString) return;
+          if (window.appInsights && window.appInsights.__loaded) {
+            if (withCookies && window.appInsights.__cookieless) {
+              window.appInsights.config.isCookieUseDisabled = false;
+              window.appInsights.__cookieless = false;
+            }
+            return;
+          }
+          if (appInsightsLoading) return;
+          appInsightsLoading = true;
           var script = document.createElement('script');
           script.src = 'https://js.monitor.azure.com/scripts/b/ai.2.min.js';
           script.onload = function () {
-            var ai = window.appInsights || (window.appInsights = {});
-            ai.config = { connectionString: appInsightsConnString, disableCookiesUsage: false, enableAutoRouteTracking: false };
-            if (window.Microsoft && window.Microsoft.ApplicationInsights) {
-              var sdk = new window.Microsoft.ApplicationInsights.ApplicationInsights({ config: ai.config });
-              sdk.loadAppInsights();
-              sdk.trackPageView();
-              window.appInsights = sdk;
-            }
+            if (!window.Microsoft || !window.Microsoft.ApplicationInsights) return;
+            var sdk = new window.Microsoft.ApplicationInsights.ApplicationInsights({
+              config: {
+                connectionString: appInsightsConnString,
+                disableCookiesUsage: !withCookies,
+                enableAutoRouteTracking: false,
+              }
+            });
+            sdk.loadAppInsights();
+            sdk.trackPageView();
+            sdk.__loaded = true;
+            sdk.__cookieless = !withCookies;
+            window.appInsights = sdk;
           };
           document.head.appendChild(script);
         }
 
-        // Check current consent state
+        var initialWithCookies = false;
         try {
           var stored = localStorage.getItem(CONSENT_KEY);
           if (stored) {
             var prefs = JSON.parse(stored);
-            if (prefs && prefs.analytics === true) loadAppInsights();
+            if (prefs && prefs.analytics === true) initialWithCookies = true;
           }
         } catch (_) {}
 
-        // Also listen for consent events dispatched by CookieConsent.vue
-        window.addEventListener('cookie-consent-accepted', loadAppInsights);
+        loadAppInsights(initialWithCookies);
+
+        window.addEventListener('cookie-consent-accepted', function () { loadAppInsights(true); });
       })();
     </script>
   </body>

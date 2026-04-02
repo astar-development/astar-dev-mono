@@ -15,8 +15,10 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
     [Fact]
     public void when_all_axaml_files_are_scanned_then_none_contain_hardcoded_text_or_title_values()
     {
-        var violations = Directory
-            .EnumerateFiles(_appRoot, "*.axaml", SearchOption.AllDirectories)
+        var axamlFiles = Directory.EnumerateFiles(_appRoot, "*.axaml", SearchOption.AllDirectories).ToList();
+        axamlFiles.ShouldNotBeEmpty("no .axaml files found — check FindAppRoot()");
+
+        var violations = axamlFiles
             .SelectMany(ScanAxamlFile)
             .ToList();
 
@@ -26,8 +28,10 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
     [Fact]
     public void when_all_viewmodel_files_are_scanned_then_none_contain_hardcoded_coming_soon_strings()
     {
-        var violations = Directory
-            .EnumerateFiles(_appRoot, "*ViewModel.cs", SearchOption.AllDirectories)
+        var viewModelFiles = Directory.EnumerateFiles(_appRoot, "*ViewModel.cs", SearchOption.AllDirectories).ToList();
+        viewModelFiles.ShouldNotBeEmpty("no ViewModel.cs files found — check FindAppRoot()");
+
+        var violations = viewModelFiles
             .SelectMany(ScanViewModelFile)
             .ToList();
 
