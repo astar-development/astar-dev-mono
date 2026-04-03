@@ -1,7 +1,11 @@
 using AStar.Dev.OneDrive.Client.Features.Authentication;
+using AStar.Dev.OneDrive.Client.Features.DeltaQueries;
+using AStar.Dev.OneDrive.Client.Features.FileOperations;
 using AStar.Dev.OneDrive.Client.Features.FolderBrowsing;
+using AStar.Dev.OneDrive.Client.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using System.IO.Abstractions;
 
 namespace AStar.Dev.OneDrive.Client;
 
@@ -12,7 +16,7 @@ public static class OneDriveClientServiceExtensions
 {
     /// <summary>
     ///     Adds MSAL authentication, token management, consent storage, auth state
-    ///     notifications, and OneDrive folder browsing to <paramref name="services" />.
+    ///     notifications, OneDrive folder browsing, delta queries, and file operations to <paramref name="services" />.
     /// </summary>
     public static IServiceCollection AddOneDriveClient(this IServiceCollection services, OneDriveClientOptions options)
     {
@@ -29,6 +33,12 @@ public static class OneDriveClientServiceExtensions
         _ = services.AddSingleton<IConsentStore, ConsentStore>();
         _ = services.AddSingleton<IMsalClient, MsalClient>();
         _ = services.AddSingleton<IOneDriveFolderService, OneDriveFolderService>();
+        _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
+        _ = services.AddSingleton<IDeltaQueryService, DeltaQueryService>();
+        _ = services.AddSingleton<IFileSystem, FileSystem>();
+        _ = services.AddHttpClient();
+        _ = services.AddSingleton<IFileDownloader, FileDownloader>();
+        _ = services.AddSingleton<IFileUploader, FileUploader>();
 
         return services;
     }
