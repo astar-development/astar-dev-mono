@@ -1,10 +1,11 @@
+using System;
 using System.ComponentModel;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 
 /// <summary>
 ///     INPC wrapper around a single localised string key.  Subscribed to
-///     <see cref="ILocalisationService.LocaleChanged" /> via a <see cref="WeakReference{T}" />
+///     <see cref="ILocalisationService.LocaleChanged" /> via a <see cref="WeakReference" />
 ///     so that the source can be garbage-collected when the binding is released, preventing the
 ///     singleton service from rooting orphaned instances indefinitely.
 /// </summary>

@@ -10,7 +10,7 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFileAsync_WithNonExistentFile_ReturnWithoutError()
     {
-        var filePath = "/nonexistent/path/file.txt";
+        const string filePath = "/nonexistent/path/file.txt";
 
         await _sut.DeleteFileAsync(filePath, moveToRecycleBin: false);
     }
@@ -30,7 +30,7 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFileAsync_WithExistingFile_DeletesPermanentlyWhenNotRecycling()
     {
-        var tempFile = System.IO.Path.GetTempFileName();
+        string tempFile = Path.GetTempFileName();
 
         try
         {
@@ -56,7 +56,7 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFilesAsync_WithNonExistentFiles_ReturnWithoutError()
     {
-        var files = new[] { "/nonexistent/file1.txt", "/nonexistent/file2.txt" };
+        string[] files = ["/nonexistent/file1.txt", "/nonexistent/file2.txt"];
 
         await _sut.DeleteFilesAsync(files, moveToRecycleBin: false);
     }
@@ -64,8 +64,8 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFilesAsync_WithExistingFiles_DeletesPermanentlyWhenNotRecycling()
     {
-        var tempFile1 = System.IO.Path.GetTempFileName();
-        var tempFile2 = System.IO.Path.GetTempFileName();
+        string tempFile1 = Path.GetTempFileName();
+        string tempFile2 = Path.GetTempFileName();
 
         try
         {
@@ -89,8 +89,8 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFilesAsync_WithMixedExistingAndNonExistentFiles_DeletesOnlyExistingFiles()
     {
-        var tempFile = System.IO.Path.GetTempFileName();
-        var nonExistentFile = "/nonexistent/file.txt";
+        string tempFile = Path.GetTempFileName();
+        const string nonExistentFile = "/nonexistent/file.txt";
 
         try
         {
@@ -110,7 +110,7 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFileAsync_WithMultipleCallsOnSameFile_HandlesGracefully()
     {
-        var tempFile = System.IO.Path.GetTempFileName();
+        string tempFile = Path.GetTempFileName();
 
         try
         {
@@ -135,19 +135,11 @@ public class FileDeleteServiceShould
     [Fact]
     public async Task DeleteFilesAsync_WithRecycleBinFlag_DoesNotThrowOnUnsupportedPlatform()
     {
-        var tempFile = System.IO.Path.GetTempFileName();
+        string tempFile = Path.GetTempFileName();
 
         try
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                await _sut.DeleteFilesAsync([tempFile], moveToRecycleBin: true);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                await _sut.DeleteFilesAsync([tempFile], moveToRecycleBin: true);
-            }
+            await _sut.DeleteFilesAsync([tempFile], moveToRecycleBin: true);
         }
         finally
         {

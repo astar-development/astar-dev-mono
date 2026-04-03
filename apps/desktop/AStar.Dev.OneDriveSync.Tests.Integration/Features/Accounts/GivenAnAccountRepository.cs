@@ -1,7 +1,10 @@
+using System;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
-using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Features.Accounts;
 
@@ -63,7 +66,7 @@ public sealed class GivenAnAccountRepository
 
         await sut.RemoveAsync(account.Id, TestContext.Current.CancellationToken);
 
-        var remaining = await context.SyncedFileMetadata
+        int remaining = await context.SyncedFileMetadata
             .CountAsync(meta => meta.AccountId == account.Id, TestContext.Current.CancellationToken);
         remaining.ShouldBe(0);
     }

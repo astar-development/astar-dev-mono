@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Localisation;
@@ -18,7 +19,7 @@ internal sealed class RelativeTimeFormatter(ILocalisationService localisationSer
 
     private string FormatRelative(TimeSpan diff)
     {
-        var minutes = Math.Max(1, (int)diff.TotalMinutes);
+        int minutes = Math.Max(1, (int)diff.TotalMinutes);
 
         return minutes == 1
             ? localisationService.GetString("RelativeTimeFormatter_OneMinuteAgo")

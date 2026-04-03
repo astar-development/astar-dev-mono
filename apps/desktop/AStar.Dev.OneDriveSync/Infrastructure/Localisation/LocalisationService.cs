@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Resources;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
@@ -37,7 +41,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
     {
         var result = await settingsRepository.GetAsync(ct).ConfigureAwait(false);
 
-        var locale = result is Result<AppSettings?, ErrorResponse>.Ok ok && ok.Value?.Locale is { } persisted
+        string locale = result is Result<AppSettings?, ErrorResponse>.Ok { Value.Locale: { } persisted }
             ? persisted
             : ResolveFirstLaunchLocale();
 
@@ -47,7 +51,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
 
     private string ResolveFirstLaunchLocale()
     {
-        var osLocale = CultureInfo.CurrentUICulture.Name;
+        string osLocale = CultureInfo.CurrentUICulture.Name;
 
         if (SupportedLocales.Contains(osLocale))
             return osLocale;
@@ -65,7 +69,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
 
         var getResult = await settingsRepository.GetAsync(ct).ConfigureAwait(false);
 
-        var settings = getResult is Result<AppSettings?, ErrorResponse>.Ok ok && ok.Value is { } existing
+        var settings = getResult is Result<AppSettings?, ErrorResponse>.Ok { Value: { } existing }
             ? existing
             : new AppSettings { Id = AppSettings.SingletonId };
 
@@ -84,7 +88,7 @@ internal sealed partial class LocalisationService(IAppSettingsRepository setting
 
     private void ApplyLocale(string locale)
     {
-        var resolved = SupportedLocales.Contains(locale) ? locale : "en-GB";
+        string resolved = SupportedLocales.Contains(locale) ? locale : "en-GB";
         _currentCulture = CultureInfo.GetCultureInfo(resolved);
 
         Dispatcher.UIThread.Post(() =>

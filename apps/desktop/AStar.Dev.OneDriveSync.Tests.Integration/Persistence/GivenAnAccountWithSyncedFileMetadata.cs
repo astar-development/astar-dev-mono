@@ -1,6 +1,11 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
-using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 
@@ -24,8 +29,7 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         int remainingRows = context.SyncedFileMetadata
-            .Where(m => m.AccountId == account.Id)
-            .Count();
+            .Count(m => m.AccountId == account.Id);
 
         remainingRows.ShouldBe(0);
     }
@@ -49,13 +53,11 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         context.SyncedFileMetadata
-            .Where(m => m.AccountId == deletedAccount.Id)
-            .Count()
+            .Count(m => m.AccountId == deletedAccount.Id)
             .ShouldBe(0);
 
         context.SyncedFileMetadata
-            .Where(m => m.AccountId == keptAccount.Id)
-            .Count()
+            .Count(m => m.AccountId == keptAccount.Id)
             .ShouldBe(1);
     }
 
@@ -73,8 +75,7 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         int rowCount = context.SyncedFileMetadata
-            .Where(m => m.AccountId == account.Id)
-            .Count();
+            .Count(m => m.AccountId == account.Id);
 
         rowCount.ShouldBe(1);
     }
@@ -97,8 +98,7 @@ public sealed class GivenAnAccountWithSyncedFileMetadata
         await using var readContext = await factory.CreateContextAsync(TestContext.Current.CancellationToken);
 
         var retrieved = readContext.SyncedFileMetadata
-            .Where(m => m.AccountId == account.Id)
-            .Single();
+            .Single(m => m.AccountId == account.Id);
 
         retrieved.LastModifiedUtc.ToUnixTimeMilliseconds().ShouldBe(knownTimestamp.ToUnixTimeMilliseconds());
         retrieved.CreatedUtc.ToUnixTimeMilliseconds().ShouldBe(knownTimestamp.ToUnixTimeMilliseconds());

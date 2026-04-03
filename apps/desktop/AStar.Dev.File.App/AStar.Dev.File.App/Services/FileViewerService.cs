@@ -1,21 +1,15 @@
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.Services;
 
 /// <summary>
 /// Service responsible for file viewing operations, including updating view history.
 /// </summary>
-public class FileViewerService : IFileViewerService
+public class FileViewerService(IDbContextFactory<FileAppDbContext> dbContextFactory) : IFileViewerService
 {
-    private readonly IDbContextFactory<FileAppDbContext> _dbContextFactory;
-
     public event Action<ScannedFileDisplayItem>? FileViewRequested;
-
-    public FileViewerService(IDbContextFactory<FileAppDbContext> dbContextFactory) => _dbContextFactory = dbContextFactory;
 
     /// <summary>
     /// Processes a file view request by updating the last viewed timestamp in the database
@@ -27,7 +21,7 @@ public class FileViewerService : IFileViewerService
         if (item is null)
             return;
 
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        await using var db = await dbContextFactory.CreateDbContextAsync();
         var file = await db.ScannedFiles.FindAsync(item.Id);
         if (file is not null)
         {

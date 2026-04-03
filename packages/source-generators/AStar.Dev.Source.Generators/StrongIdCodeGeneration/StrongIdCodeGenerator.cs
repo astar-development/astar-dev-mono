@@ -25,12 +25,18 @@ internal static class StrongIdCodeGenerator
 
         if(underlying.IndexOf('.') < 0)
         {
-            if(underlying == "Guid")
-                underlying = "System.Guid";
-            else if(underlying == "string")
-                underlying = "System.String";
-            else if(underlying == "int")
-                underlying = "System.Int32";
+            switch (underlying)
+            {
+                case "Guid":
+                    underlying = "System.Guid";
+                    break;
+                case "string":
+                    underlying = "System.String";
+                    break;
+                case "int":
+                    underlying = "System.Int32";
+                    break;
+            }
         }
 
         return underlying;

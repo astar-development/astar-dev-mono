@@ -1,5 +1,3 @@
-using AStar.Dev.OneDriveSync.Features.Onboarding;
-
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
 /// <summary>

@@ -1,4 +1,6 @@
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Localisation;
 
@@ -10,7 +12,7 @@ public sealed class GivenALocaliseExtension
         LocalisationServiceLocator.Instance = null;
         var sut = new LocaliseExtension("Settings_Heading");
 
-        var result = sut.ProvideValue(serviceProvider: null!);
+        object result = sut.ProvideValue(serviceProvider: null!);
 
         result.ShouldBe("Settings_Heading");
     }

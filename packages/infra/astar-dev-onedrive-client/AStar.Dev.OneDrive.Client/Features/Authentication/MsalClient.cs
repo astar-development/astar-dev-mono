@@ -7,18 +7,13 @@ namespace AStar.Dev.OneDrive.Client.Features.Authentication;
 ///     MSAL client implementation (AU-01).
 ///     Handles system browser OAuth flow for consumers tenant only.
 /// </summary>
-internal sealed class MsalClient : IMsalClient
+internal sealed class MsalClient(IPublicClientApplication msalApp) : IMsalClient
 {
-    private readonly IPublicClientApplication _msalApp;
-
-    public MsalClient(IPublicClientApplication msalApp)
-    {
-        _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
-    }
+    private readonly IPublicClientApplication _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
 
     public async Task<Result<(AccessToken, string?), string>> AcquireTokenInteractiveAsync(CancellationToken ct = default)
     {
-        var scopes = new[] { "Files.ReadWrite", "offline_access" };
+        string[] scopes = ["Files.ReadWrite", "offline_access"];
 
         try
         {
@@ -30,27 +25,27 @@ internal sealed class MsalClient : IMsalClient
 
             var accessToken = new AccessToken(result.AccessToken, result.ExpiresOn);
             // MSAL does not expose RefreshToken in AuthenticationResult
-            var refreshToken = (string?)null;
+            string? refreshToken = null;
 
-            return (Result<(AccessToken, string?), string>)new Result<(AccessToken, string?), string>.Ok((accessToken, refreshToken));
+            return new Result<(AccessToken, string?), string>.Ok((accessToken, refreshToken));
         }
         catch (MsalClientException ex)
         {
-            return (Result<(AccessToken, string?), string>)new Result<(AccessToken, string?), string>.Error($"Interactive auth failed: {ex.Message}");
+            return new Result<(AccessToken, string?), string>.Error($"Interactive auth failed: {ex.Message}");
         }
         catch (MsalServiceException ex)
         {
-            return (Result<(AccessToken, string?), string>)new Result<(AccessToken, string?), string>.Error($"Interactive auth service error: {ex.Message}");
+            return new Result<(AccessToken, string?), string>.Error($"Interactive auth service error: {ex.Message}");
         }
     }
 
     public async Task<Result<AccessToken, string>> AcquireTokenSilentAsync(CancellationToken ct = default)
     {
-        var scopes = new[] { "Files.ReadWrite", "offline_access" };
+        string[] scopes = ["Files.ReadWrite", "offline_access"];
         var accounts = await _msalApp.GetAccountsAsync().ConfigureAwait(false);
 
         if (!accounts.Any())
-            return (Result<AccessToken, string>)new Result<AccessToken, string>.Error("No cached tokens; user must re-authenticate");
+            return new Result<AccessToken, string>.Error("No cached tokens; user must re-authenticate");
 
         try
         {
@@ -60,19 +55,19 @@ internal sealed class MsalClient : IMsalClient
                 .ConfigureAwait(false);
 
             var accessToken = new AccessToken(result.AccessToken, result.ExpiresOn);
-            return (Result<AccessToken, string>)new Result<AccessToken, string>.Ok(accessToken);
+            return new Result<AccessToken, string>.Ok(accessToken);
         }
         catch (MsalUiRequiredException)
         {
-            return (Result<AccessToken, string>)new Result<AccessToken, string>.Error("User interaction required; token expired");
+            return new Result<AccessToken, string>.Error("User interaction required; token expired");
         }
         catch (MsalClientException ex)
         {
-            return (Result<AccessToken, string>)new Result<AccessToken, string>.Error($"Silent token acquisition failed: {ex.Message}");
+            return new Result<AccessToken, string>.Error($"Silent token acquisition failed: {ex.Message}");
         }
         catch (MsalServiceException ex)
         {
-            return (Result<AccessToken, string>)new Result<AccessToken, string>.Error($"Silent token service error: {ex.Message}");
+            return new Result<AccessToken, string>.Error($"Silent token service error: {ex.Message}");
         }
     }
 }

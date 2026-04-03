@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AStar.Dev.Source.Generators.OptionsBindingGeneration;
@@ -68,9 +67,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         string? sectionName = null;
         var attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
         if(attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
-        {
             sectionName = s;
-        }
         else if(ctx.Attributes.Length > 0)
         {
             // Fallback: parse from syntax
@@ -93,9 +90,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         {
             if(member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
                field.ConstantValue is not string val || string.IsNullOrWhiteSpace(val))
-            {
                 continue;
-            }
 
             sectionName = val;
             break;

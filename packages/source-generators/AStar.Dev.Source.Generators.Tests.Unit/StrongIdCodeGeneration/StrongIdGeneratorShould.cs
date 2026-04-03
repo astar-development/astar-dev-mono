@@ -20,7 +20,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -43,7 +43,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -66,7 +66,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -89,7 +89,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -112,7 +112,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new StrongIdGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();

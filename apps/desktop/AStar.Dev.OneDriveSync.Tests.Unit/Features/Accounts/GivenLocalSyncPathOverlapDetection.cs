@@ -1,6 +1,13 @@
+using System;
+using System.Collections.Generic;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using System.IO.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Accounts;
 
@@ -103,7 +110,7 @@ public sealed class GivenLocalSyncPathOverlapDetection
     [Fact]
     public void when_get_default_path_then_includes_display_name_and_onedrive_segment()
     {
-        var path = _sut.GetDefaultPath("Alice Smith");
+        string path = _sut.GetDefaultPath("Alice Smith");
 
         path.ShouldContain("Alice Smith");
         path.ShouldContain("OneDrive");

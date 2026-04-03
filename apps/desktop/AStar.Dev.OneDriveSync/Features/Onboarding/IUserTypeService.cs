@@ -1,3 +1,5 @@
+using System;
+
 namespace AStar.Dev.OneDriveSync.Features.Onboarding;
 
 public interface IUserTypeService

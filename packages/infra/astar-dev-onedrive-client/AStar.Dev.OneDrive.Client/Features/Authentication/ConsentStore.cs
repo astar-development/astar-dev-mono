@@ -14,7 +14,7 @@ internal sealed class ConsentStore : IConsentStore
     {
         lock (_consentDecisions)
         {
-            var result = _consentDecisions.TryGetValue(accountId, out var consented)
+            var result = _consentDecisions.TryGetValue(accountId, out bool consented)
                 ? (Option<bool>)new Option<bool>.Some(consented)
                 : Option<bool>.None.Instance;
 
@@ -24,11 +24,8 @@ internal sealed class ConsentStore : IConsentStore
 
     public Task<Result<bool, string>> SetConsentDecisionAsync(Guid accountId, bool consented, CancellationToken ct = default)
     {
-        lock (_consentDecisions)
-        {
-            _consentDecisions[accountId] = consented;
-        }
+        lock (_consentDecisions) _consentDecisions[accountId] = consented;
 
-        return Task.FromResult((Result<bool, string>)new Result<bool, string>.Ok(consented));
+        return Task.FromResult<Result<bool, string>>(new Result<bool, string>.Ok(consented));
     }
 }

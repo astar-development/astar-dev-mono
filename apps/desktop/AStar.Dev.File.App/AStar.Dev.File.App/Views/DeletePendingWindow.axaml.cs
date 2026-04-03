@@ -12,15 +12,12 @@ public partial class DeletePendingWindow : Window
         DataContextChanged += OnDataContextChanged;
     }
 
-    private void OnDataContextChanged(object? sender, System.EventArgs e)
+    private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is DeletePendingViewModel vm)
-        {
-            vm.ViewFileRequested += OnViewFileRequested;
-        }
+        if (DataContext is DeletePendingViewModel vm) vm.ViewFileRequested += OnViewFileRequested;
     }
 
-    private void OnViewFileRequested(ScannedFileDisplayItem item)
+    private static void OnViewFileRequested(ScannedFileDisplayItem item)
     {
         int imgW = 0, imgH = 0;
 

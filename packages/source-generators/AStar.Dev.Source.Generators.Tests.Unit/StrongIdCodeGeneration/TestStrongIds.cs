@@ -9,5 +9,5 @@ internal readonly partial record struct UserId;
 [StrongId(typeof(int))]
 internal readonly partial record struct OrderId2;
 
-[StrongId(typeof(System.Guid))]
+[StrongId(typeof(Guid))]
 internal readonly partial record struct EntityId;

@@ -1,5 +1,3 @@
-using System;
-
 namespace AStar.Dev.File.App.ViewModels;
 
 public class ViewWindowViewModel

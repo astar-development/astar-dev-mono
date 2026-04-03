@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Subjects;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;

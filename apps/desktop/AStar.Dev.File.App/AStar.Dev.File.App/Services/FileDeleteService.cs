@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.Services;
 
@@ -19,7 +15,7 @@ public class FileDeleteService : IFileDeleteService
 
     public async Task DeleteFilesAsync(IEnumerable<string> filePaths, bool moveToRecycleBin = true)
     {
-        var files = filePaths.Where(f => System.IO.File.Exists(f)).ToList();
+        var files = filePaths.Where(System.IO.File.Exists).ToList();
         if (files.Count == 0)
             return;
 
@@ -28,32 +24,22 @@ public class FileDeleteService : IFileDeleteService
             if (moveToRecycleBin)
             {
                 if (OperatingSystem.IsWindows())
-                {
                     MoveFilesToRecycleBinWindows(files);
-                }
                 else if (OperatingSystem.IsLinux())
-                {
                     MoveFilesToTrashLinux(files);
-                }
                 else if (OperatingSystem.IsMacOS())
-                {
-                    MoveFilesToTrashMacOS(files);
-                }
+                    MoveFilesToTrashMacOs(files);
                 else
-                {
                     PermanentlyDeleteFiles(files);
-                }
             }
             else
-            {
                 PermanentlyDeleteFiles(files);
-            }
         });
     }
 
     private static void PermanentlyDeleteFiles(IEnumerable<string> filePaths)
     {
-        foreach (var file in filePaths)
+        foreach (string file in filePaths)
         {
             try
             {
@@ -68,9 +54,10 @@ public class FileDeleteService : IFileDeleteService
 
     private static void MoveFilesToTrashLinux(IEnumerable<string> filePaths)
     {
+        string[] paths = filePaths as string[] ?? filePaths.ToArray();
         try
         {
-            var args = string.Join(" ", filePaths.Select(f => $"\"{f}\""));
+            string args = string.Join(" ", paths.Select(f => $"\"{f}\""));
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -87,24 +74,24 @@ public class FileDeleteService : IFileDeleteService
             process.Start();
             process.WaitForExit();
 
-            if (process.ExitCode != 0)
-            {
-                Debug.WriteLine("gio trash failed, falling back to permanent delete");
-                PermanentlyDeleteFiles(filePaths);
-            }
+            if (process.ExitCode == 0) return;
+
+            Debug.WriteLine("gio trash failed, falling back to permanent delete");
+            PermanentlyDeleteFiles(paths);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"gio trash not available: {ex.Message}. Falling back to permanent delete.");
-            PermanentlyDeleteFiles(filePaths);
+            PermanentlyDeleteFiles(paths);
         }
     }
 
-    private static void MoveFilesToTrashMacOS(IEnumerable<string> filePaths)
+    private static void MoveFilesToTrashMacOs(IEnumerable<string> filePaths)
     {
+        string[] paths = filePaths as string[] ?? filePaths.ToArray();
         try
         {
-            var args = string.Join(" ", filePaths.Select(f => $"\"{f}\""));
+            string args = string.Join(" ", paths.Select(f => $"\"{f}\""));
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -124,44 +111,44 @@ public class FileDeleteService : IFileDeleteService
         catch (Exception ex)
         {
             Debug.WriteLine($"macOS trash failed: {ex.Message}");
-            PermanentlyDeleteFiles(filePaths);
+            PermanentlyDeleteFiles(paths);
         }
     }
 
     private static void MoveFilesToRecycleBinWindows(IEnumerable<string> filePaths)
     {
-        var paths = string.Join("\0", filePaths) + "\0\0";
-        var fileOp = new SHFILEOPSTRUCT
+        IEnumerable<string> pathsAsArray = filePaths as string[] ?? filePaths.ToArray();
+        string paths = string.Join("\0", pathsAsArray) + "\0\0";
+        var fileOp = new Shfileopstruct
         {
-            wFunc = FileOperationType.FO_DELETE,
+            wFunc = FileOperationType.FoDelete,
             pFrom = paths,
-            fFlags = FileOperationFlags.FOF_ALLOWUNDO | FileOperationFlags.FOF_NOCONFIRMATION | FileOperationFlags.FOF_NOERRORUI | FileOperationFlags.FOF_SILENT
+            fFlags = FileOperationFlags.FofAllowundo | FileOperationFlags.FofNoconfirmation | FileOperationFlags.FofNoerrorui | FileOperationFlags.FofSilent
         };
 
         try
         {
             int result = SHFileOperation(ref fileOp);
 
-            if (result != 0)
-            {
-                Debug.WriteLine($"Shell delete failed with code {result}. Falling back to permanent delete.");
-                PermanentlyDeleteFiles(filePaths);
-            }
+            if (result == 0) return;
+
+            Debug.WriteLine($"Shell delete failed with code {result}. Falling back to permanent delete.");
+            PermanentlyDeleteFiles(pathsAsArray);
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Shell delete failed: {ex.Message}. Falling back to permanent delete.");
-            PermanentlyDeleteFiles(filePaths);
+            PermanentlyDeleteFiles(pathsAsArray);
         }
     }
 
     [DllImport("shell32.dll", CharSet = CharSet.Auto)]
 #pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-    private static extern int SHFileOperation(ref SHFILEOPSTRUCT lpFileOp);
+    private static extern int SHFileOperation(ref Shfileopstruct lpFileOp);
 #pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    private struct SHFILEOPSTRUCT
+    private struct Shfileopstruct
     {
         public IntPtr hwnd;
         public FileOperationType wFunc;
@@ -179,28 +166,28 @@ public class FileDeleteService : IFileDeleteService
 
     private enum FileOperationType
     {
-        FO_MOVE = 1,
-        FO_COPY = 2,
-        FO_DELETE = 3,
-        FO_RENAME = 4
+        FoMove = 1,
+        FoCopy = 2,
+        FoDelete = 3,
+        FoRename = 4
     }
 
     [Flags]
     private enum FileOperationFlags
     {
-        FOF_MULTIDESTFILES = 0x0001,
-        FOF_CONFIRMMOUSE = 0x0002,
-        FOF_SILENT = 0x0004,
-        FOF_RENAMEONCOLLISION = 0x0008,
-        FOF_NOCONFIRMATION = 0x0010,
-        FOF_WANTMAPPINGHANDLE = 0x0020,
-        FOF_ALLOWUNDO = 0x0040,
-        FOF_FILESONLY = 0x0080,
-        FOF_SIMPLEPROGRESS = 0x0100,
-        FOF_NOCONFIRMMKDIR = 0x0200,
-        FOF_NOERRORUI = 0x0400,
-        FOF_NOCOPYSECURITYATTRIBS = 0x0800,
-        FOF_NORECURSION = 0x1000,
-        FOF_NO_UI = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NOCONFIRMMKDIR
+        FofMultidestfiles = 0x0001,
+        FofConfirmmouse = 0x0002,
+        FofSilent = 0x0004,
+        FofRenameoncollision = 0x0008,
+        FofNoconfirmation = 0x0010,
+        FofWantmappinghandle = 0x0020,
+        FofAllowundo = 0x0040,
+        FofFilesonly = 0x0080,
+        FofSimpleprogress = 0x0100,
+        FofNoconfirmmkdir = 0x0200,
+        FofNoerrorui = 0x0400,
+        FofNocopysecurityattribs = 0x0800,
+        FofNorecursion = 0x1000,
+        FofNoUi = FofSilent | FofNoconfirmation | FofNoerrorui | FofNoconfirmmkdir
     }
 }

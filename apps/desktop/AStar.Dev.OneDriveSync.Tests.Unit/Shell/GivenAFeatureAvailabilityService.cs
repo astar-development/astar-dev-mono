@@ -1,4 +1,7 @@
+using System;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Shell;
 
@@ -41,7 +44,7 @@ public sealed class GivenAFeatureAvailabilityService
         var sut = new FeatureAvailabilityService();
         sut.Register(NavSection.Dashboard);
 
-        Action act = () => sut.Register(NavSection.Dashboard);
+        var act = () => sut.Register(NavSection.Dashboard);
 
         sut.IsAvailable(NavSection.Dashboard);
         act.ShouldNotThrow();
@@ -66,7 +69,7 @@ public sealed class GivenAFeatureAvailabilityService
         var sut = new FeatureAvailabilityService();
         sut.Freeze();
 
-        Action act = () => sut.Register(NavSection.Dashboard);
+        var act = () => sut.Register(NavSection.Dashboard);
 
         act.ShouldThrow<InvalidOperationException>();
     }

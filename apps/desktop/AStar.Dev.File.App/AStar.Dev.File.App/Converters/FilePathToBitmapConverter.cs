@@ -1,6 +1,5 @@
 using Avalonia.Data.Converters;
 using Avalonia.Media.Imaging;
-using System;
 using System.Globalization;
 
 namespace AStar.Dev.File.App.Converters;
@@ -22,6 +21,6 @@ public class FilePathToBitmapConverter : IValueConverter
         }
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }

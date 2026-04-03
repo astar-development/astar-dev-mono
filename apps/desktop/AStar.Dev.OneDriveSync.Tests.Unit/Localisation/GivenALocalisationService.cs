@@ -1,8 +1,13 @@
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Localisation;
 
@@ -49,7 +54,7 @@ public sealed class GivenALocalisationService
     [Fact]
     public async Task when_locale_is_set_then_locale_changed_event_is_fired()
     {
-        var eventFired = false;
+        bool eventFired = false;
         _sut.LocaleChanged += (_, _) => eventFired = true;
 
         _ = await _sut.SetLocaleAsync("en-GB", TestContext.Current.CancellationToken);

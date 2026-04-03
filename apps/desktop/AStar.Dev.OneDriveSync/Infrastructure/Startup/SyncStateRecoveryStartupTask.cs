@@ -1,3 +1,6 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Startup;
 
 public sealed class SyncStateRecoveryStartupTask : IStartupTask

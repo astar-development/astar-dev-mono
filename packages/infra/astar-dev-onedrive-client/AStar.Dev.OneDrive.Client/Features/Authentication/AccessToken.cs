@@ -1,5 +1,3 @@
-using AStar.Dev.Functional.Extensions;
-
 namespace AStar.Dev.OneDrive.Client.Features.Authentication;
 
 /// <summary>

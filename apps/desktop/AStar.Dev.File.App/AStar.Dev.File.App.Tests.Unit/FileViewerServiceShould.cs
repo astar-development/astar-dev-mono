@@ -28,7 +28,7 @@ public class FileViewerServiceShould
     {
         var scannedFile = CreateScannedFile();
         var displayItem = new ScannedFileDisplayItem(scannedFile);
-        var eventRaised = false;
+        bool eventRaised = false;
         ScannedFileDisplayItem? eventItem = null;
 
         _sut.FileViewRequested += item =>
@@ -77,8 +77,8 @@ public class FileViewerServiceShould
     {
         var scannedFile = CreateScannedFile();
         var displayItem = new ScannedFileDisplayItem(scannedFile);
-        var firstSubscriberCalled = false;
-        var secondSubscriberCalled = false;
+        bool firstSubscriberCalled = false;
+        bool secondSubscriberCalled = false;
 
         _sut.FileViewRequested += _ => firstSubscriberCalled = true;
         _sut.FileViewRequested += _ => secondSubscriberCalled = true;

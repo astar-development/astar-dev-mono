@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using AStar.Dev.OneDriveSync.Features.About;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.Activity;

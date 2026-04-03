@@ -21,12 +21,7 @@ internal static class ServiceCollectionCodeGenerator
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach(var model in items)
-        {
-            foreach(string? registration in CreateRegistrationsForModel(model).Where(seen.Add))
-            {
-                yield return registration;
-            }
-        }
+        foreach(string? registration in CreateRegistrationsForModel(model).Where(seen.Add)) yield return registration;
     }
 
     private static IEnumerable<string> CreateRegistrationsForModel(ServiceModel model)
@@ -41,9 +36,7 @@ internal static class ServiceCollectionCodeGenerator
                 yield return $"        services.{method}<{model.ImplFqn}>();";
         }
         else
-        {
             yield return $"        services.{method}<{model.ImplFqn}>();";
-        }
     }
 
     private static string GetRegistrationMethod(ServiceLifetime lifetime)

@@ -1,9 +1,17 @@
+using System;
+using System.IO;
 using System.IO.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using AStar.Dev.OneDriveSync.Infrastructure.Startup;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Startup;
 
@@ -57,7 +65,7 @@ public sealed class GivenADatabaseMigrationStartupTask : IAsyncLifetime
 
         var services = new ServiceCollection();
         services.AddSingleton(pathProvider);
-        services.AddDbContext<AppDbContext>(opts => opts.UseSqlite(connection), ServiceLifetime.Scoped);
+        services.AddDbContext<AppDbContext>(opts => opts.UseSqlite(connection));
         _serviceProvider = services.BuildServiceProvider();
 
         return new DatabaseMigrationStartupTask(_serviceProvider, Substitute.For<ILogger<DatabaseMigrationStartupTask>>(), new FileSystem(), folderResolver);
@@ -130,13 +138,13 @@ public sealed class GivenADatabaseMigrationStartupTask : IAsyncLifetime
     public async Task when_run_async_completes_then_wal_journal_mode_is_enabled()
     {
         string dbFilePath = Path.Combine(_testRoot, "wal-test.db");
-        using var fileConnection = new SqliteConnection($"DataSource={dbFilePath}");
+        await using var fileConnection = new SqliteConnection($"DataSource={dbFilePath}");
         fileConnection.Open();
         var sut = CreateSut(fileConnection);
 
         await sut.RunAsync(CancellationToken.None);
 
-        using var cmd = fileConnection.CreateCommand();
+        await using var cmd = fileConnection.CreateCommand();
         cmd.CommandText = "PRAGMA journal_mode";
         string? mode = (string?)cmd.ExecuteScalar();
 

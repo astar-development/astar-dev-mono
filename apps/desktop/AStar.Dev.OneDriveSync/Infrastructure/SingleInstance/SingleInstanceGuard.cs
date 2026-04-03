@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.SingleInstance;
 
 public sealed class SingleInstanceGuard(string mutexName) : IDisposable

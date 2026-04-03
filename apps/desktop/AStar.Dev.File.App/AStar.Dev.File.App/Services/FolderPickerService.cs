@@ -2,8 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.Services;
 

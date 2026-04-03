@@ -1,9 +1,14 @@
+using System.Linq;
 using System.Reactive.Concurrency;
+using System.Reactive.Subjects;
 using AStar.Dev.OneDriveSync.Features.Home;
 using AStar.Dev.OneDriveSync.Infrastructure;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
+using NSubstitute;
 using ReactiveUI;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Shell;
 
@@ -38,7 +43,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(section).Returns(expectedView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe(new Subject<System.Reactive.Unit>());
 
         sut.ActiveView.ShouldBe(expectedView);
     }
@@ -59,7 +64,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(section).Returns(expectedView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe(new Subject<System.Reactive.Unit>());
 
         sut.SelectedSection.ShouldBe(section);
     }
@@ -79,7 +84,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe(new Subject<System.Reactive.Unit>());
 
         var targetItem = sut.NavItems.Single(i => i.Section == section);
 
@@ -101,7 +106,7 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(section).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(section).Subscribe();
+        _ = sut.NavigateCommand.Execute(section).Subscribe(new Subject<System.Reactive.Unit>());
 
         var inactiveItems = sut.NavItems.Where(i => i.Section != section);
 
@@ -117,10 +122,10 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(dashboardView);
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe(new Subject<System.Reactive.Unit>());
         var viewBeforeAttempt = sut.ActiveView;
 
-        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe(new Subject<System.Reactive.Unit>());
 
         sut.ActiveView.ShouldBe(viewBeforeAttempt);
     }
@@ -133,9 +138,9 @@ public sealed class GivenAMainWindowViewModel
         _ = _navigationService.ResolveView(NavSection.Dashboard).Returns(new TestViewModel());
 
         var sut = new MainWindowViewModel(_navigationService, _featureAvailability, _localisationService, _shellNavigator);
-        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Dashboard).Subscribe(new Subject<System.Reactive.Unit>());
 
-        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe();
+        _ = sut.NavigateCommand.Execute(NavSection.Accounts).Subscribe(new Subject<System.Reactive.Unit>());
 
         sut.SelectedSection.ShouldBe(NavSection.Dashboard);
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Avalonia;
@@ -6,7 +7,7 @@ using AStar.Dev.OneDriveSync.Infrastructure.SingleInstance;
 
 namespace AStar.Dev.OneDriveSync;
 
-sealed partial class Program
+internal sealed partial class Program
 {
     private const string ApplicationMutexName  = "Global\\AStar.Dev.OneDriveSync.SingleInstance";
     private const string AlreadyRunningMessage = "AStar OneDrive Sync is already running.";
@@ -17,17 +18,15 @@ sealed partial class Program
     {
         using var guard = new SingleInstanceGuard(ApplicationMutexName);
 
-        if (guard.TryAcquire() == SingleInstanceResult.AlreadyRunning)
-        {
-            ShowAlreadyRunningMessage();
+        if (guard.TryAcquire() != SingleInstanceResult.AlreadyRunning) return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 
-            return 0;
-        }
+        ShowAlreadyRunningMessage();
 
-        return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        return 0;
+
     }
 
-    public static AppBuilder BuildAvaloniaApp()
+    private static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()

@@ -14,14 +14,13 @@ public partial class MainWindow : Window
         DataContextChanged += OnDataContextChanged;
     }
 
-    private void OnDataContextChanged(object? sender, System.EventArgs e)
+    private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.StatusMessages.CollectionChanged += OnStatusMessagesChanged;
-            vm.ViewFileRequested += OnViewFileRequested;
-            vm.OpenDeleteWindowRequested += OnOpenDeleteWindowRequested;
-        }
+        if (DataContext is not MainWindowViewModel vm) return;
+
+        vm.StatusMessages.CollectionChanged += OnStatusMessagesChanged;
+        vm.ViewFileRequested += OnViewFileRequested;
+        vm.OpenDeleteWindowRequested += OnOpenDeleteWindowRequested;
     }
 
     private void OnStatusMessagesChanged(object? sender, NotifyCollectionChangedEventArgs e) => StatusScrollViewer.ScrollToEnd();

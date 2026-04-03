@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Theming;
 
@@ -24,9 +30,9 @@ public sealed partial class GivenNoHardcodedColoursInAxamlFiles
 
     private static IEnumerable<string> ScanFile(string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
+        string[] lines = File.ReadAllLines(filePath);
 
-        for (var i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Length; i++)
         {
             string line = lines[i];
 
@@ -40,7 +46,7 @@ public sealed partial class GivenNoHardcodedColoursInAxamlFiles
 
     private static bool IsResourceDictionaryDefinition(string line)
     {
-        var trimmed = line.TrimStart();
+        string trimmed = line.TrimStart();
 
         return trimmed.StartsWith("<Color ", StringComparison.Ordinal)
             || trimmed.StartsWith("<SolidColorBrush ", StringComparison.Ordinal);
@@ -52,10 +58,7 @@ public sealed partial class GivenNoHardcodedColoursInAxamlFiles
 
         while (dir is not null)
         {
-            if (dir.GetFiles("*.slnx").Length > 0)
-            {
-                return Path.Combine(dir.FullName, "apps", "desktop", "AStar.Dev.OneDriveSync");
-            }
+            if (dir.GetFiles("*.slnx").Length > 0) return Path.Combine(dir.FullName, "apps", "desktop", "AStar.Dev.OneDriveSync");
 
             dir = dir.Parent;
         }

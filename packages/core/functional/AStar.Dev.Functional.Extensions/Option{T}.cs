@@ -29,7 +29,7 @@ public abstract class Option<T>
         this switch
         {
             Some some => onSome(some.Value),
-            None x    => onNone(),
+            None _    => onNone(),
             _         => throw new InvalidOperationException("It should not be possible to reach this point.")
         };
 
@@ -96,10 +96,7 @@ public abstract class Option<T>
         /// <exception cref="ArgumentNullException" />
         public Some(T value)
         {
-            if(value is null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            if(value is null) throw new ArgumentNullException(nameof(value));
 
             Value = value;
         }

@@ -1,7 +1,11 @@
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Infrastructure.Shell;
 using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Onboarding;
 
@@ -16,7 +20,7 @@ public sealed class GivenNoAccountsInDatabase
 
         var sut = new OnboardingViewModel(accountRepository, shellNavigator);
 
-        sut.ShouldShowOnboarding.ShouldBeTrue();
+        (await sut.ShouldShowOnboarding()).ShouldBeTrue();
     }
 
     [Fact]
@@ -28,6 +32,6 @@ public sealed class GivenNoAccountsInDatabase
 
         var sut = new OnboardingViewModel(accountRepository, shellNavigator);
 
-        sut.ShouldShowOnboarding.ShouldBeFalse();
+        (await sut.ShouldShowOnboarding()).ShouldBeFalse();
     }
 }

@@ -1,12 +1,7 @@
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.Services;
 
@@ -23,14 +18,14 @@ public class FileScannerService(
         var scanStartedAt = DateTime.UtcNow;
         var counter = new Counter();
 
-        await RecurseDirectory(rootPath, rootPath, progress, counter, ct);
+        await RecurseDirectoryAsync(rootPath, rootPath, progress, counter, ct);
 
         await using var db = await dbContextFactory.CreateDbContextAsync(ct);
         await db.ScannedFiles
             .Where(f => f.RootPath == rootPath && f.LastScannedAt < scanStartedAt)
             .ExecuteUpdateAsync(s => s.SetProperty(f => f.PendingDelete, true), ct);
 
-        var time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+        string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(
             CurrentFolder: rootPath,
             TotalFilesProcessed: counter.Value,
@@ -38,21 +33,21 @@ public class FileScannerService(
             StatusMessage: $"[{time}] Scan complete. {counter.Value} files processed."));
     }
 
-    private async Task RecurseDirectory(
+    private async Task RecurseDirectoryAsync(
         string rootPath,
         string directory,
         IProgress<ScanProgressUpdate> progress,
         Counter counter,
         CancellationToken ct)
     {
-        var time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+        string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(CurrentFolder: directory, TotalFilesProcessed: counter.Value, CurrentFileName: null, StatusMessage: $"[{time}] Scanning: {directory}"));
 
         await using var db = await dbContextFactory.CreateDbContextAsync(ct);
 
         try
         {
-            foreach (var filePath in Directory.EnumerateFiles(directory))
+            foreach (string filePath in Directory.EnumerateFiles(directory))
             {
                 ct.ThrowIfCancellationRequested();
 
@@ -104,7 +99,7 @@ public class FileScannerService(
         }
         catch (UnauthorizedAccessException ex)
         {
-            var errTime = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+            string errTime = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
             progress.Report(new ScanProgressUpdate(
                 CurrentFolder: directory,
                 TotalFilesProcessed: counter.Value,
@@ -112,10 +107,10 @@ public class FileScannerService(
                 StatusMessage: $"[{errTime}] ACCESS DENIED: {ex.Message}"));
         }
 
-        foreach (var subDir in Directory.EnumerateDirectories(directory))
+        foreach (string subDir in Directory.EnumerateDirectories(directory))
         {
             ct.ThrowIfCancellationRequested();
-            await RecurseDirectory(rootPath, subDir, progress, counter, ct);
+            await RecurseDirectoryAsync(rootPath, subDir, progress, counter, ct);
         }
     }
 }

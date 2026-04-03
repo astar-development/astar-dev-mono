@@ -13,18 +13,13 @@ public static class OptionLinqExtensions
     /// <summary>
     ///     Projects and flattens nested <see cref="Option{T}" /> structures using a LINQ-style binding function.
     /// </summary>
-    public static Option<TResult> SelectMany<T, TIntermediate, TResult>(
-        this Option<T>                  option,
-        Func<T, Option<TIntermediate>>  bind,
-        Func<T, TIntermediate, TResult> project) =>
+    public static Option<TResult> SelectMany<T, TIntermediate, TResult>(this Option<T> option, Func<T, Option<TIntermediate>> bind, Func<T, TIntermediate, TResult> project) =>
         option.Bind(x => bind(x).Map(y => project(x, y)));
 
     /// <summary>
     ///     Asynchronously projects the value of a <see cref="Task{Option}" /> using the specified function.
     /// </summary>
-    public static async Task<Option<TResult>> SelectAwait<T, TResult>(
-        this Task<Option<T>>   task,
-        Func<T, Task<TResult>> selector)
+    public static async Task<Option<TResult>> SelectAwaitAsync<T, TResult>(this Task<Option<T>> task, Func<T, Task<TResult>> selector)
     {
         var option = await task;
 

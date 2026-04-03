@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using AStar.Dev.OneDriveSync.Infrastructure;
 using System.Reactive;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
