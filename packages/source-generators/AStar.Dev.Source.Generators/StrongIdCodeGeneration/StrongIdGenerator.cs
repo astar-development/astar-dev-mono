@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -41,7 +40,7 @@ public class StrongIdGenerator : IIncrementalGenerator
             foreach(var recordStruct in structs)
             {
                 var model = compilation.GetSemanticModel(recordStruct.SyntaxTree);
-                if(model.GetDeclaredSymbol(recordStruct) is not INamedTypeSymbol symbol)
+                if(model.GetDeclaredSymbol(recordStruct) is not { } symbol)
                     continue;
 
                 var attr = symbol.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, strongIdAttrSymbol));

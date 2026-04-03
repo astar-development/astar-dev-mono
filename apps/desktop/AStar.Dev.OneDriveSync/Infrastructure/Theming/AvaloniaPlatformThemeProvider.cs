@@ -1,3 +1,4 @@
+using System;
 using System.Reactive.Subjects;
 using Avalonia;
 using Avalonia.Platform;

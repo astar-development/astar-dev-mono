@@ -1,5 +1,8 @@
+using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Avalonia.Styling;
@@ -15,10 +18,9 @@ public sealed partial class ThemeService(IAppSettingsRepository settingsReposito
 {
     private readonly Subject<ThemeMode> _themeChanged = new();
     private IDisposable? _platformSubscription;
-    private ThemeMode _currentMode = ThemeMode.Auto;
 
     /// <inheritdoc />
-    public ThemeMode CurrentMode => _currentMode;
+    public ThemeMode CurrentMode { get; private set; } = ThemeMode.Auto;
 
     /// <inheritdoc />
     public IObservable<ThemeMode> ThemeChanged => _themeChanged.AsObservable();
@@ -28,7 +30,7 @@ public sealed partial class ThemeService(IAppSettingsRepository settingsReposito
     {
         var result = await settingsRepository.GetAsync(ct).ConfigureAwait(false);
 
-        var mode = result is Result<AppSettings?, ErrorResponse>.Ok ok && ok.Value is { } s
+        var mode = result is Result<AppSettings?, ErrorResponse>.Ok { Value: { } s }
             ? ParseMode(s.ThemeMode)
             : ThemeMode.Auto;
 
@@ -42,7 +44,7 @@ public sealed partial class ThemeService(IAppSettingsRepository settingsReposito
     public async Task<Result<ThemeMode, ErrorResponse>> SetThemeAsync(ThemeMode mode, CancellationToken ct = default)
     {
         DisposePlatformSubscription();
-        _currentMode = mode;
+        CurrentMode = mode;
 
         var settings = new AppSettings { Id = AppSettings.SingletonId, ThemeMode = mode.ToString() };
         _ = await settingsRepository.SaveAsync(settings, ct).ConfigureAwait(false);
@@ -63,7 +65,7 @@ public sealed partial class ThemeService(IAppSettingsRepository settingsReposito
 
     private void ApplyMode(ThemeMode mode)
     {
-        _currentMode = mode;
+        CurrentMode = mode;
 
         if (mode == ThemeMode.Auto)
         {

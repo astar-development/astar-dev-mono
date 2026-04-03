@@ -4,16 +4,10 @@ using AStar.Dev.File.App.Services;
 using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.ViewModels;
 
@@ -88,23 +82,23 @@ public class MainWindowViewModel : ViewModelBase
 
         // Commands
         var canSelectFolder = this.WhenAnyValue(x => x.IsScanning, scanning => !scanning);
-        SelectFolderCommand = ReactiveCommand.CreateFromTask(SelectFolder, canSelectFolder);
+        SelectFolderCommand = ReactiveCommand.CreateFromTask(SelectFolderAsync, canSelectFolder);
 
         var canScan = this.WhenAnyValue(x => x.IsScanning, x => x.SelectedFolderPath,
             (scanning, path) => !scanning && !string.IsNullOrWhiteSpace(path));
-        StartScanCommand = ReactiveCommand.CreateFromTask(StartScan, canScan);
+        StartScanCommand = ReactiveCommand.CreateFromTask(StartScanAsync, canScan);
 
         var canCancel = this.WhenAnyValue(x => x.IsScanning);
         CancelCommand = ReactiveCommand.Create(Cancel, canCancel);
 
         var canLoad = this.WhenAnyValue(x => x.SelectedFolderPath, path => !string.IsNullOrWhiteSpace(path));
-        LoadFromDatabaseCommand = ReactiveCommand.CreateFromTask(LoadFromDatabase, canLoad);
+        LoadFromDatabaseCommand = ReactiveCommand.CreateFromTask(LoadFromDatabaseAsync, canLoad);
 
         OpenDeleteWindowCommand = ReactiveCommand.Create(() => OpenDeleteWindowRequested?.Invoke());
         ToggleDuplicatesOnlyCommand = ReactiveCommand.Create(() => { ShowDuplicatesOnly = !ShowDuplicatesOnly; });
 
-        TogglePendingDeleteCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(TogglePendingDelete);
-        ViewFileCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(ViewFile);
+        TogglePendingDeleteCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(TogglePendingDeleteAsync);
+        ViewFileCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(ViewFileAsync);
 
         var canGoFirst = this.WhenAnyValue(x => x.CurrentPage, page => page > 1);
         FirstPageCommand = ReactiveCommand.Create(() => { CurrentPage = 1; }, canGoFirst);
@@ -162,18 +156,14 @@ public class MainWindowViewModel : ViewModelBase
         var setting = await db.AppSettings.FirstOrDefaultAsync(s => s.Key == "SelectedFolderPath");
 
         if (setting is not null && !string.IsNullOrWhiteSpace(setting.Value) && Directory.Exists(setting.Value))
-        {
             SelectedFolderPath = setting.Value;
-        }
         else
-        {
             SelectedFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-        }
     }
 
-    private async Task SelectFolder()
+    private async Task SelectFolderAsync()
     {
-        var path = await _folderPickerService.OpenFolderPickerAsync();
+        string? path = await _folderPickerService.OpenFolderPickerAsync();
         if (!string.IsNullOrEmpty(path))
         {
             SelectedFolderPath = path;
@@ -187,18 +177,14 @@ public class MainWindowViewModel : ViewModelBase
         var setting = await db.AppSettings.FirstOrDefaultAsync(s => s.Key == "SelectedFolderPath");
 
         if (setting is not null)
-        {
             setting.Value = path;
-        }
         else
-        {
             db.AppSettings.Add(new AppSetting { Key = "SelectedFolderPath", Value = path });
-        }
 
         await db.SaveChangesAsync();
     }
 
-    private async Task LoadFromDatabase()
+    private async Task LoadFromDatabaseAsync()
     {
         _suppressPageReload = true;
         CurrentPage = 1;
@@ -206,7 +192,7 @@ public class MainWindowViewModel : ViewModelBase
         await LoadScannedFilesAsync();
     }
 
-    private async Task StartScan()
+    private async Task StartScanAsync()
     {
         if (string.IsNullOrWhiteSpace(SelectedFolderPath) || IsScanning)
             return;
@@ -238,7 +224,7 @@ public class MainWindowViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
-            var time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+            string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
             StatusMessages.Add($"[{time}] [CANCELLED] Scan cancelled by user.");
         }
         finally
@@ -248,7 +234,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task TogglePendingDelete(ScannedFileDisplayItem? item)
+    private async Task TogglePendingDeleteAsync(ScannedFileDisplayItem? item)
     {
         if (item is null) return;
 
@@ -262,7 +248,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private async Task ViewFile(ScannedFileDisplayItem? item) => await _fileViewerService.ViewFileAsync(item);
+    private async Task ViewFileAsync(ScannedFileDisplayItem? item) => await _fileViewerService.ViewFileAsync(item);
 
     private void Cancel() => CancellationTokenSource.Cancel();
 
@@ -272,7 +258,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             if (string.IsNullOrWhiteSpace(SelectedFolderPath)) return;
 
-            var prefix = SelectedFolderPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string prefix = SelectedFolderPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
 
             await using var db = await _dbContextFactory.CreateDbContextAsync();
 

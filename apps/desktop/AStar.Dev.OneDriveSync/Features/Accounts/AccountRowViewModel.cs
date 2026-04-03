@@ -1,3 +1,4 @@
+using System;
 using System.Reactive;
 using AStar.Dev.OneDrive.Client.Features.Authentication;
 using AStar.Dev.OneDriveSync.Infrastructure;
@@ -58,7 +59,7 @@ public sealed class AccountRowViewModel : ViewModelBase
 
     private static string MaskEmail(string email)
     {
-        var atIndex = email.IndexOf('@');
+        int atIndex = email.IndexOf('@');
         if (atIndex <= 0)
             return email;
 

@@ -2,9 +2,9 @@ namespace AStar.Dev.Logging.Extensions.Tests.Unit.Helpers;
 
 internal sealed class FakeLogger : ILogger
 {
-    public List<(LogLevel Level, EventId EventId, string Message, Exception? Exception)> Logs { get; } = new();
+    public List<(LogLevel Level, EventId EventId, string Message, Exception? Exception)> Logs { get; } = [];
 
-    public IDisposable? BeginScope<TState>(TState? state) where TState : notnull => NullScope.Instance;
+    public IDisposable BeginScope<TState>(TState? state) where TState : notnull => NullScope.Instance;
 
     public bool IsEnabled(LogLevel logLevel) => true;
 

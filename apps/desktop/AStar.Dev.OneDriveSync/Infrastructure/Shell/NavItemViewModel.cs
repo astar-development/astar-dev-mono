@@ -1,6 +1,5 @@
 using System.Windows.Input;
 using ReactiveUI;
-using AStar.Dev.OneDriveSync.Infrastructure;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;
 

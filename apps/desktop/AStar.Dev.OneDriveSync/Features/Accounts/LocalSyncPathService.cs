@@ -1,5 +1,9 @@
+using System;
 using AStar.Dev.Functional.Extensions;
 using System.IO.Abstractions;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AStar.Dev.OneDriveSync.Features.Accounts;
 
@@ -9,7 +13,7 @@ internal sealed class LocalSyncPathService(IAccountRepository accountRepository,
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(candidatePath);
 
-        var normalised = NormalisePath(candidatePath);
+        string normalised = NormalisePath(candidatePath);
         var existingPaths = await accountRepository.GetAllSyncPathsAsync(ct).ConfigureAwait(false);
 
         foreach (var (accountId, existingPath) in existingPaths)
@@ -20,11 +24,12 @@ internal sealed class LocalSyncPathService(IAccountRepository accountRepository,
             if (existingPath is null or { Length: 0 })
                 continue;
 
-            var normalisedExisting = NormalisePath(existingPath);
+            string normalisedExisting = NormalisePath(existingPath);
 
             if (PathsOverlap(normalised, normalisedExisting))
-                return new Result<bool, string>.Error(
-                    $"The selected folder overlaps with an existing account's sync folder: {existingPath}");
+            {
+                return new Result<bool, string>.Error($"The selected folder overlaps with an existing account's sync folder: {existingPath}");
+            }
         }
 
         return new Result<bool, string>.Ok(true);
@@ -44,15 +49,15 @@ internal sealed class LocalSyncPathService(IAccountRepository accountRepository,
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountDisplayName);
 
-        var sanitised = SanitisePathSegment(accountDisplayName);
-        var home      = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string sanitised = SanitisePathSegment(accountDisplayName);
+        string home      = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         return fileSystem.Path.Combine(home, "OneDrive", sanitised);
     }
 
     private static string NormalisePath(string path)
     {
-        var trimmed = path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+        string trimmed = path.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
 
         return trimmed + System.IO.Path.DirectorySeparatorChar;
     }
@@ -63,7 +68,7 @@ internal sealed class LocalSyncPathService(IAccountRepository accountRepository,
 
     private static string SanitisePathSegment(string name)
     {
-        var invalid = System.IO.Path.GetInvalidFileNameChars();
+        char[] invalid = System.IO.Path.GetInvalidFileNameChars();
 
         return string.Concat(name.Select(character => Array.IndexOf(invalid, character) >= 0 ? '_' : character));
     }

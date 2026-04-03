@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +9,7 @@ namespace AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
 
 internal sealed class AppDbContextFactory : IAsyncDisposable
 {
-    private readonly SqliteConnection _connection;
-
-    private AppDbContextFactory(SqliteConnection connection) => _connection = connection;
+    private AppDbContextFactory(SqliteConnection connection) => Connection = connection;
 
     public static AppDbContextFactory Create()
     {
@@ -21,7 +22,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
     public async Task<AppDbContext> CreateContextAsync(CancellationToken cancellationToken = default)
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite(_connection)
+            .UseSqlite(Connection)
             .Options;
 
         var context = new AppDbContext(options);
@@ -42,7 +43,7 @@ internal sealed class AppDbContextFactory : IAsyncDisposable
         return new AppDbContext(options);
     }
 
-    public SqliteConnection Connection => _connection;
+    public SqliteConnection Connection { get; }
 
-    public async ValueTask DisposeAsync() => await _connection.DisposeAsync().ConfigureAwait(false);
+    public async ValueTask DisposeAsync() => await Connection.DisposeAsync().ConfigureAwait(false);
 }

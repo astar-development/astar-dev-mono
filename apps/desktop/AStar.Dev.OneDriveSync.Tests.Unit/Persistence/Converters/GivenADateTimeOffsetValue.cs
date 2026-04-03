@@ -1,15 +1,18 @@
+using System;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence.Converters;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Persistence.Converters;
 
 public sealed class GivenADateTimeOffsetValue
 {
-    private static readonly DateTimeOffset                            UtcEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffsetToUnixMillisecondsConverter Sut      = new();
+    private static readonly DateTimeOffset                            _utcEpoch = new(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffsetToUnixMillisecondsConverter _sut      = new();
 
     [Fact]
     public void when_the_epoch_is_converted_then_zero_milliseconds_is_returned() =>
-        ((long)Sut.ConvertToProvider(UtcEpoch)!).ShouldBe(0L);
+        ((long)_sut.ConvertToProvider(_utcEpoch)!).ShouldBe(0L);
 
     [Theory]
     [InlineData( 5,  0)]
@@ -20,7 +23,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var dto = new DateTimeOffset(2024, 6, 15, 12, 0, 0, TimeSpan.FromHours(offsetHours) + TimeSpan.FromMinutes(offsetMinutes));
 
-        long result = (long)Sut.ConvertToProvider(dto)!;
+        long result = (long)_sut.ConvertToProvider(dto)!;
 
         result.ShouldBe(dto.ToUnixTimeMilliseconds());
     }
@@ -30,7 +33,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var dto = new DateTimeOffset(2024, 3, 15, 10, 30, 45, 123, TimeSpan.Zero);
 
-        long result = (long)Sut.ConvertToProvider(dto)!;
+        long result = (long)_sut.ConvertToProvider(dto)!;
 
         result.ShouldBe(dto.ToUnixTimeMilliseconds());
         (result % 1000).ShouldBe(123L);
@@ -38,12 +41,12 @@ public sealed class GivenADateTimeOffsetValue
 
     [Fact]
     public void when_zero_milliseconds_is_converted_then_the_epoch_is_returned() =>
-        ((DateTimeOffset)Sut.ConvertFromProvider(0L)!).ShouldBe(UtcEpoch);
+        ((DateTimeOffset)_sut.ConvertFromProvider(0L)!).ShouldBe(_utcEpoch);
 
     [Fact]
     public void when_converted_from_provider_format_then_the_result_has_utc_offset()
     {
-        var result = (DateTimeOffset)Sut.ConvertFromProvider(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())!;
+        var result = (DateTimeOffset)_sut.ConvertFromProvider(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())!;
 
         result.Offset.ShouldBe(TimeSpan.Zero);
     }
@@ -53,7 +56,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var original = new DateTimeOffset(2025, 11, 28, 14, 45, 30, 500, TimeSpan.FromHours(3));
 
-        var roundTripped = (DateTimeOffset)Sut.ConvertFromProvider((long)Sut.ConvertToProvider(original)!)!;
+        var roundTripped = (DateTimeOffset)_sut.ConvertFromProvider((long)_sut.ConvertToProvider(original)!)!;
 
         roundTripped.ToUnixTimeMilliseconds().ShouldBe(original.ToUnixTimeMilliseconds());
         roundTripped.UtcDateTime.ShouldBe(original.UtcDateTime);
@@ -69,7 +72,7 @@ public sealed class GivenADateTimeOffsetValue
     {
         var original = DateTimeOffset.FromUnixTimeMilliseconds(ms);
 
-        var roundTripped = (DateTimeOffset)Sut.ConvertFromProvider((long)Sut.ConvertToProvider(original)!)!;
+        var roundTripped = (DateTimeOffset)_sut.ConvertFromProvider((long)_sut.ConvertToProvider(original)!)!;
 
         roundTripped.ToUnixTimeMilliseconds().ShouldBe(ms);
     }

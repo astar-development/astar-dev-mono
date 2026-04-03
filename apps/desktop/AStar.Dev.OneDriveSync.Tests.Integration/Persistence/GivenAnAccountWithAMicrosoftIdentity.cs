@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
-using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
-using AStar.Dev.OneDriveSync.Features.Accounts;
+using Microsoft.EntityFrameworkCore;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 
@@ -40,7 +42,7 @@ public sealed class GivenAnAccountWithAMicrosoftIdentity
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
             "INSERT INTO test_ms_id_child (id, account_id) VALUES ({0}, {1})",
-            (IEnumerable<object>)[Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
+            [Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
 
         var loaded = await context.Accounts.FindAsync([account.Id], TestContext.Current.CancellationToken);

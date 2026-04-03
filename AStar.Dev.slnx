@@ -50,6 +50,10 @@
             <Project Path="packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client.Tests.Unit/AStar.Dev.OneDrive.Client.Tests.Unit.csproj" />
         </Folder>
     </Folder>
+    <Folder Name="/packages/infra/astar-dev-onedrive-client/">
+        <Project Path="packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client.Tests.Unit/AStar.Dev.OneDrive.Client.Tests.Unit.csproj" />
+        <Project Path="packages/infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
+    </Folder>
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
         <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />

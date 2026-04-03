@@ -1,7 +1,10 @@
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Onboarding;
 
@@ -54,7 +57,7 @@ public sealed class GivenAUserTypeService : IAsyncLifetime
         SeedAppSettings();
 
         var sut = new UserTypeService(_contextFactory!);
-        var confirmationRequested = false;
+        bool confirmationRequested = false;
         sut.ConfirmationRequested += (_, _) => confirmationRequested = true;
 
         sut.RequestUserTypeChange(UserType.PowerUser);
@@ -69,7 +72,7 @@ public sealed class GivenAUserTypeService : IAsyncLifetime
 
         var sut = new UserTypeService(_contextFactory!);
         sut.SetUserType(UserType.PowerUser);
-        var confirmationRequested = false;
+        bool confirmationRequested = false;
         sut.ConfirmationRequested += (_, _) => confirmationRequested = true;
 
         sut.RequestUserTypeChange(UserType.Casual);

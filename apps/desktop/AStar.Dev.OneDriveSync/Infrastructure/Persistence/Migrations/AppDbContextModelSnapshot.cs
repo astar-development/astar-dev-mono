@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
             modelBuilder.Entity("AStar.Dev.OneDriveSync.Features.Accounts.Account", b =>
                 {
@@ -146,7 +146,10 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("UserType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Casual");
 
                     b.HasKey("Id");
 

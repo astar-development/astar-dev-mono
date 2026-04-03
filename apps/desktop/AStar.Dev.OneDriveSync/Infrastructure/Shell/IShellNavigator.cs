@@ -1,3 +1,6 @@
+using System;
+using AStar.Dev.OneDriveSync.Features.Home;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;
 
 /// <summary>

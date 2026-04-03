@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
-using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
-using AStar.Dev.OneDriveSync.Features.Accounts;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Persistence;
 
@@ -19,7 +21,7 @@ public sealed class GivenAnAccountWithLinkedRows
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
             "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
-            (IEnumerable<object>)[Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
+            [Guid.NewGuid().ToString(), account.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
         SqliteAssert.ChildRowCount(factory.Connection, "test_account_child", account.Id, expected: 1);
 
@@ -42,11 +44,11 @@ public sealed class GivenAnAccountWithLinkedRows
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
             "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
-            (IEnumerable<object>)[Guid.NewGuid().ToString(), keptAccount.Id.ToString("D").ToUpperInvariant()],
+            [Guid.NewGuid().ToString(), keptAccount.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
         _ = await context.Database.ExecuteSqlRawAsync(
             "INSERT INTO test_account_child (id, account_id) VALUES ({0}, {1})",
-            (IEnumerable<object>)[Guid.NewGuid().ToString(), deletedAccount.Id.ToString("D").ToUpperInvariant()],
+            [Guid.NewGuid().ToString(), deletedAccount.Id.ToString("D").ToUpperInvariant()],
             TestContext.Current.CancellationToken);
 
         _ = context.Accounts.Remove(deletedAccount);

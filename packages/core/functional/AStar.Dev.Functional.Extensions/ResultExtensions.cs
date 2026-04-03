@@ -277,10 +277,7 @@ public static class ResultExtensions
         this Result<TSuccess, TError> result,
         Action<TSuccess>              action)
     {
-        if(result is Result<TSuccess, TError>.Ok ok)
-        {
-            action(ok.Value);
-        }
+        if(result is Result<TSuccess, TError>.Ok ok) action(ok.Value);
 
         return result;
     }
@@ -300,10 +297,7 @@ public static class ResultExtensions
         this Result<TSuccess, TError> result,
         Action<TError>                action)
     {
-        if(result is Result<TSuccess, TError>.Error err)
-        {
-            action(err.Reason);
-        }
+        if(result is Result<TSuccess, TError>.Error err) action(err.Reason);
 
         return result;
     }
@@ -323,10 +317,7 @@ public static class ResultExtensions
         this Result<TSuccess, TError> result,
         Func<TSuccess, Task>          actionAsync)
     {
-        if(result is Result<TSuccess, TError>.Ok ok)
-        {
-            await actionAsync(ok.Value);
-        }
+        if(result is Result<TSuccess, TError>.Ok ok) await actionAsync(ok.Value);
 
         return result;
     }
@@ -386,10 +377,7 @@ public static class ResultExtensions
         this Result<TSuccess, TError> result,
         Func<TError, Task>            actionAsync)
     {
-        if(result is Result<TSuccess, TError>.Error err)
-        {
-            await actionAsync(err.Reason);
-        }
+        if(result is Result<TSuccess, TError>.Error err) await actionAsync(err.Reason);
 
         return result;
     }

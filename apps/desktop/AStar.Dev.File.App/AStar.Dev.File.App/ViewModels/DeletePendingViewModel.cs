@@ -3,11 +3,8 @@ using AStar.Dev.File.App.Services;
 using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.ViewModels;
 
@@ -30,29 +27,26 @@ public class DeletePendingViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ClearMarkingsCommand { get; }
     public ReactiveCommand<ScannedFileDisplayItem?, Unit> ViewFileCommand { get; }
 
-    public DeletePendingViewModel(
-        IDbContextFactory<FileAppDbContext> dbContextFactory,
-        IFileDeleteService fileDeleteService,
-        IFileViewerService fileViewerService)
+    public DeletePendingViewModel(IDbContextFactory<FileAppDbContext> dbContextFactory,IFileDeleteService fileDeleteService, IFileViewerService fileViewerService)
     {
         _dbContextFactory = dbContextFactory;
         _fileDeleteService = fileDeleteService;
         _fileViewerService = fileViewerService;
         _fileViewerService.FileViewRequested += item => ViewFileRequested?.Invoke(item);
 
-        TogglePendingDeleteCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(TogglePendingDelete);
+        TogglePendingDeleteCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(TogglePendingDeleteAsync);
 
         var canDeleteAll = this.WhenAnyValue(x => x.IsDeleting, x => x.PendingDeleteCount,
             (deleting, count) => !deleting && count > 0);
-        DeleteAllCommand = ReactiveCommand.CreateFromTask(DeleteAll, canDeleteAll);
+        DeleteAllCommand = ReactiveCommand.CreateFromTask(DeleteAllAsync, canDeleteAll);
 
-        ClearMarkingsCommand = ReactiveCommand.CreateFromTask(ClearMarkings);
-        ViewFileCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(ViewFile);
+        ClearMarkingsCommand = ReactiveCommand.CreateFromTask(ClearMarkingsAsync);
+        ViewFileCommand = ReactiveCommand.CreateFromTask<ScannedFileDisplayItem?>(ViewFileAsync);
 
         _ = LoadPendingFilesAsync();
     }
 
-    private async Task TogglePendingDelete(ScannedFileDisplayItem? item)
+    private async Task TogglePendingDeleteAsync(ScannedFileDisplayItem? item)
     {
         if (item is null) return;
 
@@ -67,7 +61,7 @@ public class DeletePendingViewModel : ViewModelBase
         await LoadPendingFilesAsync();
     }
 
-    private async Task DeleteAll()
+    private async Task DeleteAllAsync()
     {
         if (PendingDeleteFiles.Count == 0)
             return;
@@ -84,10 +78,7 @@ public class DeletePendingViewModel : ViewModelBase
             await using var db = await _dbContextFactory.CreateDbContextAsync();
             var ids = PendingDeleteFiles.Select(f => f.Id).ToList();
             var filesToRemove = await db.ScannedFiles.Where(f => ids.Contains(f.Id)).ToListAsync();
-            foreach (var file in filesToRemove)
-            {
-                db.ScannedFiles.Remove(file);
-            }
+            foreach (var file in filesToRemove) db.ScannedFiles.Remove(file);
             await db.SaveChangesAsync();
 
             StatusMessage = $"Successfully deleted {filePaths.Count} file(s) to recycle bin.";
@@ -103,7 +94,7 @@ public class DeletePendingViewModel : ViewModelBase
         }
     }
 
-    private async Task ClearMarkings()
+    private async Task ClearMarkingsAsync()
     {
         if (PendingDeleteFiles.Count == 0)
             return;
@@ -111,17 +102,14 @@ public class DeletePendingViewModel : ViewModelBase
         await using var db = await _dbContextFactory.CreateDbContextAsync();
         var ids = PendingDeleteFiles.Select(f => f.Id).ToList();
         var files = await db.ScannedFiles.Where(f => ids.Contains(f.Id)).ToListAsync();
-        foreach (var file in files)
-        {
-            file.PendingDelete = false;
-        }
+        foreach (var file in files) file.PendingDelete = false;
         await db.SaveChangesAsync();
 
         StatusMessage = "All delete markings cleared.";
         await LoadPendingFilesAsync();
     }
 
-    private async Task ViewFile(ScannedFileDisplayItem? item) => await _fileViewerService.ViewFileAsync(item);
+    private async Task ViewFileAsync(ScannedFileDisplayItem? item) => await _fileViewerService.ViewFileAsync(item);
 
     private async Task LoadPendingFilesAsync()
     {

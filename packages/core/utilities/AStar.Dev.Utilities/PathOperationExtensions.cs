@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-
 namespace AStar.Dev.Utilities;
 
 /// <summary>
@@ -25,10 +21,7 @@ public static class PathOperationExtensions
 
         foreach(string? segment in segments.Where(s => s is not null))
         {
-            if(Path.IsPathRooted(segment))
-            {
-                throw new ArgumentException("Path segments must be relative.", nameof(segments));
-            }
+            if(Path.IsPathRooted(segment)) throw new ArgumentException("Path segments must be relative.", nameof(segments));
 
             combined = Path.Join(combined, segment);
         }

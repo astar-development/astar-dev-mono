@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Localisation;
 
@@ -6,10 +12,14 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
 {
     private static readonly string _appRoot = FindAppRoot();
 
-    [GeneratedRegex(@"(?<!\w)(?:Text|Title)=""(?!\{)(?!\s*"")([^""]{2,})""")]
+    [GeneratedRegex("""
+                    (?<!\w)(?:Text|Title)="(?!\{)(?!\s*")([^"]{2,})"
+                    """)]
     private static partial Regex HardcodedTextPattern();
 
-    [GeneratedRegex(@"""[^""]*—[^""]*[Cc]oming [Ss]oon[^""]*""")]
+    [GeneratedRegex("""
+                    "[^"]*—[^"]*[Cc]oming [Ss]oon[^"]*"
+                    """)]
     private static partial Regex ComingSoonLiteralPattern();
 
     [Fact]
@@ -40,9 +50,9 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
 
     private static IEnumerable<string> ScanAxamlFile(string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
+        string[] lines = File.ReadAllLines(filePath);
 
-        for (var i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Length; i++)
         {
             string line = lines[i];
 
@@ -56,9 +66,9 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
 
     private static IEnumerable<string> ScanViewModelFile(string filePath)
     {
-        var lines = File.ReadAllLines(filePath);
+        string[] lines = File.ReadAllLines(filePath);
 
-        for (var i = 0; i < lines.Length; i++)
+        for (int i = 0; i < lines.Length; i++)
         {
             string line = lines[i];
 
@@ -69,7 +79,7 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
 
     private static bool IsDesignTimeOrCommentLine(string line)
     {
-        var trimmed = line.TrimStart();
+        string trimmed = line.TrimStart();
 
         return trimmed.StartsWith("<!--", StringComparison.Ordinal)
             || trimmed.StartsWith("d:", StringComparison.Ordinal)
@@ -82,10 +92,7 @@ public sealed partial class GivenNoHardcodedStringsInUiFiles
 
         while (dir is not null)
         {
-            if (dir.GetFiles("*.slnx").Length > 0)
-            {
-                return Path.Combine(dir.FullName, "apps", "desktop", "AStar.Dev.OneDriveSync");
-            }
+            if (dir.GetFiles("*.slnx").Length > 0) return Path.Combine(dir.FullName, "apps", "desktop", "AStar.Dev.OneDriveSync");
 
             dir = dir.Parent;
         }

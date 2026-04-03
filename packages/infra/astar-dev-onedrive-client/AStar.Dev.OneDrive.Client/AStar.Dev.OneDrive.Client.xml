@@ -134,7 +134,19 @@
                 Handles system browser OAuth flow for consumers tenant only.
             </summary>
         </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.MsalClient.#ctor(Microsoft.Identity.Client.IPublicClientApplication)">
+            <summary>
+                MSAL client implementation (AU-01).
+                Handles system browser OAuth flow for consumers tenant only.
+            </summary>
+        </member>
         <member name="T:AStar.Dev.OneDrive.Client.Features.Authentication.TokenManager">
+            <summary>
+                Token manager implementation (AU-02, AU-04, AU-05).
+                Scoped per account. Handles silent refresh and token persistence.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.OneDrive.Client.Features.Authentication.TokenManager.#ctor(System.Guid,AStar.Dev.OneDrive.Client.Features.Authentication.IMsalClient,AStar.Dev.OneDrive.Client.Features.Authentication.IAuthStateService)">
             <summary>
                 Token manager implementation (AU-02, AU-04, AU-05).
                 Scoped per account. Handles silent refresh and token persistence.
@@ -179,16 +191,27 @@
                 Graph API implementation of <see cref="T:AStar.Dev.OneDrive.Client.Features.FolderBrowsing.IOneDriveFolderService"/> (AM-03, AM-04).
             </summary>
         </member>
+        <member name="T:AStar.Dev.OneDrive.Client.IOneDriveClientOptions">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.IOneDriveClientOptions.AzureClientId">
+            <summary>The Azure App Registration client ID for the consumers tenant.</summary>
+        </member>
+        <member name="P:AStar.Dev.OneDrive.Client.IOneDriveClientOptions.RedirectUri">
+            <summary>Redirect URI registered in the Azure portal (local loopback or <c>urn:ietf:wg:oauth:2.0:oob</c>).</summary>
+        </member>
         <member name="T:AStar.Dev.OneDrive.Client.OneDriveClientOptions">
             <summary>
                 Configuration options for the OneDrive Client package.
             </summary>
         </member>
         <member name="P:AStar.Dev.OneDrive.Client.OneDriveClientOptions.AzureClientId">
-            <summary>The Azure App Registration client ID for the consumers tenant.</summary>
+            <inheritdoc/>
         </member>
         <member name="P:AStar.Dev.OneDrive.Client.OneDriveClientOptions.RedirectUri">
-            <summary>Redirect URI registered in the Azure portal (local loopback or <c>urn:ietf:wg:oauth:2.0:oob</c>).</summary>
+            <inheritdoc/>
         </member>
         <member name="T:AStar.Dev.OneDrive.Client.OneDriveClientOptionsFactory">
             <summary>Factory for <see cref="T:AStar.Dev.OneDrive.Client.OneDriveClientOptions"/>.</summary>

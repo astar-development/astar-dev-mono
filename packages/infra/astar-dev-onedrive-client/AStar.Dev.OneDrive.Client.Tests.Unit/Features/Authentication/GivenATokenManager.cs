@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Client.Features.Authentication;
 using AStar.Dev.Functional.Extensions;
+using AccessToken = AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Features.Authentication;
 
@@ -19,7 +20,7 @@ public sealed class GivenATokenManager : IDisposable
     {
         SetUp();
         _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("Token expired")));
+            .Returns(Task.FromResult<Result<AccessToken, string>>(new Result<AccessToken, string>.Error("Token expired")));
 
         var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
@@ -32,7 +33,7 @@ public sealed class GivenATokenManager : IDisposable
         SetUp();
         var validToken = new AccessToken("valid_token", DateTimeOffset.UtcNow.AddHours(1));
         _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Ok(validToken)));
+            .Returns(Task.FromResult<Result<AccessToken, string>>(new Result<AccessToken, string>.Ok(validToken)));
 
         var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
@@ -49,7 +50,7 @@ public sealed class GivenATokenManager : IDisposable
         var subscription = _authStateService.AccountAuthStateChanged.Subscribe(change => stateChanges.Add(change));
 
         _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("Auth required")));
+            .Returns(Task.FromResult<Result<AccessToken, string>>(new Result<AccessToken, string>.Error("Auth required")));
 
         var result = await _tokenManager.GetTokenSilentlyAsync(TestContext.Current.CancellationToken);
 
@@ -80,7 +81,7 @@ public sealed class GivenATokenManager : IDisposable
         SetUp();
         var token = new AccessToken("new_token", DateTimeOffset.UtcNow.AddHours(1));
         _msalClient.AcquireTokenSilentAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((Result<AccessToken, string>)new Result<AccessToken, string>.Error("No cached token")));
+            .Returns(Task.FromResult<Result<AccessToken, string>>(new Result<AccessToken, string>.Error("No cached token")));
         await _tokenManager.PersistTokenAsync(token, null, TestContext.Current.CancellationToken);
 
         var clearResult = await _tokenManager.ClearTokenAsync(TestContext.Current.CancellationToken);

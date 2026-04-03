@@ -1,3 +1,5 @@
+using System;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Theming;
 
 /// <summary>Abstracts OS-level dark/light theme detection for testability.</summary>

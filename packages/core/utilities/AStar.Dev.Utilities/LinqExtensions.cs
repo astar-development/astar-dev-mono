@@ -13,9 +13,6 @@ public static class LinqExtensions
     {
         if (enumerable == null || action == null) return;
 
-        foreach(var item in enumerable)
-        {
-            action(item);
-        }
+        foreach(var item in enumerable) action(item);
     }
 }

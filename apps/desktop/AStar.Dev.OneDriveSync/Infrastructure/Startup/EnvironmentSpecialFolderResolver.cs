@@ -1,3 +1,5 @@
+using System;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Startup;
 
 public sealed class EnvironmentSpecialFolderResolver : ISpecialFolderResolver

@@ -1,5 +1,4 @@
 using AStar.Dev.File.App.ViewModels;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.File.App.Services;
 
@@ -11,7 +10,7 @@ public interface IFileViewerService
     /// <summary>
     /// Raised when a file is requested to be viewed.
     /// </summary>
-    event System.Action<ScannedFileDisplayItem>? FileViewRequested;
+    event Action<ScannedFileDisplayItem>? FileViewRequested;
 
     /// <summary>
     /// Processes a file view request, updating the last viewed timestamp and raising the view event.

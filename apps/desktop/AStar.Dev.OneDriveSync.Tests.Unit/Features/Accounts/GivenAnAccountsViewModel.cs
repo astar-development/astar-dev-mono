@@ -1,7 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Client.Features.Authentication;
 using AStar.Dev.OneDrive.Client.Features.FolderBrowsing;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Accounts;
 
@@ -22,7 +30,7 @@ public sealed class GivenAnAccountsViewModel
     public async Task when_loaded_then_accounts_list_is_populated()
     {
         _accountRepository.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<Account>)[new Account { Id = Guid.NewGuid(), DisplayName = "Alice", Email = "a@b.com", MicrosoftAccountId = "ms-1" }]);
+            .Returns([new Account { Id = Guid.NewGuid(), DisplayName = "Alice", Email = "a@b.com", MicrosoftAccountId = "ms-1" }]);
         _authStateService.AccountAuthStateChanged.Returns(System.Reactive.Linq.Observable.Empty<(Guid, AccountAuthState)>());
         _timeFormatter.Format(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>()).Returns("just now");
 
@@ -36,7 +44,7 @@ public sealed class GivenAnAccountsViewModel
     public async Task when_loaded_with_no_accounts_then_accounts_list_is_empty()
     {
         _accountRepository.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<Account>)[]);
+            .Returns([]);
         _authStateService.AccountAuthStateChanged.Returns(System.Reactive.Linq.Observable.Empty<(Guid, AccountAuthState)>());
 
         var sut = CreateSut();
@@ -51,13 +59,13 @@ public sealed class GivenAnAccountsViewModel
         var accountId = Guid.NewGuid();
         var account = new Account { Id = accountId, DisplayName = "Alice", Email = "a@b.com", MicrosoftAccountId = "ms-1", IsSyncActive = true };
         _accountRepository.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<Account>)[account]);
+            .Returns([account]);
         _authStateService.AccountAuthStateChanged.Returns(System.Reactive.Linq.Observable.Empty<(Guid, AccountAuthState)>());
 
         var sut = CreateSut();
         await sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        var canRemove = sut.Accounts.First().CanRemove;
+        bool canRemove = sut.Accounts.First().CanRemove;
 
         canRemove.ShouldBeFalse();
     }
@@ -67,13 +75,13 @@ public sealed class GivenAnAccountsViewModel
     {
         var account = new Account { Id = Guid.NewGuid(), DisplayName = "Alice", Email = "a@b.com", MicrosoftAccountId = "ms-1", IsSyncActive = false };
         _accountRepository.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<Account>)[account]);
+            .Returns([account]);
         _authStateService.AccountAuthStateChanged.Returns(System.Reactive.Linq.Observable.Empty<(Guid, AccountAuthState)>());
 
         var sut = CreateSut();
         await sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        var canRemove = sut.Accounts.First().CanRemove;
+        bool canRemove = sut.Accounts.First().CanRemove;
 
         canRemove.ShouldBeTrue();
     }

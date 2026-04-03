@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -23,8 +29,7 @@ namespace AStar.Dev.OneDriveSync;
 public partial class App : Application, IDisposable
 {
     // Cached at startup so the log call does not invoke reflection each time
-    private static readonly string _appVersion =
-        typeof(App).Assembly.GetName().Version?.ToString() ?? "unknown";
+    private static readonly string _appVersion = typeof(App).Assembly.GetName().Version?.ToString() ?? "unknown";
 
     private ServiceProvider?         _services;
     private CancellationTokenSource? _appLifetimeCts;
@@ -32,6 +37,7 @@ public partial class App : Application, IDisposable
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     // Avalonia event handler — async void required
+    // ReSharper disable once AsyncVoidMethod
     public override async void OnFrameworkInitializationCompleted()
     {
         _appLifetimeCts = new CancellationTokenSource();
@@ -90,7 +96,7 @@ public partial class App : Application, IDisposable
     }
 
     private static bool MigrationFailed(IReadOnlyList<StartupTaskResult> results) =>
-        results.Any(r => r.TaskName == DatabaseMigrationStartupTask.TaskName && !r.Succeeded);
+        results.Any(startupTaskResult => startupTaskResult is { TaskName: DatabaseMigrationStartupTask.TaskName, Succeeded: false });
 
     private static ServiceProvider BuildServiceProvider()
     {
@@ -108,8 +114,8 @@ public partial class App : Application, IDisposable
 
     private static OneDriveClientOptions BuildOneDriveClientOptions()
     {
-        var clientId     = Environment.GetEnvironmentVariable("ONEDRIVEYNC_AZURE_CLIENT_ID") ?? string.Empty;
-        var redirectUri  = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
+        string clientId     = Environment.GetEnvironmentVariable("ONEDRIVEYNC_AZURE_CLIENT_ID") ?? "3057f494-687d-4abb-a653-4b8066230b6e";
+        string redirectUri  = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
 
         return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
     }
@@ -136,10 +142,7 @@ public partial class App : Application, IDisposable
     {
         var dataValidationPluginsToRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            _ = BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) _ = BindingPlugins.DataValidators.Remove(plugin);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Application starting — version {AppVersion}")]

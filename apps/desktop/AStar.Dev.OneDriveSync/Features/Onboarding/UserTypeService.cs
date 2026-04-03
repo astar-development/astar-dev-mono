@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,23 +34,23 @@ internal sealed class UserTypeService(IDbContextFactory<AppDbContext> contextFac
 
     public void RequestUserTypeChange(UserType userType)
     {
-        if (userType == UserType.PowerUser && CurrentUserType != UserType.PowerUser)
+        switch (userType)
         {
-            _pendingUserType = userType;
-            ConfirmationRequested?.Invoke(this, EventArgs.Empty);
-        }
-        else if (userType == UserType.Casual)
-        {
-            SetUserType(userType);
+            case UserType.PowerUser when CurrentUserType != UserType.PowerUser:
+                _pendingUserType = userType;
+                ConfirmationRequested?.Invoke(this, EventArgs.Empty);
+                break;
+            case UserType.Casual:
+                SetUserType(userType);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(userType), userType, null);
         }
     }
 
     public void ConfirmUserTypeChange(bool accepted)
     {
-        if (accepted)
-        {
-            SetUserType(_pendingUserType);
-        }
+        if (accepted) SetUserType(_pendingUserType);
     }
 
     private void LoadUserType()

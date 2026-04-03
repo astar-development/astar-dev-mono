@@ -8,8 +8,6 @@ using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using System;
-using System.IO;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 
@@ -51,7 +49,7 @@ public partial class App : Application
 
     private static ServiceProvider BuildServices()
     {
-        var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationName, "files.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationName, "files.db");
         Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
 
         var services = new ServiceCollection();

@@ -1,3 +1,5 @@
+using System;
+
 namespace AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 
 /// <summary>Formats a timestamp as a locale-aware relative or absolute string (AC LO-07).</summary>

@@ -5,7 +5,7 @@ namespace AStar.Dev.Functional.Extensions;
 /// </summary>
 public static class OptionExtensions
 {
-    private static readonly string UnreachableMessage = "It should not be possible to reach this point.";
+    private static readonly string _unreachableMessage = "It should not be possible to reach this point.";
 
     /// <summary>
     ///     Attempts to extract the value from an <see cref="Option{T}" />.
@@ -122,7 +122,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => new Option<TResult>.Some(await mapAsync(some.Value)),
             Option<T>.None      => Option.None<TResult>(),
-            _                   => throw new InvalidOperationException(UnreachableMessage)
+            _                   => throw new InvalidOperationException(_unreachableMessage)
         };
 
     /// <summary>
@@ -155,7 +155,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await bindAsync(some.Value),
             Option<T>.None      => Option.None<TResult>(),
-            _                   => throw new InvalidOperationException(UnreachableMessage)
+            _                   => throw new InvalidOperationException(_unreachableMessage)
         };
 
     /// <summary>
@@ -213,10 +213,7 @@ public static class OptionExtensions
     /// </summary>
     public static Option<T> Tap<T>(this Option<T> option, Action<T> action)
     {
-        if(option is Option<T>.Some some)
-        {
-            action(some.Value);
-        }
+        if(option is Option<T>.Some some) action(some.Value);
 
         return option;
     }
@@ -228,10 +225,7 @@ public static class OptionExtensions
         this Option<T> option,
         Func<T, Task>  actionAsync)
     {
-        if(option is Option<T>.Some some)
-        {
-            await actionAsync(some.Value);
-        }
+        if(option is Option<T>.Some some) await actionAsync(some.Value);
 
         return option;
     }
@@ -271,7 +265,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await onSomeAsync(some.Value),
             Option<T>.None      => onNone(),
-            _                   => throw new InvalidOperationException(UnreachableMessage)
+            _                   => throw new InvalidOperationException(_unreachableMessage)
         };
 
     /// <summary>
@@ -285,7 +279,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => onSome(some.Value),
             Option<T>.None      => await onNoneAsync(),
-            _                   => throw new InvalidOperationException(UnreachableMessage)
+            _                   => throw new InvalidOperationException(_unreachableMessage)
         };
 
     /// <summary>
@@ -299,7 +293,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await onSomeAsync(some.Value),
             Option<T>.None      => await onNoneAsync(),
-            _                   => throw new InvalidOperationException(UnreachableMessage)
+            _                   => throw new InvalidOperationException(_unreachableMessage)
         };
 
     /// <summary>
@@ -340,12 +334,7 @@ public static class OptionExtensions
     public static IEnumerable<T> Values<T>(this IEnumerable<Option<T>> options)
     {
         foreach(var option in options)
-        {
-            if(option is Option<T>.Some some)
-            {
-                yield return some.Value;
-            }
-        }
+            if(option is Option<T>.Some some) yield return some.Value;
     }
 
     /// <summary>
@@ -369,10 +358,7 @@ public static class OptionExtensions
         {
             var option = chooser(item);
 
-            if(option is Option<TResult>.Some some)
-            {
-                yield return some.Value;
-            }
+            if(option is Option<TResult>.Some some) yield return some.Value;
         }
     }
 
@@ -382,7 +368,7 @@ public static class OptionExtensions
     public static Option<T> Filter<T>(this Option<T> option, Func<T, bool> predicate) =>
         option.Match(
                      some => predicate(some) ? option : Option.None<T>(),
-                     () => Option.None<T>());
+                     Option.None<T>);
 
     /// <summary>
     ///     Maps the value if present, or returns a default value.
@@ -391,9 +377,7 @@ public static class OptionExtensions
         this Option<T>   option,
         Func<T, TResult> map,
         TResult          defaultValue) =>
-        option.Match(
-                     some => map(some),
-                     () => defaultValue);
+        option.Match(map, () => defaultValue);
 
     /// <summary>
     ///     Maps the value if present, or computes a default value.
@@ -402,7 +386,5 @@ public static class OptionExtensions
         this Option<T>   option,
         Func<T, TResult> map,
         Func<TResult>    defaultFactory) =>
-        option.Match(
-                     some => map(some),
-                     defaultFactory);
+        option.Match(map, defaultFactory);
 }

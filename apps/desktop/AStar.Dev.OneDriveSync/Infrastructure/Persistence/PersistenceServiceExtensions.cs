@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,8 +19,8 @@ internal static class PersistenceServiceExtensions
         _ = services.AddSingleton<IAppDataPathProvider, LocalAppDataPathProvider>();
         _ = services.AddSingleton<IDbBackupService, DbBackupService>();
 
-        _ = services.AddDbContext<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
-        _ = services.AddDbContextFactory<AppDbContext>((sp, options) => ConfigureOptions(sp, options));
+        _ = services.AddDbContext<AppDbContext>(ConfigureOptions);
+        _ = services.AddDbContextFactory<AppDbContext>(ConfigureOptions);
 
         return services;
     }

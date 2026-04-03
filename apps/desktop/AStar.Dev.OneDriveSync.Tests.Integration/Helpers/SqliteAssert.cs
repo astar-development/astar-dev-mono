@@ -1,4 +1,6 @@
+using System;
 using Microsoft.Data.Sqlite;
+using Shouldly;
 
 namespace AStar.Dev.OneDriveSync.Tests.Integration.Helpers;
 

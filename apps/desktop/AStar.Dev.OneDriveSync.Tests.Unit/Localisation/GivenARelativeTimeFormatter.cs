@@ -1,4 +1,8 @@
+using System;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
+using NSubstitute;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Localisation;
 
@@ -23,7 +27,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
         var timestamp = now.AddSeconds(-30);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("1 minute ago");
     }
@@ -34,7 +38,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
         var timestamp = now.AddMinutes(-5);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("5 minutes ago");
     }
@@ -45,7 +49,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
         var timestamp = now.AddMinutes(-59);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("59 minutes ago");
     }
@@ -56,7 +60,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
         var timestamp = now.AddHours(-1);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("Today at 11:00");
     }
@@ -67,7 +71,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 14, 32, 0, TimeSpan.Zero);
         var timestamp = new DateTimeOffset(2026, 3, 31, 9, 15, 0, TimeSpan.Zero);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("Today at 09:15");
     }
@@ -78,7 +82,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 14, 32, 0, TimeSpan.Zero);
         var timestamp = new DateTimeOffset(2026, 3, 25, 9, 15, 0, TimeSpan.Zero);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("25 Mar at 09:15");
     }
@@ -89,7 +93,7 @@ public sealed class GivenARelativeTimeFormatter
         var now       = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
         var timestamp = now.AddMinutes(5);
 
-        var result = _sut.Format(timestamp, now);
+        string result = _sut.Format(timestamp, now);
 
         result.ShouldBe("1 minute ago");
     }

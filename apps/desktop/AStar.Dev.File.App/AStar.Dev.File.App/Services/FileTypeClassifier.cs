@@ -1,12 +1,10 @@
 using AStar.Dev.File.App.Models;
-using System;
-using System.Collections.Generic;
 
 namespace AStar.Dev.File.App.Services;
 
 public class FileTypeClassifier : IFileTypeClassifier
 {
-    private static readonly Dictionary<string, FileType> ExtensionMap =
+    private static readonly Dictionary<string, FileType> _extensionMap =
         new(StringComparer.OrdinalIgnoreCase)
         {
             // Image
@@ -118,7 +116,7 @@ public class FileTypeClassifier : IFileTypeClassifier
         if (string.IsNullOrEmpty(fileExtension))
             return FileType.Unknown;
 
-        return ExtensionMap.TryGetValue(fileExtension, out var type)
+        return _extensionMap.TryGetValue(fileExtension, out var type)
             ? type
             : FileType.Unknown;
     }

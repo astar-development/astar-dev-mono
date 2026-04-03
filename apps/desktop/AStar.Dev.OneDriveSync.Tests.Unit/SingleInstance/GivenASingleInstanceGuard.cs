@@ -1,4 +1,8 @@
+using System;
+using System.Threading;
 using AStar.Dev.OneDriveSync.Infrastructure.SingleInstance;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.SingleInstance;
 
@@ -56,10 +60,7 @@ public sealed class GivenASingleInstanceGuard
     {
         string mutexName = UniqueMutexName();
 
-        using (var first = new SingleInstanceGuard(mutexName))
-        {
-            _ = first.TryAcquire();
-        }
+        using (var first = new SingleInstanceGuard(mutexName)) _ = first.TryAcquire();
 
         using var second = new SingleInstanceGuard(mutexName);
         var result = second.TryAcquire();

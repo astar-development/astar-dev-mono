@@ -9,7 +9,7 @@ public class FolderPickerServiceShould
     [Fact]
     public async Task OpenFolderPickerAsync_WithNoApplicationContext_ReturnsNull()
     {
-        var result = await _sut.OpenFolderPickerAsync();
+        string? result = await _sut.OpenFolderPickerAsync();
 
         result.ShouldBeNull();
     }

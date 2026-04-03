@@ -1,4 +1,7 @@
+using System;
 using System.IO.Abstractions;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +28,15 @@ public sealed partial class DatabaseMigrationStartupTask(IServiceProvider servic
 
         MigrateFromLegacyPathIfNeeded(pathProvider);
 
-        await dbContext.Database.MigrateAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await dbContext.Database.MigrateAsync(ct).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
         LogMigrationCompleted(logger);
 
         await dbContext.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL", ct).ConfigureAwait(false);

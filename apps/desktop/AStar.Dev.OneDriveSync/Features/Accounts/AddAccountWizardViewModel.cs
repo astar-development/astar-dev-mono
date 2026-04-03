@@ -1,11 +1,14 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
-using System.Reactive.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Features.Authentication;
 using AStar.Dev.OneDrive.Client.Features.FolderBrowsing;
 using AStar.Dev.OneDriveSync.Infrastructure;
 using ReactiveUI;
+using AccessToken = AStar.Dev.OneDrive.Client.Features.Authentication.AccessToken;
 
 namespace AStar.Dev.OneDriveSync.Features.Accounts;
 
@@ -162,14 +165,14 @@ public sealed class AddAccountWizardViewModel : ViewModelBase
         AvailableFolders.Clear();
 
         var result = await _folderService
-            .GetRootFoldersAsync(_acquiredToken.Token, ct)
+            .GetRootFoldersAsync(_acquiredToken?.Token!, ct)
             .ConfigureAwait(false);
 
         result
             .Tap(folders =>
             {
                 foreach (var folder in folders)
-                    AvailableFolders.Add(new OneDriveFolderViewModel(folder, _folderService, _acquiredToken.Token));
+                    AvailableFolders.Add(new OneDriveFolderViewModel(folder, _folderService, _acquiredToken?.Token!));
 
                 LocalSyncPath = _pathService.GetDefaultPath(AccountDisplayName.Length > 0 ? AccountDisplayName : "OneDrive");
                 CanAdvance    = true;

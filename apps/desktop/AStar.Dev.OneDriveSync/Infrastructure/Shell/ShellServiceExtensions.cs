@@ -1,3 +1,4 @@
+using System;
 using AStar.Dev.OneDrive.Client;
 using AStar.Dev.OneDriveSync.Features.About;
 using System.IO.Abstractions;

@@ -1,5 +1,3 @@
-using System;
-
 namespace AStar.Dev.File.App.Models;
 
 public class ScannedFile

@@ -20,7 +20,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -45,7 +45,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -69,7 +69,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -93,7 +93,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -119,7 +119,7 @@ namespace TestNamespace
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         result.Diagnostics.ShouldContain(d => d.Id == "ASTAROPT001");
@@ -142,7 +142,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
@@ -166,7 +166,7 @@ namespace TestNamespace
 }";
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
-        CSharpGeneratorDriver? driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(generator);
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();

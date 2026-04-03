@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Core;
 
 namespace AStar.Dev.Logging.Extensions;
 
@@ -28,10 +27,7 @@ public static class LoggingExtensions
     /// </returns>
     public static WebApplicationBuilder AddSerilogLogging(this WebApplicationBuilder builder, string externalSettingsFile = "")
     {
-        if(externalSettingsFile.IsNotNullOrWhiteSpace())
-        {
-            _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
-        }
+        if(externalSettingsFile.IsNotNullOrWhiteSpace()) _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
         _ = builder.Services.AddScoped(typeof(ILoggerAstar<>), typeof(AStarLogger<>));
         _ = builder.Services.AddApplicationInsightsTelemetry(builder.Configuration);
@@ -63,10 +59,7 @@ public static class LoggingExtensions
     public static HostApplicationBuilder AddSerilogLogging(this HostApplicationBuilder builder,
                                                            string                      externalSettingsFile = "")
     {
-        if(externalSettingsFile.IsNotNullOrWhiteSpace())
-        {
-            _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
-        }
+        if(externalSettingsFile.IsNotNullOrWhiteSpace()) _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
         // Register a default TelemetryConfiguration if not present, for test/integration scenarios.
         _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new());
