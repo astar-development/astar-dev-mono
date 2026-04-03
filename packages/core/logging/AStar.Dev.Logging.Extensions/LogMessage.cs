@@ -161,4 +161,34 @@ public static partial class LogMessage
     /// <param name="path">The path of the HTTP request that caused the Gateway Timeout.</param>
     [LoggerMessage(EventId = 504, Level = LogLevel.Error, Message = "Gateway Timeout (504) for `{Path}`")]
     public static partial void GatewayTimeout(ILogger logger, string path);
+
+    /// <summary>Logs a Graph API throttle event with retry details (EH-02).</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="attempt">Current retry attempt (1-based).</param>
+    /// <param name="maxRetries">Maximum number of retries.</param>
+    /// <param name="delaySeconds">Delay in seconds before the next retry.</param>
+    [LoggerMessage(EventId = 429, Level = LogLevel.Debug, Message = "Graph API throttled (attempt {Attempt}/{MaxRetries}), retrying after {DelaySeconds}s")]
+    public static partial void GraphApiThrottled(ILogger logger, int attempt, int maxRetries, double delaySeconds);
+
+    /// <summary>Logs successful completion of a file download.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="bytes">Total bytes written to disk.</param>
+    /// <param name="localPath">Destination path on the local file system.</param>
+    [LoggerMessage(EventId = 200, Level = LogLevel.Debug, Message = "Downloaded {Bytes} bytes to {LocalPath}")]
+    public static partial void FileDownloaded(ILogger logger, long bytes, string localPath);
+
+    /// <summary>Logs successful completion of a file upload (direct or chunked).</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="fileName">Name of the uploaded file.</param>
+    /// <param name="bytes">Total bytes transferred.</param>
+    /// <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
+    [LoggerMessage(EventId = 200, Level = LogLevel.Debug, Message = "Uploaded {FileName} ({Bytes} bytes) → remote id {RemoteItemId}")]
+    public static partial void FileUploaded(ILogger logger, string fileName, long bytes, string remoteItemId);
+
+    /// <summary>Logs a failure to delete a partial (incomplete) download file.</summary>
+    /// <param name="logger">The logger.</param>
+    /// <param name="ex">The exception that prevented deletion.</param>
+    /// <param name="localPath">Path of the partial file.</param>
+    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "Failed to delete partial file at {LocalPath}")]
+    public static partial void PartialFileDeletionFailed(ILogger logger, Exception ex, string localPath);
 }

@@ -4,6 +4,7 @@ using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using AStar.Dev.OneDriveSync.Infrastructure.SingleInstance;
+using AStar.Dev.Source.Generators.Attributes;
 
 namespace AStar.Dev.OneDriveSync;
 

@@ -253,6 +253,32 @@
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Gateway Timeout.</param>
         </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.GraphApiThrottled(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Double)">
+            <summary>Logs a Graph API throttle event with retry details (EH-02).</summary>
+            <param name="logger">The logger.</param>
+            <param name="attempt">Current retry attempt (1-based).</param>
+            <param name="maxRetries">Maximum number of retries.</param>
+            <param name="delaySeconds">Delay in seconds before the next retry.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.FileDownloaded(Microsoft.Extensions.Logging.ILogger,System.Int64,System.String)">
+            <summary>Logs successful completion of a file download.</summary>
+            <param name="logger">The logger.</param>
+            <param name="bytes">Total bytes written to disk.</param>
+            <param name="localPath">Destination path on the local file system.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.FileUploaded(Microsoft.Extensions.Logging.ILogger,System.String,System.Int64,System.String)">
+            <summary>Logs successful completion of a file upload (direct or chunked).</summary>
+            <param name="logger">The logger.</param>
+            <param name="fileName">Name of the uploaded file.</param>
+            <param name="bytes">Total bytes transferred.</param>
+            <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.PartialFileDeletionFailed(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String)">
+            <summary>Logs a failure to delete a partial (incomplete) download file.</summary>
+            <param name="logger">The logger.</param>
+            <param name="ex">The exception that prevented deletion.</param>
+            <param name="localPath">Path of the partial file.</param>
+        </member>
         <member name="T:AStar.Dev.Logging.Extensions.Models.ApplicationInsights">
             <summary>
                 The <see cref="T:AStar.Dev.Logging.Extensions.Models.ApplicationInsights" /> class which is used to configure the logging.
