@@ -17,7 +17,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20.x'
-  AZURE_WEBAPP_NAME: fab4kids
+  AZURE_WEBAPP_NAME: fab4kids-site
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
