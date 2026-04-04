@@ -76,6 +76,8 @@ internal sealed partial class SqliteSyncStateStore(AppDbContext dbContext, ILogg
         }
 
         _ = await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        LogCheckpointSaved(logger, checkpoint.AccountId);
     }
 
     /// <inheritdoc />
@@ -114,8 +116,16 @@ internal sealed partial class SqliteSyncStateStore(AppDbContext dbContext, ILogg
         entry.Property(r => r.CheckpointJson).IsModified = true;
 
         _ = await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        LogCheckpointCleared(logger, accountId);
     }
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Sync state set for account {AccountId}: {State}")]
     private static partial void LogStateSet(ILogger logger, string accountId, SyncAccountState state);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Checkpoint saved for account {AccountId}")]
+    private static partial void LogCheckpointSaved(ILogger logger, string accountId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Checkpoint cleared for account {AccountId}")]
+    private static partial void LogCheckpointCleared(ILogger logger, string accountId);
 }

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Threading;
 using System.Threading.Tasks;
+using AStar.Dev.OneDrive.Client.Features.Authentication;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Infrastructure;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
@@ -19,7 +21,7 @@ namespace AStar.Dev.OneDriveSync.Features.Dashboard;
 ///     All <see cref="AStar.Dev.Functional.Extensions.Result{TSuccess,TError}"/> failures are translated
 ///     to observable state; no try/catch (NF-16).
 /// </summary>
-public sealed class DashboardViewModel : ViewModelBase
+public sealed class DashboardViewModel : ViewModelBase, IDisposable
 {
     private readonly IAccountRepository _accountRepository;
     private readonly ISyncEngine _syncEngine;
@@ -46,34 +48,44 @@ public sealed class DashboardViewModel : ViewModelBase
     {
         var accounts = await _accountRepository.GetAllAsync(ct).ConfigureAwait(false);
 
-        var cards = new System.Collections.Generic.List<AccountCardViewModel>();
+        List<AccountCardViewModel> cards = [];
         foreach (var account in accounts)
         {
-            var state       = await _syncStateStore.GetStateAsync(account.Id.ToString(), ct).ConfigureAwait(false);
-            var isInterrupted = state == SyncAccountState.Interrupted;
-            var lastSynced  = account.LastSyncedAt.HasValue
+            var state         = await _syncStateStore.GetStateAsync(account.Id.ToString(), ct).ConfigureAwait(false);
+            bool isInterrupted = state == SyncAccountState.Interrupted;
+            string? lastSynced = account.LastSyncedAt.HasValue
                 ? _timeFormatter.Format(account.LastSyncedAt.Value, DateTimeOffset.UtcNow)
                 : null;
 
             var card = new AccountCardViewModel(
-                accountId:     account.Id.ToString(),
-                displayName:   account.DisplayName,
-                isAuthRequired: account.AuthState == "AuthRequired",
-                lastSynced:    lastSynced,
-                isInterrupted: isInterrupted,
-                isSyncActive:  account.IsSyncActive,
-                onSyncNow:     (c, token) => HandleSyncNowAsync(c, token),
-                onResume:      (c, token) => HandleResumeAsync(c, token));
+                accountId:      account.Id.ToString(),
+                displayName:    account.DisplayName,
+                isAuthRequired: account.AuthState == nameof(AccountAuthState.AuthRequired),
+                lastSynced:     lastSynced,
+                isInterrupted:  isInterrupted,
+                isSyncActive:   account.IsSyncActive,
+                onSyncNow:      (c, token) => HandleSyncNowAsync(c, token),
+                onResume:       (c, token) => HandleResumeAsync(c, token));
 
             cards.Add(card);
         }
 
         RxApp.MainThreadScheduler.Schedule(() =>
         {
+            DisposeCards();
             Accounts.Clear();
             foreach (var card in cards)
                 Accounts.Add(card);
         });
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => DisposeCards();
+
+    private void DisposeCards()
+    {
+        foreach (var card in Accounts)
+            card.Dispose();
     }
 
     private async Task HandleSyncNowAsync(AccountCardViewModel card, CancellationToken ct)
@@ -130,13 +142,13 @@ public sealed class DashboardViewModel : ViewModelBase
 
     private async Task<bool> ApplySuccessAsync(AccountCardViewModel card, SyncReport report, CancellationToken ct)
     {
-        card.LastSynced = _timeFormatter.Format(report.CompletedAt, DateTimeOffset.UtcNow);
+        card.LastSynced    = _timeFormatter.Format(report.CompletedAt, DateTimeOffset.UtcNow);
         card.IsInterrupted = false;
 
         if (report.HasSkippedFiles)
             _toastService.Show(DashboardStrings.SkippedFilesToastMessage, card.AccountId);
 
-        return await Task.FromResult(true).ConfigureAwait(false);
+        return true;
     }
 
     private async Task<bool> ApplySyncFailureAsync(AccountCardViewModel card, SyncEngineError error, CancellationToken ct)
@@ -170,6 +182,8 @@ public sealed class DashboardViewModel : ViewModelBase
 
             if (confirmed)
                 await RunSyncAsync(card, isFullResync: true, ct).ConfigureAwait(false);
+
+            return false;
         }
 
         return await ApplySyncFailureAsync(card, error, ct).ConfigureAwait(false);

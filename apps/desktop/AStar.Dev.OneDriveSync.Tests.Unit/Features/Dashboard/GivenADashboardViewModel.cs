@@ -17,9 +17,11 @@ using ReactiveUI;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.Dashboard;
 
-public sealed class GivenADashboardViewModel
+public sealed class GivenADashboardViewModel : IDisposable
 {
     private static readonly Guid AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    private readonly IScheduler _originalScheduler = RxApp.MainThreadScheduler;
 
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncEngine _syncEngine = Substitute.For<ISyncEngine>();
@@ -43,6 +45,26 @@ public sealed class GivenADashboardViewModel
 
         _timeFormatter.Format(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
             .Returns("just now");
+    }
+
+    public void Dispose() => RxApp.MainThreadScheduler = _originalScheduler;
+
+    [Fact]
+    public async Task when_loaded_then_accounts_collection_is_populated()
+    {
+        var sut = await CreateAndLoadSutAsync();
+
+        sut.Accounts.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_loaded_with_no_accounts_then_accounts_collection_is_empty()
+    {
+        _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
+
+        var sut = await CreateAndLoadSutAsync();
+
+        sut.Accounts.ShouldBeEmpty();
     }
 
     [Fact]
@@ -172,8 +194,9 @@ public sealed class GivenADashboardViewModel
     public async Task when_local_path_error_clears_after_successful_sync_then_error_badge_is_hidden()
     {
         _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.LocalPathUnavailable()),
-                     new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(false, false)));
+            .Returns(
+                new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.LocalPathUnavailable()),
+                new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(false, false)));
 
         var sut = await CreateAndLoadSutAsync();
         var card = sut.Accounts[0];
@@ -203,9 +226,60 @@ public sealed class GivenADashboardViewModel
         var sut = await CreateAndLoadSutAsync();
         var card = sut.Accounts[0];
 
-        card.DismissInterruptedCommand.Execute(System.Reactive.Unit.Default).Subscribe();
+        await card.DismissInterruptedCommand.Execute().FirstAsync();
 
         card.IsInterrupted.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_resume_command_is_executed_then_sync_is_started()
+    {
+        _syncStateStore.GetStateAsync(AccountId.ToString(), Arg.Any<CancellationToken>())
+            .Returns(SyncAccountState.Interrupted);
+        _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(false, false)));
+
+        var sut = await CreateAndLoadSutAsync();
+
+        await sut.Accounts[0].ResumeCommand.Execute().FirstAsync();
+
+        await _syncEngine.Received(1).StartSyncAsync(AccountId.ToString(), false, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_resume_fails_with_resume_failed_error_then_full_resync_dialog_is_presented()
+    {
+        _syncStateStore.GetStateAsync(AccountId.ToString(), Arg.Any<CancellationToken>())
+            .Returns(SyncAccountState.Interrupted);
+        _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.ResumeFailed()));
+        _dialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        var sut = await CreateAndLoadSutAsync();
+
+        await sut.Accounts[0].ResumeCommand.Execute().FirstAsync();
+
+        await _dialogService.Received(1).ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_resume_fails_and_user_confirms_full_resync_then_full_resync_is_started()
+    {
+        _syncStateStore.GetStateAsync(AccountId.ToString(), Arg.Any<CancellationToken>())
+            .Returns(SyncAccountState.Interrupted);
+        _syncEngine.StartSyncAsync(AccountId.ToString(), false, Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.ResumeFailed()));
+        _syncEngine.StartSyncAsync(AccountId.ToString(), true, Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(false, false)));
+        _dialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var sut = await CreateAndLoadSutAsync();
+
+        await sut.Accounts[0].ResumeCommand.Execute().FirstAsync();
+
+        await _syncEngine.Received(1).StartSyncAsync(AccountId.ToString(), true, Arg.Any<CancellationToken>());
     }
 
     private async Task<DashboardViewModel> CreateAndLoadSutAsync()
