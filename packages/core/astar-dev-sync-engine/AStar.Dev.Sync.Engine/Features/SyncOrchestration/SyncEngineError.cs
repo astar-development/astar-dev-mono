@@ -15,6 +15,9 @@ public sealed record FullResyncRequiredError() : SyncEngineError("Delta token ha
 /// <summary>Returned when the interrupted-sync checkpoint is corrupt and a resume cannot be attempted (EH-06).</summary>
 public sealed record ResumeFailedError() : SyncEngineError("Cannot resume interrupted sync — checkpoint state is corrupt.");
 
+/// <summary>Returned when the local sync folder is not accessible (e.g. unmounted drive) (AM-11).</summary>
+public sealed record LocalPathUnavailableError(string LocalPath) : SyncEngineError($"Local folder unavailable: {LocalPath}. Check your drive.");
+
 /// <summary>Factory for <see cref="SyncEngineError"/> subtypes.</summary>
 public static class SyncEngineErrorFactory
 {
@@ -29,4 +32,7 @@ public static class SyncEngineErrorFactory
 
     /// <summary>Creates a <see cref="ResumeFailedError"/>.</summary>
     public static ResumeFailedError ResumeFailed() => new();
+
+    /// <summary>Creates a <see cref="LocalPathUnavailableError"/>.</summary>
+    public static LocalPathUnavailableError LocalPathUnavailable(string localPath = "") => new(localPath);
 }

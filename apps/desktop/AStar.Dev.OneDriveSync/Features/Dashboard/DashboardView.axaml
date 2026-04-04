@@ -4,7 +4,98 @@
              xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Dashboard.DashboardView"
              x:DataType="vm:DashboardViewModel">
-    <TextBlock Text="{loc:Localise Dashboard_ComingSoon}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+
+    <ScrollViewer Padding="24,16">
+        <ItemsControl ItemsSource="{Binding Accounts}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:AccountCardViewModel">
+
+                    <Border Margin="0,0,0,12"
+                            Padding="16"
+                            CornerRadius="8"
+                            BorderThickness="1">
+                        <StackPanel Spacing="10">
+
+                            <!-- Header row: display name, auth badge, Sync Now button -->
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding DisplayName}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center" />
+                                    <Border CornerRadius="4"
+                                            Padding="6,2"
+                                            IsVisible="{Binding IsAuthRequired}">
+                                        <TextBlock Text="{loc:Localise Dashboard_AuthRequired}"
+                                                   FontSize="11" />
+                                    </Border>
+                                </StackPanel>
+
+                                <Button Grid.Column="1"
+                                        Command="{Binding SyncNowCommand}"
+                                        IsEnabled="{Binding !IsSyncing}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{loc:Localise Dashboard_SyncNow}"
+                                                   IsVisible="{Binding !IsSyncing}" />
+                                        <TextBlock Text="{loc:Localise Dashboard_Syncing}"
+                                                   IsVisible="{Binding IsSyncing}" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Last-synced timestamp -->
+                            <TextBlock Text="{Binding LastSynced}"
+                                       Opacity="0.6"
+                                       FontSize="12"
+                                       IsVisible="{Binding LastSynced, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                            <!-- Progress bar + ETA (visible only while syncing) -->
+                            <StackPanel IsVisible="{Binding IsSyncing}" Spacing="4">
+                                <ProgressBar Value="{Binding PercentComplete}"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Height="6" />
+                                <TextBlock Text="{Binding PercentComplete, StringFormat={}{0:F0}%}"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                            </StackPanel>
+
+                            <!-- Local path unavailable error badge (AM-11) -->
+                            <Border CornerRadius="4"
+                                    Padding="8,4"
+                                    IsVisible="{Binding HasLocalPathError}">
+                                <TextBlock Text="{loc:Localise Dashboard_LocalPathError}"
+                                           FontSize="12" />
+                            </Border>
+
+                            <!-- Interrupted sync recovery banner (EH-05, EH-06) -->
+                            <Border CornerRadius="4"
+                                    Padding="8,4"
+                                    IsVisible="{Binding IsInterrupted}">
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{loc:Localise Dashboard_Interrupted}"
+                                               FontSize="12"
+                                               VerticalAlignment="Center" />
+                                    <Button Grid.Column="1"
+                                            Content="{loc:Localise Dashboard_Resume}"
+                                            Command="{Binding ResumeCommand}"
+                                            Margin="8,0,0,0"
+                                            FontSize="12" />
+                                    <Button Grid.Column="2"
+                                            Content="{loc:Localise Dashboard_Dismiss}"
+                                            Command="{Binding DismissInterruptedCommand}"
+                                            Margin="8,0,0,0"
+                                            FontSize="12" />
+                                </Grid>
+                            </Border>
+
+                        </StackPanel>
+                    </Border>
+
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+
 </UserControl>

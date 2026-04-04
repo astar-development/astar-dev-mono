@@ -27,6 +27,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     /// <summary>Conflict queue — all detected sync conflicts (CR-05, NF-05).</summary>
     public DbSet<ConflictRecord> ConflictRecords => Set<ConflictRecord>();
 
+    /// <summary>Per-account sync state and resume checkpoints (EH-04, EH-05, EH-06).</summary>
+    public DbSet<SyncStateRecord> SyncStateRecords => Set<SyncStateRecord>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         => _ = configurationBuilder.Properties<DateTimeOffset>()
             .HaveConversion<DateTimeOffsetToUnixMillisecondsConverter>();

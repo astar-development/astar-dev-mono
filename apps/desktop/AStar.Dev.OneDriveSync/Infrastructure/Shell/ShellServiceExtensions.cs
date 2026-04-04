@@ -15,6 +15,7 @@ using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Features.Settings;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.OneDriveSync.Infrastructure.Theming;
+using AStar.Dev.Sync.Engine;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;
@@ -26,6 +27,7 @@ internal static class ShellServiceExtensions
         _ = services.AddLocalisation();
         _ = services.AddTheming();
         _ = services.AddOneDriveClient(oneDriveOptions);
+        _ = services.AddSyncEngine();
 
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
@@ -47,6 +49,9 @@ internal static class ShellServiceExtensions
         _ = services.AddTransient<AddAccountWizardViewModel>();
         _ = services.AddSingleton<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
 
+        _ = services.AddSingleton<IDialogService, AvaloniaDialogService>();
+        _ = services.AddSingleton<AvaloniaToastService>();
+        _ = services.AddSingleton<IToastService>(sp => sp.GetRequiredService<AvaloniaToastService>());
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<AccountsViewModel>();
         _ = services.AddSingleton<ActivityViewModel>();

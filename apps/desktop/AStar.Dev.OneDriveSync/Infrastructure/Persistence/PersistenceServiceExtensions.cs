@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using AStar.Dev.Sync.Engine.Features.StateTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SyncEngineBackup = AStar.Dev.Sync.Engine.Infrastructure.IDbBackupService;
 
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 
@@ -11,16 +13,19 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence;
 internal static class PersistenceServiceExtensions
 {
     /// <summary>
-    ///     Adds <see cref="AppDbContext" />, <see cref="IAppDataPathProvider" />, and
-    ///     <see cref="IDbBackupService" /> to <paramref name="services" />.
+    ///     Adds <see cref="AppDbContext" />, <see cref="IAppDataPathProvider" />,
+    ///     <see cref="IDbBackupService" />, and <see cref="ISyncStateStore"/> to <paramref name="services" />.
     /// </summary>
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
         _ = services.AddSingleton<IAppDataPathProvider, LocalAppDataPathProvider>();
         _ = services.AddSingleton<IDbBackupService, DbBackupService>();
+        _ = services.AddSingleton<SyncEngineBackup, SyncEngineDbBackupAdapter>();
 
         _ = services.AddDbContext<AppDbContext>(ConfigureOptions);
         _ = services.AddDbContextFactory<AppDbContext>(ConfigureOptions);
+
+        _ = services.AddTransient<ISyncStateStore, SqliteSyncStateStore>();
 
         return services;
     }
