@@ -1,0 +1,69 @@
+---
+import '@/styles/global.css';
+import { CookieBanner } from '@/components/CookieBanner.tsx';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
+---
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | fab4kids</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={`${title} | fab4kids`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonicalURL.href} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      (function () {
+        const VALID_THEMES = ['light', 'dark', 'colourful'];
+        const stored = localStorage.getItem('fab4kids-theme');
+        let theme;
+        if (stored !== null && VALID_THEMES.includes(stored)) {
+          theme = stored;
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          theme = 'dark';
+        } else {
+          theme = 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <slot name="header" />
+    <main>
+      <slot />
+    </main>
+    <slot name="footer" />
+    <CookieBanner client:load />
+    <script is:inline>
+      window.addEventListener('cookie-consent-accepted', () => {
+        const s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        s.async = true;
+        document.head.appendChild(s);
+      });
+      if (localStorage.getItem('fab4kids-cookie-consent') === 'accepted') {
+        const s = document.createElement('script');
+        s.src = 'https://js.stripe.com/v3/';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+    </script>
+  </body>
+</html>

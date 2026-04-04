@@ -1,0 +1,49 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import { ResendLinksForm } from '@/components/ResendLinksForm.tsx';
+import Stripe from 'stripe';
+
+export const prerender = false;
+
+const sessionId = Astro.url.searchParams.get('session_id');
+if (!sessionId) {
+  return Astro.redirect('/');
+}
+
+let customerEmail = '';
+try {
+  const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY);
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  customerEmail = session.customer_details?.email ?? '';
+} catch {
+  return Astro.redirect('/');
+}
+---
+
+<PageLayout title="Order Confirmed | fab4kids" description="Your order has been confirmed.">
+  <div class="success-page">
+    <div class="success-icon" aria-hidden="true">✅</div>
+    <h1>Payment successful!</h1>
+    <p class="success-lead">
+      Thank you for your order. Download links have been sent to
+      <strong>{customerEmail}</strong>.
+    </p>
+    <p class="success-note">
+      Links expire after 15 minutes. If you don't receive the email within a few
+      minutes, check your spam folder or use the form below.
+    </p>
+    <ResendLinksForm client:load sessionId={sessionId} customerEmail={customerEmail} />
+  </div>
+</PageLayout>
+
+<style>
+  .success-page {
+    max-width: 560px;
+    margin: 4rem auto;
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .success-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .success-lead { font-size: 1.125rem; margin: 1rem 0; }
+  .success-note { color: var(--color-text-muted); margin-bottom: 2rem; }
+</style>

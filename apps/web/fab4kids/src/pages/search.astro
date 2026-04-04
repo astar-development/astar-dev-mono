@@ -1,0 +1,37 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+
+export const prerender = false;
+
+const q = Astro.url.searchParams.get('q') ?? '';
+---
+
+<PageLayout title="Search | fab4kids" description="Search all educational resources for KS1–KS4.">
+  <div class="search-page" data-pagefind-ignore>
+    <h1>Search resources</h1>
+    <div id="search"></div>
+  </div>
+</PageLayout>
+
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+
+<script is:inline define:vars={{ q }}>
+  window.addEventListener('DOMContentLoaded', async () => {
+    const { PagefindUI } = await import('/pagefind/pagefind-ui.js');
+    new PagefindUI({
+      element: '#search',
+      showImages: false,
+      resetStyles: false,
+      ...(q ? { search: q } : {}),
+    });
+  });
+</script>
+
+<style>
+  .search-page {
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  .search-page h1 { margin-bottom: 1.5rem; }
+</style>

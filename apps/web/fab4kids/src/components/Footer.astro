@@ -1,0 +1,144 @@
+---
+import { SUBJECTS, SUBJECT_LABELS } from '@/lib/constants';
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <a href="/" class="site-footer__logo" aria-label="fab4kids home">
+        <span class="site-footer__logo-text">fab4kids</span>
+      </a>
+      <p class="site-footer__tagline">Quality educational resources for every child</p>
+    </div>
+
+    <nav class="site-footer__col" aria-label="Subject pages">
+      <h3 class="site-footer__heading">Subjects</h3>
+      <ul class="site-footer__list" role="list">
+        {SUBJECTS.map((subject) => (
+          <li>
+            <a href={`/${subject}`} class="site-footer__link">{SUBJECT_LABELS[subject]}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav class="site-footer__col" aria-label="Support links">
+      <h3 class="site-footer__heading">Support</h3>
+      <ul class="site-footer__list" role="list">
+        <li><a href="/search" class="site-footer__link">Search Resources</a></li>
+        <li><a href="/#newsletter" class="site-footer__link">Newsletter</a></li>
+      </ul>
+    </nav>
+
+    <nav class="site-footer__col" aria-label="Legal links">
+      <h3 class="site-footer__heading">Legal</h3>
+      <ul class="site-footer__list" role="list">
+        <li><a href="/privacy-policy" class="site-footer__link">Privacy Policy</a></li>
+        <li><a href="/cookie-policy" class="site-footer__link">Cookie Policy</a></li>
+        <li><a href="/terms" class="site-footer__link">Terms</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="site-footer__bottom">
+    <p class="site-footer__copyright">© {currentYear} fab4kids. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-bg-surface);
+    border-top: 1px solid var(--color-border);
+    margin-top: auto;
+  }
+
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 2rem;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .site-footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .site-footer__logo {
+    text-decoration: none;
+    width: fit-content;
+  }
+
+  .site-footer__logo-text {
+    font-family: var(--font-family-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: var(--color-primary);
+  }
+
+  .site-footer__tagline {
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .site-footer__heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .site-footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .site-footer__link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.9375rem;
+    transition: color 0.15s ease;
+  }
+
+  .site-footer__link:hover {
+    color: var(--color-primary);
+  }
+
+  .site-footer__bottom {
+    border-top: 1px solid var(--color-border);
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .site-footer__copyright {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 900px) {
+    .site-footer__inner {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 540px) {
+    .site-footer__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

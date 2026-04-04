@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+coverage/
+data/
+.env
+.env.local
