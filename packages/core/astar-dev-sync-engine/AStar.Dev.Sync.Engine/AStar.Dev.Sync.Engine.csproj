@@ -21,12 +21,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../../infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
     <ProjectReference Include="../../functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <ProjectReference Include="../../logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

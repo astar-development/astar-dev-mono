@@ -155,13 +155,13 @@
         <member name="T:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItem">
             <summary>Represents a single item returned by a Graph delta query.</summary>
         </member>
-        <member name="M:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItem.#ctor(System.String,System.String,System.String,AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemType,System.String)">
+        <member name="M:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItem.#ctor(System.String,System.String,System.String,AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemType,System.String,System.Nullable{System.Int64},System.Nullable{System.DateTimeOffset})">
             <summary>Represents a single item returned by a Graph delta query.</summary>
         </member>
         <member name="T:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemFactory">
             <summary>Factory for <see cref="T:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItem"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemFactory.Create(System.String,System.String,System.String,AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemType,System.String)">
+        <member name="M:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemFactory.Create(System.String,System.String,System.String,AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemType,System.String,System.Nullable{System.Int64},System.Nullable{System.DateTimeOffset})">
             <summary>Creates a file or folder delta item.</summary>
         </member>
         <member name="M:AStar.Dev.OneDrive.Client.Features.DeltaQueries.DeltaItemFactory.CreateDeleted(System.String)">
