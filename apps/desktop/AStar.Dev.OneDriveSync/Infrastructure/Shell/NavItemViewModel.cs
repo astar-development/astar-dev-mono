@@ -17,4 +17,14 @@ public sealed class NavItemViewModel : ViewModelBase
         get;
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
+
+    /// <summary>Live badge count shown on the nav rail icon; 0 hides the badge.</summary>
+    public int BadgeCount
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>Whether the badge should be visible.</summary>
+    public bool HasBadge => BadgeCount > 0;
 }

@@ -1,4 +1,5 @@
 using System;
+using AStar.Dev.Conflict.Resolution.Domain;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Infrastructure.Persistence.Converters;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     /// <summary>Single-row application settings (theme, locale, user type).</summary>
     public DbSet<AppSettings> AppSettings => Set<AppSettings>();
+
+    /// <summary>Conflict queue — all detected sync conflicts (CR-05, NF-05).</summary>
+    public DbSet<ConflictRecord> ConflictRecords => Set<ConflictRecord>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         => _ = configurationBuilder.Properties<DateTimeOffset>()

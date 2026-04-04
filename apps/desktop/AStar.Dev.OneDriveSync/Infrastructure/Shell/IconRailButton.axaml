@@ -80,6 +80,24 @@
 
         </Button>
 
+        <!-- Badge — shown when BadgeCount > 0, positioned top-right of the icon button -->
+        <Border x:Name="BadgeBorder"
+                Width="16" Height="16"
+                CornerRadius="8"
+                Background="{DynamicResource TextAccentBrush}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,6,6,0"
+                IsVisible="False">
+            <TextBlock x:Name="BadgeText"
+                       FontSize="9"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="White"
+                       Text="0"/>
+        </Border>
+
     </Grid>
 
 </UserControl>

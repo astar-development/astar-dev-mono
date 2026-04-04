@@ -1,3 +1,5 @@
+using AStar.Dev.Conflict.Resolution.Features.Detection;
+using AStar.Dev.Conflict.Resolution.Features.Persistence;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Features.DeltaQueries;
 using AStar.Dev.Sync.Engine.Features.Concurrency;
@@ -24,7 +26,7 @@ public sealed class GivenADiskSpaceCheck : IDisposable
     private readonly IDiskSpaceChecker _diskSpaceChecker = Substitute.For<IDiskSpaceChecker>();
     private readonly IDbBackupService _dbBackupService = Substitute.For<IDbBackupService>();
 
-    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), new System.IO.Abstractions.TestingHelpers.MockFileSystem(), NullLogger<SyncEngine>.Instance);
+    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), new System.IO.Abstractions.TestingHelpers.MockFileSystem(), Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
 
     [Fact]
     public async Task when_available_space_is_less_than_required_then_insufficient_disk_space_error_is_returned()

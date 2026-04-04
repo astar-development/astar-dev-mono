@@ -1,4 +1,6 @@
 using System;
+using AStar.Dev.Conflict.Resolution;
+using AStar.Dev.Conflict.Resolution.Features.Persistence;
 using AStar.Dev.OneDrive.Client;
 using AStar.Dev.OneDriveSync.Features.About;
 using System.IO.Abstractions;
@@ -34,6 +36,9 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ShellNavigator>();
         _ = services.AddSingleton<IShellNavigator>(sp => sp.GetRequiredService<ShellNavigator>());
 
+        _ = services.AddConflictResolution();
+        _ = services.AddSingleton<IConflictStore, ConflictStore>();
+
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
         _ = services.AddSingleton<ILocalSyncPathService, LocalSyncPathService>();
@@ -61,6 +66,7 @@ internal static class ShellServiceExtensions
     {
         service.Register(NavSection.Dashboard);
         service.Register(NavSection.Accounts);
+        service.Register(NavSection.Conflicts);
         service.Register(NavSection.Settings);
         service.Register(NavSection.Help);
     }
