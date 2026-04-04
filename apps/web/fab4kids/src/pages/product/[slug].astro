@@ -1,0 +1,215 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import PageLayout from '@/layouts/PageLayout.astro';
+import { getAllProducts } from '@/lib/sanity.ts';
+import { SUBJECT_LABELS, KEY_STAGE_LABELS, FILE_FORMAT_LABELS } from '@/lib/constants.ts';
+import { AddToCartButton } from '@/components/AddToCartButton.tsx';
+
+export const prerender = true;
+
+export const getStaticPaths = (async () => {
+  const products = await getAllProducts();
+
+  return products.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { product } = Astro.props;
+const { title, subject, keyStages, fileFormats, price, image, description, _id } = product;
+const subjectLabel = SUBJECT_LABELS[subject];
+const pounds = Math.floor(price / 100);
+const pence = (price % 100).toString().padStart(2, '0');
+const formattedPrice = `£${pounds}.${pence}`;
+const ogDescription = description.length > 160 ? `${description.slice(0, 157)}...` : description;
+---
+
+<PageLayout title={title} description={ogDescription}>
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        <li><a href={`/${subject}`}>{subjectLabel}</a></li>
+        {keyStages.length > 0 && (
+          <li>
+            <a href={`/${subject}/${keyStages[0]}`}>{KEY_STAGE_LABELS[keyStages[0]]}</a>
+          </li>
+        )}
+        <li aria-current="page">{title}</li>
+      </ol>
+    </nav>
+
+    <div class="product-detail">
+      <div class="product-detail__image-col">
+        {image ? (
+          <img
+            src={image.url}
+            alt={image.alt}
+            class="product-detail__image"
+            loading="eager"
+            decoding="async"
+          />
+        ) : (
+          <div class="product-detail__placeholder" aria-hidden="true">
+            <span class="product-detail__placeholder-label">{subjectLabel}</span>
+          </div>
+        )}
+      </div>
+
+      <div class="product-detail__info">
+        <div class="product-detail__badges">
+          <span class="badge badge--subject">{subjectLabel}</span>
+          {keyStages.map((ks) => (
+            <span class="badge badge--ks" style={`background-color: var(--color-badge-${ks})`}>
+              {KEY_STAGE_LABELS[ks]}
+            </span>
+          ))}
+          {fileFormats.map((fmt) => (
+            <span class="badge badge--format">{FILE_FORMAT_LABELS[fmt]}</span>
+          ))}
+        </div>
+
+        <h1 class="product-detail__title">{title}</h1>
+
+        <p class="product-detail__description">{description}</p>
+
+        <div class="product-detail__purchase">
+          <span class="product-detail__price">{formattedPrice}</span>
+          <AddToCartButton
+            client:load
+            productId={_id}
+            slug={product.slug}
+            title={title}
+            price={price}
+            stripePriceId={product.stripePriceId}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</PageLayout>
+
+<style>
+  .container {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+    padding-block: 2rem;
+  }
+
+  .breadcrumb {
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb li + li::before {
+    content: '›';
+    margin-right: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--color-primary);
+  }
+
+  .breadcrumb li:last-child {
+    color: var(--color-text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 20rem;
+  }
+
+  .product-detail {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .product-detail {
+      grid-template-columns: 2fr 3fr;
+    }
+  }
+
+  .product-detail__image {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+  }
+
+  .product-detail__placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-lg);
+    background: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-detail__placeholder-label {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary-contrast);
+    opacity: 0.9;
+  }
+
+  .product-detail__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .product-detail__title {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 1.25rem;
+    line-height: 1.25;
+  }
+
+  .product-detail__description {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+
+  .product-detail__purchase {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .product-detail__price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+
+  .btn--large {
+    font-size: 1.0625rem;
+    padding: 0.875rem 2rem;
+  }
+</style>

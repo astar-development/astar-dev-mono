@@ -1,0 +1,116 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="Privacy Policy | fab4kids"
+  description="How fab4kids collects, uses, and protects your personal data under UK GDPR."
+>
+  <article class="legal-page">
+    <h1>Privacy Policy</h1>
+    <p class="legal-meta">Last updated: April 2026</p>
+
+    <h2>1. Who we are</h2>
+    <p>
+      fab4kids (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is the data controller for personal data
+      collected through this website. Contact us at{' '}
+      <a href="mailto:privacy@fab4kids.co.uk">privacy@fab4kids.co.uk</a>.
+    </p>
+
+    <h2>2. Data we collect and why</h2>
+    <table class="legal-table">
+      <thead>
+        <tr><th>Category</th><th>Data</th><th>Legal basis</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Purchase</td>
+          <td>Email address, order reference, items purchased</td>
+          <td>Contractual necessity (to fulfil your order)</td>
+        </tr>
+        <tr>
+          <td>Transactional email</td>
+          <td>Email address</td>
+          <td>Legitimate interest (to deliver what you paid for)</td>
+        </tr>
+        <tr>
+          <td>Newsletter</td>
+          <td>Email address, opt-in timestamp</td>
+          <td>Consent (you opted in explicitly)</td>
+        </tr>
+        <tr>
+          <td>Server logs</td>
+          <td>IP address, browser, pages visited</td>
+          <td>Legitimate interest (security and fraud prevention)</td>
+        </tr>
+        <tr>
+          <td>Cookies</td>
+          <td>Theme preference, cart contents, consent decision</td>
+          <td>Functional necessity / consent (see Cookie Policy)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Third-party processors</h2>
+    <p>We share data with the following processors, each bound by a Data Processing Agreement:</p>
+    <ul>
+      <li><strong>Stripe</strong> — payment processing. Card data never touches our servers.</li>
+      <li><strong>Resend</strong> — transactional and marketing email delivery.</li>
+      <li><strong>Sanity</strong> — content management (product and category data; no personal data).</li>
+      <li><strong>Microsoft Azure</strong> — hosting (Azure App Service) and file storage (Azure Blob Storage).</li>
+    </ul>
+
+    <h2>4. Retention periods</h2>
+    <ul>
+      <li>Purchase records: 7 years (HMRC statutory requirement).</li>
+      <li>Newsletter subscriptions: until you unsubscribe.</li>
+      <li>Server logs: 90 days.</li>
+    </ul>
+
+    <h2>5. Your rights under UK GDPR</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li><strong>Access</strong> — request a copy of the data we hold about you.</li>
+      <li><strong>Rectification</strong> — ask us to correct inaccurate data.</li>
+      <li><strong>Erasure</strong> — ask us to delete your data (subject to legal retention obligations).</li>
+      <li><strong>Restriction</strong> — ask us to pause processing while a dispute is resolved.</li>
+      <li><strong>Portability</strong> — receive your data in a machine-readable format.</li>
+      <li><strong>Object</strong> — object to processing based on legitimate interest.</li>
+      <li><strong>Withdraw consent</strong> — unsubscribe from marketing at any time.</li>
+    </ul>
+    <p>To exercise any right, email <a href="mailto:privacy@fab4kids.co.uk">privacy@fab4kids.co.uk</a>. We will respond within 30 days.</p>
+    <p>You may also lodge a complaint with the <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ICO</a>.</p>
+
+    <h2>6. Children&rsquo;s data</h2>
+    <p>
+      This website is directed at adults (parents and guardians). We do not knowingly collect
+      personal data from children under 13. If you believe we have inadvertently collected such
+      data, please contact us and we will delete it promptly.
+    </p>
+
+    <h2>7. International transfers</h2>
+    <p>
+      Data processed by Stripe and Resend may be transferred outside the UK/EEA under
+      appropriate safeguards (Standard Contractual Clauses or UK Adequacy decisions).
+    </p>
+
+    <h2>8. Changes to this policy</h2>
+    <p>
+      We will notify you of material changes by updating the date above. Continued use of
+      the site after a change constitutes acceptance.
+    </p>
+  </article>
+</PageLayout>
+
+<style>
+  .legal-page { max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  .legal-meta { color: var(--color-text-muted); margin-bottom: 2rem; }
+  .legal-page h2 { margin-top: 2rem; }
+  .legal-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  .legal-table th, .legal-table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .legal-table th { background: var(--color-bg-surface); }
+</style>

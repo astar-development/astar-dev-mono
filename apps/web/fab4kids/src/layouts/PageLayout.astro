@@ -1,0 +1,23 @@
+---
+import Base from './Base.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  subject?: string;
+}
+
+const { title, description, subject: _subject } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <Fragment slot="header">
+    <Header />
+  </Fragment>
+  <slot />
+  <Fragment slot="footer">
+    <Footer />
+  </Fragment>
+</Base>

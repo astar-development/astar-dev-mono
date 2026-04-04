@@ -1,0 +1,106 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+---
+
+<PageLayout
+  title="Cookie Policy | fab4kids"
+  description="Information about the cookies used on fab4kids."
+>
+  <article class="legal-page">
+    <h1>Cookie Policy</h1>
+    <p class="legal-meta">Last updated: April 2026</p>
+
+    <p>
+      This policy explains what cookies and similar storage technologies are used on
+      fab4kids and why. You can control non-essential cookies via the consent banner.
+    </p>
+
+    <h2>What are cookies?</h2>
+    <p>
+      Cookies are small text files stored by your browser. We also use
+      <code>localStorage</code> — a similar technology that stores data locally in
+      your browser without expiry unless cleared.
+    </p>
+
+    <h2>Cookies we use</h2>
+    <table class="legal-table">
+      <thead>
+        <tr><th>Name</th><th>Purpose</th><th>Type</th><th>Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>fab4kids-theme</code></td>
+          <td>Stores your colour theme preference (light, dark, colourful)</td>
+          <td>Functional (localStorage)</td>
+          <td>Persistent until cleared</td>
+        </tr>
+        <tr>
+          <td><code>fab4kids-cart</code></td>
+          <td>Stores your shopping cart contents between page loads</td>
+          <td>Functional (localStorage)</td>
+          <td>Persistent until cleared</td>
+        </tr>
+        <tr>
+          <td><code>fab4kids-cookie-consent</code></td>
+          <td>Records your cookie consent decision</td>
+          <td>Functional (localStorage)</td>
+          <td>Persistent until cleared</td>
+        </tr>
+        <tr>
+          <td><code>__stripe_mid</code></td>
+          <td>Stripe fraud prevention and security</td>
+          <td>Third-party (Stripe)</td>
+          <td>1 year</td>
+        </tr>
+        <tr>
+          <td><code>__stripe_sid</code></td>
+          <td>Stripe session identifier</td>
+          <td>Third-party (Stripe)</td>
+          <td>Session</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Functional cookies</h2>
+    <p>
+      Functional cookies (including our <code>localStorage</code> entries) are essential
+      to the site working correctly — they remember your preferences and cart. They are
+      set regardless of your consent choice, as they are strictly necessary for the
+      service you have requested.
+    </p>
+
+    <h2>Third-party cookies (Stripe)</h2>
+    <p>
+      When you accept cookies, we load Stripe&rsquo;s JavaScript library to enable secure
+      payment processing. Stripe may set cookies for fraud detection. See
+      <a href="https://stripe.com/en-gb/privacy" target="_blank" rel="noopener noreferrer">Stripe&rsquo;s Privacy Policy</a>
+      for details. Stripe cookies are not loaded if you select &ldquo;Essential cookies only&rdquo;.
+    </p>
+
+    <h2>Managing cookies</h2>
+    <p>
+      You can change your consent choice at any time by clearing <code>fab4kids-cookie-consent</code>
+      from your browser&rsquo;s local storage, then refreshing the page.
+      Most browsers also allow you to block or delete cookies via their settings.
+    </p>
+
+    <p>
+      For more information about how we use your data, see our{' '}
+      <a href="/privacy-policy">Privacy Policy</a>.
+    </p>
+  </article>
+</PageLayout>
+
+<style>
+  .legal-page { max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  .legal-meta { color: var(--color-text-muted); margin-bottom: 2rem; }
+  .legal-page h2 { margin-top: 2rem; }
+  .legal-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  .legal-table th, .legal-table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .legal-table th { background: var(--color-bg-surface); }
+  code { background: var(--color-bg-surface); padding: 0.1em 0.3em; border-radius: var(--radius-sm); font-size: 0.875em; }
+</style>

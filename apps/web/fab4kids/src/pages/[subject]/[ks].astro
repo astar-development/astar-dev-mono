@@ -1,0 +1,173 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import PageLayout from '@/layouts/PageLayout.astro';
+import { ProductCard } from '@/components/ProductCard.tsx';
+import { getProductsBySubjectAndKS } from '@/lib/sanity.ts';
+import { SUBJECTS, SUBJECT_LABELS, KEY_STAGES, KEY_STAGE_LABELS } from '@/lib/constants.ts';
+import type { Subject, KeyStage } from '@/types/index.ts';
+
+export const prerender = true;
+
+export const getStaticPaths = (async () => {
+  return SUBJECTS.flatMap((subject) =>
+    KEY_STAGES.map((ks) => ({ params: { subject, ks } })),
+  );
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { subject, ks } = Astro.params as { subject: Subject; ks: KeyStage };
+const products = await getProductsBySubjectAndKS(subject, ks);
+const subjectLabel = SUBJECT_LABELS[subject];
+const ksLabel = KEY_STAGE_LABELS[ks];
+---
+
+<PageLayout
+  title={`${subjectLabel} ${ksLabel} Resources`}
+  description={`Browse ${subjectLabel} resources for ${ksLabel} on fab4kids.`}
+>
+  <section class="hero">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li><a href={`/${subject}`}>{subjectLabel}</a></li>
+          <li aria-current="page">{ksLabel}</li>
+        </ol>
+      </nav>
+      <h1 class="hero__title">{subjectLabel} — {ksLabel} Resources</h1>
+      <p class="hero__subtitle">{ksLabel} {subjectLabel} resources for teachers and parents.</p>
+    </div>
+  </section>
+
+  <section class="catalogue">
+    <div class="container">
+      <div class="catalogue__header">
+        <a href={`/${subject}`} class="back-link" aria-label={`Back to all ${subjectLabel} resources`}>
+          ← All {subjectLabel}
+        </a>
+      </div>
+
+      {products.length === 0 ? (
+        <div class="empty-state">
+          <p>No {subjectLabel} {ksLabel} resources yet. Check back soon!</p>
+          <a href={`/${subject}`} class="btn btn--secondary">Back to {subjectLabel}</a>
+        </div>
+      ) : (
+        <div class="product-grid">
+          {products.map((product) => (
+            <ProductCard product={product} />
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .container {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+
+  .hero {
+    padding-block: 3rem 2rem;
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .breadcrumb ol {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .breadcrumb li + li::before {
+    content: '›';
+    margin-right: 0.5rem;
+  }
+
+  .breadcrumb a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--color-primary);
+  }
+
+  .hero__title {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+  }
+
+  .hero__subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.0625rem;
+  }
+
+  .catalogue {
+    padding-block: 2.5rem;
+  }
+
+  .catalogue__header {
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--color-primary);
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 1.5rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding-block: 4rem;
+    color: var(--color-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .btn--secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .btn--secondary:hover {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+  }
+</style>

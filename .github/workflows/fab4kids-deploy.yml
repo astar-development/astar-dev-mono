@@ -1,43 +1,90 @@
-name: Fab4Kids - Build and Deploy
+name: fab4kids Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'apps/web/fab4kids/**'
       - '.github/workflows/fab4kids-deploy.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: fab4kids-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  AZURE_WEBAPP_NAME: fab4kids
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  build-and-deploy:
+
+  deploy:
+    name: Build & Deploy to Azure
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web/fab4kids
 
     steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: apps/web/fab4kids/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: apps/web/fab4kids
+        run: npm install
+
+      - name: Run tests
+        run: npm test
 
       - name: Build
         run: npm run build
-        working-directory: apps/web/fab4kids
+        env:
+          SANITY_PROJECT_ID: ${{ secrets.FAB4KIDS_SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ secrets.FAB4KIDS_SANITY_DATASET }}
+          SANITY_API_TOKEN: ${{ secrets.FAB4KIDS_SANITY_API_TOKEN }}
+          PUBLIC_SITE_URL: https://fab4kids.co.uk
 
-      - name: Prune dev dependencies
-        run: npm prune --omit=dev
-        working-directory: apps/web/fab4kids
+      - name: Verify build output
+        run: |
+          test -f dist/server/entry.mjs || (echo "ERROR: dist/server/entry.mjs not found" && exit 1)
+          test -d dist/pagefind || (echo "ERROR: Pagefind index not found" && exit 1)
+          echo "Build output verified"
+
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy
+          cp -r dist/client deploy/client
+          cp -r dist/server deploy/server
+          cp package-lock.json deploy/package-lock.json
+          jq '.scripts = {"start": "PORT=${PORT:-8080} HOST=0.0.0.0 node server/entry.mjs"}' package.json > deploy/package.json
+          cd deploy && npm ci --omit=dev && rm package-lock.json
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: fab4kids-site
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_30A7893EAF2D4593B54B7ACFE4926151 }}
-          package: apps/web/fab4kids
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.FAB4KIDS_AZURE_PUBLISH_PROFILE }}
+          package: apps/web/fab4kids/deploy
+
+      - name: Wait for app to warm up
+        run: sleep 15
+
+      - name: Health check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fab4kids.co.uk/)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed with status $STATUS"
+            exit 1
+          fi
+          echo "Health check passed"
