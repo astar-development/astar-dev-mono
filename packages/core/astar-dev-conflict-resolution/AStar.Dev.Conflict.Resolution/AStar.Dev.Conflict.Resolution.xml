@@ -4,5 +4,268 @@
         <name>AStar.Dev.Conflict.Resolution</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Conflict.Resolution.ConflictResolutionServiceExtensions">
+            <summary>Registers conflict resolution services into the DI container.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.ConflictResolutionServiceExtensions.AddConflictResolution(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+                Adds <see cref="T:AStar.Dev.Conflict.Resolution.Features.Detection.IConflictDetector"/>, <see cref="T:AStar.Dev.Conflict.Resolution.Features.Resolution.IConflictResolver"/>, and <see cref="T:AStar.Dev.Conflict.Resolution.Features.Resolution.ICascadeService"/>
+                as singletons. The caller must register <see cref="T:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore"/>
+                separately (implementation lives in the desktop app — requires EF Core).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictDetectionError">
+            <summary>Base discriminated union for conflict detection failures.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictDetectionError.#ctor(System.String)">
+            <summary>Base discriminated union for conflict detection failures.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.LocalFileAccessDeniedError">
+            <summary>Returned when access to the local file system is denied.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.LocalFileAccessDeniedError.#ctor(System.String)">
+            <summary>Returned when access to the local file system is denied.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictDetectionErrorFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictDetectionError"/> subtypes.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictDetectionErrorFactory.AccessDenied(System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Conflict.Resolution.Domain.LocalFileAccessDeniedError"/>.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChanged">
+            <summary>Event raised when the conflict queue is modified (conflict added or resolved).</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChanged.#ctor(System.Guid,AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChangeType,System.Int32)">
+            <summary>Event raised when the conflict queue is modified (conflict added or resolved).</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChangeType">
+            <summary>The type of change that occurred on the conflict queue.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChangeType.ConflictAdded">
+            <summary>A new conflict was added to the queue.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ConflictQueueChangeType.ConflictResolved">
+            <summary>A conflict was resolved and removed from the pending queue.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord">
+            <summary>
+                Represents a single detected sync conflict that is persisted to the queue until resolved.
+                Entities with state use <c>class</c> per repo conventions.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.Id">
+            <summary>Synthetic primary key — immutable once assigned.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.AccountId">
+            <summary>The account (by synthetic Guid) that owns this conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.FilePath">
+            <summary>The file path of the conflicted item.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.AccountDisplayName">
+            <summary>The display name of the account (for UI only — read from Accounts table at query time).</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.LocalLastModified">
+            <summary>UTC timestamp when the local file was last modified.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.RemoteLastModified">
+            <summary>UTC timestamp when the remote file was last modified.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.ConflictType">
+            <summary>Nature of the detected conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.DetectedAt">
+            <summary>UTC timestamp when the conflict was detected.</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.IsResolved">
+            <summary>Whether the conflict has been resolved (resolved conflicts remain for audit).</summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord.AppliedStrategy">
+            <summary>The strategy applied when resolving; null while pending.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictRecordFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictRecordFactory.Create(System.Guid,System.String,System.DateTimeOffset,System.DateTimeOffset,AStar.Dev.Conflict.Resolution.Domain.ConflictType)">
+            <summary>Creates a new pending <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictRecord"/>.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverError">
+            <summary>Base discriminated union for conflict resolver failures.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverError.#ctor(System.String)">
+            <summary>Base discriminated union for conflict resolver failures.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.FileOperationFailedError">
+            <summary>Returned when the file operation underlying a resolution fails.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.FileOperationFailedError.#ctor(System.String,System.String)">
+            <summary>Returned when the file operation underlying a resolution fails.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverErrorFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverError"/> subtypes.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverErrorFactory.FileOperationFailed(System.String,System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Conflict.Resolution.Domain.FileOperationFailedError"/>.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreError">
+            <summary>Base discriminated union for conflict store failures.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreError.#ctor(System.String)">
+            <summary>Base discriminated union for conflict store failures.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictNotFoundError">
+            <summary>Returned when the requested conflict record cannot be found.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictNotFoundError.#ctor(System.Guid)">
+            <summary>Returned when the requested conflict record cannot be found.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictStorePersistenceError">
+            <summary>Returned when a database write fails.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictStorePersistenceError.#ctor(System.String)">
+            <summary>Returned when a database write fails.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreErrorFactory">
+            <summary>Factory for <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreError"/> subtypes.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreErrorFactory.NotFound(System.Guid)">
+            <summary>Creates a <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictNotFoundError"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Domain.ConflictStoreErrorFactory.Persistence(System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictStorePersistenceError"/>.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ConflictType">
+            <summary>Describes the nature of a detected sync conflict.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ConflictType.BothModified">
+            <summary>The file was modified on both the local machine and OneDrive since the last sync.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ConflictType.DeletedOnOneSide">
+            <summary>The file was deleted on one side while the other side still has it.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy">
+            <summary>The strategy chosen by the user to resolve a conflict.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy.LocalWins">
+            <summary>The local file overrides the remote version; the remote is discarded.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy.RemoteWins">
+            <summary>The remote file is downloaded; the local version is discarded.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy.KeepBoth">
+            <summary>Both versions are kept; the conflicting copy is renamed with a UTC timestamp suffix.</summary>
+        </member>
+        <member name="F:AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy.Skip">
+            <summary>The conflict is deferred and remains in the queue across sessions.</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Detection.ConflictDetector">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Detection.ConflictDetector.#ctor(System.IO.Abstractions.IFileSystem,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Conflict.Resolution.Features.Detection.ConflictDetector})">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Detection.ConflictDetector.DetectAsync(System.Guid,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Boolean,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Detection.IConflictDetector">
+            <summary>
+                Detects sync conflicts between a remote delta item and the local file system.
+                Integrated into the sync engine during delta processing (CR-01).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Detection.IConflictDetector.DetectAsync(System.Guid,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.Int64},System.Boolean,System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)">
+            <summary>
+                Inspects the remote item and the local file state to determine whether a conflict exists.
+                Returns <see langword="null"/> in the success value when no conflict is detected.
+            </summary>
+            <param name="accountId">Synthetic account Guid.</param>
+            <param name="filePath">Local file path of the item being processed.</param>
+            <param name="remoteLastModified">When the remote copy was last modified; null for deleted items.</param>
+            <param name="remoteSize">Size of the remote file in bytes; null for deleted items.</param>
+            <param name="isRemoteDeleted">True when the remote delta indicates the item was deleted.</param>
+            <param name="lastSyncCompletedAt">UTC time of the last completed sync; used to detect local modifications since last sync.</param>
+            <param name="ct">Cancellation token.</param>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore">
+            <summary>
+                Persistent, durable queue of conflict records backed by SQLite (CR-05, NF-05).
+                All writes are atomic. Implementations must be singleton — the queue is app-wide state.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore.ConflictQueueChanged">
+            <summary>Observable that fires on the calling thread whenever the queue changes.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore.AddAsync(AStar.Dev.Conflict.Resolution.Domain.ConflictRecord,System.Threading.CancellationToken)">
+            <summary>Atomically persists a new conflict to the queue.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore.GetPendingAsync(System.Threading.CancellationToken)">
+            <summary>Returns all unresolved conflicts, ordered newest first.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore.ResolveAsync(System.Guid,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy,System.Threading.CancellationToken)">
+            <summary>Marks a conflict as resolved with the given strategy.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore.GetByFilePathAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Returns all pending conflicts for a given file path (used by cascade logic).</summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Resolution.CascadeService">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.CascadeService.#ctor(AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Conflict.Resolution.Features.Resolution.CascadeService})">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.CascadeService.ApplyCascadeAsync(System.Guid,System.String,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Resolution.ConflictResolver">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.ConflictResolver.#ctor(AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore,System.IO.Abstractions.IFileSystem,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Conflict.Resolution.Features.Resolution.ConflictResolver})">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.ConflictResolver.ResolveAsync(AStar.Dev.Conflict.Resolution.Domain.ConflictRecord,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Resolution.ICascadeService">
+            <summary>
+                When a conflict is resolved, applies the same resolution to all other pending conflicts
+                for the same file path across all accounts and sessions (CR-08).
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.ICascadeService.ApplyCascadeAsync(System.Guid,System.String,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy,System.Threading.CancellationToken)">
+            <summary>
+                Finds all pending conflicts matching <paramref name="filePath"/> (excluding <paramref name="resolvedConflictId"/>)
+                and applies <paramref name="strategy"/> to each. Returns the number of cascaded resolutions.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Features.Resolution.IConflictResolver">
+            <summary>
+                Executes a chosen resolution strategy against a conflict record (CR-03, CR-04).
+                Never throws — all failures are returned as <see cref="T:AStar.Dev.Conflict.Resolution.Domain.ConflictResolverError"/>.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Features.Resolution.IConflictResolver.ResolveAsync(AStar.Dev.Conflict.Resolution.Domain.ConflictRecord,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy,System.Threading.CancellationToken)">
+            <summary>
+                Executes <paramref name="strategy"/> for <paramref name="conflict"/>.
+                LocalWins / RemoteWins deletions are logged at Warning before execution (NF-04).
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage">
+            <summary>Compile-time log message templates for conflict resolution (NF-00).</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage.ConflictDetected(Microsoft.Extensions.Logging.ILogger,System.String,System.Guid,AStar.Dev.Conflict.Resolution.Domain.ConflictType,System.Guid)">
+            <summary>Logs that a new conflict was detected and persisted.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage.ConflictResolved(Microsoft.Extensions.Logging.ILogger,System.Guid,System.String,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy)">
+            <summary>Logs that a conflict was resolved.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage.DestructiveResolutionPending(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Guid)">
+            <summary>Logs a destructive file action before execution (NF-04).</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage.CascadeResolutionApplied(Microsoft.Extensions.Logging.ILogger,System.Guid,System.String,AStar.Dev.Conflict.Resolution.Domain.ResolutionStrategy)">
+            <summary>Logs that a cascade resolution was applied to a matching conflict.</summary>
+        </member>
+        <member name="M:AStar.Dev.Conflict.Resolution.Infrastructure.ConflictResolutionLogMessage.ConflictCopyRenamed(Microsoft.Extensions.Logging.ILogger,System.String,System.Guid)">
+            <summary>Logs that a conflict file rename was performed for KeepBoth.</summary>
+        </member>
     </members>
 </doc>

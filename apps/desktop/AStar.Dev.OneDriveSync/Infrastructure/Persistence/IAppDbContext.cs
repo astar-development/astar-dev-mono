@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using AStar.Dev.Conflict.Resolution.Domain;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,9 @@ public interface IAppDbContext
 
     /// <summary>Application settings (singleton row).</summary>
     DbSet<AppSettings> AppSettings { get; }
+
+    /// <summary>Conflict queue — all detected sync conflicts (CR-05, NF-05).</summary>
+    DbSet<ConflictRecord> ConflictRecords { get; }
 
     /// <summary>Saves pending changes to database.</summary>
     int SaveChanges();

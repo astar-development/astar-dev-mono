@@ -23,6 +23,9 @@ public partial class IconRailButton : UserControl
     public static readonly StyledProperty<object?> CommandParameterProperty =
         AvaloniaProperty.Register<IconRailButton, object?>(nameof(CommandParameter));
 
+    public static readonly StyledProperty<int> BadgeCountProperty =
+        AvaloniaProperty.Register<IconRailButton, int>(nameof(BadgeCount));
+
     public bool IsActive
     {
         get => GetValue(IsActiveProperty);
@@ -53,6 +56,12 @@ public partial class IconRailButton : UserControl
         set => SetValue(CommandParameterProperty, value);
     }
 
+    public int BadgeCount
+    {
+        get => GetValue(BadgeCountProperty);
+        set => SetValue(BadgeCountProperty, value);
+    }
+
     public IconRailButton()
     {
         InitializeComponent();
@@ -60,6 +69,7 @@ public partial class IconRailButton : UserControl
         _ = IsActiveProperty.Changed.AddClassHandler<IconRailButton>(OnIsActiveChanged);
         _ = IconPathProperty.Changed.AddClassHandler<IconRailButton>(OnIconPathChanged);
         _ = TooltipLabelProperty.Changed.AddClassHandler<IconRailButton>(OnTooltipChanged);
+        _ = BadgeCountProperty.Changed.AddClassHandler<IconRailButton>(OnBadgeCountChanged);
     }
 
     private static void OnIsEnabledChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
@@ -84,6 +94,13 @@ public partial class IconRailButton : UserControl
 
     private static void OnTooltipChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
         => sender.TooltipText.Text = e.GetNewValue<string>();
+
+    private static void OnBadgeCountChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        int count = e.GetNewValue<int>();
+        sender.BadgeBorder.IsVisible = count > 0;
+        sender.BadgeText.Text        = count > 99 ? "99+" : count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
 
     private void RailBtnClick(object? sender, RoutedEventArgs e)
     {

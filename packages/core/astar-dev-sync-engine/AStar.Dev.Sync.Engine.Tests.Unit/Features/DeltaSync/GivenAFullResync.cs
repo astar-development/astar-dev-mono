@@ -1,4 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
+using AStar.Dev.Conflict.Resolution.Features.Detection;
+using AStar.Dev.Conflict.Resolution.Features.Persistence;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Features.DeltaQueries;
 using AStar.Dev.Sync.Engine.Features.Concurrency;
@@ -35,7 +37,7 @@ public sealed class GivenAFullResync : IDisposable
         [LocalFilePath] = new MockFileData(new byte[FileSize]) { LastWriteTime = RemoteLastModified.UtcDateTime },
     });
 
-    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), _fileSystem, NullLogger<SyncEngine>.Instance);
+    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), _fileSystem, Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
 
     [Fact]
     public async Task when_full_resync_and_file_matches_local_size_and_timestamp_then_file_is_skipped()

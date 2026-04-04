@@ -30,6 +30,7 @@
     <ProjectReference Include="../../../infra/astar-dev-onedrive-client/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj" />
     <ProjectReference Include="../../functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
     <ProjectReference Include="../../logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    <ProjectReference Include="../../astar-dev-conflict-resolution/AStar.Dev.Conflict.Resolution/AStar.Dev.Conflict.Resolution.csproj" />
   </ItemGroup>
 
 </Project>

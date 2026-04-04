@@ -187,6 +187,21 @@
   <data name="Conflicts_ComingSoon" xml:space="preserve">
     <value>Conflicts — coming soon</value>
   </data>
+  <data name="Conflicts_SelectAll" xml:space="preserve">
+    <value>Select All</value>
+  </data>
+  <data name="Conflicts_LocalWins" xml:space="preserve">
+    <value>Local Wins</value>
+  </data>
+  <data name="Conflicts_RemoteWins" xml:space="preserve">
+    <value>Remote Wins</value>
+  </data>
+  <data name="Conflicts_KeepBoth" xml:space="preserve">
+    <value>Keep Both</value>
+  </data>
+  <data name="Conflicts_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
   <data name="Help_ComingSoon" xml:space="preserve">
     <value>Help — coming soon</value>
   </data>

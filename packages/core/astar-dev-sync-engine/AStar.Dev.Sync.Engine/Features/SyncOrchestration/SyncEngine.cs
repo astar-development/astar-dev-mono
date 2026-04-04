@@ -1,5 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using AStar.Dev.Conflict.Resolution.Domain;
+using AStar.Dev.Conflict.Resolution.Features.Detection;
+using AStar.Dev.Conflict.Resolution.Features.Persistence;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Features.DeltaQueries;
 using AStar.Dev.Sync.Engine.Features.Concurrency;
@@ -27,6 +30,8 @@ internal sealed class SyncEngine(
     IDbBackupService dbBackupService,
     ExponentialBackoffPolicy backoffPolicy,
     IFileSystem fileSystem,
+    IConflictDetector conflictDetector,
+    IConflictStore conflictStore,
     ILogger<SyncEngine> logger) : ISyncEngine
 {
     private const double DiskSpaceBufferFactor = 1.1;
@@ -121,7 +126,7 @@ internal sealed class SyncEngine(
 
         await foreach (var item in ToAsyncEnumerable(queryResult.Items).WithCancellation(ct).ConfigureAwait(false))
         {
-            await ProcessDeltaItemAsync(accountId, item, queryResult.IsFullSync, counters, ct).ConfigureAwait(false);
+            await ProcessDeltaItemAsync(accountId, item, queryResult.IsFullSync, counters, null, ct).ConfigureAwait(false);
 
             var checkpoint = SyncCheckpointFactory.Create(accountId, item.Id);
             await stateStore.SaveCheckpointAsync(checkpoint, ct).ConfigureAwait(false);
@@ -132,14 +137,14 @@ internal sealed class SyncEngine(
         await stateStore.SetStateAsync(accountId, SyncAccountState.Completed, ct).ConfigureAwait(false);
         await stateStore.ClearCheckpointAsync(accountId, ct).ConfigureAwait(false);
 
-        var report = SyncReportFactory.Create(accountId, startedAt, DateTimeOffset.UtcNow, counters.Downloaded, counters.Uploaded, counters.Skipped, 0, counters.Errors, queryResult.IsFullSync, false, hadMultiAccountWarning);
+        var report = SyncReportFactory.Create(accountId, startedAt, DateTimeOffset.UtcNow, counters.Downloaded, counters.Uploaded, counters.Skipped, counters.Conflicts, counters.Errors, queryResult.IsFullSync, false, hadMultiAccountWarning);
 
         SyncEngineLogMessage.SyncCompleted(logger, accountId, counters.Downloaded, counters.Uploaded, counters.Skipped);
 
         return new Result<SyncReport, SyncEngineError>.Ok(report);
     }
 
-    private async Task ProcessDeltaItemAsync(string accountId, DeltaItem item, bool isFullSync, SyncCounters counters, CancellationToken ct)
+    private async Task ProcessDeltaItemAsync(string accountId, DeltaItem item, bool isFullSync, SyncCounters counters, DateTimeOffset? lastSyncCompletedAt, CancellationToken ct)
     {
         var slots = syncGate.GetTransferSlots(accountId);
         await slots.WaitAsync(ct).ConfigureAwait(false);
@@ -153,23 +158,36 @@ internal sealed class SyncEngine(
                 return;
             }
 
+            var localPath = item.Name ?? item.Id;
+
             if (item.ItemType == DeltaItemType.Deleted)
             {
-                SyncEngineLogMessage.DestructiveActionPending(logger, accountId, "delete", item.Name ?? item.Id);
+                var deleteConflict = await DetectAndPersistConflictAsync(accountId, localPath, item, lastSyncCompletedAt, ct).ConfigureAwait(false);
+
+                if (deleteConflict is null)
+                    SyncEngineLogMessage.DestructiveActionPending(logger, accountId, "delete", localPath);
 
                 return;
             }
 
             if (isFullSync && IsRemoteAndLocalInSync(item))
             {
-                SyncEngineLogMessage.FullResyncFileSkipped(logger, item.Name ?? item.Id);
+                SyncEngineLogMessage.FullResyncFileSkipped(logger, localPath);
                 counters.Skipped++;
 
                 return;
             }
 
+            var conflict = await DetectAndPersistConflictAsync(accountId, localPath, item, lastSyncCompletedAt, ct).ConfigureAwait(false);
+
+            if (conflict is not null)
+            {
+                counters.Conflicts++;
+
+                return;
+            }
+
             var accessToken = string.Empty;
-            var localPath = item.Name ?? item.Id;
             var downloadResult = await fileTransferService.DownloadAsync(accessToken, item.Id, localPath, null, ct).ConfigureAwait(false);
 
             if (downloadResult is Result<OneDrive.Client.Features.FileOperations.FileDownloadResult, string>.Ok)
@@ -181,6 +199,21 @@ internal sealed class SyncEngine(
         {
             slots.Release();
         }
+    }
+
+    private async Task<ConflictRecord?> DetectAndPersistConflictAsync(string accountId, string filePath, DeltaItem item, DateTimeOffset? lastSyncCompletedAt, CancellationToken ct)
+    {
+        var accountGuid = Guid.TryParse(accountId, out var parsed) ? parsed : Guid.Empty;
+        var detectionResult = await conflictDetector.DetectAsync(accountGuid, filePath, item.LastModifiedDateTime, item.Size, item.ItemType == DeltaItemType.Deleted, lastSyncCompletedAt, ct).ConfigureAwait(false);
+
+        if (detectionResult is not Result<ConflictRecord?, ConflictDetectionError>.Ok detectionOk || detectionOk.Value is null)
+
+            return null;
+
+        var conflict = detectionOk.Value;
+        await conflictStore.AddAsync(conflict, ct).ConfigureAwait(false);
+
+        return conflict;
     }
 
     private async Task ProcessFolderRenameAsync(DeltaItem item, SyncCounters counters)
@@ -294,6 +327,7 @@ internal sealed class SyncEngine(
         public int Downloaded;
         public int Uploaded;
         public int Skipped;
+        public int Conflicts;
         public List<string> Errors { get; } = [];
     }
 }

@@ -18,4 +18,16 @@
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <ProjectReference Include="../../logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+  </ItemGroup>
+
 </Project>
