@@ -177,6 +177,33 @@ public sealed class GivenADashboardViewModel : IDisposable
     }
 
     [Fact]
+    public async Task when_sync_completes_with_skipped_files_then_toast_message_property_is_set()
+    {
+        _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(hadMultiAccountWarning: false, hasSkippedFiles: true)));
+
+        var sut = await CreateAndLoadSutAsync();
+
+        await sut.Accounts[0].SyncNowCommand.Execute().FirstAsync();
+
+        sut.ToastMessage.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task when_dismiss_toast_command_is_executed_then_toast_message_is_cleared()
+    {
+        _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncReport, SyncEngineError>.Ok(BuildSuccessReport(hadMultiAccountWarning: false, hasSkippedFiles: true)));
+
+        var sut = await CreateAndLoadSutAsync();
+        await sut.Accounts[0].SyncNowCommand.Execute().FirstAsync();
+
+        await sut.DismissToastCommand.Execute().FirstAsync();
+
+        sut.ToastMessage.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task when_local_path_unavailable_error_is_returned_then_card_shows_error_badge()
     {
         _syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
