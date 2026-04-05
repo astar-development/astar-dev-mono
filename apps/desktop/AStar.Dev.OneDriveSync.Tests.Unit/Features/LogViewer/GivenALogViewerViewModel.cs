@@ -1,10 +1,10 @@
 using System.Collections.Generic;
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
-using AStar.Dev.Functional.Extensions;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
-using Microsoft.Reactive.Testing;
 using ReactiveUI;
 using Serilog.Events;
 
@@ -16,7 +16,7 @@ public sealed class GivenALogViewerViewModel : IDisposable
     private const string OtherAccountId   = "aaaabbbb-cccc-dddd-eeee-ffffffffffff";
     private const string AllAccountsValue = "";
 
-    private readonly IScheduler _originalMainScheduler = RxApp.MainThreadScheduler;
+    private readonly IScheduler _originalScheduler = RxApp.MainThreadScheduler;
     private readonly ILogEntryProvider _logProvider     = Substitute.For<ILogEntryProvider>();
     private readonly IAccountRepository _accountRepo    = Substitute.For<IAccountRepository>();
     private readonly IUserTypeService _userTypeService  = Substitute.For<IUserTypeService>();
@@ -29,7 +29,7 @@ public sealed class GivenALogViewerViewModel : IDisposable
         _logProvider.EntryAdded.Returns(_subject);
         _logProvider.GetSnapshot().Returns([]);
         _accountRepo.GetAllAsync(default).ReturnsForAnyArgs(
-            new Result<IReadOnlyList<Account>, string>.Ok([]));
+            Task.FromResult<IReadOnlyList<Account>>([]));
         _userTypeService.CurrentUserType.Returns(UserType.Casual);
     }
 
@@ -188,7 +188,7 @@ public sealed class GivenALogViewerViewModel : IDisposable
 
     public void Dispose()
     {
-        RxApp.MainThreadScheduler = _originalMainScheduler;
+        RxApp.MainThreadScheduler = _originalScheduler;
         _subject.Dispose();
     }
 

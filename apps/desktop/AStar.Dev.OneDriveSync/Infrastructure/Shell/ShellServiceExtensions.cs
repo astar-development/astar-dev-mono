@@ -23,7 +23,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Shell;
 
 internal static class ShellServiceExtensions
 {
-    internal static IServiceCollection AddShell(this IServiceCollection services, OneDriveClientOptions oneDriveOptions)
+    internal static IServiceCollection AddShell(this IServiceCollection services, OneDriveClientOptions oneDriveOptions, InMemoryLogSink inMemoryLogSink)
     {
         _ = services.AddLocalisation();
         _ = services.AddTheming();
@@ -45,6 +45,9 @@ internal static class ShellServiceExtensions
 
         _ = services.AddConflictResolution();
         _ = services.AddSingleton<IConflictStore, ConflictStore>();
+
+        _ = services.AddSingleton<InMemoryLogSink>(inMemoryLogSink);
+        _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
 
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
@@ -78,6 +81,7 @@ internal static class ShellServiceExtensions
         service.Register(NavSection.Accounts);
         service.Register(NavSection.Activity);
         service.Register(NavSection.Conflicts);
+        service.Register(NavSection.LogViewer);
         service.Register(NavSection.Settings);
         service.Register(NavSection.Help);
     }
