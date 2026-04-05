@@ -5,6 +5,7 @@ using AStar.Dev.Conflict.Resolution.Features.Detection;
 using AStar.Dev.Conflict.Resolution.Features.Persistence;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Features.DeltaQueries;
+using AStar.Dev.Sync.Engine.Features.Activity;
 using AStar.Dev.Sync.Engine.Features.Concurrency;
 using AStar.Dev.Sync.Engine.Features.DiskSpace;
 using AStar.Dev.Sync.Engine.Features.FileTransfer;
@@ -23,6 +24,7 @@ internal sealed class SyncEngine(
     SyncGate syncGate,
     ISyncStateStore stateStore,
     ISyncProgressReporter progressReporter,
+    IActivityReporter activityReporter,
     IDeltaQueryService deltaQueryService,
     IFileTransferService fileTransferService,
     ILocalFileScanner localFileScanner,
@@ -172,6 +174,7 @@ internal sealed class SyncEngine(
             {
                 SyncEngineLogMessage.FullResyncFileSkipped(logger, localPath);
                 counters.Skipped++;
+                activityReporter.Report(accountId, ActivityActionType.Skipped, localPath);
 
                 return;
             }
@@ -181,6 +184,7 @@ internal sealed class SyncEngine(
             if (conflict is not null)
             {
                 counters.Conflicts++;
+                activityReporter.Report(accountId, ActivityActionType.ConflictDetected, localPath);
 
                 return;
             }
@@ -189,9 +193,15 @@ internal sealed class SyncEngine(
             var downloadResult = await fileTransferService.DownloadAsync(accessToken, item.Id, localPath, null, ct).ConfigureAwait(false);
 
             if (downloadResult is Result<OneDrive.Client.Features.FileOperations.FileDownloadResult, string>.Ok)
+            {
                 counters.Downloaded++;
+                activityReporter.Report(accountId, ActivityActionType.Downloaded, localPath);
+            }
             else
+            {
                 counters.Errors.Add($"Download failed for {item.Id}");
+                activityReporter.Report(accountId, ActivityActionType.Error, localPath);
+            }
         }
         finally
         {
@@ -249,9 +259,15 @@ internal sealed class SyncEngine(
             var uploadResult = await fileTransferService.UploadAsync(accessToken, filePath, accountId, null, ct).ConfigureAwait(false);
 
             if (uploadResult is Result<OneDrive.Client.Features.FileOperations.FileUploadResult, string>.Ok)
+            {
                 counters.Uploaded++;
+                activityReporter.Report(accountId, ActivityActionType.Uploaded, filePath);
+            }
             else
+            {
                 counters.Errors.Add($"Upload failed for {filePath}");
+                activityReporter.Report(accountId, ActivityActionType.Error, filePath);
+            }
         }
     }
 
