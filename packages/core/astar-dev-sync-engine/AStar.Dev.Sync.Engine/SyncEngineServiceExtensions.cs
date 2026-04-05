@@ -9,6 +9,7 @@ using AStar.Dev.Sync.Engine.Features.Resilience;
 using AStar.Dev.Sync.Engine.Features.Scheduling;
 using AStar.Dev.Sync.Engine.Features.SyncOrchestration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AStar.Dev.Sync.Engine;
 
@@ -24,7 +25,7 @@ public static class SyncEngineServiceExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<SyncGate>();
-        services.AddSingleton<IActivityReporter, NullActivityReporter>();
+        services.TryAddSingleton<IActivityReporter, NullActivityReporter>();
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncScheduler, SyncScheduler>();
         services.AddSingleton<ISyncProgressReporter, SyncProgressReporter>();

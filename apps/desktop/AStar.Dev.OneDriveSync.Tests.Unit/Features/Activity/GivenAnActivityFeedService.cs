@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDriveSync.Features.Activity;
 using AStar.Dev.Sync.Engine.Features.Activity;
@@ -45,18 +44,39 @@ public sealed class GivenAnActivityFeedService : IDisposable
     }
 
     [Fact]
-    public void when_item_is_reported_then_activity_stream_emits_the_item()
+    public void when_item_is_reported_then_activity_stream_emits_a_non_null_item()
     {
         ActivityItem? received = null;
 
-        using var _ = _sut.ActivityStream.Subscribe(item => received = item);
+        using var subscription = _sut.ActivityStream.Subscribe(item => received = item);
 
         _sut.Report("acc-1", ActivityActionType.Uploaded, "/doc.docx");
 
         received.ShouldNotBeNull();
-        received.AccountId.ShouldBe("acc-1");
-        received.ActionType.ShouldBe(ActivityActionType.Uploaded);
-        received.FilePath.ShouldBe("/doc.docx");
+    }
+
+    [Fact]
+    public void when_item_is_reported_then_emitted_item_has_correct_account_id()
+    {
+        ActivityItem? received = null;
+
+        using var subscription = _sut.ActivityStream.Subscribe(item => received = item);
+
+        _sut.Report("acc-1", ActivityActionType.Uploaded, "/doc.docx");
+
+        received!.AccountId.ShouldBe("acc-1");
+    }
+
+    [Fact]
+    public void when_item_is_reported_then_emitted_item_has_correct_action_type()
+    {
+        ActivityItem? received = null;
+
+        using var subscription = _sut.ActivityStream.Subscribe(item => received = item);
+
+        _sut.Report("acc-1", ActivityActionType.Uploaded, "/doc.docx");
+
+        received!.ActionType.ShouldBe(ActivityActionType.Uploaded);
     }
 
     [Fact]
@@ -70,6 +90,22 @@ public sealed class GivenAnActivityFeedService : IDisposable
             onSome: items => { items.ShouldContain(item => item.FilePath == "/photo.jpg"); return 0; },
             onNone: () => { throw new InvalidOperationException("Expected Some but got None."); });
     }
+
+    [Fact]
+    public void when_report_is_called_with_null_account_id_then_throws_argument_exception()
+        => Should.Throw<ArgumentException>(() => _sut.Report(null!, ActivityActionType.Downloaded, "/file.txt"));
+
+    [Fact]
+    public void when_report_is_called_with_whitespace_account_id_then_throws_argument_exception()
+        => Should.Throw<ArgumentException>(() => _sut.Report("   ", ActivityActionType.Downloaded, "/file.txt"));
+
+    [Fact]
+    public void when_report_is_called_with_null_file_path_then_throws_argument_exception()
+        => Should.Throw<ArgumentException>(() => _sut.Report("acc-1", ActivityActionType.Downloaded, null!));
+
+    [Fact]
+    public void when_report_is_called_with_whitespace_file_path_then_throws_argument_exception()
+        => Should.Throw<ArgumentException>(() => _sut.Report("acc-1", ActivityActionType.Downloaded, "   "));
 
     public void Dispose() => _sut.Dispose();
 }

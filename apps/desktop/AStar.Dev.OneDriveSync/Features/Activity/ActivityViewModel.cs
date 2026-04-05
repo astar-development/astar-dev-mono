@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using AStar.Dev.OneDriveSync.Infrastructure;
@@ -59,7 +60,7 @@ public sealed class ActivityViewModel : ViewModelBase, IDisposable
 
     private void LoadSnapshot(IReadOnlyList<ActivityItem> items)
     {
-        foreach (var item in items)
+        foreach (var item in items.OrderByDescending(static i => i.Timestamp))
             Items.Add(new ActivityItemViewModel(item));
     }
 
