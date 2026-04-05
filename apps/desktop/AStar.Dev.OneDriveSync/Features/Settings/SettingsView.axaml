@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:AStar.Dev.OneDriveSync.Features.Settings"
              xmlns:theming="using:AStar.Dev.OneDriveSync.Infrastructure.Theming"
+             xmlns:onboarding="using:AStar.Dev.OneDriveSync.Features.Onboarding"
              xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.Settings.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -43,6 +44,35 @@
                       MinWidth="200"
                       Foreground="{DynamicResource TextPrimaryBrush}"
                       Background="{DynamicResource BackgroundSecondaryBrush}"/>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Localise Settings_UserTypeLabel}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <ComboBox ItemsSource="{Binding UserTypes}"
+                      SelectedItem="{Binding SelectedUserType}"
+                      MinWidth="200"
+                      Foreground="{DynamicResource TextPrimaryBrush}"
+                      Background="{DynamicResource BackgroundSecondaryBrush}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="onboarding:UserType">
+                        <TextBlock Text="{Binding}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Spacing="8">
+            <TextBlock Text="{loc:Localise Settings_NotificationsLabel}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+            <ToggleSwitch IsChecked="{Binding NotificationsEnabled}"
+                          OnContent="{loc:Localise Settings_NotificationsOn}"
+                          OffContent="{loc:Localise Settings_NotificationsOff}"
+                          Foreground="{DynamicResource TextPrimaryBrush}"/>
         </StackPanel>
 
     </StackPanel>

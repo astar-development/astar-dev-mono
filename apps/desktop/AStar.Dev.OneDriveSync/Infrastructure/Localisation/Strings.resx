@@ -71,6 +71,24 @@
   <data name="Settings_LocaleLabel" xml:space="preserve">
     <value>Language</value>
   </data>
+  <data name="Settings_UserTypeLabel" xml:space="preserve">
+    <value>User Type</value>
+  </data>
+  <data name="Settings_NotificationsLabel" xml:space="preserve">
+    <value>OS Notifications</value>
+  </data>
+  <data name="Settings_NotificationsOn" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Settings_NotificationsOff" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="Settings_PowerUserConfirm_Title" xml:space="preserve">
+    <value>Switch to Power User?</value>
+  </data>
+  <data name="Settings_PowerUserConfirm_Message" xml:space="preserve">
+    <value>This unlocks advanced settings that can affect sync performance if misconfigured</value>
+  </data>
   <data name="Nav_Dashboard" xml:space="preserve">
     <value>Dashboard</value>
   </data>

@@ -20,4 +20,7 @@ public sealed class AppSettings
 
     /// <summary>User type preference: Casual or PowerUser (OH-04, AM-05).</summary>
     public string UserType { get; set; } = "Casual";
+
+    /// <summary>Whether OS notifications are enabled (ST-03). Defaults to <see langword="true"/>.</summary>
+    public bool NotificationsEnabled { get; set; } = true;
 }

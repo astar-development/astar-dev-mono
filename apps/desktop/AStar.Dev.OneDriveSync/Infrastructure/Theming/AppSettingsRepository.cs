@@ -44,9 +44,10 @@ internal sealed partial class AppSettingsRepository(IDbContextFactory<AppDbConte
                 ctx.AppSettings.Add(settings);
             else
             {
-                existing.ThemeMode = settings.ThemeMode;
-                existing.Locale    = settings.Locale;
-                existing.UserType  = settings.UserType;
+                existing.ThemeMode             = settings.ThemeMode;
+                existing.Locale               = settings.Locale;
+                existing.UserType             = settings.UserType;
+                existing.NotificationsEnabled = settings.NotificationsEnabled;
             }
 
             _ = await ctx.SaveChangesAsync(ct).ConfigureAwait(false);

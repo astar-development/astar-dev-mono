@@ -53,6 +53,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
         _ = services.AddSingleton<ILocalSyncPathService, LocalSyncPathService>();
         _ = services.AddSingleton<IUserTypeService, UserTypeService>();
+        _ = services.AddSingleton<INotificationsService, NotificationsService>();
 
         _ = services.AddTransient<AddAccountWizardViewModel>();
         _ = services.AddSingleton<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
@@ -65,7 +66,7 @@ internal static class ShellServiceExtensions
         _ = services.AddTransient<ActivityViewModel>();
         _ = services.AddSingleton<ConflictsViewModel>();
         _ = services.AddTransient<LogViewerViewModel>();
-        _ = services.AddSingleton<SettingsViewModel>();
+        _ = services.AddTransient<SettingsViewModel>();
         _ = services.AddSingleton<OnboardingViewModel>();
         _ = services.AddSingleton<HelpViewModel>();
         _ = services.AddSingleton<AboutViewModel>();
