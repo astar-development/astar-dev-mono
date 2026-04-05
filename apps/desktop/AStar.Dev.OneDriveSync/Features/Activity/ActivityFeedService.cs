@@ -51,9 +51,9 @@ public sealed class ActivityFeedService : IActivityFeedService, IActivityReporte
 
             while (_items.Count > MaxItems)
                 _items.RemoveLast();
-        }
 
-        _subject.OnNext(item);
+            _subject.OnNext(item);
+        }
     }
 
     /// <inheritdoc />

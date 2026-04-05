@@ -59,7 +59,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IToastService>(sp => sp.GetRequiredService<AvaloniaToastService>());
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<AccountsViewModel>();
-        _ = services.AddSingleton<ActivityViewModel>();
+        _ = services.AddTransient<ActivityViewModel>();
         _ = services.AddSingleton<ConflictsViewModel>();
         _ = services.AddSingleton<LogViewerViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
