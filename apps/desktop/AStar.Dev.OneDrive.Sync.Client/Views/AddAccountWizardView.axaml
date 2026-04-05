@@ -1,0 +1,209 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.AddAccountWizardView"
+             x:DataType="vm:AddAccountWizardViewModel">
+
+    <StackPanel Spacing="24">
+
+        <!-- Header: title + step indicators -->
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0"
+                       Text="Add OneDrive account"
+                       FontSize="{StaticResource FontSizeXl}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center"/>
+
+            <!-- Step dots: overlay accent on top of muted base -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        VerticalAlignment="Center">
+                <Grid Width="8" Height="8">
+                    <Ellipse Fill="{DynamicResource BorderDefaultBrush}"/>
+                    <Ellipse Fill="{DynamicResource TextAccentBrush}"
+                             IsVisible="{Binding IsSignInStep}"/>
+                </Grid>
+                <Grid Width="8" Height="8">
+                    <Ellipse Fill="{DynamicResource BorderDefaultBrush}"/>
+                    <Ellipse Fill="{DynamicResource TextAccentBrush}"
+                             IsVisible="{Binding IsSelectFoldersStep}"/>
+                </Grid>
+                <Grid Width="8" Height="8">
+                    <Ellipse Fill="{DynamicResource BorderDefaultBrush}"/>
+                    <Ellipse Fill="{DynamicResource TextAccentBrush}"
+                             IsVisible="{Binding IsConfirmStep}"/>
+                </Grid>
+            </StackPanel>
+        </Grid>
+
+        <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+        <!-- Step 1 — Sign in -->
+        <StackPanel IsVisible="{Binding IsSignInStep}" Spacing="16">
+
+            <TextBlock Text="Sign in to your Microsoft account"
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="A browser window will open for you to sign in. Only personal Microsoft accounts are supported (Outlook, Hotmail, Live)."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       TextWrapping="Wrap"/>
+
+            <Button HorizontalAlignment="Left"
+                    Padding="16,8"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="{DynamicResource TextAccentBrush}"
+                    BorderThickness="0"
+                    Command="{Binding OpenBrowserCommand}"
+                    IsEnabled="{Binding !IsWaitingForAuth}">
+                <TextBlock Text="Open browser to sign in"
+                           Foreground="White"
+                           FontSize="{StaticResource FontSizeMd}"/>
+            </Button>
+
+            <!-- Status text — visible only when non-empty -->
+            <TextBlock Text="{Binding SignInStatusText}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextAccentBrush}"
+                       IsVisible="{Binding IsWaitingForAuth}"/>
+
+            <TextBlock Text="{Binding SignInStatusText}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource StatusSyncedBrush}"
+                       IsVisible="{Binding IsSignedIn}"/>
+
+        </StackPanel>
+
+        <!-- Step 2 — Select folders -->
+        <StackPanel IsVisible="{Binding IsSelectFoldersStep}" Spacing="16">
+
+            <TextBlock Text="Which folders would you like to sync?"
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+            <TextBlock Text="You can change this at any time from the Files section."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       TextWrapping="Wrap"/>
+
+            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    MaxHeight="200">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Folders}"
+                                  Margin="4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:WizardFolderItem">
+                                <Grid ColumnDefinitions="Auto,*"
+                                      Margin="8,4">
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsSelected}"
+                                              VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               FontSize="{StaticResource FontSizeMd}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="8,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <Button HorizontalAlignment="Left"
+                    Padding="8,4"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Command="{Binding SkipFoldersCommand}">
+                <TextBlock Text="Skip — I'll choose folders later"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+            </Button>
+
+        </StackPanel>
+
+        <!-- Step 3 — Confirm -->
+        <StackPanel IsVisible="{Binding IsConfirmStep}" Spacing="12">
+
+            <TextBlock Text="Ready to connect"
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Padding="16">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="120,*">
+                        <TextBlock Grid.Column="0"
+                                   Text="Account"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ConfirmedEmail}"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="120,*">
+                        <TextBlock Grid.Column="0"
+                                   Text="Folders to sync"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ConfirmedFolderCount, StringFormat='{}{0} selected'}"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+
+        <!-- Footer: Back / Cancel / Next -->
+        <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+        <Grid ColumnDefinitions="Auto,*,Auto,8,Auto">
+
+            <Button Grid.Column="0"
+                    Content="Back"
+                    Padding="12,6"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                    BorderThickness="1"
+                    IsVisible="{Binding CanGoBack}"
+                    Command="{Binding BackCommand}"/>
+
+            <Button Grid.Column="2"
+                    Content="Cancel"
+                    Padding="12,6"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="Transparent"
+                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                    BorderThickness="1"
+                    Command="{Binding CancelCommand}"/>
+
+            <Button Grid.Column="4"
+                    Content="{Binding NextLabel}"
+                    Padding="16,6"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="{DynamicResource TextAccentBrush}"
+                    Foreground="White"
+                    BorderThickness="0"
+                    IsEnabled="{Binding CanGoNext}"
+                    Command="{Binding NextCommand}"/>
+
+        </Grid>
+
+    </StackPanel>
+
+</UserControl>
