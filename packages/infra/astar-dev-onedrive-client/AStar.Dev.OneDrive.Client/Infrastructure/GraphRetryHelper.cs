@@ -15,7 +15,9 @@ internal static class GraphRetryHelper
         {
             try
             {
-                return await operation().ConfigureAwait(false);
+                var result = await operation().ConfigureAwait(false);
+
+                return result;
             }
             catch (ODataError oDataError) when (oDataError.ResponseStatusCode == 429)
             {
@@ -37,7 +39,9 @@ internal static class GraphRetryHelper
         {
             var headerValue = values?.FirstOrDefault();
             if (int.TryParse(headerValue, out var seconds))
+            {
                 return TimeSpan.FromSeconds(seconds);
+            }
         }
 
         return TimeSpan.FromSeconds(DefaultRetryAfterSeconds);
