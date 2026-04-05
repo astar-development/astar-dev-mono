@@ -33,7 +33,7 @@ internal sealed class FileUploader(IGraphClientFactory graphClientFactory, IFile
 
         try
         {
-            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct).ConfigureAwait(false);
+            var drive = await GraphRetryHelper.CallWithRetryAsync(() => client.Me.Drive.GetAsync(cancellationToken: ct), logger, ct).ConfigureAwait(false);
 
             if (drive?.Id is null)
                 return new Result<FileUploadResult, string>.Error("Could not resolve OneDrive drive ID for the account.");
@@ -44,6 +44,10 @@ internal sealed class FileUploader(IGraphClientFactory graphClientFactory, IFile
             return fileInfo.Length <= DirectUploadThresholdBytes
                 ? await DirectUploadAsync(client, drive.Id, remoteFolderId, fileName, localPath, fileInfo.Length, progress, ct).ConfigureAwait(false)
                 : await ChunkedUploadAsync(client, drive.Id, remoteFolderId, fileName, localPath, fileInfo.Length, progress, ct).ConfigureAwait(false);
+        }
+        catch (ODataError oDataError) when (oDataError.ResponseStatusCode == 429)
+        {
+            return new Result<FileUploadResult, string>.Error("Graph API throttled: maximum retries exceeded.");
         }
         catch (ODataError oDataError)
         {
@@ -59,7 +63,7 @@ internal sealed class FileUploader(IGraphClientFactory graphClientFactory, IFile
     {
         using var fileStream  = fileSystem.FileStream.New(localPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         var uploadPath        = $"{remoteFolderId}:/{fileName}:";
-        var uploadedItem      = await client.Drives[driveId].Items[uploadPath].Content.PutAsync(fileStream, cancellationToken: ct).ConfigureAwait(false);
+        var uploadedItem      = await GraphRetryHelper.CallWithRetryAsync(() => client.Drives[driveId].Items[uploadPath].Content.PutAsync(fileStream, cancellationToken: ct), logger, ct).ConfigureAwait(false);
 
         if (uploadedItem?.Id is null)
             return new Result<FileUploadResult, string>.Error($"Graph did not return an item ID after uploading '{fileName}'.");
@@ -73,7 +77,7 @@ internal sealed class FileUploader(IGraphClientFactory graphClientFactory, IFile
     private async Task<Result<FileUploadResult, string>> ChunkedUploadAsync(Microsoft.Graph.GraphServiceClient client, string driveId, string remoteFolderId, string fileName, string localPath, long fileSize, IProgress<long>? progress, CancellationToken ct)
     {
         var uploadPath = $"{remoteFolderId}:/{fileName}:";
-        var session    = await client.Drives[driveId].Items[uploadPath].CreateUploadSession.PostAsync(new CreateUploadSessionPostRequestBody(), cancellationToken: ct).ConfigureAwait(false);
+        var session    = await GraphRetryHelper.CallWithRetryAsync(() => client.Drives[driveId].Items[uploadPath].CreateUploadSession.PostAsync(new CreateUploadSessionPostRequestBody(), cancellationToken: ct), logger, ct).ConfigureAwait(false);
 
         if (session?.UploadUrl is null)
             return new Result<FileUploadResult, string>.Error($"Graph did not return an upload session URL for '{fileName}'.");
