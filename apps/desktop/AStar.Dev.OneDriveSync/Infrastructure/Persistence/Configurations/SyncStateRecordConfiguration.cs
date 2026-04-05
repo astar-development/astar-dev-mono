@@ -23,5 +23,9 @@ internal sealed class SyncStateRecordConfiguration : IEntityTypeConfiguration<Sy
 
         _ = builder.Property(record => record.CheckpointJson)
             .IsRequired(false);
+
+        _ = builder.Property(record => record.DeltaToken)
+            .IsRequired(false)
+            .HasMaxLength(2048);
     }
 }
