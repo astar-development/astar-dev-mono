@@ -22,7 +22,11 @@ public sealed class NavItemViewModel : ViewModelBase
     public int BadgeCount
     {
         get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
+        set
+        {
+            _ = this.RaiseAndSetIfChanged(ref field, value);
+            this.RaisePropertyChanged(nameof(HasBadge));
+        }
     }
 
     /// <summary>Whether the badge should be visible.</summary>

@@ -49,7 +49,8 @@
                                     IsEnabled="{Binding IsFeatureEnabled}"
                                     TooltipLabel="{Binding Tooltip}"
                                     Command="{Binding NavigateCommand}"
-                                    CommandParameter="{Binding Section}"/>
+                                    CommandParameter="{Binding Section}"
+                                    BadgeCount="{Binding BadgeCount}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -66,7 +67,8 @@
                                     IsEnabled="{Binding IsFeatureEnabled}"
                                     TooltipLabel="{Binding Tooltip}"
                                     Command="{Binding NavigateCommand}"
-                                    CommandParameter="{Binding Section}"/>
+                                    CommandParameter="{Binding Section}"
+                                    BadgeCount="{Binding BadgeCount}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
