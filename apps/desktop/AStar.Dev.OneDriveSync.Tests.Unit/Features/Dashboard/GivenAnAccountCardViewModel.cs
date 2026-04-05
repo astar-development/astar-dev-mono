@@ -16,6 +16,16 @@ public sealed class GivenAnAccountCardViewModel
     }
 
     [Fact]
+    public void when_eta_seconds_is_1_then_eta_display_shows_1_second()
+    {
+        var sut = BuildCard();
+
+        sut.EtaSeconds = 1;
+
+        sut.EtaDisplay.ShouldBe("ETA 1s");
+    }
+
+    [Fact]
     public void when_eta_seconds_is_less_than_60_then_eta_display_shows_seconds()
     {
         var sut = BuildCard();
