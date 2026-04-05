@@ -44,11 +44,11 @@ internal sealed class SyncEngine(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
 
+        var hadMultiAccountWarning = syncGate.IsAnyAccountSyncing();
+
         if (!syncGate.TryBeginSync(accountId))
 
             return new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.AlreadyRunning());
-
-        var hadMultiAccountWarning = syncGate.IsAnyAccountSyncing();
 
         if (hadMultiAccountWarning)
             SyncEngineLogMessage.MultiAccountSyncWarning(logger, accountId);
@@ -87,10 +87,7 @@ internal sealed class SyncEngine(
 
         string? storedDeltaToken = null;
         if (!isFullResync)
-        {
-            var checkpoint = await stateStore.GetCheckpointAsync(accountId, ct).ConfigureAwait(false);
-            storedDeltaToken = checkpoint?.LastCompletedFileId;
-        }
+            storedDeltaToken = await stateStore.GetDeltaTokenAsync(accountId, ct).ConfigureAwait(false);
 
         var accessToken = string.Empty;
 
@@ -111,7 +108,7 @@ internal sealed class SyncEngine(
 
             await stateStore.SetStateAsync(accountId, SyncAccountState.Failed, ct).ConfigureAwait(false);
 
-            return new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.AlreadyRunning());
+            return new Result<SyncReport, SyncEngineError>.Error(SyncEngineErrorFactory.DeltaQueryFailed(deltaError.Reason.Message));
         }
 
         var queryResult = ((Result<DeltaQueryResult, DeltaQueryError>.Ok)deltaResult).Value;
@@ -134,10 +131,11 @@ internal sealed class SyncEngine(
 
         await CollectLocalFilesForUploadAsync(accountId, counters, ct).ConfigureAwait(false);
 
+        await stateStore.SaveDeltaTokenAsync(accountId, queryResult.NextDeltaToken, ct).ConfigureAwait(false);
         await stateStore.SetStateAsync(accountId, SyncAccountState.Completed, ct).ConfigureAwait(false);
         await stateStore.ClearCheckpointAsync(accountId, ct).ConfigureAwait(false);
 
-        var report = SyncReportFactory.Create(accountId, startedAt, DateTimeOffset.UtcNow, counters.Downloaded, counters.Uploaded, counters.Skipped, counters.Conflicts, counters.Errors, queryResult.IsFullSync, false, hadMultiAccountWarning);
+        var report = SyncReportFactory.Create(accountId, startedAt, DateTimeOffset.UtcNow, counters.Downloaded, counters.Uploaded, counters.Skipped, counters.Conflicts, counters.Errors, queryResult.IsFullSync, counters.Skipped > 0, hadMultiAccountWarning);
 
         SyncEngineLogMessage.SyncCompleted(logger, accountId, counters.Downloaded, counters.Uploaded, counters.Skipped);
 
@@ -223,6 +221,7 @@ internal sealed class SyncEngine(
 
         try
         {
+            fileSystem.Directory.Move(oldName, newName);
             SyncEngineLogMessage.FolderRenamed(logger, oldName, newName);
         }
         catch (IOException ex)

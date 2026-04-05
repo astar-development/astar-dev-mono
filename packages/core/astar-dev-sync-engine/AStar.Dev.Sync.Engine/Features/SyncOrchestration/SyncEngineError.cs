@@ -18,6 +18,9 @@ public sealed record ResumeFailedError() : SyncEngineError("Cannot resume interr
 /// <summary>Returned when the local sync folder is not accessible (e.g. unmounted drive) (AM-11).</summary>
 public sealed record LocalPathUnavailableError(string LocalPath) : SyncEngineError($"Local folder unavailable: {LocalPath}. Check your drive.");
 
+/// <summary>Returned when the delta query fails for a reason other than token expiry.</summary>
+public sealed record DeltaQueryFailedError(string Reason) : SyncEngineError($"Delta query failed: {Reason}.");
+
 /// <summary>Factory for <see cref="SyncEngineError"/> subtypes.</summary>
 public static class SyncEngineErrorFactory
 {
@@ -35,4 +38,7 @@ public static class SyncEngineErrorFactory
 
     /// <summary>Creates a <see cref="LocalPathUnavailableError"/>.</summary>
     public static LocalPathUnavailableError LocalPathUnavailable(string localPath = "") => new(localPath);
+
+    /// <summary>Creates a <see cref="DeltaQueryFailedError"/>.</summary>
+    public static DeltaQueryFailedError DeltaQueryFailed(string reason) => new(reason);
 }
