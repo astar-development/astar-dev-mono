@@ -17,7 +17,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20.x'
-  AZURE_WEBAPP_NAME: fab4kids
+  AZURE_WEBAPP_NAME: fab4kids-site
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -74,7 +74,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.FAB4KIDS_AZURE_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_30A7893EAF2D4593B54B7ACFE4926151 }}
           package: apps/web/fab4kids/deploy
 
       - name: Wait for app to warm up
