@@ -23,6 +23,9 @@ public interface IAppDbContext
     /// <summary>Conflict queue — all detected sync conflicts (CR-05, NF-05).</summary>
     DbSet<ConflictRecord> ConflictRecords { get; }
 
+    /// <summary>Per-account sync state and resume checkpoints (EH-04, EH-05, EH-06).</summary>
+    DbSet<SyncStateRecord> SyncStateRecords { get; }
+
     /// <summary>Saves pending changes to database.</summary>
     int SaveChanges();
 

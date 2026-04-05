@@ -204,6 +204,25 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                     b.ToTable("AppSettings", (string)null);
                 });
 
+            modelBuilder.Entity("AStar.Dev.OneDriveSync.Infrastructure.Persistence.SyncStateRecord", b =>
+                {
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(36)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CheckpointJson")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("SyncStateRecords");
+                });
+
             modelBuilder.Entity("AStar.Dev.OneDriveSync.Features.Accounts.SyncedFileMetadata", b =>
                 {
                     b.HasOne("AStar.Dev.OneDriveSync.Features.Accounts.Account", "Account")

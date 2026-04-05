@@ -101,6 +101,54 @@
   <data name="Dashboard_ComingSoon" xml:space="preserve">
     <value>Dashboard — coming soon</value>
   </data>
+  <data name="Dashboard_SyncNow" xml:space="preserve">
+    <value>Sync Now</value>
+  </data>
+  <data name="Dashboard_Syncing" xml:space="preserve">
+    <value>Syncing…</value>
+  </data>
+  <data name="Dashboard_NeverSynced" xml:space="preserve">
+    <value>Never synced</value>
+  </data>
+  <data name="Dashboard_Progress" xml:space="preserve">
+    <value>Syncing — {0}% — ETA {1} min</value>
+  </data>
+  <data name="Dashboard_MultiAccountWarning_Title" xml:space="preserve">
+    <value>Multiple Accounts Syncing</value>
+  </data>
+  <data name="Dashboard_MultiAccountWarning_Message" xml:space="preserve">
+    <value>Syncing multiple accounts simultaneously may impact performance. Continue?</value>
+  </data>
+  <data name="Dashboard_FullResync_Title" xml:space="preserve">
+    <value>Full Re-sync Required</value>
+  </data>
+  <data name="Dashboard_FullResync_Message" xml:space="preserve">
+    <value>Your sync data has expired (30+ days inactive). A full re-sync is required. Start now or postpone?</value>
+  </data>
+  <data name="Dashboard_ResumeFailed_Title" xml:space="preserve">
+    <value>Resume Failed</value>
+  </data>
+  <data name="Dashboard_ResumeFailed_Message" xml:space="preserve">
+    <value>Resume failed — a full re-sync is required. Start now?</value>
+  </data>
+  <data name="Dashboard_SkippedFiles_Toast" xml:space="preserve">
+    <value>Some files were skipped during sync — review the log for details</value>
+  </data>
+  <data name="Dashboard_LocalPathError" xml:space="preserve">
+    <value>Local folder unavailable — check your drive</value>
+  </data>
+  <data name="Dashboard_Interrupted" xml:space="preserve">
+    <value>Last sync interrupted — resume?</value>
+  </data>
+  <data name="Dashboard_Resume" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="Dashboard_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Dashboard_AuthRequired" xml:space="preserve">
+    <value>Re-authentication required</value>
+  </data>
   <data name="Accounts_ComingSoon" xml:space="preserve">
     <value>Accounts — coming soon</value>
   </data>

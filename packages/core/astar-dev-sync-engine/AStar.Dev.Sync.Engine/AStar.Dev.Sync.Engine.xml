@@ -303,6 +303,12 @@
         <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.ResumeFailedError.#ctor">
             <summary>Returned when the interrupted-sync checkpoint is corrupt and a resume cannot be attempted (EH-06).</summary>
         </member>
+        <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.LocalPathUnavailableError">
+            <summary>Returned when the local sync folder is not accessible (e.g. unmounted drive) (AM-11).</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.LocalPathUnavailableError.#ctor(System.String)">
+            <summary>Returned when the local sync folder is not accessible (e.g. unmounted drive) (AM-11).</summary>
+        </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineError"/> subtypes.</summary>
         </member>
@@ -317,6 +323,9 @@
         </member>
         <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory.ResumeFailed">
             <summary>Creates a <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.ResumeFailedError"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory.LocalPathUnavailable(System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.LocalPathUnavailableError"/>.</summary>
         </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncReport">
             <summary>Summary of a completed sync run for an account.</summary>
