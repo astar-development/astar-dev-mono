@@ -23,6 +23,7 @@ using Serilog.Events;
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 using AStar.Dev.Utilities;
 using AStar.Dev.OneDrive.Client;
+using AStar.Dev.OneDriveSync.Features.LogViewer;
 
 namespace AStar.Dev.OneDriveSync;
 
@@ -100,13 +101,14 @@ public partial class App : Application, IDisposable
 
     private static ServiceProvider BuildServiceProvider()
     {
-        ConfigureSerilog();
+        var inMemoryLogSink = new InMemoryLogSink();
+        ConfigureSerilog(inMemoryLogSink);
 
         var services = new ServiceCollection();
 
         _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
         _ = services.AddPersistence();
-        _ = services.AddShell(BuildOneDriveClientOptions());
+        _ = services.AddShell(BuildOneDriveClientOptions(), inMemoryLogSink);
         _ = services.AddStartupTasks();
 
         return services.BuildServiceProvider();
@@ -120,21 +122,22 @@ public partial class App : Application, IDisposable
         return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
     }
 
-    private static void ConfigureSerilog()
+    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink)
     {
         string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath("AStar.Dev.OneDriveSync", "logs");
 
         _ = Directory.CreateDirectory(logDirectory);
 
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+            .MinimumLevel.Verbose()
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
                 path: Path.Combine(logDirectory, "app.log"),
                 formatProvider: CultureInfo.InvariantCulture,
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 14)
+                retainedFileCountLimit: 7)
+            .WriteTo.Sink(inMemoryLogSink)
             .CreateLogger();
     }
 

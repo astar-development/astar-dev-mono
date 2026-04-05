@@ -4,7 +4,112 @@
              xmlns:loc="using:AStar.Dev.OneDriveSync.Infrastructure.Localisation"
              x:Class="AStar.Dev.OneDriveSync.Features.LogViewer.LogViewerView"
              x:DataType="vm:LogViewerViewModel">
-    <TextBlock Text="{loc:Localise LogViewer_ComingSoon}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+
+    <DockPanel Margin="16">
+
+        <!-- Header row: title + casual mode tooltip -->
+        <Grid DockPanel.Dock="Top"
+              ColumnDefinitions="*,Auto"
+              Margin="0,0,0,12">
+            <TextBlock Grid.Column="0"
+                       Text="{loc:Localise LogViewer_Heading}"
+                       FontSize="{StaticResource FontSizeLg}"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       Text="{loc:Localise LogViewer_CasualModeHint}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding !IsPowerUser}"
+                       ToolTip.Tip="{loc:Localise LogViewer_CasualModeTooltip}" />
+        </Grid>
+
+        <!-- Account filter + log file path row -->
+        <Grid DockPanel.Dock="Top"
+              ColumnDefinitions="Auto,*,Auto,Auto"
+              Margin="0,0,0,12">
+
+            <TextBlock Grid.Column="0"
+                       Text="{loc:Localise LogViewer_AccountFilterLabel}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
+
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding AccountFilterOptions}"
+                      SelectedValueBinding="{Binding AccountId}"
+                      SelectedValue="{Binding SelectedAccountId}"
+                      MinWidth="200"
+                      HorizontalAlignment="Left">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="vm:AccountFilterOption">
+                        <TextBlock Text="{Binding DisplayName}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <TextBlock Grid.Column="2"
+                       Text="{loc:Localise LogViewer_LogStoredAt}"
+                       VerticalAlignment="Center"
+                       Margin="16,0,8,0"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       FontSize="{StaticResource FontSizeSm}" />
+
+            <Button Grid.Column="3"
+                    Command="{Binding CopyPathCommand}"
+                    Content="{loc:Localise LogViewer_CopyPath}"
+                    FontSize="{StaticResource FontSizeSm}"
+                    ToolTip.Tip="{Binding LogFilePath}" />
+        </Grid>
+
+        <!-- Log entries -->
+        <Panel>
+            <TextBlock Text="{loc:Localise LogViewer_EmptyState}"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       IsVisible="{Binding !Entries.Count}" />
+
+            <ScrollViewer IsVisible="{Binding Entries.Count}">
+                <ItemsControl ItemsSource="{Binding Entries}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:LogEntryViewModel">
+                            <Border Padding="12,6"
+                                    BorderThickness="0,0,0,1"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}">
+                                <Grid ColumnDefinitions="160,80,*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Timestamp}"
+                                               VerticalAlignment="Center"
+                                               FontSize="{StaticResource FontSizeSm}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding LevelDisplay}"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextAccentBrush}" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding RenderedMessage}"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding AccountId}"
+                                               Margin="8,0,0,0"
+                                               VerticalAlignment="Center"
+                                               FontSize="{StaticResource FontSizeSm}"
+                                               IsVisible="{Binding AccountId, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Panel>
+
+    </DockPanel>
+
 </UserControl>

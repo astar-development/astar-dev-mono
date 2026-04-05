@@ -277,6 +277,30 @@
   <data name="LogViewer_ComingSoon" xml:space="preserve">
     <value>Log Viewer — coming soon</value>
   </data>
+  <data name="LogViewer_Heading" xml:space="preserve">
+    <value>Log Viewer</value>
+  </data>
+  <data name="LogViewer_AccountFilterLabel" xml:space="preserve">
+    <value>Account:</value>
+  </data>
+  <data name="LogViewer_LogStoredAt" xml:space="preserve">
+    <value>Logs stored at:</value>
+  </data>
+  <data name="LogViewer_CopyPath" xml:space="preserve">
+    <value>Copy Path</value>
+  </data>
+  <data name="LogViewer_AllAccounts" xml:space="preserve">
+    <value>All Accounts</value>
+  </data>
+  <data name="LogViewer_EmptyState" xml:space="preserve">
+    <value>No log entries to display</value>
+  </data>
+  <data name="LogViewer_CasualModeHint" xml:space="preserve">
+    <value>Simplified view</value>
+  </data>
+  <data name="LogViewer_CasualModeTooltip" xml:space="preserve">
+    <value>This view is simplified. Change to Power User in Settings for full log access.</value>
+  </data>
   <data name="Onboarding_Welcome" xml:space="preserve">
     <value>Welcome to OneDrive Sync</value>
   </data>
