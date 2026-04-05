@@ -20,4 +20,10 @@ public interface ISyncStateStore
 
     /// <summary>Removes the checkpoint for <paramref name="accountId"/> after a successful sync.</summary>
     Task ClearCheckpointAsync(string accountId, CancellationToken ct = default);
+
+    /// <summary>Persists the <paramref name="deltaToken"/> returned by the last successful sync for <paramref name="accountId"/> (SE-09).</summary>
+    Task SaveDeltaTokenAsync(string accountId, string deltaToken, CancellationToken ct = default);
+
+    /// <summary>Returns the stored delta token for <paramref name="accountId"/>, or <see langword="null"/> if none (SE-09).</summary>
+    Task<string?> GetDeltaTokenAsync(string accountId, CancellationToken ct = default);
 }

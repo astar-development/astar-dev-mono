@@ -213,6 +213,12 @@
         <member name="M:AStar.Dev.Sync.Engine.Features.StateTracking.ISyncStateStore.ClearCheckpointAsync(System.String,System.Threading.CancellationToken)">
             <summary>Removes the checkpoint for <paramref name="accountId"/> after a successful sync.</summary>
         </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.StateTracking.ISyncStateStore.SaveDeltaTokenAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>Persists the <paramref name="deltaToken"/> returned by the last successful sync for <paramref name="accountId"/> (SE-09).</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.StateTracking.ISyncStateStore.GetDeltaTokenAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Returns the stored delta token for <paramref name="accountId"/>, or <see langword="null"/> if none (SE-09).</summary>
+        </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.StateTracking.SyncAccountState">
             <summary>The lifecycle state of a sync run for a single account (EH-04, EH-05, EH-06).</summary>
         </member>
@@ -309,6 +315,12 @@
         <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.LocalPathUnavailableError.#ctor(System.String)">
             <summary>Returned when the local sync folder is not accessible (e.g. unmounted drive) (AM-11).</summary>
         </member>
+        <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.DeltaQueryFailedError">
+            <summary>Returned when the delta query fails for a reason other than token expiry.</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.DeltaQueryFailedError.#ctor(System.String)">
+            <summary>Returned when the delta query fails for a reason other than token expiry.</summary>
+        </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineError"/> subtypes.</summary>
         </member>
@@ -326,6 +338,9 @@
         </member>
         <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory.LocalPathUnavailable(System.String)">
             <summary>Creates a <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.LocalPathUnavailableError"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngineErrorFactory.DeltaQueryFailed(System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.DeltaQueryFailedError"/>.</summary>
         </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncReport">
             <summary>Summary of a completed sync run for an account.</summary>

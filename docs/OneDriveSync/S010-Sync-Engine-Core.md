@@ -17,82 +17,83 @@ So that my files stay in sync without manual effort and I always know what's hap
 ## Acceptance Criteria
 
 ### Bi-directional Sync (SE-01)
-- [ ] Sync detects and applies: remote-only additions, local-only additions, remote modifications, local modifications, remote deletions, local deletions
-- [ ] No silent data loss — every destructive action is logged before execution (NF-04)
+- [x] Sync detects and applies: remote-only additions, local-only additions, remote modifications, local modifications, remote deletions, local deletions
+- [x] No silent data loss — every destructive action is logged before execution (NF-04)
 
 ### Concurrency Gate (SE-02, SE-06)
-- [ ] `SyncGate` enforces: max 1 sync per account at a time (SE-06); second trigger for same account is rejected with `SyncAlreadyRunningError`
-- [ ] Power User configurable max concurrent file transfers per account: 1–10 (default 5); hard ceiling 10 regardless of input
-- [ ] `SemaphoreSlim` used for transfer slot management — never `Thread.Sleep`
+- [x] `SyncGate` enforces: max 1 sync per account at a time (SE-06); second trigger for same account is rejected with `SyncAlreadyRunningError`
+- [x] Power User configurable max concurrent file transfers per account: 1–10 (default 5); hard ceiling 10 regardless of input
+- [x] `SemaphoreSlim` used for transfer slot management — never `Thread.Sleep`
 
 ### Multi-Account Concurrent Sync Warning (SE-05)
-- [ ] If any account is already syncing and a second account's sync is triggered, `ISyncEngine.StartSyncAsync()` returns a `MultiAccountSyncWarning` signal
-- [ ] The desktop app (not the sync engine) decides to prompt the user — sync engine just signals; UI story (S012) handles the prompt
+- [x] If any account is already syncing and a second account's sync is triggered, `ISyncEngine.StartSyncAsync()` returns a `MultiAccountSyncWarning` signal
+- [x] The desktop app (not the sync engine) decides to prompt the user — sync engine just signals; UI story (S012) handles the prompt
 
 ### Delta Sync (SE-09)
-- [ ] Incremental sync uses Graph delta queries via `IDeltaQueryService` (from `AStar.Dev.OneDrive.Client`)
-- [ ] `DeltaToken` persisted per account/folder in SQLite after each successful sync; used on next run
+- [x] Incremental sync uses Graph delta queries via `IDeltaQueryService` (from `AStar.Dev.OneDrive.Client`)
+- [x] `DeltaToken` persisted per account/folder in SQLite after each successful sync via `ISyncStateStore.SaveDeltaTokenAsync`; used on next run via `GetDeltaTokenAsync`
 
 ### Delta Token Expiry (SE-10)
-- [ ] On `DeltaTokenExpiredError`, engine raises a `FullResyncRequired` event — does not auto-proceed
-- [ ] `ISyncEngine` returns `FullResyncRequiredResult` to the caller; UI (S012) presents the user choice
+- [x] On `DeltaTokenExpiredError`, engine raises a `FullResyncRequired` event — does not auto-proceed
+- [x] `ISyncEngine` returns `FullResyncRequiredResult` to the caller; UI (S012) presents the user choice
 
 ### Full Re-sync Optimisation (SE-11)
-- [ ] During full re-sync: files where local `LastModified` + `Size` match remote `LastModifiedDateTime` + `Size` are **skipped** — no download/upload
-- [ ] Skipped file count reported in `SyncReport`
+- [x] During full re-sync: files where local `LastModified` + `Size` match remote `LastModifiedDateTime` + `Size` are **skipped** — no download/upload
+- [x] Skipped file count reported in `SyncReport`
 
 ### Folder Rename Detection (SE-12)
-- [ ] `DeltaItem` with type `FolderRenamed` triggers a local folder rename (not delete+recreate)
-- [ ] Rename operation logged at `Information`; on failure (permissions, path conflict), logged at `Error` and surfaced in `SyncReport`
+- [x] `DeltaItem` with type `FolderRenamed` triggers a local folder rename (not delete+recreate)
+- [x] Rename operation logged at `Information`; on failure (permissions, path conflict), logged at `Error` and surfaced in `SyncReport`
 
 ### Progress Reporting (SE-13, SE-14)
-- [ ] `ISyncProgressReporter` publishes: `PercentComplete`, `EtaSeconds`, `FilesProcessed`, `FilesTotal`
-- [ ] ETA recalculated after each file completes and after each Graph 429 delay — updates in real time
-- [ ] Progress publication via `IObservable<SyncProgress>` — UI subscribes without polling (NF-01)
+- [x] `ISyncProgressReporter` publishes: `PercentComplete`, `EtaSeconds`, `FilesProcessed`, `FilesTotal`
+- [x] ETA recalculated after each file completes and after each Graph 429 delay — updates in real time
+- [x] Progress publication via `IObservable<SyncProgress>` — UI subscribes without polling (NF-01)
 
 ### Special File Skipping (SE-15)
-- [ ] Symlinks, hardlinks, `.git` directories, socket files skipped during local scan
-- [ ] Each skip logged at `Debug`; post-sync `SyncReport` includes `SkippedFileCount`
-- [ ] `SyncReport` flag: `HasSkippedFiles` — UI uses this to show "some files were skipped — review the log" (wired in S012)
+- [x] Symlinks, hardlinks, `.git` directories, socket files skipped during local scan
+- [x] Each skip logged at `Debug`; post-sync `SyncReport` includes `SkippedFileCount`
+- [x] `SyncReport` flag: `HasSkippedFiles` — UI uses this to show "some files were skipped — review the log" (wired in S012)
 
 ### State Tracking (EH-04, EH-05, EH-06)
-- [ ] `ISyncStateStore` persists sync state to SQLite: `Running`, `Interrupted`, `Completed`, `Failed` per account
-- [ ] On next launch/scheduled trigger, `Interrupted` state detected; resume attempted from the last completed file checkpoint
-- [ ] If resume impossible (checkpoint state corrupt), `ISyncEngine` returns `ResumeFailed` — UI (S012) shows explanation
+- [x] `ISyncStateStore` persists sync state to SQLite: `Running`, `Interrupted`, `Completed`, `Failed` per account
+- [x] On next launch/scheduled trigger, `Interrupted` state detected; resume attempted from the last completed file checkpoint
+- [x] If resume impossible (checkpoint state corrupt), `ISyncEngine` returns `ResumeFailed` — UI (S012) shows explanation
 
 ### Error Resilience (EH-01)
-- [ ] Network failure during sync: exponential backoff (2ˢ seconds, max 5 retries, cap 60s)
-- [ ] After backoff exhausted: sync state set to `Interrupted`; engine stops and waits for next trigger
-- [ ] `CancellationToken` from `IAppLifetime` honours app shutdown during backoff (no wait past shutdown)
+- [x] Network failure during sync: exponential backoff (2ˢ seconds, max 5 retries, cap 60s)
+- [x] After backoff exhausted: sync state set to `Interrupted`; engine stops and waits for next trigger
+- [x] `CancellationToken` from `IAppLifetime` honours app shutdown during backoff (no wait past shutdown)
 
 ### Disk Space Check (EH-03)
-- [ ] Before starting sync: estimate download size from delta results; compare against available disk space
-- [ ] If available space < estimated download size + 10% buffer: return `InsufficientDiskSpaceError`; do not start
+- [x] Before starting sync: estimate download size from delta results; compare against available disk space
+- [x] If available space < estimated download size + 10% buffer: return `InsufficientDiskSpaceError`; do not start
 - [ ] If a write fails mid-sync with `IOException` (disk full): set state to `Failed`, log `Error`, surface in `SyncReport`
 
 ### DB Backup (EH-07)
-- [ ] `IDbBackupService.BackupAsync()` called before the first DB write in each sync run
-- [ ] Failure to backup: logged at `Warning`; sync proceeds (backup is best-effort)
+- [x] `IDbBackupService.BackupAsync()` called before the first DB write in each sync run
+- [x] Failure to backup: logged at `Warning`; sync proceeds (backup is best-effort)
 
 ### Scheduler (SE-04, SE-06)
-- [ ] `ISyncScheduler` runs scheduled syncs per account based on configured interval (5/15/30/60 min)
-- [ ] Scheduler honours `CancellationToken` from app lifetime — clean shutdown
-- [ ] If a scheduled sync is already running for the account, scheduler skips that tick (not queued)
+- [x] `ISyncScheduler` runs scheduled syncs per account based on configured interval (5/15/30/60 min)
+- [x] Scheduler honours `CancellationToken` from app lifetime — clean shutdown
+- [x] If a scheduled sync is already running for the account, scheduler skips that tick (not queued)
 
 ### Sync Report
-- [ ] `SyncReport` record: `AccountId`, `StartedAt`, `CompletedAt`, `FilesDownloaded`, `FilesUploaded`, `FilesSkipped`, `ConflictsDetected`, `HasErrors`, `ErrorMessages`, `WasFull ResyncTriggered`, `HasSkippedFiles`
+- [x] `SyncReport` record: `AccountId`, `StartedAt`, `CompletedAt`, `FilesDownloaded`, `FilesUploaded`, `FilesSkipped`, `ConflictsDetected`, `HasErrors`, `ErrorMessages`, `WasFullResyncTriggered`, `HasSkippedFiles`
 
 ### Tests (NF-09, NF-10)
-- [ ] **Unit test**: `SyncGate` — concurrent sync for same account rejected; different accounts permitted
-- [ ] **Unit test**: full re-sync skips files with matching timestamp + size
-- [ ] **Unit test**: folder rename via delta triggers local rename (not delete+create)
-- [ ] **Unit test**: exponential backoff — network error → retries at correct intervals; cancellation stops retries
-- [ ] **Unit test**: disk space check — insufficient space returns `InsufficientDiskSpaceError`
-- [ ] **Unit test**: special file skipping — symlinks, `.git` dirs excluded from local scan
-- [ ] **Unit test**: ETA calculation — updates correctly after each file and after 429 delay
+- [x] **Unit test**: `SyncGate` — concurrent sync for same account rejected; different accounts permitted
+- [x] **Unit test**: full re-sync skips files with matching timestamp + size
+- [x] **Unit test**: folder rename via delta triggers local rename (not delete+create)
+- [x] **Unit test**: exponential backoff — network error → retries at correct intervals; cancellation stops retries
+- [x] **Unit test**: disk space check — insufficient space returns `InsufficientDiskSpaceError`
+- [x] **Unit test**: special file skipping — symlinks, `.git` dirs excluded from local scan
+- [x] **Unit test**: ETA calculation — updates correctly after each file and after 429 delay
+- [x] **Unit test**: multi-account warning — `HadMultiAccountWarning` true only when another account was already syncing
 - [ ] **Integration test**: interrupted sync state persists; detected on next trigger; resume attempted
-- [ ] `System.IO.Abstractions` used for all file I/O — real file system not touched in tests (NF-10)
-- [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
+- [x] `System.IO.Abstractions` used for all file I/O — real file system not touched in tests (NF-10)
+- [x] `dotnet build` zero errors/warnings; `dotnet test` all pass
 
 ---
 
