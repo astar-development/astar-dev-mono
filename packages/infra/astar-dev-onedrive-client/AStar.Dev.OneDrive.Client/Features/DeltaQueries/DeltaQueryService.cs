@@ -1,5 +1,4 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Logging.Extensions;
 using AStar.Dev.OneDrive.Client.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
@@ -10,9 +9,7 @@ namespace AStar.Dev.OneDrive.Client.Features.DeltaQueries;
 /// <inheritdoc />
 internal sealed class DeltaQueryService(IGraphClientFactory graphClientFactory, ILogger<DeltaQueryService> logger) : IDeltaQueryService
 {
-    private const int MaxRetries = 3;
     private const string MoveOrRenamedAnnotation = "@microsoft.graph.moveOrRenamed";
-    private const int DefaultRetryAfterSeconds = 30;
 
     /// <inheritdoc />
     public async Task<Result<DeltaQueryResult, DeltaQueryError>> GetDeltaAsync(string accessToken, string folderId, string? deltaToken, CancellationToken ct = default)
@@ -76,39 +73,8 @@ internal sealed class DeltaQueryService(IGraphClientFactory graphClientFactory, 
         }
     }
 
-    private async Task<T> CallWithRetryAsync<T>(Func<Task<T>> operation, CancellationToken ct)
-    {
-        for (var attempt = 0; attempt < MaxRetries; attempt++)
-        {
-            try
-            {
-                return await operation().ConfigureAwait(false);
-            }
-            catch (ODataError oDataError) when (oDataError.ResponseStatusCode == 429)
-            {
-                if (attempt == MaxRetries - 1)
-                    throw;
-
-                var delay = GetRetryAfterDelay(oDataError);
-                LogMessage.GraphApiThrottled(logger, attempt + 1, MaxRetries, delay.TotalSeconds);
-                await Task.Delay(delay, ct).ConfigureAwait(false);
-            }
-        }
-
-        throw new InvalidOperationException("Exceeded maximum retries without a result.");
-    }
-
-    private static TimeSpan GetRetryAfterDelay(ODataError oDataError)
-    {
-        if (oDataError.ResponseHeaders?.TryGetValue("Retry-After", out var values) == true)
-        {
-            var headerValue = values?.FirstOrDefault();
-            if (int.TryParse(headerValue, out var seconds))
-                return TimeSpan.FromSeconds(seconds);
-        }
-
-        return TimeSpan.FromSeconds(DefaultRetryAfterSeconds);
-    }
+    private Task<T> CallWithRetryAsync<T>(Func<Task<T>> operation, CancellationToken ct)
+        => GraphRetryHelper.CallWithRetryAsync(operation, logger, ct);
 
     private static IReadOnlyList<DeltaItem> MapItems(IEnumerable<DriveItem> items)
         => [..items.Select(MapItem)];

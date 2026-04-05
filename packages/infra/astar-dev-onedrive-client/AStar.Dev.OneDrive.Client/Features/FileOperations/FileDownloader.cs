@@ -23,12 +23,12 @@ internal sealed class FileDownloader(IGraphClientFactory graphClientFactory, IFi
 
         try
         {
-            var drive = await client.Me.Drive.GetAsync(cancellationToken: ct).ConfigureAwait(false);
+            var drive = await GraphRetryHelper.CallWithRetryAsync(() => client.Me.Drive.GetAsync(cancellationToken: ct), logger, ct).ConfigureAwait(false);
 
             if (drive?.Id is null)
                 return new Result<FileDownloadResult, string>.Error("Could not resolve OneDrive drive ID for the account.");
 
-            var contentStream = await client.Drives[drive.Id].Items[remoteFileId].Content.GetAsync(cancellationToken: ct).ConfigureAwait(false);
+            var contentStream = await GraphRetryHelper.CallWithRetryAsync(() => client.Drives[drive.Id].Items[remoteFileId].Content.GetAsync(cancellationToken: ct), logger, ct).ConfigureAwait(false);
 
             if (contentStream is null)
                 return new Result<FileDownloadResult, string>.Error($"Graph returned no content stream for item '{remoteFileId}'.");
@@ -43,6 +43,12 @@ internal sealed class FileDownloader(IGraphClientFactory graphClientFactory, IFi
         {
             DeletePartialFile(localPath);
             throw;
+        }
+        catch (ODataError oDataError) when (oDataError.ResponseStatusCode == 429)
+        {
+            DeletePartialFile(localPath);
+
+            return new Result<FileDownloadResult, string>.Error("Graph API throttled: maximum retries exceeded.");
         }
         catch (ODataError oDataError)
         {

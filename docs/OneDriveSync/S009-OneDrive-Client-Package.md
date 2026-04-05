@@ -17,42 +17,42 @@ So that the sync engine and account management feature have a reliable, mockable
 ## Acceptance Criteria
 
 ### Folder Browsing (AM-03)
-- [ ] `IOneDriveFolderService` — `GetRootFoldersAsync(accountId, CancellationToken)` and `GetChildFoldersAsync(accountId, folderId, CancellationToken)`
-- [ ] Returns `Result<IReadOnlyList<OneDriveFolder>>` — never throws
-- [ ] `OneDriveFolder` record: `Id`, `Name`, `Path`, `HasChildren`
+- [x] `IOneDriveFolderService` — `GetRootFoldersAsync(accountId, CancellationToken)` and `GetChildFoldersAsync(accountId, folderId, CancellationToken)`
+- [x] Returns `Result<IReadOnlyList<OneDriveFolder>>` — never throws
+- [x] `OneDriveFolder` record: `Id`, `Name`, `ParentId`, `HasChildren` (uses `ParentId` instead of `Path` for cleaner tree navigation)
 
 ### Delta Query Service (SE-09, SE-10, SE-12)
-- [ ] `IDeltaQueryService` — `GetDeltaAsync(accountId, folderId, deltaToken, CancellationToken)` returns `Result<DeltaQueryResult>`
-- [ ] `DeltaQueryResult` contains: `IReadOnlyList<DeltaItem>` (changed/added/deleted items), `string NextDeltaToken`, `bool IsFullSync`
-- [ ] Delta token expiry (HTTP 410 Gone) detected and returned as `DeltaTokenExpiredError` (not an exception)
-- [ ] `DeltaItem` has `ItemType` distinguishing `File`, `Folder`, `Deleted`, `FolderRenamed` — rename detected via Graph `@microsoft.graph.moveOrRenamed` annotation (SE-12)
-- [ ] `DeltaToken` value object stored in SQLite per account/folder (wired up in sync engine stories)
+- [x] `IDeltaQueryService` — `GetDeltaAsync(accountId, folderId, deltaToken, CancellationToken)` returns `Result<DeltaQueryResult>`
+- [x] `DeltaQueryResult` contains: `IReadOnlyList<DeltaItem>` (changed/added/deleted items), `string NextDeltaToken`, `bool IsFullSync`
+- [x] Delta token expiry (HTTP 410 Gone) detected and returned as `DeltaTokenExpiredError` (not an exception)
+- [x] `DeltaItem` has `ItemType` distinguishing `File`, `Folder`, `Deleted`, `FolderRenamed` — rename detected via Graph `@microsoft.graph.moveOrRenamed` annotation (SE-12)
+- [x] `DeltaToken` value object stored in SQLite per account/folder (wired up in sync engine stories)
 
 ### File Download (SE-02, SE-16)
-- [ ] `IFileDownloader` — `DownloadAsync(accountId, remoteFileId, localPath, IProgress<long>, CancellationToken)`
-- [ ] Returns `Result<FileDownloadResult>` — never throws
-- [ ] Respects `CancellationToken` — partial file cleaned up on cancellation
-- [ ] SE-16 (resumable downloads) is Post-MVP; `IFileDownloader` interface designed to accommodate a `byteOffset` parameter in future without breaking changes
+- [x] `IFileDownloader` — `DownloadAsync(accountId, remoteFileId, localPath, IProgress<long>, CancellationToken)`
+- [x] Returns `Result<FileDownloadResult>` — never throws
+- [x] Respects `CancellationToken` — partial file cleaned up on cancellation
+- [x] SE-16 (resumable downloads) is Post-MVP; `IFileDownloader` interface designed to accommodate a `byteOffset` parameter in future without breaking changes
 
 ### File Upload
-- [ ] `IFileUploader` — `UploadAsync(accountId, localPath, remoteFolderId, IProgress<long>, CancellationToken)`
-- [ ] Returns `Result<FileUploadResult>` — never throws
-- [ ] Uses Graph chunked upload for files > 4 MB; direct upload for smaller files
+- [x] `IFileUploader` — `UploadAsync(accountId, localPath, remoteFolderId, IProgress<long>, CancellationToken)`
+- [x] Returns `Result<FileUploadResult>` — never throws
+- [x] Uses Graph chunked upload for files > 4 MB; direct upload for smaller files
 
 ### Graph API 429 Handling (EH-02)
-- [ ] All Graph calls: if HTTP 429 received, silently read `Retry-After` header, delay, and retry (up to 3 retries)
-- [ ] Retry count and delay logged at `Debug` level
-- [ ] After 3 retries, return `Result.Failure(ThrottledError)`
+- [x] All Graph calls: if HTTP 429 received, silently read `Retry-After` header, delay, and retry (up to 3 retries) — implemented in shared `GraphRetryHelper`; applied in `DeltaQueryService`, `FileDownloader`, and `FileUploader`
+- [x] Retry count and delay logged at `Debug` level
+- [x] After 3 retries, return `Result.Failure(ThrottledError)`
 
 ### Tests (NF-09, NF-10, NF-14)
-- [ ] All interfaces mocked in tests — no real Graph API calls in unit tests
-- [ ] Use `DevAM.LemonShark` or equivalent HTTP mock to simulate Graph responses (NF-14)
-- [ ] **Unit test**: `DeltaQueryService` — 410 response returns `DeltaTokenExpiredError`
-- [ ] **Unit test**: `DeltaQueryService` — folder rename item parsed as `FolderRenamed` type
-- [ ] **Unit test**: 429 retry — first call 429; second call 200 → result returned; after 3 retries → `ThrottledError`
-- [ ] **Unit test**: `FileDownloader` — cancellation mid-download cleans up partial file
-- [ ] **Unit test**: `FileUploader` — file > 4 MB uses chunked upload path; < 4 MB uses direct upload path
-- [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
+- [x] All interfaces mocked in tests — no real Graph API calls in unit tests
+- [x] Custom `HttpMessageHandler` fakes (`FakeGraphClients`) used to simulate Graph responses (NF-14)
+- [x] **Unit test**: `DeltaQueryService` — 410 response returns `DeltaTokenExpiredError`
+- [x] **Unit test**: `DeltaQueryService` — folder rename item parsed as `FolderRenamed` type
+- [x] **Unit test**: 429 retry — first call 429; second call 200 → result returned; after 3 retries → `ThrottledError` (`GivenAGraphRetryHelper`)
+- [x] **Unit test**: `FileDownloader` — cancellation mid-download cleans up partial file
+- [x] **Unit test**: `FileUploader` — file > 4 MB uses chunked upload path; < 4 MB uses direct upload path
+- [x] `dotnet build` zero errors/warnings; `dotnet test` all pass (38/38)
 
 ---
 
