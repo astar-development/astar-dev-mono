@@ -219,6 +219,7 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DeltaToken")
+                        .HasMaxLength(2048)
                         .HasColumnType("TEXT");
 
                     b.HasKey("AccountId");

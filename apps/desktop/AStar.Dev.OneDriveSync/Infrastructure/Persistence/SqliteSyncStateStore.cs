@@ -133,7 +133,7 @@ internal sealed partial class SqliteSyncStateStore(AppDbContext dbContext, ILogg
 
         if (record is null)
         {
-            dbContext.SyncStateRecords.Add(new SyncStateRecord { AccountId = accountId, State = SyncAccountState.Completed, DeltaToken = deltaToken });
+            dbContext.SyncStateRecords.Add(new SyncStateRecord { AccountId = accountId, State = SyncAccountState.Running, DeltaToken = deltaToken });
         }
         else
         {

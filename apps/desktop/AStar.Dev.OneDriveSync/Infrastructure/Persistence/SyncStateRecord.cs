@@ -20,8 +20,7 @@ public sealed class SyncStateRecord
     public string? CheckpointJson { get; set; }
 
     /// <summary>
-    ///     Opaque delta token returned by the last successful OneDrive delta query (SE-09);
-    ///     <c>null</c> when no sync has completed yet.
+    ///     Delta token returned by the last successful sync; <c>null</c> when no sync has completed (SE-09).
     /// </summary>
     public string? DeltaToken { get; set; }
 }
