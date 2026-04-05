@@ -289,6 +289,9 @@
   <data name="LogViewer_CopyPath" xml:space="preserve">
     <value>Copy Path</value>
   </data>
+  <data name="LogViewer_AllAccounts" xml:space="preserve">
+    <value>All Accounts</value>
+  </data>
   <data name="LogViewer_EmptyState" xml:space="preserve">
     <value>No log entries to display</value>
   </data>

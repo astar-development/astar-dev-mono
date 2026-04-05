@@ -64,7 +64,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<AccountsViewModel>();
         _ = services.AddTransient<ActivityViewModel>();
         _ = services.AddSingleton<ConflictsViewModel>();
-        _ = services.AddSingleton<LogViewerViewModel>();
+        _ = services.AddTransient<LogViewerViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
         _ = services.AddSingleton<OnboardingViewModel>();
         _ = services.AddSingleton<HelpViewModel>();

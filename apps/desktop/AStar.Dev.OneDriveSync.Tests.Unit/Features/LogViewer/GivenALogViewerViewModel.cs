@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using ReactiveUI;
 using Serilog.Events;
 
@@ -16,11 +18,12 @@ public sealed class GivenALogViewerViewModel : IDisposable
     private const string OtherAccountId   = "aaaabbbb-cccc-dddd-eeee-ffffffffffff";
     private const string AllAccountsValue = "";
 
-    private readonly IScheduler _originalScheduler = RxApp.MainThreadScheduler;
-    private readonly ILogEntryProvider _logProvider     = Substitute.For<ILogEntryProvider>();
-    private readonly IAccountRepository _accountRepo    = Substitute.For<IAccountRepository>();
-    private readonly IUserTypeService _userTypeService  = Substitute.For<IUserTypeService>();
-    private readonly Subject<LogEntry> _subject         = new();
+    private readonly IScheduler _originalScheduler      = RxApp.MainThreadScheduler;
+    private readonly ILogEntryProvider _logProvider      = Substitute.For<ILogEntryProvider>();
+    private readonly IAccountRepository _accountRepo     = Substitute.For<IAccountRepository>();
+    private readonly IUserTypeService _userTypeService   = Substitute.For<IUserTypeService>();
+    private readonly ILocalisationService _localisation  = Substitute.For<ILocalisationService>();
+    private readonly Subject<LogEntry> _subject          = new();
 
     public GivenALogViewerViewModel()
     {
@@ -31,6 +34,39 @@ public sealed class GivenALogViewerViewModel : IDisposable
         _accountRepo.GetAllAsync(default).ReturnsForAnyArgs(
             Task.FromResult<IReadOnlyList<Account>>([]));
         _userTypeService.CurrentUserType.Returns(UserType.Casual);
+        _localisation.GetString(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+    }
+
+    [Fact]
+    public void when_log_entry_provider_is_null_then_throws()
+    {
+        var exception = Should.Throw<ArgumentNullException>(() => new LogViewerViewModel(null!, _accountRepo, _userTypeService, _localisation));
+
+        exception.ParamName.ShouldBe("logEntryProvider");
+    }
+
+    [Fact]
+    public void when_account_repository_is_null_then_throws()
+    {
+        var exception = Should.Throw<ArgumentNullException>(() => new LogViewerViewModel(_logProvider, null!, _userTypeService, _localisation));
+
+        exception.ParamName.ShouldBe("accountRepository");
+    }
+
+    [Fact]
+    public void when_user_type_service_is_null_then_throws()
+    {
+        var exception = Should.Throw<ArgumentNullException>(() => new LogViewerViewModel(_logProvider, _accountRepo, null!, _localisation));
+
+        exception.ParamName.ShouldBe("userTypeService");
+    }
+
+    [Fact]
+    public void when_localisation_service_is_null_then_throws()
+    {
+        var exception = Should.Throw<ArgumentNullException>(() => new LogViewerViewModel(_logProvider, _accountRepo, _userTypeService, null!));
+
+        exception.ParamName.ShouldBe("localisationService");
     }
 
     [Fact]
@@ -180,10 +216,34 @@ public sealed class GivenALogViewerViewModel : IDisposable
         _userTypeService.CurrentUserType.Returns(UserType.PowerUser);
         var sut = CreateSut();
 
+        sut.Entries.ShouldBeEmpty();
         sut.Dispose();
         _subject.OnNext(LogEntryFactory.Create(DateTimeOffset.UtcNow, LogEventLevel.Information, "After dispose", null));
 
-        sut.Entries.ShouldBeEmpty();
+        sut.Entries.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void when_constructed_then_all_accounts_sentinel_is_first_filter_option()
+    {
+        var sut = CreateSut();
+
+        sut.AccountFilterOptions[0].AccountId.ShouldBe(LogViewerViewModel.AllAccounts);
+    }
+
+    [Fact]
+    public async Task when_accounts_are_loaded_then_filter_options_are_populated()
+    {
+        var account = new Account { Id = Guid.Parse(AnyAccountId), DisplayName = "Test Account" };
+        _accountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(
+            Task.FromResult<IReadOnlyList<Account>>([account]));
+
+        var sut = CreateSut();
+
+        await Task.Yield();
+
+        sut.AccountFilterOptions.Count.ShouldBeGreaterThanOrEqualTo(2);
+        sut.AccountFilterOptions.ShouldContain(opt => opt.AccountId == AnyAccountId);
     }
 
     public void Dispose()
@@ -192,5 +252,5 @@ public sealed class GivenALogViewerViewModel : IDisposable
         _subject.Dispose();
     }
 
-    private LogViewerViewModel CreateSut() => new(_logProvider, _accountRepo, _userTypeService);
+    private LogViewerViewModel CreateSut() => new(_logProvider, _accountRepo, _userTypeService, _localisation);
 }

@@ -53,7 +53,11 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     }
 
     /// <inheritdoc />
-    public void Dispose() => _subject.Dispose();
+    public void Dispose()
+    {
+        _subject.OnCompleted();
+        _subject.Dispose();
+    }
 
     private static LogEntry ToLogEntry(LogEvent logEvent)
     {
@@ -66,7 +70,10 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     private static string? ExtractAccountId(LogEvent logEvent)
     {
         if (!logEvent.Properties.TryGetValue("AccountId", out var property))
+        {
+
             return null;
+        }
 
         string raw = property.ToString();
 

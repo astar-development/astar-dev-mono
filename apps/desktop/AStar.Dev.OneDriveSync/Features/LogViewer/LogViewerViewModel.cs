@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Infrastructure;
+using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
 using AStar.Dev.Utilities;
 using ReactiveUI;
 using Serilog.Events;
@@ -20,13 +20,13 @@ namespace AStar.Dev.OneDriveSync.Features.LogViewer;
 ///     View model for the Log Viewer (S014).
 ///     Reads from <see cref="ILogEntryProvider"/> — never reads log files from disk.
 ///     Filters by account and by user type (Casual: Warning+ only; Power User: all levels).
+///     Registered as Transient so filter state resets on each navigation (spec: LG-07).
 /// </summary>
 public sealed class LogViewerViewModel : ViewModelBase, IDisposable
 {
     /// <summary>Sentinel value for "All Accounts" selection in <see cref="SelectedAccountId"/>.</summary>
     public const string AllAccounts = "";
 
-    private readonly ILogEntryProvider _logEntryProvider;
     private readonly IAccountRepository _accountRepository;
     private readonly IDisposable _subscription;
     private readonly List<LogEntry> _allEntries = [];
@@ -34,18 +34,25 @@ public sealed class LogViewerViewModel : ViewModelBase, IDisposable
     private string _selectedAccountId = AllAccounts;
 
     /// <summary>Initialises the view model, pre-populates from snapshot, and subscribes to the live stream.</summary>
-    public LogViewerViewModel(ILogEntryProvider logEntryProvider, IAccountRepository accountRepository, IUserTypeService userTypeService)
+    public LogViewerViewModel(ILogEntryProvider logEntryProvider, IAccountRepository accountRepository, IUserTypeService userTypeService, ILocalisationService localisationService)
     {
         ArgumentNullException.ThrowIfNull(logEntryProvider);
         ArgumentNullException.ThrowIfNull(accountRepository);
         ArgumentNullException.ThrowIfNull(userTypeService);
+        ArgumentNullException.ThrowIfNull(localisationService);
 
-        _logEntryProvider  = logEntryProvider;
         _accountRepository = accountRepository;
 
-        IsPowerUser  = userTypeService.CurrentUserType == UserType.PowerUser;
-        LogFilePath  = ResolveLogFilePath();
-        CopyPathCommand = ReactiveCommand.Create(CopyLogPath);
+        IsPowerUser = userTypeService.CurrentUserType == UserType.PowerUser;
+        LogFilePath = ResolveLogFilePath();
+
+        AccountFilterOptions.Add(AccountFilterOptionFactory.CreateAllAccounts(localisationService.GetString("LogViewer_AllAccounts")));
+
+        CopyPathCommand = ReactiveCommand.CreateFromTask(CopyLogPathAsync);
+
+        _subscription = logEntryProvider.EntryAdded
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(OnEntryAdded);
 
         foreach (var entry in logEntryProvider.GetSnapshot())
             _allEntries.Add(entry);
@@ -53,17 +60,13 @@ public sealed class LogViewerViewModel : ViewModelBase, IDisposable
         ApplyFilters();
 
         _ = LoadAccountFilterOptionsAsync();
-
-        _subscription = logEntryProvider.EntryAdded
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(OnEntryAdded);
     }
 
     /// <summary>Filtered and sorted log entries bound to the list view.</summary>
     public ObservableCollection<LogEntryViewModel> Entries { get; } = [];
 
     /// <summary>Account filter options: first item is "All Accounts", remainder are configured accounts.</summary>
-    public ObservableCollection<AccountFilterOption> AccountFilterOptions { get; } = [new(AllAccounts, "All Accounts")];
+    public ObservableCollection<AccountFilterOption> AccountFilterOptions { get; } = [];
 
     /// <summary>
     ///     The currently selected account filter.
@@ -96,7 +99,10 @@ public sealed class LogViewerViewModel : ViewModelBase, IDisposable
         _allEntries.Add(entry);
 
         if (!PassesFilters(entry))
+        {
+
             return;
+        }
 
         Entries.Insert(0, new LogEntryViewModel(entry));
     }
@@ -129,16 +135,16 @@ public sealed class LogViewerViewModel : ViewModelBase, IDisposable
         RxApp.MainThreadScheduler.Schedule(() =>
         {
             foreach (var account in accounts)
-                AccountFilterOptions.Add(new AccountFilterOption(account.Id.ToString(), account.DisplayName));
+                AccountFilterOptions.Add(AccountFilterOptionFactory.Create(account.Id.ToString(), account.DisplayName));
         });
     }
 
-    private static void CopyLogPath()
+    private static async Task CopyLogPathAsync()
     {
         string logPath = ResolveLogFilePath();
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime { MainWindow: { } window })
-            _ = window.Clipboard?.SetTextAsync(logPath);
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime { MainWindow: { } window } && window.Clipboard is { } clipboard)
+            await clipboard.SetTextAsync(logPath).ConfigureAwait(false);
     }
 
     private static string ResolveLogFilePath() =>

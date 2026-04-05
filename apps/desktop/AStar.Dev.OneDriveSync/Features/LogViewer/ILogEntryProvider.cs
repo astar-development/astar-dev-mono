@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace AStar.Dev.OneDriveSync.Features.LogViewer;
 
 /// <summary>Provides access to in-memory log entries captured by <see cref="InMemoryLogSink"/>.</summary>

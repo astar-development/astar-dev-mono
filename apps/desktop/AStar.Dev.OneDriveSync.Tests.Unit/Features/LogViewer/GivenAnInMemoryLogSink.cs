@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using Serilog.Events;
 using Serilog.Parsing;
@@ -113,6 +114,53 @@ public sealed class GivenAnInMemoryLogSink
         sut.Emit(BuildLogEvent(LogEventLevel.Information, "Second"));
 
         snapshot.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_capacity_is_zero_then_throws()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryLogSink(0));
+    }
+
+    [Fact]
+    public void when_capacity_is_negative_then_throws()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryLogSink(-1));
+    }
+
+    [Fact]
+    public void when_emit_is_called_with_null_then_throws()
+    {
+        var sut = new InMemoryLogSink();
+
+        Should.Throw<ArgumentNullException>(() => sut.Emit(null!));
+    }
+
+    [Fact]
+    public void when_message_contains_multiple_emails_then_all_are_redacted()
+    {
+        var sut = new InMemoryLogSink();
+
+        sut.Emit(BuildLogEvent(LogEventLevel.Warning, "Conflict between user@a.com and admin@b.com"));
+
+        var message = sut.GetSnapshot()[0].RenderedMessage;
+        message.ShouldNotContain("user@a.com");
+        message.ShouldNotContain("admin@b.com");
+        message.ShouldContain("[email redacted]");
+    }
+
+    [Fact]
+    public async Task when_disposed_then_entry_added_observable_completes()
+    {
+        var sut = new InMemoryLogSink();
+        bool completed = false;
+
+        using var _ = sut.EntryAdded.Subscribe(onNext: static _ => { }, onCompleted: () => completed = true);
+
+        sut.Dispose();
+        await Task.Yield();
+
+        completed.ShouldBeTrue();
     }
 
     private static LogEvent BuildLogEvent(LogEventLevel level, string messageText, DateTimeOffset? timestamp = null)
