@@ -74,8 +74,20 @@ public sealed class AccountCardViewModel : ViewModelBase, IDisposable
     public int EtaSeconds
     {
         get;
-        internal set => this.RaiseAndSetIfChanged(ref field, value);
+        internal set
+        {
+            this.RaiseAndSetIfChanged(ref field, value);
+            this.RaisePropertyChanged(nameof(EtaDisplay));
+        }
     }
+
+    /// <summary>Human-readable ETA string derived from <see cref="EtaSeconds"/> (SE-14).</summary>
+    public string EtaDisplay => EtaSeconds switch
+    {
+        <= 0   => string.Empty,
+        < 60   => $"ETA {EtaSeconds}s",
+        _      => $"ETA {EtaSeconds / 60}m {EtaSeconds % 60}s"
+    };
 
     /// <summary>True when the last sync failed because the local path was unavailable (AM-11).</summary>
     public bool HasLocalPathError

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,13 +39,45 @@ public sealed class DashboardViewModel : ViewModelBase, IDisposable
         _dialogService     = dialogService;
         _toastService      = toastService;
         _timeFormatter     = timeFormatter;
+
+        DismissToastCommand = ReactiveCommand.Create(DismissToast);
     }
 
     /// <summary>All configured account cards; updated by <see cref="LoadAsync"/>.</summary>
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
+    /// <summary>Non-null while a skipped-files toast is visible (SE-15). Bind <c>IsVisible</c> to this.</summary>
+    public string? ToastMessage
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>Non-null when <see cref="LoadAsync"/> fails (e.g. repository unavailable). Bind to an error banner.</summary>
+    public string? LoadError
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>Dismisses the skipped-files toast (SE-15).</summary>
+    public ReactiveCommand<Unit, Unit> DismissToastCommand { get; }
+
     /// <summary>Loads accounts and checks for interrupted syncs. Must be called after construction.</summary>
     public async Task LoadAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            await LoadAccountsAsync(ct).ConfigureAwait(false);
+            LoadError = null;
+        }
+        catch (Exception ex)
+        {
+            RxApp.MainThreadScheduler.Schedule(() => LoadError = ex.Message);
+        }
+    }
+
+    private async Task LoadAccountsAsync(CancellationToken ct)
     {
         var accounts = await _accountRepository.GetAllAsync(ct).ConfigureAwait(false);
 
@@ -80,7 +113,13 @@ public sealed class DashboardViewModel : ViewModelBase, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => DisposeCards();
+    public void Dispose()
+    {
+        DisposeCards();
+        DismissToastCommand.Dispose();
+    }
+
+    private void DismissToast() => ToastMessage = null;
 
     private void DisposeCards()
     {
@@ -146,7 +185,14 @@ public sealed class DashboardViewModel : ViewModelBase, IDisposable
         card.IsInterrupted = false;
 
         if (report.HasSkippedFiles)
+        {
             _toastService.Show(DashboardStrings.SkippedFilesToastMessage, card.AccountId);
+            ToastMessage = DashboardStrings.SkippedFilesToastMessage;
+        }
+        else
+        {
+            ToastMessage = null;
+        }
 
         return true;
     }

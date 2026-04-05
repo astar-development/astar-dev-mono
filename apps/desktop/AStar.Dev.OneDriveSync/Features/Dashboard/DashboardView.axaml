@@ -5,7 +5,16 @@
              x:Class="AStar.Dev.OneDriveSync.Features.Dashboard.DashboardView"
              x:DataType="vm:DashboardViewModel">
 
-    <ScrollViewer Padding="24,16">
+    <Grid RowDefinitions="Auto,*,Auto">
+
+    <!-- Load error banner -->
+    <Border Grid.Row="0"
+            Padding="16,10"
+            IsVisible="{Binding LoadError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Text="{Binding LoadError}" TextWrapping="Wrap" />
+    </Border>
+
+    <ScrollViewer Grid.Row="1" Padding="24,16">
         <ItemsControl ItemsSource="{Binding Accounts}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="vm:AccountCardViewModel">
@@ -55,9 +64,15 @@
                                              Minimum="0"
                                              Maximum="100"
                                              Height="6" />
-                                <TextBlock Text="{Binding PercentComplete, StringFormat={}{0:F0}%}"
-                                           FontSize="12"
-                                           Opacity="0.7" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="{Binding PercentComplete, StringFormat={}{0:F0}%}"
+                                               FontSize="12"
+                                               Opacity="0.7" />
+                                    <TextBlock Text="{Binding EtaDisplay}"
+                                               FontSize="12"
+                                               Opacity="0.7"
+                                               IsVisible="{Binding EtaDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                                </StackPanel>
                             </StackPanel>
 
                             <!-- Local path unavailable error badge (AM-11) -->
@@ -97,5 +112,24 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
     </ScrollViewer>
+
+    <!-- Skipped-files toast (SE-15) -->
+    <Border Grid.Row="2"
+            Padding="16,10"
+            IsVisible="{Binding ToastMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding ToastMessage}"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap" />
+            <Button Grid.Column="1"
+                    Command="{Binding DismissToastCommand}"
+                    Content="✕"
+                    Margin="12,0,0,0"
+                    FontSize="12" />
+        </Grid>
+    </Border>
+
+    </Grid>
 
 </UserControl>
