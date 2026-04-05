@@ -1,0 +1,334 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Global stats strip ── -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource BackgroundSecondaryBrush}"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                Padding="20,14">
+
+            <Grid ColumnDefinitions="*,1,*,1,*,1,*,1,*">
+
+                <!-- Accounts -->
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding TotalAccounts}"
+                               FontSize="22" FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="accounts"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Rectangle Grid.Column="1" Width="1"
+                           Fill="{DynamicResource BorderSubtleBrush}"
+                           VerticalAlignment="Stretch" Margin="0,4"/>
+
+                <!-- Folders -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding TotalFolders}"
+                               FontSize="22" FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="folders synced"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Rectangle Grid.Column="3" Width="1"
+                           Fill="{DynamicResource BorderSubtleBrush}"
+                           VerticalAlignment="Stretch" Margin="0,4"/>
+
+                <!-- Conflicts -->
+                <StackPanel Grid.Column="4" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding TotalConflicts}"
+                               FontSize="22" FontWeight="Medium"
+                               HorizontalAlignment="Center">
+                        <TextBlock.Foreground>
+                            <SolidColorBrush Color="{Binding TotalConflicts,
+                                Converter={StaticResource ConflictCountToColorConverter}}"/>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                    <TextBlock Text="conflicts"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Rectangle Grid.Column="5" Width="1"
+                           Fill="{DynamicResource BorderSubtleBrush}"
+                           VerticalAlignment="Stretch" Margin="0,4"/>
+
+                <!-- Overall status -->
+                <StackPanel Grid.Column="6" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding OverallStatusText}"
+                               FontSize="{StaticResource FontSizeMd}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="overall status"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Rectangle Grid.Column="7" Width="1"
+                           Fill="{DynamicResource BorderSubtleBrush}"
+                           VerticalAlignment="Stretch" Margin="0,4"/>
+
+                <!-- Last sync -->
+                <StackPanel Grid.Column="8" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding LastSyncText}"
+                               FontSize="{StaticResource FontSizeMd}"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="last sync"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <!-- ── No accounts placeholder ── -->
+        <StackPanel Grid.Row="1"
+                    IsVisible="{Binding !HasAccounts}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8">
+            <TextBlock Text="No accounts connected"
+                       FontSize="{StaticResource FontSizeLg}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Add an account to see your sync health here."
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- ── Account sections ── -->
+        <ScrollViewer Grid.Row="1"
+                      IsVisible="{Binding HasAccounts}"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="20,16">
+            <ItemsControl ItemsSource="{Binding AccountSections}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:DashboardAccountViewModel">
+
+                        <Border Background="{DynamicResource BackgroundPrimaryBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusLg}"
+                                Margin="0,0,0,12">
+
+                            <StackPanel>
+
+                                <!-- Section header -->
+                                <Border Padding="16,12"
+                                        BorderThickness="0,0,0,1"
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto,8,Auto">
+
+                                        <!-- Accent dot + name -->
+                                        <Ellipse Grid.Column="0"
+                                                 Width="10" Height="10"
+                                                 Margin="0,0,10,0"
+                                                 VerticalAlignment="Center">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding AccentColor}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+
+                                        <StackPanel Grid.Column="1"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="1">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Email}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Status badge -->
+                                        <Border Grid.Column="2"
+                                                Padding="8,3"
+                                                CornerRadius="{StaticResource RadiusSm}"
+                                                VerticalAlignment="Center">
+                                            <Border.Background>
+                                                <SolidColorBrush Color="{Binding SyncState,
+                                                    Converter={StaticResource SyncStateToBadgeBackgroundConverter}}"/>
+                                            </Border.Background>
+                                            <TextBlock Text="{Binding StatusLabel}"
+                                                       FontSize="{StaticResource FontSizeXs}">
+                                                <TextBlock.Foreground>
+                                                    <SolidColorBrush Color="{Binding SyncState,
+                                                        Converter={StaticResource SyncStateToBadgeForegroundConverter}}"/>
+                                                </TextBlock.Foreground>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Sync now + expand -->
+                                        <StackPanel Grid.Column="4"
+                                                    Orientation="Horizontal"
+                                                    Spacing="6">
+                                            <Button Content="Sync now"
+                                                    Padding="10,4"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    IsEnabled="{Binding !IsSyncing}"
+                                                    Command="{Binding SyncNowCommand}"/>
+
+                                            <Button Padding="6,4"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Command="{Binding ToggleExpandCommand}">
+                                                <TextBlock Text="{Binding ExpanderGlyph}"
+                                                           FontSize="{StaticResource FontSizeSm}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </Button>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+
+                                <!-- Expanded content -->
+                                <Grid IsVisible="{Binding IsExpanded}"
+                                      ColumnDefinitions="*,1,*"
+                                      Margin="16,12">
+
+                                    <!-- Storage + stats -->
+                                    <StackPanel Grid.Column="0" Spacing="10">
+
+                                        <TextBlock Text="Storage"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                   FontWeight="Medium"/>
+
+                                        <!-- Storage bar -->
+                                        <StackPanel Spacing="4">
+                                            <Grid>
+                                                <ProgressBar Value="{Binding StorageFraction}"
+                                                             Minimum="0" Maximum="1"
+                                                             Height="6"
+                                                             CornerRadius="3"
+                                                             Background="{DynamicResource BackgroundTertiaryBrush}">
+                                                    <ProgressBar.Foreground>
+                                                        <SolidColorBrush Color="{Binding AccentColor}"/>
+                                                    </ProgressBar.Foreground>
+                                                </ProgressBar>
+                                            </Grid>
+                                            <TextBlock Text="{Binding StorageText}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Quick stats -->
+                                        <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="{Binding FolderCount}"
+                                                           FontSize="{StaticResource FontSizeLg}"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="folders"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="{Binding ConflictCount}"
+                                                           FontSize="{StaticResource FontSizeLg}"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="conflicts"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Spacing="2">
+                                                <TextBlock Text="{Binding LastSyncText}"
+                                                           FontSize="{StaticResource FontSizeSm}"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="last sync"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                    </StackPanel>
+
+                                    <!-- Divider -->
+                                    <Rectangle Grid.Column="1"
+                                               Width="1"
+                                               Fill="{DynamicResource BorderSubtleBrush}"
+                                               Margin="16,0"/>
+
+                                    <!-- Recent activity -->
+                                    <StackPanel Grid.Column="2" Spacing="6">
+
+                                        <TextBlock Text="Recent activity"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                   FontWeight="Medium"/>
+
+                                        <!-- Empty -->
+                                        <TextBlock Text="No recent activity"
+                                                   IsVisible="{Binding RecentActivity.Count,
+                                                       Converter={StaticResource IntZeroToBoolConverter}}"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+
+                                        <ItemsControl ItemsSource="{Binding RecentActivity}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="vm:ActivityItemViewModel">
+                                                    <Grid ColumnDefinitions="Auto,8,*,Auto"
+                                                          Margin="0,2">
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="{Binding TypeIcon}"
+                                                                   FontSize="{StaticResource FontSizeSm}"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding FileName}"
+                                                                   FontSize="{StaticResource FontSizeXs}"
+                                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="3"
+                                                                   Text="{Binding TimeAgoText}"
+                                                                   FontSize="{StaticResource FontSizeXs}"
+                                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                    </StackPanel>
+
+                                </Grid>
+
+                            </StackPanel>
+                        </Border>
+
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+    </Grid>
+
+</UserControl>

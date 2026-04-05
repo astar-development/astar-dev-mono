@@ -1,0 +1,77 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════
+         Spacing & Geometry
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="SpacingXs">4</x:Double>
+    <x:Double x:Key="SpacingSm">8</x:Double>
+    <x:Double x:Key="SpacingMd">12</x:Double>
+    <x:Double x:Key="SpacingLg">16</x:Double>
+    <x:Double x:Key="SpacingXl">24</x:Double>
+    <x:Double x:Key="SpacingXxl">32</x:Double>
+
+    <CornerRadius x:Key="RadiusSm">4</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">8</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">12</CornerRadius>
+    <CornerRadius x:Key="RadiusXl">16</CornerRadius>
+
+    <!-- ═══════════════════════════════════════════════════
+         Icon Rail
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="IconRailWidth">48</x:Double>
+    <x:Double x:Key="IconRailButtonSize">36</x:Double>
+    <x:Double x:Key="IconSize">20</x:Double>
+
+    <!-- ═══════════════════════════════════════════════════
+         Account Panel
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="AccountPanelWidth">200</x:Double>
+
+    <!-- ═══════════════════════════════════════════════════
+         Status Bar
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="StatusBarHeight">26</x:Double>
+
+    <!-- ═══════════════════════════════════════════════════
+         Typography
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="FontSizeXs">11</x:Double>
+    <x:Double x:Key="FontSizeSm">12</x:Double>
+    <x:Double x:Key="FontSizeMd">13</x:Double>
+    <x:Double x:Key="FontSizeLg">15</x:Double>
+    <x:Double x:Key="FontSizeXl">18</x:Double>
+
+    <!-- ═══════════════════════════════════════════════════
+         Account Accent Colours (consistent across themes)
+    ════════════════════════════════════════════════════ -->
+    <Color x:Key="AccountAccent0">#185FA5</Color>
+    <Color x:Key="AccountAccent1">#0F6E56</Color>
+    <Color x:Key="AccountAccent2">#993C1D</Color>
+    <Color x:Key="AccountAccent3">#534AB7</Color>
+    <Color x:Key="AccountAccent4">#993556</Color>
+    <Color x:Key="AccountAccent5">#854F0B</Color>
+
+    <!-- ═══════════════════════════════════════════════════
+         Status Semantic Colours (consistent across themes)
+    ════════════════════════════════════════════════════ -->
+    <Color x:Key="StatusSyncedColor">#1D9E75</Color>
+    <Color x:Key="StatusPendingColor">#BA7517</Color>
+    <Color x:Key="StatusConflictColor">#E24B4A</Color>
+    <Color x:Key="StatusExcludedColor">#888780</Color>
+    <Color x:Key="StatusErrorColor">#E24B4A</Color>
+
+    <SolidColorBrush x:Key="StatusSyncedBrush" Color="{StaticResource StatusSyncedColor}"/>
+    <SolidColorBrush x:Key="StatusPendingBrush" Color="{StaticResource StatusPendingColor}"/>
+    <SolidColorBrush x:Key="StatusConflictBrush" Color="{StaticResource StatusConflictColor}"/>
+    <SolidColorBrush x:Key="StatusExcludedBrush" Color="{StaticResource StatusExcludedColor}"/>
+    <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}"/>
+
+    <!-- ═══════════════════════════════════════════════════
+         Animation Durations
+    ════════════════════════════════════════════════════ -->
+    <x:Double x:Key="AnimationDurationFast">100</x:Double>
+    <x:Double x:Key="AnimationDurationMd">200</x:Double>
+    <x:Double x:Key="AnimationDurationSlow">300</x:Double>
+
+</ResourceDictionary>
