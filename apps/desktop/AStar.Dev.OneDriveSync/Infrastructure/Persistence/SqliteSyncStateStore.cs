@@ -120,6 +120,46 @@ internal sealed partial class SqliteSyncStateStore(AppDbContext dbContext, ILogg
         LogCheckpointCleared(logger, accountId);
     }
 
+    /// <inheritdoc />
+    public async Task SaveDeltaTokenAsync(string accountId, string deltaToken, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(deltaToken);
+
+        var record = await dbContext.SyncStateRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.AccountId == accountId, ct)
+            .ConfigureAwait(false);
+
+        if (record is null)
+        {
+            dbContext.SyncStateRecords.Add(new SyncStateRecord { AccountId = accountId, State = SyncAccountState.Completed, DeltaToken = deltaToken });
+        }
+        else
+        {
+            var entry = dbContext.SyncStateRecords.Attach(record);
+            entry.Entity.DeltaToken = deltaToken;
+            entry.Property(r => r.DeltaToken).IsModified = true;
+        }
+
+        _ = await dbContext.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        LogDeltaTokenSaved(logger, accountId);
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> GetDeltaTokenAsync(string accountId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+
+        var record = await dbContext.SyncStateRecords
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.AccountId == accountId, ct)
+            .ConfigureAwait(false);
+
+        return record?.DeltaToken;
+    }
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "Sync state set for account {AccountId}: {State}")]
     private static partial void LogStateSet(ILogger logger, string accountId, SyncAccountState state);
 
@@ -128,4 +168,7 @@ internal sealed partial class SqliteSyncStateStore(AppDbContext dbContext, ILogg
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "Checkpoint cleared for account {AccountId}")]
     private static partial void LogCheckpointCleared(ILogger logger, string accountId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Delta token saved for account {AccountId}")]
+    private static partial void LogDeltaTokenSaved(ILogger logger, string accountId);
 }

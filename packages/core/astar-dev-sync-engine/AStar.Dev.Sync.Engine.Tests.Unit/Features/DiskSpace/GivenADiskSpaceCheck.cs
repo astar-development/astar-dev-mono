@@ -9,6 +9,7 @@ using AStar.Dev.Sync.Engine.Features.LocalScanning;
 using AStar.Dev.Sync.Engine.Features.ProgressTracking;
 using AStar.Dev.Sync.Engine.Features.Resilience;
 using AStar.Dev.Sync.Engine.Features.StateTracking;
+using AStar.Dev.Sync.Engine.Features.Activity;
 using AStar.Dev.Sync.Engine.Features.SyncOrchestration;
 using AStar.Dev.Sync.Engine.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,7 +27,7 @@ public sealed class GivenADiskSpaceCheck : IDisposable
     private readonly IDiskSpaceChecker _diskSpaceChecker = Substitute.For<IDiskSpaceChecker>();
     private readonly IDbBackupService _dbBackupService = Substitute.For<IDbBackupService>();
 
-    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), new System.IO.Abstractions.TestingHelpers.MockFileSystem(), Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
+    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, Substitute.For<IActivityReporter>(), _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), new System.IO.Abstractions.TestingHelpers.MockFileSystem(), Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
 
     [Fact]
     public async Task when_available_space_is_less_than_required_then_insufficient_disk_space_error_is_returned()

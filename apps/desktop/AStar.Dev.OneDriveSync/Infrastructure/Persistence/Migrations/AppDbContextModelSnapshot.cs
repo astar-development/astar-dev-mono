@@ -218,6 +218,9 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                     b.Property<string>("CheckpointJson")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DeltaToken")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("AccountId");
 
                     b.ToTable("SyncStateRecords");

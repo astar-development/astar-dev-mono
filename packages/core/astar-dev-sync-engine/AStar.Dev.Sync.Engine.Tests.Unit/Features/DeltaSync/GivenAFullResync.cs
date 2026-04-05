@@ -10,6 +10,7 @@ using AStar.Dev.Sync.Engine.Features.LocalScanning;
 using AStar.Dev.Sync.Engine.Features.ProgressTracking;
 using AStar.Dev.Sync.Engine.Features.Resilience;
 using AStar.Dev.Sync.Engine.Features.StateTracking;
+using AStar.Dev.Sync.Engine.Features.Activity;
 using AStar.Dev.Sync.Engine.Features.SyncOrchestration;
 using AStar.Dev.Sync.Engine.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -37,7 +38,7 @@ public sealed class GivenAFullResync : IDisposable
         [LocalFilePath] = new MockFileData(new byte[FileSize]) { LastWriteTime = RemoteLastModified.UtcDateTime },
     });
 
-    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), _fileSystem, Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
+    private SyncEngine BuildEngine() => new(_gate, _stateStore, _progressReporter, Substitute.For<IActivityReporter>(), _deltaQueryService, _fileTransferService, _localFileScanner, _diskSpaceChecker, _dbBackupService, new ExponentialBackoffPolicy(NullLogger<ExponentialBackoffPolicy>.Instance), _fileSystem, Substitute.For<IConflictDetector>(), Substitute.For<IConflictStore>(), NullLogger<SyncEngine>.Instance);
 
     [Fact]
     public async Task when_full_resync_and_file_matches_local_size_and_timestamp_then_file_is_skipped()

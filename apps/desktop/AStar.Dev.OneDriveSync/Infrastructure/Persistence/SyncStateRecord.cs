@@ -18,4 +18,10 @@ public sealed class SyncStateRecord
     ///     Opaque JSON blob for resume checkpoint data; <c>null</c> when no checkpoint is active.
     /// </summary>
     public string? CheckpointJson { get; set; }
+
+    /// <summary>
+    ///     Opaque delta token returned by the last successful OneDrive delta query (SE-09);
+    ///     <c>null</c> when no sync has completed yet.
+    /// </summary>
+    public string? DeltaToken { get; set; }
 }

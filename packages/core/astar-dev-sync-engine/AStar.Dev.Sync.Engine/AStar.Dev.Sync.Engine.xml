@@ -4,6 +4,40 @@
         <name>AStar.Dev.Sync.Engine</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType">
+            <summary>Classifies the file operation recorded in the activity feed (S013).</summary>
+        </member>
+        <member name="F:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType.Downloaded">
+            <summary>A remote file was downloaded to the local machine.</summary>
+        </member>
+        <member name="F:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType.Uploaded">
+            <summary>A local file was uploaded to OneDrive.</summary>
+        </member>
+        <member name="F:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType.Skipped">
+            <summary>A file was skipped because it was already in sync.</summary>
+        </member>
+        <member name="F:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType.ConflictDetected">
+            <summary>A conflict between local and remote versions was detected.</summary>
+        </member>
+        <member name="F:AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType.Error">
+            <summary>A file operation failed.</summary>
+        </member>
+        <member name="T:AStar.Dev.Sync.Engine.Features.Activity.IActivityReporter">
+            <summary>
+                Receives a notification after each file operation performed by the sync engine (S013).
+                The default registration is <see cref="T:AStar.Dev.Sync.Engine.Features.Activity.NullActivityReporter"/>; the desktop app overrides
+                this with <c>ActivityFeedService</c> which surfaces events to the Activity view.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.Activity.IActivityReporter.Report(System.String,AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType,System.String)">
+            <summary>Records a single file operation event.</summary>
+        </member>
+        <member name="T:AStar.Dev.Sync.Engine.Features.Activity.NullActivityReporter">
+            <summary>No-op implementation used when no activity feed consumer is registered.</summary>
+        </member>
+        <member name="M:AStar.Dev.Sync.Engine.Features.Activity.NullActivityReporter.Report(System.String,AStar.Dev.Sync.Engine.Features.Activity.ActivityActionType,System.String)">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Sync.Engine.Features.Concurrency.SyncGate">
             <summary>
                 Enforces: max one active sync per account (SE-02, SE-06) and manages the per-account transfer-slot
@@ -270,7 +304,7 @@
         <member name="T:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine.#ctor(AStar.Dev.Sync.Engine.Features.Concurrency.SyncGate,AStar.Dev.Sync.Engine.Features.StateTracking.ISyncStateStore,AStar.Dev.Sync.Engine.Features.ProgressTracking.ISyncProgressReporter,AStar.Dev.OneDrive.Client.Features.DeltaQueries.IDeltaQueryService,AStar.Dev.Sync.Engine.Features.FileTransfer.IFileTransferService,AStar.Dev.Sync.Engine.Features.LocalScanning.ILocalFileScanner,AStar.Dev.Sync.Engine.Features.DiskSpace.IDiskSpaceChecker,AStar.Dev.Sync.Engine.Infrastructure.IDbBackupService,AStar.Dev.Sync.Engine.Features.Resilience.ExponentialBackoffPolicy,System.IO.Abstractions.IFileSystem,AStar.Dev.Conflict.Resolution.Features.Detection.IConflictDetector,AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine})">
+        <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine.#ctor(AStar.Dev.Sync.Engine.Features.Concurrency.SyncGate,AStar.Dev.Sync.Engine.Features.StateTracking.ISyncStateStore,AStar.Dev.Sync.Engine.Features.ProgressTracking.ISyncProgressReporter,AStar.Dev.Sync.Engine.Features.Activity.IActivityReporter,AStar.Dev.OneDrive.Client.Features.DeltaQueries.IDeltaQueryService,AStar.Dev.Sync.Engine.Features.FileTransfer.IFileTransferService,AStar.Dev.Sync.Engine.Features.LocalScanning.ILocalFileScanner,AStar.Dev.Sync.Engine.Features.DiskSpace.IDiskSpaceChecker,AStar.Dev.Sync.Engine.Infrastructure.IDbBackupService,AStar.Dev.Sync.Engine.Features.Resilience.ExponentialBackoffPolicy,System.IO.Abstractions.IFileSystem,AStar.Dev.Conflict.Resolution.Features.Detection.IConflictDetector,AStar.Dev.Conflict.Resolution.Features.Persistence.IConflictStore,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine})">
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Sync.Engine.Features.SyncOrchestration.SyncEngine.GetProgressStream(System.String)">
