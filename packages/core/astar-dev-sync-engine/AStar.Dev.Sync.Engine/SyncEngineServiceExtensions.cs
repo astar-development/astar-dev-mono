@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Sync.Engine.Features.Activity;
 using AStar.Dev.Sync.Engine.Features.Concurrency;
 using AStar.Dev.Sync.Engine.Features.DiskSpace;
 using AStar.Dev.Sync.Engine.Features.FileTransfer;
@@ -23,6 +24,7 @@ public static class SyncEngineServiceExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<SyncGate>();
+        services.AddSingleton<IActivityReporter, NullActivityReporter>();
         services.AddSingleton<ISyncEngine, SyncEngine>();
         services.AddSingleton<ISyncScheduler, SyncScheduler>();
         services.AddSingleton<ISyncProgressReporter, SyncProgressReporter>();

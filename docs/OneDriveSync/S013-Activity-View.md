@@ -15,19 +15,19 @@ I want a live feed of the last 50 sync activity items (newest first) so I can qu
 
 ## Acceptance Criteria
 
-- [ ] Activity view displays the last 50 items, newest first
-- [ ] Each activity item shows: timestamp (formatted per LO-07), account name, action type (Downloaded, Uploaded, Skipped, Conflict Detected, Error), file name/path
-- [ ] List updates in real time during an active sync — new items prepended; list truncated to 50 as items are added
-- [ ] No filter controls in MVP — all accounts shown together (account column differentiates entries)
-- [ ] Empty state: "No sync activity yet — start a sync to see activity here"
-- [ ] Activity feed is **ephemeral** — stored in memory only; cleared on app restart (not persisted to SQLite)
-- [ ] `IActivityFeedService` (singleton) publishes `IObservable<ActivityItem>` that `ActivityViewModel` subscribes to
-- [ ] Sync engine (S010) publishes to `IActivityFeedService` after each file operation
+- [x] Activity view displays the last 50 items, newest first
+- [x] Each activity item shows: timestamp (formatted per LO-07), account name, action type (Downloaded, Uploaded, Skipped, Conflict Detected, Error), file name/path
+- [x] List updates in real time during an active sync — new items prepended; list truncated to 50 as items are added
+- [x] No filter controls in MVP — all accounts shown together (account column differentiates entries)
+- [x] Empty state: "No sync activity yet — start a sync to see activity here"
+- [x] Activity feed is **ephemeral** — stored in memory only; cleared on app restart (not persisted to SQLite)
+- [x] `IActivityFeedService` (singleton) publishes `IObservable<ActivityItem>` that `ActivityViewModel` subscribes to
+- [x] Sync engine (S010) publishes to `IActivityFeedService` after each file operation
 
 ### Tests
-- [ ] **Unit test**: `ActivityFeedService` — adding 51 items trims to 50; newest item is first
-- [ ] **Unit test**: `ActivityViewModel` — subscription to feed updates the `Items` observable collection
-- [ ] `dotnet build` zero errors/warnings; `dotnet test` all pass
+- [x] **Unit test**: `ActivityFeedService` — adding 51 items trims to 50; newest item is first
+- [x] **Unit test**: `ActivityViewModel` — subscription to feed updates the `Items` observable collection
+- [x] `dotnet build` zero errors/warnings; `dotnet test` all pass
 
 ---
 

@@ -232,6 +232,24 @@
   <data name="Activity_ComingSoon" xml:space="preserve">
     <value>Activity — coming soon</value>
   </data>
+  <data name="Activity_EmptyState" xml:space="preserve">
+    <value>No sync activity yet — start a sync to see activity here</value>
+  </data>
+  <data name="Activity_Downloaded" xml:space="preserve">
+    <value>Downloaded</value>
+  </data>
+  <data name="Activity_Uploaded" xml:space="preserve">
+    <value>Uploaded</value>
+  </data>
+  <data name="Activity_Skipped" xml:space="preserve">
+    <value>Skipped</value>
+  </data>
+  <data name="Activity_ConflictDetected" xml:space="preserve">
+    <value>Conflict Detected</value>
+  </data>
+  <data name="Activity_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="Conflicts_ComingSoon" xml:space="preserve">
     <value>Conflicts — coming soon</value>
   </data>
