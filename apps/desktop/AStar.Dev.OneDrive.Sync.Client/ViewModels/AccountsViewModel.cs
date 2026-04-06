@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -80,7 +80,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         account.AccentIndex = Accounts.Count % 6;
         account.IsActive = Accounts.Count == 0;
         if(account.LocalSyncPath.IsNullOrWhiteSpace())
-            account.LocalSyncPath = App.GetPlatformUserDataDirectory(account.Email);
+            account.LocalSyncPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
 
         var entity = ToEntity(account);
         await repository.UpsertAsync(entity);

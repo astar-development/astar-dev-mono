@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Services;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;

@@ -1,8 +1,13 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
+using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
+using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
+using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,19 +26,15 @@ internal static class ShellServiceExtensions
 
         _ = services.AddSingleton<InMemoryLogSink>(inMemoryLogSink);
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
-
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
-
-        _ = services.AddTransient<AddAccountWizardViewModel>();
-        _ = services.AddSingleton<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
-
-        _ = services.AddSingleton<DashboardViewModel>();
-        _ = services.AddSingleton<AccountsViewModel>();
-        _ = services.AddTransient<ActivityViewModel>();
-        _ = services.AddTransient<SettingsViewModel>();
-
-        _ = services.AddTransient<MainWindowViewModel>();
+        _ = services.AddTransient<IAuthService, AuthService>();
+        _ = services.AddTransient<TokenCacheService>();
+        _ = services.AddTransient<IGraphService, GraphService>();
+        _ = services.AddTransient<IStartupService, StartupService>();
+        _ = services.AddTransient<ISyncService,  SyncService>();
+        _ = services.AddTransient<SyncScheduler>();
+        _ = services.AddTransient<ISettingsService, SettingsService>();
 
         return services;
     }

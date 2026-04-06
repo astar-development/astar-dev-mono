@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Settings;

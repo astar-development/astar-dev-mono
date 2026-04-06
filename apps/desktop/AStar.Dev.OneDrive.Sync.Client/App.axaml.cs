@@ -1,7 +1,5 @@
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
@@ -19,7 +17,6 @@ using AStar.Dev.Utilities;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
@@ -49,7 +46,7 @@ public partial class App : Application, IDisposable
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
-        var mainWindow = new MainWindow();
+        var mainWindow = _services.GetRequiredService<MainWindow>();
         desktop.MainWindow = mainWindow;
 
         mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
@@ -75,6 +72,8 @@ public partial class App : Application, IDisposable
         _ = services.AddLocalizationServices();
         _ = services.AddShell(BuildOneDriveClientOptions(), inMemoryLogSink);
         _ = services.AddStartupTasks();
+        _ = services.AddViews();
+        _ = services.AddViewModels();
 
         return services.BuildServiceProvider();
     }
@@ -104,21 +103,6 @@ public partial class App : Application, IDisposable
                 retainedFileCountLimit: 7)
             .WriteTo.Sink(inMemoryLogSink)
             .CreateLogger();
-    }
-
-    public static string GetPlatformUserDataDirectory(string email)
-    {
-        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        string safeEmail = string.Concat(email.Split(Path.GetInvalidFileNameChars()));
-        return OperatingSystem.IsWindows()
-            ? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                ApplicationMetadata.ApplicationName,
-                safeEmail)
-            : OperatingSystem.IsMacOS()
-                ? Path.Combine(home, "Library", "Application Support", ApplicationMetadata.ApplicationName, safeEmail)
-                : Path.Combine(home, ".config", ApplicationMetadata.ApplicationName, safeEmail);
     }
 
     private async Task BootstrapAsync(MainWindow window)
