@@ -2,11 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
         xmlns:vmHome="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Home"
         xmlns:controls="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Controls"
-        xmlns:views="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Home"
         xmlns:local="clr-namespace:AStar.Dev.OneDrive.Sync.Client"
+        xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
         mc:Ignorable="d"
         x:Class="AStar.Dev.OneDrive.Sync.Client.Home.MainWindow"
         x:DataType="vmHome:MainWindowViewModel"
@@ -221,7 +220,7 @@
                             <ItemsControl IsVisible="{Binding Accounts.HasAccounts}"
                                         ItemsSource="{Binding Accounts.Accounts}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="vm:AccountCardViewModel">
+                                    <DataTemplate DataType="accounts:AccountCardViewModel">
                                         <Button Background="Transparent"
                                                 BorderThickness="0"
                                                 HorizontalAlignment="Stretch"

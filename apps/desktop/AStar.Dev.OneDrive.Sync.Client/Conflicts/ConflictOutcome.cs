@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
 public enum ConflictOutcome
 {

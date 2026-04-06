@@ -1,6 +1,17 @@
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using AccountCardViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountCardViewModel;
+using AccountFilesViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountFilesViewModel;
+using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewModel;
+using AccountSyncSettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountSyncSettingsViewModel;
+using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
+using AddAccountWizardViewModel = AStar.Dev.OneDrive.Sync.Client.Onboarding.AddAccountWizardViewModel;
+using ConflictItemViewModel = AStar.Dev.OneDrive.Sync.Client.Conflicts.ConflictItemViewModel;
+using DashboardAccountViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardAccountViewModel;
+using DashboardViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardViewModel;
+using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 

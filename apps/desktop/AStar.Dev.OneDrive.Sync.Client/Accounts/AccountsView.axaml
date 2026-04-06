@@ -1,9 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
              xmlns:vmHome="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Home"
-             xmlns:views="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Views"
-             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.AccountsView"
+             xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             xmlns:onboarding="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Onboarding"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsView"
              x:DataType="vmHome:MainWindowViewModel">
 
     <Grid RowDefinitions="*">
@@ -69,7 +69,7 @@
 
                 <ItemsControl ItemsSource="{Binding Accounts.Accounts}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:AccountCardViewModel">
+                        <DataTemplate DataType="accounts:AccountCardViewModel">
 
                             <Border Background="{DynamicResource BackgroundSecondaryBrush}"
                                     BorderBrush="{DynamicResource BorderSubtleBrush}"
@@ -171,8 +171,8 @@
 
                 <ContentControl Content="{Binding Accounts.Wizard}">
                     <ContentControl.DataTemplates>
-                        <DataTemplate DataType="vm:AddAccountWizardViewModel">
-                            <views:AddAccountWizardView/>
+                        <DataTemplate DataType="onboarding:AddAccountWizardViewModel">
+                            <onboarding:AddAccountWizardView/>
                         </DataTemplate>
                     </ContentControl.DataTemplates>
                 </ContentControl>

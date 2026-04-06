@@ -63,4 +63,27 @@
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Accounts\AccountsView.axaml.cs">
+      <DependentUpon>AccountsView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Accounts\ActivityView.axaml.cs">
+      <DependentUpon>ActivityView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Dashboard\DashboardView.axaml.cs">
+      <DependentUpon>DashboardView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Settings\SettingsView.axaml.cs">
+      <DependentUpon>SettingsView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Onboarding\AddAccountWizardView.axaml.cs">
+      <DependentUpon>AddAccountWizardView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

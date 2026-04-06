@@ -13,12 +13,12 @@ public sealed partial class FilesViewModel(
     IGraphService graphService,
     IAccountRepository repository) : ObservableObject
 {
-    public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
+    public ObservableCollection<Accounts.AccountFilesViewModel> Tabs { get; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasTabs))]
     [NotifyPropertyChangedFor(nameof(HasNoAccounts))]
-    private AccountFilesViewModel? _activeTab;
+    public partial Accounts.AccountFilesViewModel? ActiveTab { get; set; }
 
     public bool HasTabs => Tabs.Count > 0;
     public bool HasNoAccounts => Tabs.Count == 0;
@@ -34,7 +34,7 @@ public sealed partial class FilesViewModel(
         if(Tabs.Any(t => t.AccountId == account.Id))
             return;
 
-        var tab = new AccountFilesViewModel(
+        var tab = new Accounts.AccountFilesViewModel(
             account, authService, graphService, repository);
 
         tab.ViewActivityRequested += (_, node) =>
@@ -73,7 +73,7 @@ public sealed partial class FilesViewModel(
         await tab.LoadCommand.ExecuteAsync(null);
     }
 
-    private void ActivateTab(AccountFilesViewModel? tab)
+    private void ActivateTab(Accounts.AccountFilesViewModel? tab)
     {
         foreach(var t in Tabs)
             t.IsActiveTab = t == tab;
