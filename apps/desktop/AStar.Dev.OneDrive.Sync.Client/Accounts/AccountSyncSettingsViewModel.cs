@@ -1,9 +1,10 @@
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountSyncSettingsViewModel(
     OneDriveAccount account,
@@ -14,9 +15,11 @@ public sealed partial class AccountSyncSettingsViewModel(
     public string DisplayName => account.DisplayName;
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
-    [ObservableProperty] private string _localSyncPath = account.LocalSyncPath;
-    [ObservableProperty] private ConflictPolicy _conflictPolicy = account.ConflictPolicy;
+    [ObservableProperty]
+    public partial string LocalSyncPath { get; set; } = account.LocalSyncPath;
 
+    [ObservableProperty]
+    public partial ConflictPolicy ConflictPolicy { get; set; } = account.ConflictPolicy;
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
     [
         new(ConflictPolicy.Ignore,        "Ignore",          "Skip conflicts — leave both unchanged"),

@@ -1,8 +1,6 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
-using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;

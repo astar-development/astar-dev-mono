@@ -1,16 +1,19 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
 public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, SyncScheduler scheduler, IAccountRepository repository) : ObservableObject
 {
-    [ObservableProperty] private AppTheme _theme = settingsService.Current.Theme;
+    [ObservableProperty]
+    public partial AppTheme Theme { get; set; } = settingsService.Current.Theme;
 
     partial void OnThemeChanged(AppTheme value)
     {
@@ -27,7 +30,7 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
     ];
 
     [ObservableProperty]
-    private ConflictPolicy _defaultConflictPolicy =
+    public partial ConflictPolicy DefaultConflictPolicy { get; set; } =
         settingsService.Current.DefaultConflictPolicy;
 
     partial void OnDefaultConflictPolicyChanged(ConflictPolicy value)
@@ -37,7 +40,7 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
     }
 
     [ObservableProperty]
-    private int _syncIntervalMinutes =
+    public partial int SyncIntervalMinutes { get; set; } =
         settingsService.Current.SyncIntervalMinutes;
 
     partial void OnSyncIntervalMinutesChanged(int value)

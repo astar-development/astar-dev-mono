@@ -1,8 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
-             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.DashboardView"
-             x:DataType="vm:DashboardViewModel">
+             xmlns:dashboard="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Dashboard"
+             xmlns:activity="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Activity"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardView"
+             x:DataType="dashboard:DashboardViewModel">
 
     <Grid RowDefinitions="Auto,*">
 
@@ -123,7 +124,7 @@
                       Padding="20,16">
             <ItemsControl ItemsSource="{Binding AccountSections}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="vm:DashboardAccountViewModel">
+                    <DataTemplate DataType="dashboard:DashboardAccountViewModel">
 
                         <Border Background="{DynamicResource BackgroundPrimaryBrush}"
                                 BorderBrush="{DynamicResource BorderSubtleBrush}"
@@ -293,7 +294,7 @@
 
                                         <ItemsControl ItemsSource="{Binding RecentActivity}">
                                             <ItemsControl.ItemTemplate>
-                                                <DataTemplate DataType="vm:ActivityItemViewModel">
+                                                <DataTemplate DataType="activity:ActivityItemViewModel">
                                                     <Grid ColumnDefinitions="Auto,8,*,Auto"
                                                           Margin="0,2">
                                                         <TextBlock Grid.Column="0"

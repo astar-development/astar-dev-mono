@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
 public sealed partial class DashboardViewModel(SyncScheduler scheduler) : ObservableObject
 {
@@ -11,13 +13,22 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
-    private int _totalAccounts;
+    public partial int TotalAccounts { get; set; }
 
-    [ObservableProperty] private int    _totalFolders;
-    [ObservableProperty] private int    _totalConflicts;
-    [ObservableProperty] private string _lastSyncText   = "Never";
-    [ObservableProperty] private bool   _anyErrors;
-    [ObservableProperty] private bool   _anySyncing;
+    [ObservableProperty]
+    public partial int TotalFolders { get; set; }
+
+    [ObservableProperty]
+    public partial int TotalConflicts { get; set; }
+
+    [ObservableProperty]
+    public partial string LastSyncText { get; set; } = "Never";
+
+    [ObservableProperty]
+    public partial bool AnyErrors { get; set; }
+
+    [ObservableProperty]
+    public partial bool AnySyncing { get; set; }
 
     public bool HasAccounts => TotalAccounts > 0;
 

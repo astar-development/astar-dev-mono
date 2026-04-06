@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -7,7 +8,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
 public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository) : ObservableObject
 {
@@ -18,7 +19,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLogTabActive))]
     [NotifyPropertyChangedFor(nameof(IsConflictsTabActive))]
-    private ActivityTab _activeTab = ActivityTab.Log;
+    public partial ActivityTab ActiveTab { get; set; } = ActivityTab.Log;
 
     public bool IsLogTabActive => ActiveTab == ActivityTab.Log;
     public bool IsConflictsTabActive => ActiveTab == ActivityTab.Conflicts;
@@ -31,18 +32,18 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasLogItems))]
-    private int _logItemCount;
+    public partial int LogItemCount { get; set; }
 
     public bool HasLogItems => LogItemCount > 0;
 
-    [ObservableProperty] private ActivityItemType? _activeFilter;
-
+    [ObservableProperty]
+    public partial ActivityItemType? ActiveFilter { get; set; }
     public ObservableCollection<ConflictItemViewModel> Conflicts { get; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasConflicts))]
     [NotifyPropertyChangedFor(nameof(ConflictBadgeText))]
-    private int _conflictCount;
+    public partial int ConflictCount { get; set; }
 
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString(CultureInfo.CurrentCulture) : string.Empty;

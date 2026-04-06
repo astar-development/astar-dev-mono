@@ -1,9 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
-             xmlns:viewModels="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
-             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AddAccountWizardView"
-             x:DataType="vm:AddAccountWizardViewModel">
+             xmlns:onboarding="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Onboarding"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Onboarding.AddAccountWizardView"
+             x:DataType="onboarding:AddAccountWizardViewModel">
 
     <StackPanel Spacing="24">
 
@@ -100,7 +99,7 @@
                     <ItemsControl ItemsSource="{Binding Folders}"
                                   Margin="4">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="vm:WizardFolderItem">
+                            <DataTemplate DataType="onboarding:WizardFolderItem">
                                 <Grid ColumnDefinitions="Auto,*"
                                       Margin="8,4">
                                     <CheckBox Grid.Column="0"

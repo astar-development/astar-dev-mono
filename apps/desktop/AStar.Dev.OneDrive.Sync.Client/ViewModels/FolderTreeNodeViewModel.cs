@@ -22,7 +22,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsIncluded))]
     [NotifyPropertyChangedFor(nameof(IsExcluded))]
     [NotifyPropertyChangedFor(nameof(StatusBadgeText))]
-    private FolderSyncState _syncState;
+    public partial FolderSyncState SyncState { get; set; }
 
     public bool IsIncluded => SyncState is not FolderSyncState.Excluded;
     public bool IsExcluded => SyncState is FolderSyncState.Excluded;
@@ -40,10 +40,13 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
-    private bool _isExpanded;
+    public partial bool IsExpanded { get; set; }
 
-    [ObservableProperty] private bool _isLoadingChildren;
-    [ObservableProperty] private bool _hasChildren;
+    [ObservableProperty]
+    public partial bool IsLoadingChildren { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasChildren { get; set; }
 
     public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
 
@@ -64,7 +67,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         Name = node.Name;
         ParentId = node.ParentId;
         Depth = depth;
-        _syncState = node.SyncState;
+        SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
         _accessToken = accessToken;

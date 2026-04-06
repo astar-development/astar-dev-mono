@@ -1,7 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Settings;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <summary>
 /// Application-level settings persisted to JSON alongside the DB.

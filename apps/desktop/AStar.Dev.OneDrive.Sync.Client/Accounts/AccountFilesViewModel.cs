@@ -4,11 +4,12 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
@@ -33,11 +34,17 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     public ObservableCollection<FolderTreeNodeViewModel> RootFolders { get; } = [];
 
-    [ObservableProperty] private bool   _isLoading;
-    [ObservableProperty] private string _loadError    = string.Empty;
-    [ObservableProperty] private bool   _hasLoadError;
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
 
-    [ObservableProperty] private bool _isActiveTab;
+    [ObservableProperty]
+    public partial string LoadError { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasLoadError { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsActiveTab { get; set; }
 
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 

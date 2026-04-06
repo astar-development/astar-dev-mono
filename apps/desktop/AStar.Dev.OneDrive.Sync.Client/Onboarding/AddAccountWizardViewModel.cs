@@ -5,7 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
+namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 public enum WizardStep { SignIn, SelectFolders, Confirm }
 
@@ -14,7 +14,8 @@ public sealed partial class WizardFolderItem(string id, string name) : Observabl
     public string Id { get; } = id;
     public string Name { get; } = name;
 
-    [ObservableProperty] private bool _isSelected = true;
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; } = true;
 }
 
 public sealed partial class AddAccountWizardViewModel(IAuthService authService, IGraphService graphService) : ObservableObject, IDisposable
@@ -30,7 +31,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [NotifyPropertyChangedFor(nameof(CanGoBack))]
     [NotifyPropertyChangedFor(nameof(CanGoNext))]
     [NotifyPropertyChangedFor(nameof(NextLabel))]
-    private WizardStep _currentStep = WizardStep.SignIn;
+    public partial WizardStep CurrentStep { get; set; } = WizardStep.SignIn;
 
     public bool IsSignInStep => CurrentStep == WizardStep.SignIn;
     public bool IsSelectFoldersStep => CurrentStep == WizardStep.SelectFolders;
@@ -38,20 +39,32 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGoNext))]
-    private bool _isSignedIn;
+    public partial bool IsSignedIn { get; set; }
 
-    [ObservableProperty] private bool   _isWaitingForAuth;
-    [ObservableProperty] private string _signInStatusText = string.Empty;
-    [ObservableProperty] private bool   _signInHasError;
+    [ObservableProperty]
+    public partial bool IsWaitingForAuth { get; set; }
 
+    [ObservableProperty]
+    public partial string SignInStatusText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool SignInHasError { get; set; }
     public ObservableCollection<WizardFolderItem> Folders { get; } = [];
 
-    [ObservableProperty] private bool   _isLoadingFolders;
-    [ObservableProperty] private string _folderLoadError = string.Empty;
+    [ObservableProperty]
+    public partial bool IsLoadingFolders { get; set; }
 
-    [ObservableProperty] private string _confirmedDisplayName = string.Empty;
-    [ObservableProperty] private string _confirmedEmail       = string.Empty;
-    [ObservableProperty] private int    _confirmedFolderCount;
+    [ObservableProperty]
+    public partial string FolderLoadError { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string ConfirmedDisplayName { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string ConfirmedEmail { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial int ConfirmedFolderCount { get; set; }
 
     public bool CanGoBack => CurrentStep != WizardStep.SignIn;
     public bool CanGoNext => CurrentStep switch

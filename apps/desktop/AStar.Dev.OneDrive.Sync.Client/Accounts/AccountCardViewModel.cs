@@ -1,9 +1,10 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 /// <summary>
 /// Drives a single account card in the left-hand account panel.
@@ -47,10 +48,17 @@ public sealed partial class AccountCardViewModel : ObservableObject
     /// <summary>Hex string for the accent colour, looked up from the fixed palette.</summary>
     public string AccentHex => AccentPalette[_model.AccentIndex % AccentPalette.Length];
 
-    [ObservableProperty] private bool      _isActive;
-    [ObservableProperty] private SyncState _syncState = SyncState.Idle;
-    [ObservableProperty] private int       _conflictCount;
-    [ObservableProperty] private string    _lastSyncText = string.Empty;
+    [ObservableProperty]
+    public partial bool IsActive { get; set; }
+
+    [ObservableProperty]
+    public partial SyncState SyncState { get; set; } = SyncState.Idle;
+
+    [ObservableProperty]
+    public partial int ConflictCount { get; set; }
+
+    [ObservableProperty]
+    public partial string LastSyncText { get; set; } = string.Empty;
 
     /// <summary>Raised when the user clicks the card — navigates to Files view.</summary>
     public event EventHandler<AccountCardViewModel>? Selected;
@@ -67,7 +75,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
     public AccountCardViewModel(OneDriveAccount model)
     {
         _model = model;
-        _isActive = model.IsActive;
+        IsActive = model.IsActive;
         UpdateLastSyncText();
     }
 

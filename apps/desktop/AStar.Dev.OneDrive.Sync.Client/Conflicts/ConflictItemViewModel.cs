@@ -5,7 +5,7 @@ using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
 public sealed partial class ConflictItemViewModel(
     SyncConflict conflict,
@@ -28,14 +28,18 @@ public sealed partial class ConflictItemViewModel(
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPanelOpen))]
-    private bool _isExpanded;
+    public partial bool IsExpanded { get; set; }
 
     public bool IsPanelOpen => IsExpanded;
 
-    [ObservableProperty] private bool          _isResolving;
-    [ObservableProperty] private bool          _isResolved;
-    [ObservableProperty] private ConflictPolicy _selectedPolicy = ConflictPolicy.Ignore;
+    [ObservableProperty]
+    public partial bool IsResolving { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsResolved { get; set; }
+
+    [ObservableProperty]
+    public partial ConflictPolicy SelectedPolicy { get; set; } = ConflictPolicy.Ignore;
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
     [
         new(ConflictPolicy.Ignore,        "Ignore",          "Skip — leave both versions unchanged"),

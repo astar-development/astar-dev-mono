@@ -1,13 +1,15 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using AStar.Dev.Utilities;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
 public sealed partial class DashboardAccountViewModel : ObservableObject
 {
@@ -33,17 +35,22 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel))]
     [NotifyPropertyChangedFor(nameof(IsHealthy))]
-    private SyncState _syncState = SyncState.Idle;
+    public partial SyncState SyncState { get; set; } = SyncState.Idle;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel))]
     [NotifyPropertyChangedFor(nameof(IsHealthy))]
-    private int _conflictCount;
+    public partial int ConflictCount { get; set; }
 
-    [ObservableProperty] private string _lastSyncText = "Never synced";
-    [ObservableProperty] private int    _folderCount;
+    [ObservableProperty]
+    public partial string LastSyncText { get; set; } = "Never synced";
+
+    [ObservableProperty]
+    public partial int FolderCount { get; set; }
+
     private readonly IAccountRepository _repository;
-    [ObservableProperty] private bool   _isSyncing;
+    [ObservableProperty]
+    public partial bool IsSyncing { get; set; }
 
     public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
     public string StatusLabel => (SyncState, ConflictCount) switch
@@ -57,7 +64,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
-    private bool _isExpanded = true;
+    public partial bool IsExpanded { get; set; } = true;
 
     public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
 
@@ -68,7 +75,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     {
         _account = account;
         _scheduler = scheduler;
-        _folderCount = account.SelectedFolderIds.Count;
+        FolderCount = account.SelectedFolderIds.Count;
         _repository = repository;
         UpdateLastSyncText(SyncState.Idle);
     }

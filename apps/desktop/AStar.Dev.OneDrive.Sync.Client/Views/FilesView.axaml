@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
-             xmlns:controls="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Controls"
              xmlns:views="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Views"
+             xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Views.FilesView"
              x:DataType="vm:FilesViewModel">
 
@@ -24,7 +24,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:AccountFilesViewModel">
+                        <DataTemplate DataType="accounts:AccountFilesViewModel">
 
                             <Button Background="Transparent"
                                     BorderThickness="0,0,0,2"
@@ -83,7 +83,7 @@
 
             <ContentControl Content="{Binding ActiveTab}">
                 <ContentControl.DataTemplates>
-                    <DataTemplate DataType="vm:AccountFilesViewModel">
+                    <DataTemplate DataType="accounts:AccountFilesViewModel">
 
                         <Grid>
 

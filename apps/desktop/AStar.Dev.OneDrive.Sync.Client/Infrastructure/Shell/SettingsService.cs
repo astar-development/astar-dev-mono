@@ -1,8 +1,7 @@
 using System.Text.Json;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Settings;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 public interface ISettingsService
 {

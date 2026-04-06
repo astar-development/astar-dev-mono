@@ -1,11 +1,10 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Views;
+namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
 public partial class SettingsView : UserControl
 {

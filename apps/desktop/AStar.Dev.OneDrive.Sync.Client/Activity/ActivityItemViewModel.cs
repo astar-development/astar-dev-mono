@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
 public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, Info }
 

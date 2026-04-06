@@ -1,8 +1,9 @@
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Views;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public partial class ActivityView : UserControl
 {

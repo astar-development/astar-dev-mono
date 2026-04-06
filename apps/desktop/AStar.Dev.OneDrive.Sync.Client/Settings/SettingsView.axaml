@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
              xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
-             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.SettingsView"
-             x:DataType="vm:SettingsViewModel">
+             xmlns:settings="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Settings"
+             xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Settings.SettingsView"
+             x:DataType="settings:SettingsViewModel">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto"
                   Padding="24,20">
@@ -88,7 +90,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:ConflictPolicyOption">
+                                <DataTemplate DataType="conflicts:ConflictPolicyOption">
                                     <Button Padding="10,5"
                                             Margin="0,0,6,6"
                                             CornerRadius="{StaticResource RadiusMd}"

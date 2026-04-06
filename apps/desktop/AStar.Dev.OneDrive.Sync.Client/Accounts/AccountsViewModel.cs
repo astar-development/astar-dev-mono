@@ -9,7 +9,7 @@ using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
@@ -17,13 +17,13 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
-    private AccountCardViewModel? _activeAccount;
+    public partial AccountCardViewModel? ActiveAccount { get; set; }
 
     public bool HasAccounts => Accounts.Count > 0;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsWizardVisible))]
-    private AddAccountWizardViewModel? _wizard;
+    public partial Onboarding.AddAccountWizardViewModel? Wizard { get; set; }
 
     public bool IsWizardVisible => Wizard is not null;
 
@@ -38,7 +38,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     public void AddAccount()
     {
-        var wizard = new AddAccountWizardViewModel(authService, graphService);
+        var wizard = new Onboarding.AddAccountWizardViewModel(authService, graphService);
         wizard.Completed += OnWizardCompleted;
         wizard.Cancelled += OnWizardCancelled;
         Wizard = wizard;

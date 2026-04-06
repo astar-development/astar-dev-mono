@@ -1,9 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
              xmlns:controls="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Controls"
-             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.ActivityView"
-             x:DataType="vm:ActivityViewModel">
+             xmlns:activity="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Activity"
+             xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.ActivityView"
+             x:DataType="activity:ActivityViewModel">
 
     <Grid RowDefinitions="Auto,*">
 
@@ -143,7 +145,7 @@
                               VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding FilteredLog}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="vm:ActivityItemViewModel">
+                            <DataTemplate DataType="activity:ActivityItemViewModel">
                                 <Border BorderThickness="0,0,0,1"
                                         BorderBrush="{DynamicResource BorderSubtleBrush}"
                                         Padding="16,8">
@@ -226,7 +228,7 @@
                               VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Conflicts}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="vm:ConflictItemViewModel">
+                            <DataTemplate DataType="conflicts:ConflictItemViewModel">
                                 <StackPanel>
 
                                     <!-- Conflict row header -->

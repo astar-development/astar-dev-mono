@@ -8,21 +8,38 @@ namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 /// </summary>
 public sealed partial class StatusBarViewModel : ObservableObject
 {
-    [ObservableProperty] private string _accountDisplayName = string.Empty;
-    [ObservableProperty] private string _accountEmail = string.Empty;
-    [ObservableProperty] private bool _hasAccount;
+    [ObservableProperty]
+    public partial string AccountDisplayName { get; set; } = string.Empty;
 
-    [ObservableProperty] private SyncState _syncState = SyncState.Idle;
-    [ObservableProperty] private int _pendingCount;
-    [ObservableProperty] private int _conflictCount;
-    [ObservableProperty] private string _lastSyncText = string.Empty;
-    [ObservableProperty] private bool _isSyncing;
+    [ObservableProperty]
+    public partial string AccountEmail { get; set; } = string.Empty;
 
-    [ObservableProperty] private string _storageUsedText = string.Empty;
+    [ObservableProperty]
+    public partial bool HasAccount { get; set; }
 
-    [ObservableProperty] private string _conflictPolicyText = string.Empty;
+    [ObservableProperty]
+    public partial SyncState SyncState { get; set; } = SyncState.Idle;
 
-    [ObservableProperty] private double _syncProgress;
+    [ObservableProperty]
+    public partial int PendingCount { get; set; }
+
+    [ObservableProperty]
+    public partial int ConflictCount { get; set; }
+
+    [ObservableProperty]
+    public partial string LastSyncText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsSyncing { get; set; }
+
+    [ObservableProperty]
+    public partial string StorageUsedText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string ConflictPolicyText { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial double SyncProgress { get; set; }
 
     public string StatusLabel => SyncState switch
     {

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
+namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 public partial class AddAccountWizardView : UserControl
 {
