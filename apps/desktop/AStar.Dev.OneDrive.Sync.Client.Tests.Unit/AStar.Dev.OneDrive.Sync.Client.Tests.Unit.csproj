@@ -25,6 +25,7 @@
     <PackageReference Include="Shouldly"/>
     <PackageReference Include="WireMock.Net" />
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
   </ItemGroup>
 
   <ItemGroup>

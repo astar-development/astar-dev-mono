@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Services;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Auth;
 

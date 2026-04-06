@@ -1,11 +1,9 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
-using AStar.Dev.Utilities;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.Delta;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
-using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 

@@ -3,7 +3,6 @@ using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data;

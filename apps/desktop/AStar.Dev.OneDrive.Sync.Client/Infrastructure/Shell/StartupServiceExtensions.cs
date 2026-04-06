@@ -1,5 +1,4 @@
 using System.IO.Abstractions;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;

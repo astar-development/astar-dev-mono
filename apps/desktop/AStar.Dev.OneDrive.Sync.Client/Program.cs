@@ -1,6 +1,4 @@
-﻿using AStar.Dev.OneDrive.Sync.Client.Data;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
+﻿using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
