@@ -13,9 +13,7 @@ public static class DbContextFactory
 {
     public static AppDbContext Create()
     {
-        string dir = new LocalApplicationPathsProvider().ApplicationDirectory;
-
-        string dbPath = dir.CombinePath(ApplicationMetadata.ApplicationNameLowered);
+        string dbPath = ApplicationMetadata.ApplicationNameLowered.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameLowered}.db");
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite($"Data Source={dbPath}")

@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,9 +30,7 @@ internal static class PersistenceServiceExtensions
 
     private static void ConfigureOptions(IServiceProvider sp, DbContextOptionsBuilder options)
     {
-        var pathProvider = sp.GetRequiredService<IApplicationPathsProvider>();
-        _ = Directory.CreateDirectory(pathProvider.ApplicationDirectory);
-        string dbPath = Path.Combine(pathProvider.ApplicationDirectory, ApplicationMetadata.ApplicationNameLowered);
+        string dbPath = ApplicationMetadata.ApplicationNameLowered.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameLowered}.db");
         _ = options.UseSqlite($"DataSource={dbPath}");
     }
 }
