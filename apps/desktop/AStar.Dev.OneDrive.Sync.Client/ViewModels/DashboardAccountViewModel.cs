@@ -127,7 +127,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             ? "Never synced"
             : (DateTimeOffset.UtcNow - _account.LastSyncedAt.Value) switch
             {
-                { TotalSeconds: < 60 } => "Just now 2",
+                { TotalSeconds: < 60 } => "Just now",
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
                 { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
                 { TotalDays: < 2 } => "Yesterday",

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Localization;
+namespace AStar.Dev.OneDrive.Sync.Client.Localization;
 
 /// <summary>
 /// Provides localised string lookup with optional format-argument support.
@@ -34,4 +34,16 @@ public interface ILocalizationService
 
     /// <summary>Raised after a successful culture switch.</summary>
     event EventHandler<CultureInfo>? CultureChanged;
+
+    /// <summary>
+    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
+    /// Loads strings for the requested culture (or en-GB as fallback).
+    /// </summary>
+    Task InitialiseAsync(CultureInfo? requested = null);
+
+    /// <summary>
+    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
+    /// Loads strings for the requested culture (or en-GB as fallback).
+    /// </summary>
+    void Initialise(CultureInfo? requested = null);
 }

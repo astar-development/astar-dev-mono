@@ -1,7 +1,7 @@
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 /// <summary>
 /// Wires MSAL's cross-platform token cache persistence using

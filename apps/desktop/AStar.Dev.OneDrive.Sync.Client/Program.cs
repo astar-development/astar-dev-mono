@@ -1,4 +1,6 @@
 ﻿using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
+using AStar.Dev.Utilities;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -19,9 +21,9 @@ sealed class Program
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            string logPath = Path.Combine(
-                DbContextFactory.GetPlatformDataDirectory(),
-                "sync.txt");
+            var pathsProvider = new LocalApplicationPathsProvider();
+
+            string logPath = pathsProvider.LogsDirectory.CombinePath("sync.txt");
 
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)

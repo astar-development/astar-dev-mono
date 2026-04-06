@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 /// <summary>
 /// Abstracts MSAL authentication for OneDrive personal accounts.

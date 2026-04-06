@@ -1,7 +1,9 @@
 using System.Text.Json;
 using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
+using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Settings;
+namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 public interface ISettingsService
 {
@@ -26,25 +28,26 @@ public sealed class SettingsService : ISettingsService
 
     public SettingsService()
     {
-        string dir = DbContextFactory.GetPlatformDataDirectory();
-        _ = Directory.CreateDirectory(dir);
+        string dir = new LocalApplicationPathsProvider().ApplicationDirectory;
         _path = Path.Combine(dir, "settings.json");
     }
+
+    public SettingsService(IApplicationPathsProvider pathProvider)
+        => _path = Path.Combine(pathProvider.ApplicationDirectory, "settings.json");
 
     public static async Task<SettingsService> LoadAsync()
     {
         var svc = new SettingsService();
-        if(File.Exists(svc._path))
+        if (!File.Exists(svc._path)) return svc;
+
+        try
         {
-            try
-            {
-                await using var stream = File.OpenRead(svc._path);
-                svc.Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts) ?? new AppSettings();
-            }
-            catch
-            {
-                svc.Current = new AppSettings();
-            }
+            await using var stream = File.OpenRead(svc._path);
+            svc.Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts) ?? new AppSettings();
+        }
+        catch
+        {
+            svc.Current = new AppSettings();
         }
 
         return svc;

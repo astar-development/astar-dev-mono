@@ -1,6 +1,6 @@
 using Microsoft.Identity.Client;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 /// <summary>
 /// MSAL-backed authentication service for OneDrive personal accounts.

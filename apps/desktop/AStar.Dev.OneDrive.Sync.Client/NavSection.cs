@@ -9,6 +9,9 @@ public enum NavSection
     Dashboard = 0,
     Files     = 1,
     Activity  = 2,
-    Accounts  = 3,
-    Settings  = 4
+    Conflicts = 3,
+    LogViewer = 4,
+    Accounts  = 5,
+    Settings  = 6,
+    Help      = 7
 }

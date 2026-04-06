@@ -34,7 +34,7 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         if(AccountSections.Any(s => s.AccountId == account.Id))
             return;
 
-        var section = new DashboardAccountViewModel(account, scheduler, App.Repository);
+        var section = new DashboardAccountViewModel(account, scheduler, App.AccountRepository);
 
         AccountSections.Add(section);
 

@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Localization;
+namespace AStar.Dev.OneDrive.Sync.Client.Localization;
 
 /// <summary>
 /// Loads localised strings from embedded JSON resources named
@@ -24,14 +24,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 /// </summary>
 public sealed class LocalizationService : ILocalizationService
 {
-    private static readonly CultureInfo FallbackCulture = new("en-GB");
+    private static readonly CultureInfo _fallbackCulture = new("en-GB");
 
     private readonly Assembly _assembly;
     private readonly string   _resourcePrefix;
 
     private Dictionary<string, string> _strings = [];
 
-    public CultureInfo CurrentCulture { get; private set; } = FallbackCulture;
+    public CultureInfo CurrentCulture { get; private set; } = _fallbackCulture;
     public IReadOnlyList<CultureInfo> AvailableCultures { get; private set; } = [];
 
     public event EventHandler<CultureInfo>? CultureChanged;
@@ -50,8 +50,18 @@ public sealed class LocalizationService : ILocalizationService
     /// </summary>
     public async Task InitialiseAsync(CultureInfo? requested = null)
     {
-        var target = requested ?? FallbackCulture;
+        var target = requested ?? _fallbackCulture;
         await LoadAsync(target);
+    }
+
+    /// <summary>
+    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
+    /// Loads strings for the requested culture (or en-GB as fallback).
+    /// </summary>
+    public void Initialise(CultureInfo? requested = null)
+    {
+        var target = requested ?? _fallbackCulture;
+        LoadAsync(target).GetAwaiter().GetResult();
     }
 
     public string GetLocal(string key) => _strings.TryGetValue(key, out string? value) ? value : key;
@@ -83,7 +93,7 @@ public sealed class LocalizationService : ILocalizationService
         {
             target.Name,
             target.TwoLetterISOLanguageName,
-            FallbackCulture.Name
+            _fallbackCulture.Name
         }.Distinct();
 
         foreach(string name in candidates)
@@ -101,12 +111,12 @@ public sealed class LocalizationService : ILocalizationService
 
             CurrentCulture = name == target.Name
                 ? target
-                : (name == FallbackCulture.Name ? FallbackCulture : new CultureInfo(name));
+                : (name == _fallbackCulture.Name ? _fallbackCulture : new CultureInfo(name));
             return;
         }
 
         _strings = [];
-        CurrentCulture = FallbackCulture;
+        CurrentCulture = _fallbackCulture;
     }
 
     private static async Task<Dictionary<string, string>> ParseAsync(Stream stream)
@@ -156,6 +166,6 @@ public sealed class LocalizationService : ILocalizationService
             }
         }
 
-        return cultures.Count > 0 ? cultures : [FallbackCulture];
+        return cultures.Count > 0 ? cultures : [_fallbackCulture];
     }
 }
