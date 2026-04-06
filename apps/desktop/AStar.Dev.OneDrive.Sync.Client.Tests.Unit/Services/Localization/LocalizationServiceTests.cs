@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Localization;
 

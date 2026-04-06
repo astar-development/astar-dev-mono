@@ -43,5 +43,17 @@
         <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
         <Project Path="packages/source-generators/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" />
     </Folder>
+    <Folder Name="/SolutionItems/">
+        <File Path="CLAUDE.md" />
+        <File Path="Directory.Build.props" />
+        <File Path="Directory.Build.targets" />
+        <File Path="Directory.Packages.props" />
+        <File Path="global.json" />
+        <File Path="local-setup.md" />
+        <File Path="NuGet.Config" />
+        <File Path="package-lock.json" />
+        <File Path="package.json" />
+        <File Path="README.md" />
+    </Folder>
     <Folder Name="/tests/" />
   </Solution>

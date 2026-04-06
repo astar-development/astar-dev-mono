@@ -4,6 +4,41 @@
         <name>AStar.Dev.Utilities</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Utilities.ApplicationPathsProvider">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.ApplicationDirectory(System.String)">
+            <inheritdoc cref="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.ApplicationDirectory"/>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.LogsDirectory(System.String)">
+            <inheritdoc cref="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.LogsDirectory"/>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.UserDirectory(System.String)">
+            <inheritdoc cref="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.UserDirectory"/>
+        </member>
+        <member name="T:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.&lt;M&gt;$4D03039C7A0A7135BE5D9448DB73CAB7">
+            <param name="applicationName"></param>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.ApplicationDirectory">
+             <summary>
+            
+             </summary>
+             <returns></returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.LogsDirectory">
+             <summary>
+            
+             </summary>
+             <returns></returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.ApplicationPathsProvider.&lt;G&gt;$34505F560D9EACF86A87F3ED1F85E448.UserDirectory">
+             <summary>
+            
+             </summary>
+             <returns></returns>
+        </member>
         <member name="T:AStar.Dev.Utilities.Constants">
             <summary>
                 The <see href="Constants"></see>see> class contains static / constant properties to simplify and centralise various

@@ -2,31 +2,107 @@ using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Services;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.OneDrive.Sync.Client.LogViewer;
+using AStar.Dev.Utilities;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Events;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
-    private const string AppName    = "AStar.Dev.OneDrive.Sync";
+    private ServiceProvider         _services = null!;
+    private readonly CancellationTokenSource _appLifetimeCts = new();
+    private bool _disposed;
     public static ILocalizationService Localisation { get; private set; } = null!;
     public static IThemeService Theme { get; private set; } = null!;
     public static IAuthService Auth { get; private set; } = null!;
-    public static IAccountRepository Repository { get; private set; } = null!;
+    public static IAccountRepository AccountRepository { get; private set; } = null!;
     public static ISyncService SyncService { get; private set; } = null!;
     public static SyncScheduler Scheduler { get; private set; } = null!;
     public static ISettingsService AppSettings { get; private set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        base.OnFrameworkInitializationCompleted();
+        _services       = BuildServiceProvider();
+
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            return;
+
+        var mainWindow = new MainWindow();
+        desktop.MainWindow = mainWindow;
+
+        mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
+
+        desktop.Exit += async (_, _) =>
+        {
+            await Scheduler.DisposeAsync();
+
+            Serilog.Log.Information("[App] Application exiting");
+            await Serilog.Log.CloseAndFlushAsync();
+        };
+    }
+
+    private static ServiceProvider BuildServiceProvider()
+    {
+        var inMemoryLogSink = new InMemoryLogSink();
+        ConfigureSerilog(inMemoryLogSink);
+
+        var services = new ServiceCollection();
+
+        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
+        _ = services.AddPersistence();
+        _ = services.AddLocalizationServices();
+        _ = services.AddShell(BuildOneDriveClientOptions(), inMemoryLogSink);
+        _ = services.AddStartupTasks();
+
+        return services.BuildServiceProvider();
+    }
+
+    private static OneDriveClientOptions BuildOneDriveClientOptions()
+    {
+        string clientId     = Environment.GetEnvironmentVariable("ONEDRIVEYNC_AZURE_CLIENT_ID") ?? "3057f494-687d-4abb-a653-4b8066230b6e";
+        string redirectUri  = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
+
+        return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
+    }
+
+    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink)
+    {
+        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(ApplicationMetadata.ApplicationName, "logs");
+
+        _ = Directory.CreateDirectory(logDirectory);
+
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+            .WriteTo.File(
+                path: Path.Combine(logDirectory, "app.log"),
+                formatProvider: CultureInfo.InvariantCulture,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7)
+            .WriteTo.Sink(inMemoryLogSink)
+            .CreateLogger();
+    }
 
     public static string GetPlatformUserDataDirectory(string email)
     {
@@ -36,41 +112,18 @@ public partial class App : Application
         return OperatingSystem.IsWindows()
             ? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                AppName,
+                ApplicationMetadata.ApplicationName,
                 safeEmail)
             : OperatingSystem.IsMacOS()
-                ? Path.Combine(home, "Library", "Application Support", AppName, safeEmail)
-                : Path.Combine(home, ".config", AppName, safeEmail);
+                ? Path.Combine(home, "Library", "Application Support", ApplicationMetadata.ApplicationName, safeEmail)
+                : Path.Combine(home, ".config", ApplicationMetadata.ApplicationName, safeEmail);
     }
 
-    public override void OnFrameworkInitializationCompleted()
-    {
-        base.OnFrameworkInitializationCompleted();
-
-        if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            var mainWindow = new MainWindow();
-            desktop.MainWindow = mainWindow;
-
-            mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
-
-            desktop.Exit += async (_, _) =>
-            {
-                if(Scheduler is not null)
-                    await Scheduler.DisposeAsync();
-
-                Serilog.Log.Information("[App] Application exiting");
-                await Serilog.Log.CloseAndFlushAsync();
-            };
-        }
-    }
-
-    private static async Task BootstrapAsync(MainWindow window)
+    private async Task BootstrapAsync(MainWindow window)
     {
         try
         {
-            var locService = new LocalizationService();
-            await locService.InitialiseAsync(new CultureInfo("en-GB"));
+            var locService = _services.GetRequiredService<ILocalizationService>();
             Localisation = locService;
 
             var settingsService = await SettingsService.LoadAsync();
@@ -80,11 +133,9 @@ public partial class App : Application
             themeService.Apply(settingsService.Current.Theme);
             Theme = themeService;
 
-            var db = DbContextFactory.Create();
-            await db.Database.MigrateAsync();
-            var accountRepository = new AccountRepository(db);
-            var syncRepository    = new SyncRepository(db);
-            Repository = accountRepository;
+            var accountRepository = _services.GetRequiredService<IAccountRepository>();
+            var syncRepository    = _services.GetRequiredService<ISyncRepository>();
+            AccountRepository = accountRepository;
 
             var tokenCache  = new TokenCacheService();
             var authService = new AuthService(tokenCache);
@@ -106,5 +157,17 @@ public partial class App : Application
         {
             Serilog.Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
         }
+    }
+
+    public void Dispose()
+    {
+        if(_disposed)
+            return;
+
+        _disposed = true;
+        _appLifetimeCts.Dispose();
+        _services.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
              xmlns:controls="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Controls"
+             xmlns:views="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Views"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Views.FilesView"
              x:DataType="vm:FilesViewModel">
 
@@ -127,7 +128,7 @@
                                 <ItemsControl ItemsSource="{Binding RootFolders}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="vm:FolderTreeNodeViewModel">
-                                            <controls:FolderTreeItemView/>
+                                            <views:FolderTreeItemView/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>

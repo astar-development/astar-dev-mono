@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Controls;
+namespace AStar.Dev.OneDrive.Sync.Client.Views;
 
 public partial class FolderTreeItemView : UserControl
 {
