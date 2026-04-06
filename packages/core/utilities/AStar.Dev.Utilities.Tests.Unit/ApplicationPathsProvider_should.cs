@@ -25,7 +25,7 @@ public class ApplicationPathsProvider_should
         }
         catch(ShouldAssertException)
         {
-            // on GH, the action doesn't return the documents folder either (hence the above tests have been changed to `EndsWith` but... enough is enough so not shortening the local test more...
+            // on GH, the action doesn't return the documents folder either (hence the above tests have been changed to `EndsWith`) but... enough is enough so not shortening the local test more...
             "test-application-name".UserDirectory()
                 .ShouldEndWith("test-application-name/sync");
         }

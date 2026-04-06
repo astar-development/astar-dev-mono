@@ -1,7 +1,5 @@
 #nullable enable
 
-using System.Runtime.CompilerServices;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 
 /// <summary>

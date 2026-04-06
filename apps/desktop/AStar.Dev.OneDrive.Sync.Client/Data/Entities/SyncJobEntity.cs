@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;

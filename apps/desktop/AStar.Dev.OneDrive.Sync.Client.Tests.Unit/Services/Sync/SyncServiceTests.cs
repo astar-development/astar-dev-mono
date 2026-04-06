@@ -1,10 +1,10 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
