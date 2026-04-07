@@ -11,14 +11,62 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260403044940_RecreateDatabase")]
-    partial class RecreateDatabase
+    [Migration("20260407182941_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
+
+            modelBuilder.Entity("AStar.Dev.Conflict.Resolution.Domain.ConflictRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AccountDisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("AppliedStrategy")
+                        .HasMaxLength(32)
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ConflictType")
+                        .HasMaxLength(32)
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("DetectedAt")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(4096)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsResolved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<long>("LocalLastModified")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("RemoteLastModified")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilePath");
+
+                    b.HasIndex("IsResolved", "DetectedAt");
+
+                    b.ToTable("ConflictRecords");
+                });
 
             modelBuilder.Entity("AStar.Dev.OneDriveSync.Features.Accounts.Account", b =>
                 {
@@ -142,6 +190,11 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("en-GB");
 
+                    b.Property<bool>("NotificationsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("ThemeMode")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -157,6 +210,29 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AppSettings", (string)null);
+                });
+
+            modelBuilder.Entity("AStar.Dev.OneDriveSync.Infrastructure.Persistence.SyncStateRecord", b =>
+                {
+                    b.Property<string>("AccountId")
+                        .HasMaxLength(36)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CheckpointJson")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeltaToken")
+                        .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("SyncStateRecords");
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDriveSync.Features.Accounts.SyncedFileMetadata", b =>

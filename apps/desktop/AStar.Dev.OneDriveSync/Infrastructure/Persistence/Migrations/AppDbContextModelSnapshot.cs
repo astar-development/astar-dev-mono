@@ -188,7 +188,6 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("en-GB");
 
                     b.Property<bool>("NotificationsEnabled")
-                        .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
@@ -216,16 +215,16 @@ namespace AStar.Dev.OneDriveSync.Infrastructure.Persistence.Migrations
                         .HasMaxLength(36)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("CheckpointJson")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DeltaToken")
                         .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.HasKey("AccountId");

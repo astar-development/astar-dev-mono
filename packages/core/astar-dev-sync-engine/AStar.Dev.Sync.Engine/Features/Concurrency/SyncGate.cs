@@ -18,10 +18,7 @@ public sealed class SyncGate : IDisposable
 
     /// <summary>Creates a <see cref="SyncGate"/> with the configured max concurrent transfers per account.</summary>
     /// <param name="maxConcurrentTransfersPerAccount">Must be in range 1–10; values outside are clamped.</param>
-    public SyncGate(int maxConcurrentTransfersPerAccount = DefaultMaxTransfers)
-    {
-        _maxConcurrentTransfers = Math.Clamp(maxConcurrentTransfersPerAccount, MinTransfers, MaxTransferCeiling);
-    }
+    public SyncGate(int maxConcurrentTransfersPerAccount = DefaultMaxTransfers) => _maxConcurrentTransfers = Math.Clamp(maxConcurrentTransfersPerAccount, MinTransfers, MaxTransferCeiling);
 
     /// <summary>
     ///     Attempts to register <paramref name="accountId"/> as actively syncing.

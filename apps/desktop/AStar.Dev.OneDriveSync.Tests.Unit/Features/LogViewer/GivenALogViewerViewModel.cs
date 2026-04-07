@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
@@ -7,8 +8,11 @@ using AStar.Dev.OneDriveSync.Features.Accounts;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using AStar.Dev.OneDriveSync.Features.Onboarding;
 using AStar.Dev.OneDriveSync.Infrastructure.Localisation;
+using NSubstitute;
 using ReactiveUI;
 using Serilog.Events;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.LogViewer;
 

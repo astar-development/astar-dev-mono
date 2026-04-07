@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AStar.Dev.OneDriveSync.Features.LogViewer;
 using Serilog.Events;
 using Serilog.Parsing;
+using Shouldly;
+using Xunit;
 
 namespace AStar.Dev.OneDriveSync.Tests.Unit.Features.LogViewer;
 
