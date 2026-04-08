@@ -78,7 +78,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             RaiseProgress(account.Id, folderId, 0, 0, "Fetching changes\u2026", SyncState.Syncing);
 
-            (var delta, var allJobs) = await ProcessPownloadDeltas(account, token, folderId, deltaLink, ct);
+            (var delta, var allJobs) = await ProcessPownloadDeltasAsync(account, token, folderId, deltaLink, ct);
 
             DetectLocalChanges(account, folderId, folderEntity, allJobs);
 
@@ -90,7 +90,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
             }
             else
             {
-                await ReportNoRemoteOrLocalChanges(account, folderId, entity);
+                await ReportNoRemoteOrLocalChangesAsync(account, folderId, entity);
             }
 
             if(delta.NextDeltaLink is not null)
@@ -115,7 +115,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         }
     }
 
-    private async Task ReportNoRemoteOrLocalChanges(OneDriveAccount account, string folderId, AccountEntity? entity)
+    private async Task ReportNoRemoteOrLocalChangesAsync(OneDriveAccount account, string folderId, AccountEntity? entity)
     {
         account.LastSyncedAt = DateTimeOffset.UtcNow;
 
@@ -151,7 +151,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         }
     }
 
-    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessPownloadDeltas(OneDriveAccount account, string token, string folderId, string? deltaLink, CancellationToken ct)
+    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessPownloadDeltasAsync(OneDriveAccount account, string token, string folderId, string? deltaLink, CancellationToken ct)
     {
         var delta = await graphService.GetDeltaAsync(token, folderId, deltaLink, ct);
 

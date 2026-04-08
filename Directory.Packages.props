@@ -99,16 +99,16 @@
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Span" Version="3.1.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="5.0.0" />
     <PackageVersion Include="Serilog.Expressions" Version="5.0.0" />
     <PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup Label="Data access">
@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup Label="Serialisation">
     <PackageVersion Include="System.Text.Json" Version="10.0.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
   <ItemGroup Label="Messaging and background jobs">
     <PackageVersion Include="MediatR" Version="12.4.0" />
@@ -174,7 +175,6 @@
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="WireMock.Net" Version="2.2.0" />
     <PackageVersion Include="Bogus" Version="35.6.1" />
     <PackageVersion Include="Respawn" Version="6.2.1" />
     <PackageVersion Include="Microsoft.Reactive.Testing" Version="6.0.1" />
@@ -182,6 +182,7 @@
     <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="22.0.16" />
     <PackageVersion Include="Testcontainers" Version="3.11.0" />
     <PackageVersion Include="JetBrains.Annotations" Version="2025.2.4" />
+    <PackageVersion Include="WireMock.Net" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup Label="Build and source link tooling">
     <PackageVersion Include="GitVersion.MsBuild" Version="6.2.0" />
