@@ -33,7 +33,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
 
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
-    
+
     <!-- Dependency Injection & Logging -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />

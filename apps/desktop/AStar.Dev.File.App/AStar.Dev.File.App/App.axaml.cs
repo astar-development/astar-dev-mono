@@ -34,7 +34,7 @@ public partial class App : Application
 
         var factory = _services.GetRequiredService<IDbContextFactory<FileAppDbContext>>();
         using var ctx = factory.CreateDbContext();
-        ctx.Database.Migrate();
+        ctx.Database.MigrateAsync().GetAwaiter().GetResult();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
