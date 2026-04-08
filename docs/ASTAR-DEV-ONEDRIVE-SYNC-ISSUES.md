@@ -143,11 +143,11 @@
 
 | #   | Line | Severity | Issue                                                                                                           | Fix                                                                                           | Done |
 | --- | ---- | -------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---- |
-| 51  | 64   | error    | `LoadAsync(target).GetAwaiter().GetResult()` — blocking async; will deadlock on the Avalonia UI thread.         | Remove `Initialise()` or guard that it is never called from a synchronisation-context thread. |      |
-| 52  | 74   | warning  | `return string.Format(...)` directly follows the `string template = GetLocal(key);` assignment — no blank line. | Add blank line.                                                                               |      |
-| 53  | 78   | warning  | `return template;` directly follows the `catch(FormatException)` opening brace — no blank line.                 | Add blank line.                                                                               |      |
-| 54  | 85   | warning  | `return;` directly follows the `if` on line 84 — no blank line.                                                 | Add blank line.                                                                               |      |
-| 55  | 141  | warning  | `return [];` directly follows `catch(JsonException)` opening brace — no blank line.                             | Add blank line.                                                                               |      |
+| 51  | 64   | error    | `LoadAsync(target).GetAwaiter().GetResult()` — blocking async; will deadlock on the Avalonia UI thread.         | Remove `Initialise()` or guard that it is never called from a synchronisation-context thread. | yes  |
+| 52  | 74   | warning  | `return string.Format(...)` directly follows the `string template = GetLocal(key);` assignment — no blank line. | Add blank line.                                                                               | yes     |
+| 53  | 78   | warning  | `return template;` directly follows the `catch(FormatException)` opening brace — no blank line.                 | Add blank line.                                                                               | yes  |
+| 54  | 85   | warning  | `return;` directly follows the `if` on line 84 — no blank line.                                                 | Add blank line.                                                                               | yes  |
+| 55  | 141  | warning  | `return [];` directly follows `catch(JsonException)` opening brace — no blank line.                             | Add blank line.                                                                               | yes  |
 
 ---
 
@@ -155,11 +155,11 @@
 
 | #   | Line  | Severity   | Issue                                                                                                        | Fix                                             | Done |
 | --- | ----- | ---------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | ---- |
-| 56  | 31-32 | warning    | Inline comment `// Update scalar properties` — describes what the code does.                                 | Remove.                                         |      |
-| 57  | 34-35 | warning    | Inline comment `// Sync folder collection — remove deleted, add new` — same.                                 | Remove.                                         |      |
-| 58  | 55-57 | warning    | Inline comment `// Clear all active flags then set the requested one` — same.                                | Remove.                                         |      |
-| 59  | 65    | warning    | `async Task UpdateDeltaLinkAsync(...)` is expression-bodied with a single `await` — redundant state machine. | Remove `async`; return the `Task` directly.     |      |
-| 60  | 51    | suggestion | Same state machine overhead in `DeleteAsync`.                                                                | Return `Task` directly without `async`/`await`. |      |
+| 56  | 31-32 | warning    | Inline comment `// Update scalar properties` — describes what the code does.                                 | Remove.                                         | yes  |
+| 57  | 34-35 | warning    | Inline comment `// Sync folder collection — remove deleted, add new` — same.                                 | Remove.                                         | yes  |
+| 58  | 55-57 | warning    | Inline comment `// Clear all active flags then set the requested one` — same.                                | Remove.                                         | yes   |
+| 59  | 65    | warning    | `async Task UpdateDeltaLinkAsync(...)` is expression-bodied with a single `await` — redundant state machine. | Remove `async`; return the `Task` directly.     | ?     |
+| 60  | 51    | suggestion | Same state machine overhead in `DeleteAsync`.                                                                | Return `Task` directly without `async`/`await`. | ?    |
 
 ---
 

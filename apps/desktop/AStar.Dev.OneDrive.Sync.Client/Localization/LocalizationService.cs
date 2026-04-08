@@ -48,20 +48,10 @@ public sealed class LocalizationService : ILocalizationService
     /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
     /// Loads strings for the requested culture (or en-GB as fallback).
     /// </summary>
-    public async Task InitialiseAsync(CultureInfo? requested = null)
-    {
-        var target = requested ?? _fallbackCulture;
-        await LoadAsync(target);
-    }
-
-    /// <summary>
-    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
-    /// Loads strings for the requested culture (or en-GB as fallback).
-    /// </summary>
     public void Initialise(CultureInfo? requested = null)
     {
         var target = requested ?? _fallbackCulture;
-        LoadAsync(target).GetAwaiter().GetResult();
+        Load(target);
     }
 
     public string GetLocal(string key) => _strings.TryGetValue(key, out string? value) ? value : key;
@@ -83,11 +73,12 @@ public sealed class LocalizationService : ILocalizationService
     {
         if(culture.Name == CurrentCulture.Name)
             return;
-        await LoadAsync(culture);
+
+        Load(culture);
         CultureChanged?.Invoke(this, CurrentCulture);
     }
 
-    private async Task LoadAsync(CultureInfo target)
+    private void Load(CultureInfo target)
     {
         var candidates = new[]
         {
@@ -99,11 +90,11 @@ public sealed class LocalizationService : ILocalizationService
         foreach(string name in candidates)
         {
             string resourceName = $"{_resourcePrefix}{name}.json";
-            await using var stream = _assembly.GetManifestResourceStream(resourceName);
+             using var stream = _assembly.GetManifestResourceStream(resourceName);
             if(stream is null)
                 continue;
 
-            var loaded = await ParseAsync(stream);
+            var loaded =  Parse(stream);
             if(loaded.Count == 0)
                 continue;
 
@@ -112,6 +103,7 @@ public sealed class LocalizationService : ILocalizationService
             CurrentCulture = name == target.Name
                 ? target
                 : (name == _fallbackCulture.Name ? _fallbackCulture : new CultureInfo(name));
+                
             return;
         }
 
@@ -119,11 +111,11 @@ public sealed class LocalizationService : ILocalizationService
         CurrentCulture = _fallbackCulture;
     }
 
-    private static async Task<Dictionary<string, string>> ParseAsync(Stream stream)
+    private static Dictionary<string, string> Parse(Stream stream)
     {
         try
         {
-            using var doc = await JsonDocument.ParseAsync(stream);
+            using var doc = JsonDocument.Parse(stream);
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach(var prop in doc.RootElement.EnumerateObject())
             {
