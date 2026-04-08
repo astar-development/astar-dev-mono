@@ -1,0 +1,316 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             xmlns:controls="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Controls"
+             xmlns:activity="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Activity"
+             xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.ActivityView"
+             x:DataType="activity:ActivityViewModel">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── Tab strip + filter row ── -->
+        <Border Grid.Row="0"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                Background="{DynamicResource BackgroundSecondaryBrush}">
+
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Tabs -->
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal">
+
+                    <Button Height="40"
+                            Padding="16,0"
+                            Background="Transparent"
+                            BorderThickness="0,0,0,2"
+                            Click="OnLogTabClick">
+                        <Button.BorderBrush>
+                            <SolidColorBrush Color="{Binding IsLogTabActive,
+                                Converter={StaticResource BoolToAccentConverter}}"/>
+                        </Button.BorderBrush>
+                        <TextBlock Text="Activity log"
+                                   FontSize="{StaticResource FontSizeSm}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    </Button>
+
+                    <Button Height="40"
+                            Padding="16,0"
+                            Background="Transparent"
+                            BorderThickness="0,0,0,2"
+                            Click="OnConflictsTabClick">
+                        <Button.BorderBrush>
+                            <SolidColorBrush Color="{Binding IsConflictsTabActive,
+                                Converter={StaticResource BoolToAccentConverter}}"/>
+                        </Button.BorderBrush>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="Conflicts"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <Border IsVisible="{Binding HasConflicts}"
+                                    Background="{DynamicResource StatusConflictBrush}"
+                                    CornerRadius="8"
+                                    Padding="5,1">
+                                <TextBlock Text="{Binding ConflictBadgeText}"
+                                           FontSize="{StaticResource FontSizeXs}"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </Button>
+
+                </StackPanel>
+
+                <!-- Filter chips (log tab only) -->
+                <StackPanel Grid.Column="2"
+                            IsVisible="{Binding IsLogTabActive}"
+                            Orientation="Horizontal"
+                            Spacing="4"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center">
+
+                    <Button Content="All"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Click="OnFilterAllClick"/>
+
+                    <Button Content="↓ downloads"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Click="OnFilterDownloadsClick"/>
+
+                    <Button Content="↑ uploads"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Click="OnFilterUploadsClick"/>
+
+                    <Button Content="⚠ errors"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Click="OnFilterErrorsClick"/>
+
+                    <Button Content="Clear"
+                            Padding="8,3"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                            BorderThickness="1"
+                            FontSize="{StaticResource FontSizeXs}"
+                            Command="{Binding ClearLogCommand}"/>
+
+                </StackPanel>
+
+            </Grid>
+        </Border>
+
+        <!-- ── Content area ── -->
+        <Grid Grid.Row="1">
+
+            <!-- Activity log tab -->
+            <Grid IsVisible="{Binding IsLogTabActive}">
+
+                <!-- Empty state -->
+                <StackPanel IsVisible="{Binding !HasLogItems}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                    <TextBlock Text="No activity yet"
+                               FontSize="{StaticResource FontSizeLg}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Sync activity will appear here."
+                               FontSize="{StaticResource FontSizeMd}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Log list -->
+                <ScrollViewer IsVisible="{Binding HasLogItems}"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding FilteredLog}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="activity:ActivityItemViewModel">
+                                <Border BorderThickness="0,0,0,1"
+                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                        Padding="16,8">
+                                    <Grid ColumnDefinitions="Auto,12,*,Auto,12,Auto">
+
+                                        <!-- Type icon -->
+                                        <Border Grid.Column="0"
+                                                Width="28" Height="28"
+                                                CornerRadius="{StaticResource RadiusSm}"
+                                                Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TypeIcon}"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        </Border>
+
+                                        <!-- File info -->
+                                        <StackPanel Grid.Column="2"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="2">
+                                            <TextBlock Text="{Binding FileName}"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding TypeLabel}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                                <TextBlock Text="{Binding FolderName}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                                           IsVisible="{Binding FolderName,
+                                                               Converter={StaticResource StringNotEmptyConverter}}"/>
+                                                <TextBlock Text="{Binding FileSizeText}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                                           IsVisible="{Binding FileSizeText,
+                                                               Converter={StaticResource StringNotEmptyConverter}}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Time -->
+                                        <TextBlock Grid.Column="3"
+                                                   Text="{Binding TimeAgoText}"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                   VerticalAlignment="Center"/>
+
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+            </Grid>
+
+            <!-- Conflicts tab -->
+            <Grid IsVisible="{Binding IsConflictsTabActive}">
+
+                <!-- Empty state -->
+                <StackPanel IsVisible="{Binding !HasConflicts}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Spacing="8">
+                    <TextBlock Text="No conflicts"
+                               FontSize="{StaticResource FontSizeLg}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Any sync conflicts will appear here for resolution."
+                               FontSize="{StaticResource FontSizeMd}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Conflict list -->
+                <ScrollViewer IsVisible="{Binding HasConflicts}"
+                              VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Conflicts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="conflicts:ConflictItemViewModel">
+                                <StackPanel>
+
+                                    <!-- Conflict row header -->
+                                    <Border BorderThickness="0,0,0,1"
+                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                            Padding="16,8"
+                                            Background="{DynamicResource BackgroundPrimaryBrush}">
+
+                                        <Grid ColumnDefinitions="Auto,12,*,Auto,8,Auto">
+
+                                            <!-- Conflict icon -->
+                                            <Border Grid.Column="0"
+                                                    Width="28" Height="28"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Background="{DynamicResource BackgroundWarningBrush}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="⚠"
+                                                           FontSize="{StaticResource FontSizeMd}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextWarningBrush}"/>
+                                            </Border>
+
+                                            <!-- File info -->
+                                            <StackPanel Grid.Column="2"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                <TextBlock Text="{Binding FileName}"
+                                                           FontSize="{StaticResource FontSizeMd}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding RelativePath}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+
+                                            <!-- Resolved badge -->
+                                            <Border Grid.Column="3"
+                                                    IsVisible="{Binding IsResolved}"
+                                                    Background="{DynamicResource BackgroundSuccessBrush}"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="6,2"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="resolved"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextSuccessBrush}"/>
+                                            </Border>
+
+                                            <!-- Expand button -->
+                                            <Button Grid.Column="5"
+                                                    Padding="8,4"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    IsVisible="{Binding !IsResolved}"
+                                                    Command="{Binding TogglePanelCommand}">
+                                                <TextBlock Text="{Binding IsExpanded,
+                                                               Converter={StaticResource BoolToCollapseExpandConverter}}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            </Button>
+
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Slide-in resolution panel -->
+                                    <controls:ConflictResolutionPanel
+                                        IsVisible="{Binding IsPanelOpen}"
+                                        DataContext="{Binding}"/>
+
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+
+</UserControl>

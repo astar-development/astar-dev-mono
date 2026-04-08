@@ -1,0 +1,67 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════
+         Surface colours
+    ════════════════════════════════════════════════════ -->
+    <Color x:Key="BackgroundPrimary">#1C1B19</Color>
+    <Color x:Key="BackgroundSecondary">#242320</Color>
+    <Color x:Key="BackgroundTertiary">#2C2B28</Color>
+    <Color x:Key="BackgroundRail">#1A1917</Color>
+    <Color x:Key="BackgroundAccountPanel">#211F1D</Color>
+    <Color x:Key="BackgroundStatusBar">#161614</Color>
+    <Color x:Key="BackgroundHover">#323028</Color>
+    <Color x:Key="BackgroundActive">#3A3830</Color>
+    <Color x:Key="BackgroundSelected">#0C2A45</Color>
+
+    <!-- ═══════════════════════════════════════════════════
+         Text colours
+    ════════════════════════════════════════════════════ -->
+    <Color x:Key="TextPrimary">#E8E6DF</Color>
+    <Color x:Key="TextSecondary">#9C9A92</Color>
+    <Color x:Key="TextTertiary">#5F5E5A</Color>
+    <Color x:Key="TextDisabled">#444441</Color>
+    <Color x:Key="TextAccent">#85B7EB</Color>
+
+    <!-- ═══════════════════════════════════════════════════
+         Border colours
+    ════════════════════════════════════════════════════ -->
+    <Color x:Key="BorderSubtle">#2C2B28</Color>
+    <Color x:Key="BorderDefault">#3A3830</Color>
+    <Color x:Key="BorderStrong">#5F5E5A</Color>
+    <Color x:Key="BorderAccent">#378ADD</Color>
+
+    <!-- ═══════════════════════════════════════════════════
+         Brushes
+    ════════════════════════════════════════════════════ -->
+    <SolidColorBrush x:Key="BackgroundPrimaryBrush"      Color="{StaticResource BackgroundPrimary}"/>
+    <SolidColorBrush x:Key="BackgroundSecondaryBrush"    Color="{StaticResource BackgroundSecondary}"/>
+    <SolidColorBrush x:Key="BackgroundTertiaryBrush"     Color="{StaticResource BackgroundTertiary}"/>
+    <SolidColorBrush x:Key="BackgroundRailBrush"         Color="{StaticResource BackgroundRail}"/>
+    <SolidColorBrush x:Key="BackgroundAccountPanelBrush" Color="{StaticResource BackgroundAccountPanel}"/>
+    <SolidColorBrush x:Key="BackgroundStatusBarBrush"    Color="{StaticResource BackgroundStatusBar}"/>
+    <SolidColorBrush x:Key="BackgroundHoverBrush"        Color="{StaticResource BackgroundHover}"/>
+    <SolidColorBrush x:Key="BackgroundActiveBrush"       Color="{StaticResource BackgroundActive}"/>
+    <SolidColorBrush x:Key="BackgroundSelectedBrush"     Color="{StaticResource BackgroundSelected}"/>
+
+    <SolidColorBrush x:Key="TextPrimaryBrush"    Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush"  Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush"   Color="{StaticResource TextTertiary}"/>
+    <SolidColorBrush x:Key="TextDisabledBrush"   Color="{StaticResource TextDisabled}"/>
+    <SolidColorBrush x:Key="TextAccentBrush"     Color="{StaticResource TextAccent}"/>
+
+    <SolidColorBrush x:Key="BorderSubtleBrush"   Color="{StaticResource BorderSubtle}"/>
+    <SolidColorBrush x:Key="BorderDefaultBrush"  Color="{StaticResource BorderDefault}"/>
+    <SolidColorBrush x:Key="BorderStrongBrush"   Color="{StaticResource BorderStrong}"/>
+    <SolidColorBrush x:Key="BorderAccentBrush"   Color="{StaticResource BorderAccent}"/>
+
+    <SolidColorBrush x:Key="BackgroundWarningBrush" Color="#412402"/>
+    <SolidColorBrush x:Key="TextWarningBrush"       Color="#FAC775"/>
+    <SolidColorBrush x:Key="BackgroundSuccessBrush" Color="#173404"/>
+    <SolidColorBrush x:Key="TextSuccessBrush"       Color="#C0DD97"/>
+    <SolidColorBrush x:Key="StatusConflictBrush"    Color="#E24B4A"/>
+
+    <!-- Icon rail active indicator -->
+    <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
+
+</ResourceDictionary>

@@ -1,0 +1,232 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
+             xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             xmlns:settings="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Settings"
+             xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Settings.SettingsView"
+             x:DataType="settings:SettingsViewModel">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  Padding="24,20">
+        <StackPanel Spacing="24" MaxWidth="640">
+
+            <!-- ── Appearance ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Appearance"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Theme"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Choose light, dark or follow the system setting."
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Spacing="6"
+                                    VerticalAlignment="Center">
+                            <Button Content="Light"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeLightClick"/>
+                            <Button Content="Dark"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeDarkClick"/>
+                            <Button Content="System"
+                                    Padding="12,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    BorderThickness="1"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Click="OnThemeSystemClick"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- ── Sync policy ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Sync policy"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <!-- Default conflict policy -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="Default conflict resolution"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Applied to new accounts and when no per-account policy is set."
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl ItemsSource="{Binding PolicyOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="conflicts:ConflictPolicyOption">
+                                    <Button Padding="10,5"
+                                            Margin="0,0,6,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            ToolTip.Tip="{Binding Description}"
+                                            Click="OnPolicyClick"
+                                            Tag="{Binding Policy}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <!-- Sync interval -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Sync interval"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="How often to automatically check for changes."
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding IntervalOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:SyncIntervalOption">
+                                    <Button Padding="10,5"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Click="OnIntervalClick"
+                                            Tag="{Binding Minutes}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- ── Per-account settings ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Account sync paths"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <TextBlock Text="Set the local folder where each account's files will be synced."
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+
+                <ItemsControl ItemsSource="{Binding AccountSettings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="accounts:AccountSyncSettingsViewModel">
+                            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLg}"
+                                    Padding="16"
+                                    Margin="0,0,0,8">
+                                <StackPanel Spacing="12">
+
+                                    <!-- Account header -->
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Ellipse Width="8" Height="8" VerticalAlignment="Center">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding AccentHex}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding Email}"
+                                                   FontSize="{StaticResource FontSizeMd}"
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </StackPanel>
+
+                                    <!-- Local path -->
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Local sync folder"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                        <Grid ColumnDefinitions="*,8,Auto">
+                                            <TextBox Grid.Column="0"
+                                                     Text="{Binding LocalSyncPath}"
+                                                     FontSize="{StaticResource FontSizeSm}"
+                                                     Watermark="e.g. /home/user/OneDrive/personal"
+                                                     CornerRadius="{StaticResource RadiusMd}"/>
+                                            <Button Grid.Column="2"
+                                                    Content="Browse ..."
+                                                    Padding="10,6"
+                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeSm}"
+                                                    Click="OnBrowseClick"
+                                                    Tag="{Binding AccountId}"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Save button -->
+                                    <Button Content="Save"
+                                            HorizontalAlignment="Right"
+                                            Padding="14,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            Background="{DynamicResource TextAccentBrush}"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Command="{Binding SaveCommand}"/>
+
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>
