@@ -18,9 +18,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, int workerCount = 8) : IDisposable
+public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, HttpDownloader downloader, int workerCount = 8) : IDisposable
 {
-    private readonly HttpDownloader _downloader = new();
+    private readonly Lock _lock = new();
 
     public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, CancellationToken ct = default)
     {
@@ -30,7 +30,6 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
 
         int total   = jobList.Count;
         int done    = 0;
-        object lockObj = new object();
 
         var channel = Channel.CreateBounded<SyncJob>(
             new BoundedChannelOptions(workerCount * 4)
@@ -43,7 +42,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         void OnJobComplete(SyncJob job, bool success, string? error)
         {
             int completedSoFar;
-            lock(lockObj)
+            lock(_lock)
             {
                 done++;
                 completedSoFar = done;
@@ -64,7 +63,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         }
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => new DownloadWorker(                    id, _downloader, graphService, syncRepository)
+            .Select(id => new DownloadWorker(                    id, downloader, graphService, syncRepository)
             .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
             .ToList();
 
@@ -92,7 +91,6 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         }
         finally
         {
-            // Always raise completion so UI resets
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
 
             Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
@@ -103,5 +101,5 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
     }
 
-    public void Dispose() => _downloader.Dispose();
+    public void Dispose() => downloader.Dispose();
 }

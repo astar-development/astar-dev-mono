@@ -28,8 +28,6 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         try
         {
             _timer = new Timer(OnTimerTick, state: null, dueTime: _interval, period: _interval);
-
-            _running = false;
         }
         catch(Exception ex)
         {
@@ -112,8 +110,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 }
                 catch(Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"Scheduled sync failed for {account.Email}: {ex.Message}");
+                    Serilog.Log.Error(ex, "[SyncScheduler] Scheduled sync failed for {Id}: {Error}", account.Id, ex.Message);
                 }
                 finally
                 {

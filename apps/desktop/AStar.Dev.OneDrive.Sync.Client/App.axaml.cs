@@ -125,8 +125,8 @@ public partial class App : Application, IDisposable
             var authService = new AuthService(tokenCache);
             Auth = authService;
 
-            var graphService   = new GraphService();
-            var syncService    = new SyncService(authService, graphService, accountRepository, syncRepository);
+            var graphService   = _services.GetRequiredService<IGraphService>();
+            var syncService    = new SyncService(authService, graphService, accountRepository, syncRepository, _services.GetRequiredService<LocalChangeDetector>(), _services.GetRequiredService<HttpDownloader>());
             var scheduler      = new SyncScheduler(syncService, accountRepository);
             SyncService = syncService;
             Scheduler = scheduler;

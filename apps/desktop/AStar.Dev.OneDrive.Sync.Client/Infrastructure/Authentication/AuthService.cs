@@ -118,13 +118,14 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
         IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
         return accounts
             .Select(a => a.HomeAccountId.Identifier)
-            .ToList();
+            .ToList().AsReadOnly();
     }
 
     private async Task EnsureCacheRegisteredAsync()
     {
         if(_cacheRegistered)
             return;
+
         await _cacheService.RegisterAsync(_app);
         _cacheRegistered = true;
     }

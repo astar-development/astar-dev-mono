@@ -96,7 +96,7 @@ public class HttpDownloaderFileOperationTests
     [Fact]
     public void HttpDownloader_ShouldBeDisposable()
     {
-        var downloader = new HttpDownloader();
+        var downloader = new HttpDownloader(Substitute.For<IHttpClientFactory>());
 
         _ = downloader.ShouldBeAssignableTo<IDisposable>();
     }
@@ -104,7 +104,7 @@ public class HttpDownloaderFileOperationTests
     [Fact]
     public void HttpDownloader_DisposeMultipleTimes_ShouldNotThrow()
     {
-        var downloader = new HttpDownloader();
+        var downloader = new HttpDownloader(Substitute.For<IHttpClientFactory>());
 
         downloader.Dispose();
         downloader.Dispose();
@@ -113,7 +113,7 @@ public class HttpDownloaderFileOperationTests
     [Fact]
     public async Task DownloadAsync_Created_ShouldHaveValidHttpClient()
     {
-        var downloader = new HttpDownloader();
+        var downloader = new HttpDownloader(Substitute.For<IHttpClientFactory>());
         _ = downloader.ShouldNotBeNull();
 
         downloader.Dispose();

@@ -31,6 +31,9 @@ internal static class ShellServiceExtensions
         _ = services.AddTransient<ISyncService,  SyncService>();
         _ = services.AddTransient<SyncScheduler>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
+        _ = services.AddTransient<LocalChangeDetector>();
+        _ = services.AddTransient<UploadService>();
+        _ = services.AddTransient<HttpDownloader>();
 
         return services;
     }

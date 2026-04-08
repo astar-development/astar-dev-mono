@@ -7,9 +7,9 @@ using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 
-public sealed class GraphService : IGraphService
+public sealed class GraphService(UploadService uploadService) : IGraphService
 {
-    private readonly UploadService _uploadService = new();
+    private const string RootPathMarker = "root:";
     private readonly Dictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
@@ -150,7 +150,7 @@ public sealed class GraphService : IGraphService
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        return await _uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
+        return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
     }
 
     private static async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, string folderName, CancellationToken ct)
@@ -212,9 +212,8 @@ public sealed class GraphService : IGraphService
     private static DeltaItem MapToDeltaItem(DriveItem item)
     {
         string parentPath = item.ParentReference?.Path ?? string.Empty;
-        string rootMarker = "root:";
-        string afterRoot  = parentPath.Contains(rootMarker)
-                            ? parentPath[(parentPath.IndexOf(rootMarker, StringComparison.CurrentCulture) + rootMarker.Length)..].TrimStart('/')
+        string afterRoot  = parentPath.Contains(RootPathMarker)
+                            ? parentPath[(parentPath.IndexOf(RootPathMarker, StringComparison.Ordinal) + RootPathMarker.Length)..].TrimStart('/')
                             : string.Empty;
 
         string relativePath = string.IsNullOrEmpty(afterRoot)
@@ -270,5 +269,5 @@ public sealed class GraphService : IGraphService
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }
 
-    public void Dispose() => _uploadService.Dispose();
+    public void Dispose() => uploadService.Dispose();
 }

@@ -16,8 +16,10 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
 
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         _ = service.ShouldNotBeNull();
     }
@@ -29,7 +31,10 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount
         {
@@ -54,7 +59,10 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount { Id = "user-1", Email = "user@outlook.com" };
         bool errorRaised = false;
@@ -80,7 +88,10 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount
         {
@@ -111,7 +122,10 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount
         {
@@ -139,7 +153,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var conflict = new SyncConflict
         {
@@ -165,7 +181,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
 
@@ -187,7 +205,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
 
@@ -206,7 +226,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount
         {
@@ -231,7 +253,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var account = new OneDriveAccount
         {
@@ -256,7 +280,9 @@ public class SyncServiceTests
         var mockGraphService = Substitute.For<IGraphService>();
         var mockAccountRepository = Substitute.For<IAccountRepository>();
         var mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
+        var mockLocalChangeDetector = Substitute.For<LocalChangeDetector>();
+        var mockHttpDownloader = Substitute.For<HttpDownloader>();
+        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
         var cts = new CancellationTokenSource();

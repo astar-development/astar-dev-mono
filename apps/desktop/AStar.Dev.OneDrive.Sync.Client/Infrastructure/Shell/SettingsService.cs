@@ -1,14 +1,6 @@
 using System.Text.Json;
 using AStar.Dev.Utilities;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
-
-public interface ISettingsService
-{
-    AppSettings Current { get; }
-    Task SaveAsync();
-    event EventHandler<AppSettings>? SettingsChanged;
-}
 
 public sealed class SettingsService : ISettingsService
 {
@@ -34,8 +26,9 @@ public sealed class SettingsService : ISettingsService
             await using var stream = File.OpenRead(svc._path);
             svc.Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, _jsonOpts) ?? new AppSettings();
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Warning(ex, "[SettingsService] Failed to deserialize settings from {Path}; using defaults", svc._path);
             svc.Current = new AppSettings();
         }
 

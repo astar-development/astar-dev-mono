@@ -18,6 +18,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 /// </summary>
 public sealed class TokenCacheService
 {
+    private const int KeyringTimeoutSeconds = 5;
     private const string CacheFileName = "msal_token_cache.bin";
     private const string AppName       = "AStar.Dev.OneDrive.Sync";
 
@@ -38,8 +39,6 @@ public sealed class TokenCacheService
 
         if(OperatingSystem.IsLinux())
         {
-            // On Linux try keyring first, fall back to unprotected file
-            // They cannot be combined in the same builder
             try
             {
                 var keyringProperties = new StorageCreationPropertiesBuilder(
@@ -56,7 +55,7 @@ public sealed class TokenCacheService
                         accountName: "MSALCache")
                     .Build();
 
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(KeyringTimeoutSeconds));
                 var helper = await MsalCacheHelper
                     .CreateAsync(keyringProperties)
                     .WaitAsync(cts.Token);
