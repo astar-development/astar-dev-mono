@@ -18,8 +18,8 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
     {
         Serilog.Log.Information("[SyncService] SyncAccountAsync called for {Email}, LocalSyncPath={Path}, Folders={Count}", account.Email, account.LocalSyncPath, account.SelectedFolderIds.Count);
 
+        RaiseProgress(account.Id, string.Empty, 0, 0, "Authenticating...", SyncState.Syncing);
         var authResult = await authService.AcquireTokenSilentAsync(account.Id, ct);
-        SyncProgressChanged?.Invoke(this, new SyncProgressEventArgs(account.Id, folderId: string.Empty, completed: 0, total: 0, currentFile: "TEST TEST TEST !!!", SyncState.Syncing));
 
         Serilog.Log.Information("[SyncService] Auth result: IsError={IsError}, Error={Error}", authResult.IsError, authResult.ErrorMessage ?? "none");
 
@@ -81,6 +81,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             if(allJobs.Count > 0)
             {
+                RaiseProgress(account.Id, folderId, 0, 0, $"Queuing {allJobs.Count} file(s) for sync...", SyncState.Syncing);
                 await ProcessJobQueueAsync(account, token, allJobs, ct);
 
                 Serilog.Log.Information("[SyncFolder] ProcessJobQueueAsync completed for {FolderId}", folderId);
