@@ -89,13 +89,13 @@ public class SyncSchedulerTests
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync().Returns([]);
+        _ = mockRepository.GetAllAsync(TestContext.Current.CancellationToken).Returns([]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
         await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
 
-        _ = await mockRepository.Received(1).GetAllAsync();
+        _ = await mockRepository.Received(1).GetAllAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class SyncSchedulerTests
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync().Returns([]);
+        _ = mockRepository.GetAllAsync(TestContext.Current.CancellationToken).Returns([]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 

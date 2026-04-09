@@ -4,10 +4,55 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 public interface IAccountRepository
 {
-    Task<List<AccountEntity>> GetAllAsync();
-    Task<AccountEntity?> GetByIdAsync(string id);
-    Task UpsertAsync(AccountEntity account);
-    Task DeleteAsync(string id);
-    Task SetActiveAccountAsync(string id);
-    Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink);
+    /// <summary>
+    /// Returns all accounts in the database. The list is never null but may be empty.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The list of accounts - may be empty.</returns>
+    Task<List<AccountEntity>> GetAllAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns the account with the specified ID, or null if no such account exists.
+    /// </summary>
+    /// <param name="id">The account ID.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The account, or null if not found.</returns>
+    Task<AccountEntity?> GetByIdAsync(string id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Inserts a new account or updates an existing one with the same ID. The account is identified by its ID property.
+    /// </summary>
+    /// <param name="account">The account to insert or update.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task UpsertAsync(AccountEntity account, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Deletes the account with the specified ID. If no such account exists, does nothing.
+    /// If the deleted account is currently active, there will be no active account after this operation.
+    /// Note: this does not delete any associated sync folders or jobs - those will be orphaned and should be cleaned up separately if needed.
+    /// This method is used when unlinking an account, so we intentionally keep the sync history intact in case of re-linking the same account later.
+    /// </summary>
+    /// <param name="id">The ID of the account to delete.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task DeleteAsync(string id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets the account with the specified ID as the active account. Only one account can be active at a time.
+    /// </summary>
+    /// <param name="id">The ID of the account to set as active.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task SetActiveAccountAsync(string id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns the currently active account, or null if no account is active.
+    /// </summary>
+    /// <param name="accountId">The ID of the account.</param>
+    /// <param name="folderId">The ID of the folder.</param>
+    /// <param name="deltaLink">The delta link.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The active account, or null if no account is active.</returns>
+    Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink, CancellationToken cancellationToken);
 }

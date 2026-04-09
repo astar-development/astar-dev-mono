@@ -69,7 +69,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         try
         {
             RaiseProgress(account.Id, string.Empty, 0, 0, "Getting account details", SyncState.Syncing);
-            var entity = await accountRepository.GetByIdAsync(account.Id);
+            var entity = await accountRepository.GetByIdAsync(account.Id, CancellationToken.None);
             var folderEntity = entity?.SyncFolders.FirstOrDefault(f => f.FolderId == folderId);
 
             string? deltaLink = folderEntity?.DeltaLink;
@@ -93,13 +93,13 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             if(delta.NextDeltaLink is not null)
             {
-                await accountRepository.UpdateDeltaLinkAsync(account.Id, folderId, delta.NextDeltaLink);
+                await accountRepository.UpdateDeltaLinkAsync(account.Id, folderId, delta.NextDeltaLink, CancellationToken.None);
             }
 
             if(entity is not null)
             {
                 entity.LastSyncedAt = DateTimeOffset.UtcNow;
-                await accountRepository.UpsertAsync(entity);
+                await accountRepository.UpsertAsync(entity, CancellationToken.None);
             }
 
             account.LastSyncedAt = DateTimeOffset.UtcNow;
@@ -120,7 +120,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         if(entity is not null)
         {
             entity.LastSyncedAt = DateTimeOffset.UtcNow;
-            await accountRepository.UpsertAsync(entity);
+            await accountRepository.UpsertAsync(entity, CancellationToken.None);
         }
 
         RaiseProgress(account.Id, folderId, 0, 0, "No changes", SyncState.Idle);

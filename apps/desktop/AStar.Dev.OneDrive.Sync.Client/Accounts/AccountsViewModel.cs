@@ -62,7 +62,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     private async Task RemoveAccountAsync(AccountCardViewModel card)
     {
         await authService.SignOutAsync(card.Id);
-        await repository.DeleteAsync(card.Id);
+        await repository.DeleteAsync(card.Id, CancellationToken.None);
 
         _ = Accounts.Remove(card);
 
@@ -83,10 +83,10 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             account.LocalSyncPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
 
         var entity = ToEntity(account);
-        await repository.UpsertAsync(entity);
+        await repository.UpsertAsync(entity, CancellationToken.None);
 
         if(account.IsActive)
-            await repository.SetActiveAccountAsync(account.Id);
+            await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
 
         var card = BuildCard(account);
         Accounts.Add(card);
@@ -120,7 +120,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         ActiveAccount = card;
         AccountSelected?.Invoke(this, card);
 
-        _ = repository.SetActiveAccountAsync(card.Id);
+        _ = repository.SetActiveAccountAsync(card.Id, CancellationToken.None);
     }
 
     private AccountCardViewModel BuildCard(OneDriveAccount account)

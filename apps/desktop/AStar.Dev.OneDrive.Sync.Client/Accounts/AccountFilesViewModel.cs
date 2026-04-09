@@ -144,7 +144,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 })]
         };
 
-        await _repository.UpsertAsync(entity);
+        await _repository.UpsertAsync(entity, CancellationToken.None);
     }
 
     private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node)

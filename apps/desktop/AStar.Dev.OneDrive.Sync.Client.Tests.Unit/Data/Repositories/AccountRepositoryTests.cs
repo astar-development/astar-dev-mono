@@ -13,7 +13,7 @@ public class AccountRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -27,7 +27,7 @@ public class AccountRepositoryTests
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Id.ShouldBe("user-1");
@@ -45,7 +45,7 @@ public class AccountRepositoryTests
         );
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(3);
         result[0].Email.ShouldBe("alice@outlook.com");
@@ -62,7 +62,7 @@ public class AccountRepositoryTests
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("user-1");
+        var result = await repository.GetByIdAsync("user-1", TestContext.Current.CancellationToken);
 
         _ = result.ShouldNotBeNull();
         result.Email.ShouldBe("user@outlook.com");
@@ -74,7 +74,7 @@ public class AccountRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
 
-        var result = await repository.GetByIdAsync("non-existent");
+        var result = await repository.GetByIdAsync("non-existent", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -86,7 +86,7 @@ public class AccountRepositoryTests
         var repository = new AccountRepository(db);
         var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
 
-        await repository.UpsertAsync(account);
+        await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
         var retrieved = await db.Accounts.FindAsync(["user-1"], cancellationToken: TestContext.Current.CancellationToken);
         _ = retrieved.ShouldNotBeNull();
@@ -103,7 +103,7 @@ public class AccountRepositoryTests
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         account.DisplayName = "Updated User";
-        await repository.UpsertAsync(account);
+        await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
         var retrieved = await db.Accounts.FindAsync(["user-1", TestContext.Current.CancellationToken], TestContext.Current.CancellationToken);
         retrieved!.DisplayName.ShouldBe("Updated User");
@@ -120,7 +120,7 @@ public class AccountRepositoryTests
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         account.SyncFolders[0].FolderId = "folder-2";
-        await repository.UpsertAsync(account);
+        await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
         var retrieved = await db.Accounts.Include(a => a.SyncFolders).FirstAsync(a => a.Id == "user-1",TestContext.Current.CancellationToken);
         retrieved.SyncFolders.Count.ShouldBe(1);
@@ -138,7 +138,7 @@ public class AccountRepositoryTests
 
         try
         {
-            await repository.DeleteAsync("user-1");
+            await repository.DeleteAsync("user-1", TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -159,7 +159,7 @@ public class AccountRepositoryTests
 
         try
         {
-            await repository.SetActiveAccountAsync("user-2");
+            await repository.SetActiveAccountAsync("user-2", TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -180,7 +180,7 @@ public class AccountRepositoryTests
 
         try
         {
-            await repository.UpdateDeltaLinkAsync("user-1", "folder-1", "new-delta");
+            await repository.UpdateDeltaLinkAsync("user-1", "folder-1", "new-delta", TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -198,7 +198,7 @@ public class AccountRepositoryTests
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         _ = result[0].SyncFolders.ShouldNotBeNull();
         result[0].SyncFolders.Count.ShouldBe(1);
@@ -215,7 +215,7 @@ public class AccountRepositoryTests
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("user-1");
+        var result = await repository.GetByIdAsync("user-1", TestContext.Current.CancellationToken);
 
         _ = result!.SyncFolders.ShouldNotBeNull();
         result.SyncFolders.Count.ShouldBe(1);

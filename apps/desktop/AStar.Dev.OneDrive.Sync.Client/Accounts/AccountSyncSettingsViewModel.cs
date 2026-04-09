@@ -42,12 +42,12 @@ public sealed partial class AccountSyncSettingsViewModel(
         account.LocalSyncPath = LocalSyncPath;
         account.ConflictPolicy = ConflictPolicy;
 
-        var entity = await repository.GetByIdAsync(account.Id);
+        var entity = await repository.GetByIdAsync(account.Id, CancellationToken.None);
         if(entity is null)
             return;
 
         entity.LocalSyncPath = LocalSyncPath;
         entity.ConflictPolicy = ConflictPolicy;
-        await repository.UpsertAsync(entity);
+        await repository.UpsertAsync(entity, CancellationToken.None);
     }
 }
