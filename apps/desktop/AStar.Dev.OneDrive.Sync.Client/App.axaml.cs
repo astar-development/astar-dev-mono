@@ -44,7 +44,7 @@ public class App : Application, IDisposable
 
         splashWindow.Opened += async (_, _) =>
         {
-            await BootstrapAsync(mainWindow);
+            await BootstrapAsync(mainWindow, new Progress<string>(splashWindow.SetStatus));
             desktop.MainWindow = mainWindow;
             mainWindow.Show();
             splashWindow.Close();
@@ -104,15 +104,18 @@ public class App : Application, IDisposable
             .CreateLogger();
     }
 
-    private async Task BootstrapAsync(MainWindow window)
+    private async Task BootstrapAsync(MainWindow window, IProgress<string> progress)
     {
         try
         {
+            progress.Report("Loading settings…");
             var settingsService = await SettingsService.LoadAsync();
 
+            progress.Report("Applying theme…");
             var themeService = _services.GetRequiredService<IThemeService>();
             themeService.Apply(settingsService.Current.Theme);
 
+            progress.Report("Configuring services…");
             var accountRepository = _services.GetRequiredService<IAccountRepository>();
             var syncRepository = _services.GetRequiredService<ISyncRepository>();
 
@@ -125,10 +128,12 @@ public class App : Application, IDisposable
             var scheduler = new SyncScheduler(syncService, accountRepository);
             Scheduler = scheduler;
 
+            progress.Report("Initialising startup…");
             var startupService = new StartupService(accountRepository, authService);
 
             await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository, localisationService, themeService);
 
+            progress.Report("Starting sync scheduler…");
             scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
         }
         catch (Exception ex)
