@@ -28,7 +28,7 @@ public class App : Application, IDisposable
     private readonly ServiceProvider _services = BuildServiceProvider();
     private readonly CancellationTokenSource _appLifetimeCts = new();
     private bool _disposed;
-    private static SyncScheduler Scheduler { get; set; } = null!;
+    private static ISyncScheduler Scheduler { get; set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -120,17 +120,15 @@ public class App : Application, IDisposable
             var accountRepository = _services.GetRequiredService<IAccountRepository>();
             var syncRepository = _services.GetRequiredService<ISyncRepository>();
 
-            var tokenCache = new TokenCacheService();
-            var authService = new AuthService(tokenCache);
-
+            var authService = _services.GetRequiredService<IAuthService>();
             var localisationService = _services.GetRequiredService<ILocalizationService>();
             var graphService = _services.GetRequiredService<IGraphService>();
-            var syncService = new SyncService(authService, graphService, accountRepository, syncRepository, _services.GetRequiredService<LocalChangeDetector>(), _services.GetRequiredService<HttpDownloader>());
-            var scheduler = new SyncScheduler(syncService, accountRepository);
+            var syncService = _services.GetRequiredService<ISyncService>();
+            var scheduler = _services.GetRequiredService<ISyncScheduler>();
             Scheduler = scheduler;
 
             progress.Report("Initialising startup…");
-            var startupService = new StartupService(accountRepository, authService);
+            var startupService = _services.GetRequiredService<IStartupService>();
 
             await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository, localisationService, themeService);
 

@@ -14,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 public sealed partial class DashboardAccountViewModel : ObservableObject
 {
     private readonly OneDriveAccount _account;
-    private readonly SyncScheduler   _scheduler;
+    private readonly ISyncScheduler   _scheduler;
 
     public string AccountId => _account.Id;
     public string DisplayName => _account.DisplayName;
@@ -72,7 +72,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
-    public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService)
+    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService)
     {
         _account = account;
         _scheduler = scheduler;

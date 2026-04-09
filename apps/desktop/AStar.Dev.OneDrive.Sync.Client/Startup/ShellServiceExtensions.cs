@@ -26,16 +26,16 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
-        _ = services.AddTransient<IAuthService, AuthService>();
-        _ = services.AddTransient<ITokenCacheService, TokenCacheService>();
-        _ = services.AddTransient<IGraphService, GraphService>();
+        _ = services.AddSingleton<ITokenCacheService, TokenCacheService>();
+        _ = services.AddSingleton<IAuthService, AuthService>();
+        _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddTransient<IStartupService, StartupService>();
-        _ = services.AddTransient<ISyncService,  SyncService>();
-        _ = services.AddTransient<ISyncScheduler, SyncScheduler>();
+        _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
+        _ = services.AddSingleton<IUploadService, UploadService>();
+        _ = services.AddSingleton<ILocalChangeDetector, LocalChangeDetector>();
+        _ = services.AddSingleton<ISyncService, SyncService>();
+        _ = services.AddSingleton<ISyncScheduler, SyncScheduler>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
-        _ = services.AddTransient<ILocalChangeDetector, LocalChangeDetector>();
-        _ = services.AddTransient<IUploadService, UploadService>();
-        _ = services.AddTransient<IHttpDownloader, HttpDownloader>();
         _ = services.AddTransient<IThemeService, ThemeService>();
 
         return services;

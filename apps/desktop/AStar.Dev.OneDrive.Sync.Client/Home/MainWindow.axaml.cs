@@ -21,7 +21,7 @@ public partial class MainWindow : Window
         DataContext = vm;
     }
 
-    public async Task InitialiseAsync(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, SyncScheduler scheduler, ISyncRepository syncRepository,
+    public async Task InitialiseAsync(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, ISyncScheduler scheduler, ISyncRepository syncRepository,
                                       ISettingsService settingsService, IAccountRepository accountRepository, ILocalizationService localizationService, IThemeService themeService)
     {
         _vm = new MainWindowViewModel(authService, graphService, startupService, syncService, themeService, scheduler, syncRepository, settingsService, accountRepository, localizationService);
