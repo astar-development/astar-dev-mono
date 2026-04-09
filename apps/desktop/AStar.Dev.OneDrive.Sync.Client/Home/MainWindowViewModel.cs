@@ -242,6 +242,9 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
                 card.SyncState = e.SyncState;
                 Dashboard.UpdateAccountSyncState(e.AccountId, card);
 
+                if(e.Total == 0 && !string.IsNullOrEmpty(e.CurrentFile))
+                    Dashboard.AddActivityItem(new ActivityItemViewModel { AccountId = e.AccountId, FileName = e.CurrentFile, Type = ActivityItemType.Info });
+
                 if(card.Id == Accounts.ActiveAccount?.Id)
                     SyncStatusBarToActiveAccount();
             });

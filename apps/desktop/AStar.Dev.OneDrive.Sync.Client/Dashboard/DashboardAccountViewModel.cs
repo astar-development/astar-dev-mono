@@ -88,6 +88,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
+        AddRecentActivity(new ActivityItemViewModel { FileName = _localizationService.GetLocal("Sync.Starting") });
+
         var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
         if(entity is null)
             return;
@@ -102,7 +104,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
             LastSyncedAt      = entity.LastSyncedAt
         };
-        AddRecentActivity(new ActivityItemViewModel(){FileName = _localizationService.GetLocal("Sync.Starting")});
+
         await _scheduler.TriggerAccountAsync(fullAccount);
     }
 
