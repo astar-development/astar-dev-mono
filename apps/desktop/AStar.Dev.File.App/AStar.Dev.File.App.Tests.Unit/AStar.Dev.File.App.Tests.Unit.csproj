@@ -6,7 +6,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>AStar.Dev.File.App.Tests.Unit</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
