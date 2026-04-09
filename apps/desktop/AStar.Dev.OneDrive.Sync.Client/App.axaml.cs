@@ -2,6 +2,7 @@ using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
+using AStar.Dev.OneDrive.Sync.Client.Splash;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Data;
@@ -37,10 +38,17 @@ public class App : Application, IDisposable
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
+        var splashWindow = new SplashWindow();
         var mainWindow = _services.GetRequiredService<MainWindow>();
-        desktop.MainWindow = mainWindow;
+        desktop.MainWindow = splashWindow;
 
-        mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
+        splashWindow.Opened += async (_, _) =>
+        {
+            await BootstrapAsync(mainWindow);
+            desktop.MainWindow = mainWindow;
+            mainWindow.Show();
+            splashWindow.Close();
+        };
 
         desktop.Exit += async (_, _) =>
         {
@@ -88,7 +96,7 @@ public class App : Application, IDisposable
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
-                path: Path.Combine(logDirectory, "app.log"),
+                path: Path.Combine(logDirectory, ApplicationMetadata.ApplicationLogName),
                 formatProvider: CultureInfo.InvariantCulture,
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7)
