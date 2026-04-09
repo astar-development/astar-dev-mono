@@ -1,7 +1,7 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
 /// Scans local sync folders for files that have been created or modified

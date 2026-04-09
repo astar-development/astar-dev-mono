@@ -1,8 +1,7 @@
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Views;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public partial class FilesView : UserControl
 {

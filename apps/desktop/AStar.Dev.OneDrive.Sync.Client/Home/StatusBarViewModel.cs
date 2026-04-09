@@ -1,6 +1,7 @@
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>
 /// Drives the bottom status bar.  Bound to the active account only.

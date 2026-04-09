@@ -81,6 +81,14 @@
       <DependentUpon>AddAccountWizardView.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Home\FilesView.axaml.cs">
+      <DependentUpon>FilesView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Home\FolderTreeItemView.axaml.cs">
+      <DependentUpon>FolderTreeItemView.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
 </Project>

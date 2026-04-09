@@ -1,6 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.ViewModels"
              xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
              xmlns:settings="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Settings"
              xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
@@ -132,7 +131,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="vm:SyncIntervalOption">
+                                <DataTemplate DataType="settings:SyncIntervalOption">
                                     <Button Padding="10,5"
                                             CornerRadius="{StaticResource RadiusMd}"
                                             BorderThickness="1"

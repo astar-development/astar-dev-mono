@@ -1,6 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 public sealed class JobCompletedEventArgs(SyncJob job) : EventArgs
 {

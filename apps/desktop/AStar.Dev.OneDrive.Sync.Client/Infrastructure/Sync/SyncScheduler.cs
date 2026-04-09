@@ -1,7 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
 /// Runs scheduled sync passes for all connected accounts.
@@ -10,8 +10,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 /// </summary>
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable
 {
-    private readonly ISyncService       _syncService       = syncService;
-    private readonly IAccountRepository _accountRepository = accountRepository;
     private          Timer?             _timer;
     private          TimeSpan           _interval = TimeSpan.FromMinutes(60);
     private          bool               _running;
@@ -63,7 +61,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         SyncStarted?.Invoke(this, account.Id);
         try
         {
-            await _syncService.SyncAccountAsync(account, ct);
+            await syncService.SyncAccountAsync(account, ct);
         }
         finally
         {
@@ -71,6 +69,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
+    // ReSharper disable once AsyncVoidMethod - Timer requires this signature
     private async void OnTimerTick(object? state)
     {
         if(_running)
@@ -85,28 +84,23 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         try
         {
-            var entities = await _accountRepository.GetAllAsync(CancellationToken.None);
-            foreach(var entity in entities)
+            var entities = await accountRepository.GetAllAsync(CancellationToken.None);
+            foreach (var account in entities.TakeWhile(entity => !ct.IsCancellationRequested).Select(entity => new OneDriveAccount
+                     {
+                         Id                = entity.Id,
+                         DisplayName       = entity.DisplayName,
+                         Email             = entity.Email,
+                         AccentIndex       = entity.AccentIndex,
+                         IsActive          = entity.IsActive,
+                         LocalSyncPath     = entity.LocalSyncPath,
+                         ConflictPolicy    = entity.ConflictPolicy,
+                         SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+                     }))
             {
-                if(ct.IsCancellationRequested)
-                    break;
-
-                var account = new OneDriveAccount
-                {
-                    Id                = entity.Id,
-                    DisplayName       = entity.DisplayName,
-                    Email             = entity.Email,
-                    AccentIndex       = entity.AccentIndex,
-                    IsActive          = entity.IsActive,
-                    LocalSyncPath     = entity.LocalSyncPath,
-                    ConflictPolicy    = entity.ConflictPolicy,
-                    SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
-                };
-
                 SyncStarted?.Invoke(this, account.Id);
                 try
                 {
-                    await _syncService.SyncAccountAsync(account, ct);
+                    await syncService.SyncAccountAsync(account, ct);
                 }
                 catch(Exception ex)
                 {
