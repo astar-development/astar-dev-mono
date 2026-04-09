@@ -1,6 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
 public interface IGraphService : IDisposable
 {

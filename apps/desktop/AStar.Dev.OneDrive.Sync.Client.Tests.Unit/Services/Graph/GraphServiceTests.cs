@@ -1,5 +1,5 @@
-using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Graph;
 

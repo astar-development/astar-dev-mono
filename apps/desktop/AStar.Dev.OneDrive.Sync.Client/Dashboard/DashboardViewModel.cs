@@ -1,10 +1,9 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;

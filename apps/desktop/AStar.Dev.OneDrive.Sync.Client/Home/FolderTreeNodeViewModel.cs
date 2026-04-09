@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {

@@ -1,11 +1,11 @@
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.Delta;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
 public sealed class GraphService(UploadService uploadService) : IGraphService
 {

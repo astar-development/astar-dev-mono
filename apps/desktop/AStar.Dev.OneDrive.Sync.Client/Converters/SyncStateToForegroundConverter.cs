@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 

@@ -1,10 +1,10 @@
-using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Persistence;
+namespace AStar.Dev.OneDrive.Sync.Client.Data;
 
 /// <summary>
 ///     Registers all persistence-layer services with the DI container.

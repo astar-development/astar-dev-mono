@@ -3,7 +3,7 @@ using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
 /// Handles resumable upload sessions for all file sizes.

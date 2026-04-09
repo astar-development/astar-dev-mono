@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
 /// Handles file downloads with automatic retry on 429 Too Many Requests.

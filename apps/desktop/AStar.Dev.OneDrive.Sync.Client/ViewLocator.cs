@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 

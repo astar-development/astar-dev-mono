@@ -2,15 +2,14 @@ using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
-using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 public sealed class SyncService(IAuthService authService, IGraphService graphService, IAccountRepository accountRepository, ISyncRepository syncRepository, LocalChangeDetector localChangeDetector, HttpDownloader httpDownloader) : ISyncService
 {
-    private const int maxParallelDownloads = 8;
+    private const int MaxParallelDownloads = 8;
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
     public event EventHandler<JobCompletedEventArgs>?  JobCompleted;
     public event EventHandler<SyncConflict>?           ConflictDetected;
@@ -298,7 +297,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         await syncRepository.EnqueueJobsAsync(jobs);
 
-        var pipeline = new ParallelDownloadPipeline(syncRepository, graphService, httpDownloader, workerCount: maxParallelDownloads);
+        var pipeline = new ParallelDownloadPipeline(syncRepository, graphService, httpDownloader, workerCount: MaxParallelDownloads);
 
         await pipeline.RunAsync(jobs, accessToken, args => SyncProgressChanged?.Invoke(this, args), args => JobCompleted?.Invoke(this, args), account.Id, jobs.FirstOrDefault()?.FolderId ?? string.Empty, ct: ct);
     }
