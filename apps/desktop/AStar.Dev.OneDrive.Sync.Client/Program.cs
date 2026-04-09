@@ -45,7 +45,6 @@ sealed class Program
         }
         finally
         {
-            Serilog.Log.Information("Application Closing");
             Log.CloseAndFlush();
         }
     }
