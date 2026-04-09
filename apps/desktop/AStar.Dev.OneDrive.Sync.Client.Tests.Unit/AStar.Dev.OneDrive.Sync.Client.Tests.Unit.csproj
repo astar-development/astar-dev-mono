@@ -4,7 +4,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>AStar.Dev.OneDrive.Sync.Client.Tests.Unit</RootNamespace>
     <TargetFramework>net10.0</TargetFramework>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>

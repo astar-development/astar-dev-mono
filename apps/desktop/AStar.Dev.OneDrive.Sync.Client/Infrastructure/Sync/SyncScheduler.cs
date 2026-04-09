@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// Default interval: 60 minutes. Configurable via Settings.
 /// Manual sync can be triggered immediately via <see cref="TriggerNowAsync"/>.
 /// </summary>
-public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable
+public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable, ISyncScheduler
 {
     private          Timer?             _timer;
     private          TimeSpan           _interval = TimeSpan.FromMinutes(60);

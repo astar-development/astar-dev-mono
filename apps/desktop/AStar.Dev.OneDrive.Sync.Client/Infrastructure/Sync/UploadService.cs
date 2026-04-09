@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory): IDisposable
+public sealed class UploadService(IHttpClientFactory httpClientFactory): IDisposable, IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
 

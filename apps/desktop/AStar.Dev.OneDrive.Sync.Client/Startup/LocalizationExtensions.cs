@@ -2,7 +2,7 @@ using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 public static class LocalizationExtensions
 {

@@ -8,7 +8,7 @@ public class GraphServiceTests
     [Fact]
     public void Constructor_ShouldInitializeSuccessfully()
     {
-        var service = new GraphService(Substitute.For<UploadService>());
+        var service = new GraphService(Substitute.For<IUploadService>());
 
         _ = service.ShouldNotBeNull();
     }
@@ -16,7 +16,7 @@ public class GraphServiceTests
     [Fact]
     public void GraphService_ShouldImplementIGraphService()
     {
-        var service = new GraphService(Substitute.For<UploadService>());
+        var service = new GraphService(Substitute.For<IUploadService>());
 
         _ = service.ShouldBeAssignableTo<IGraphService>();
     }

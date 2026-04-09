@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 /// (libsecret on Linux, DPAPI on Windows, Keychain on macOS).
 /// Falls back to plaintext with a warning on unsupported platforms.
 /// </summary>
-public sealed class TokenCacheService
+public sealed class TokenCacheService : ITokenCacheService
 {
     private const int KeyringTimeoutSeconds = 5;
     private const string CacheFileName = "msal_token_cache.bin";

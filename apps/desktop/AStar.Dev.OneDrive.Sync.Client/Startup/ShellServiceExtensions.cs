@@ -3,12 +3,13 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 internal static class ShellServiceExtensions
 {
@@ -26,15 +27,15 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
         _ = services.AddTransient<IAuthService, AuthService>();
-        _ = services.AddTransient<TokenCacheService>();
+        _ = services.AddTransient<ITokenCacheService, TokenCacheService>();
         _ = services.AddTransient<IGraphService, GraphService>();
         _ = services.AddTransient<IStartupService, StartupService>();
         _ = services.AddTransient<ISyncService,  SyncService>();
-        _ = services.AddTransient<SyncScheduler>();
+        _ = services.AddTransient<ISyncScheduler, SyncScheduler>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
-        _ = services.AddTransient<LocalChangeDetector>();
-        _ = services.AddTransient<UploadService>();
-        _ = services.AddTransient<HttpDownloader>();
+        _ = services.AddTransient<ILocalChangeDetector, LocalChangeDetector>();
+        _ = services.AddTransient<IUploadService, UploadService>();
+        _ = services.AddTransient<IHttpDownloader, HttpDownloader>();
         _ = services.AddTransient<IThemeService, ThemeService>();
 
         return services;

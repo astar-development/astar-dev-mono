@@ -7,7 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, IGraphService graphService, IAccountRepository accountRepository, ISyncRepository syncRepository, LocalChangeDetector localChangeDetector, HttpDownloader httpDownloader) : ISyncService
+public sealed class SyncService(IAuthService authService, IGraphService graphService, IAccountRepository accountRepository, ISyncRepository syncRepository, ILocalChangeDetector localChangeDetector, IHttpDownloader httpDownloader) : ISyncService
 {
     private const int MaxParallelDownloads = 8;
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;

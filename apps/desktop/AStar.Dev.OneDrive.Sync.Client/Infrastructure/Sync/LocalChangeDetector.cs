@@ -11,7 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// New subfolders are created on OneDrive automatically when their
 /// parent upload session is created — no separate folder creation needed.
 /// </summary>
-public sealed class LocalChangeDetector
+public sealed class LocalChangeDetector : ILocalChangeDetector
 {
     /// <summary>
     /// Returns upload jobs for all local files in <paramref name="localFolderPath"/>

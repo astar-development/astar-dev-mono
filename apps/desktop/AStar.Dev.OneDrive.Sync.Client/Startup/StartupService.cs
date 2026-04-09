@@ -1,8 +1,9 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 public sealed class StartupService(
     IAccountRepository repository,
