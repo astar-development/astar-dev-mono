@@ -16,16 +16,15 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService: IDisposable
+public sealed class UploadService(IHttpClientFactory httpClientFactory): IDisposable
 {
-    // 10 MB — must be multiple of 320 KB (327,680 bytes)
-    private const int ChunkSize = 10 * 1024 * 1024;
+    private const int ChunkSize10Mb = 10 * 1024 * 1024;
 
     private const int    MaxRetries       = 5;
     private const double BaseDelaySeconds = 2.0;
     private const double MaxDelaySeconds  = 120.0;
 
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http = httpClientFactory.CreateClient();
 
     /// <summary>
     /// Uploads a local file to OneDrive using a resumable upload session.
@@ -88,14 +87,14 @@ public sealed class UploadService: IDisposable
     private async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
     {
         await using var file = File.OpenRead(localPath);
-        byte[] buffer    = new byte[ChunkSize];
+        byte[] buffer    = new byte[ChunkSize10Mb];
         long uploaded  = 0L;
 
         while(uploaded < totalBytes)
         {
             ct.ThrowIfCancellationRequested();
 
-            int bytesToRead = (int)Math.Min(ChunkSize, totalBytes - uploaded);
+            int bytesToRead = (int)Math.Min(ChunkSize10Mb, totalBytes - uploaded);
             int bytesRead   = await file.ReadAsync(
                 buffer.AsMemory(0, bytesToRead), ct);
 
@@ -147,14 +146,10 @@ public sealed class UploadService: IDisposable
                 }
 
                 if(response.StatusCode == System.Net.HttpStatusCode.Accepted)
-                {
                     return null;
-                }
 
                 if(response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
-                {
-                    return await GetUpdloadedDocumentId(response, ct);
-                }
+                    return await GetUploadedDocumentId(response, ct);
 
                 _ = response.EnsureSuccessStatusCode();
 
@@ -170,7 +165,7 @@ public sealed class UploadService: IDisposable
         }
     }
 
-    private static async Task<string?> GetUpdloadedDocumentId(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<string?> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
     {
         string json = await response.Content.ReadAsStringAsync(ct);
         using var doc = System.Text.Json.JsonDocument.Parse(json);

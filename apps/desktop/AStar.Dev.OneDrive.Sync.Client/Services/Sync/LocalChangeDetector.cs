@@ -18,7 +18,7 @@ public sealed class LocalChangeDetector
     /// that are newer than <paramref name="since"/>.
     /// Pass null for <paramref name="since"/> to queue everything (first upload pass).
     /// </summary>
-#pragma warning disable CA1822
+#pragma warning disable CA1822 // Method is called from another class, not sure why that call is not detected.
     public List<SyncJob> DetectChanges(string accountId, string folderId, string localFolderPath, string remoteFolderPath, DateTimeOffset? since)
 #pragma warning restore CA1822
     {
@@ -46,9 +46,10 @@ public sealed class LocalChangeDetector
 
     private static void ScanDirectory(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
     {
+        const string UnknownRemoteId = ""; // we don't know the remote ID until the upload completes, so we use an empty string as placeholder
         try
         {
-            foreach(string filePath in Directory.EnumerateFiles(localDir, "", SearchOption.AllDirectories))
+            foreach(string filePath in Directory.EnumerateFiles(localDir, "*", SearchOption.AllDirectories))
             {
                 var info = new FileInfo(filePath);
 
@@ -65,7 +66,7 @@ public sealed class LocalChangeDetector
                 {
                     AccountId = accountId,
                     FolderId = folderId,
-                    RemoteItemId = string.Empty, // unknown until upload completes
+                    RemoteItemId = UnknownRemoteId,
                     RelativePath = relativePath,
                     LocalPath = filePath,
                     Direction = SyncDirection.Upload,

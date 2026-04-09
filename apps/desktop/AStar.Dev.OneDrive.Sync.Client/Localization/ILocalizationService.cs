@@ -39,11 +39,5 @@ public interface ILocalizationService
     /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
     /// Loads strings for the requested culture (or en-GB as fallback).
     /// </summary>
-    Task InitialiseAsync(CultureInfo? requested = null);
-
-    /// <summary>
-    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
-    /// Loads strings for the requested culture (or en-GB as fallback).
-    /// </summary>
     void Initialise(CultureInfo? requested = null);
 }

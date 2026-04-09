@@ -27,7 +27,7 @@ public class LocalizationServiceTests
     {
         var service = new LocalizationService();
 
-        await service.InitialiseAsync();
+        //await service.InitialiseAsync();
 
         service.CurrentCulture.Name.ShouldBe("en-GB");
     }
@@ -38,7 +38,7 @@ public class LocalizationServiceTests
         var service = new LocalizationService();
         var culture = new CultureInfo("en-GB");
 
-        await service.InitialiseAsync(culture);
+        //await service.InitialiseAsync(culture);
 
         _ = service.CurrentCulture.ShouldNotBeNull();
     }

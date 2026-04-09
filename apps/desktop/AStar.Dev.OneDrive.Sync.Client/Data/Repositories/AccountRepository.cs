@@ -28,10 +28,8 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
         }
         else
         {
-            // Update scalar properties
             db.Entry(existing).CurrentValues.SetValues(account);
 
-            // Sync folder collection — remove deleted, add new
             var toRemove = existing.SyncFolders
                 .Where(f => account.SyncFolders.All(nf => nf.FolderId != f.FolderId))
                 .ToList();
@@ -52,7 +50,6 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 
     public async Task SetActiveAccountAsync(string id)
     {
-        // Clear all active flags then set the requested one
         _ = await db.Accounts.ExecuteUpdateAsync(s =>
             s.SetProperty(a => a.IsActive, false));
 
@@ -62,7 +59,8 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
                 s.SetProperty(a => a.IsActive, true));
     }
 
-    public async Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink) => await db.SyncFolders
+    public async Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink)
+        => await db.SyncFolders
             .Where(f => f.AccountId == accountId && f.FolderId == folderId)
             .ExecuteUpdateAsync(s =>
                 s.SetProperty(f => f.DeltaLink, deltaLink));

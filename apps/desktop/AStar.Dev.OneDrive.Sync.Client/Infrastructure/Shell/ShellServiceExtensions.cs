@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -20,7 +21,7 @@ internal static class ShellServiceExtensions
 
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
 
-        _ = services.AddSingleton<InMemoryLogSink>(inMemoryLogSink);
+        _ = services.AddSingleton(inMemoryLogSink);
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
@@ -31,6 +32,10 @@ internal static class ShellServiceExtensions
         _ = services.AddTransient<ISyncService,  SyncService>();
         _ = services.AddTransient<SyncScheduler>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
+        _ = services.AddTransient<LocalChangeDetector>();
+        _ = services.AddTransient<UploadService>();
+        _ = services.AddTransient<HttpDownloader>();
+        _ = services.AddTransient<IThemeService, ThemeService>();
 
         return services;
     }

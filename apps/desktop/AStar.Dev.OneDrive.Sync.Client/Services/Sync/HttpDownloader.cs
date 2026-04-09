@@ -13,9 +13,9 @@ public sealed class HttpDownloader : IDisposable
     private const double BaseDelaySeconds  = 2.0;
     private const double MaxDelaySeconds   = 120.0;
 
-    public HttpDownloader()
+    public HttpDownloader(IHttpClientFactory httpClientFactory)
     {
-        _http = new HttpClient();
+        _http = httpClientFactory.CreateClient();
         _http.DefaultRequestHeaders.Add("User-Agent", "AStar.Dev.OneDrive.Sync/1.0");
     }
 
@@ -75,6 +75,7 @@ public sealed class HttpDownloader : IDisposable
                 }
 
                 PreserveRemoteTimestamp(localPath, remoteModified);
+
                 return;
             }
             catch(HttpRequestException) when(attempt <= MaxRetries)
@@ -97,12 +98,11 @@ public sealed class HttpDownloader : IDisposable
         if(response.Headers.RetryAfter?.Delta is { } delta)
             return delta + AddAdditionalSecondBackoff();
 
-        if(response.Headers.RetryAfter?.Date is { } date)
-        {
-            var wait = date - DateTimeOffset.UtcNow;
-            if(wait > TimeSpan.Zero)
-                return wait + AddAdditionalSecondBackoff();
-        }
+        if (response.Headers.RetryAfter?.Date is not { } date) return GetBackoffDelay(attempt);
+
+        var wait = date - DateTimeOffset.UtcNow;
+        if(wait > TimeSpan.Zero)
+            return wait + AddAdditionalSecondBackoff();
 
         return GetBackoffDelay(attempt);
     }
@@ -113,12 +113,11 @@ public sealed class HttpDownloader : IDisposable
     {
         double seconds = CalculateExponentialBackoff(attempt);
 
-        // Add up to 20% jitter to avoid thundering herd
         double jitter = seconds * 0.2 * Random.Shared.NextDouble();
         return TimeSpan.FromSeconds(seconds + jitter);
     }
 
-    private static double CalculateExponentialBackoff(int attempt) // Exponential backoff with jitter: 2s, 4s, 8s, 16s, 32s (max 120s)
+    private static double CalculateExponentialBackoff(int attempt)
             => Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
 
     public void Dispose() => _http.Dispose();
