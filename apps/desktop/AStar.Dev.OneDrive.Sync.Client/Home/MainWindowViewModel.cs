@@ -178,7 +178,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
         if(active is null)
             return;
 
-        var entity = await accountRepository.GetByIdAsync(active.Id);
+        var entity = await accountRepository.GetByIdAsync(active.Id, CancellationToken.None);
         if(entity is null)
             return;
 

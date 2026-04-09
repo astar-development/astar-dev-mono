@@ -85,7 +85,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         try
         {
-            var entities = await _accountRepository.GetAllAsync();
+            var entities = await _accountRepository.GetAllAsync(CancellationToken.None);
             foreach(var entity in entities)
             {
                 if(ct.IsCancellationRequested)

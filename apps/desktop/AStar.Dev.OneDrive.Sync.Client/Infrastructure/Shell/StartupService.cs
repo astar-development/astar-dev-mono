@@ -10,7 +10,7 @@ public sealed class StartupService(
 {
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
-        var entities = await repository.GetAllAsync();
+        var entities = await repository.GetAllAsync(CancellationToken.None);
 
         var cachedIds = (await authService.GetCachedAccountIdsAsync()).ToHashSet();
 

@@ -89,7 +89,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        var entity = await _repository.GetByIdAsync(_account.Id);
+        var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
         if(entity is null)
             return;
 
