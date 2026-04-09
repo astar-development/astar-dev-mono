@@ -16,29 +16,28 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 
 /// <summary>
-/// When refactored, this class will disappear but "baby steps"
+/// Add current view models to the DI container here. Transient for view models with short-lived state (e.g. wizards, dialogs), singleton for those that should maintain state across the app (e.g. accounts, activity).
 /// </summary>
 public static class ViewModelExtensions
 {
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
         _ = services.AddTransient<MainWindowViewModel>();
-        _ = services.AddSingleton<AccountsViewModel>();
-        _ = services.AddSingleton<ActivityViewModel>();
-        _ = services.AddSingleton<AccountCardViewModel>();
-        _ = services.AddSingleton<AccountFilesViewModel>();
-        _ = services.AddSingleton<AccountSyncSettingsViewModel>();
-        _ = services.AddSingleton<ActivityItemViewModel>();
-        _ = services.AddSingleton<ActivityViewModel>();
+        _ = services.AddTransient<AccountsViewModel>();
+        _ = services.AddTransient<ActivityViewModel>();
+        _ = services.AddTransient<AccountCardViewModel>();
+        _ = services.AddTransient<AccountFilesViewModel>();
+        _ = services.AddTransient<AccountSyncSettingsViewModel>();
+        _ = services.AddTransient<ActivityItemViewModel>();
+        _ = services.AddTransient<ActivityViewModel>();
         _ = services.AddTransient<AddAccountWizardViewModel>();
-        _ = services.AddSingleton<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
-        _ = services.AddSingleton<ConflictItemViewModel>();
-        _ = services.AddSingleton<DashboardAccountViewModel>();
-        _ = services.AddSingleton<DashboardViewModel>();
-        _ = services.AddSingleton<FilesViewModel>();
-        _ = services.AddSingleton<FolderTreeNodeViewModel>();
-        _ = services.AddTransient<SettingsViewModel>();
-        _ = services.AddSingleton<StatusBarViewModel>();
+        _ = services.AddTransient<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
+        _ = services.AddTransient<ConflictItemViewModel>();
+        _ = services.AddTransient<DashboardAccountViewModel>();
+        _ = services.AddTransient<DashboardViewModel>();
+        _ = services.AddTransient<FilesViewModel>();
+        _ = services.AddTransient<FolderTreeNodeViewModel>();
+        _ = services.AddTransient<StatusBarViewModel>();
         _ = services.AddTransient<SettingsViewModel>();
 
         return services;

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
@@ -49,6 +50,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public partial int FolderCount { get; set; }
 
     private readonly IAccountRepository _repository;
+    private readonly ILocalizationService _localizationService;
+
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
 
@@ -70,13 +73,13 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
-    public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler,
-    IAccountRepository repository)
+    public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService)
     {
         _account = account;
         _scheduler = scheduler;
         FolderCount = account.SelectedFolderIds.Count;
         _repository = repository;
+        _localizationService = localizationService;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -100,7 +103,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
             LastSyncedAt      = entity.LastSyncedAt
         };
-
+        AddRecentActivity(new ActivityItemViewModel(){FileName = _localizationService.GetLocal("Sync.Starting")});
         await _scheduler.TriggerAccountAsync(fullAccount);
     }
 
@@ -111,11 +114,10 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
                                         ConflictCount = conflicts;
                                         IsSyncing = state == SyncState.Syncing;
 
-                                        if(state == SyncState.Idle)
-                                        {
-                                            _account.LastSyncedAt = DateTimeOffset.UtcNow;
-                                            UpdateLastSyncText(SyncState);
-                                        }
+                                        if (state != SyncState.Idle) return;
+
+                                        _account.LastSyncedAt = DateTimeOffset.UtcNow;
+                                        UpdateLastSyncText(SyncState);
                                     });
 
     public void AddRecentActivity(ActivityItemViewModel item)

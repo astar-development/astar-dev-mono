@@ -306,6 +306,7 @@
                                                                    Text="{Binding FileName}"
                                                                    FontSize="{StaticResource FontSizeXs}"
                                                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                   TextWrapping="Wrap"
                                                                    TextTrimming="CharacterEllipsis"
                                                                    VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="3"

@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
@@ -7,7 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
-public sealed partial class DashboardViewModel(SyncScheduler scheduler) : ObservableObject
+public sealed partial class DashboardViewModel(SyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -45,7 +47,7 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         if(AccountSections.Any(s => s.AccountId == account.Id))
             return;
 
-        var section = new DashboardAccountViewModel(account, scheduler, App.AccountRepository);
+        var section = new DashboardAccountViewModel(account, scheduler, accountRepository, localizationService);
 
         AccountSections.Add(section);
 

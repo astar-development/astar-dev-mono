@@ -21,25 +21,18 @@ using Serilog.Events;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
-public partial class App : Application, IDisposable
+public class App : Application, IDisposable
 {
-    private ServiceProvider         _services = null!;
+    private readonly ServiceProvider _services = BuildServiceProvider();
     private readonly CancellationTokenSource _appLifetimeCts = new();
     private bool _disposed;
-    public static ILocalizationService Localisation { get; private set; } = null!;
-    public static IThemeService Theme { get; private set; } = null!;
-    public static IAuthService Auth { get; private set; } = null!;
-    public static IAccountRepository AccountRepository { get; private set; } = null!;
-    public static ISyncService SyncService { get; private set; } = null!;
-    public static SyncScheduler Scheduler { get; private set; } = null!;
-    public static ISettingsService AppSettings { get; private set; } = null!;
+    private static SyncScheduler Scheduler { get; set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
     {
         base.OnFrameworkInitializationCompleted();
-        _services       = BuildServiceProvider();
 
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
@@ -53,8 +46,8 @@ public partial class App : Application, IDisposable
         {
             await Scheduler.DisposeAsync();
 
-            Serilog.Log.Information("[App] Application exiting");
-            await Serilog.Log.CloseAndFlushAsync();
+            Log.Information("[App] Application exiting");
+            await Log.CloseAndFlushAsync();
         };
     }
 
@@ -78,8 +71,8 @@ public partial class App : Application, IDisposable
 
     private static OneDriveClientOptions BuildOneDriveClientOptions()
     {
-        string clientId     = Environment.GetEnvironmentVariable("ONEDRIVEYNC_AZURE_CLIENT_ID") ?? "3057f494-687d-4abb-a653-4b8066230b6e";
-        string redirectUri  = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
+        string clientId = Environment.GetEnvironmentVariable("ONEDRIVESYNC_AZURE_CLIENT_ID") ?? "3057f494-687d-4abb-a653-4b8066230b6e";
+        string redirectUri = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
 
         return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
     }
@@ -107,45 +100,38 @@ public partial class App : Application, IDisposable
     {
         try
         {
-            var locService = _services.GetRequiredService<ILocalizationService>();
-            Localisation = locService;
-
             var settingsService = await SettingsService.LoadAsync();
-            AppSettings = settingsService;
 
-            var themeService = new ThemeService();
+            var themeService = _services.GetRequiredService<IThemeService>();
             themeService.Apply(settingsService.Current.Theme);
-            Theme = themeService;
 
             var accountRepository = _services.GetRequiredService<IAccountRepository>();
-            var syncRepository    = _services.GetRequiredService<ISyncRepository>();
-            AccountRepository = accountRepository;
+            var syncRepository = _services.GetRequiredService<ISyncRepository>();
 
-            var tokenCache  = new TokenCacheService();
+            var tokenCache = new TokenCacheService();
             var authService = new AuthService(tokenCache);
-            Auth = authService;
 
-            var graphService   = _services.GetRequiredService<IGraphService>();
-            var syncService    = new SyncService(authService, graphService, accountRepository, syncRepository, _services.GetRequiredService<LocalChangeDetector>(), _services.GetRequiredService<HttpDownloader>());
-            var scheduler      = new SyncScheduler(syncService, accountRepository);
-            SyncService = syncService;
+            var localisationService = _services.GetRequiredService<ILocalizationService>();
+            var graphService = _services.GetRequiredService<IGraphService>();
+            var syncService = new SyncService(authService, graphService, accountRepository, syncRepository, _services.GetRequiredService<LocalChangeDetector>(), _services.GetRequiredService<HttpDownloader>());
+            var scheduler = new SyncScheduler(syncService, accountRepository);
             Scheduler = scheduler;
 
             var startupService = new StartupService(accountRepository, authService);
 
-            await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository);
+            await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository, localisationService, themeService);
 
             scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
+            Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
         }
     }
 
     public void Dispose()
     {
-        if(_disposed)
+        if (_disposed)
             return;
 
         _disposed = true;

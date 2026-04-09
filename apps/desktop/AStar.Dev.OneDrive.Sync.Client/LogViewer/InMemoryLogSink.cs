@@ -23,7 +23,6 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     /// <summary>Initialises the sink with <see cref="DefaultCapacity"/>.</summary>
     public InMemoryLogSink() : this(DefaultCapacity) { }
 
-    /// <summary>Initialises the sink with a custom <paramref name="capacity"/>. Exposed internal for testing.</summary>
     private InMemoryLogSink(int capacity)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
@@ -68,10 +67,7 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     private static string? ExtractAccountId(LogEvent logEvent)
     {
         if (!logEvent.Properties.TryGetValue("AccountId", out var property))
-        {
-
             return null;
-        }
 
         string raw = property.ToString();
 

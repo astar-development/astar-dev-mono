@@ -144,7 +144,7 @@
 | #   | Line | Severity | Issue                                                                                                           | Fix                                                                                           | Done |
 | --- | ---- | -------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---- |
 | 51  | 64   | error    | `LoadAsync(target).GetAwaiter().GetResult()` — blocking async; will deadlock on the Avalonia UI thread.         | Remove `Initialise()` or guard that it is never called from a synchronisation-context thread. | yes  |
-| 52  | 74   | warning  | `return string.Format(...)` directly follows the `string template = GetLocal(key);` assignment — no blank line. | Add blank line.                                                                               | yes     |
+| 52  | 74   | warning  | `return string.Format(...)` directly follows the `string template = GetLocal(key);` assignment — no blank line. | Add blank line.                                                                               | yes  |
 | 53  | 78   | warning  | `return template;` directly follows the `catch(FormatException)` opening brace — no blank line.                 | Add blank line.                                                                               | yes  |
 | 54  | 85   | warning  | `return;` directly follows the `if` on line 84 — no blank line.                                                 | Add blank line.                                                                               | yes  |
 | 55  | 141  | warning  | `return [];` directly follows `catch(JsonException)` opening brace — no blank line.                             | Add blank line.                                                                               | yes  |
@@ -157,21 +157,21 @@
 | --- | ----- | ---------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | ---- |
 | 56  | 31-32 | warning    | Inline comment `// Update scalar properties` — describes what the code does.                                 | Remove.                                         | yes  |
 | 57  | 34-35 | warning    | Inline comment `// Sync folder collection — remove deleted, add new` — same.                                 | Remove.                                         | yes  |
-| 58  | 55-57 | warning    | Inline comment `// Clear all active flags then set the requested one` — same.                                | Remove.                                         | yes   |
-| 59  | 65    | warning    | `async Task UpdateDeltaLinkAsync(...)` is expression-bodied with a single `await` — redundant state machine. | Remove `async`; return the `Task` directly.     | ?     |
+| 58  | 55-57 | warning    | Inline comment `// Clear all active flags then set the requested one` — same.                                | Remove.                                         | yes  |
+| 59  | 65    | warning    | `async Task UpdateDeltaLinkAsync(...)` is expression-bodied with a single `await` — redundant state machine. | Remove `async`; return the `Task` directly.     | ?    |
 | 60  | 51    | suggestion | Same state machine overhead in `DeleteAsync`.                                                                | Return `Task` directly without `async`/`await`. | ?    |
 
 ---
 
 ## App.axaml.cs
 
-| #   | Line    | Severity | Issue                                                                                                                                                                                      | Fix                                                                                                   | Done |
-| --- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ---- |
-| 61  | 26      | error    | `private ServiceProvider _services = null!;` — `null!` suppression without a documented reason.                                                                                            | Add `// Assigned in OnFrameworkInitializationCompleted before any use.` or restructure.               |      |
-| 62  | 29-35   | error    | Six `public static` mutable service locator properties (`Localisation`, `Theme`, `Auth`, etc.) — SOLID / DI violation; makes all consumers untestable.                                     | Pass dependencies through constructor injection; remove static service locator. Raise a GitHub issue. |      |
-| 63  | 124-130 | error    | `AuthService`, `TokenCacheService`, `GraphService`, `SyncService`, `SyncScheduler`, `StartupService` are newed up manually in `BootstrapAsync` instead of being resolved from `_services`. | Register all services in `BuildServiceProvider`; resolve via `_services.GetRequiredService<T>()`.     |      |
-| 64  | 50      | warning  | `async` lambda subscribed to `Opened` event — unhandled exceptions in `BootstrapAsync` are swallowed (fire-and-forget).                                                                    | Wrap in `try/catch` inside the lambda.                                                                |      |
-| 65  | 81      | warning  | Typo in env-var name: `ONEDRIVEYNC_AZURE_CLIENT_ID` (missing `S`; should be `ONEDRIVESYNC_AZURE_CLIENT_ID`).                                                                               | Fix the typo.                                                                                         |      |
+| #   | Line    | Severity | Issue                                                                                                                                                                                      | Fix                                                                                                   | Done        |
+| --- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ----------- |
+| 61  | 26      | error    | `private ServiceProvider _services = null!;` — `null!` suppression without a documented reason.                                                                                            | Add `// Assigned in OnFrameworkInitializationCompleted before any use.` or restructure.               | Initialised |
+| 62  | 29-35   | error    | Six `public static` mutable service locator properties (`Localisation`, `Theme`, `Auth`, etc.) — SOLID / DI violation; makes all consumers untestable.                                     | Pass dependencies through constructor injection; remove static service locator. Raise a GitHub issue. | Done        |
+| 63  | 124-130 | error    | `AuthService`, `TokenCacheService`, `GraphService`, `SyncService`, `SyncScheduler`, `StartupService` are newed up manually in `BootstrapAsync` instead of being resolved from `_services`. | Register all services in `BuildServiceProvider`; resolve via `_services.GetRequiredService<T>()`.     | Done        |
+| 64  | 50      | warning  | `async` lambda subscribed to `Opened` event — unhandled exceptions in `BootstrapAsync` are swallowed (fire-and-forget).                                                                    | Wrap in `try/catch` inside the lambda.                                                                |             |
+| 65  | 81      | warning  | Typo in env-var name: `ONEDRIVEYNC_AZURE_CLIENT_ID` (missing `S`; should be `ONEDRIVESYNC_AZURE_CLIENT_ID`).                                                                               | Fix the typo.                                                                                         | Done        |
 
 ---
 
@@ -179,17 +179,17 @@
 
 | #   | Line | Severity | Issue                                                                                                               | Fix                                                    | Done |
 | --- | ---- | -------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---- |
-| 66  | 48   | error    | `new DashboardAccountViewModel(account, scheduler, App.AccountRepository)` — calls static service locator directly. | Inject `IAccountRepository` into `DashboardViewModel`. |      |
+| 66  | 48   | error    | `new DashboardAccountViewModel(account, scheduler, App.AccountRepository)` — calls static service locator directly. | Inject `IAccountRepository` into `DashboardViewModel`. | Done |
 
 ---
 
 ## Home/MainWindowViewModel.cs
 
-| #   | Line    | Severity | Issue                                                                                                                                                                            | Fix                                                                                        | Done |
-| --- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
-| 67  | 120-128 | error    | `Accounts`, `Files`, `Activity`, `Dashboard`, `Settings`, `StatusBar` instantiated via `new(...)` calling `App.AccountRepository` and `App.Theme` — service locator antipattern. | Inject composed child ViewModels or use a ViewModel factory.                               |      |
-| 68  | 24-33   | warning  | Primary constructor has 8 parameters — exceeds recommended maximum of 5.                                                                                                         | Introduce a parameter object (e.g., `SyncClientContext`) grouping the common dependencies. |      |
-| 69  | 209/217 | warning  | `async void OnAccountSelected` and `async void OnAccountAdded` — Avalonia event handler exception; both have no `try/catch`.                                                     | Wrap bodies in `try/catch(Exception ex) { Log.Error(ex, ...); }`.                          |      |
+| #   | Line    | Severity | Issue                                                                                                                                                                            | Fix                                                                                        | Done                     |
+| --- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
+| 67  | 120-128 | error    | `Accounts`, `Files`, `Activity`, `Dashboard`, `Settings`, `StatusBar` instantiated via `new(...)` calling `App.AccountRepository` and `App.Theme` — service locator antipattern. | Inject composed child ViewModels or use a ViewModel factory.                               |                          |
+| 68  | 24-33   | warning  | Primary constructor has 8 parameters — exceeds recommended maximum of 5.                                                                                                         | Introduce a parameter object (e.g., `SyncClientContext`) grouping the common dependencies. | Currently more than 8... |
+| 69  | 209/217 | warning  | `async void OnAccountSelected` and `async void OnAccountAdded` — Avalonia event handler exception; both have no `try/catch`.                                                     | Wrap bodies in `try/catch(Exception ex) { Log.Error(ex, ...); }`.                          | Done                     |
 
 ---
 
@@ -205,9 +205,9 @@
 
 | #   | Line  | Severity | Issue                                                                                                                                                                                                                                                                                                                                   | Fix                                                     | Done |
 | --- | ----- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ---- |
-| 71  | 40/42 | error    | `SettingsViewModel` registered twice — second registration silently overwrites the first; runtime bug.                                                                                                                                                                                                                                  | Remove the duplicate on line 42.                        |      |
-| 72  | 20    | warning  | Comment `// When refactored, this class will disappear but "baby steps"` — no-comments rule; no issue reference.                                                                                                                                                                                                                        | Remove comment; raise a GitHub issue.                   |      |
-| 73  | 28-39 | error    | `AccountCardViewModel`, `AccountFilesViewModel`, `AccountSyncSettingsViewModel`, `ActivityItemViewModel`, `ConflictItemViewModel`, `DashboardAccountViewModel`, `FolderTreeNodeViewModel` registered as `Singleton` — per-account/per-item ViewModels with account-specific state; Singleton means every caller gets the same instance. | Register as `Transient` per Avalonia DI lifetime rules. |      |
+| 71  | 40/42 | error    | `SettingsViewModel` registered twice — second registration silently overwrites the first; runtime bug.                                                                                                                                                                                                                                  | Remove the duplicate on line 42.                        | Done |
+| 72  | 20    | warning  | Comment `// When refactored, this class will disappear but "baby steps"` — no-comments rule; no issue reference.                                                                                                                                                                                                                        | Remove comment; raise a GitHub issue.                   | Done |
+| 73  | 28-39 | error    | `AccountCardViewModel`, `AccountFilesViewModel`, `AccountSyncSettingsViewModel`, `ActivityItemViewModel`, `ConflictItemViewModel`, `DashboardAccountViewModel`, `FolderTreeNodeViewModel` registered as `Singleton` — per-account/per-item ViewModels with account-specific state; Singleton means every caller gets the same instance. | Register as `Transient` per Avalonia DI lifetime rules. | Done |
 
 ---
 
@@ -215,9 +215,9 @@
 
 | #   | Line  | Severity   | Issue                                                                                                                                                                                 | Fix                                                                                                                                                  | Done |
 | --- | ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| 74  | 21-23 | error      | `#pragma warning disable CA1822` — suppression without a documented reason.                                                                                                           | Either make `DetectChanges` static (preferred) or add inline justification: `// Kept as instance method for future ILocalChangeDetector extraction`. |      |
-| 75  | 51    | warning    | `Directory.EnumerateFiles(localDir, "", SearchOption.AllDirectories)` — empty string pattern matches nothing on some platforms; intended wildcard is `"*"`.                           | Change to `"*"`.                                                                                                                                     |      |
-| 76  | 68    | suggestion | `RemoteItemId = string.Empty` with comment `// unknown until upload completes` — acceptable (non-obvious reason), but consider a named constant `UnknownRemoteItemId = string.Empty`. | Minor suggestion only.                                                                                                                               |      |
+| 74  | 21-23 | error      | `#pragma warning disable CA1822` — suppression without a documented reason.                                                                                                           | Either make `DetectChanges` static (preferred) or add inline justification: `// Kept as instance method for future ILocalChangeDetector extraction`. | Done  |
+| 75  | 51    | warning    | `Directory.EnumerateFiles(localDir, "", SearchOption.AllDirectories)` — empty string pattern matches nothing on some platforms; intended wildcard is `"*"`.                           | Change to `"*"`.                                                                                                                                     | Done |
+| 76  | 68    | suggestion | `RemoteItemId = string.Empty` with comment `// unknown until upload completes` — acceptable (non-obvious reason), but consider a named constant `UnknownRemoteItemId = string.Empty`. | Minor suggestion only.                                                                                                                               | Done     |
 
 ---
 
@@ -225,8 +225,8 @@
 
 | #   | Line  | Severity | Issue                                                                                                 | Fix                                                               | Done |
 | --- | ----- | -------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---- |
-| 77  | 71-74 | warning  | Extra blank line inside trivially short `if` body in `ExtractAccountId` — inconsistent formatting.    | Remove the extra blank line.                                      |      |
-| 78  | 27    | warning  | `private InMemoryLogSink(int capacity)` is `private` but XML doc says "Exposed internal for testing". | Change to `internal` or expose a static factory method for tests. |      |
+| 77  | 71-74 | warning  | Extra blank line inside trivially short `if` body in `ExtractAccountId` — inconsistent formatting.    | Remove the extra blank line.                                      | Done     |
+| 78  | 27    | warning  | `private InMemoryLogSink(int capacity)` is `private` but XML doc says "Exposed internal for testing". | Change to `internal` or expose a static factory method for tests. | Removed comment     |
 
 ---
 
@@ -249,7 +249,7 @@
 
 ## Design / Architecture (Cross-Cutting)
 
-| #   | Severity   | Issue                                                                                                                                                                                                              |
+| #   | Severity   | Resolved |Issue                                                                                                                                                                                                              |
 | --- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
 | 89  | error      | `ViewModels/` folder is a technical-type folder. Repo convention mandates feature-based organisation. All ViewModels should live alongside the feature they belong to.                                             |     |
 | 90  | warning    | `Models/` folder is a technical-type folder — `OneDriveAccount`, `SyncJob`, `SyncConflict`, `DeltaItem` etc. should be co-located with their owning feature.                                                       |     |

@@ -117,5 +117,6 @@
   "Common.MinutesAgo": "{0} minutes ago",
   "Common.HoursAgo": "{0} hours ago",
   "Common.Yesterday": "Yesterday",
-  "Common.DaysAgo": "{0} days ago"
+  "Common.DaysAgo": "{0} days ago",
+  "Sync.Starting": "Starting sync... this could take some time..."
 }

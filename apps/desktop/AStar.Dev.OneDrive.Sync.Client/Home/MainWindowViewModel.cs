@@ -1,9 +1,13 @@
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -21,15 +25,8 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(
-    IAuthService authService,
-    IGraphService graphService,
-    IStartupService startupService,
-    ISyncService syncService,
-    SyncScheduler scheduler,
-    ISyncRepository syncRepository,
-    ISettingsService settingsService,
-    IAccountRepository accountRepository) : ObservableObject
+public sealed partial class MainWindowViewModel(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, IThemeService themeService,
+    SyncScheduler scheduler, ISyncRepository syncRepository, ISettingsService settingsService, IAccountRepository accountRepository, ILocalizationService localizationService) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -117,15 +114,15 @@ public sealed partial class MainWindowViewModel(
         }
     }
 
-    public AccountsViewModel Accounts { get; } = new(authService, graphService, App.AccountRepository);
+    public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository);
 
-    public FilesViewModel Files { get; } = new(authService, graphService, App.AccountRepository);
+    public FilesViewModel Files { get; } = new(authService, graphService, accountRepository);
 
     public ActivityViewModel Activity { get; } = new(syncService, syncRepository);
 
-    public DashboardViewModel Dashboard { get; } = new(scheduler);
+    public DashboardViewModel Dashboard { get; } = new(scheduler, localizationService, accountRepository);
 
-    public SettingsViewModel Settings { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
+    public SettingsViewModel Settings { get; } = new(settingsService, themeService, scheduler, accountRepository);
 
     public StatusBarViewModel StatusBar { get; } = new();
 
@@ -181,7 +178,7 @@ public sealed partial class MainWindowViewModel(
         if(active is null)
             return;
 
-        var entity = await App.AccountRepository.GetByIdAsync(active.Id);
+        var entity = await accountRepository.GetByIdAsync(active.Id);
         if(entity is null)
             return;
 
@@ -207,22 +204,28 @@ public sealed partial class MainWindowViewModel(
     }
 
     private async void OnAccountSelected(object? sender, AccountCardViewModel card)
-    {
-        ActiveSection = NavSection.Files;
-        await Files.ActivateAccountAsync(card.Id);
-        await Activity.SetActiveAccountAsync(card.Id, card.Email);
-        SyncStatusBarToActiveAccount();
-    }
+        => await Try.RunAsync(async () =>
+            {
+                ActiveSection = NavSection.Files;
+                await Files.ActivateAccountAsync(card.Id);
+                await Activity.SetActiveAccountAsync(card.Id, card.Email);
+                SyncStatusBarToActiveAccount();
+                return Unit.Default;
+            })
+            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelected] Error: {Error}", e));
 
     private async void OnAccountAdded(object? sender, OneDriveAccount account)
-    {
-        Files.AddAccount(account);
-        Dashboard.AddAccount(account);
-        Settings.AddAccount(account);
-        ActiveSection = NavSection.Files;
-        await Files.ActivateAccountAsync(account.Id);
-        await Activity.SetActiveAccountAsync(account.Id, account.Email);
-    }
+        => await Try.RunAsync(async () =>
+            {
+                Files.AddAccount(account);
+                Dashboard.AddAccount(account);
+                Settings.AddAccount(account);
+                ActiveSection = NavSection.Files;
+                await Files.ActivateAccountAsync(account.Id);
+                await Activity.SetActiveAccountAsync(account.Id, account.Email);
+                return Unit.Default;
+            })
+            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAdded] Error: {Error}", e));
 
     private void OnAccountRemoved(object? sender, string accountId)
     {
