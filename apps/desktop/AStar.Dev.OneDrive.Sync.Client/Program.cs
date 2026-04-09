@@ -20,7 +20,7 @@ sealed class Program
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            string logPath = ApplicationMetadata.ApplicationName.LogsDirectory().CombinePath("sync.txt");
+            string logPath = ApplicationMetadata.ApplicationName.LogsDirectory().CombinePath(ApplicationMetadata.ApplicationLogName);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .MinimumLevel.Information()
@@ -34,16 +34,18 @@ sealed class Program
                 )
                 .CreateLogger();
 
+            Serilog.Log.Information("Application Starting");
             var appBuilder = BuildAvaloniaApp();
 
             _ = appBuilder.StartWithClassicDesktopLifetime(args);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
         }
         finally
         {
+            Serilog.Log.Information("Application Closing");
             Log.CloseAndFlush();
         }
     }
