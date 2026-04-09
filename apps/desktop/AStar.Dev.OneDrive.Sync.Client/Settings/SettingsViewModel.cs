@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
-public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, SyncScheduler scheduler, IAccountRepository repository) : ObservableObject
+public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository) : ObservableObject
 {
     [ObservableProperty]
     public partial AppTheme Theme { get; set; } = settingsService.Current.Theme;

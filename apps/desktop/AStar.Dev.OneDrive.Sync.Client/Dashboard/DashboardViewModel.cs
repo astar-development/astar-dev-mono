@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
-public sealed partial class DashboardViewModel(SyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository) : ObservableObject
+public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 

@@ -13,7 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 ///   offline_access      — get refresh tokens so the app works without re-auth
 ///   User.Read           — get display name and email from the profile
 /// </summary>
-public sealed class AuthService(TokenCacheService cacheService) : IAuthService
+public sealed class AuthService(ITokenCacheService cacheService) : IAuthService
 {
     private const string ClientId = "3057f494-687d-4abb-a653-4b8066230b6e";
 
@@ -34,7 +34,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
             .WithClientVersion("1.0.0")
             .Build();
 
-    private readonly TokenCacheService _cacheService = cacheService;
+    private readonly ITokenCacheService _cacheService = cacheService;
     private          bool                     _cacheRegistered;
 
     public async Task<AuthResult> SignInInteractiveAsync(CancellationToken ct = default)
