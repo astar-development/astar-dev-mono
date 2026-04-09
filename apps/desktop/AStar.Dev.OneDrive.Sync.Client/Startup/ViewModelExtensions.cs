@@ -15,7 +15,7 @@ using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNo
 using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewModel;
 using StatusBarViewModel = AStar.Dev.OneDrive.Sync.Client.Home.StatusBarViewModel;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure;
+namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 /// <summary>
 /// Add current view models to the DI container here. Transient for view models with short-lived state (e.g. wizards, dialogs), singleton for those that should maintain state across the app (e.g. accounts, activity).

@@ -89,13 +89,13 @@ public class SyncSchedulerTests
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(TestContext.Current.CancellationToken).Returns([]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new (){ Email = "test@example.com", DisplayName = "test" }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
         await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
 
-        _ = await mockRepository.Received(1).GetAllAsync(TestContext.Current.CancellationToken);
+        _ = await mockRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -103,12 +103,10 @@ public class SyncSchedulerTests
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(TestContext.Current.CancellationToken).Returns([]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new (){ Email = "test@example.com", DisplayName = "test" }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
-        // This is difficult to test without internal state exposure
-        // Just verify it doesn't throw
         await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
 
         _ = scheduler.ShouldNotBeNull();

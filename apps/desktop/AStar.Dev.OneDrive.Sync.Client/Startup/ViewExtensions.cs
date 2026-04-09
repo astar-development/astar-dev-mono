@@ -5,7 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure;
+namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 /// <summary>
 /// When refactored, this class will disappear but "baby steps"

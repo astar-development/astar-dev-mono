@@ -12,6 +12,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
+using AStar.Dev.OneDrive.Sync.Client.Startup;
 using AStar.Dev.Utilities;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;

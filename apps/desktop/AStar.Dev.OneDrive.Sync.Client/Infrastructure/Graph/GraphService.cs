@@ -7,7 +7,7 @@ using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
-public sealed class GraphService(UploadService uploadService) : IGraphService
+public sealed class GraphService(IUploadService uploadService) : IGraphService
 {
     private const string RootPathMarker = "root:";
     private readonly Dictionary<string, DriveContext> _cache = [];

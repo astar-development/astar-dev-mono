@@ -5,7 +5,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// Uses exponential backoff respecting the Retry-After header when present.
 /// A single shared HttpClient instance is used across all downloads.
 /// </summary>
-public sealed class HttpDownloader : IDisposable
+public sealed class HttpDownloader : IDisposable, IHttpDownloader
 {
     private readonly HttpClient _http;
 
