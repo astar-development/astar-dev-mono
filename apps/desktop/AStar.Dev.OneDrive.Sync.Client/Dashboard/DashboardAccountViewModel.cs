@@ -115,10 +115,10 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
                                         ConflictCount = conflicts;
                                         IsSyncing = state == SyncState.Syncing;
 
-                                        if (state != SyncState.Idle) return;
+                                        if (state is not (SyncState.Idle or SyncState.Completed)) return;
 
                                         _account.LastSyncedAt = DateTimeOffset.UtcNow;
-                                        UpdateLastSyncText(SyncState);
+                                        UpdateLastSyncText(state);
                                     });
 
     public void AddRecentActivity(ActivityItemViewModel item)
