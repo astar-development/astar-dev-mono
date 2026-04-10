@@ -6,7 +6,7 @@ using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
-sealed class Program
+internal sealed class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -23,7 +23,6 @@ sealed class Program
             string logPath = ApplicationMetadata.ApplicationName.LogsDirectory().CombinePath(ApplicationMetadata.ApplicationLogName);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
-                .MinimumLevel.Information()
                 .WriteTo.File(
                     formatter: new Serilog.Formatting.Json.JsonFormatter(),
                     path: logPath,

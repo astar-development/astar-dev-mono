@@ -17,7 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader, int workerCount = 8) : IDisposable
+public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader, int workerCount = 8)
 {
     private readonly Lock _lock = new();
 
@@ -100,5 +100,4 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
     }
 
-    public void Dispose() => downloader.Dispose();
 }

@@ -269,5 +269,4 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }
 
-    public void Dispose() => uploadService.Dispose();
 }

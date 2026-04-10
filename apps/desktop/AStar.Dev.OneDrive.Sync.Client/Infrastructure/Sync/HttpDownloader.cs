@@ -3,29 +3,27 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// <summary>
 /// Handles file downloads with automatic retry on 429 Too Many Requests.
 /// Uses exponential backoff respecting the Retry-After header when present.
-/// A single shared HttpClient instance is used across all downloads.
+/// A new HttpClient is obtained from IHttpClientFactory per download call so the
+/// factory can rotate and dispose handlers freely without this class holding stale references.
 /// </summary>
-public sealed class HttpDownloader : IDisposable, IHttpDownloader
+public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttpDownloader
 {
-    private readonly HttpClient _http;
-
+    private const string UserAgent         = "AStar.Dev.OneDrive.Sync/1.0";
     private const int    MaxRetries        = 5;
     private const double BaseDelaySeconds  = 2.0;
     private const double MaxDelaySeconds   = 120.0;
-
-    public HttpDownloader(IHttpClientFactory httpClientFactory)
-    {
-        _http = httpClientFactory.CreateClient();
-        _http.DefaultRequestHeaders.Add("User-Agent", "AStar.Dev.OneDrive.Sync/1.0");
-    }
 
     /// <summary>
     /// Downloads the file at <paramref name="url"/> to <paramref name="localPath"/>.
     /// Automatically retries on 429 with exponential backoff.
     /// Preserves the remote last-modified timestamp on the local file.
     /// </summary>
+    /// <inheritdoc />
     public async Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
     {
+        using var http = httpClientFactory.CreateClient();
+        http.DefaultRequestHeaders.Add("User-Agent", UserAgent);
+
         int attempt = 0;
 
         while(true)
@@ -37,7 +35,7 @@ public sealed class HttpDownloader : IDisposable, IHttpDownloader
 
             try
             {
-                response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+                response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
 
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
@@ -120,5 +118,4 @@ public sealed class HttpDownloader : IDisposable, IHttpDownloader
     private static double CalculateExponentialBackoff(int attempt)
             => Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
 
-    public void Dispose() => _http.Dispose();
 }

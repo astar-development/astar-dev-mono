@@ -9,6 +9,4 @@ public interface IUploadService
     /// Returns the uploaded DriveItem ID on success.
     /// </summary>
     Task<string> UploadAsync(GraphServiceClient client, string driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default);
-
-    void Dispose();
 }
