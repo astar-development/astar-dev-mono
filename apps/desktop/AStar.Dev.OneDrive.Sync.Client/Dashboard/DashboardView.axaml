@@ -120,9 +120,9 @@
         <!-- ── Account sections ── -->
         <ScrollViewer Grid.Row="1"
                       IsVisible="{Binding HasAccounts}"
-                      VerticalScrollBarVisibility="Auto"
-                      Padding="20,16">
-            <ItemsControl ItemsSource="{Binding AccountSections}">
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding AccountSections}"
+                          Padding="20,16">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="dashboard:DashboardAccountViewModel">
 
