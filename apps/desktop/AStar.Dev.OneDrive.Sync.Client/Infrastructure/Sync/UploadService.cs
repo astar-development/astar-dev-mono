@@ -16,15 +16,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory): IDisposable, IUploadService
+public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
 
     private const int    MaxRetries       = 5;
     private const double BaseDelaySeconds = 2.0;
     private const double MaxDelaySeconds  = 120.0;
-
-    private readonly HttpClient _http = httpClientFactory.CreateClient();
 
     /// <summary>
     /// Uploads a local file to OneDrive using a resumable upload session.
@@ -86,6 +84,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory): IDispos
 
     private async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
     {
+        using var http = httpClientFactory.CreateClient();
         await using var file = File.OpenRead(localPath);
         byte[] buffer    = new byte[ChunkSize10Mb];
         long uploaded  = 0L;
@@ -102,7 +101,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory): IDispos
                 break;
 
             long rangeEnd  = uploaded + bytesRead - 1;
-            string? itemId    = await UploadChunkWithRetryAsync(sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
+            string? itemId    = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
 
             uploaded += bytesRead;
             progress?.Report(uploaded);
@@ -114,7 +113,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory): IDispos
         throw new InvalidOperationException("Upload completed without receiving item ID from Graph API.");
     }
 
-    private async Task<string?> UploadChunkWithRetryAsync(string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
+    private static async Task<string?> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
     {
         int attempt = 0;
 
@@ -129,7 +128,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory): IDispos
                 content.Headers.Add("Content-Range", $"bytes {rangeStart}-{rangeEnd}/{totalBytes}");
                 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.CurrentCulture));
 
-                using var response = await _http.PutAsync(sessionUrl, content, ct);
+                using var response = await http.PutAsync(sessionUrl, content, ct);
 
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
@@ -199,5 +198,4 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory): IDispos
         return TimeSpan.FromSeconds(seconds + jitter);
     }
 
-    public void Dispose() => _http.Dispose();
 }

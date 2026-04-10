@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
-public interface IGraphService : IDisposable
+public interface IGraphService
 {
     /// <summary>
     /// Returns the ID of the user's default drive (OneDrive for Business or Personal).

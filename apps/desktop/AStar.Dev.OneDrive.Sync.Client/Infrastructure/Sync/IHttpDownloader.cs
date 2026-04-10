@@ -8,6 +8,4 @@ public interface IHttpDownloader
     /// Preserves the remote last-modified timestamp on the local file.
     /// </summary>
     Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default);
-
-    void Dispose();
 }
