@@ -266,12 +266,10 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
         => Dispatcher.UIThread.Post(() =>
             {
                 var card = Accounts.Accounts.FirstOrDefault(a => a.Id == accountId);
-                if(card is null)
-                    return;
+                if(card is not null)
+                    card.SyncState = SyncState.Completed;
 
-                card.SyncState = SyncState.Completed;
-                Dashboard.UpdateAccountSyncState(accountId, card);
-                Dashboard.AddActivityItem(new ActivityItemViewModel { AccountId = accountId, FileName = "Sync complete", Type = ActivityItemType.Info });
+                Dashboard.MarkSyncCompleted(accountId);
                 SyncStatusBarToActiveAccount();
             });
 
