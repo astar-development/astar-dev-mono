@@ -125,16 +125,18 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         var entity = new AccountEntity
         {
-            Id           = _account.Id,
-            DisplayName  = _account.DisplayName,
-            Email        = _account.Email,
-            AccentIndex  = _account.AccentIndex,
-            IsActive     = _account.IsActive,
-            DeltaLink    = _account.DeltaLink,
-            LastSyncedAt = _account.LastSyncedAt,
-            QuotaTotal   = _account.QuotaTotal,
-            QuotaUsed    = _account.QuotaUsed,
-            SyncFolders  = [.. RootFolders
+            Id             = _account.Id,
+            DisplayName    = _account.DisplayName,
+            Email          = _account.Email,
+            AccentIndex    = _account.AccentIndex,
+            IsActive       = _account.IsActive,
+            DeltaLink      = _account.DeltaLink,
+            LastSyncedAt   = _account.LastSyncedAt,
+            QuotaTotal     = _account.QuotaTotal,
+            QuotaUsed      = _account.QuotaUsed,
+            LocalSyncPath  = _account.LocalSyncPath,
+            ConflictPolicy = _account.ConflictPolicy,
+            SyncFolders    = [.. RootFolders
                 .Where(f => f.IsIncluded)
                 .Select(f => new SyncFolderEntity
                 {
