@@ -123,28 +123,18 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             _ = _account.SelectedFolderIds.Remove(node.Id);
         }
 
-        var entity = new AccountEntity
-        {
-            Id             = _account.Id,
-            DisplayName    = _account.DisplayName,
-            Email          = _account.Email,
-            AccentIndex    = _account.AccentIndex,
-            IsActive       = _account.IsActive,
-            DeltaLink      = _account.DeltaLink,
-            LastSyncedAt   = _account.LastSyncedAt,
-            QuotaTotal     = _account.QuotaTotal,
-            QuotaUsed      = _account.QuotaUsed,
-            LocalSyncPath  = _account.LocalSyncPath,
-            ConflictPolicy = _account.ConflictPolicy,
-            SyncFolders    = [.. RootFolders
-                .Where(f => f.IsIncluded)
-                .Select(f => new SyncFolderEntity
-                {
-                    FolderId   = f.Id,
-                    FolderName = f.Name,
-                    AccountId  = _account.Id
-                })]
-        };
+        var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
+        if(entity is null)
+            return;
+
+        entity.SyncFolders = [.. RootFolders
+            .Where(f => f.IsIncluded)
+            .Select(f => new SyncFolderEntity
+            {
+                FolderId   = f.Id,
+                FolderName = f.Name,
+                AccountId  = _account.Id
+            })];
 
         await _repository.UpsertAsync(entity, CancellationToken.None);
     }
