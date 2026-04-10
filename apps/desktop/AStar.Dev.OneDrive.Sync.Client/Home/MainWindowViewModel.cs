@@ -131,6 +131,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
             syncService.SyncProgressChanged += OnSyncProgressChanged;
             syncService.JobCompleted += OnJobCompleted;
             syncService.ConflictDetected += OnConflictDetected;
+            scheduler.SyncCompleted += OnSyncCompleted;
 
             Accounts.AccountSelected += OnAccountSelected;
             Accounts.AccountAdded += OnAccountAdded;
@@ -259,6 +260,17 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
 
                 Activity.AddActivityItem(item);
                 Dashboard.AddActivityItem(item);
+            });
+
+    private void OnSyncCompleted(object? sender, string accountId)
+        => Dispatcher.UIThread.Post(() =>
+            {
+                var card = Accounts.Accounts.FirstOrDefault(a => a.Id == accountId);
+                if(card is not null)
+                    card.SyncState = SyncState.Completed;
+
+                Dashboard.MarkSyncCompleted(accountId);
+                SyncStatusBarToActiveAccount();
             });
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)

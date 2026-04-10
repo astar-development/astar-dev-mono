@@ -5,7 +5,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.Utilities;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -109,25 +108,23 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     }
 
     public void UpdateSyncState(SyncState state, int conflicts)
-        => Dispatcher.UIThread.Post(() =>
-                                    {
-                                        SyncState = state;
-                                        ConflictCount = conflicts;
-                                        IsSyncing = state == SyncState.Syncing;
+    {
+        SyncState = state;
+        ConflictCount = conflicts;
+        IsSyncing = state == SyncState.Syncing;
 
-                                        if (state != SyncState.Idle) return;
+        if (state is not (SyncState.Idle or SyncState.Completed)) return;
 
-                                        _account.LastSyncedAt = DateTimeOffset.UtcNow;
-                                        UpdateLastSyncText(SyncState);
-                                    });
+        _account.LastSyncedAt = DateTimeOffset.UtcNow;
+        UpdateLastSyncText(state);
+    }
 
     public void AddRecentActivity(ActivityItemViewModel item)
-        => Dispatcher.UIThread.Post(() =>
-                                    {
-                                        RecentActivity.Insert(0, item);
-                                        while(RecentActivity.Count > 3)
-                                            RecentActivity.RemoveAt(RecentActivity.Count - 1);
-                                    });
+    {
+        RecentActivity.Insert(0, item);
+        while(RecentActivity.Count > 3)
+            RecentActivity.RemoveAt(RecentActivity.Count - 1);
+    }
 
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =

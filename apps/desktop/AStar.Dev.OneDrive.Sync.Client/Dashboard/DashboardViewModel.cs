@@ -75,6 +75,18 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         RecalculateGlobals();
     }
 
+    public void MarkSyncCompleted(string accountId)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        if(section is null)
+            return;
+
+        section.UpdateSyncState(SyncState.Completed, section.ConflictCount);
+        section.AddRecentActivity(new ActivityItemViewModel { AccountId = accountId, FileName = "Sync complete", Type = ActivityItemType.Info });
+
+        RecalculateGlobals();
+    }
+
     public void AddActivityItem(ActivityItemViewModel item)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == item.AccountId);
