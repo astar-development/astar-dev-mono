@@ -4,7 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
-public class SyncSchedulerTests
+public sealed class SyncSchedulerTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithDependencies()

@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
@@ -8,17 +9,17 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
 internal static class ShellServiceExtensions
 {
-    internal static IServiceCollection AddShell(this IServiceCollection services, OneDriveClientOptions oneDriveOptions, InMemoryLogSink inMemoryLogSink)
+    internal static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogSink inMemoryLogSink)
     {
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
         featureAvailability.Freeze();
-        _ = services.AddOneDriveClient(oneDriveOptions);
 
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
 
@@ -37,6 +38,11 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISyncScheduler, SyncScheduler>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
         _ = services.AddTransient<IThemeService, ThemeService>();
+        _ = services.AddTransient<IParallelDownloadPipeline, ParallelDownloadPipeline>();
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var settingsService = scope.ServiceProvider.GetRequiredService<IOptions<EntraIdConfiguration>>();
+
+        _ = services.AddOneDriveClient(settingsService);
 
         return services;
     }

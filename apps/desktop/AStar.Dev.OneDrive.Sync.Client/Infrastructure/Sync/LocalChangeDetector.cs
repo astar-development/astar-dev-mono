@@ -1,5 +1,7 @@
 using System.Globalization;
+using AStar.Dev.OneDrive.Sync.Client.Converters;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using SQLitePCL;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -18,7 +20,7 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
     /// that are newer than <paramref name="since"/>.
     /// Pass null for <paramref name="since"/> to queue everything (first upload pass).
     /// </summary>
-#pragma warning disable CA1822 // Method is called from another class, not sure why that call is not detected.
+#pragma warning disable CA1822 // Method is called from another class, and making it static would require changing the interface and all callers.
     public List<SyncJob> DetectChanges(string accountId, string folderId, string localFolderPath, string remoteFolderPath, DateTimeOffset? since)
 #pragma warning restore CA1822
     {
@@ -46,7 +48,7 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
 
     private static void ScanDirectory(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
     {
-        const string UnknownRemoteId = ""; // we don't know the remote ID until the upload completes, so we use an empty string as placeholder
+        const string UnknownRemoteId = "";
         try
         {
             foreach(string filePath in Directory.EnumerateFiles(localDir, "*", SearchOption.AllDirectories))
@@ -107,5 +109,11 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
         }
     }
 
-    private static bool IsFileToSkip(DateTime cutoff, FileInfo info) => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.') || info.Extension is ".tmp" or ".temp" or ".partial" || info.LastWriteTimeUtc <= cutoff || info.CreationTimeUtc <= cutoff;
+    private static bool IsFileToSkip(DateTime cutoff, FileInfo info) => IsHidden(info) || IsTemporaryFile(info.Extension) || DateIsBeforeCutoff(info.LastWriteTimeUtc, info.CreationTimeUtc, cutoff);
+
+    private static bool IsTemporaryFile(string fileName) => fileName.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".temp", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".partial", StringComparison.OrdinalIgnoreCase);
+
+    private static bool DateIsBeforeCutoff(DateTime lastWriteTimeUtc, DateTime lastModifiedUtc, DateTime cutoff) => lastWriteTimeUtc <= cutoff || lastModifiedUtc <= cutoff;
+
+    private static bool IsHidden(FileInfo info) => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.');
 }

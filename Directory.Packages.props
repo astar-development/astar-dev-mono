@@ -54,6 +54,7 @@
   <ItemGroup Label="AStar.Dev packages">
     <PackageVersion Include="AStar.Dev.Utilities" Version="1.6.8" />
     <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.5" />
   </ItemGroup>
   <ItemGroup Label="Core framework and hosting">
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.5" />

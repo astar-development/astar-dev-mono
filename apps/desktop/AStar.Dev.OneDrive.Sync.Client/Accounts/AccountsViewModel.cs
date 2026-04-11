@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
@@ -39,7 +41,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     public void AddAccount()
     {
         var wizard = new Onboarding.AddAccountWizardViewModel(authService, graphService);
-        wizard.Completed += OnWizardCompleted;
+        wizard.Completed += OnWizardCompletedAsync;
         wizard.Cancelled += OnWizardCancelled;
         Wizard = wizard;
     }
@@ -73,31 +75,33 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         AccountRemoved?.Invoke(this, card.Id);
     }
 
-    private async void OnWizardCompleted(object? sender, OneDriveAccount account)
-    {
-        CloseWizard();
+    private async void OnWizardCompletedAsync(object? sender, OneDriveAccount account)
+        => await Try.RunAsync(async () =>
+            {
+                CloseWizard();
 
-        account.AccentIndex = Accounts.Count % 6;
-        account.IsActive = Accounts.Count == 0;
-        if(account.LocalSyncPath.IsNullOrWhiteSpace())
-            account.LocalSyncPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
+                account.AccentIndex = Accounts.Count % 6;
+                account.IsActive = Accounts.Count == 0;
+                if (account.LocalSyncPath.IsNullOrWhiteSpace())
+                    account.LocalSyncPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
 
-        var entity = ToEntity(account);
-        await repository.UpsertAsync(entity, CancellationToken.None);
+                var entity = ToEntity(account);
+                await repository.UpsertAsync(entity, CancellationToken.None);
 
-        if(account.IsActive)
-            await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
+                if (account.IsActive)
+                    await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
 
-        var card = BuildCard(account);
-        Accounts.Add(card);
-        OnPropertyChanged(nameof(HasAccounts));
+                var card = BuildCard(account);
+                Accounts.Add(card);
+                OnPropertyChanged(nameof(HasAccounts));
 
-        if(account.IsActive)
-            ActiveAccount = card;
+                if (account.IsActive)
+                    ActiveAccount = card;
 
-        AccountAdded?.Invoke(this, account);
-        System.Diagnostics.Debug.WriteLine($"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
-    }
+                AccountAdded?.Invoke(this, account);
+                return Unit.Default;
+            })
+            .TapErrorAsync(error => Serilog.Log.Error(error, "Error completing account onboarding wizard"));
 
     private void OnWizardCancelled(object? sender, EventArgs e) => CloseWizard();
 
@@ -105,7 +109,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     {
         if(Wizard is not null)
         {
-            Wizard.Completed -= OnWizardCompleted;
+            Wizard.Completed -= OnWizardCompletedAsync;
             Wizard.Cancelled -= OnWizardCancelled;
         }
 

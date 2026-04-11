@@ -17,23 +17,23 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader, int workerCount = 8)
+public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader) : IParallelDownloadPipeline
 {
     private readonly Lock _lock = new();
 
-    public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, CancellationToken ct = default)
+    public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
     {
         var jobList = jobs.ToList();
-        if(jobList.Count == 0)
+        if (jobList.Count == 0)
             return;
 
-        int total   = jobList.Count;
-        int done    = 0;
+        int total = jobList.Count;
+        int done = 0;
 
         var channel = Channel.CreateBounded<SyncJob>(
             new BoundedChannelOptions(workerCount * 4)
             {
-                FullMode     = BoundedChannelFullMode.Wait,
+                FullMode = BoundedChannelFullMode.Wait,
                 SingleReader = false,
                 SingleWriter = true
             });
@@ -41,7 +41,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         void OnJobComplete(SyncJob job, bool success, string? error)
         {
             int completedSoFar;
-            lock(_lock)
+            lock (_lock)
             {
                 done++;
                 completedSoFar = done;
@@ -49,9 +49,9 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
 
             var completedJob = job with
             {
-                State        = success ? SyncJobState.Completed : SyncJobState.Failed,
+                State = success ? SyncJobState.Completed : SyncJobState.Failed,
                 ErrorMessage = error,
-                CompletedAt  = DateTimeOffset.UtcNow
+                CompletedAt = DateTimeOffset.UtcNow
             };
 
             bool isComplete = completedSoFar == total;
@@ -62,13 +62,13 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         }
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => new DownloadWorker(                    id, downloader, graphService, syncRepository)
+            .Select(id => new DownloadWorker(id, downloader, graphService, syncRepository)
             .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
             .ToList();
 
         try
         {
-            foreach(var job in jobList)
+            foreach (var job in jobList)
             {
                 ct.ThrowIfCancellationRequested();
                 await channel.Writer.WriteAsync(job, ct);
@@ -84,7 +84,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
             await Task.WhenAll(workers);
             Serilog.Log.Information("[Pipeline] All workers completed normally");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Serilog.Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
         }

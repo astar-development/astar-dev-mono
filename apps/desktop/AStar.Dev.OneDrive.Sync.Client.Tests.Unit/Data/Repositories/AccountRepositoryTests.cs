@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
-public class AccountRepositoryTests
+public sealed class AccountRepositoryTests
 {
     [Fact]
     public async Task GetAllAsync_WithNoAccounts_ShouldReturnEmptyList()

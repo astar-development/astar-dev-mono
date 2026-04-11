@@ -4,7 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Settings;
 
-public class SettingsServiceTests
+public sealed class SettingsServiceTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithDefaultSettings()

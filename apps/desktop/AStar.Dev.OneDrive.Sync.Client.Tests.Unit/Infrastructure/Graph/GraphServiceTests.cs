@@ -3,7 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Graph;
 
-public class GraphServiceTests
+public sealed class GraphServiceTests
 {
     [Fact]
     public void Constructor_ShouldInitializeSuccessfully()

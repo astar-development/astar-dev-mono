@@ -3,7 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
-public class HttpDownloaderBackoffTests
+public sealed class HttpDownloaderBackoffTests
 {
     [Fact]
     public void GetBackoffDelay_Attempt1_ShouldBeBetweenBaseAndBaseWithJitter()

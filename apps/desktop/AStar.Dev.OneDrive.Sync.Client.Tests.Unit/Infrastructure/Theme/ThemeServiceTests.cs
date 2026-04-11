@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services;
 
-public class ThemeServiceTests
+public sealed class ThemeServiceTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithSystemTheme()

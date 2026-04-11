@@ -7,9 +7,8 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, IGraphService graphService, IAccountRepository accountRepository, ISyncRepository syncRepository, ILocalChangeDetector localChangeDetector, IHttpDownloader httpDownloader) : ISyncService
+public sealed class SyncService(IAuthService authService, IGraphService graphService, IAccountRepository accountRepository, ISyncRepository syncRepository, ILocalChangeDetector localChangeDetector, IHttpDownloader httpDownloader, IParallelDownloadPipeline parallelDownloadPipeline) : ISyncService
 {
-    private const int MaxParallelDownloads = 8;
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
     public event EventHandler<JobCompletedEventArgs>?  JobCompleted;
     public event EventHandler<SyncConflict>?           ConflictDetected;
@@ -75,7 +74,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             RaiseProgress(account.Id, folderId, 0, 0, "Fetching changes\u2026", SyncState.Syncing);
 
-            var (delta, allJobs) = await ProcessPownloadDeltasAsync(account, token, folderId, deltaLink, ct);
+            var (delta, allJobs) = await ProcessDownloadDeltasAsync(account, token, folderId, deltaLink, ct);
 
             DetectLocalChanges(account, folderId, folderEntity, allJobs);
 
@@ -146,7 +145,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         allJobs.AddRange(uploadJobs);
     }
 
-    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessPownloadDeltasAsync(OneDriveAccount account, string token, string folderId, string? deltaLink, CancellationToken ct)
+    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessDownloadDeltasAsync(OneDriveAccount account, string token, string folderId, string? deltaLink, CancellationToken ct)
     {
         var delta = await graphService.GetDeltaAsync(token, folderId, deltaLink, ct);
 
@@ -276,9 +275,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
                     clean.Add(job);
                     break;
                 default:
-#pragma warning disable CA2208
-                    throw new ArgumentOutOfRangeException(paramName:nameof(outcome), message: $"Outcome of type {outcome} is not supported.");
-#pragma warning restore CA2208
+                    throw new InvalidDataException($"Outcome of type '{outcome}' is not supported.");
             }
         }
 
@@ -298,9 +295,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         await syncRepository.EnqueueJobsAsync(jobs);
 
-        var pipeline = new ParallelDownloadPipeline(syncRepository, graphService, httpDownloader, workerCount: MaxParallelDownloads);
-
-        await pipeline.RunAsync(jobs, accessToken, args => SyncProgressChanged?.Invoke(this, args), args => JobCompleted?.Invoke(this, args), account.Id, jobs.FirstOrDefault()?.FolderId ?? string.Empty, ct: ct);
+        await parallelDownloadPipeline.RunAsync(jobs, accessToken, args => SyncProgressChanged?.Invoke(this, args), args => JobCompleted?.Invoke(this, args), account.Id, jobs.FirstOrDefault()?.FolderId ?? string.Empty, ct: ct);
     }
 
     private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, CancellationToken ct)

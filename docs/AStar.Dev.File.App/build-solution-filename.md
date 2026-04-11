@@ -362,16 +362,16 @@ Code
 
 If you want, I can also:
 
-- Add automated tests using `actionlint` + a matrix of repo names  
-- Add CI to auto‑publish `v1` tags  
-- Add optional inputs (e.g., custom separator, custom casing rules)  
-- Generate a logo for the Marketplace listing  
+- Add automated tests using `actionlint` + a matrix of repo names
+- Add CI to auto‑publish `v1` tags
+- Add optional inputs (e.g., custom separator, custom casing rules)
+- Generate a logo for the Marketplace listing
 
 Just tell me the direction you want to take it.
 
 You said
-Add CI to auto‑publish `v1` tags  
-- Add optional inputs (e.g., custom separator, custom casing rules) 
+Add CI to auto‑publish `v1` tags
+- Add optional inputs (e.g., custom separator, custom casing rules)
 Please
 Copilot said
 
@@ -527,13 +527,13 @@ jobs:
 
 What this gives you
 
-    Automatic v1 maintenance  
+    Automatic v1 maintenance
     Every time you publish v1.1, v1.2, etc., the v1 tag updates automatically.
 
-    Matrix testing  
+    Matrix testing
     Ensures your action behaves correctly across multiple repo‑name patterns.
 
-    Linting  
+    Linting
     Lightweight but enough to catch malformed action.yml.
 
 If you want to go further
@@ -1289,7 +1289,7 @@ markdown
 
 ## ✨ Overview
 
-This action transforms a repository name into a predictable, PascalCase format.  
+This action transforms a repository name into a predictable, PascalCase format.
 It supports:
 
 - Custom input separators (default: `-`)
@@ -1421,13 +1421,13 @@ Code
 
 Your action now has:
 
-- A **professional README**  
-- Marketplace‑ready branding  
-- Clear usage examples  
-- Full documentation of inputs/outputs  
-- CI badges  
-- Versioning policy  
-- Contribution guidelines  
+- A **professional README**
+- Marketplace‑ready branding
+- Clear usage examples
+- Full documentation of inputs/outputs
+- CI badges
+- Versioning policy
+- Contribution guidelines
 
 This is the kind of documentation that makes your action feel like it belongs alongside the official GitHub Actions.
 

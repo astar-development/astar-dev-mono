@@ -13,6 +13,16 @@ public sealed partial class AccountCardViewModel : ObservableObject
 {
     private readonly OneDriveAccount _model;
 
+    private static readonly string[] _palette =
+    [
+        "#185FA5",
+        "#0F6E56",
+        "#993C1D",
+        "#534AB7",
+        "#993556",
+        "#854F0B"
+    ];
+
     public string Id => _model.Id;
     public string DisplayName => _model.DisplayName;
     public string Email => _model.Email;
@@ -46,7 +56,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
     public int AccentIndex => _model.AccentIndex;
 
     /// <summary>Hex string for the accent colour, looked up from the fixed palette.</summary>
-    public string AccentHex => AccentPalette[_model.AccentIndex % AccentPalette.Length];
+    public string AccentHex => _palette[_model.AccentIndex % _palette.Length];
 
     [ObservableProperty]
     public partial bool IsActive { get; set; }
@@ -104,27 +114,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
                      : $"{(int)elapsed.TotalDays}d ago";
     }
 
-    private static readonly string[] AccentPalette =
-    [
-        "#185FA5",
-        "#0F6E56",
-        "#993C1D",
-        "#534AB7",
-        "#993556",
-        "#854F0B"
-    ];
+    public static Color PaletteColor(int index) => Color.Parse(_palette[index % _palette.Length]);
 
-    public static Color PaletteColor(int index) => Color.Parse(Palette[index % Palette.Length]);
-
-    public static string PaletteHex(int index) => Palette[index % Palette.Length];
-
-    private static readonly string[] Palette =
-    [
-        "#185FA5",
-        "#0F6E56",
-        "#993C1D",
-        "#534AB7",
-        "#993556",
-        "#854F0B"
-    ];
+    public static string PaletteHex(int index) => _palette[index % _palette.Length];
 }
