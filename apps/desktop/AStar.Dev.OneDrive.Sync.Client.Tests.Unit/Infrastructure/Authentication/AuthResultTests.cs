@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Auth;
 
-public class AuthResultTests
+public sealed class AuthResultTests
 {
     [Fact]
     public void Success_ShouldCreateResultWithCorrectProperties()

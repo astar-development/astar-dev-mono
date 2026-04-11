@@ -3,7 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Localization;
 
-public class LocalizationServiceTests
+public sealed class LocalizationServiceTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithFallbackCulture()

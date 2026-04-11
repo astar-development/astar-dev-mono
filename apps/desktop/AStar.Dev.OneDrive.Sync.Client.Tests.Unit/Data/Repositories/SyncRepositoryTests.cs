@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
-public class SyncRepositoryTests
+public sealed class SyncRepositoryTests
 {
     [Fact]
     public async Task EnqueueJobsAsync_WithEmptyList_ShouldNotThrow()

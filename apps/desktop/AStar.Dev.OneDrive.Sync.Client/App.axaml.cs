@@ -20,6 +20,8 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using Microsoft.Extensions.Configuration;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -70,20 +72,19 @@ public class App : Application, IDisposable
         _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
         _ = services.AddPersistence();
         _ = services.AddLocalizationServices();
-        _ = services.AddShell(BuildOneDriveClientOptions(), inMemoryLogSink);
         _ = services.AddStartupTasks();
         _ = services.AddViews();
         _ = services.AddViewModels();
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+        _ = services.AddOptions<EntraIdConfiguration>()
+                .Bind(configuration.GetSection("EntraId"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+        _ = services.AddShell(inMemoryLogSink);
 
         return services.BuildServiceProvider();
-    }
-
-    private static OneDriveClientOptions BuildOneDriveClientOptions()
-    {
-        string clientId = Environment.GetEnvironmentVariable("ONEDRIVESYNC_AZURE_CLIENT_ID") ?? "3057f494-687d-4abb-a653-4b8066230b6e";
-        string redirectUri = Environment.GetEnvironmentVariable("ONEDRIVESYNC_REDIRECT_URI") ?? "http://localhost";
-
-        return OneDriveClientOptionsFactory.Create(clientId, new Uri(redirectUri));
     }
 
     private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink)
@@ -129,8 +130,6 @@ public class App : Application, IDisposable
 
             progress.Report("Initialising startup…");
             var startupService = _services.GetRequiredService<IStartupService>();
-
-            await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository, localisationService, themeService);
 
             progress.Report("Starting sync scheduler…");
             scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));

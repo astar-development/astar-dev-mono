@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Models;
 
-public class DeltaItemTests
+public sealed class DeltaItemTests
 {
     [Fact]
     public void DeltaItem_AllPropertiesCanBeSet()

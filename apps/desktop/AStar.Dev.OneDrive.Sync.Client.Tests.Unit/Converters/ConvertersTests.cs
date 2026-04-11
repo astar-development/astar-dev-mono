@@ -4,7 +4,7 @@ using Avalonia.Media;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Converters;
 
-public class DepthToIndentConverterTests
+public sealed class DepthToIndentConverterTests
 {
     [Fact]
     public void Convert_WithDepth0_ShouldReturn0()

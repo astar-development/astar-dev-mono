@@ -3,7 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
-public class ConflictResolverTests
+public sealed class ConflictResolverTests
 {
     [Fact]
     public void Resolve_WithIgnorePolicy_ShouldReturnSkip()

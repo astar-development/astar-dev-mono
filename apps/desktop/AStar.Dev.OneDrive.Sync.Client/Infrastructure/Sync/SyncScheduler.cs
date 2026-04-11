@@ -80,7 +80,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        _running = true;
+        _running = Interlocked.Exchange(ref _running, true);
 
         try
         {
@@ -114,7 +114,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         finally
         {
-            _running = false;
+            _running = Interlocked.Exchange(ref _running, false);
         }
     }
 

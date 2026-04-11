@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Models;
 
-public class SyncJobTests
+public sealed class SyncJobTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithDefaultValues()

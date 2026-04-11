@@ -133,8 +133,8 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
             syncService.ConflictDetected += OnConflictDetected;
             scheduler.SyncCompleted += OnSyncCompleted;
 
-            Accounts.AccountSelected += OnAccountSelected;
-            Accounts.AccountAdded += OnAccountAdded;
+            Accounts.AccountSelected += OnAccountSelectedAsync;
+            Accounts.AccountAdded += OnAccountAddedAsync;
             Accounts.AccountRemoved += OnAccountRemoved;
             Accounts.PropertyChanged += (_, e) =>
             {
@@ -202,7 +202,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
         Accounts.AddAccount();
     }
 
-    private async void OnAccountSelected(object? sender, AccountCardViewModel card)
+    private async void OnAccountSelectedAsync(object? sender, AccountCardViewModel card)
         => await Try.RunAsync(async () =>
             {
                 ActiveSection = NavSection.Files;
@@ -211,9 +211,9 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
                 SyncStatusBarToActiveAccount();
                 return Unit.Default;
             })
-            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelected] Error: {Error}", e));
+            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
 
-    private async void OnAccountAdded(object? sender, OneDriveAccount account)
+    private async void OnAccountAddedAsync(object? sender, OneDriveAccount account)
         => await Try.RunAsync(async () =>
             {
                 Files.AddAccount(account);
@@ -224,7 +224,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
                 await Activity.SetActiveAccountAsync(account.Id, account.Email);
                 return Unit.Default;
             })
-            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAdded] Error: {Error}", e));
+            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
 
     private void OnAccountRemoved(object? sender, string accountId)
     {
@@ -266,8 +266,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
         => Dispatcher.UIThread.Post(() =>
             {
                 var card = Accounts.Accounts.FirstOrDefault(a => a.Id == accountId);
-                if(card is not null)
-                    card.SyncState = SyncState.Completed;
+                card?.SyncState = SyncState.Completed;
 
                 Dashboard.MarkSyncCompleted(accountId);
                 SyncStatusBarToActiveAccount();

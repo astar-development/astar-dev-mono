@@ -3,7 +3,7 @@ using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Auth;
 
-public class TokenCacheServiceTests
+public sealed class TokenCacheServiceTests
 {
     [Fact]
     public void Constructor_ShouldCreateCacheDirectory()

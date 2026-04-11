@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -13,23 +15,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 ///   offline_access      — get refresh tokens so the app works without re-auth
 ///   User.Read           — get display name and email from the profile
 /// </summary>
-public sealed class AuthService(ITokenCacheService cacheService) : IAuthService
+public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions) : IAuthService
 {
-    private const string ClientId = "3057f494-687d-4abb-a653-4b8066230b6e";
-
-    private const string AuthorityForMicrosoftAccountsOunly = "https://login.microsoftonline.com/consumers";
-
-    private static readonly string[] Scopes =
-    [
-        "Files.ReadWrite",
-        "offline_access",
-        "User.Read"
-    ];
-
     private readonly IPublicClientApplication _app = PublicClientApplicationBuilder
-            .Create(ClientId)
-            .WithAuthority(AuthorityForMicrosoftAccountsOunly)
-            .WithRedirectUri("http://localhost")
+            .Create(entraIdOptions.Value.ClientId)
+            .WithAuthority(entraIdOptions.Value.AuthorityForMicrosoftAccountsOnly)
+            .WithRedirectUri(entraIdOptions.Value.RedirectUri)
             .WithClientName("AStar.Dev.OneDrive.Sync")
             .WithClientVersion("1.0.0")
             .Build();
@@ -44,7 +35,7 @@ public sealed class AuthService(ITokenCacheService cacheService) : IAuthService
         try
         {
             var result = await _app
-                    .AcquireTokenInteractive(Scopes)
+                    .AcquireTokenInteractive(entraIdOptions.Value.Scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .ExecuteAsync(ct);
 
@@ -81,7 +72,7 @@ public sealed class AuthService(ITokenCacheService cacheService) : IAuthService
                 return AuthResult.Failure("Account not found in token cache.");
 
             var result = await _app
-                .AcquireTokenSilent(Scopes, account)
+                .AcquireTokenSilent(entraIdOptions.Value.Scopes, account)
                 .ExecuteAsync(ct);
 
             return BuildSuccess(result);
