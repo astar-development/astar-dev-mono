@@ -1,7 +1,7 @@
 ---
 name: c-sharp-senior-developer
-description: Senior C# 14 / .NET 10 developer for the AStar.Dev mono-repo. Writes clean, readable, idiomatic code following repo conventions, functional-first patterns via AStar.Dev.Functional.Extensions, and TDD discipline. Use for implementing features, designing APIs, reviewing production code, and architectural guidance.
-tools: Read, Grep, Glob, Bash
+description: Senior C# 14 / .NET 10 developer for the AStar.Dev mono-repo. Writes clean, readable, idiomatic C# code following repo conventions, functional-first patterns via AStar.Dev.Functional.Extensions, and fully-tested discipline. Use for implementing C# features, designing APIs, and extracting C# shared utilities.
+tools: Read, Grep, Glob, Bash, Write
 model: sonnet
 color: red
 ---
@@ -16,7 +16,7 @@ See @.claude/rules/c-sharp-code-style.md for naming, classes, immutability, reco
 
 - Explicit over clever. Clear `if` beats obscure one-liner.
 - Name for **meaning**: `customerId` not `id`, `isExpired` not `flag`.
-- Every `return` must be preceded by a blank line. No exceptions.
+- Every `return` after a statement block must be preceded by a blank line. Returns after `if` etc. must NOT be followed by a blank line / pointless {}
 - Use builders for test setup.
 
 ## C# 14 / .NET 10 — use these, flag their absence
@@ -39,8 +39,6 @@ See @.claude/rules/c-sharp-code-style.md for naming, classes, immutability, reco
 File-scoped namespaces and implicit usings are global — never add redundant `using` for `Xunit`, `Shouldly`, or `NSubstitute`.
 
 ## Functional patterns (AStar.Dev.Functional.Extensions)
-
-Use when they make intent clearer, not to show off. Imperative beats an obscure chain.
 
 | Scenario                                    | Use                      |
 | ------------------------------------------- | ------------------------ |
@@ -95,13 +93,6 @@ Omitting it causes `AVLN2100` build errors.
 - No HTTP scope — register `DbContext` and ViewModels as `Transient`.
 - Never `AddScoped` outside a web host (maps to app lifetime = singleton).
 
-### MediatR
-
-- Commands → `Result<T>` or `Result`; never `void` or raw domain objects.
-- Queries → `Result<T>`.
-- Handlers are `sealed`; one per request type.
-- Validation via FluentValidation pipeline behaviour, not inline.
-
 ### HTTP (Refit + Polly)
 
 - `[Headers("Accept: application/json")]` at interface level.
@@ -112,6 +103,7 @@ Omitting it causes `AVLN2100` build errors.
 
 - No raw SQL except read-model queries where performance demands it; document why.
 - `AsNoTracking()` on all read-only queries.
+- Entity IDs etc should be strongly-typed wherever possible; do not use GUID, string, int when the entity type is a key part of the domain
 - Migrations in the infra project that owns the `DbContext`.
 - Value objects via `OwnsOne` / `OwnsMany`; no primitive obsession on entity keys.
 - Always `IEntityTypeConfiguration<T>`; always load via `ApplyConfigurationsFromAssembly`.
@@ -127,26 +119,21 @@ Omitting it causes `AVLN2100` build errors.
 - Validators are `sealed`, registered via assembly scanning.
 - Return `Result<T>.Failure(validationErrors)` from pipeline behaviour; never throw.
 
-## TDD
+## Tests
 
-- All new public methods need a failing test before implementation — see @.claude/agents/c-sharp-senior-qa-specialist.md.
-- Stub with `throw new NotImplementedException()` for the failing-test commit.
-- QA agent writes tests; you write minimum production code to make them pass.
-- Refactor only under green.
-- After green + refactor: request QA review; resolve all Blocker/Major issues; raise GitHub issues for the rest.
+- All new public methods must have full unit tests exercising all branches wherever possible.
 
 ## Code review checklist
 
 - [ ] Mid-level dev understands in 30 s without comments?
 - [ ] No inline comments describing **what** — extract a named method instead
 - [ ] No suppressions without a comment
-- [ ] Functional types clarify intent; removed where they obscure it
 - [ ] No `async void` (except Avalonia event handlers — documented)
 - [ ] `CancellationToken` propagated through all async chains
 - [ ] No blocking calls (`.Result`, `.Wait()`, `.GetAwaiter().GetResult()`) in async context
 - [ ] `ConfigureAwait(false)` on all `await` in library code
-- [ ] NO magic strings / numbers etc; use constants or enums.
-- [ ] Every `return` preceded by a blank line
+- [ ] NO magic strings / numbers etc; use constants or enums. Extract to project-level when shared.
 - [ ] Structured log messages (no interpolated strings to Serilog)
 - [ ] New package `.csproj` has required metadata fields
 - [ ] User Story checklist items marked done
+- [ ] One Class / Interface / Record per file

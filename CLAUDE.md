@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Mono-repo containing all AStar Development products: **Blazor** web apps, **astro** web apps, **Avalonia** desktop apps, and ~25 published **NuGet packages**. Solution file: `MonoRepo.slnx`.
+Mono-repo containing all AStar Development products: **Blazor** web apps, **astro** web apps, **Avalonia** desktop apps, and ~25 published **NuGet packages**. Solution file: `AStar.Dev.slnx`.
 
 ## Build Commands
 
@@ -68,7 +68,7 @@ The mono repo contains many NuGet projects that are deployed to both GitHub and 
 
 ```
 apps/
-  web/        # Blazor WebAssembly/Server and Next.js apps
+  web/        # Blazor WebAssembly/Server and astro apps
   desktop/    # Avalonia cross-platform desktop apps
 packages/
   core/       # Domain models, business logic
@@ -122,13 +122,13 @@ For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalon
 ### Conventions
 
 - **Commit messages**: Conventional Commits format — `feat(packages/core): ...`, `fix(apps/web/Portal.Blazor): ...`
-- **Branch names**: `feature/...`, `bug/...`, `doc/...`; `main` is always deployable
-- **Test projects**: Named `*.Tests` or `*.IntegrationTests` — automatically set `IsPackable=false`
+- **Branch names**: `feature/...`, `bug/...`, `doc/...`; `main` is ALWAYS deployable
+- **Test projects**: Named `*.Tests.Unit` or `*.Tests.Integration` — automatically set `IsPackable=false`
 - **Method signatures**: Always single-line regardless of parameter count — `public void Foo(string a, int b, CancellationToken ct = default)`. Never split parameters across lines. This applies to every file type.
-- **Comments**: Never add comments that restate what the code already says — in any file type (`.cs`, `.csproj`, `.axaml`, config files, etc.). Only write a comment when the *reason* behind a decision is not derivable from the code itself.
+- **Comments**: Never add comments that restate what the code already says — in any file type (`.cs`, `.csproj`, `.axaml`, config files, etc.). Refactor to extract the code that needs a comment when appropriate. Only write a comment when the *reason* behind a decision is not derivable from the code itself.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
 - **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/javascript-code-style.md for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
-- **XML Comments**: include for public methods / properties
+- **XML Comments**: include for all public methods / properties
     - Classes that implement an interface should rely on interface documentation, not class-level docs. Use `<inheritdoc />` where supported.
 
 ## Before Starting Any Task
@@ -143,7 +143,7 @@ These two steps are **mandatory** before writing a single line of code. No excep
 
     Branch naming: `feature/...`, `bug/...`, `doc/...`. Never commit directly to `main`. See @docs/git-instructions.md.
 
-2. **Tests first (TDD)** — every coding task requires a test project. Write a failing test before writing any production code. Follow the red → green → refactor commit sequence defined in @.claude/agents/c-sharp-senior-qa-specialist.md (C#) or @.claude/agents/javascript-senior-qa-specialist.md (JavaScript/TypeScript).
+2. **Tests are MANDATORY** — every coding task requires a test project. New code MUST have tests covering all branches wherever possible.
 
 ## Definition of Done
 
@@ -151,11 +151,9 @@ Before considering any coding task complete — including commits and PRs — al
 
 1. `dotnet build` the affected project(s) and confirm zero errors and zero warnings
 2. `dotnet test` the affected test project(s) and confirm all tests pass
-3. Request a review from the @.claude/agents/c-sharp-senior-qa-specialist.md for all .Net Projects or @.claude/agents/javascript-senior-qa-specialist.md for JavaScript projects
-4. Resolve ALL `Blocker` and `Major` issues the QA agent reports. Raise GitHub issues for all other issues so they can be addressed later.
-5. Repeat the QA loop until there are no `Blocker` or `Major` isues from the original code or any updates.
-
-Do not raise a PR or claim a task is finished until both steps pass locally.
+3. Request the human reviews the code BEFORE committing it.
+4. If the human requests changes, implement them and then request re-review.
+5. ONLY when the human confirms the code is approved can you commit the code to the branch and raise the GitHub PR.
 
 ## Additional Instructions
 
