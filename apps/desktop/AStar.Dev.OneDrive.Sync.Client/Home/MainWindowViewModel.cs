@@ -4,12 +4,8 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
-using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,8 +18,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, IThemeService themeService,
-    ISyncScheduler scheduler, ISyncRepository syncRepository, ISettingsService settingsService, IAccountRepository accountRepository, ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -65,7 +60,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     {
         get
         {
-            field ??= new DashboardView { DataContext = Dashboard };
+            field ??= new DashboardView { DataContext = dashboard };
 
             return field;
         }
@@ -75,7 +70,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     {
         get
         {
-            field ??= new FilesView { DataContext = Files };
+            field ??= new FilesView { DataContext = files };
 
             return field;
         }
@@ -85,7 +80,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     {
         get
         {
-            field ??= new ActivityView { DataContext = Activity };
+            field ??= new ActivityView { DataContext = activity };
 
             return field;
         }
@@ -105,21 +100,21 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     {
         get
         {
-            field ??= new SettingsView { DataContext = Settings };
+            field ??= new SettingsView { DataContext = settings };
 
             return field;
         }
     }
 
-    public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository, syncEventAggregator);
+    public AccountsViewModel Accounts => accounts;
 
-    public FilesViewModel Files { get; } = new(authService, graphService, accountRepository);
+    public FilesViewModel Files => files;
 
-    public ActivityViewModel Activity { get; } = new(syncService, syncRepository, syncEventAggregator);
+    public ActivityViewModel Activity => activity;
 
-    public DashboardViewModel Dashboard { get; } = new(scheduler, localizationService, accountRepository, syncEventAggregator);
+    public DashboardViewModel Dashboard => dashboard;
 
-    public SettingsViewModel Settings { get; } = new(settingsService, themeService, scheduler, accountRepository);
+    public SettingsViewModel Settings => settings;
 
     public StatusBarViewModel StatusBar { get; } = new();
 
@@ -131,39 +126,17 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
             syncEventAggregator.SyncCompleted += OnSyncCompleted;
             syncEventAggregator.ConflictDetected += OnConflictDetected;
 
-            Accounts.SubscribeToSyncEvents();
-            Activity.SubscribeToSyncEvents();
-            Dashboard.SubscribeToSyncEvents();
-
-            Accounts.AccountSelected += OnAccountSelectedAsync;
-            Accounts.AccountAdded += OnAccountAddedAsync;
-            Accounts.AccountRemoved += OnAccountRemoved;
-            Accounts.ActiveAccountStateChanged += (_, _) => SyncStatusBarToActiveAccount();
-            Accounts.PropertyChanged += (_, e) =>
+            accounts.AccountSelected += OnAccountSelectedAsync;
+            accounts.AccountAdded += OnAccountAddedAsync;
+            accounts.AccountRemoved += OnAccountRemoved;
+            accounts.ActiveAccountStateChanged += (_, _) => SyncStatusBarToActiveAccount();
+            accounts.PropertyChanged += (_, e) =>
             {
                 if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
                     SyncStatusBarToActiveAccount();
             };
 
-            var restored = await startupService.RestoreAccountsAsync();
-
-            Accounts.RestoreAccounts(restored);
-
-            foreach(var account in restored)
-            {
-                Files.AddAccount(account);
-                Dashboard.AddAccount(account);
-            }
-
-            Settings.LoadAccounts(restored);
-
-            var active = restored.FirstOrDefault(a => a.IsActive);
-            if(active is not null)
-            {
-                await Files.ActivateAccountAsync(active.Id);
-
-                await Activity.SetActiveAccountAsync(active.Id, active.Email);
-            }
+            await initializer.InitializeAsync();
 
             SyncStatusBarToActiveAccount();
         }
@@ -176,7 +149,7 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        var active = Accounts.ActiveAccount;
+        var active = accounts.ActiveAccount;
         if(active is null)
             return;
 
@@ -202,15 +175,15 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     private void AddAccount()
     {
         ActiveSection = NavSection.Accounts;
-        Accounts.AddAccount();
+        accounts.AddAccount();
     }
 
     private async void OnAccountSelectedAsync(object? sender, AccountCardViewModel card)
         => await Try.RunAsync(async () =>
             {
                 ActiveSection = NavSection.Files;
-                await Files.ActivateAccountAsync(card.Id);
-                await Activity.SetActiveAccountAsync(card.Id, card.Email);
+                await files.ActivateAccountAsync(card.Id);
+                await activity.SetActiveAccountAsync(card.Id, card.Email);
                 SyncStatusBarToActiveAccount();
                 return Unit.Default;
             })
@@ -219,44 +192,44 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     private async void OnAccountAddedAsync(object? sender, OneDriveAccount account)
         => await Try.RunAsync(async () =>
             {
-                Files.AddAccount(account);
-                Dashboard.AddAccount(account);
-                Settings.AddAccount(account);
+                files.AddAccount(account);
+                dashboard.AddAccount(account);
+                settings.AddAccount(account);
                 ActiveSection = NavSection.Files;
-                await Files.ActivateAccountAsync(account.Id);
-                await Activity.SetActiveAccountAsync(account.Id, account.Email);
+                await files.ActivateAccountAsync(account.Id);
+                await activity.SetActiveAccountAsync(account.Id, account.Email);
                 return Unit.Default;
             })
             .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
 
     private void OnAccountRemoved(object? sender, string accountId)
     {
-        Files.RemoveAccount(accountId);
-        Dashboard.RemoveAccount(accountId);
-        Settings.RemoveAccount(accountId);
+        files.RemoveAccount(accountId);
+        dashboard.RemoveAccount(accountId);
+        settings.RemoveAccount(accountId);
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
     {
-        if(Accounts.Accounts.Any(a => a.Id == e.AccountId && a.Id == Accounts.ActiveAccount?.Id))
+        if(accounts.Accounts.Any(a => a.Id == e.AccountId && a.Id == accounts.ActiveAccount?.Id))
             SyncStatusBarToActiveAccount();
     }
 
     private void OnSyncCompleted(object? sender, string accountId)
     {
-        if(Accounts.ActiveAccount?.Id == accountId)
+        if(accounts.ActiveAccount?.Id == accountId)
             SyncStatusBarToActiveAccount();
     }
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
-        if(Accounts.ActiveAccount?.Id == conflict.AccountId)
+        if(accounts.ActiveAccount?.Id == conflict.AccountId)
             SyncStatusBarToActiveAccount();
     }
 
     private void SyncStatusBarToActiveAccount()
     {
-        var active = Accounts.ActiveAccount;
+        var active = accounts.ActiveAccount;
         if(active is null)
         {
             StatusBar.HasAccount = false;
