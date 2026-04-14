@@ -39,9 +39,13 @@ public sealed class GivenAMainWindowViewModel
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator);
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
-    private static StatusBarViewModel CreateStatusBarViewModel() => new();
 
-    private MainWindowViewModel CreateSut() => new(_initializer, _scheduler, _accountRepository, _syncEventAggregator, CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateStatusBarViewModel());
+    private MainWindowViewModel CreateSut()
+    {
+        var accountsVm = CreateAccountsViewModel();
+
+        return new(_initializer, _scheduler, _accountRepository, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
+    }
 
     [Fact]
     public void when_created_then_active_section_is_dashboard()
