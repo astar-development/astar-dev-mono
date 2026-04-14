@@ -36,6 +36,8 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILocalChangeDetector, LocalChangeDetector>();
         _ = services.AddSingleton<ISyncService, SyncService>();
         _ = services.AddSingleton<ISyncScheduler, SyncScheduler>();
+        _ = services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
+        _ = services.AddSingleton<ISyncEventAggregator, SyncEventAggregator>();
         _ = services.AddTransient<ISettingsService, SettingsService>();
         _ = services.AddTransient<IThemeService, ThemeService>();
         _ = services.AddTransient<IParallelDownloadPipeline, ParallelDownloadPipeline>();

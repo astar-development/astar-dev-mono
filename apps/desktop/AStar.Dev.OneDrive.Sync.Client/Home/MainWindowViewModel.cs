@@ -12,7 +12,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AccountCardViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountCardViewModel;
@@ -24,7 +23,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class MainWindowViewModel(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, IThemeService themeService,
-    ISyncScheduler scheduler, ISyncRepository syncRepository, ISettingsService settingsService, IAccountRepository accountRepository, ILocalizationService localizationService) : ObservableObject
+    ISyncScheduler scheduler, ISyncRepository syncRepository, ISettingsService settingsService, IAccountRepository accountRepository, ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -112,13 +111,13 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
         }
     }
 
-    public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository);
+    public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository, syncEventAggregator);
 
     public FilesViewModel Files { get; } = new(authService, graphService, accountRepository);
 
-    public ActivityViewModel Activity { get; } = new(syncService, syncRepository);
+    public ActivityViewModel Activity { get; } = new(syncService, syncRepository, syncEventAggregator);
 
-    public DashboardViewModel Dashboard { get; } = new(scheduler, localizationService, accountRepository);
+    public DashboardViewModel Dashboard { get; } = new(scheduler, localizationService, accountRepository, syncEventAggregator);
 
     public SettingsViewModel Settings { get; } = new(settingsService, themeService, scheduler, accountRepository);
 
@@ -128,14 +127,18 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     {
         try
         {
-            syncService.SyncProgressChanged += OnSyncProgressChanged;
-            syncService.JobCompleted += OnJobCompleted;
-            syncService.ConflictDetected += OnConflictDetected;
-            scheduler.SyncCompleted += OnSyncCompleted;
+            syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;
+            syncEventAggregator.SyncCompleted += OnSyncCompleted;
+            syncEventAggregator.ConflictDetected += OnConflictDetected;
+
+            Accounts.SubscribeToSyncEvents();
+            Activity.SubscribeToSyncEvents();
+            Dashboard.SubscribeToSyncEvents();
 
             Accounts.AccountSelected += OnAccountSelectedAsync;
             Accounts.AccountAdded += OnAccountAddedAsync;
             Accounts.AccountRemoved += OnAccountRemoved;
+            Accounts.ActiveAccountStateChanged += (_, _) => SyncStatusBarToActiveAccount();
             Accounts.PropertyChanged += (_, e) =>
             {
                 if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
@@ -234,59 +237,21 @@ public sealed partial class MainWindowViewModel(IAuthService authService, IGraph
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
-        => Dispatcher.UIThread.Post(() =>
-            {
-                var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
-                if(card is null)
-                    return;
-
-                card.SyncState = e.SyncState;
-                Dashboard.UpdateAccountSyncState(e.AccountId, card);
-
-                if(e.Total == 0 && !string.IsNullOrEmpty(e.CurrentFile))
-                    Dashboard.AddActivityItem(new ActivityItemViewModel { AccountId = e.AccountId, FileName = e.CurrentFile, Type = ActivityItemType.Info });
-
-                if(card.Id == Accounts.ActiveAccount?.Id)
-                    SyncStatusBarToActiveAccount();
-            });
-
-    private void OnJobCompleted(object? sender, JobCompletedEventArgs e)
-        => Dispatcher.UIThread.Post(() =>
-            {
-                var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.Job.AccountId);
-
-                string accountEmail = card?.Email ?? e.Job.AccountId;
-                var item = ActivityItemViewModel.FromJob(e.Job, accountEmail);
-
-                Activity.AddActivityItem(item);
-                Dashboard.AddActivityItem(item);
-            });
+    {
+        if(Accounts.Accounts.Any(a => a.Id == e.AccountId && a.Id == Accounts.ActiveAccount?.Id))
+            SyncStatusBarToActiveAccount();
+    }
 
     private void OnSyncCompleted(object? sender, string accountId)
-        => Dispatcher.UIThread.Post(() =>
-            {
-                var card = Accounts.Accounts.FirstOrDefault(a => a.Id == accountId);
-                card?.SyncState = SyncState.Completed;
-
-                Dashboard.MarkSyncCompleted(accountId);
-                SyncStatusBarToActiveAccount();
-            });
+    {
+        if(Accounts.ActiveAccount?.Id == accountId)
+            SyncStatusBarToActiveAccount();
+    }
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
-        Activity.AddConflictItem(conflict);
-
-        Dispatcher.UIThread.Post(() =>
-        {
-            var card = Accounts.Accounts.FirstOrDefault(a => a.Id == conflict.AccountId);
-            if(card is not null)
-            {
-                card.ConflictCount++;
-                Dashboard.UpdateAccountSyncState(conflict.AccountId, card);
-            }
-
+        if(Accounts.ActiveAccount?.Id == conflict.AccountId)
             SyncStatusBarToActiveAccount();
-        });
     }
 
     private void SyncStatusBarToActiveAccount()
