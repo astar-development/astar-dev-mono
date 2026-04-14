@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using Microsoft.Extensions.DependencyInjection;
 using AccountCardViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountCardViewModel;
 using AccountFilesViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountFilesViewModel;
@@ -24,23 +25,25 @@ public static class ViewModelExtensions
 {
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
-        _ = services.AddTransient<MainWindowViewModel>();
-        _ = services.AddTransient<AccountsViewModel>();
-        _ = services.AddTransient<ActivityViewModel>();
+        _ = services.AddTransient<IApplicationInitializer, ApplicationInitializer>();
+
+        _ = services.AddSingleton<MainWindowViewModel>();
+        _ = services.AddSingleton<AccountsViewModel>();
+        _ = services.AddSingleton<ActivityViewModel>();
+        _ = services.AddSingleton<DashboardViewModel>();
+        _ = services.AddSingleton<FilesViewModel>();
+        _ = services.AddSingleton<SettingsViewModel>();
+
         _ = services.AddTransient<AccountCardViewModel>();
         _ = services.AddTransient<AccountFilesViewModel>();
         _ = services.AddTransient<AccountSyncSettingsViewModel>();
         _ = services.AddTransient<ActivityItemViewModel>();
-        _ = services.AddTransient<ActivityViewModel>();
         _ = services.AddTransient<AddAccountWizardViewModel>();
         _ = services.AddTransient<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
         _ = services.AddTransient<ConflictItemViewModel>();
         _ = services.AddTransient<DashboardAccountViewModel>();
-        _ = services.AddTransient<DashboardViewModel>();
-        _ = services.AddTransient<FilesViewModel>();
         _ = services.AddTransient<FolderTreeNodeViewModel>();
         _ = services.AddTransient<StatusBarViewModel>();
-        _ = services.AddTransient<SettingsViewModel>();
 
         return services;
     }
