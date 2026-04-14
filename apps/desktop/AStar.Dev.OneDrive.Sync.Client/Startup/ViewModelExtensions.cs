@@ -18,9 +18,6 @@ using StatusBarViewModel = AStar.Dev.OneDrive.Sync.Client.Home.StatusBarViewMode
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
-/// <summary>
-/// Add current view models to the DI container here. Transient for view models with short-lived state (e.g. wizards, dialogs), singleton for those that should maintain state across the app (e.g. accounts, activity).
-/// </summary>
 public static class ViewModelExtensions
 {
     public static IServiceCollection AddViewModels(this IServiceCollection services)
@@ -33,6 +30,7 @@ public static class ViewModelExtensions
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<FilesViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
+        _ = services.AddSingleton<StatusBarViewModel>();
 
         _ = services.AddTransient<AccountCardViewModel>();
         _ = services.AddTransient<AccountFilesViewModel>();
@@ -43,7 +41,6 @@ public static class ViewModelExtensions
         _ = services.AddTransient<ConflictItemViewModel>();
         _ = services.AddTransient<DashboardAccountViewModel>();
         _ = services.AddTransient<FolderTreeNodeViewModel>();
-        _ = services.AddTransient<StatusBarViewModel>();
 
         return services;
     }

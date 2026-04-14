@@ -18,7 +18,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -116,7 +116,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
 
     public SettingsViewModel Settings => settings;
 
-    public StatusBarViewModel StatusBar { get; } = new();
+    public StatusBarViewModel StatusBar => statusBar;
 
     public async Task InitialiseAsync()
     {
@@ -232,18 +232,18 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         var active = accounts.ActiveAccount;
         if(active is null)
         {
-            StatusBar.HasAccount = false;
-            StatusBar.AccountEmail = string.Empty;
-            StatusBar.AccountDisplayName = string.Empty;
+            statusBar.HasAccount = false;
+            statusBar.AccountEmail = string.Empty;
+            statusBar.AccountDisplayName = string.Empty;
             return;
         }
 
-        StatusBar.HasAccount = true;
-        StatusBar.AccountEmail = active.Email;
-        StatusBar.AccountDisplayName = active.DisplayName;
-        StatusBar.SyncState = active.SyncState;
-        StatusBar.ConflictCount = active.ConflictCount;
-        StatusBar.LastSyncText = active.LastSyncText;
-        StatusBar.IsSyncing = active.SyncState == SyncState.Syncing;
+        statusBar.HasAccount = true;
+        statusBar.AccountEmail = active.Email;
+        statusBar.AccountDisplayName = active.DisplayName;
+        statusBar.SyncState = active.SyncState;
+        statusBar.ConflictCount = active.ConflictCount;
+        statusBar.LastSyncText = active.LastSyncText;
+        statusBar.IsSyncing = active.SyncState == SyncState.Syncing;
     }
 }
