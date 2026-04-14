@@ -18,6 +18,11 @@ public interface ISyncScheduler
     Task TriggerNowAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// Triggers an immediate sync for a single account identified by its ID.
+    /// </summary>
+    Task TriggerAccountAsync(string accountId, CancellationToken ct = default);
+
+    /// <summary>
     /// Triggers an immediate sync for a single account.
     /// </summary>
     Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default);

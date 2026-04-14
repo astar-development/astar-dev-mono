@@ -3,7 +3,6 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -18,7 +17,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -141,22 +140,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         if(active is null)
             return;
 
-        var entity = await accountRepository.GetByIdAsync(active.Id, CancellationToken.None);
-        if(entity is null)
-            return;
-
-        var account = new OneDriveAccount
-        {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath,
-            ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
-            LastSyncedAt      = entity.LastSyncedAt
-        };
-
-        await scheduler.TriggerAccountAsync(account);
+        await scheduler.TriggerAccountAsync(active.Id);
     }
 
     [RelayCommand]
