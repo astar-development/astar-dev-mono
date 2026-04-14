@@ -32,7 +32,7 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Keep classes short; ideally under 300 lines.
 - Use meaningful names for classes and methods that clearly convey their purpose.
 - Put all method / constructor overloads together in the same order as their parameters.
-- Always single-line method / constructor signatures regardless of parameter count. Never split parameters across lines.
+- Single-line method / constructor signatures where possible. Split parameters across lines ONLY if line-length > 200 characters and spilt as close to 200 characters as possible. Use as few lines as possible when splitting parameters across lines.
 - Use expression-bodied members for simple methods and properties.
 - Keep method and constructor parameters to a minimum (ideally <5 parameters); prefer using parameter objects when multiple parameters are needed.
 - Avoid long parameter lists; consider using the Builder pattern for complex object construction.
@@ -42,11 +42,13 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Do not use regions or #pragma to hide code; refactor instead.
 - Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
 - Every `return` statement after a code block must be preceded by a blank line. `return` after an `if` must NOT be followed by a blank line or `{ return; }`.
+- Name for **meaning**: `customerId` not `id`, `isExpired` not `flag`.
+- Use builders for test setup / test data creation.
 
 ## Primitive Obsession
 
 - Don't use string / GUID etc for domain concepts - create a specific type:
-    - Id should be strongly-typed - use AStar.Dev.Source.Generators / AStar.Dev.Source.Generators.Attributes to standardise the generation. The Id CAN be a string / GUID but the property MUST be strongly typed.
+    - Id should be strongly-typed - use AStar.Dev.Source.Generators / AStar.Dev.Source.Generators.Attributes to standardise the generation. The Id value CAN be a string / GUID but the property MUST be strongly typed.
     - File info / Directory info should NOT be represented as a string. Either use the Testably abstraction or create a specific type (i.e. when only 3-5 properties are required)
 
 ## Immutability

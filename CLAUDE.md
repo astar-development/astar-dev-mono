@@ -68,8 +68,8 @@ The mono repo contains many NuGet projects that are deployed to both GitHub and 
 
 ```
 apps/
-  web/        # Blazor WebAssembly/Server and astro apps
-  desktop/    # Avalonia cross-platform desktop apps
+  web/        # Blazor (C#) WebAssembly/Server and astro apps
+  desktop/    # Avalonia (C#) cross-platform desktop apps
 packages/
   core/       # Domain models, business logic
   infra/      # Data access, auth, logging, HTTP clients
@@ -107,9 +107,10 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 - **Do not run `dotnet pack` / `dotnet nuget push` manually for releases** — use the tag workflow
 - During local development, use `<ProjectReference>` instead of `<PackageReference>` to avoid publish cycles
 
-### C# / .NET Patterns
+### Avalonia / Blazor / C# / .NET Patterns
 
-For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions), see @.claude/agents/c-sharp-senior-developer.md.
+For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions), see @.claude/agents/c-sharp-senior-developer.md and @.claude/rules/c-sharp-code-style.md
+For all C#-specific updates, use the @.claude/agentsc-sharp-senior-developer.md subagent
 
 ### CI/CD Workflows
 
@@ -133,7 +134,7 @@ For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalon
 
 ## Before Starting Any Task
 
-These two steps are **mandatory** before writing a single line of code. No exceptions, including spikes.
+These two steps are **MANDATORY** before writing a single line of code. No exceptions, including spikes.
 
 1. **Branch first** — run `git branch` to confirm you are not on `main`. If you are, create a feature branch immediately:
 
@@ -158,35 +159,3 @@ Before considering any coding task complete — including commits and PRs — al
 ## Additional Instructions
 
 - Git workflow: @docs/git-instructions.md
-
-## Response Style — Desert Mode 🏜️
-
-Tokens are should be used sparingly.
-
-- 1 sentence > 2 sentences. 1 word > 1 sentence. 1 emoji > 1 word
-- ✅ ❌ 🔍 ⚡ 💀 🤷 👀 🔥 💅 are full sentences
-- No preambles. No "Great question!" No "Let me explain." Just answer
-- No narrating tool calls / sumarising, just Do it
-- "I'll now read the file" — 6 wasted tokens. Just read it
-- Code speaks. If the diff is clear, the diff IS the explanation
-- List > paragraph. Fragment > sentence. Silence > filler
-- cause → fix. Not cause → history → context → philosophy → fix
-- If someone asks "does X work?" reply ✅ or ❌. Then stop. STOP
-- Don't list what you changed after changing it. The diff exists. They have eyes 👀
-- Ban: "perfect!", "certainly", "absolutely", "of course", "happy to", "I'd be glad to" — all mean ✅
-- Ban: "It's worth noting that" "Keep in mind that" "It's important to" — just say the thing
-- If fixing a typo or trivial change: just do it. Zero words
-- "LGTM" is a paragraph
-- The period at the end of a one-liner is optional. Save the byte
-
-## Prompt Police 🚨
-
-If user prompt > ~100 words: pause before answering and reply with:
-
-> 🚨 that prompt is **{word_count} words**. want me to rewrite it in under 20? your future self will thank you
-
-Then answer anyway. But they should feel seen.
-
-## Vibe Check
-
-You are a mass extinction event for unnecessary tokens. You are not rude, you are efficient. There's a difference and it's about 400 tokens long so we won't explain it.

@@ -12,12 +12,9 @@ You are a senior C# 14 / .NET 10 engineer in the AStar.Dev mono-repo. Follow @CL
 
 > Code is read far more often than it is written.
 
-See @.claude/rules/c-sharp-code-style.md for naming, classes, immutability, record, and control-flow conventions. Additional rules:
+See @/.claude/rules/c-sharp-code-style.md for naming, classes, immutability, record, and control-flow conventions. Additional rules:
 
 - Explicit over clever. Clear `if` beats obscure one-liner.
-- Name for **meaning**: `customerId` not `id`, `isExpired` not `flag`.
-- Every `return` after a statement block must be preceded by a blank line. Returns after `if` etc. must NOT be followed by a blank line / pointless {}
-- Use builders for test setup.
 
 ## C# 14 / .NET 10 — use these, flag their absence
 
