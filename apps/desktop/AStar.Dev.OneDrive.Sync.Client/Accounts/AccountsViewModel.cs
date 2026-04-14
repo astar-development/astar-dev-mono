@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,7 +14,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
@@ -37,6 +38,16 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     /// <summary>Raised after an account is removed.</summary>
     public event EventHandler<string>? AccountRemoved;
+
+    /// <summary>Raised when a sync event changes the active account's card state.</summary>
+    public event EventHandler? ActiveAccountStateChanged;
+
+    public void SubscribeToSyncEvents()
+    {
+        syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;
+        syncEventAggregator.SyncCompleted += OnSyncCompleted;
+        syncEventAggregator.ConflictDetected += OnConflictDetected;
+    }
 
     public void AddAccount()
     {
@@ -118,8 +129,8 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     private void OnCardSelected(object? sender, AccountCardViewModel card)
     {
-        foreach(var c in Accounts)
-            c.IsActive = c == card;
+        foreach(var accountCard in Accounts)
+            accountCard.IsActive = accountCard == card;
 
         ActiveAccount = card;
         AccountSelected?.Invoke(this, card);
@@ -127,11 +138,47 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         _ = repository.SetActiveAccountAsync(card.Id, CancellationToken.None);
     }
 
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
+    {
+        var card = Accounts.FirstOrDefault(a => a.Id == args.AccountId);
+        if(card is null)
+            return;
+
+        card.SyncState = args.SyncState;
+
+        if(card.Id == ActiveAccount?.Id)
+            ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnSyncCompleted(object? sender, string accountId)
+    {
+        var card = Accounts.FirstOrDefault(a => a.Id == accountId);
+        if(card is null)
+            return;
+
+        card.SyncState = SyncState.Completed;
+
+        if(card.Id == ActiveAccount?.Id)
+            ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnConflictDetected(object? sender, SyncConflict conflict)
+    {
+        var card = Accounts.FirstOrDefault(a => a.Id == conflict.AccountId);
+        if(card is null)
+            return;
+
+        card.ConflictCount++;
+
+        if(card.Id == ActiveAccount?.Id)
+            ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {
         var card = new AccountCardViewModel(account);
         card.Selected += OnCardSelected;
-        card.RemoveRequested += (_, c) => RemoveAccountCommand.Execute(c);
+        card.RemoveRequested += (_, accountCard) => RemoveAccountCommand.Execute(accountCard);
         return card;
     }
 

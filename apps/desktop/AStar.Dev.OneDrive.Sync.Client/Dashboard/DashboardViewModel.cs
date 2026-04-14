@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
-public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository) : ObservableObject
+public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -40,6 +40,14 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         (_, _, > 0) => $"{TotalConflicts} conflict{(TotalConflicts == 1 ? "" : "s")}",
         _ => "All synced"
     };
+
+    public void SubscribeToSyncEvents()
+    {
+        syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;
+        syncEventAggregator.JobCompleted += OnJobCompleted;
+        syncEventAggregator.SyncCompleted += OnSyncCompleted;
+        syncEventAggregator.ConflictDetected += OnConflictDetected;
+    }
 
     public void AddAccount(OneDriveAccount account)
     {
@@ -91,6 +99,41 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == item.AccountId);
         section?.AddRecentActivity(item);
+    }
+
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.AccountId);
+        if(section is null)
+            return;
+
+        section.UpdateSyncState(args.SyncState, section.ConflictCount);
+
+        if(args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
+            AddActivityItem(new ActivityItemViewModel { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info });
+
+        RecalculateGlobals();
+    }
+
+    private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.AccountId);
+        string accountEmail = section?.Email ?? args.Job.AccountId;
+        var item = ActivityItemViewModel.FromJob(args.Job, accountEmail);
+        AddActivityItem(item);
+    }
+
+    private void OnSyncCompleted(object? sender, string accountId) => MarkSyncCompleted(accountId);
+
+    private void OnConflictDetected(object? sender, SyncConflict conflict)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.AccountId);
+        if(section is null)
+            return;
+
+        section.UpdateSyncState(section.SyncState, section.ConflictCount + 1);
+
+        RecalculateGlobals();
     }
 
     private void RecalculateGlobals()

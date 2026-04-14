@@ -10,9 +10,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
-public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository) : ObservableObject
+public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
-    private const int MaxLogSixe = 10_000;
+    private const int MaxLogSize = 10_000;
     private string? _activeAccountId;
     private string _activeAccountEmail = string.Empty;
 
@@ -47,6 +47,12 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString(CultureInfo.CurrentCulture) : string.Empty;
+
+    public void SubscribeToSyncEvents()
+    {
+        syncEventAggregator.JobCompleted += OnJobCompleted;
+        syncEventAggregator.ConflictDetected += OnConflictDetected;
+    }
 
     /// <summary>
     /// Called by MainWindowViewModel when the active account changes.
@@ -86,19 +92,19 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         ConflictCount = Conflicts.Count;
     }
 
-    /// <summary>Called by MainWindowViewModel when a sync job completes.</summary>
+    /// <summary>Called when a sync job completes.</summary>
     public void AddActivityItem(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
                                                                     {
                                                                         LogItems.Insert(0, item);
 
-                                                                        while(LogItems.Count > MaxLogSixe)
+                                                                        while(LogItems.Count > MaxLogSize)
                                                                             LogItems.RemoveAt(LogItems.Count - 1);
 
                                                                         LogItemCount = LogItems.Count;
                                                                         RebuildFilteredLog();
                                                                     });
 
-    /// <summary>Called by MainWindowViewModel when a new conflict is detected.</summary>
+    /// <summary>Called when a new conflict is detected.</summary>
     public void AddConflictItem(SyncConflict conflict) => Dispatcher.UIThread.Post(() =>
                                                                {
                                                                    if(Conflicts.Any(c => c.Id == conflict.Id))
@@ -124,12 +130,20 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         LogItemCount = 0;
     }
 
+    private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
+    {
+        var item = ActivityItemViewModel.FromJob(args.Job, _activeAccountEmail);
+        AddActivityItem(item);
+    }
+
+    private void OnConflictDetected(object? sender, SyncConflict conflict) => AddConflictItem(conflict);
+
     private void AddConflict(SyncConflict conflict)
     {
         var vm = new ConflictItemViewModel(conflict, syncService);
-        vm.Resolved += (_, c) =>
+        vm.Resolved += (_, conflictItem) =>
         {
-            _ = Conflicts.Remove(c);
+            _ = Conflicts.Remove(conflictItem);
             ConflictCount = Conflicts.Count;
         };
         Conflicts.Add(vm);

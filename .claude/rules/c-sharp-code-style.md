@@ -1,8 +1,6 @@
 ---
 paths:
-    - "apps/**/*.cs"
-    - "packages/**/*.cs"
-    - "tests/**/*.cs"
+    - "**/*.cs"
 ---
 
 Coding standards and style guidelines / preferences for C# files in this repository that AI must follow.
@@ -11,8 +9,8 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 
 - **Public members**: PascalCase (e.g., `MyClass`, `MyMethod`, `MyProperty`)
 - **Private members**: camelCase (e.g., `myVariable`, `myMethod`)
-- **Private fields**: \_camelCase with underscore prefix (e.g., `_fieldName`)
-- **Constants**: CONSTANT_CASE or PascalCase
+- **Private fields**: camelCase without underscore prefix (e.g., `fieldName`)
+- **Constants**: PascalCase
 - Use meaningful names that clearly convey purpose; avoid abbreviations unless widely understood
 - Use `nameof()` for parameter names in exceptions and logging
 - NEVER use single-letter variable names except for loop indices (e.g., `i`, `j`, `k`).
@@ -21,20 +19,20 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 
 - Use file-scoped namespaces.
 - Namespace names should follow the pattern: Company.Project.Module (e.g., Contoso.Sales.Reporting).
-- Avoid unnecessary nested namespaces; keep the structure flat when possible.
 
 ## Classes and Methods
 
-- Define one class per file, and name the file after the class.
+- Define one class, recored, interface etc. per file, and name the file after the class.
 - Follow SOLID principles for class and method design.
-- Keep classes focused on a single responsibility.
+- Keep classes / methods focused on a SINGLE responsibility.
 - Ensure good cohesion within classes and methods (related functionality grouped together).
 - Ensure low coupling between classes and methods.
 - Ensure methods do one thing and do it well.
 - Keep methods short; ideally under 20 lines.
+- Keep classes short; ideally under 300 lines.
 - Use meaningful names for classes and methods that clearly convey their purpose.
 - Put all method / constructor overloads together in the same order as their parameters.
-- Always single-line method / constructor signatures regardless of parameter count. Never split parameters across lines.
+- Single-line method / constructor signatures where possible. Split parameters across lines ONLY if line-length > 200 characters and spilt as close to 200 characters as possible. Use as few lines as possible when splitting parameters across lines.
 - Use expression-bodied members for simple methods and properties.
 - Keep method and constructor parameters to a minimum (ideally <5 parameters); prefer using parameter objects when multiple parameters are needed.
 - Avoid long parameter lists; consider using the Builder pattern for complex object construction.
@@ -43,12 +41,14 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Avoid deep nesting; use early returns and guard clauses.
 - Do not use regions or #pragma to hide code; refactor instead.
 - Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
-- Every `return` statement must be preceded by a blank line. No exceptions.
+- Every `return` statement after a code block must be preceded by a blank line. `return` after an `if` must NOT be followed by a blank line or `{ return; }`.
+- Name for **meaning**: `customerId` not `id`, `isExpired` not `flag`.
+- Use builders for test setup / test data creation.
 
 ## Primitive Obsession
 
 - Don't use string / GUID etc for domain concepts - create a specific type:
-    - Id should be strongly-typed - use AStar.Dev.Source.Generators / AStar.Dev.Source.Generators.Attributes to standardise the generation. The Id CAN be a string / GUID but the property MUST be strongly typed.
+    - Id should be strongly-typed - use AStar.Dev.Source.Generators / AStar.Dev.Source.Generators.Attributes to standardise the generation. The Id value CAN be a string / GUID but the property MUST be strongly typed.
     - File info / Directory info should NOT be represented as a string. Either use the Testably abstraction or create a specific type (i.e. when only 3-5 properties are required)
 
 ## Immutability
@@ -64,7 +64,6 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 
 - Define record properties on the same line with the record declaration when possible.
 - Accompany each record `<name>` with a corresponding `<name>Factory` static factory class.
-- Place the factory class in the same file as the record it creates.
 - Expose static `Create` methods on the factory class for constructing instances of the record.
 - Place argument validation logic within the factory methods.
 - Never use the public constructor of a record directly; always use the factory methods.
