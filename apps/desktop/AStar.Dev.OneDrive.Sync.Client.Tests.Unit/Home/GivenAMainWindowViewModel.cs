@@ -44,7 +44,7 @@ public sealed class GivenAMainWindowViewModel
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, _accountRepository, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
     }
 
     [Fact]
@@ -93,7 +93,20 @@ public sealed class GivenAMainWindowViewModel
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
-        await _scheduler.DidNotReceive().TriggerAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+        await _scheduler.DidNotReceive().TriggerAccountAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_sync_now_command_executed_with_active_account_then_scheduler_called_with_account_id()
+    {
+        const string accountId = "active-account-123";
+        var accountsVm = CreateAccountsViewModel();
+        accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = accountId, DisplayName = "Test User", Email = "test@example.com" });
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
+
+        await sut.SyncNowCommand.ExecuteAsync(null);
+
+        await _scheduler.Received(1).TriggerAccountAsync(accountId, Arg.Any<CancellationToken>());
     }
 
     [Fact]
