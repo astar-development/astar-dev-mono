@@ -142,14 +142,10 @@ Removed deps from MainWindowViewModel: `IAuthService`, `IGraphService`, `ISettin
 
 ### Options (pick one)
 
-**Option A — Subscribe in StatusBarViewModel** (recommended):
+**Subscribe in StatusBarViewModel** (recommended):
 - `StatusBarViewModel` takes `AccountsViewModel` as a constructor dep
 - Subscribes to `AccountsViewModel.PropertyChanged` for `nameof(ActiveAccount)`
 - Self-updates its own properties
-
-**Option B — XAML binding** (simpler, no subscription management):
-- Bind `StatusBar.*` directly to `Accounts.ActiveAccount.*` in `MainWindow.axaml`
-- Works if `ActiveAccount` raises `PropertyChanged` on its own properties
 
 ### Modified files
 

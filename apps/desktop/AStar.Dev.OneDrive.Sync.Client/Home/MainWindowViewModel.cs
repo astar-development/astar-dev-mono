@@ -18,7 +18,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, IAccountRepository accountRepository, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -122,23 +122,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     {
         try
         {
-            syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;
-            syncEventAggregator.SyncCompleted += OnSyncCompleted;
-            syncEventAggregator.ConflictDetected += OnConflictDetected;
-
             accounts.AccountSelected += OnAccountSelectedAsync;
             accounts.AccountAdded += OnAccountAddedAsync;
             accounts.AccountRemoved += OnAccountRemoved;
-            accounts.ActiveAccountStateChanged += (_, _) => SyncStatusBarToActiveAccount();
-            accounts.PropertyChanged += (_, e) =>
-            {
-                if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
-                    SyncStatusBarToActiveAccount();
-            };
 
             await initializer.InitializeAsync();
-
-            SyncStatusBarToActiveAccount();
         }
         catch(Exception ex)
         {
@@ -184,10 +172,9 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 ActiveSection = NavSection.Files;
                 await files.ActivateAccountAsync(card.Id);
                 await activity.SetActiveAccountAsync(card.Id, card.Email);
-                SyncStatusBarToActiveAccount();
                 return Unit.Default;
             })
-            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
+            .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
 
     private async void OnAccountAddedAsync(object? sender, OneDriveAccount account)
         => await Try.RunAsync(async () =>
@@ -200,50 +187,12 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 await activity.SetActiveAccountAsync(account.Id, account.Email);
                 return Unit.Default;
             })
-            .TapErrorAsync(e=> Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
+            .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
 
     private void OnAccountRemoved(object? sender, string accountId)
     {
         files.RemoveAccount(accountId);
         dashboard.RemoveAccount(accountId);
         settings.RemoveAccount(accountId);
-    }
-
-    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
-    {
-        if(accounts.Accounts.Any(a => a.Id == e.AccountId && a.Id == accounts.ActiveAccount?.Id))
-            SyncStatusBarToActiveAccount();
-    }
-
-    private void OnSyncCompleted(object? sender, string accountId)
-    {
-        if(accounts.ActiveAccount?.Id == accountId)
-            SyncStatusBarToActiveAccount();
-    }
-
-    private void OnConflictDetected(object? sender, SyncConflict conflict)
-    {
-        if(accounts.ActiveAccount?.Id == conflict.AccountId)
-            SyncStatusBarToActiveAccount();
-    }
-
-    private void SyncStatusBarToActiveAccount()
-    {
-        var active = accounts.ActiveAccount;
-        if(active is null)
-        {
-            statusBar.HasAccount = false;
-            statusBar.AccountEmail = string.Empty;
-            statusBar.AccountDisplayName = string.Empty;
-            return;
-        }
-
-        statusBar.HasAccount = true;
-        statusBar.AccountEmail = active.Email;
-        statusBar.AccountDisplayName = active.DisplayName;
-        statusBar.SyncState = active.SyncState;
-        statusBar.ConflictCount = active.ConflictCount;
-        statusBar.LastSyncText = active.LastSyncText;
-        statusBar.IsSyncing = active.SyncState == SyncState.Syncing;
     }
 }
