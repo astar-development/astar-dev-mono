@@ -54,6 +54,29 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     }
 
     /// <summary>
+    /// Triggers an immediate sync for a single account identified by its ID.
+    /// </summary>
+    public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
+    {
+        var entity = await accountRepository.GetByIdAsync(accountId, ct).ConfigureAwait(false);
+        if(entity is null)
+            return;
+
+        var account = new OneDriveAccount
+        {
+            Id                = entity.Id,
+            DisplayName       = entity.DisplayName,
+            Email             = entity.Email,
+            LocalSyncPath     = entity.LocalSyncPath,
+            ConflictPolicy    = entity.ConflictPolicy,
+            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+            LastSyncedAt      = entity.LastSyncedAt
+        };
+
+        await TriggerAccountAsync(account, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Triggers an immediate sync for a single account.
     /// </summary>
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
