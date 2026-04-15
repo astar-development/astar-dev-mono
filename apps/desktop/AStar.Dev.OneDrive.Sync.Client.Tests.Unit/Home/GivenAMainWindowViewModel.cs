@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -31,7 +32,7 @@ public sealed class GivenAMainWindowViewModel
     public GivenAMainWindowViewModel()
     {
         _settingsService.Current.Returns(new AppSettings());
-        _syncRepository.GetPendingConflictsAsync(Arg.Any<string>()).Returns([]);
+        _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, _syncEventAggregator);
@@ -99,14 +100,14 @@ public sealed class GivenAMainWindowViewModel
     [Fact]
     public async Task when_sync_now_command_executed_with_active_account_then_scheduler_called_with_account_id()
     {
-        const string accountId = "active-account-123";
+        const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
-        accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = accountId, DisplayName = "Test User", Email = "test@example.com" });
+        accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), DisplayName = "Test User", Email = "test@example.com" });
         var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
-        await _scheduler.Received(1).TriggerAccountAsync(accountId, Arg.Any<CancellationToken>());
+        await _scheduler.Received(1).TriggerAccountAsync(accountIdStr, Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -1,10 +1,11 @@
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 public sealed class AccountEntity
 {
-    public string Id { get; set; } = string.Empty;
+    public AccountId Id { get; set; } = new AccountId("Unknown");
     public string DisplayName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public int AccentIndex { get; set; }
@@ -13,10 +14,7 @@ public sealed class AccountEntity
     public DateTimeOffset? LastSyncedAt { get; set; }
     public long QuotaTotal { get; set; }
     public long QuotaUsed { get; set; }
-
-    // Sync settings
-    public string LocalSyncPath { get; set; } = string.Empty;
+    public LocalSyncPath LocalSyncPath { get; set; } = LocalSyncPath.Restore(string.Empty);
     public ConflictPolicy ConflictPolicy { get; set; } = ConflictPolicy.Ignore;
-
     public List<SyncFolderEntity> SyncFolders { get; set; } = [];
 }

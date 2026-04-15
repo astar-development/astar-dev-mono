@@ -18,7 +18,7 @@ using StatusBarViewModel = AStar.Dev.OneDrive.Sync.Client.Home.StatusBarViewMode
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
-public static class ViewModelExtensions
+internal static class ViewModelExtensions
 {
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {

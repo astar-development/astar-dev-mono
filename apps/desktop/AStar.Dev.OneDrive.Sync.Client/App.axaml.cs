@@ -4,7 +4,6 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Splash;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -132,11 +131,12 @@ public class App : Application, IDisposable
             var startupService = _services.GetRequiredService<IStartupService>();
 
             progress.Report("Starting sync scheduler…");
-            scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
+            scheduler.StartSync(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
         }
         catch (Exception ex)
         {
             Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
+            throw;
         }
     }
 

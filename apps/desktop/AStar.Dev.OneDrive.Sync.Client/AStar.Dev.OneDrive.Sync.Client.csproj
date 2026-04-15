@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -58,7 +58,18 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\core\functional\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
+    <ProjectReference Include="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" PrivateAssets="all" />
   </ItemGroup>
+
+  <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+  </Target>
 
   <ItemGroup>
     <Compile Update="Accounts\AccountsView.axaml.cs">

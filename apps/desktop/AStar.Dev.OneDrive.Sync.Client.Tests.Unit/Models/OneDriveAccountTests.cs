@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Models;
@@ -9,7 +10,6 @@ public sealed class OneDriveAccountTests
     {
         var account = new OneDriveAccount();
 
-        account.Id.ShouldNotBeNullOrEmpty();
         account.DisplayName.ShouldBe(string.Empty);
         account.Email.ShouldBe(string.Empty);
         account.AccentIndex.ShouldBe(0);
@@ -20,17 +20,18 @@ public sealed class OneDriveAccountTests
         account.QuotaUsed.ShouldBe(0L);
         account.IsActive.ShouldBeFalse();
         account.FolderNames.ShouldBeEmpty();
-        account.LocalSyncPath.ShouldBe(string.Empty);
+        account.LocalSyncPath.ShouldBeNull();
         account.ConflictPolicy.ShouldBe(ConflictPolicy.Ignore);
     }
 
     [Fact]
-    public void Id_ShouldBeUnique()
+    public void Id_WhenExplicitlySet_ShouldBePreserved()
     {
-        var account1 = new OneDriveAccount();
-        var account2 = new OneDriveAccount();
+        var id = new AccountId("unique-account-id");
+        var account = new OneDriveAccount { Id = id };
 
-        account1.Id.ShouldNotBe(account2.Id);
+        account.Id.ShouldBe(id);
+        account.Id.Id.ShouldBe("unique-account-id");
     }
 
     [Fact]
@@ -70,7 +71,7 @@ public sealed class OneDriveAccountTests
     public void SelectedFolderIds_ShouldBeModifiable()
     {
         var account = new OneDriveAccount();
-        string folderId = "folder-123";
+        var folderId = new OneDriveFolderId("folder-123");
 
         account.SelectedFolderIds.Add(folderId);
 
@@ -103,7 +104,7 @@ public sealed class OneDriveAccountTests
     public void QuotaTotal_ShouldBeSettable()
     {
         var account = new OneDriveAccount();
-        long quotaTotal = 1_099_511_627_776L; // 1 TB
+        long quotaTotal = 1_099_511_627_776L;
 
         account.QuotaTotal = quotaTotal;
 
@@ -114,7 +115,7 @@ public sealed class OneDriveAccountTests
     public void QuotaUsed_ShouldBeSettable()
     {
         var account = new OneDriveAccount();
-        long quotaUsed = 549_755_813_888L; // 512 GB
+        long quotaUsed = 549_755_813_888L;
 
         account.QuotaUsed = quotaUsed;
 
@@ -136,7 +137,7 @@ public sealed class OneDriveAccountTests
     public void FolderNames_ShouldBeModifiable()
     {
         var account = new OneDriveAccount();
-        string folderId = "folder-123";
+        var folderId = new OneDriveFolderId("folder-123");
         string folderName = "Documents";
 
         account.FolderNames[folderId] = folderName;
@@ -145,14 +146,15 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void LocalSyncPath_ShouldBeSettable()
+    public void LocalSyncPath_ShouldBeSettableViaFactory()
     {
         var account = new OneDriveAccount();
-        string localSyncPath = "/home/jason/OneDrive";
+        string rawPath = "/home/jason/OneDrive";
 
-        account.LocalSyncPath = localSyncPath;
+        account.LocalSyncPath = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
 
-        account.LocalSyncPath.ShouldBe(localSyncPath);
+        account.LocalSyncPath.ShouldNotBeNull();
+        account.LocalSyncPath!.Value.ShouldBe(rawPath);
     }
 
     [Fact]

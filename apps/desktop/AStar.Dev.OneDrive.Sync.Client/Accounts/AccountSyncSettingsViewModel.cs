@@ -1,22 +1,22 @@
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountSyncSettingsViewModel(
-    OneDriveAccount account,
-    IAccountRepository repository) : ObservableObject
+public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository) : ObservableObject
 {
-    public string AccountId => account.Id;
+    /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
+    public string AccountId => account.Id.Id;
     public string Email => account.Email;
     public string DisplayName => account.DisplayName;
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty]
-    public partial string LocalSyncPath { get; set; } = account.LocalSyncPath;
+    public partial string LocalSyncPath { get; set; } = account.LocalSyncPath?.Value ?? string.Empty;
 
     [ObservableProperty]
     public partial ConflictPolicy ConflictPolicy { get; set; } = account.ConflictPolicy;
@@ -39,14 +39,14 @@ public sealed partial class AccountSyncSettingsViewModel(
     [RelayCommand]
     private async Task SaveAsync()
     {
-        account.LocalSyncPath = LocalSyncPath;
+        account.LocalSyncPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<LocalSyncPath?>(p => p, _ => null);
         account.ConflictPolicy = ConflictPolicy;
 
         var entity = await repository.GetByIdAsync(account.Id, CancellationToken.None);
         if(entity is null)
             return;
 
-        entity.LocalSyncPath = LocalSyncPath;
+        entity.LocalSyncPath = account.LocalSyncPath ?? Domain.LocalSyncPath.Restore(string.Empty);
         entity.ConflictPolicy = ConflictPolicy;
         await repository.UpsertAsync(entity, CancellationToken.None);
     }

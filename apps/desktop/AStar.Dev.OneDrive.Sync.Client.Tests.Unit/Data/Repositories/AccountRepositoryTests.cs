@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
@@ -23,14 +24,14 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
-        result[0].Id.ShouldBe("user-1");
+        result[0].Id.ShouldBe(new AccountId("user-1"));
     }
 
     [Fact]
@@ -39,9 +40,9 @@ public sealed class AccountRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
         db.Accounts.AddRange(
-            new AccountEntity { Id = "user-3", Email = "zebra@outlook.com", DisplayName = "Z User" },
-            new AccountEntity { Id = "user-1", Email = "alice@outlook.com", DisplayName = "A User" },
-            new AccountEntity { Id = "user-2", Email = "bob@outlook.com", DisplayName = "B User" }
+            new AccountEntity { Id = new AccountId("user-3"), Email = "zebra@outlook.com", DisplayName = "Z User" },
+            new AccountEntity { Id = new AccountId("user-1"), Email = "alice@outlook.com", DisplayName = "A User" },
+            new AccountEntity { Id = new AccountId("user-2"), Email = "bob@outlook.com", DisplayName = "B User" }
         );
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -58,11 +59,11 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("user-1", TestContext.Current.CancellationToken);
+        var result = await repository.GetByIdAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         _ = result.ShouldNotBeNull();
         result.Email.ShouldBe("user@outlook.com");
@@ -74,7 +75,7 @@ public sealed class AccountRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
 
-        var result = await repository.GetByIdAsync("non-existent", TestContext.Current.CancellationToken);
+        var result = await repository.GetByIdAsync(new AccountId("non-existent"), TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -84,11 +85,11 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
 
         await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
-        var retrieved = await db.Accounts.FindAsync(["user-1"], cancellationToken: TestContext.Current.CancellationToken);
+        var retrieved = await db.Accounts.FindAsync([new AccountId("user-1")], cancellationToken: TestContext.Current.CancellationToken);
         _ = retrieved.ShouldNotBeNull();
         retrieved.Email.ShouldBe("user@outlook.com");
     }
@@ -98,14 +99,14 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         account.DisplayName = "Updated User";
         await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
-        var retrieved = await db.Accounts.FindAsync(["user-1", TestContext.Current.CancellationToken], TestContext.Current.CancellationToken);
+        var retrieved = await db.Accounts.FindAsync([new AccountId("user-1"), TestContext.Current.CancellationToken], TestContext.Current.CancellationToken);
         retrieved!.DisplayName.ShouldBe("Updated User");
     }
 
@@ -114,17 +115,17 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = "user-1", FolderId = "folder-1" });
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
+        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        account.SyncFolders[0].FolderId = "folder-2";
+        account.SyncFolders[0].FolderId = new OneDriveFolderId("folder-2");
         await repository.UpsertAsync(account, TestContext.Current.CancellationToken);
 
-        var retrieved = await db.Accounts.Include(a => a.SyncFolders).FirstAsync(a => a.Id == "user-1",TestContext.Current.CancellationToken);
+        var retrieved = await db.Accounts.Include(a => a.SyncFolders).FirstAsync(a => a.Id == new AccountId("user-1"), TestContext.Current.CancellationToken);
         retrieved.SyncFolders.Count.ShouldBe(1);
-        retrieved.SyncFolders[0].FolderId.ShouldBe("folder-2");
+        retrieved.SyncFolders[0].FolderId.ShouldBe(new OneDriveFolderId("folder-2"));
     }
 
     [Fact]
@@ -132,13 +133,13 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.DeleteAsync("user-1", TestContext.Current.CancellationToken);
+            await repository.DeleteAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -152,14 +153,14 @@ public sealed class AccountRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
         db.Accounts.AddRange(
-            new AccountEntity { Id = "user-1", Email = "user1@outlook.com", DisplayName = "User 1", IsActive = true },
-            new AccountEntity { Id = "user-2", Email = "user2@outlook.com", DisplayName = "User 2", IsActive = false }
+            new AccountEntity { Id = new AccountId("user-1"), Email = "user1@outlook.com", DisplayName = "User 1", IsActive = true },
+            new AccountEntity { Id = new AccountId("user-2"), Email = "user2@outlook.com", DisplayName = "User 2", IsActive = false }
         );
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.SetActiveAccountAsync("user-2", TestContext.Current.CancellationToken);
+            await repository.SetActiveAccountAsync(new AccountId("user-2"), TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -172,15 +173,15 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
-        var folder = new SyncFolderEntity { AccountId = "user-1", FolderId = "folder-1", DeltaLink = "old-delta" };
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
+        var folder = new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1"), DeltaLink = "old-delta" };
         account.SyncFolders.Add(folder);
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.UpdateDeltaLinkAsync("user-1", "folder-1", "new-delta", TestContext.Current.CancellationToken);
+            await repository.UpdateDeltaLinkAsync(new AccountId("user-1"), new OneDriveFolderId("folder-1"), "new-delta", TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -193,8 +194,8 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = "user-1", FolderId = "folder-1" });
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
+        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -202,7 +203,7 @@ public sealed class AccountRepositoryTests
 
         _ = result[0].SyncFolders.ShouldNotBeNull();
         result[0].SyncFolders.Count.ShouldBe(1);
-        result[0].SyncFolders[0].FolderId.ShouldBe("folder-1");
+        result[0].SyncFolders[0].FolderId.ShouldBe(new OneDriveFolderId("folder-1"));
     }
 
     [Fact]
@@ -210,12 +211,12 @@ public sealed class AccountRepositoryTests
     {
         var db = CreateInMemoryDatabase();
         var repository = new AccountRepository(db);
-        var account = new AccountEntity { Id = "user-1", Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = "user-1", FolderId = "folder-1" });
+        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
+        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
         _ = db.Accounts.Add(account);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("user-1", TestContext.Current.CancellationToken);
+        var result = await repository.GetByIdAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         _ = result!.SyncFolders.ShouldNotBeNull();
         result.SyncFolders.Count.ShouldBe(1);

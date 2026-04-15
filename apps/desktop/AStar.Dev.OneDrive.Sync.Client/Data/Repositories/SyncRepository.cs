@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,9 +12,9 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         var entities = jobs.Select(j => new SyncJobEntity
         {
             Id             = j.Id,
-            AccountId      = j.AccountId,
-            FolderId       = j.FolderId,
-            RemoteItemId   = j.RemoteItemId,
+            AccountId      = new AccountId(j.AccountId),
+            FolderId       = new OneDriveFolderId(j.FolderId),
+            RemoteItemId   = new OneDriveItemId(j.RemoteItemId),
             RelativePath   = j.RelativePath,
             LocalPath      = j.LocalPath,
             Direction      = j.Direction,
@@ -28,7 +29,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncJobEntity>> GetPendingJobsAsync(string accountId)
+    public Task<List<SyncJobEntity>> GetPendingJobsAsync(AccountId accountId)
         => db.SyncJobs
           .Where(j => j.AccountId == accountId &&
                       j.State == SyncJobState.Queued)
@@ -45,7 +46,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                         ? DateTimeOffset.UtcNow
                         : null));
 
-    public Task ClearCompletedJobsAsync(string accountId)
+    public Task ClearCompletedJobsAsync(AccountId accountId)
         => db.SyncJobs
           .Where(job => job.AccountId == accountId && job.State == SyncJobState.Completed)
           .ExecuteDeleteAsync();
@@ -54,24 +55,24 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
     {
         _ = db.SyncConflicts.Add(new SyncConflictEntity
         {
-            Id = conflict.Id,
-            AccountId = conflict.AccountId,
-            FolderId = conflict.FolderId,
-            RemoteItemId = conflict.RemoteItemId,
-            RelativePath = conflict.RelativePath,
-            LocalPath = conflict.LocalPath,
-            LocalModified = conflict.LocalModified,
+            Id             = conflict.Id,
+            AccountId      = new AccountId(conflict.AccountId),
+            FolderId       = new OneDriveFolderId(conflict.FolderId),
+            RemoteItemId   = new OneDriveItemId(conflict.RemoteItemId),
+            RelativePath   = conflict.RelativePath,
+            LocalPath      = conflict.LocalPath,
+            LocalModified  = conflict.LocalModified,
             RemoteModified = conflict.RemoteModified,
-            LocalSize = conflict.LocalSize,
-            RemoteSize = conflict.RemoteSize,
-            State = conflict.State,
-            DetectedAt = conflict.DetectedAt
+            LocalSize      = conflict.LocalSize,
+            RemoteSize     = conflict.RemoteSize,
+            State          = conflict.State,
+            DetectedAt     = conflict.DetectedAt
         });
 
         _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncConflictEntity>> GetPendingConflictsAsync(string accountId)
+    public Task<List<SyncConflictEntity>> GetPendingConflictsAsync(AccountId accountId)
         => db.SyncConflicts
           .Where(c => c.AccountId == accountId &&
                       c.State == ConflictState.Pending)
@@ -85,7 +86,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                 .SetProperty(c => c.Resolution, resolution)
                 .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
 
-    public Task<int> GetPendingConflictCountAsync(string accountId)
+    public Task<int> GetPendingConflictCountAsync(AccountId accountId)
         => db.SyncConflicts
           .CountAsync(c => c.AccountId == accountId &&
                            c.State == ConflictState.Pending);

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -214,13 +215,13 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     {
         var account = new OneDriveAccount
         {
-            Id                = _accountId,
+            Id                = new AccountId(_accountId),
             DisplayName       = ConfirmedDisplayName,
             Email             = ConfirmedEmail,
-            SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => f.Id)],
+            SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => new OneDriveFolderId(f.Id))],
             FolderNames       = Folders
                 .Where(f => f.IsSelected)
-                .ToDictionary(f => f.Id, f => f.Name)
+                .ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
         };
         Completed?.Invoke(this, account);
     }

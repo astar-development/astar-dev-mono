@@ -1,7 +1,6 @@
 using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -37,11 +36,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
-    public object? ActiveView
-    {
-        get
-        {
-            object? result = ActiveSection switch
+    public object? ActiveView => ActiveSection switch
             {
                 NavSection.Dashboard => DashboardViewInstance,
                 NavSection.Files     => FilesViewInstance,
@@ -50,10 +45,6 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 NavSection.Settings  => SettingsViewInstance,
                 _                    => null
             };
-
-            return result;
-        }
-    }
 
     private DashboardView DashboardViewInstance
     {
@@ -118,20 +109,15 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     public StatusBarViewModel StatusBar => statusBar;
 
     public async Task InitialiseAsync()
-    {
-        try
-        {
-            accounts.AccountSelected += OnAccountSelectedAsync;
-            accounts.AccountAdded += OnAccountAddedAsync;
-            accounts.AccountRemoved += OnAccountRemoved;
-
-            await initializer.InitializeAsync();
-        }
-        catch(Exception ex)
-        {
-            Serilog.Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
-        }
-    }
+        => await Try.RunAsync(async () =>
+            {
+                accounts.AccountSelected += OnAccountSelectedAsync;
+                accounts.AccountAdded += OnAccountAddedAsync;
+                accounts.AccountRemoved += OnAccountRemoved;
+                await initializer.InitializeAsync();
+                return Unit.Default;
+            })
+            .TapErrorAsync(e => Serilog.Log.Fatal(e, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", e));
 
     [RelayCommand]
     private async Task SyncNowAsync()
@@ -140,7 +126,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         if(active is null)
             return;
 
-        await scheduler.TriggerAccountAsync(active.Id);
+        await scheduler.TriggerAccountAsync(active.Id).ConfigureAwait(false);
     }
 
     [RelayCommand]
@@ -167,8 +153,8 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 dashboard.AddAccount(account);
                 settings.AddAccount(account);
                 ActiveSection = NavSection.Files;
-                await files.ActivateAccountAsync(account.Id);
-                await activity.SetActiveAccountAsync(account.Id, account.Email);
+                await files.ActivateAccountAsync(account.Id.Id);
+                await activity.SetActiveAccountAsync(account.Id.Id, account.Email);
                 return Unit.Default;
             })
             .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));

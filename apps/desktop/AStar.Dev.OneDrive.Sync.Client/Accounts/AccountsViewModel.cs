@@ -3,6 +3,7 @@ using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -75,7 +76,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     private async Task RemoveAccountAsync(AccountCardViewModel card)
     {
         await authService.SignOutAsync(card.Id);
-        await repository.DeleteAsync(card.Id, CancellationToken.None);
+        await repository.DeleteAsync(new AccountId(card.Id), CancellationToken.None);
 
         _ = Accounts.Remove(card);
 
@@ -93,20 +94,23 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
                 account.AccentIndex = Accounts.Count % 6;
                 account.IsActive = Accounts.Count == 0;
-                if (account.LocalSyncPath.IsNullOrWhiteSpace())
-                    account.LocalSyncPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
+                if(account.LocalSyncPath is null)
+                {
+                    var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
+                    account.LocalSyncPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
+                }
 
                 var entity = ToEntity(account);
                 await repository.UpsertAsync(entity, CancellationToken.None);
 
-                if (account.IsActive)
+                if(account.IsActive)
                     await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
 
                 var card = BuildCard(account);
                 Accounts.Add(card);
                 OnPropertyChanged(nameof(HasAccounts));
 
-                if (account.IsActive)
+                if(account.IsActive)
                     ActiveAccount = card;
 
                 AccountAdded?.Invoke(this, account);
@@ -135,7 +139,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         ActiveAccount = card;
         AccountSelected?.Invoke(this, card);
 
-        _ = repository.SetActiveAccountAsync(card.Id, CancellationToken.None);
+        _ = repository.SetActiveAccountAsync(new AccountId(card.Id), CancellationToken.None);
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
@@ -185,21 +189,21 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     private static AccountEntity ToEntity(OneDriveAccount a)
         => new()
         {
-            Id = a.Id,
-            DisplayName = a.DisplayName,
-            Email = a.Email,
-            AccentIndex = a.AccentIndex,
-            IsActive = a.IsActive,
-            DeltaLink = a.DeltaLink,
-            LastSyncedAt = a.LastSyncedAt,
-            QuotaTotal = a.QuotaTotal,
-            LocalSyncPath = a.LocalSyncPath,
+            Id            = a.Id,
+            DisplayName   = a.DisplayName,
+            Email         = a.Email,
+            AccentIndex   = a.AccentIndex,
+            IsActive      = a.IsActive,
+            DeltaLink     = a.DeltaLink,
+            LastSyncedAt  = a.LastSyncedAt,
+            QuotaTotal    = a.QuotaTotal,
+            LocalSyncPath = a.LocalSyncPath ?? LocalSyncPath.Restore(string.Empty),
             ConflictPolicy = a.ConflictPolicy,
-            QuotaUsed = a.QuotaUsed,
-            SyncFolders = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
+            QuotaUsed     = a.QuotaUsed,
+            SyncFolders   = [.. a.SelectedFolderIds.Select(folderId => new SyncFolderEntity
                 {
-                    FolderId   = id,
-                    FolderName = a.FolderNames.GetValueOrDefault(id, string.Empty),
+                    FolderId   = folderId,
+                    FolderName = a.FolderNames.GetValueOrDefault(folderId, string.Empty),
                     AccountId  = a.Id
                 })]
         };

@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,7 @@ public sealed class SyncRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new SyncRepository(db);
 
-        var result = await repository.GetPendingJobsAsync("user-1");
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
 
         result.ShouldBeEmpty();
     }
@@ -56,7 +57,7 @@ public sealed class SyncRepositoryTests
         };
         await repository.EnqueueJobsAsync(jobs);
 
-        var result = await repository.GetPendingJobsAsync("user-1");
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
 
         result.Count.ShouldBe(1);
         result[0].State.ShouldBe(SyncJobState.Queued);
@@ -76,7 +77,7 @@ public sealed class SyncRepositoryTests
         };
         await repository.EnqueueJobsAsync(jobs);
 
-        var result = await repository.GetPendingJobsAsync("user-1");
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
 
         result.Count.ShouldBe(3);
         result[0].QueuedAt.ShouldBeLessThan(result[1].QueuedAt);
@@ -155,7 +156,7 @@ public sealed class SyncRepositoryTests
 
         try
         {
-            await repository.ClearCompletedJobsAsync("user-1");
+            await repository.ClearCompletedJobsAsync(new AccountId("user-1"));
         }
         catch(InvalidOperationException)
         {
@@ -194,7 +195,7 @@ public sealed class SyncRepositoryTests
         await repository.AddConflictAsync(conflict1);
         await repository.AddConflictAsync(conflict2);
 
-        var result = await repository.GetPendingConflictsAsync("user-1");
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"));
 
         result.Count.ShouldBe(1);
         result[0].State.ShouldBe(ConflictState.Pending);
@@ -212,7 +213,7 @@ public sealed class SyncRepositoryTests
         await repository.AddConflictAsync(conflict1);
         await repository.AddConflictAsync(conflict2);
 
-        var result = await repository.GetPendingConflictsAsync("user-1");
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"));
 
         result[0].DetectedAt.ShouldBeLessThan(result[1].DetectedAt);
     }
@@ -259,7 +260,7 @@ public sealed class SyncRepositoryTests
         var db = CreateInMemoryDatabase();
         var repository = new SyncRepository(db);
 
-        int count = await repository.GetPendingConflictCountAsync("user-1");
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"));
 
         count.ShouldBe(0);
     }
@@ -277,7 +278,7 @@ public sealed class SyncRepositoryTests
         await repository.AddConflictAsync(conflict2);
         await repository.AddConflictAsync(conflict3);
 
-        int count = await repository.GetPendingConflictCountAsync("user-1");
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"));
 
         count.ShouldBe(2);
     }
@@ -294,13 +295,13 @@ public sealed class SyncRepositoryTests
         };
         await repository.EnqueueJobsAsync(jobs);
 
-        var user1Jobs = await repository.GetPendingJobsAsync("user-1");
-        var user2Jobs = await repository.GetPendingJobsAsync("user-2");
+        var user1Jobs = await repository.GetPendingJobsAsync(new AccountId("user-1"));
+        var user2Jobs = await repository.GetPendingJobsAsync(new AccountId("user-2"));
 
         user1Jobs.Count.ShouldBe(1);
-        user1Jobs[0].AccountId.ShouldBe("user-1");
+        user1Jobs[0].AccountId.Id.ShouldBe("user-1");
         user2Jobs.Count.ShouldBe(1);
-        user2Jobs[0].AccountId.ShouldBe("user-2");
+        user2Jobs[0].AccountId.Id.ShouldBe("user-2");
     }
 
     private static AppDbContext CreateInMemoryDatabase()

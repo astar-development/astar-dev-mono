@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -20,9 +21,9 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
-        Id = "user-1",
+        Id = new AccountId("user-1"),
         Email = "user@outlook.com",
-        LocalSyncPath = localSyncPath,
+        LocalSyncPath = LocalSyncPath.Restore(localSyncPath),
         SelectedFolderIds = []
     };
 
@@ -42,7 +43,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if (args.CurrentFile == "Authenticating...")
+            if(args.CurrentFile == "Authenticating...")
                 authCallOrder.Add("progress");
         };
 
@@ -61,7 +62,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if (args.CurrentFile == "Authenticating...")
+            if(args.CurrentFile == "Authenticating...")
                 capturedState = args.SyncState;
         };
 

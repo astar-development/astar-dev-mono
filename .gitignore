@@ -45,6 +45,7 @@ launchSettings.json
 
 # Entity Framework migrations snapshot backups
 *.Designer.cs.bak
+*design_time_temp.db
 
 # dotnet test results
 TestResults/

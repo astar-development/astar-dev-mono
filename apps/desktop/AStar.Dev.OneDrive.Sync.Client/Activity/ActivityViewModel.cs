@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Avalonia.Threading;
@@ -66,23 +67,23 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         Conflicts.Clear();
         FilteredLog.Clear();
 
-        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(accountId);
+        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId));
 
         foreach(var entity in persistedConflicts)
         {
             var model = new SyncConflict
             {
-                Id = entity.Id,
-                AccountId = entity.AccountId,
-                FolderId = entity.FolderId,
-                RemoteItemId = entity.RemoteItemId,
-                RelativePath = entity.RelativePath,
-                LocalPath = entity.LocalPath,
-                LocalModified = entity.LocalModified,
+                Id             = entity.Id,
+                AccountId      = entity.AccountId.Id,
+                FolderId       = entity.FolderId.Id,
+                RemoteItemId   = entity.RemoteItemId.Id,
+                RelativePath   = entity.RelativePath,
+                LocalPath      = entity.LocalPath,
+                LocalModified  = entity.LocalModified,
                 RemoteModified = entity.RemoteModified,
-                LocalSize = entity.LocalSize,
-                RemoteSize = entity.RemoteSize,
-                DetectedAt = entity.DetectedAt
+                LocalSize      = entity.LocalSize,
+                RemoteSize     = entity.RemoteSize,
+                DetectedAt     = entity.DetectedAt
             };
 
             AddConflict(model);

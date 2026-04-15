@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -17,7 +18,7 @@ public interface ISyncRepository
     /// </summary>
     /// <param name="accountId">The ID of the account for which to retrieve pending jobs.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task<List<SyncJobEntity>> GetPendingJobsAsync(string accountId);
+    Task<List<SyncJobEntity>> GetPendingJobsAsync(AccountId accountId);
 
     /// <summary>
     /// Updates the state of a sync job. This is called by the SyncService when a job's state changes (e.g., from pending to in-progress, or when it completes).
@@ -33,7 +34,7 @@ public interface ISyncRepository
     /// </summary>
     /// <param name="accountId">The ID of the account for which to clear completed jobs.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task ClearCompletedJobsAsync(string accountId);
+    Task ClearCompletedJobsAsync(AccountId accountId);
 
     /// <summary>
     /// Adds a new sync conflict to the repository. This is called by the SyncService when it detects a conflict during synchronization.
@@ -47,7 +48,7 @@ public interface ISyncRepository
     /// </summary>
     /// <param name="accountId">The ID of the account for which to retrieve pending conflicts.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task<List<SyncConflictEntity>> GetPendingConflictsAsync(string accountId);
+    Task<List<SyncConflictEntity>> GetPendingConflictsAsync(AccountId accountId);
 
     /// <summary>
     /// Resolves a sync conflict with the specified resolution policy. This is called by the ActivityViewModel when the user resolves a conflict in the UI.
@@ -61,6 +62,6 @@ public interface ISyncRepository
     /// Gets the count of pending conflicts for the specified account. This is called by the ActivityViewModel when the active account changes, to update the conflict badge in the UI.
     /// </summary>
     /// <param name="accountId">The ID of the account for which to get pending conflict count.</param>
-    /// <returns></returns>
-    Task<int> GetPendingConflictCountAsync(string accountId);
+    /// <returns>The count of pending conflicts.</returns>
+    Task<int> GetPendingConflictCountAsync(AccountId accountId);
 }
