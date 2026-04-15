@@ -10,31 +10,31 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable, ISyncScheduler
 {
-    private          Timer?             _timer;
-    private          TimeSpan           _interval = TimeSpan.FromMinutes(60);
-    private          bool               _running;
+    private Timer? _timer;
+    private TimeSpan _interval = TimeSpan.FromMinutes(60);
+    private int _runningFlag;
 
     public static readonly TimeSpan DefaultInterval = TimeSpan.FromMinutes(60);
 
     public event EventHandler<string>? SyncStarted;
     public event EventHandler<string>? SyncCompleted;
 
-    public void Start(TimeSpan? interval = null)
+    public void StartSync(TimeSpan? interval = null)
     {
         _interval = interval ?? DefaultInterval;
 
         try
         {
-            _timer = new Timer(OnTimerTick, state: null, dueTime: _interval, period: _interval);
+            _timer = new Timer(OnTimerTickAsync, state: null, dueTime: _interval, period: _interval);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Serilog.Log.Fatal(ex, "[SyncScheduler.Start] FATAL ERROR creating Timer: {Error}", ex.Message);
             throw;
         }
     }
 
-    public void Stop() => _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    public void StopSync() => _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
     public void SetInterval(TimeSpan interval)
     {
@@ -47,7 +47,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// </summary>
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
-        if(_running)
+        if (_runningFlag == 1)
             return;
 
         await RunSyncPassAsync(ct);
@@ -59,18 +59,18 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
     {
         var entity = await accountRepository.GetByIdAsync(accountId, ct).ConfigureAwait(false);
-        if(entity is null)
+        if (entity is null)
             return;
 
         var account = new OneDriveAccount
         {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath,
-            ConflictPolicy    = entity.ConflictPolicy,
+            Id = entity.Id,
+            DisplayName = entity.DisplayName,
+            Email = entity.Email,
+            LocalSyncPath = entity.LocalSyncPath,
+            ConflictPolicy = entity.ConflictPolicy,
             SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
-            LastSyncedAt      = entity.LastSyncedAt
+            LastSyncedAt = entity.LastSyncedAt
         };
 
         await TriggerAccountAsync(account, ct).ConfigureAwait(false);
@@ -93,9 +93,9 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     }
 
     // ReSharper disable once AsyncVoidMethod - Timer requires this signature
-    private async void OnTimerTick(object? state)
+    private async void OnTimerTickAsync(object? state)
     {
-        if(_running)
+        if (_runningFlag == 1)
             return;
 
         await RunSyncPassAsync(CancellationToken.None);
@@ -103,29 +103,30 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        _running = Interlocked.Exchange(ref _running, true);
+        if (Interlocked.Exchange(ref _runningFlag, 1) == 1)
+            return;
 
         try
         {
             var entities = await accountRepository.GetAllAsync(CancellationToken.None);
             foreach (var account in entities.TakeWhile(entity => !ct.IsCancellationRequested).Select(entity => new OneDriveAccount
-                     {
-                         Id                = entity.Id,
-                         DisplayName       = entity.DisplayName,
-                         Email             = entity.Email,
-                         AccentIndex       = entity.AccentIndex,
-                         IsActive          = entity.IsActive,
-                         LocalSyncPath     = entity.LocalSyncPath,
-                         ConflictPolicy    = entity.ConflictPolicy,
-                         SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
-                     }))
+            {
+                Id = entity.Id,
+                DisplayName = entity.DisplayName,
+                Email = entity.Email,
+                AccentIndex = entity.AccentIndex,
+                IsActive = entity.IsActive,
+                LocalSyncPath = entity.LocalSyncPath,
+                ConflictPolicy = entity.ConflictPolicy,
+                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+            }))
             {
                 SyncStarted?.Invoke(this, account.Id);
                 try
                 {
                     await syncService.SyncAccountAsync(account, ct);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Serilog.Log.Error(ex, "[SyncScheduler] Scheduled sync failed for {Id}: {Error}", account.Id, ex.Message);
                 }
@@ -137,15 +138,15 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         finally
         {
-            _running = Interlocked.Exchange(ref _running, false);
+            Interlocked.Exchange(ref _runningFlag, 0);
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        Stop();
+        StopSync();
 
-        if(_timer is not null)
+        if (_timer is not null)
             await _timer.DisposeAsync();
     }
 }

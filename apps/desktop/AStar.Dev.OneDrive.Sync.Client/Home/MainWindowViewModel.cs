@@ -37,11 +37,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
-    public object? ActiveView
-    {
-        get
-        {
-            object? result = ActiveSection switch
+    public object? ActiveView => ActiveSection switch
             {
                 NavSection.Dashboard => DashboardViewInstance,
                 NavSection.Files     => FilesViewInstance,
@@ -50,10 +46,6 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 NavSection.Settings  => SettingsViewInstance,
                 _                    => null
             };
-
-            return result;
-        }
-    }
 
     private DashboardView DashboardViewInstance
     {
@@ -118,20 +110,15 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     public StatusBarViewModel StatusBar => statusBar;
 
     public async Task InitialiseAsync()
-    {
-        try
-        {
-            accounts.AccountSelected += OnAccountSelectedAsync;
-            accounts.AccountAdded += OnAccountAddedAsync;
-            accounts.AccountRemoved += OnAccountRemoved;
-
-            await initializer.InitializeAsync();
-        }
-        catch(Exception ex)
-        {
-            Serilog.Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
-        }
-    }
+        => await Try.RunAsync(async () =>
+            {
+                accounts.AccountSelected += OnAccountSelectedAsync;
+                accounts.AccountAdded += OnAccountAddedAsync;
+                accounts.AccountRemoved += OnAccountRemoved;
+                await initializer.InitializeAsync();
+                return Unit.Default;
+            })
+            .TapErrorAsync(e => Serilog.Log.Fatal(e, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", e));
 
     [RelayCommand]
     private async Task SyncNowAsync()
@@ -140,7 +127,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         if(active is null)
             return;
 
-        await scheduler.TriggerAccountAsync(active.Id);
+        await scheduler.TriggerAccountAsync(active.Id).ConfigureAwait(false);
     }
 
     [RelayCommand]

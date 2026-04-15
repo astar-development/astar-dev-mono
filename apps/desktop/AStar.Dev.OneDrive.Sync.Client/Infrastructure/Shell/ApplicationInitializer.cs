@@ -31,6 +31,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, Accou
             settings.LoadAccounts(restored);
 
             var activeAccount = restored.FirstOrDefault(account => account.IsActive);
+            
             if(activeAccount is not null)
             {
                 await files.ActivateAccountAsync(activeAccount.Id).ConfigureAwait(false);
@@ -40,6 +41,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, Accou
         catch(Exception ex)
         {
             Serilog.Log.Fatal(ex, "[ApplicationInitializer.InitializeAsync] FATAL ERROR: {Error}", ex.Message);
+            throw;
         }
     }
 }

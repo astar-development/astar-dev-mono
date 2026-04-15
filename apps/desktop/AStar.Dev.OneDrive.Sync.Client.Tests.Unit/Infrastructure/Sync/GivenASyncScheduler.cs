@@ -3,7 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncScheduler
 {
@@ -29,7 +29,7 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
-        scheduler.Start();
+        scheduler.StartSync();
 
         _ = scheduler.ShouldNotBeNull();
     }
@@ -41,7 +41,7 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
-        scheduler.Start();
+        scheduler.StartSync();
 
         _ = scheduler.ShouldNotBeNull();
     }
@@ -54,7 +54,7 @@ public sealed class GivenASyncScheduler
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
         var customInterval = TimeSpan.FromMinutes(30);
 
-        scheduler.Start(customInterval);
+        scheduler.StartSync(customInterval);
 
         _ = scheduler.ShouldNotBeNull();
     }
@@ -65,9 +65,9 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        scheduler.Start();
+        scheduler.StartSync();
 
-        scheduler.Stop();
+        scheduler.StopSync();
 
         _ = scheduler.ShouldNotBeNull();
     }
@@ -78,7 +78,7 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        scheduler.Start();
+        scheduler.StartSync();
         var newInterval = TimeSpan.FromMinutes(30);
 
         scheduler.SetInterval(newInterval);
@@ -91,7 +91,7 @@ public sealed class GivenASyncScheduler
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new (){ Email = "test@example.com", DisplayName = "test" }]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Email = "test@example.com", DisplayName = "test" }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
@@ -105,7 +105,7 @@ public sealed class GivenASyncScheduler
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new (){ Email = "test@example.com", DisplayName = "test" }]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Email = "test@example.com", DisplayName = "test" }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
@@ -213,7 +213,7 @@ public sealed class GivenASyncScheduler
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
         var interval = TimeSpan.FromMinutes(minutes);
 
-        scheduler.Start(interval);
+        scheduler.StartSync(interval);
 
         _ = scheduler.ShouldNotBeNull();
     }

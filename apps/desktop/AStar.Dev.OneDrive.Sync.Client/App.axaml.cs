@@ -132,7 +132,7 @@ public class App : Application, IDisposable
             var startupService = _services.GetRequiredService<IStartupService>();
 
             progress.Report("Starting sync scheduler…");
-            scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
+            scheduler.StartSync(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
         }
         catch (Exception ex)
         {
