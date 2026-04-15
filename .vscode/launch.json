@@ -1,14 +1,14 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
     {
-      "name": "C#: AStar.Dev.OneDriveSync Debug",
+      "name": "C#: OneDrive.Sync.Client Debug",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/AStar.Dev.OneDriveSync/AStar.Dev.OneDriveSync.csproj"
+      "projectPath": "${workspaceFolder}/apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj"
     }
-    ]
+  ]
 }
