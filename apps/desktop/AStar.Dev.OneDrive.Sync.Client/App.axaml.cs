@@ -136,6 +136,7 @@ public class App : Application, IDisposable
         catch (Exception ex)
         {
             Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
+            throw;
         }
     }
 

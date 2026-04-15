@@ -67,7 +67,7 @@
 
 - [x] 9.1 Run `dotnet ef migrations add StronglyTypedIds --project AStar.Dev.OneDrive.Sync.Client`
 - [x] 9.2 Verify generated migration SQL is a no-op (no `ALTER TABLE` or data changes)
-- [ ] 9.3 Run `dotnet ef database update` against a local test database and confirm success
+- [x] 9.3 Run `dotnet ef database update` against a local test database and confirm success
 
 ## 10. Tests
 

@@ -23,7 +23,8 @@ public sealed partial class AccountCardViewModel : ObservableObject
         "#854F0B"
     ];
 
-    public string Id => _model.Id;
+    /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
+    public string Id => _model.Id.Id;
     public string DisplayName => _model.DisplayName;
     public string Email => _model.Email;
     public Color AccentColor => Color.Parse(PaletteHex(_model.AccentIndex));

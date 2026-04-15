@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -31,7 +32,7 @@ public sealed class GivenAnApplicationInitializer
     public GivenAnApplicationInitializer()
     {
         _settingsService.Current.Returns(new AppSettings());
-        _syncRepository.GetPendingConflictsAsync(Arg.Any<string>()).Returns([]);
+        _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, _syncEventAggregator);
@@ -44,7 +45,7 @@ public sealed class GivenAnApplicationInitializer
         => new(_startupService, accounts, files, dashboard, activity, settings);
 
     private static OneDriveAccount BuildAccount(string id = "acc-1", string email = "user@test.com", bool isActive = false)
-        => new() { Id = id, DisplayName = "Test User", Email = email, IsActive = isActive, SelectedFolderIds = [] };
+        => new() { Id = new AccountId(id), DisplayName = "Test User", Email = email, IsActive = isActive, SelectedFolderIds = [] };
 
     [Fact]
     public async Task when_initialized_then_accounts_are_restored_from_startup_service()
@@ -124,7 +125,7 @@ public sealed class GivenAnApplicationInitializer
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).GetPendingConflictsAsync("acc-active");
+        await _syncRepository.Received(1).GetPendingConflictsAsync(new AccountId("acc-active"));
     }
 
     [Fact]

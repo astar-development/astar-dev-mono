@@ -8,10 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(
-    IAuthService authService,
-    IGraphService graphService,
-    IAccountRepository repository) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
     public ObservableCollection<Accounts.AccountFilesViewModel> Tabs { get; } = [];
 
@@ -31,7 +28,7 @@ public sealed partial class FilesViewModel(
 
     public void AddAccount(OneDriveAccount account)
     {
-        if(Tabs.Any(t => t.AccountId == account.Id))
+        if(Tabs.Any(t => t.AccountId == account.Id.Id))
             return;
 
         var tab = new Accounts.AccountFilesViewModel(

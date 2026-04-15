@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -9,22 +10,22 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 {
-    private const string AccountId     = "account-1";
-    private const string LocalSyncPath = "/configured/sync/path";
-    private const string AccessToken   = "token-abc";
-    private const string DriveId       = "drive-1";
-    private const string FolderId      = "folder-1";
-    private const string FolderName    = "Photos";
+    private const string AccountIdString = "account-1";
+    private const string LocalSyncPathString = "/configured/sync/path";
+    private const string AccessToken = "token-abc";
+    private const string DriveId = "drive-1";
+    private const string FolderId = "folder-1";
+    private const string FolderName = "Photos";
 
     [Fact]
     public async Task when_a_folder_is_toggled_then_the_local_sync_path_is_preserved_in_the_repository()
     {
         var (authService, graphService, repository) = BuildMocks();
 
-        repository.GetByIdAsync(AccountId, Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPath, ConflictPolicy.LastWriteWins));
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.LastWriteWins));
 
-        var sut = BuildSut(BuildAccount(LocalSyncPath, ConflictPolicy.LastWriteWins), authService, graphService, repository);
+        var sut = BuildSut(BuildAccount(LocalSyncPathString, ConflictPolicy.LastWriteWins), authService, graphService, repository);
 
         await sut.LoadCommand.ExecuteAsync(null);
 
@@ -35,7 +36,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         await repository.Received(1).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
         savedEntity.ShouldNotBeNull();
-        savedEntity!.LocalSyncPath.ShouldBe(LocalSyncPath);
+        savedEntity!.LocalSyncPath.Value.ShouldBe(LocalSyncPathString);
     }
 
     [Fact]
@@ -43,10 +44,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     {
         var (authService, graphService, repository) = BuildMocks();
 
-        repository.GetByIdAsync(AccountId, Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPath, ConflictPolicy.LastWriteWins));
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.LastWriteWins));
 
-        var sut = BuildSut(BuildAccount(LocalSyncPath, ConflictPolicy.LastWriteWins), authService, graphService, repository);
+        var sut = BuildSut(BuildAccount(LocalSyncPathString, ConflictPolicy.LastWriteWins), authService, graphService, repository);
 
         await sut.LoadCommand.ExecuteAsync(null);
 
@@ -65,8 +66,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     {
         var (authService, graphService, repository) = BuildMocks();
 
-        repository.GetByIdAsync(AccountId, Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPath, ConflictPolicy.RemoteWins));
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.RemoteWins));
 
         var staleAccount = BuildAccount(localSyncPath: string.Empty, ConflictPolicy.Ignore);
 
@@ -81,7 +82,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         await repository.Received(1).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
         savedEntity.ShouldNotBeNull();
-        savedEntity!.LocalSyncPath.ShouldBe(LocalSyncPath);
+        savedEntity!.LocalSyncPath.Value.ShouldBe(LocalSyncPathString);
         savedEntity!.ConflictPolicy.ShouldBe(ConflictPolicy.RemoteWins);
     }
 
@@ -91,8 +92,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var graphService = Substitute.For<IGraphService>();
         var repository   = Substitute.For<IAccountRepository>();
 
-        authService.AcquireTokenSilentAsync(AccountId, Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success(AccessToken, AccountId, "Test User", "test@test.com"));
+        authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Success(AccessToken, AccountIdString, "Test User", "test@test.com"));
 
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns(DriveId);
@@ -106,20 +107,20 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     private static OneDriveAccount BuildAccount(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id             = AccountId,
+            Id             = new AccountId(AccountIdString),
             DisplayName    = "Test User",
             Email          = "test@test.com",
-            LocalSyncPath  = localSyncPath,
+            LocalSyncPath  = string.IsNullOrEmpty(localSyncPath) ? null : LocalSyncPath.Restore(localSyncPath),
             ConflictPolicy = conflictPolicy
         };
 
     private static AccountEntity BuildStoredEntity(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id             = AccountId,
+            Id             = new AccountId(AccountIdString),
             DisplayName    = "Test User",
             Email          = "test@test.com",
-            LocalSyncPath  = localSyncPath,
+            LocalSyncPath  = LocalSyncPath.Restore(localSyncPath),
             ConflictPolicy = conflictPolicy
         };
 

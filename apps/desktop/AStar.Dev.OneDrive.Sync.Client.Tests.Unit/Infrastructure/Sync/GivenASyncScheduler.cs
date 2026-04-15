@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
@@ -120,7 +121,7 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        var account = new OneDriveAccount { Id = "test-account" };
+        var account = new OneDriveAccount { Id = new AccountId("test-account") };
 
         await scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
 
@@ -133,7 +134,7 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        var account = new OneDriveAccount { Id = "test-account" };
+        var account = new OneDriveAccount { Id = new AccountId("test-account") };
         bool eventRaised = false;
         string? raisedAccountId = null;
 
@@ -155,7 +156,7 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        var account = new OneDriveAccount { Id = "test-account" };
+        var account = new OneDriveAccount { Id = new AccountId("test-account") };
         bool eventRaised = false;
         string? raisedAccountId = null;
 
@@ -177,7 +178,7 @@ public sealed class GivenASyncScheduler
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
-        var account = new OneDriveAccount { Id = "test-account" };
+        var account = new OneDriveAccount { Id = new AccountId("test-account") };
 
         _ = mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("Sync failed")));
@@ -226,7 +227,7 @@ public sealed class GivenASyncScheduler
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
         var account = new OneDriveAccount
         {
-            Id = "account-123",
+            Id = new AccountId("account-123"),
             Email = "test@outlook.com",
             DisplayName = "Test User"
         };
@@ -234,44 +235,44 @@ public sealed class GivenASyncScheduler
         await scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
 
         await mockSyncService.Received(1).SyncAccountAsync(
-            Arg.Is<OneDriveAccount>(a => a.Id == "account-123"),
+            Arg.Is<OneDriveAccount>(a => a.Id == new AccountId("account-123")),
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_trigger_account_by_id_and_account_exists_then_sync_service_called()
     {
-        const string accountId = "account-456";
+        const string accountIdStr = "account-456";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(new AccountEntity
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity
         {
-            Id = accountId,
+            Id = new AccountId(accountIdStr),
             DisplayName = "Test User",
             Email = "test@outlook.com",
-            LocalSyncPath = "/some/path",
+            LocalSyncPath = LocalSyncPath.Restore("/some/path"),
             ConflictPolicy = ConflictPolicy.Ignore,
             SyncFolders = []
         });
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
-        await scheduler.TriggerAccountAsync(accountId, TestContext.Current.CancellationToken);
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
         await mockSyncService.Received(1).SyncAccountAsync(
-            Arg.Is<OneDriveAccount>(a => a.Id == accountId),
+            Arg.Is<OneDriveAccount>(a => a.Id == new AccountId(accountIdStr)),
             Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_trigger_account_by_id_and_account_not_found_then_sync_service_not_called()
     {
-        const string accountId = "missing-account";
+        const string accountIdStr = "missing-account";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns((AccountEntity?)null);
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns((AccountEntity?)null);
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
 
-        await scheduler.TriggerAccountAsync(accountId, TestContext.Current.CancellationToken);
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
         await mockSyncService.DidNotReceive().SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
     }
@@ -279,32 +280,32 @@ public sealed class GivenASyncScheduler
     [Fact]
     public async Task when_trigger_account_by_id_and_account_exists_then_sync_started_event_raised()
     {
-        const string accountId = "account-789";
+        const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = accountId, DisplayName = "Test", Email = "test@test.com", SyncFolders = [] });
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com", SyncFolders = [] });
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
         string? raisedId = null;
         scheduler.SyncStarted += (_, id) => raisedId = id;
 
-        await scheduler.TriggerAccountAsync(accountId, TestContext.Current.CancellationToken);
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
-        raisedId.ShouldBe(accountId);
+        raisedId.ShouldBe(accountIdStr);
     }
 
     [Fact]
     public async Task when_trigger_account_by_id_and_account_exists_then_sync_completed_event_raised()
     {
-        const string accountId = "account-789";
+        const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(accountId, Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = accountId, DisplayName = "Test", Email = "test@test.com", SyncFolders = [] });
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com", SyncFolders = [] });
         var scheduler = new SyncScheduler(mockSyncService, mockRepository);
         string? raisedId = null;
         scheduler.SyncCompleted += (_, id) => raisedId = id;
 
-        await scheduler.TriggerAccountAsync(accountId, TestContext.Current.CancellationToken);
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
-        raisedId.ShouldBe(accountId);
+        raisedId.ShouldBe(accountIdStr);
     }
 }

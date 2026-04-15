@@ -51,7 +51,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
 
     public void AddAccount(OneDriveAccount account)
     {
-        if(AccountSections.Any(s => s.AccountId == account.Id))
+        if(AccountSections.Any(s => s.AccountId == account.Id.Id))
             return;
 
         var section = new DashboardAccountViewModel(account, scheduler, accountRepository, localizationService);

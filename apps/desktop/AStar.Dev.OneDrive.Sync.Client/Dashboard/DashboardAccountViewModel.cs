@@ -15,7 +15,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private readonly OneDriveAccount _account;
     private readonly ISyncScheduler   _scheduler;
 
-    public string AccountId => _account.Id;
+    /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
+    public string AccountId => _account.Id.Id;
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
     public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(_account.AccentIndex);
@@ -98,7 +99,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             Id                = entity.Id,
             DisplayName       = entity.DisplayName,
             Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath,
+            LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
             ConflictPolicy    = entity.ConflictPolicy,
             SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
             LastSyncedAt      = entity.LastSyncedAt
@@ -113,7 +114,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         ConflictCount = conflicts;
         IsSyncing = state == SyncState.Syncing;
 
-        if (state is not (SyncState.Idle or SyncState.Completed)) return;
+        if(state is not (SyncState.Idle or SyncState.Completed)) return;
 
         _account.LastSyncedAt = DateTimeOffset.UtcNow;
         UpdateLastSyncText(state);

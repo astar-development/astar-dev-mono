@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -5,9 +6,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 public sealed class SyncJobEntity
 {
     public Guid Id { get; set; }
-    public string AccountId { get; set; } = string.Empty;
-    public string FolderId { get; set; } = string.Empty;
-    public string RemoteItemId { get; set; } = string.Empty;
+    public AccountId AccountId { get; set; }
+    public OneDriveFolderId FolderId { get; set; }
+    public OneDriveItemId RemoteItemId { get; set; }
     public string RelativePath { get; set; } = string.Empty;
     public string LocalPath { get; set; } = string.Empty;
     public SyncDirection Direction { get; set; }

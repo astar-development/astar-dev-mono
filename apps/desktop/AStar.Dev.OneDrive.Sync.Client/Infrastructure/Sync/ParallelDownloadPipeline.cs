@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
@@ -24,7 +25,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
     public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
     {
         var jobList = jobs.ToList();
-        if (jobList.Count == 0)
+        if(jobList.Count == 0)
             return;
 
         int total = jobList.Count;
@@ -41,7 +42,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         void OnJobComplete(SyncJob job, bool success, string? error)
         {
             int completedSoFar;
-            lock (_lock)
+            lock(_lock)
             {
                 done++;
                 completedSoFar = done;
@@ -53,8 +54,6 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
                 ErrorMessage = error,
                 CompletedAt = DateTimeOffset.UtcNow
             };
-
-            bool isComplete = completedSoFar == total;
 
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
 
@@ -68,7 +67,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
 
         try
         {
-            foreach (var job in jobList)
+            foreach(var job in jobList)
             {
                 ct.ThrowIfCancellationRequested();
                 await channel.Writer.WriteAsync(job, ct);
@@ -84,20 +83,18 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
             await Task.WhenAll(workers);
             Serilog.Log.Information("[Pipeline] All workers completed normally");
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Serilog.Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
         }
         finally
         {
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
-
             Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
         }
 
-        await syncRepository.ClearCompletedJobsAsync(accountId);
+        await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId));
 
         Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
     }
-
 }

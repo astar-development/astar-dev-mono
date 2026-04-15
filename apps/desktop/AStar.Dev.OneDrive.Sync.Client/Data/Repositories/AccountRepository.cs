@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -11,7 +12,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
           .OrderBy(a => a.Email)
           .ToListAsync(cancellationToken);
 
-    public Task<AccountEntity?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public Task<AccountEntity?> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
         => db.Accounts
           .Include(a => a.SyncFolders)
           .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
@@ -46,10 +47,10 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
         _ = await db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(string id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(AccountId id, CancellationToken cancellationToken)
         => await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken);
 
-    public async Task SetActiveAccountAsync(string id, CancellationToken cancellationToken)
+    public async Task SetActiveAccountAsync(AccountId id, CancellationToken cancellationToken)
     {
         _ = await db.Accounts.ExecuteUpdateAsync(s =>
             s.SetProperty(a => a.IsActive, false), cancellationToken: cancellationToken);
@@ -60,7 +61,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
                 s.SetProperty(a => a.IsActive, true), cancellationToken: cancellationToken);
     }
 
-    public async Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink, CancellationToken cancellationToken)
+    public async Task UpdateDeltaLinkAsync(AccountId accountId, OneDriveFolderId folderId, string deltaLink, CancellationToken cancellationToken)
         => await db.SyncFolders
             .Where(f => f.AccountId == accountId && f.FolderId == folderId)
             .ExecuteUpdateAsync(s =>

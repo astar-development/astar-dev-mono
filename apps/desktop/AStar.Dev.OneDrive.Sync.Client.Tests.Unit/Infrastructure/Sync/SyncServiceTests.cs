@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -39,9 +40,9 @@ public sealed class SyncServiceTests
 
         var account = new OneDriveAccount
         {
-            Id = "user-1",
+            Id = new AccountId("user-1"),
             Email = "user@outlook.com",
-            LocalSyncPath = "/home/user/OneDrive",
+            LocalSyncPath = LocalSyncPath.Restore("/home/user/OneDrive"),
             SelectedFolderIds = []
         };
 
@@ -66,12 +67,12 @@ public sealed class SyncServiceTests
 
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository, mockLocalChangeDetector, mockHttpDownloader, mockParallelDownloadPipeline);
 
-        var account = new OneDriveAccount { Id = "user-1", Email = "user@outlook.com" };
+        var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com" };
         bool errorRaised = false;
 
         service.SyncProgressChanged += (s, args) =>
         {
-            if (args.SyncState == SyncState.Error)
+            if(args.SyncState == SyncState.Error)
                 errorRaised = true;
         };
 
@@ -98,9 +99,9 @@ public sealed class SyncServiceTests
 
         var account = new OneDriveAccount
         {
-            Id = "user-1",
+            Id = new AccountId("user-1"),
             Email = "user@outlook.com",
-            LocalSyncPath = null!
+            LocalSyncPath = null
         };
 
         _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -109,7 +110,7 @@ public sealed class SyncServiceTests
         bool noSyncPathRaised = false;
         service.SyncProgressChanged += (s, args) =>
         {
-            if (args.CurrentFile == "No local sync path configured")
+            if(args.CurrentFile == "No local sync path configured")
                 noSyncPathRaised = true;
         };
 
@@ -133,9 +134,9 @@ public sealed class SyncServiceTests
 
         var account = new OneDriveAccount
         {
-            Id = "user-1",
+            Id = new AccountId("user-1"),
             Email = "user@outlook.com",
-            LocalSyncPath = "/path/to/sync",
+            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync"),
             SelectedFolderIds = []
         };
 
@@ -240,18 +241,16 @@ public sealed class SyncServiceTests
 
         var account = new OneDriveAccount
         {
-            Id = "user-1",
+            Id = new AccountId("user-1"),
             Email = "user@outlook.com",
-            LocalSyncPath = "/path/to/sync",
-            SelectedFolderIds = ["folder-1", "folder-2", "folder-3"]
+            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync"),
+            SelectedFolderIds = [new OneDriveFolderId("folder-1"), new OneDriveFolderId("folder-2"), new OneDriveFolderId("folder-3")]
         };
 
         _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
-
-        // Service should attempt to sync each folder
     }
 
     [Fact]
@@ -268,10 +267,10 @@ public sealed class SyncServiceTests
 
         var account = new OneDriveAccount
         {
-            Id = "user-1",
+            Id = new AccountId("user-1"),
             Email = "user@outlook.com",
             DisplayName = "Test User",
-            LocalSyncPath = "/path/to/sync"
+            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync")
         };
 
         var cts = new CancellationTokenSource();

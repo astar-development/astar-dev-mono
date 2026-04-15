@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -20,7 +21,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private          string?            _accessToken;
     private          string?            _driveId;
 
-    public string AccountId => _account.Id;
+    /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
+    public string AccountId => _account.Id.Id;
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
 
@@ -61,7 +63,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            var authResult = await _authService.AcquireTokenSilentAsync(_account.Id);
+            var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
 
             if(authResult.IsError)
             {
@@ -78,7 +80,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             foreach(var f in folders)
             {
-                var syncState = _account.SelectedFolderIds.Contains(f.Id)
+                var syncState = _account.SelectedFolderIds.Contains(new OneDriveFolderId(f.Id))
                     ? FolderSyncState.Included
                     : FolderSyncState.Excluded;
 
@@ -86,7 +88,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                     Id:          f.Id,
                     Name:        f.Name,
                     ParentId:    f.ParentId,
-                    AccountId:   _account.Id,
+                    AccountId:   _account.Id.Id,
                     SyncState:   syncState,
                     HasChildren: true);
 
@@ -113,14 +115,16 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
+        var folderId = new OneDriveFolderId(node.Id);
+
         if(node.IsIncluded)
         {
-            if(!_account.SelectedFolderIds.Contains(node.Id))
-                _account.SelectedFolderIds.Add(node.Id);
+            if(!_account.SelectedFolderIds.Contains(folderId))
+                _account.SelectedFolderIds.Add(folderId);
         }
         else
         {
-            _ = _account.SelectedFolderIds.Remove(node.Id);
+            _ = _account.SelectedFolderIds.Remove(folderId);
         }
 
         var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
@@ -131,7 +135,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             .Where(f => f.IsIncluded)
             .Select(f => new SyncFolderEntity
             {
-                FolderId   = f.Id,
+                FolderId   = new OneDriveFolderId(f.Id),
                 FolderName = f.Name,
                 AccountId  = _account.Id
             })];
