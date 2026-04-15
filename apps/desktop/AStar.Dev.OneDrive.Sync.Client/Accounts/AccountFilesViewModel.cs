@@ -14,14 +14,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
-    private readonly OneDriveAccount    _account      = account;
-    private readonly IAuthService       _authService  = authService;
-    private readonly IGraphService      _graphService = graphService;
-    private readonly IAccountRepository _repository   = repository;
-    private          string?            _accessToken;
-    private          string?            _driveId;
+    private readonly OneDriveAccount _account = account;
+    private readonly IAuthService _authService = authService;
+    private readonly IGraphService _graphService = graphService;
+    private readonly IAccountRepository _repository = repository;
+    private string? _accessToken;
+    private string? _driveId;
 
-    /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
+    /// <summary>The unique identifier for the account.</summary>
     public string AccountId => _account.Id.Id;
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
@@ -53,7 +53,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if(IsLoading)
+        if (IsLoading)
             return;
 
         IsLoading = true;
@@ -65,7 +65,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         {
             var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
 
-            if(authResult.IsError)
+            if (authResult.IsError)
             {
                 LoadError = authResult.ErrorMessage ?? "Authentication failed.";
                 HasLoadError = true;
@@ -78,18 +78,18 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             var folders = await _graphService.GetRootFoldersAsync(_accessToken);
 
-            foreach(var f in folders)
+            foreach (var f in folders)
             {
                 var syncState = _account.SelectedFolderIds.Contains(new OneDriveFolderId(f.Id))
                     ? FolderSyncState.Included
                     : FolderSyncState.Excluded;
 
                 var node = new FolderTreeNode(
-                    Id:          f.Id,
-                    Name:        f.Name,
-                    ParentId:    f.ParentId,
-                    AccountId:   _account.Id.Id,
-                    SyncState:   syncState,
+                    Id: f.Id,
+                    Name: f.Name,
+                    ParentId: f.ParentId,
+                    AccountId: _account.Id.Id,
+                    SyncState: syncState,
                     HasChildren: true);
 
                 var vm = new FolderTreeNodeViewModel(
@@ -102,7 +102,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 RootFolders.Add(vm);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LoadError = $"Failed to load folders: {ex.Message}";
             HasLoadError = true;
@@ -117,9 +117,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         var folderId = new OneDriveFolderId(node.Id);
 
-        if(node.IsIncluded)
+        if (node.IsIncluded)
         {
-            if(!_account.SelectedFolderIds.Contains(folderId))
+            if (!_account.SelectedFolderIds.Contains(folderId))
                 _account.SelectedFolderIds.Add(folderId);
         }
         else
@@ -128,7 +128,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
 
         var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
-        if(entity is null)
+        if (entity is null)
             return;
 
         entity.SyncFolders = [.. RootFolders
@@ -152,11 +152,11 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "OneDrive", node.Name);
 
-        if(!Directory.Exists(path))
+        if (!Directory.Exists(path))
             return;
 
         string opener = OperatingSystem.IsWindows() ? "explorer"
-                   : OperatingSystem.IsMacOS()   ? "open"
+                   : OperatingSystem.IsMacOS() ? "open"
                    : "xdg-open";
 
         _ = System.Diagnostics.Process.Start(opener, path);

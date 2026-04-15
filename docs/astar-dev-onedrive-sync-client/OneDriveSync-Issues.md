@@ -16,6 +16,7 @@
 **Issue:** `ActiveView` getter assigns to a local variable only to return it immediately; intermediate variable adds no value and forces a `return` that is not preceded by a blank line.
 
 **Fix:**
+
 ```csharp
 public object? ActiveView => ActiveSection switch
 {
@@ -37,6 +38,7 @@ public object? ActiveView => ActiveSection switch
 **Issue:** `InitialiseAsync` swallows all exceptions with a bare `catch(Exception)` and logs a `Fatal` message using a Serilog static accessor, hiding failures from callers and bypassing the functional error-handling pattern; should use `Try.RunAsync` (already used elsewhere in the same class) and propagate or surface failures.
 
 **Fix:**
+
 ```csharp
 public async Task InitialiseAsync()
 {
@@ -62,6 +64,7 @@ public async Task InitialiseAsync()
 **Issue:** `SyncNowAsync` awaits `scheduler.TriggerAccountAsync` without `ConfigureAwait(false)`; all awaits in infrastructure/library code must use `ConfigureAwait(false)`.
 
 **Fix:**
+
 ```csharp
 await scheduler.TriggerAccountAsync(active.Id).ConfigureAwait(false);
 ```
@@ -125,6 +128,7 @@ await scheduler.TriggerAccountAsync(active.Id).ConfigureAwait(false);
 **Issue:** `ApplyActiveAccount` has a `return` inside the `if(active is null)` branch immediately preceded by `AccountDisplayName = string.Empty;` with no blank line before the `return`, violating the return-spacing rule.
 
 **Fix:**
+
 ```csharp
 if(active is null)
 {
@@ -161,6 +165,7 @@ if(active is null)
 **Issue:** `#pragma warning disable CA1716` suppression on `Stop()` has no documented reason comment, violating the repo rule that all suppressions must explain why.
 
 **Fix:**
+
 ```csharp
 // CA1716: 'Stop' conflicts with a VB reserved keyword. Suppressed because this is a C#-only desktop app
 // with no VB consumers and renaming would break the existing public interface contract.
@@ -194,6 +199,7 @@ void Stop();
 **Issue:** `Interlocked.Exchange(ref _running, true)` returns the **previous** value and assigns it back to `_running`, immediately resetting the flag to `false`. The re-entrancy guard on line 99 (`if(_running) return;`) is completely ineffective — concurrent sync passes are never suppressed.
 
 **Fix:**
+
 ```csharp
 private int _runningFlag; // replace the bool _running field
 
@@ -222,6 +228,7 @@ private async Task RunSyncPassAsync(CancellationToken ct)
 **Issue:** `TriggerAccountAsync` calls `syncService.SyncAccountAsync` without `ConfigureAwait(false)`.
 
 **Fix:**
+
 ```csharp
 await syncService.SyncAccountAsync(account, ct).ConfigureAwait(false);
 ```
@@ -235,6 +242,7 @@ await syncService.SyncAccountAsync(account, ct).ConfigureAwait(false);
 **Issue:** `TriggerNowAsync` awaits `RunSyncPassAsync` without `ConfigureAwait(false)`.
 
 **Fix:**
+
 ```csharp
 await RunSyncPassAsync(ct).ConfigureAwait(false);
 ```
@@ -248,6 +256,7 @@ await RunSyncPassAsync(ct).ConfigureAwait(false);
 **Issue:** `accountRepository.GetAllAsync` is called with `CancellationToken.None` inside `RunSyncPassAsync`, discarding the `ct` parameter that was correctly threaded through to `TriggerNowAsync`.
 
 **Fix:**
+
 ```csharp
 var entities = await accountRepository.GetAllAsync(ct).ConfigureAwait(false);
 ```
@@ -261,6 +270,7 @@ var entities = await accountRepository.GetAllAsync(ct).ConfigureAwait(false);
 **Issue:** LINQ chain inside `RunSyncPassAsync` embeds object construction and cancellation logic in a single chained expression with an anonymous lambda spanning many lines; extract the mapping to a named method or local function.
 
 **Fix:**
+
 ```csharp
 var accounts = entities
     .TakeWhile(_ => !ct.IsCancellationRequested)
@@ -291,6 +301,7 @@ private static OneDriveAccount MapToOneDriveAccount(AccountEntity entity) => new
 **Issue:** `DisposeAsync` awaits `_timer.DisposeAsync()` without `ConfigureAwait(false)`.
 
 **Fix:**
+
 ```csharp
 public async ValueTask DisposeAsync()
 {
@@ -310,6 +321,7 @@ public async ValueTask DisposeAsync()
 **Issue:** `services.BuildServiceProvider()` is called mid-registration to resolve `IOptions<EntraIdConfiguration>`, creating a second DI container and risking duplicate singleton instances.
 
 **Fix:** Accept options as a parameter instead:
+
 ```csharp
 internal static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogSink inMemoryLogSink, IOptions<EntraIdConfiguration> entraIdConfiguration)
 {
@@ -398,13 +410,23 @@ Affected: `when_constructed_then_scheduler_is_not_null`, `when_started_then_*`, 
 
 ---
 
+SyncEntities.cs:L162-164, SyncFolderEntity.cs:L182,185, SyncJobEntity.cs:L205-207: Same pattern — all strongly-typed FK properties uninitialized. Same null-inner-string risk on new entity construction.
+
+AccountEntity.cs:L140: = LocalSyncPath.Restore(string.Empty) — sentinel empty value leaks EF-only bypass into domain default. Detection scattered: SyncScheduler checks entity.LocalSyncPath.Value.Length > 0 not is null. OneDriveAccount.LocalSyncPath is LocalSyncPath?, entity is non-nullable with empty sentinel — asymmetric nullability model between domain and entity.
+
+SyncScheduler.cs:L55: TriggerAccountAsync(string accountId, ...) still accepts raw string, immediately wraps with new AccountId(accountId). Signature should be AccountId accountId; callers that have strings should wrap at their boundary.
+
+SyncRepository.cs:L370-372: new AccountId(j.AccountId), new OneDriveFolderId(j.FolderId) etc — SyncJob domain model still uses raw strings. Mapping leaks wrapping into infra layer. SyncJob should carry typed IDs if it's domain-level.
+
+AccountsViewModel.cs:L100-101: LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, \_ => null) — factory failure silently yields null; sync then fails with generic "No local sync path configured". Log the failure at warn level so it's diagnosable.
+
 ## Summary
 
-| Severity    | Count |
-|-------------|-------|
-| `error`     | 4     |
-| `warning`   | 18    |
-| `suggestion`| 10    |
+| Severity     | Count |
+| ------------ | ----- |
+| `error`      | 4     |
+| `warning`    | 18    |
+| `suggestion` | 10    |
 
 **Verdict: Request changes.**
 
