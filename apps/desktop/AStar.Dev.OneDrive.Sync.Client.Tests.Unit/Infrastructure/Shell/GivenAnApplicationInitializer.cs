@@ -128,7 +128,7 @@ public sealed class GivenAnApplicationInitializer
     }
 
     [Fact]
-    public async Task when_startup_service_throws_then_error_is_logged_and_not_rethrown()
+    public async Task when_startup_service_throws_then_error_is_logged_and_rethrown()
     {
         _startupService.RestoreAccountsAsync().Returns(Task.FromException<List<OneDriveAccount>>(new InvalidOperationException("DB failure")));
 
@@ -136,6 +136,8 @@ public sealed class GivenAnApplicationInitializer
 
         var exception = await Record.ExceptionAsync(() => sut.InitializeAsync(TestContext.Current.CancellationToken));
 
-        exception.ShouldBeNull();
+        exception.ShouldNotBeNull();
+        exception.ShouldBeOfType<InvalidOperationException>();
+        exception!.Message.ShouldBe("DB failure");
     }
 }

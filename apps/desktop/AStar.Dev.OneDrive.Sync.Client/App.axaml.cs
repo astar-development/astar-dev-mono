@@ -4,7 +4,6 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Splash;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
