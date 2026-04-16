@@ -41,12 +41,12 @@ public class App : Application, IDisposable
             return;
 
         var splashWindow = new SplashWindow();
-        var mainWindow = _services.GetRequiredService<MainWindow>();
         desktop.MainWindow = splashWindow;
 
         splashWindow.Opened += async (_, _) =>
         {
-            await BootstrapAsync(mainWindow, new Progress<string>(splashWindow.SetStatus));
+            await BootstrapAsync(new Progress<string>(splashWindow.SetStatus));
+            var mainWindow = _services.GetRequiredService<MainWindow>();
             desktop.MainWindow = mainWindow;
             mainWindow.Show();
             splashWindow.Close();
@@ -105,7 +105,7 @@ public class App : Application, IDisposable
             .CreateLogger();
     }
 
-    private async Task BootstrapAsync(MainWindow window, IProgress<string> progress)
+    private async Task BootstrapAsync(IProgress<string> progress)
     {
         try
         {
@@ -129,6 +129,10 @@ public class App : Application, IDisposable
 
             progress.Report("Initialising startup…");
             var startupService = _services.GetRequiredService<IStartupService>();
+
+            progress.Report("Initialising application…");
+            var mainWindowViewModel = _services.GetRequiredService<MainWindowViewModel>();
+            await mainWindowViewModel.InitialiseAsync();
 
             progress.Report("Starting sync scheduler…");
             scheduler.StartSync(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
