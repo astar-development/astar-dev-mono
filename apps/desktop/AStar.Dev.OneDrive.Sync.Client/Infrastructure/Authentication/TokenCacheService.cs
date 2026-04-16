@@ -93,7 +93,6 @@ public sealed class TokenCacheService : ITokenCacheService
 
     private static string GetPlatformCacheDirectory()
     {
-        // Use the OS-appropriate application data folder
         string appData = Environment.GetFolderPath(
             OperatingSystem.IsWindows()
                 ? Environment.SpecialFolder.ApplicationData

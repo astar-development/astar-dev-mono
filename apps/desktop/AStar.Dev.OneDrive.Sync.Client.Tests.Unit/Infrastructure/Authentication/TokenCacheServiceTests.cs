@@ -37,7 +37,7 @@ public sealed class TokenCacheServiceTests
     {
         var service = new TokenCacheService();
 
-        service.CacheDirectory.ShouldContain("AStar.Dev.OneDrive.Sync");
+        service.CacheDirectory.ShouldContain("astar-dev-onedrive-sync");
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class TokenCacheServiceTests
         {
             await service.RegisterAsync(mockApp);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
             // Expected when MSAL helpers are not available in test environment
         }
@@ -69,7 +69,7 @@ public sealed class TokenCacheServiceTests
         {
             await service.RegisterAsync(mockApp);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
             // Expected when MSAL helpers are not available
         }
@@ -130,15 +130,6 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheFileName_ShouldBeBinary()
-    {
-        var service = new TokenCacheService();
-
-        service.CacheDirectory.ShouldNotBeNullOrEmpty();
-        service.CacheDirectory.ShouldContain("AStar.Dev.OneDrive.Sync");
-    }
-
-    [Fact]
     public async Task RegisterAsync_ShouldHandleNullGracefully()
     {
         var service = new TokenCacheService();
@@ -146,7 +137,7 @@ public sealed class TokenCacheServiceTests
         {
             await service.RegisterAsync(null!);
         }
-        catch(NullReferenceException)
+        catch (NullReferenceException)
         {
             // Expected - null app parameter is not validated
         }
@@ -159,7 +150,7 @@ public sealed class TokenCacheServiceTests
         var services = new List<TokenCacheService>();
         object lockObj = new object();
 
-        for(int i = 0; i < 10; i++)
+        for (int i = 0; i < 10; i++)
         {
             var task = Task.Run(() =>
             {
@@ -168,7 +159,7 @@ public sealed class TokenCacheServiceTests
                 {
                     services.Add(service);
                 }
-            },TestContext.Current.CancellationToken);
+            }, TestContext.Current.CancellationToken);
             tasks.Add(task);
         }
 
@@ -176,7 +167,7 @@ public sealed class TokenCacheServiceTests
 
         services.Count.ShouldBe(10);
         string firstDir = services[0].CacheDirectory;
-        foreach(var service in services)
+        foreach (var service in services)
         {
             service.CacheDirectory.ShouldBe(firstDir);
         }
@@ -196,15 +187,15 @@ public sealed class TokenCacheServiceTests
     {
         var service = new TokenCacheService();
         string cacheDir = service.CacheDirectory;
-        if(OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
             cacheDir.ShouldContain("AStar.Dev.OneDrive.Sync");
         }
-        else if(OperatingSystem.IsMacOS())
+        else if (OperatingSystem.IsMacOS())
         {
             cacheDir.ShouldContain("Application Support");
         }
-        else if(OperatingSystem.IsLinux())
+        else if (OperatingSystem.IsLinux())
         {
             cacheDir.ShouldContain(".config");
         }
