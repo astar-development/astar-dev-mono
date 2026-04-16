@@ -131,8 +131,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         if (entity is null)
             return;
 
-        entity.SyncFolders = [.. RootFolders
-            .Where(f => f.IsIncluded)
+        entity.SyncFolders = [.. CollectAllIncluded(RootFolders)
             .Select(f => new SyncFolderEntity
             {
                 FolderId   = new OneDriveFolderId(f.Id),
@@ -160,5 +159,17 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                    : "xdg-open";
 
         _ = System.Diagnostics.Process.Start(opener, path);
+    }
+
+    private static IEnumerable<FolderTreeNodeViewModel> CollectAllIncluded(IEnumerable<FolderTreeNodeViewModel> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.IsIncluded)
+                yield return node;
+
+            foreach (var descendant in CollectAllIncluded(node.Children))
+                yield return descendant;
+        }
     }
 }

@@ -10,6 +10,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public sealed class GraphService(IUploadService uploadService) : IGraphService
 {
     private const string RootPathMarker = "root:";
+
+    private static readonly string[] ChildrenSelect =
+    [
+        "id", "name", "folder", "file", "size", "lastModifiedDateTime", "parentReference",
+        "@microsoft.graph.downloadUrl"
+    ];
+
     private readonly Dictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
@@ -22,7 +29,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
         var driveItemCollectionResponse = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
-            .GetAsync(req => req.QueryParameters.Select =    ["id", "name", "folder", "file", "size",     "lastModifiedDateTime", "parentReference",     "@microsoft.graph.downloadUrl"], ct);
+            .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
 
         List<DriveFolder> folders = [];
 
@@ -157,27 +164,47 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     {
         List<DeltaItem> items = [];
         await EnumerateSubFolderAsync(client, driveId, folderId, folderName, items, ct);
-        var deltaPage = await GetDeltaLinkForNextSync(client, driveId, folderId, ct);
-
-        string? deltaLink = deltaPage?.OdataDeltaLink;
+        string? deltaLink = await ConsumeDeltaToGetLinkAsync(client, driveId, folderId, ct);
 
         return new DeltaResult(items, deltaLink, false);
     }
 
-    private static async Task<DeltaGetResponse?> GetDeltaLinkForNextSync(GraphServiceClient client, string driveId, string folderId, CancellationToken ct)
-            => await client.Drives[driveId].Items[folderId].Delta.GetAsDeltaGetResponseAsync(cancellationToken: ct);
+    /// <summary>
+    /// Pages through the entire delta feed for <paramref name="folderId"/> to reach the final
+    /// page that carries <c>@odata.deltaLink</c>. Only the link itself is returned; the items
+    /// enumerated here are discarded because the current sync already collected them via
+    /// <see cref="EnumerateSubFolderAsync"/>.
+    /// </summary>
+    private static async Task<string?> ConsumeDeltaToGetLinkAsync(GraphServiceClient client, string driveId, string folderId, CancellationToken ct)
+    {
+        var page = await client.Drives[driveId].Items[folderId].Delta
+            .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+
+        while(page is not null)
+        {
+            if(page.OdataNextLink is null)
+                return page.OdataDeltaLink;
+
+            page = await client.Drives[driveId].Items[folderId].Delta
+                .WithUrl(page.OdataNextLink)
+                .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+        }
+
+        return null;
+    }
 
     private static async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, List<DeltaItem> items, CancellationToken ct)
     {
-        var page = await client.Drives[driveId].Items[parentId].Children.GetAsync(cancellationToken: ct);
+        var page = await client.Drives[driveId].Items[parentId].Children
+            .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
 
         while(page?.Value is not null)
         {
             foreach(var item in page.Value)
             {
                 string itemPath = string.IsNullOrEmpty(relativePath)
-                ? item.Name ?? string.Empty
-                : $"{relativePath}/{item.Name}";
+                    ? item.Name ?? string.Empty
+                    : $"{relativePath}/{item.Name}";
 
                 items.Add(new DeltaItem(
                     Id: item.Id!,
@@ -195,9 +222,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
                     RelativePath: itemPath));
 
                 if(item.Folder is not null && item.Id is not null)
-                {
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, ct);
-                }
             }
 
             if(page.OdataNextLink is null)
