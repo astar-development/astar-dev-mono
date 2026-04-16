@@ -1,5 +1,5 @@
 ---
-name: c-sharp-senior-qa-specialist
+name: c-sharp-qa
 description: Senior QA specialist for C# / .NET 10 code in the AStar.Dev mono-repo. Designs and writes tests - specialising in missing edge-cases but ensure correct testing. Use when writing new tests, reviewing test quality.
 tools: Read, Grep, Glob, Bash
 model: sonnet

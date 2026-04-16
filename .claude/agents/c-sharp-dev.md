@@ -1,5 +1,5 @@
 ---
-name: c-sharp-senior-developer
+name: c-sharp-dev
 description: Senior C# 14 / .NET 10 developer for the AStar.Dev mono-repo. Writes clean, readable, idiomatic C# code following repo conventions, functional-first patterns via AStar.Dev.Functional.Extensions, and fully-tested discipline. Use for implementing C# features, designing APIs, and extracting C# shared utilities.
 tools: Read, Grep, Glob, Bash, Write
 model: sonnet
