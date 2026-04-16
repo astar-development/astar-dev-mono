@@ -56,7 +56,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, ct);
+        await ApplyConflictOutcomeAsync(conflict, outcome, authResult.AccessToken!, ct);
 
         await syncRepository.ResolveConflictAsync(conflict.Id, policy);
     }
@@ -298,23 +298,15 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         await parallelDownloadPipeline.RunAsync(jobs, accessToken, args => SyncProgressChanged?.Invoke(this, args), args => JobCompleted?.Invoke(this, args), account.Id.Id, jobs.FirstOrDefault()?.FolderId ?? string.Empty, ct: ct);
     }
 
-    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, CancellationToken ct)
+    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accessToken, CancellationToken ct)
     {
         switch(outcome)
         {
             case ConflictOutcome.UseRemote:
-                var job = new SyncJob
-                {
-                    AccountId      = conflict.AccountId,
-                    FolderId       = conflict.FolderId,
-                    RemoteItemId   = conflict.RemoteItemId,
-                    RelativePath   = conflict.RelativePath,
-                    LocalPath      = conflict.LocalPath,
-                    Direction      = SyncDirection.Download,
-                    RemoteModified = conflict.RemoteModified
-                };
+                string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.RemoteItemId}).");
 
-                await httpDownloader.DownloadAsync(job.DownloadUrl ?? string.Empty, job.LocalPath, job.RemoteModified, ct: ct);
+                await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct);
                 break;
 
             case ConflictOutcome.KeepBoth:

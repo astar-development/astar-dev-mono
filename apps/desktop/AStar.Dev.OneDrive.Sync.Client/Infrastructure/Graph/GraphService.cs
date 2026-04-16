@@ -10,11 +10,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public sealed class GraphService(IUploadService uploadService) : IGraphService
 {
     private const string RootPathMarker = "root:";
+    private const string DownloadUrlKey  = "@microsoft.graph.downloadUrl";
 
     private static readonly string[] ChildrenSelect =
     [
         "id", "name", "folder", "file", "size", "lastModifiedDateTime", "parentReference",
-        "@microsoft.graph.downloadUrl"
+        DownloadUrlKey
     ];
 
     private readonly Dictionary<string, DriveContext> _cache = [];
@@ -153,6 +154,23 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     }
 
     /// <inheritdoc />
+    public async Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
+    {
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+
+        var item = await client.Drives[ctx.DriveId].Items[itemId]
+            .GetAsync(req => req.QueryParameters.Select = [DownloadUrlKey], ct)
+            .ConfigureAwait(false);
+
+        if(item?.AdditionalData is null)
+            return null;
+
+        return item.AdditionalData.TryGetValue(DownloadUrlKey, out var url)
+            ? url?.ToString()
+            : null;
+    }
+
+    /// <inheritdoc />
     public async Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
@@ -215,10 +233,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
                     IsDeleted: false,
                     Size: item.Size ?? 0L,
                     LastModified: item.LastModifiedDateTime,
-                    DownloadUrl: item.AdditionalData
-                        .TryGetValue("@microsoft.graph.downloadUrl", out object? url)
-                            ? url?.ToString()
-                            : null,
+                    DownloadUrl: ExtractDownloadUrl(item),
                     RelativePath: itemPath));
 
                 if(item.Folder is not null && item.Id is not null)
@@ -254,12 +269,14 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
             IsDeleted: item.Deleted is not null,
             Size: item.Size ?? 0L,
             LastModified: item.LastModifiedDateTime,
-            DownloadUrl: item.AdditionalData
-                .TryGetValue("@microsoft.graph.downloadUrl", out object? url)
-                    ? url?.ToString()
-                    : null,
+            DownloadUrl: ExtractDownloadUrl(item),
             RelativePath: relativePath);
     }
+
+    private static string? ExtractDownloadUrl(DriveItem item)
+        => item.AdditionalData?.TryGetValue(DownloadUrlKey, out var url) is true
+            ? url?.ToString()
+            : null;
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {
