@@ -42,7 +42,7 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             catch(Exception ex)
             {
                 error = ex.Message;
-                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path} stack={Stack}", workerId, ex.GetType().Name, ex.Message, job.LocalPath, ex.StackTrace);
+                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path}", workerId, ex.GetType().Name, ex.Message, job.LocalPath);
                 await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message);
             }
             finally
@@ -57,13 +57,10 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
         switch(job.Direction)
         {
             case SyncDirection.Download:
-                if(job.DownloadUrl is null)
-                {
-                    throw new InvalidOperationException($"No download URL for {job.RelativePath}");
-                }
+                string downloadUrl = await ResolveDownloadUrlAsync(job, accessToken, ct);
 
                 await downloader.DownloadAsync(
-                    job.DownloadUrl,
+                    downloadUrl,
                     job.LocalPath,
                     job.RemoteModified,
                     ct: ct);
@@ -82,5 +79,17 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                     File.Delete(job.LocalPath);
                 break;
         }
+    }
+
+    private async Task<string> ResolveDownloadUrlAsync(SyncJob job, string accessToken, CancellationToken ct)
+    {
+        if(job.DownloadUrl is not null)
+            return job.DownloadUrl;
+
+        Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.RelativePath);
+
+        var url = await graphService.GetDownloadUrlAsync(accessToken, job.RemoteItemId, ct).ConfigureAwait(false);
+
+        return url ?? throw new InvalidOperationException($"No download URL could be resolved for '{job.RelativePath}' (itemId={job.RemoteItemId}).");
     }
 }

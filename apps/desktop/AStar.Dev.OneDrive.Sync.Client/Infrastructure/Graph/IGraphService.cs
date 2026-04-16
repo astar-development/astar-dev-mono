@@ -48,6 +48,16 @@ public interface IGraphService
     Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, CancellationToken ct = default);
 
     /// <summary>
+    /// Fetches the pre-authenticated download URL for a specific drive item.
+    /// Use this when <c>@microsoft.graph.downloadUrl</c> is absent from a delta or children response.
+    /// </summary>
+    /// <param name="accessToken">The access token for the authenticated user.</param>
+    /// <param name="itemId">The Graph item ID of the file.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>The download URL, or <see langword="null"/> if not available.</returns>
+    Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default);
+
+    /// <summary>
     /// Uploads a local file to OneDrive using a resumable upload session.
     /// Handles all file sizes. Returns the remote item ID on success.
     /// </summary>
