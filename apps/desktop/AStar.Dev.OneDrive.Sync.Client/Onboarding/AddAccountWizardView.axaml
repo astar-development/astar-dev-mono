@@ -6,7 +6,6 @@
 
     <StackPanel Spacing="24">
 
-        <!-- Header: title + step indicators -->
         <Grid ColumnDefinitions="*,Auto">
             <TextBlock Grid.Column="0"
                        Text="Add OneDrive account"
@@ -15,7 +14,6 @@
                        Foreground="{DynamicResource TextPrimaryBrush}"
                        VerticalAlignment="Center"/>
 
-            <!-- Step dots: overlay accent on top of muted base -->
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         Spacing="6"
@@ -65,7 +63,6 @@
                            FontSize="{StaticResource FontSizeMd}"/>
             </Button>
 
-            <!-- Status text — visible only when non-empty -->
             <TextBlock Text="{Binding SignInStatusText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextAccentBrush}"
@@ -90,11 +87,26 @@
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
 
+            <!-- Loading state -->
+            <TextBlock Text="Loading folders..."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       IsVisible="{Binding IsLoadingFolders}"/>
+
+            <!-- Error state -->
+            <TextBlock Text="{Binding FolderLoadError}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource StatusErrorBrush}"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding FolderLoadError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+            <!-- Folder list — hidden while loading -->
             <Border Background="{DynamicResource BackgroundSecondaryBrush}"
                     BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
                     CornerRadius="{StaticResource RadiusMd}"
-                    MaxHeight="200">
+                    MaxHeight="200"
+                    IsVisible="{Binding !IsLoadingFolders}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <ItemsControl ItemsSource="{Binding Folders}"
                                   Margin="4">
@@ -122,7 +134,8 @@
                     Padding="8,4"
                     Background="Transparent"
                     BorderThickness="0"
-                    Command="{Binding SkipFoldersCommand}">
+                    Command="{Binding SkipFoldersCommand}"
+                    IsVisible="{Binding !IsLoadingFolders}">
                 <TextBlock Text="Skip — I'll choose folders later"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>

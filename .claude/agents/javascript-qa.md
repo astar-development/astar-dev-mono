@@ -1,5 +1,5 @@
 ---
-name: javascript-senior-qa-specialist
+name: javascript-qa
 description: Senior QA specialist for JavaScript/TypeScript code in the AStar.Dev mono-repo. Designs and writes tests following strict TDD discipline — red/green/refactor with failing-test commits. Covers Vue 3 composables and components, React 19 hooks and components, and Express handlers. Use when writing new tests, reviewing test quality, or guiding TDD workflows.
 tools: Read, Grep, Glob, Bash
 model: sonnet

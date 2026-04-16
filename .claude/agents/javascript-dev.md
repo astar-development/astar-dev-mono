@@ -1,5 +1,5 @@
 ---
-name: javascript-senior-developer
+name: javascript-dev
 description: Senior JavaScript/TypeScript engineer for the AStar.Dev mono-repo. Writes clean, idiomatic, type-safe code across Vue 3, React 19, and Express. Use for implementing features, reviewing front-end and Node code, and architectural guidance on the web apps.
 tools: Read, Grep, Glob, Bash
 model: sonnet
