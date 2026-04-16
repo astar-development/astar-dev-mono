@@ -3,10 +3,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Graph;
 
-public sealed class GraphServiceTests
+public sealed class GivenAGraphService
 {
     [Fact]
-    public void Constructor_ShouldInitializeSuccessfully()
+    public void when_constructed_then_instance_is_not_null()
     {
         var service = new GraphService(Substitute.For<IUploadService>());
 
@@ -14,11 +14,10 @@ public sealed class GraphServiceTests
     }
 
     [Fact]
-    public void GraphService_ShouldImplementIGraphService()
+    public void when_constructed_then_it_implements_IGraphService()
     {
         var service = new GraphService(Substitute.For<IUploadService>());
 
         _ = service.ShouldBeAssignableTo<IGraphService>();
     }
 }
-
