@@ -93,8 +93,8 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         switch(CurrentStep)
         {
             case WizardStep.SignIn:
-                await LoadFoldersAsync();
                 CurrentStep = WizardStep.SelectFolders;
+                await LoadFoldersAsync();
                 break;
 
             case WizardStep.SelectFolders:
@@ -140,15 +140,15 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
             }
             else if(result.IsError)
             {
-                SignInStatusText = result.ErrorMessage != null ? result.ErrorMessage : "Sign-in failed.";
+                SignInStatusText = result.ErrorMessage ?? "Sign-in failed.";
                 SignInHasError = true;
             }
             else
             {
                 _accountId = result.AccountId!;
                 _accessToken = result.AccessToken;
-                ConfirmedDisplayName = result.DisplayName != null ? result.DisplayName : string.Empty;
-                ConfirmedEmail = result.Email != null ? result.Email : string.Empty;
+                ConfirmedDisplayName = result.DisplayName ?? string.Empty;
+                ConfirmedEmail = result.Email ?? string.Empty;
                 IsSignedIn = true;
                 SignInStatusText = $"Signed in as {ConfirmedEmail}";
                 SignInHasError = false;
@@ -169,10 +169,9 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private async Task CancelAsync()
     {
-        if(_authCts is null) return;
+        if(_authCts is not null)
+            await _authCts.CancelAsync();
 
-        await _authCts.CancelAsync();
-        await Task.CompletedTask;
         Cancelled?.Invoke(this, EventArgs.Empty);
     }
 
