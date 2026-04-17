@@ -110,7 +110,7 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 ### Avalonia / Blazor / C# / .NET Patterns
 
 For all C#-specific architecture patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions), see @.claude/agents/c-sharp-senior-developer.md and @.claude/rules/c-sharp-code-style.md
-For all C#-specific updates, use the @.claude/agentsc-sharp-senior-developer.md subagent
+For all C#-specific updates, use the c-sharp-dev subagent
 
 ### CI/CD Workflows
 
@@ -126,7 +126,7 @@ For all C#-specific updates, use the @.claude/agentsc-sharp-senior-developer.md 
 - **Branch names**: `feature/...`, `bug/...`, `doc/...`; `main` is ALWAYS deployable
 - **Test projects**: Named `*.Tests.Unit` or `*.Tests.Integration` — automatically set `IsPackable=false`
 - **Method signatures**: Always single-line regardless of parameter count — `public void Foo(string a, int b, CancellationToken ct = default)`. Never split parameters across lines. This applies to every file type.
-- **Comments**: Never add comments that restate what the code already says — in any file type (`.cs`, `.csproj`, `.axaml`, config files, etc.). Refactor to extract the code that needs a comment when appropriate. Only write a comment when the *reason* behind a decision is not derivable from the code itself.
+- **Comments**: Never add comments that restate what the code already says — in any file type (`.cs`, `.csproj`, `.axaml`, config files, etc.). Refactor to extract the code that needs a comment when appropriate. Only write a comment when the _reason_ behind a decision is not derivable from the code itself.
 - **Child `Directory.Build.props`**: Sub-folder overrides must import the parent via `$([MSBuild]::GetPathOfFileAbove(...))`
 - **Naming Conventions**: follow the @.claude/rules/c-sharp-code-style.md for .Net projects or @.claude/rules/javascript-code-style.md for JavaScript projects. Fallback to the official language-specific naming when no local specification exists locally.
 - **XML Comments**: include for all public methods / properties
