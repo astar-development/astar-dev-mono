@@ -40,10 +40,14 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
             return;
         }
 
+        var excludedFolderIds = account.ExplicitlyExcludedFolderIds
+            .Select(f => f.Id)
+            .ToHashSet();
+
         Serilog.Log.Information("[SyncService] About to loop {Count} folders", account.SelectedFolderIds.Count);
         foreach(OneDriveFolderId folderId in account.SelectedFolderIds.TakeWhile(_ => !ct.IsCancellationRequested))
         {
-            await SyncFolderAsync(account, token, folderId, ct);
+            await SyncFolderAsync(account, token, folderId, excludedFolderIds, ct);
         }
     }
 
@@ -61,7 +65,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         await syncRepository.ResolveConflictAsync(conflict.Id, policy);
     }
 
-    private async Task SyncFolderAsync(OneDriveAccount account, string token, OneDriveFolderId folderId, CancellationToken ct)
+    private async Task SyncFolderAsync(OneDriveAccount account, string token, OneDriveFolderId folderId, IReadOnlySet<string> excludedFolderIds, CancellationToken ct)
     {
         Serilog.Log.Information("Starting sync for account {AccountId}, folder {FolderId}", account.Id.Id, folderId.Id);
 
@@ -71,11 +75,12 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
             var entity = await accountRepository.GetByIdAsync(account.Id, CancellationToken.None);
             var folderEntity = entity?.SyncFolders.FirstOrDefault(f => f.FolderId == folderId);
 
+            string folderRelativePath = folderEntity?.FolderName ?? string.Empty;
             string? deltaLink = folderEntity?.DeltaLink;
 
             RaiseProgress(account.Id.Id, folderId.Id, 0, 0, "Fetching changes\u2026", SyncState.Syncing);
 
-            var (delta, allJobs) = await ProcessDownloadDeltasAsync(account, token, folderId, deltaLink, ct);
+            var (delta, allJobs) = await ProcessDownloadDeltasAsync(account, token, folderId, folderRelativePath, deltaLink, excludedFolderIds, ct);
 
             DetectLocalChanges(account, folderId, folderEntity, allJobs);
 
@@ -145,9 +150,9 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         allJobs.AddRange(uploadJobs);
     }
 
-    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessDownloadDeltasAsync(OneDriveAccount account, string token, OneDriveFolderId folderId, string? deltaLink, CancellationToken ct)
+    private async Task<(DeltaResult delta, List<SyncJob> allJobs)> ProcessDownloadDeltasAsync(OneDriveAccount account, string token, OneDriveFolderId folderId, string folderRelativePath, string? deltaLink, IReadOnlySet<string> excludedFolderIds, CancellationToken ct)
     {
-        var delta = await graphService.GetDeltaAsync(token, folderId.Id, deltaLink, ct);
+        var delta = await graphService.GetDeltaAsync(token, folderId.Id, folderRelativePath, deltaLink, excludedFolderIds, ct);
 
         Serilog.Log.Information("[SyncService] Delta for folder {FolderId}: {Count} items, deltaLink={HasDelta}", folderId.Id, delta.Items.Count, delta.NextDeltaLink is not null);
 

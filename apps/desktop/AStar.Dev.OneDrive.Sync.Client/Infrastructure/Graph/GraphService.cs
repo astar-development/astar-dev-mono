@@ -106,22 +106,14 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     }
 
     /// <inheritdoc />
-    public async Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, CancellationToken ct = default)
+    public async Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string folderRelativePath, string? deltaLink, IReadOnlySet<string> excludedFolderIds, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var folderItem = await client.Drives[ctx.DriveId]
-        .Items[folderId]
-        .GetAsync(req =>
-            req.QueryParameters.Select = ["id", "name"], ct);
-
-        string folderName = folderItem?.Name ?? string.Empty;
+        string effectiveRelativePath = await ResolveEffectiveFolderPathAsync(client, ctx.DriveId, folderId, folderRelativePath, ct);
 
         if(deltaLink is null)
-        {
-            return await FullEnumerationAsync(
-            client, ctx.DriveId, folderId, folderName, ct);
-        }
+            return await FullEnumerationAsync(client, ctx.DriveId, folderId, effectiveRelativePath, excludedFolderIds, ct);
 
         List<DeltaItem> items = [];
         string? nextDeltaLink = null;
@@ -150,7 +142,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
             }
         }
 
-        return new DeltaResult(items, nextDeltaLink, hasMorePages);
+        return new DeltaResult(DeltaItemExclusionFilter.Filter(items, excludedFolderIds), nextDeltaLink, hasMorePages);
     }
 
     /// <inheritdoc />
@@ -178,10 +170,20 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
     }
 
-    private static async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, string folderName, CancellationToken ct)
+    private static async Task<string> ResolveEffectiveFolderPathAsync(GraphServiceClient client, string driveId, string folderId, string folderRelativePath, CancellationToken ct)
+    {
+        if(!string.IsNullOrEmpty(folderRelativePath))
+            return folderRelativePath;
+
+        var folderItem = await client.Drives[driveId].Items[folderId].GetAsync(req => req.QueryParameters.Select = ["id", "name"], ct);
+
+        return folderItem?.Name ?? string.Empty;
+    }
+
+    private static async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, string folderRelativePath, IReadOnlySet<string> excludedFolderIds, CancellationToken ct)
     {
         List<DeltaItem> items = [];
-        await EnumerateSubFolderAsync(client, driveId, folderId, folderName, items, ct);
+        await EnumerateSubFolderAsync(client, driveId, folderId, folderRelativePath, excludedFolderIds, items, ct);
         string? deltaLink = await ConsumeDeltaToGetLinkAsync(client, driveId, folderId, ct);
 
         return new DeltaResult(items, deltaLink, false);
@@ -211,7 +213,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         return null;
     }
 
-    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, List<DeltaItem> items, CancellationToken ct)
+    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, IReadOnlySet<string> excludedFolderIds, List<DeltaItem> items, CancellationToken ct)
     {
         var page = await client.Drives[driveId].Items[parentId].Children
             .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
@@ -220,6 +222,9 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         {
             foreach(var item in page.Value)
             {
+                if(item.Folder is not null && item.Id is not null && excludedFolderIds.Contains(item.Id))
+                    continue;
+
                 string itemPath = string.IsNullOrEmpty(relativePath)
                     ? item.Name ?? string.Empty
                     : $"{relativePath}/{item.Name}";
@@ -237,7 +242,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
                     RelativePath: itemPath));
 
                 if(item.Folder is not null && item.Id is not null)
-                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, ct);
+                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, excludedFolderIds, items, ct);
             }
 
             if(page.OdataNextLink is null)

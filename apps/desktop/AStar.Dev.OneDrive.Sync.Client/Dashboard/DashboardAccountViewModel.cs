@@ -96,13 +96,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
         var fullAccount = new OneDriveAccount
         {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-            ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
-            LastSyncedAt      = entity.LastSyncedAt
+            Id                          = entity.Id,
+            DisplayName                 = entity.DisplayName,
+            Email                       = entity.Email,
+            LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+            ConflictPolicy              = entity.ConflictPolicy,
+            SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+            ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)],
+            LastSyncedAt                = entity.LastSyncedAt
         };
 
         await _scheduler.TriggerAccountAsync(fullAccount);

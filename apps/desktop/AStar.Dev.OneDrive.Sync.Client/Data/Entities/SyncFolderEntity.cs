@@ -10,6 +10,7 @@ public sealed class SyncFolderEntity
     public string FolderName { get; set; } = string.Empty;
     public AccountId AccountId { get; set; }
     public string? DeltaLink { get; set; }
+    public bool IsExplicitlyExcluded { get; set; }
 
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }

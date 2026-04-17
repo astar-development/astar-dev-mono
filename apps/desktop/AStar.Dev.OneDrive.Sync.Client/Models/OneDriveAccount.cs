@@ -21,6 +21,11 @@ public sealed class OneDriveAccount
     /// </summary>
     public List<OneDriveFolderId> SelectedFolderIds { get; set; } = [];
     /// <summary>
+    /// Folder IDs that are explicitly excluded even though their parent folder is included.
+    /// Persisted so exclusions survive app restarts.
+    /// </summary>
+    public List<OneDriveFolderId> ExplicitlyExcludedFolderIds { get; set; } = [];
+    /// <summary>
     /// Delta link token from the last successful Graph delta query.
     /// Null means a full sync is required.
     /// </summary>

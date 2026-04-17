@@ -37,10 +37,13 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 
             db.SyncFolders.RemoveRange(toRemove);
 
-            foreach(var newFolder in account.SyncFolders
-                .Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
-            {
+            foreach(var newFolder in account.SyncFolders.Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
                 existing.SyncFolders.Add(newFolder);
+
+            foreach(var updatedFolder in account.SyncFolders.Where(nf => existing.SyncFolders.Any(f => f.FolderId == nf.FolderId)))
+            {
+                var storedFolder = existing.SyncFolders.First(f => f.FolderId == updatedFolder.FolderId);
+                storedFolder.IsExplicitlyExcluded = updatedFolder.IsExplicitlyExcluded;
             }
         }
 

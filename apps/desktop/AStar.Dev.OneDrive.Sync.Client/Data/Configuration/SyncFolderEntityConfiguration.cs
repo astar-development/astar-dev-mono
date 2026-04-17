@@ -14,6 +14,8 @@ public class SyncFolderEntityConfiguration : IEntityTypeConfiguration<SyncFolder
                    .HasConversion(id => id.Id, str => new AccountId(str));
         _ = builder.Property(e => e.FolderId)
                    .HasConversion(id => id.Id, str => new OneDriveFolderId(str));
+        _ = builder.Property(e => e.IsExplicitlyExcluded)
+                   .HasDefaultValue(false);
         _ = builder.HasIndex(f => new { f.AccountId, f.FolderId }).IsUnique();
         _ = builder.HasOne(f => f.Account)
                    .WithMany(a => a.SyncFolders)

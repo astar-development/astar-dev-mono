@@ -33,7 +33,7 @@ internal sealed class Program
                 )
                 .CreateLogger();
 
-            Serilog.Log.Information("Application Starting");
+            Log.Information("Application Starting");
             var appBuilder = BuildAvaloniaApp();
 
             _ = appBuilder.StartWithClassicDesktopLifetime(args);

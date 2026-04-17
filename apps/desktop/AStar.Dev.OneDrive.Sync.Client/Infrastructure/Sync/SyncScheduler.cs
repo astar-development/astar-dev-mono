@@ -65,13 +65,14 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         var account = new OneDriveAccount
         {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-            ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
-            LastSyncedAt      = entity.LastSyncedAt
+            Id                          = entity.Id,
+            DisplayName                 = entity.DisplayName,
+            Email                       = entity.Email,
+            LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+            ConflictPolicy              = entity.ConflictPolicy,
+            SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+            ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)],
+            LastSyncedAt                = entity.LastSyncedAt
         };
 
         await TriggerAccountAsync(account, ct).ConfigureAwait(false);
@@ -112,14 +113,15 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             var entities = await accountRepository.GetAllAsync(CancellationToken.None);
             foreach(var account in entities.TakeWhile(_ => !ct.IsCancellationRequested).Select(entity => new OneDriveAccount
             {
-                Id                = entity.Id,
-                DisplayName       = entity.DisplayName,
-                Email             = entity.Email,
-                AccentIndex       = entity.AccentIndex,
-                IsActive          = entity.IsActive,
-                LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                ConflictPolicy    = entity.ConflictPolicy,
-                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+                Id                          = entity.Id,
+                DisplayName                 = entity.DisplayName,
+                Email                       = entity.Email,
+                AccentIndex                 = entity.AccentIndex,
+                IsActive                    = entity.IsActive,
+                LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+                ConflictPolicy              = entity.ConflictPolicy,
+                SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+                ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)]
             }))
             {
                 SyncStarted?.Invoke(this, account.Id.Id);

@@ -14,12 +14,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
-    private readonly OneDriveAccount _account = account;
-    private readonly IAuthService _authService = authService;
-    private readonly IGraphService _graphService = graphService;
+    private readonly OneDriveAccount   _account    = account;
+    private readonly IAuthService      _authService = authService;
+    private readonly IGraphService     _graphService = graphService;
     private readonly IAccountRepository _repository = repository;
     private string? _accessToken;
     private string? _driveId;
+    private HashSet<OneDriveFolderId> _explicitExclusionIds = [];
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => _account.Id.Id;
@@ -53,58 +54,62 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if (IsLoading)
+        if(IsLoading)
             return;
 
-        IsLoading = true;
+        IsLoading    = true;
         HasLoadError = false;
-        LoadError = string.Empty;
+        LoadError    = string.Empty;
         RootFolders.Clear();
 
         try
         {
             var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
 
-            if (authResult.IsError)
+            if(authResult.IsError)
             {
-                LoadError = authResult.ErrorMessage ?? "Authentication failed.";
+                LoadError    = authResult.ErrorMessage ?? "Authentication failed.";
                 HasLoadError = true;
                 return;
             }
 
             _accessToken = authResult.AccessToken!;
+            _driveId     = await _graphService.GetDriveIdAsync(_accessToken);
 
-            _driveId = await _graphService.GetDriveIdAsync(_accessToken);
+            _explicitExclusionIds = _account.ExplicitlyExcludedFolderIds.ToHashSet();
 
             var folders = await _graphService.GetRootFoldersAsync(_accessToken);
 
-            foreach (var f in folders)
+            foreach(var f in folders)
             {
-                var syncState = _account.SelectedFolderIds.Contains(new OneDriveFolderId(f.Id))
-                    ? FolderSyncState.Included
-                    : FolderSyncState.Excluded;
+                var folderId = new OneDriveFolderId(f.Id);
+
+                var syncState = _explicitExclusionIds.Contains(folderId)
+                    ? FolderSyncState.Excluded
+                    : _account.SelectedFolderIds.Contains(folderId)
+                        ? FolderSyncState.Included
+                        : FolderSyncState.Excluded;
 
                 var node = new FolderTreeNode(
-                    Id: f.Id,
-                    Name: f.Name,
-                    ParentId: f.ParentId,
-                    AccountId: _account.Id.Id,
-                    SyncState: syncState,
+                    Id:          f.Id,
+                    Name:        f.Name,
+                    ParentId:    f.ParentId,
+                    AccountId:   _account.Id.Id,
+                    SyncState:   syncState,
                     HasChildren: true);
 
-                var vm = new FolderTreeNodeViewModel(
-                    node, _graphService, _accessToken, _driveId);
+                var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken, _driveId, _explicitExclusionIds);
 
-                vm.IncludeToggled += OnIncludeToggled;
-                vm.ViewActivityRequested += OnViewActivityRequested;
+                vm.IncludeToggled            += OnIncludeToggled;
+                vm.ViewActivityRequested     += OnViewActivityRequested;
                 vm.OpenInFileManagerRequested += OnOpenInFileManager;
 
                 RootFolders.Add(vm);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
-            LoadError = $"Failed to load folders: {ex.Message}";
+            LoadError    = $"Failed to load folders: {ex.Message}";
             HasLoadError = true;
         }
         finally
@@ -115,28 +120,17 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
-        var folderId = new OneDriveFolderId(node.Id);
-
-        if (node.IsIncluded)
-        {
-            if (!_account.SelectedFolderIds.Contains(folderId))
-                _account.SelectedFolderIds.Add(folderId);
-        }
-        else
-        {
-            _ = _account.SelectedFolderIds.Remove(folderId);
-        }
-
         var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
-        if (entity is null)
+        if(entity is null)
             return;
 
-        entity.SyncFolders = [.. CollectAllIncluded(RootFolders)
-            .Select(f => new SyncFolderEntity
+        entity.SyncFolders = [.. CollectSyncDecisions(RootFolders, parentPath: string.Empty, parentIsIncluded: false)
+            .Select(d => new SyncFolderEntity
             {
-                FolderId   = new OneDriveFolderId(f.Id),
-                FolderName = f.Name,
-                AccountId  = _account.Id
+                FolderId             = new OneDriveFolderId(d.Node.Id),
+                FolderName           = d.RelativePath,
+                AccountId            = _account.Id,
+                IsExplicitlyExcluded = d.IsExplicitExclusion
             })];
 
         await _repository.UpsertAsync(entity, CancellationToken.None);
@@ -151,25 +145,44 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "OneDrive", node.Name);
 
-        if (!Directory.Exists(path))
+        if(!Directory.Exists(path))
             return;
 
         string opener = OperatingSystem.IsWindows() ? "explorer"
-                   : OperatingSystem.IsMacOS() ? "open"
+                   : OperatingSystem.IsMacOS()      ? "open"
                    : "xdg-open";
 
         _ = System.Diagnostics.Process.Start(opener, path);
     }
 
-    private static IEnumerable<FolderTreeNodeViewModel> CollectAllIncluded(IEnumerable<FolderTreeNodeViewModel> nodes)
+    /// <summary>
+    /// Builds the minimal set of folder decisions to persist.
+    /// Only root-level included folders and explicitly-excluded sub-folders are stored.
+    /// Implicitly-included sub-folders are handled at sync time by recursive enumeration,
+    /// so they do not need their own DB entries.
+    /// </summary>
+    private static IEnumerable<(FolderTreeNodeViewModel Node, string RelativePath, bool IsExplicitExclusion)> CollectSyncDecisions(IEnumerable<FolderTreeNodeViewModel> nodes, string parentPath, bool parentIsIncluded)
     {
-        foreach (var node in nodes)
+        foreach(var node in nodes)
         {
-            if (node.IsIncluded)
-                yield return node;
+            var nodeRelativePath = string.IsNullOrEmpty(parentPath) ? node.Name : $"{parentPath}/{node.Name}";
+            var nodeIsIncluded   = node.SyncState is not FolderSyncState.Excluded;
 
-            foreach (var descendant in CollectAllIncluded(node.Children))
-                yield return descendant;
+            if(nodeIsIncluded && !parentIsIncluded)
+            {
+                yield return (node, nodeRelativePath, false);
+                foreach(var descendant in CollectSyncDecisions(node.Children, nodeRelativePath, parentIsIncluded: true))
+                    yield return descendant;
+            }
+            else if(!nodeIsIncluded && parentIsIncluded)
+            {
+                yield return (node, nodeRelativePath, true);
+            }
+            else if(nodeIsIncluded && parentIsIncluded)
+            {
+                foreach(var descendant in CollectSyncDecisions(node.Children, nodeRelativePath, parentIsIncluded: true))
+                    yield return descendant;
+            }
         }
     }
 }
