@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,19 +8,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {
-    private readonly IGraphService                  _graphService;
-    private readonly string                         _accessToken;
-    private readonly string                         _driveId;
-    private readonly IReadOnlySet<OneDriveFolderId> _explicitExclusions;
-    private          bool                           _childrenLoaded;
-
     public string Id { get; }
     public string Name { get; }
     public string? ParentId { get; }
     public int Depth { get; }
 
     /// <summary>
-    /// The state new lazily-loaded children should inherit.
+    /// The state new children should inherit.
     /// Reflects the most recent explicit user action on this node (not the computed Partial state).
     /// </summary>
     public FolderSyncState InheritedState { get; private set; }
@@ -51,9 +44,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public partial bool IsExpanded { get; set; }
 
     [ObservableProperty]
-    public partial bool IsLoadingChildren { get; set; }
-
-    [ObservableProperty]
     public partial bool HasChildren { get; set; }
 
     public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
@@ -65,46 +55,47 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, string driveId, IReadOnlySet<OneDriveFolderId> explicitExclusions, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, int depth = 0)
     {
-        Id                  = node.Id;
-        Name                = node.Name;
-        ParentId            = node.ParentId;
-        Depth               = depth;
-        SyncState           = node.SyncState;
-        InheritedState      = node.SyncState;
-        HasChildren         = node.HasChildren;
-        _graphService       = graphService;
-        _accessToken        = accessToken;
-        _driveId            = driveId;
-        _explicitExclusions = explicitExclusions;
+        Id             = node.Id;
+        Name           = node.Name;
+        ParentId       = node.ParentId;
+        Depth          = depth;
+        SyncState      = node.SyncState;
+        InheritedState = node.SyncState;
+        HasChildren    = node.HasChildren;
+    }
+
+    /// <summary>
+    /// Adds a pre-built child node and wires all event propagation.
+    /// Called at tree-build time in <see cref="AccountFilesViewModel"/> — never after initial load.
+    /// </summary>
+    public void AddChild(FolderTreeNodeViewModel child)
+    {
+        child.ChildStateChanged          += (_, _) => RecalculateStateFromChildren();
+        child.IncludeToggled             += (sender, node) => IncludeToggled?.Invoke(sender, node);
+        child.OpenInFileManagerRequested += (sender, node) => OpenInFileManagerRequested?.Invoke(sender, node);
+        child.ViewActivityRequested      += (sender, node) => ViewActivityRequested?.Invoke(sender, node);
+        Children.Add(child);
     }
 
     [RelayCommand]
-    private async Task ToggleExpandAsync()
+    private void ToggleExpand()
     {
         if(!HasChildren)
             return;
 
-        if(!IsExpanded)
-        {
-            await EnsureChildrenLoadedAsync();
-            IsExpanded = true;
-        }
-        else
-        {
-            IsExpanded = false;
-        }
+        IsExpanded = !IsExpanded;
     }
 
     [RelayCommand]
-    private async Task ToggleIncludeAsync()
+    private void ToggleInclude()
     {
         SyncState      = SyncState is FolderSyncState.Excluded ? FolderSyncState.Included : FolderSyncState.Excluded;
         InheritedState = SyncState;
 
         if(SyncState is FolderSyncState.Included)
-            await DeepLoadAndIncludeAsync();
+            ApplyIncludedToAllDescendants();
         else
             CascadeStateToDescendants(FolderSyncState.Excluded);
 
@@ -120,14 +111,13 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     private void ViewActivity()
         => ViewActivityRequested?.Invoke(this, this);
 
-    private async Task DeepLoadAndIncludeAsync()
+    private void ApplyIncludedToAllDescendants()
     {
-        await EnsureChildrenLoadedAsync();
         foreach(var child in Children)
         {
             child.SyncState      = FolderSyncState.Included;
             child.InheritedState = FolderSyncState.Included;
-            await child.DeepLoadAndIncludeAsync();
+            child.ApplyIncludedToAllDescendants();
         }
     }
 
@@ -163,51 +153,5 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
         SyncState = newState;
         ChildStateChanged?.Invoke(this, this);
-    }
-
-    private async Task EnsureChildrenLoadedAsync()
-    {
-        if(_childrenLoaded)
-            return;
-
-        IsLoadingChildren = true;
-        try
-        {
-            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id) ?? [];
-
-            Children.Clear();
-            foreach(var f in folders)
-            {
-                var folderId       = new OneDriveFolderId(f.Id);
-                var childSyncState = _explicitExclusions.Contains(folderId) ? FolderSyncState.Excluded : InheritedState;
-
-                var childNode = new FolderTreeNode(
-                    Id:          f.Id,
-                    Name:        f.Name,
-                    ParentId:    f.ParentId,
-                    AccountId:   string.Empty,
-                    SyncState:   childSyncState,
-                    HasChildren: true);
-
-                var childVm = new FolderTreeNodeViewModel(
-                    childNode, _graphService, _accessToken, _driveId, _explicitExclusions, Depth + 1);
-
-                childVm.ChildStateChanged         += (_, _) => RecalculateStateFromChildren();
-                childVm.IncludeToggled            += (s, e) => IncludeToggled?.Invoke(s, e);
-                childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
-                childVm.ViewActivityRequested     += (s, e) => ViewActivityRequested?.Invoke(s, e);
-
-                Children.Add(childVm);
-            }
-
-            if(Children.Count == 0)
-                HasChildren = false;
-
-            _childrenLoaded = true;
-        }
-        finally
-        {
-            IsLoadingChildren = false;
-        }
     }
 }

@@ -1,7 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.Graph;
-using Microsoft.Graph.Drives.Item.Items.Item.Delta;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 
@@ -17,6 +16,8 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         "id", "name", "folder", "file", "size", "lastModifiedDateTime", "parentReference",
         DownloadUrlKey
     ];
+
+    private static readonly string[] FolderSelect = ["id", "name", "folder", "parentReference"];
 
     private readonly Dictionary<string, DriveContext> _cache = [];
 
@@ -64,7 +65,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         var result = await client.Drives[driveId].Items[parentFolderId].Children
             .GetAsync(req =>
             {
-                req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
+                req.QueryParameters.Select = FolderSelect;
                 req.QueryParameters.Top = 100;
             }, ct);
 
@@ -93,6 +94,17 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     }
 
     /// <inheritdoc />
+    public async Task<List<DriveFolder>> GetAllFoldersAsync(string accessToken, CancellationToken ct = default)
+    {
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+
+        List<DriveFolder> all = [];
+        await CollectAllFoldersRecursiveAsync(client, ctx.DriveId, ctx.RootId, all, ct);
+
+        return all;
+    }
+
+    /// <inheritdoc />
     public async Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
@@ -106,22 +118,20 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     }
 
     /// <inheritdoc />
-    public async Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string folderRelativePath, string? deltaLink, IReadOnlySet<string> excludedFolderIds, CancellationToken ct = default)
+    public async Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, IReadOnlySet<string> excludedFolderIds, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
-
-        string effectiveRelativePath = await ResolveEffectiveFolderPathAsync(client, ctx.DriveId, folderId, folderRelativePath, ct);
-
-        if(deltaLink is null)
-            return await FullEnumerationAsync(client, ctx.DriveId, folderId, effectiveRelativePath, excludedFolderIds, ct);
 
         List<DeltaItem> items = [];
         string? nextDeltaLink = null;
         bool hasMorePages      = false;
 
-        var page = await client.Drives[ctx.DriveId].Items[folderId].Delta
-                                            .WithUrl(deltaLink)
-                                            .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+        var page = deltaLink is null
+            ? await client.Drives[ctx.DriveId].Items[folderId].Delta
+                .GetAsDeltaGetResponseAsync(cancellationToken: ct)
+            : await client.Drives[ctx.DriveId].Items[folderId].Delta
+                .WithUrl(deltaLink)
+                .GetAsDeltaGetResponseAsync(cancellationToken: ct);
 
         while(page?.Value is not null)
         {
@@ -170,79 +180,21 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
     }
 
-    private static async Task<string> ResolveEffectiveFolderPathAsync(GraphServiceClient client, string driveId, string folderId, string folderRelativePath, CancellationToken ct)
-    {
-        if(!string.IsNullOrEmpty(folderRelativePath))
-            return folderRelativePath;
-
-        var folderItem = await client.Drives[driveId].Items[folderId].GetAsync(req => req.QueryParameters.Select = ["id", "name"], ct);
-
-        return folderItem?.Name ?? string.Empty;
-    }
-
-    private static async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, string folderRelativePath, IReadOnlySet<string> excludedFolderIds, CancellationToken ct)
-    {
-        List<DeltaItem> items = [];
-        await EnumerateSubFolderAsync(client, driveId, folderId, folderRelativePath, excludedFolderIds, items, ct);
-        string? deltaLink = await ConsumeDeltaToGetLinkAsync(client, driveId, folderId, ct);
-
-        return new DeltaResult(items, deltaLink, false);
-    }
-
-    /// <summary>
-    /// Pages through the entire delta feed for <paramref name="folderId"/> to reach the final
-    /// page that carries <c>@odata.deltaLink</c>. Only the link itself is returned; the items
-    /// enumerated here are discarded because the current sync already collected them via
-    /// <see cref="EnumerateSubFolderAsync"/>.
-    /// </summary>
-    private static async Task<string?> ConsumeDeltaToGetLinkAsync(GraphServiceClient client, string driveId, string folderId, CancellationToken ct)
-    {
-        var page = await client.Drives[driveId].Items[folderId].Delta
-            .GetAsDeltaGetResponseAsync(cancellationToken: ct);
-
-        while(page is not null)
-        {
-            if(page.OdataNextLink is null)
-                return page.OdataDeltaLink;
-
-            page = await client.Drives[driveId].Items[folderId].Delta
-                .WithUrl(page.OdataNextLink)
-                .GetAsDeltaGetResponseAsync(cancellationToken: ct);
-        }
-
-        return null;
-    }
-
-    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, IReadOnlySet<string> excludedFolderIds, List<DeltaItem> items, CancellationToken ct)
+    private static async Task CollectAllFoldersRecursiveAsync(GraphServiceClient client, string driveId, string parentId, List<DriveFolder> accumulator, CancellationToken ct)
     {
         var page = await client.Drives[driveId].Items[parentId].Children
-            .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
+            .GetAsync(req =>
+            {
+                req.QueryParameters.Select = FolderSelect;
+                req.QueryParameters.Top = 100;
+            }, ct);
 
         while(page?.Value is not null)
         {
-            foreach(var item in page.Value)
+            foreach(var item in page.Value.Where(i => i.Folder is not null))
             {
-                if(item.Folder is not null && item.Id is not null && excludedFolderIds.Contains(item.Id))
-                    continue;
-
-                string itemPath = string.IsNullOrEmpty(relativePath)
-                    ? item.Name ?? string.Empty
-                    : $"{relativePath}/{item.Name}";
-
-                items.Add(new DeltaItem(
-                    Id: item.Id!,
-                    DriveId: item.ParentReference?.DriveId ?? string.Empty,
-                    Name: item.Name ?? string.Empty,
-                    ParentId: item.ParentReference?.Id,
-                    IsFolder: item.Folder is not null,
-                    IsDeleted: false,
-                    Size: item.Size ?? 0L,
-                    LastModified: item.LastModifiedDateTime,
-                    DownloadUrl: ExtractDownloadUrl(item),
-                    RelativePath: itemPath));
-
-                if(item.Folder is not null && item.Id is not null)
-                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, excludedFolderIds, items, ct);
+                accumulator.Add(new DriveFolder(item.Id!, item.Name!, item.ParentReference?.Id));
+                await CollectAllFoldersRecursiveAsync(client, driveId, item.Id!, accumulator, ct);
             }
 
             if(page.OdataNextLink is null)
@@ -315,5 +267,4 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
 
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }
-
 }

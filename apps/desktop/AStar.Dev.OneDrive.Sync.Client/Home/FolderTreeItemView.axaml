@@ -135,14 +135,6 @@
             </Grid>
         </Border>
 
-        <!-- Loading children indicator -->
-        <ProgressBar IsVisible="{Binding IsLoadingChildren}"
-                     IsIndeterminate="True"
-                     Height="2"
-                     Margin="24,0,0,0"
-                     Foreground="{DynamicResource TextAccentBrush}"
-                     Background="Transparent"/>
-
         <!-- Recursive children -->
         <ItemsControl IsVisible="{Binding IsExpanded}"
                       ItemsSource="{Binding Children}">

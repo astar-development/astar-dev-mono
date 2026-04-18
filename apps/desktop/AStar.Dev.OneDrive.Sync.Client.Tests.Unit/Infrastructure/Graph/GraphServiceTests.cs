@@ -20,4 +20,14 @@ public sealed class GivenAGraphService
 
         _ = service.ShouldBeAssignableTo<IGraphService>();
     }
+
+    [Fact]
+    public void when_constructed_then_GetAllFoldersAsync_is_available_on_IGraphService()
+    {
+        IGraphService service = new GraphService(Substitute.For<IUploadService>());
+
+        var method = typeof(IGraphService).GetMethod(nameof(IGraphService.GetAllFoldersAsync));
+
+        method.ShouldNotBeNull();
+    }
 }
