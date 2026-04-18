@@ -32,6 +32,7 @@ public sealed class StartupService(IAccountRepository repository, IAuthService a
                 QuotaTotal                  = entity.QuotaTotal,
                 QuotaUsed                   = entity.QuotaUsed,
                 SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+                AllIncludedFolderIds        = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded).Select(f => f.FolderId)],
                 ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)],
                 LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
                 ConflictPolicy              = entity.ConflictPolicy

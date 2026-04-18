@@ -16,10 +16,16 @@ public sealed class OneDriveAccount
     /// </summary>
     public int AccentIndex { get; set; }
     /// <summary>
-    /// Folder item IDs the user has chosen to sync.
+    /// Root-level folder IDs the user has chosen to sync.
+    /// Used by the sync engine to drive delta API calls.
     /// Empty means "not yet configured" (all excluded until set).
     /// </summary>
     public List<OneDriveFolderId> SelectedFolderIds { get; set; } = [];
+    /// <summary>
+    /// All included folder IDs at any depth — root and nested.
+    /// Used by the UI to restore folder inclusion state on restart.
+    /// </summary>
+    public List<OneDriveFolderId> AllIncludedFolderIds { get; set; } = [];
     /// <summary>
     /// Folder IDs that are explicitly excluded even though their parent folder is included.
     /// Persisted so exclusions survive app restarts.

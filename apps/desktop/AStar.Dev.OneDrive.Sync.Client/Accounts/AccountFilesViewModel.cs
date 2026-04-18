@@ -14,12 +14,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
-    private readonly OneDriveAccount    _account     = account;
-    private readonly IAuthService       _authService = authService;
+    private readonly OneDriveAccount    _account      = account;
+    private readonly IAuthService       _authService  = authService;
     private readonly IGraphService      _graphService = graphService;
-    private readonly IAccountRepository _repository  = repository;
+    private readonly IAccountRepository _repository   = repository;
     private string? _accessToken;
     private HashSet<OneDriveFolderId> _explicitExclusionIds = [];
+    private HashSet<OneDriveFolderId> _allIncludedFolderIds = [];
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => _account.Id.Id;
@@ -72,8 +73,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 return;
             }
 
-            _accessToken = authResult.AccessToken!;
+            _accessToken          = authResult.AccessToken!;
             _explicitExclusionIds = _account.ExplicitlyExcludedFolderIds.ToHashSet();
+            _allIncludedFolderIds = _account.AllIncludedFolderIds.ToHashSet();
 
             var rootFolders = await _graphService.GetRootFoldersAsync(_accessToken);
             var allFolders  = await _graphService.GetAllFoldersAsync(_accessToken);
@@ -85,9 +87,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             foreach(var folder in rootFolders)
             {
-                var vm = BuildFolderNodeTree(folder, childrenByParentId, depth: 0);
-                vm.IncludeToggled            += OnIncludeToggled;
-                vm.ViewActivityRequested     += OnViewActivityRequested;
+                var vm = BuildFolderNodeTree(folder, childrenByParentId, depth: 0, parentState: FolderSyncState.Excluded);
+                vm.IncludeToggled             += OnIncludeToggled;
+                vm.ViewActivityRequested      += OnViewActivityRequested;
                 vm.OpenInFileManagerRequested += OnOpenInFileManager;
                 RootFolders.Add(vm);
             }
@@ -103,34 +105,36 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    private FolderTreeNodeViewModel BuildFolderNodeTree(DriveFolder folder, Dictionary<string, List<DriveFolder>> childrenByParentId, int depth)
+    private FolderTreeNodeViewModel BuildFolderNodeTree(DriveFolder folder, Dictionary<string, List<DriveFolder>> childrenByParentId, int depth, FolderSyncState parentState)
     {
-        var children = childrenByParentId.GetValueOrDefault(folder.Id) ?? [];
+        var children  = childrenByParentId.GetValueOrDefault(folder.Id) ?? [];
+        var syncState = ResolveSyncState(new OneDriveFolderId(folder.Id), parentState);
 
         var node = new FolderTreeNode(
             Id:          folder.Id,
             Name:        folder.Name,
             ParentId:    folder.ParentId,
             AccountId:   _account.Id.Id,
-            SyncState:   ResolveSyncState(new OneDriveFolderId(folder.Id)),
+            SyncState:   syncState,
             HasChildren: children.Count > 0);
 
         var vm = new FolderTreeNodeViewModel(node, depth);
 
         foreach(var child in children)
-            vm.AddChild(BuildFolderNodeTree(child, childrenByParentId, depth + 1));
+            vm.AddChild(BuildFolderNodeTree(child, childrenByParentId, depth + 1, syncState));
 
         return vm;
     }
 
-    private FolderSyncState ResolveSyncState(OneDriveFolderId folderId)
+    private FolderSyncState ResolveSyncState(OneDriveFolderId folderId, FolderSyncState parentState)
     {
         if(_explicitExclusionIds.Contains(folderId))
             return FolderSyncState.Excluded;
 
-        return _account.SelectedFolderIds.Contains(folderId)
-            ? FolderSyncState.Included
-            : FolderSyncState.Excluded;
+        if(_allIncludedFolderIds.Contains(folderId))
+            return FolderSyncState.Included;
+
+        return parentState is FolderSyncState.Included ? FolderSyncState.Included : FolderSyncState.Excluded;
     }
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
@@ -139,7 +143,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         if(entity is null)
             return;
 
-        entity.SyncFolders = [.. CollectSyncDecisions(RootFolders, parentPath: string.Empty, parentIsIncluded: false)
+        entity.SyncFolders = [.. CollectAllFolderDecisions(RootFolders, parentPath: string.Empty, parentIsIncluded: false)
             .Select(d => new SyncFolderEntity
             {
                 FolderId             = new OneDriveFolderId(d.Node.Id),
@@ -171,30 +175,27 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     }
 
     /// <summary>
-    /// Builds the minimal set of folder decisions to persist.
-    /// Only root-level included folders and explicitly-excluded sub-folders are stored.
+    /// Builds the complete set of folder decisions to persist.
+    /// Stores every included folder at any depth, plus explicit exclusions (excluded nodes whose parent was included).
+    /// Implicitly excluded folders (parent is excluded) are not stored — no DB row needed.
     /// </summary>
-    private static IEnumerable<(FolderTreeNodeViewModel Node, string RelativePath, bool IsExplicitExclusion)> CollectSyncDecisions(IEnumerable<FolderTreeNodeViewModel> nodes, string parentPath, bool parentIsIncluded)
+    private static IEnumerable<(FolderTreeNodeViewModel Node, string RelativePath, bool IsExplicitExclusion)> CollectAllFolderDecisions(IEnumerable<FolderTreeNodeViewModel> nodes, string parentPath, bool parentIsIncluded)
     {
         foreach(var node in nodes)
         {
             var nodeRelativePath = string.IsNullOrEmpty(parentPath) ? node.Name : $"{parentPath}/{node.Name}";
             var nodeIsIncluded   = node.SyncState is not FolderSyncState.Excluded;
 
-            if(nodeIsIncluded && !parentIsIncluded)
+            if(nodeIsIncluded)
             {
                 yield return (node, nodeRelativePath, false);
-                foreach(var descendant in CollectSyncDecisions(node.Children, nodeRelativePath, parentIsIncluded: true))
+
+                foreach(var descendant in CollectAllFolderDecisions(node.Children, nodeRelativePath, parentIsIncluded: true))
                     yield return descendant;
             }
-            else if(!nodeIsIncluded && parentIsIncluded)
+            else if(parentIsIncluded)
             {
                 yield return (node, nodeRelativePath, true);
-            }
-            else if(nodeIsIncluded && parentIsIncluded)
-            {
-                foreach(var descendant in CollectSyncDecisions(node.Children, nodeRelativePath, parentIsIncluded: true))
-                    yield return descendant;
             }
         }
     }

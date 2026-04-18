@@ -88,7 +88,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     }
 
     [Fact]
-    public async Task when_parent_is_included_then_only_the_parent_is_persisted_not_auto_included_children()
+    public async Task when_parent_is_included_then_parent_and_all_children_are_persisted()
     {
         var (authService, graphService, repository) = BuildMocksWithChild();
 
@@ -107,7 +107,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         await repository.Received(1).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
         savedEntity.ShouldNotBeNull();
         savedEntity!.SyncFolders.ShouldContain(f => f.FolderId == new OneDriveFolderId(FolderId) && !f.IsExplicitlyExcluded && f.FolderName == FolderName);
-        savedEntity!.SyncFolders.ShouldNotContain(f => f.FolderId == new OneDriveFolderId(ChildFolderId));
+        savedEntity!.SyncFolders.ShouldContain(f => f.FolderId == new OneDriveFolderId(ChildFolderId) && !f.IsExplicitlyExcluded);
     }
 
     [Fact]
@@ -233,12 +233,13 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         var accountWithFolderSelected = new OneDriveAccount
         {
-            Id             = new AccountId(AccountIdString),
-            DisplayName    = "Test User",
-            Email          = "test@test.com",
-            LocalSyncPath  = LocalSyncPath.Restore(LocalSyncPathString),
-            ConflictPolicy = ConflictPolicy.Ignore,
-            SelectedFolderIds = [new OneDriveFolderId(FolderId)]
+            Id                   = new AccountId(AccountIdString),
+            DisplayName          = "Test User",
+            Email                = "test@test.com",
+            LocalSyncPath        = LocalSyncPath.Restore(LocalSyncPathString),
+            ConflictPolicy       = ConflictPolicy.Ignore,
+            SelectedFolderIds    = [new OneDriveFolderId(FolderId)],
+            AllIncludedFolderIds = [new OneDriveFolderId(FolderId), new OneDriveFolderId(ChildFolderId)]
         };
 
         var sut = BuildSut(accountWithFolderSelected, authService, graphService, repository);
@@ -286,6 +287,97 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         await sut.LoadCommand.ExecuteAsync(null);
 
         sut.RootFolders[0].HasChildren.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_root_in_all_included_folder_ids_then_child_loads_as_included()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        var accountWithBothIncluded = new OneDriveAccount
+        {
+            Id                   = new AccountId(AccountIdString),
+            DisplayName          = "Test User",
+            Email                = "test@test.com",
+            LocalSyncPath        = LocalSyncPath.Restore(LocalSyncPathString),
+            ConflictPolicy       = ConflictPolicy.Ignore,
+            SelectedFolderIds    = [new OneDriveFolderId(FolderId)],
+            AllIncludedFolderIds = [new OneDriveFolderId(FolderId), new OneDriveFolderId(ChildFolderId)]
+        };
+
+        var sut = BuildSut(accountWithBothIncluded, authService, graphService, repository);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].Children[0].SyncState.ShouldBe(FolderSyncState.Included);
+    }
+
+    [Fact]
+    public async Task when_child_not_in_db_but_parent_is_included_then_child_inherits_included_state()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        var accountWithRootOnly = new OneDriveAccount
+        {
+            Id                   = new AccountId(AccountIdString),
+            DisplayName          = "Test User",
+            Email                = "test@test.com",
+            LocalSyncPath        = LocalSyncPath.Restore(LocalSyncPathString),
+            ConflictPolicy       = ConflictPolicy.Ignore,
+            SelectedFolderIds    = [new OneDriveFolderId(FolderId)],
+            AllIncludedFolderIds = [new OneDriveFolderId(FolderId)]
+        };
+
+        var sut = BuildSut(accountWithRootOnly, authService, graphService, repository);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].Children[0].SyncState.ShouldBe(FolderSyncState.Included);
+    }
+
+    [Fact]
+    public async Task when_child_is_in_all_included_but_explicitly_excluded_then_excluded_takes_priority()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        var accountWithExplicitExclusion = new OneDriveAccount
+        {
+            Id                          = new AccountId(AccountIdString),
+            DisplayName                 = "Test User",
+            Email                       = "test@test.com",
+            LocalSyncPath               = LocalSyncPath.Restore(LocalSyncPathString),
+            ConflictPolicy              = ConflictPolicy.Ignore,
+            SelectedFolderIds           = [new OneDriveFolderId(FolderId)],
+            AllIncludedFolderIds        = [new OneDriveFolderId(FolderId)],
+            ExplicitlyExcludedFolderIds = [new OneDriveFolderId(ChildFolderId)]
+        };
+
+        var sut = BuildSut(accountWithExplicitExclusion, authService, graphService, repository);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].Children[0].SyncState.ShouldBe(FolderSyncState.Excluded);
+    }
+
+    [Fact]
+    public async Task when_parent_is_included_then_child_is_also_stored_as_not_explicitly_excluded()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var sut = BuildSut(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+
+        AccountEntity? savedEntity = null;
+        await repository.UpsertAsync(Arg.Do<AccountEntity>(e => savedEntity = e), Arg.Any<CancellationToken>());
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        savedEntity.ShouldNotBeNull();
+        savedEntity!.SyncFolders.ShouldContain(f => f.FolderId == new OneDriveFolderId(ChildFolderId) && !f.IsExplicitlyExcluded);
     }
 
     private static (IAuthService Auth, IGraphService Graph, IAccountRepository Repository) BuildMocks()
