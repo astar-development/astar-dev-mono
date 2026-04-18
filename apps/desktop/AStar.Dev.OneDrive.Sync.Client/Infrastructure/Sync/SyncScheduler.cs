@@ -70,8 +70,8 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             Email                       = entity.Email,
             LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
             ConflictPolicy              = entity.ConflictPolicy,
-            SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
-            AllIncludedFolderIds        = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded).Select(f => f.FolderId)],
+            SelectedFolderIds           = [.. entity.SyncFolders.Where(f => f.IsIncluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+            AllIncludedFolderIds        = [.. entity.SyncFolders.Where(f => f.IsIncluded).Select(f => f.FolderId)],
             ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)],
             LastSyncedAt                = entity.LastSyncedAt
         };
@@ -121,8 +121,8 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 IsActive                    = entity.IsActive,
                 LocalSyncPath               = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
                 ConflictPolicy              = entity.ConflictPolicy,
-                SelectedFolderIds           = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
-                AllIncludedFolderIds        = [.. entity.SyncFolders.Where(f => !f.IsExplicitlyExcluded).Select(f => f.FolderId)],
+                SelectedFolderIds           = [.. entity.SyncFolders.Where(f => f.IsIncluded && !f.FolderName.Contains('/')).Select(f => f.FolderId)],
+                AllIncludedFolderIds        = [.. entity.SyncFolders.Where(f => f.IsIncluded).Select(f => f.FolderId)],
                 ExplicitlyExcludedFolderIds = [.. entity.SyncFolders.Where(f => f.IsExplicitlyExcluded).Select(f => f.FolderId)]
             }))
             {

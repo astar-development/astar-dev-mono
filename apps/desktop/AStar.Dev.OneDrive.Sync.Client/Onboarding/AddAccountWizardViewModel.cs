@@ -218,9 +218,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
             DisplayName       = ConfirmedDisplayName,
             Email             = ConfirmedEmail,
             SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => new OneDriveFolderId(f.Id))],
-            FolderNames       = Folders
-                .Where(f => f.IsSelected)
-                .ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
+            FolderNames       = Folders.ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
         };
         Completed?.Invoke(this, account);
     }

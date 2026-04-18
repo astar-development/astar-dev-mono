@@ -200,11 +200,12 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             LocalSyncPath = a.LocalSyncPath ?? LocalSyncPath.Restore(string.Empty),
             ConflictPolicy = a.ConflictPolicy,
             QuotaUsed     = a.QuotaUsed,
-            SyncFolders   = [.. a.SelectedFolderIds.Select(folderId => new SyncFolderEntity
+            SyncFolders   = [.. a.FolderNames.Select(kvp => new SyncFolderEntity
                 {
-                    FolderId   = folderId,
-                    FolderName = a.FolderNames.GetValueOrDefault(folderId, string.Empty),
-                    AccountId  = a.Id
+                    FolderId   = kvp.Key,
+                    FolderName = kvp.Value,
+                    AccountId  = a.Id,
+                    IsIncluded = a.SelectedFolderIds.Contains(kvp.Key)
                 })]
         };
 }

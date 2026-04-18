@@ -44,7 +44,7 @@ public sealed class OneDriveAccount
     public long QuotaUsed { get; set; }
     /// <summary>Whether this account is currently active / selected in the UI.</summary>
     public bool IsActive { get; set; }
-    /// <summary>Maps folder ID to display name — kept in sync with SelectedFolderIds.</summary>
+    /// <summary>Maps every known root folder ID to its display name. Superset of SelectedFolderIds — includes excluded folders so names are available for the exclusion UI.</summary>
     public Dictionary<OneDriveFolderId, string> FolderNames { get; set; } = [];
     /// <summary>Validated local path where files are synced. Null means not yet configured.</summary>
     public LocalSyncPath? LocalSyncPath { get; set; }

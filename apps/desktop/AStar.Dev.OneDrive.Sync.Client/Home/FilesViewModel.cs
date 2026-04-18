@@ -67,7 +67,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
             return;
 
         ActivateTab(tab);
-        await tab.LoadCommand.ExecuteAsync(null);
+       await tab.LoadCommand.ExecuteAsync(null);
     }
 
     private void ActivateTab(Accounts.AccountFilesViewModel? tab)
