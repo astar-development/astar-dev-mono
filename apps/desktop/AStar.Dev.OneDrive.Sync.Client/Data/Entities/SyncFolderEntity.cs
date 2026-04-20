@@ -13,4 +13,6 @@ public sealed class SyncFolderEntity
 
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }
+
+    public bool IsIncluded {get; set; }
 }
