@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415123218_StronglyTypedIds")]
-    partial class StronglyTypedIds
+    [Migration("20260420184044_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -144,6 +144,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.Property<string>("FolderName")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsIncluded")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

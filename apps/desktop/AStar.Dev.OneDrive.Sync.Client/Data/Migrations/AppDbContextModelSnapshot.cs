@@ -142,6 +142,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsIncluded")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId", "FolderId")

@@ -136,7 +136,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             {
                 FolderId   = new OneDriveFolderId(f.Id),
                 FolderName = f.Name,
-                AccountId  = _account.Id
+                AccountId  = _account.Id,
+                IsIncluded = f.IsIncluded
             })];
 
         await _repository.UpsertAsync(entity, CancellationToken.None);
