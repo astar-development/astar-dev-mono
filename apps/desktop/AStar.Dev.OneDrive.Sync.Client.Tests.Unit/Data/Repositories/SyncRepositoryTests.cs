@@ -11,8 +11,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task EnqueueJobsAsync_WithEmptyList_ShouldNotThrow()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
 
         await repository.EnqueueJobsAsync(new List<SyncJob>());
     }
@@ -20,8 +20,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task EnqueueJobsAsync_WithJobs_ShouldInsertAll()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
             new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-1", State = SyncJobState.Queued },
@@ -36,8 +36,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingJobsAsync_WithNoJobs_ShouldReturnEmpty()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
 
         var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
 
@@ -47,8 +47,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingJobsAsync_ShouldReturnOnlyQueuedJobs()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
             new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-1", State = SyncJobState.Queued },
@@ -66,8 +66,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingJobsAsync_ShouldReturnJobsOrderedByQueuedAt()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var now = DateTimeOffset.UtcNow;
         var jobs = new List<SyncJob>
         {
@@ -87,8 +87,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task UpdateJobStateAsync_ShouldUpdateState()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
         var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
         await repository.EnqueueJobsAsync(new[] { job });
@@ -106,8 +106,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task UpdateJobStateAsync_WithCompletedState_ShouldSetCompletedAt()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
         var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
         await repository.EnqueueJobsAsync(new[] { job });
@@ -125,8 +125,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task UpdateJobStateAsync_WithErrorMessage_ShouldSetError()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
         var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
         await repository.EnqueueJobsAsync(new[] { job });
@@ -144,8 +144,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task ClearCompletedJobsAsync_ShouldRemoveCompletedJobs()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
             new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Completed },
@@ -167,8 +167,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task AddConflictAsync_ShouldInsertConflict()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var conflict = new SyncConflict
         {
             Id = Guid.NewGuid(),
@@ -187,8 +187,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingConflictsAsync_ShouldReturnOnlyPendingConflicts()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
         var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Resolved };
 
@@ -204,8 +204,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingConflictsAsync_ShouldReturnOrderedByDetectedAt()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var now = DateTimeOffset.UtcNow;
         var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending, DetectedAt = now.AddSeconds(2) };
         var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending, DetectedAt = now.AddSeconds(1) };
@@ -221,8 +221,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task ResolveConflictAsync_ShouldUpdateState()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
         await repository.AddConflictAsync(conflict);
 
@@ -239,8 +239,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task ResolveConflictAsync_ShouldSetResolvedAt()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
         await repository.AddConflictAsync(conflict);
 
@@ -257,8 +257,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingConflictCountAsync_WithNoPendingConflicts_ShouldReturnZero()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
 
         int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"));
 
@@ -268,8 +268,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingConflictCountAsync_ShouldReturnOnlyPendingCount()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
         var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
         var conflict3 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Resolved };
@@ -286,8 +286,8 @@ public sealed class SyncRepositoryTests
     [Fact]
     public async Task GetPendingJobsAsync_DifferentAccountsIsolated()
     {
-        var db = CreateInMemoryDatabase();
-        var repository = new SyncRepository(db);
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
             new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued },
@@ -304,15 +304,16 @@ public sealed class SyncRepositoryTests
         user2Jobs[0].AccountId.Id.ShouldBe("user-2");
     }
 
-    private static AppDbContext CreateInMemoryDatabase()
+    private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory) CreateInMemoryFactory()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
+        var seedingContext = new AppDbContext(options);
+        _ = seedingContext.Database.EnsureCreated();
+        var factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(callInfo => Task.FromResult(new AppDbContext(options)));
 
-        var context = new AppDbContext(options);
-        _ = context.Database.EnsureCreated();
-
-        return context;
+        return (seedingContext, factory);
     }
 }

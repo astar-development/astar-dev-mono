@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.Delta;
 using Microsoft.Graph.Models;
+using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -151,6 +152,56 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         }
 
         return new DeltaResult(items, nextDeltaLink, hasMorePages);
+    }
+
+    /// <inheritdoc />
+    public async Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, CancellationToken ct = default)
+    {
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+
+        List<DeltaItem> items = [];
+        string? nextDeltaLink = null;
+
+        try
+        {
+            var page = deltaLink is null
+                ? await client.Drives[ctx.DriveId].Items[ctx.RootId].Delta
+                              .GetAsDeltaGetResponseAsync(cancellationToken: ct)
+                : await client.Drives[ctx.DriveId].Items[ctx.RootId].Delta
+                              .WithUrl(deltaLink)
+                              .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+
+            while(page?.Value is not null)
+            {
+                foreach(var item in page.Value)
+                    items.Add(MapToDeltaItem(item));
+
+                if(page.OdataNextLink is not null)
+                {
+                    page = await client.Drives[ctx.DriveId].Items[ctx.RootId].Delta
+                        .WithUrl(page.OdataNextLink)
+                        .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+                }
+                else
+                {
+                    nextDeltaLink = page.OdataDeltaLink;
+                    break;
+                }
+            }
+        }
+        catch(ApiException ex) when(ex.ResponseStatusCode == 410)
+        {
+            throw new DeltaLinkExpiredException();
+        }
+
+        return new DeltaResult(items, nextDeltaLink, false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default)
+    {
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        await client.Drives[ctx.DriveId].Items[itemId].DeleteAsync(cancellationToken: ct);
     }
 
     /// <inheritdoc />

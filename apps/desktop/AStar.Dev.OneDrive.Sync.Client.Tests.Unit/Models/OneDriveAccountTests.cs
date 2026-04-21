@@ -14,7 +14,6 @@ public sealed class OneDriveAccountTests
         account.Email.ShouldBe(string.Empty);
         account.AccentIndex.ShouldBe(0);
         account.SelectedFolderIds.ShouldBeEmpty();
-        account.DeltaLink.ShouldBeNull();
         account.LastSyncedAt.ShouldBeNull();
         account.QuotaTotal.ShouldBe(0L);
         account.QuotaUsed.ShouldBe(0L);
@@ -76,17 +75,6 @@ public sealed class OneDriveAccountTests
         account.SelectedFolderIds.Add(folderId);
 
         account.SelectedFolderIds.ShouldContain(folderId);
-    }
-
-    [Fact]
-    public void DeltaLink_ShouldBeSettable()
-    {
-        var account = new OneDriveAccount();
-        string deltaLink = "https://graph.microsoft.com/v1.0/drives/abc123/root/delta?token=abc";
-
-        account.DeltaLink = deltaLink;
-
-        account.DeltaLink.ShouldBe(deltaLink);
     }
 
     [Fact]

@@ -211,5 +211,11 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         };
 
     private static AccountFilesViewModel BuildSut(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository)
-        => new(account, authService, graphService, repository);
+    {
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>());
+
+        return new(account, authService, graphService, repository, syncRuleRepo);
+    }
 }

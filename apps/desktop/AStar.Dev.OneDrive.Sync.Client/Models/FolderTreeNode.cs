@@ -16,5 +16,6 @@ public sealed record FolderTreeNode(
     string Name,
     string? ParentId,
     string AccountId,
+    string RemotePath,
     FolderSyncState SyncState = FolderSyncState.Excluded,
     bool HasChildren = true);

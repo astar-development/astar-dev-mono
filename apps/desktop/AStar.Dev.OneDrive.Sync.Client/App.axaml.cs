@@ -16,11 +16,12 @@ using AStar.Dev.Utilities;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
-using Microsoft.Extensions.Configuration;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -109,6 +110,11 @@ public class App : Application, IDisposable
     {
         try
         {
+            progress.Report("Migrating database…");
+            var dbFactory = _services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+            await using var context = await dbFactory.CreateDbContextAsync();
+            await context.Database.MigrateAsync();
+
             progress.Report("Loading settings…");
             var settingsService = await SettingsService.LoadAsync();
 

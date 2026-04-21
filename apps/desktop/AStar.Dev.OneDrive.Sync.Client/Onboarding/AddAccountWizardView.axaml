@@ -73,6 +73,12 @@
                        Foreground="{DynamicResource StatusSyncedBrush}"
                        IsVisible="{Binding IsSignedIn}"/>
 
+            <TextBlock Text="{Binding SignInStatusText}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource StatusErrorBrush}"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding SignInHasError}"/>
+
         </StackPanel>
 
         <!-- Step 2 — Select folders -->

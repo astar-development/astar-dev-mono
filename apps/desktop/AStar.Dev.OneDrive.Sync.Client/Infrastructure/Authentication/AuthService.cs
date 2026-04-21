@@ -37,6 +37,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
             var result = await _app
                     .AcquireTokenInteractive(entraIdOptions.Value.Scopes)
                     .WithPrompt(Prompt.SelectAccount)
+                    .WithUseEmbeddedWebView(false)
                     .ExecuteAsync(ct);
 
             return BuildSuccess(result);

@@ -26,5 +26,17 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
                    .WithOne(j => j.Account)
                    .HasForeignKey(j => j.AccountId)
                    .OnDelete(DeleteBehavior.Cascade);
+        _ = builder.HasOne<DriveStateEntity>()
+                   .WithOne(d => d.Account)
+                   .HasForeignKey<DriveStateEntity>(d => d.AccountId)
+                   .OnDelete(DeleteBehavior.Cascade);
+        _ = builder.HasMany<SyncRuleEntity>()
+                   .WithOne(r => r.Account)
+                   .HasForeignKey(r => r.AccountId)
+                   .OnDelete(DeleteBehavior.Cascade);
+        _ = builder.HasMany<SyncedItemEntity>()
+                   .WithOne(i => i.Account)
+                   .HasForeignKey(i => i.AccountId)
+                   .OnDelete(DeleteBehavior.Cascade);
     }
 }

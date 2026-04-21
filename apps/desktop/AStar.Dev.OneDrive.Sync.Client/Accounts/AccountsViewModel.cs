@@ -194,7 +194,6 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             Email         = a.Email,
             AccentIndex   = a.AccentIndex,
             IsActive      = a.IsActive,
-            DeltaLink     = a.DeltaLink,
             LastSyncedAt  = a.LastSyncedAt,
             QuotaTotal    = a.QuotaTotal,
             LocalSyncPath = a.LocalSyncPath ?? LocalSyncPath.Restore(string.Empty),

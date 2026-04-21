@@ -27,6 +27,9 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddSingleton<IAccountRepository, AccountRepository>();
+        _ = services.AddSingleton<IDriveStateRepository, DriveStateRepository>();
+        _ = services.AddSingleton<ISyncRuleRepository, SyncRuleRepository>();
+        _ = services.AddSingleton<ISyncedItemRepository, SyncedItemRepository>();
         _ = services.AddSingleton<ITokenCacheService, TokenCacheService>();
         _ = services.AddSingleton<IAuthService, AuthService>();
         _ = services.AddSingleton<IGraphService, GraphService>();

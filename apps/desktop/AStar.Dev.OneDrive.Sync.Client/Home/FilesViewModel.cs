@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository) : ObservableObject
 {
     public ObservableCollection<Accounts.AccountFilesViewModel> Tabs { get; } = [];
 
@@ -32,7 +32,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
             return;
 
         var tab = new Accounts.AccountFilesViewModel(
-            account, authService, graphService, repository);
+            account, authService, graphService, repository, syncRuleRepository);
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,

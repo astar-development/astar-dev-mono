@@ -1,83 +1,87 @@
-using System.Globalization;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
-/// Scans local sync folders for files that have been created or modified
-/// since the last successful sync and returns them as upload jobs.
-///
-/// Scope: only files inside explicitly included folders.
-/// New subfolders are created on OneDrive automatically when their
-/// parent upload session is created — no separate folder creation needed.
+/// Scans local sync directories for files that are new or modified relative to the last synced state.
+/// Uses <see cref="SyncedItemEntity.RemoteModifiedAt"/> as the baseline for conflict/modification detection.
 /// </summary>
 public sealed class LocalChangeDetector : ILocalChangeDetector
 {
-    /// <summary>
-    /// Returns upload jobs for all local files in <paramref name="localFolderPath"/>
-    /// that are newer than <paramref name="since"/>.
-    /// Pass null for <paramref name="since"/> to queue everything (first upload pass).
-    /// </summary>
-#pragma warning disable CA1822 // Method is called from another class, and making it static would require changing the interface and all callers.
-    public List<SyncJob> DetectChanges(string accountId, string folderId, string localFolderPath, string remoteFolderPath, DateTimeOffset? since)
-#pragma warning restore CA1822
+    /// <inheritdoc />
+    public List<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup)
     {
-        if(!Directory.Exists(localFolderPath))
+        List<SyncJob> jobs = [];
+
+        foreach(var rule in rules.Where(r => r.RuleType == RuleType.Include))
         {
-            Serilog.Log.Warning("[LocalChangeDetector] Path does not exist: {Path}", localFolderPath);
-            return [];
+            string localFolderPath = BuildLocalPath(localBasePath, rule.RemotePath);
+
+            if(!Directory.Exists(localFolderPath))
+                continue;
+
+            ScanDirectory(accountId, localBasePath, localFolderPath, rules, localPathLookup, jobs);
         }
 
-        List<SyncJob> jobs = [];
-        var cutoff = since?.UtcDateTime ?? DateTime.MinValue;
-
-        ScanDirectory(
-            accountId,
-            folderId,
-            localFolderPath,
-            remoteFolderPath,
-            cutoff,
-            jobs);
-
-        Serilog.Log.Information("[LocalChangeDetector] Found {Count} changed files in {Path} since {Since}", jobs.Count, localFolderPath, since?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.CurrentCulture) ?? "beginning");
+        Serilog.Log.Information("[LocalChangeDetector] Found {Count} local new/modified files under {Path}", jobs.Count, localBasePath);
 
         return jobs;
     }
 
-    private static void ScanDirectory(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
+    private static void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup, List<SyncJob> jobs)
     {
-        const string UnknownRemoteId = "";
         try
         {
-            foreach(string filePath in Directory.EnumerateFiles(localDir, "*", SearchOption.AllDirectories))
+            foreach(string filePath in Directory.EnumerateFiles(localDir))
             {
                 var info = new FileInfo(filePath);
 
-                if(IsFileToSkip(cutoff, info))
+                if(IsFileToSkip(info))
                     continue;
 
-                string relativePath = Path.GetRelativePath(localDir, filePath).Replace(Path.DirectorySeparatorChar, '/');
+                string remotePath = $"/{Path.GetRelativePath(localBasePath, filePath).Replace(Path.DirectorySeparatorChar, '/')}";
 
-                string remotePath = string.IsNullOrEmpty(remoteDir)
-                    ? relativePath
-                    : $"{remoteDir}/{relativePath}";
+                if(!SyncRuleEvaluator.IsIncluded(remotePath, rules))
+                    continue;
+
+                var localModified = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero);
+
+                if(localPathLookup.TryGetValue(filePath, out var known))
+                {
+                    if(localModified <= known.RemoteModifiedAt.AddSeconds(5))
+                        continue;
+                }
+
+                string relativePathForUpload = remotePath.TrimStart('/');
 
                 jobs.Add(new SyncJob
                 {
-                    AccountId = accountId,
-                    FolderId = folderId,
-                    RemoteItemId = UnknownRemoteId,
-                    RelativePath = relativePath,
-                    LocalPath = filePath,
-                    Direction = SyncDirection.Upload,
-                    FileSize = info.Length,
-                    RemoteModified = new DateTimeOffset(
-                        info.LastWriteTimeUtc, TimeSpan.Zero),
-                    DownloadUrl = remotePath
+                    AccountId      = accountId,
+                    FolderId       = string.Empty,
+                    RemoteItemId   = known?.RemoteItemId.Id ?? string.Empty,
+                    RelativePath   = relativePathForUpload,
+                    LocalPath      = filePath,
+                    Direction      = SyncDirection.Upload,
+                    FileSize       = info.Length,
+                    RemoteModified = localModified,
+                    DownloadUrl    = relativePathForUpload
                 });
             }
 
-            ProcessSubDirectories(accountId, folderId, localDir, remoteDir, cutoff, jobs);
+            foreach(string subDir in Directory.EnumerateDirectories(localDir))
+            {
+                var dirInfo = new DirectoryInfo(subDir);
+                if(dirInfo.Attributes.HasFlag(FileAttributes.Hidden) || dirInfo.Name.StartsWith('.'))
+                    continue;
+
+                string subRemotePath = $"/{Path.GetRelativePath(localBasePath, subDir).Replace(Path.DirectorySeparatorChar, '/')}";
+
+                if(!SyncRuleEvaluator.IsIncluded(subRemotePath, rules))
+                    continue;
+
+                ScanDirectory(accountId, localBasePath, subDir, rules, localPathLookup, jobs);
+            }
         }
         catch(UnauthorizedAccessException ex)
         {
@@ -89,29 +93,14 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
         }
     }
 
-    private static void ProcessSubDirectories(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
-    {
-        foreach(string subDir in Directory.EnumerateDirectories(localDir))
-        {
-            var dirInfo = new DirectoryInfo(subDir);
-            if(dirInfo.Attributes.HasFlag(FileAttributes.Hidden) || dirInfo.Name.StartsWith('.'))
-                continue;
+    private static string BuildLocalPath(string localBasePath, string remotePath)
+        => Path.Combine(localBasePath, remotePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
-            string subRelative = Path.GetRelativePath(localDir, subDir).Replace(Path.DirectorySeparatorChar, '/');
+    private static bool IsFileToSkip(FileInfo info)
+        => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.') || IsTemporaryFile(info.Extension);
 
-            string subRemote = string.IsNullOrEmpty(remoteDir)
-                    ? subRelative
-                    : $"{remoteDir}/{subRelative}";
-
-            ScanDirectory(accountId, folderId, subDir, subRemote, cutoff, jobs);
-        }
-    }
-
-    private static bool IsFileToSkip(DateTime cutoff, FileInfo info) => IsHidden(info) || IsTemporaryFile(info.Extension) || DateIsBeforeCutoff(info.LastWriteTimeUtc, info.CreationTimeUtc, cutoff);
-
-    private static bool IsTemporaryFile(string fileName) => fileName.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".temp", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".partial", StringComparison.OrdinalIgnoreCase);
-
-    private static bool DateIsBeforeCutoff(DateTime lastWriteTimeUtc, DateTime lastModifiedUtc, DateTime cutoff) => lastWriteTimeUtc <= cutoff || lastModifiedUtc <= cutoff;
-
-    private static bool IsHidden(FileInfo info) => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.');
+    private static bool IsTemporaryFile(string extension)
+        => extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".temp", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".partial", StringComparison.OrdinalIgnoreCase);
 }

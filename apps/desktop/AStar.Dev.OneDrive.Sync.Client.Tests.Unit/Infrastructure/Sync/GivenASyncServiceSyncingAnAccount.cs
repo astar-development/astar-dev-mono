@@ -9,15 +9,18 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
 public sealed class GivenASyncServiceSyncingAnAccount
 {
-    private readonly IAuthService _authService = Substitute.For<IAuthService>();
-    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
-    private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
-    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
-    private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
-    private readonly IHttpDownloader _httpDownloader = Substitute.For<IHttpDownloader>();
+    private readonly IAuthService              _authService              = Substitute.For<IAuthService>();
+    private readonly IGraphService             _graphService             = Substitute.For<IGraphService>();
+    private readonly IAccountRepository        _accountRepository        = Substitute.For<IAccountRepository>();
+    private readonly ISyncRepository           _syncRepository           = Substitute.For<ISyncRepository>();
+    private readonly IDriveStateRepository     _driveStateRepository     = Substitute.For<IDriveStateRepository>();
+    private readonly ISyncRuleRepository       _syncRuleRepository       = Substitute.For<ISyncRuleRepository>();
+    private readonly ISyncedItemRepository     _syncedItemRepository     = Substitute.For<ISyncedItemRepository>();
+    private readonly ILocalChangeDetector      _localChangeDetector      = Substitute.For<ILocalChangeDetector>();
+    private readonly IHttpDownloader           _httpDownloader           = Substitute.For<IHttpDownloader>();
     private readonly IParallelDownloadPipeline _parallelDownloadPipeline = Substitute.For<IParallelDownloadPipeline>();
 
-    private SyncService CreateSut() => new(_authService, _graphService, _accountRepository, _syncRepository, _localChangeDetector, _httpDownloader, _parallelDownloadPipeline);
+    private SyncService CreateSut() => new(_authService, _graphService, _accountRepository, _syncRepository, _driveStateRepository, _syncRuleRepository, _syncedItemRepository, _localChangeDetector, _httpDownloader, _parallelDownloadPipeline);
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {

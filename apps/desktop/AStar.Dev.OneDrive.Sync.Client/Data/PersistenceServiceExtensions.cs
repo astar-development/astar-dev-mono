@@ -12,25 +12,23 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data;
 internal static class PersistenceServiceExtensions
 {
     /// <summary>
-    ///     Adds <see cref="AppDbContext" />, <see cref="IApplicationPathsProvider" />,
+    ///     Adds <see cref="IDbContextFactory{AppDbContext}" /> and all repository services. Database migration is deferred to bootstrap.
     /// </summary>
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
-        var db = DbContextFactory.Create();
-        db.Database.Migrate();
-        IAccountRepository accountRepository = new AccountRepository(db);
-        ISyncRepository syncRepository    = new SyncRepository(db);
-        _ = services.AddDbContext<AppDbContext>(ConfigureOptions);
-        _ = services.AddDbContextFactory<AppDbContext>(ConfigureOptions);
-        _ = services.AddSingleton(accountRepository);
-        _ = services.AddSingleton(syncRepository);
+        _ = services.AddDbContextFactory<AppDbContext>(ConfigureDbContext, ServiceLifetime.Singleton);
+        _ = services.AddSingleton<IAccountRepository, AccountRepository>();
+        _ = services.AddSingleton<ISyncRepository, SyncRepository>();
+        _ = services.AddSingleton<IDriveStateRepository, DriveStateRepository>();
+        _ = services.AddSingleton<ISyncRuleRepository, SyncRuleRepository>();
+        _ = services.AddSingleton<ISyncedItemRepository, SyncedItemRepository>();
 
         return services;
     }
 
-    private static void ConfigureOptions(IServiceProvider sp, DbContextOptionsBuilder options)
+    private static void ConfigureDbContext(DbContextOptionsBuilder builder)
     {
         string dbPath = ApplicationMetadata.ApplicationNameLowered.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameLowered}.db");
-        _ = options.UseSqlite($"DataSource={dbPath}");
+        _ = builder.UseSqlite($"Data Source={dbPath}");
     }
 }
