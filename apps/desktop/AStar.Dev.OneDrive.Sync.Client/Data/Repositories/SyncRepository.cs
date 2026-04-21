@@ -5,10 +5,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
-public sealed class SyncRepository(AppDbContext db) : ISyncRepository
+public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : ISyncRepository
 {
     public async Task EnqueueJobsAsync(IEnumerable<SyncJob> jobs)
     {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
         var entities = jobs.Select(j => new SyncJobEntity
         {
             Id             = j.Id,
@@ -29,14 +31,22 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncJobEntity>> GetPendingJobsAsync(AccountId accountId)
-        => db.SyncJobs
+    public async Task<List<SyncJobEntity>> GetPendingJobsAsync(AccountId accountId)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        return await db.SyncJobs
           .Where(j => j.AccountId == accountId &&
                       j.State == SyncJobState.Queued)
           .OrderBy(j => j.QueuedAt)
           .ToListAsync();
+    }
 
-    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? stateError = null) => await db.SyncJobs
+    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? stateError = null)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        _ = await db.SyncJobs
             .Where(j => j.Id == jobId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(j => j.State, state)
@@ -45,14 +55,21 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                     state is SyncJobState.Completed or SyncJobState.Failed or SyncJobState.Skipped
                         ? DateTimeOffset.UtcNow
                         : null));
+    }
 
-    public Task ClearCompletedJobsAsync(AccountId accountId)
-        => db.SyncJobs
+    public async Task ClearCompletedJobsAsync(AccountId accountId)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        _ = await db.SyncJobs
           .Where(job => job.AccountId == accountId && job.State == SyncJobState.Completed)
           .ExecuteDeleteAsync();
+    }
 
     public async Task AddConflictAsync(SyncConflict conflict)
     {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
         _ = db.SyncConflicts.Add(new SyncConflictEntity
         {
             Id             = conflict.Id,
@@ -72,22 +89,35 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncConflictEntity>> GetPendingConflictsAsync(AccountId accountId)
-        => db.SyncConflicts
+    public async Task<List<SyncConflictEntity>> GetPendingConflictsAsync(AccountId accountId)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        return await db.SyncConflicts
           .Where(c => c.AccountId == accountId &&
                       c.State == ConflictState.Pending)
           .OrderBy(c => c.DetectedAt)
           .ToListAsync();
+    }
 
-    public async Task ResolveConflictAsync(Guid conflictId, ConflictPolicy resolution) => await db.SyncConflicts
+    public async Task ResolveConflictAsync(Guid conflictId, ConflictPolicy resolution)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        _ = await db.SyncConflicts
             .Where(c => c.Id == conflictId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(c => c.State, ConflictState.Resolved)
                 .SetProperty(c => c.Resolution, resolution)
                 .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
+    }
 
-    public Task<int> GetPendingConflictCountAsync(AccountId accountId)
-        => db.SyncConflicts
+    public async Task<int> GetPendingConflictCountAsync(AccountId accountId)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        return await db.SyncConflicts
           .CountAsync(c => c.AccountId == accountId &&
                            c.State == ConflictState.Pending);
+    }
 }

@@ -20,4 +20,5 @@ public sealed record SyncJob
     public DateTimeOffset RemoteModified { get; init; }
     public DateTimeOffset QueuedAt { get; init; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? CompletedAt { get; set; }
+    public string? UploadedRemoteItemId { get; set; }
 }

@@ -69,7 +69,7 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             case SyncDirection.Upload:
                 string remotePath = job.DownloadUrl ?? job.RelativePath;
 
-                _ = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
+                job.UploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
 
                 Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
                 break;

@@ -4,21 +4,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
-public sealed class AccountRepository(AppDbContext db) : IAccountRepository
+public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory) : IAccountRepository
 {
-    public Task<List<AccountEntity>> GetAllAsync(CancellationToken cancellationToken)
-        => db.Accounts
+    public async Task<List<AccountEntity>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        return await db.Accounts
           .Include(a => a.SyncFolders)
           .OrderBy(a => a.Email)
           .ToListAsync(cancellationToken);
+    }
 
-    public Task<AccountEntity?> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
-        => db.Accounts
+    public async Task<AccountEntity?> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        return await db.Accounts
           .Include(a => a.SyncFolders)
           .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+    }
 
     public async Task UpsertAsync(AccountEntity account, CancellationToken cancellationToken)
     {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
         var existing = await db.Accounts
             .Include(a => a.SyncFolders)
             .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken);
@@ -48,10 +58,15 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
     }
 
     public async Task DeleteAsync(AccountId id, CancellationToken cancellationToken)
-        => await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken);
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        _ = await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken);
+    }
 
     public async Task SetActiveAccountAsync(AccountId id, CancellationToken cancellationToken)
     {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
         _ = await db.Accounts.ExecuteUpdateAsync(s =>
             s.SetProperty(a => a.IsActive, false), cancellationToken: cancellationToken);
 
@@ -60,10 +75,4 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
             .ExecuteUpdateAsync(s =>
                 s.SetProperty(a => a.IsActive, true), cancellationToken: cancellationToken);
     }
-
-    public async Task UpdateDeltaLinkAsync(AccountId accountId, OneDriveFolderId folderId, string deltaLink, CancellationToken cancellationToken)
-        => await db.SyncFolders
-            .Where(f => f.AccountId == accountId && f.FolderId == folderId)
-            .ExecuteUpdateAsync(s =>
-                s.SetProperty(f => f.DeltaLink, deltaLink), cancellationToken);
 }

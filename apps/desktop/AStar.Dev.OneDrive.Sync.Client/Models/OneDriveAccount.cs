@@ -20,11 +20,6 @@ public sealed class OneDriveAccount
     /// Empty means "not yet configured" (all excluded until set).
     /// </summary>
     public List<OneDriveFolderId> SelectedFolderIds { get; set; } = [];
-    /// <summary>
-    /// Delta link token from the last successful Graph delta query.
-    /// Null means a full sync is required.
-    /// </summary>
-    public string? DeltaLink { get; set; }
     /// <summary>UTC timestamp of the last successful delta sync.</summary>
     public DateTimeOffset? LastSyncedAt { get; set; }
     /// <summary>Total OneDrive quota in bytes (refreshed periodically).</summary>

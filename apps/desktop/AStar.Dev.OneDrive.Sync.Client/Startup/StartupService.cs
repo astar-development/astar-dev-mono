@@ -27,7 +27,6 @@ public sealed class StartupService(IAccountRepository repository, IAuthService a
                 Email             = entity.Email,
                 AccentIndex       = entity.AccentIndex,
                 IsActive          = entity.IsActive,
-                DeltaLink         = entity.DeltaLink,
                 LastSyncedAt      = entity.LastSyncedAt,
                 QuotaTotal        = entity.QuotaTotal,
                 QuotaUsed         = entity.QuotaUsed,

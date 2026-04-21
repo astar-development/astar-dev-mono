@@ -12,12 +12,13 @@ using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
     private readonly IGraphService _graphService = graphService;
     private readonly IAccountRepository _repository = repository;
+    private readonly ISyncRuleRepository _syncRuleRepository = syncRuleRepository;
     private string? _accessToken;
     private string? _driveId;
 
@@ -73,14 +74,20 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             }
 
             _accessToken = authResult.AccessToken!;
-
             _driveId = await _graphService.GetDriveIdAsync(_accessToken);
+
+            var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
+            var includedPaths = existingRules
+                .Where(r => r.RuleType == RuleType.Include)
+                .Select(r => r.RemotePath)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var folders = await _graphService.GetRootFoldersAsync(_accessToken);
 
             foreach (var f in folders)
             {
-                var syncState = _account.SelectedFolderIds.Contains(new OneDriveFolderId(f.Id))
+                string remotePath = $"/{f.Name}";
+                var syncState = includedPaths.Contains(remotePath)
                     ? FolderSyncState.Included
                     : FolderSyncState.Excluded;
 
@@ -89,6 +96,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                     Name: f.Name,
                     ParentId: f.ParentId,
                     AccountId: _account.Id.Id,
+                    RemotePath: remotePath,
                     SyncState: syncState,
                     HasChildren: true);
 
@@ -115,29 +123,21 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
-        var folderId = new OneDriveFolderId(node.Id);
+        var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
 
-        if (node.IsIncluded)
-        {
-            if (!_account.SelectedFolderIds.Contains(folderId))
-                _account.SelectedFolderIds.Add(folderId);
-        }
-        else
-        {
-            _ = _account.SelectedFolderIds.Remove(folderId);
-        }
+        await _syncRuleRepository.UpsertAsync(_account.Id, node.RemotePath, ruleType, CancellationToken.None);
 
         var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
         if (entity is null)
             return;
 
-        entity.SyncFolders = [.. CollectAllIncluded(RootFolders)
+        entity.SyncFolders = [.. CollectAllVisible(RootFolders)
+            .Where(f => f.IsIncluded)
             .Select(f => new SyncFolderEntity
             {
                 FolderId   = new OneDriveFolderId(f.Id),
                 FolderName = f.Name,
-                AccountId  = _account.Id,
-                IsIncluded = f.IsIncluded
+                AccountId  = _account.Id
             })];
 
         await _repository.UpsertAsync(entity, CancellationToken.None);
@@ -162,14 +162,13 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         _ = System.Diagnostics.Process.Start(opener, path);
     }
 
-    private static IEnumerable<FolderTreeNodeViewModel> CollectAllIncluded(IEnumerable<FolderTreeNodeViewModel> nodes)
+    private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
     {
         foreach (var node in nodes)
         {
-            if (node.IsIncluded)
-                yield return node;
+            yield return node;
 
-            foreach (var descendant in CollectAllIncluded(node.Children))
+            foreach (var descendant in CollectAllVisible(node.Children))
                 yield return descendant;
         }
     }

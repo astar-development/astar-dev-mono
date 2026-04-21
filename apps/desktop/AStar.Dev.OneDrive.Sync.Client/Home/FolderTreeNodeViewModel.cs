@@ -16,6 +16,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public string Id { get; }
     public string Name { get; }
     public string? ParentId { get; }
+    public string RemotePath { get; }
     public int Depth { get; }
 
     [ObservableProperty]
@@ -56,16 +57,12 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(
-        FolderTreeNode node,
-        IGraphService graphService,
-        string accessToken,
-        string driveId,
-        int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, string driveId, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
         ParentId = node.ParentId;
+        RemotePath = node.RemotePath;
         Depth = depth;
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
@@ -123,11 +120,14 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
             Children.Clear();
             foreach(var f in folders)
             {
+                string childRemotePath = $"{RemotePath}/{f.Name}";
+
                 var childNode = new FolderTreeNode(
                     Id:          f.Id,
                     Name:        f.Name,
                     ParentId:    f.ParentId,
                     AccountId:   string.Empty,
+                    RemotePath:  childRemotePath,
                     SyncState:   FolderSyncState.Excluded,
                     HasChildren: true);
 
