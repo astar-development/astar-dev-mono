@@ -43,9 +43,10 @@ public interface IGraphService
     /// </summary>
     /// <param name="accessToken">The access token for the authenticated user.</param>
     /// <param name="deltaLink">The drive-level delta link for incremental sync, or null for a full enumeration.</param>
+    /// <param name="onPageFetched">Optional callback invoked after each page is retrieved; receives the 1-based page number.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The delta result containing all changed items and the next delta link.</returns>
-    Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, CancellationToken ct = default);
+    Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, Action<int>? onPageFetched = null, CancellationToken ct = default);
 
     /// <summary>
     /// Fetches the pre-authenticated download URL for a specific drive item.

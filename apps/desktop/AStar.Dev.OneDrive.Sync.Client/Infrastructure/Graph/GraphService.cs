@@ -155,12 +155,13 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     }
 
     /// <inheritdoc />
-    public async Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, CancellationToken ct = default)
+    public async Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, Action<int>? onPageFetched = null, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
         List<DeltaItem> items = [];
         string? nextDeltaLink = null;
+        int pageNumber = 0;
 
         try
         {
@@ -173,6 +174,8 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
 
             while(page?.Value is not null)
             {
+                onPageFetched?.Invoke(++pageNumber);
+
                 foreach(var item in page.Value)
                     items.Add(MapToDeltaItem(item));
 

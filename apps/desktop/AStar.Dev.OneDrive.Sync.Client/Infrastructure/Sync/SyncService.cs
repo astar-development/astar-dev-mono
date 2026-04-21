@@ -80,16 +80,18 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         RaiseProgress(account.Id.Id, 0, 0, "Fetching changes...", SyncState.Syncing);
 
+        void OnPageFetched(int page) => RaiseProgress(account.Id.Id, 0, 0, $"Retrieving page {page}...", SyncState.Syncing);
+
         DeltaResult delta;
         try
         {
-            delta = await graphService.GetDriveRootDeltaAsync(token, driveState.DeltaLink, ct);
+            delta = await graphService.GetDriveRootDeltaAsync(token, driveState.DeltaLink, OnPageFetched, ct);
         }
         catch(DeltaLinkExpiredException)
         {
             Serilog.Log.Warning("[SyncService] Delta link expired for {Email} — re-enumerating from scratch", account.Email);
             driveState.DeltaLink = null;
-            delta = await graphService.GetDriveRootDeltaAsync(token, null, ct);
+            delta = await graphService.GetDriveRootDeltaAsync(token, null, OnPageFetched, ct);
         }
 
         Serilog.Log.Information("[SyncService] Delta returned {Count} items for {Email}", delta.Items.Count, account.Email);
