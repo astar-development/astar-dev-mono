@@ -202,8 +202,31 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
 
-        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Include, Arg.Any<CancellationToken>());
-        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Include, Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Include, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Include, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_folder_is_toggled_included_then_the_remote_item_id_is_stored_in_the_rule()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>());
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Include, FolderId, Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Include, ChildFolderId, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -225,8 +248,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
 
-        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Exclude, Arg.Any<CancellationToken>());
-        await syncRuleRepo.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Exclude, Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await syncRuleRepo.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -270,7 +293,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
 
-        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), RuleType.Exclude, Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

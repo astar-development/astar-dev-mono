@@ -10,4 +10,6 @@ public sealed record DeltaItem(
     long Size,
     DateTimeOffset? LastModified,
     string? DownloadUrl,
-    string? RelativePath = null);
+    string? RelativePath = null,
+    string? ETag = null,
+    string? CTag = null);

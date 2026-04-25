@@ -45,7 +45,7 @@ public sealed class GivenASyncRuleRepository : IDisposable
         await SeedAccountAsync();
         var repository = new SyncRuleRepository(_factory);
 
-        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, TestContext.Current.CancellationToken);
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, null, TestContext.Current.CancellationToken);
 
         var rules = await _seedingContext.SyncRules.AsNoTracking().Where(r => r.AccountId == new AccountId(AccountIdString)).ToListAsync(TestContext.Current.CancellationToken);
         rules.Count.ShouldBe(1);
@@ -59,8 +59,8 @@ public sealed class GivenASyncRuleRepository : IDisposable
         await SeedAccountAsync();
         var repository = new SyncRuleRepository(_factory);
 
-        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, TestContext.Current.CancellationToken);
-        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Exclude, TestContext.Current.CancellationToken);
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, null, TestContext.Current.CancellationToken);
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Exclude, null, TestContext.Current.CancellationToken);
 
         var rules = await _seedingContext.SyncRules.AsNoTracking().Where(r => r.AccountId == new AccountId(AccountIdString)).ToListAsync(TestContext.Current.CancellationToken);
         rules.Count.ShouldBe(1);
@@ -75,9 +75,35 @@ public sealed class GivenASyncRuleRepository : IDisposable
         await _seedingContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var repository = new SyncRuleRepository(_factory);
-        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Exclude, TestContext.Current.CancellationToken);
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Exclude, null, TestContext.Current.CancellationToken);
 
         var rule = await _seedingContext.SyncRules.AsNoTracking().SingleAsync(r => r.AccountId == new AccountId(AccountIdString) && r.RemotePath == "/Photos", TestContext.Current.CancellationToken);
+        rule.RuleType.ShouldBe(RuleType.Exclude);
+    }
+
+    [Fact]
+    public async Task when_upsert_is_called_with_a_remote_item_id_then_it_is_persisted()
+    {
+        await SeedAccountAsync();
+        var repository = new SyncRuleRepository(_factory);
+
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, "item-id-123", TestContext.Current.CancellationToken);
+
+        var rule = await _seedingContext.SyncRules.AsNoTracking().SingleAsync(r => r.AccountId == new AccountId(AccountIdString) && r.RemotePath == "/Photos", TestContext.Current.CancellationToken);
+        rule.RemoteItemId.ShouldBe("item-id-123");
+    }
+
+    [Fact]
+    public async Task when_upsert_is_called_twice_and_second_call_has_null_item_id_then_existing_item_id_is_preserved()
+    {
+        await SeedAccountAsync();
+        var repository = new SyncRuleRepository(_factory);
+
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, "item-id-123", TestContext.Current.CancellationToken);
+        await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Exclude, null, TestContext.Current.CancellationToken);
+
+        var rule = await _seedingContext.SyncRules.AsNoTracking().SingleAsync(r => r.AccountId == new AccountId(AccountIdString) && r.RemotePath == "/Photos", TestContext.Current.CancellationToken);
+        rule.RemoteItemId.ShouldBe("item-id-123");
         rule.RuleType.ShouldBe(RuleType.Exclude);
     }
 

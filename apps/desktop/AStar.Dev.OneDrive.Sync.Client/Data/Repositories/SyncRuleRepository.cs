@@ -16,12 +16,12 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
              .ToListAsync(cancellationToken);
     }
 
-    public async Task UpsertAsync(AccountId accountId, string remotePath, RuleType ruleType, CancellationToken cancellationToken)
+    public async Task UpsertAsync(AccountId accountId, string remotePath, RuleType ruleType, string? remoteItemId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         _ = await db.Database.ExecuteSqlAsync(
-            $"INSERT INTO SyncRules (AccountId, RemotePath, RuleType) VALUES ({accountId.Id}, {remotePath}, {(int)ruleType}) ON CONFLICT(AccountId, RemotePath) DO UPDATE SET RuleType = excluded.RuleType",
+            $"INSERT INTO SyncRules (AccountId, RemotePath, RuleType, RemoteItemId) VALUES ({accountId.Id}, {remotePath}, {(int)ruleType}, {remoteItemId}) ON CONFLICT(AccountId, RemotePath) DO UPDATE SET RuleType = excluded.RuleType, RemoteItemId = COALESCE(excluded.RemoteItemId, RemoteItemId)",
             cancellationToken);
     }
 

@@ -10,6 +10,7 @@ public sealed class SyncRuleEntity
     public AccountId AccountId { get; set; }
     public string RemotePath { get; set; } = string.Empty;
     public RuleType RuleType { get; set; }
+    public string? RemoteItemId { get; set; }
 
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }

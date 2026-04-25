@@ -103,7 +103,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 var vm = new FolderTreeNodeViewModel(
                     node, _graphService, _accessToken, _driveId);
 
-                vm.IncludeToggled += OnIncludeToggled;
+                vm.IncludeToggled += OnIncludeToggledAsync;
                 vm.ViewActivityRequested += OnViewActivityRequested;
                 vm.OpenInFileManagerRequested += OnOpenInFileManager;
 
@@ -121,7 +121,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
+    private async void OnIncludeToggledAsync(object? sender, FolderTreeNodeViewModel node)
     {
         try
         {
@@ -131,12 +131,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
-            IEnumerable<FolderTreeNodeViewModel> affected = ruleType == RuleType.Include
+            var affected = ruleType == RuleType.Include
                 ? CollectAllVisible([node])
                 : [node];
 
             foreach(var item in affected)
-                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, CancellationToken.None);
+                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
 
             var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
             if(entity is null)
