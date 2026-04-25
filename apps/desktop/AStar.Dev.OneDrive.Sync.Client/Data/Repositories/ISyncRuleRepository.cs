@@ -17,4 +17,7 @@ public interface ISyncRuleRepository
 
     /// <summary>Removes all rules for the specified account.</summary>
     Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken);
+
+    /// <summary>Removes all rules whose remote path starts with <paramref name="parentPath"/>/ for the specified account.</summary>
+    Task DeleteChildRulesAsync(AccountId accountId, string parentPath, CancellationToken cancellationToken);
 }

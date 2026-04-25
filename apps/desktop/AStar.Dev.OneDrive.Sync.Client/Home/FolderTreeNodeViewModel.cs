@@ -67,6 +67,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
+        
         _accessToken = accessToken;
         _driveId = driveId;
     }
@@ -91,11 +92,20 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [RelayCommand]
     private void ToggleInclude()
     {
-        SyncState = SyncState is FolderSyncState.Excluded
+        var newState = SyncState is FolderSyncState.Excluded
             ? FolderSyncState.Included
             : FolderSyncState.Excluded;
 
+        ApplySyncStateRecursively(newState);
         IncludeToggled?.Invoke(this, this);
+    }
+
+    internal void ApplySyncStateRecursively(FolderSyncState state)
+    {
+        SyncState = state;
+
+        foreach(var child in Children)
+            child.ApplySyncStateRecursively(state);
     }
 
     [RelayCommand]
@@ -128,7 +138,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
                     ParentId:    f.ParentId,
                     AccountId:   string.Empty,
                     RemotePath:  childRemotePath,
-                    SyncState:   FolderSyncState.Excluded,
+                    SyncState:   SyncState,
                     HasChildren: true);
 
                 var childVm = new FolderTreeNodeViewModel(

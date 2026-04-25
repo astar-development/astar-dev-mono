@@ -123,24 +123,45 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
-        var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
+        try
+        {
+            var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
 
-        await _syncRuleRepository.UpsertAsync(_account.Id, node.RemotePath, ruleType, CancellationToken.None);
+            Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
 
-        var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
-        if (entity is null)
-            return;
+            await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
-        entity.SyncFolders = [.. CollectAllVisible(RootFolders)
-            .Where(f => f.IsIncluded)
-            .Select(f => new SyncFolderEntity
+            IEnumerable<FolderTreeNodeViewModel> affected = ruleType == RuleType.Include
+                ? CollectAllVisible([node])
+                : [node];
+
+            foreach(var item in affected)
+                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, CancellationToken.None);
+
+            var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
+            if(entity is null)
             {
-                FolderId   = new OneDriveFolderId(f.Id),
-                FolderName = f.Name,
-                AccountId  = _account.Id
-            })];
+                Serilog.Log.Warning("[AccountFilesViewModel] Account {AccountId} not found in repository — SyncFolders not updated", _account.Id.Id);
+                return;
+            }
 
-        await _repository.UpsertAsync(entity, CancellationToken.None);
+            entity.SyncFolders = [.. CollectAllVisible(RootFolders)
+                .Where(f => f.IsIncluded)
+                .Select(f => new SyncFolderEntity
+                {
+                    FolderId   = new OneDriveFolderId(f.Id),
+                    FolderName = f.Name,
+                    AccountId  = _account.Id
+                })];
+
+            await _repository.UpsertAsync(entity, CancellationToken.None);
+
+            Serilog.Log.Debug("[AccountFilesViewModel] Folder selection persisted for account {AccountId}", _account.Id.Id);
+        }
+        catch(Exception ex)
+        {
+            Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
+        }
     }
 
     private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node)

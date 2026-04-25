@@ -80,7 +80,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         RaiseProgress(account.Id.Id, 0, 0, "Fetching changes...", SyncState.Syncing);
 
-        void OnPageFetched(int page) => RaiseProgress(account.Id.Id, 0, 0, $"Retrieving page {page}...", SyncState.Syncing);
+        void OnPageFetched(int page) => RaiseProgress(account.Id.Id, 0, 0, $"Retrieving page {page:N0}...", SyncState.Syncing);
 
         DeltaResult delta;
         try
@@ -155,7 +155,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
                 continue;
             }
 
-            if(item.IsFolder)
+            if(item.IsFolder && SyncRuleEvaluator.IsIncluded(remotePath, rules))
             {
                 await HandleFolderAsync(account.Id, item, remotePath, localBasePath, syncedItems, ct);
                 continue;

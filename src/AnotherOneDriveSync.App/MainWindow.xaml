@@ -1,0 +1,111 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AnotherOneDriveSync.App.ViewModels"
+        x:Class="AnotherOneDriveSync.App.MainWindow"
+        Title="Another OneDrive Sync"
+        Width="960"
+        Height="680">
+
+  <DockPanel>
+
+    <!-- Toolbar -->
+    <Border DockPanel.Dock="Top" Background="#2D2D30" Padding="8,6">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Command="{Binding LoginCommand}" MinWidth="80">Login</Button>
+        <Button Command="{Binding SyncNowCommand}" MinWidth="90">Sync Now</Button>
+        <Separator Width="1" Background="#555" Margin="4,2"/>
+        <TextBlock Text="{Binding StatusMessage}"
+                   VerticalAlignment="Center"
+                   Foreground="#CCCCCC"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" Background="#1E1E1E" Padding="8,6">
+      <DockPanel>
+        <ProgressBar DockPanel.Dock="Bottom"
+                     IsIndeterminate="True"
+                     IsVisible="{Binding IsBusy}"
+                     Height="3"
+                     Margin="0,4,0,0"/>
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="Local Root:" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+          <TextBox Text="{Binding LocalRootPath}" MinWidth="340" VerticalAlignment="Center"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Main panel: tree + sync list -->
+    <Grid ColumnDefinitions="*,6,*">
+
+      <!-- OneDrive tree -->
+      <DockPanel Grid.Column="0">
+        <Border DockPanel.Dock="Top" Background="#3C3C3C" Padding="8,5">
+          <DockPanel>
+            <Button DockPanel.Dock="Right"
+                    Command="{Binding RefreshCommand}"
+                    Padding="8,3">Refresh</Button>
+            <TextBlock Text="OneDrive"
+                       FontWeight="SemiBold"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
+          </DockPanel>
+        </Border>
+        <TreeView ItemsSource="{Binding TreeRoots}"
+                  SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+          <TreeView.DataTemplates>
+            <TreeDataTemplate DataType="{x:Type vm:OneDriveTreeNodeViewModel}"
+                              ItemsSource="{Binding Children}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding Name}"/>
+                <TextBlock Text="(loading)"
+                           IsVisible="{Binding IsLoading}"
+                           FontStyle="Italic"
+                           Opacity="0.6"
+                           FontSize="11"/>
+              </StackPanel>
+            </TreeDataTemplate>
+          </TreeView.DataTemplates>
+          <TreeView.Styles>
+            <Style Selector="TreeViewItem">
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            </Style>
+          </TreeView.Styles>
+        </TreeView>
+      </DockPanel>
+
+      <!-- Splitter -->
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#555"/>
+
+      <!-- Sync folders -->
+      <DockPanel Grid.Column="2">
+        <Border DockPanel.Dock="Top" Background="#3C3C3C" Padding="8,5">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+              <Button Command="{Binding AddFolderCommand}" Padding="8,3">Add Selected</Button>
+              <Button Command="{Binding RemoveFolderCommand}" Padding="8,3">Remove</Button>
+            </StackPanel>
+            <TextBlock Text="Sync Folders"
+                       FontWeight="SemiBold"
+                       Foreground="White"
+                       VerticalAlignment="Center"/>
+          </DockPanel>
+        </Border>
+        <ListBox ItemsSource="{Binding SyncFolders}"
+                 SelectedItem="{Binding SelectedSyncFolder, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="{x:Type vm:SyncFolderItemViewModel}">
+              <StackPanel Spacing="2" Margin="2,4">
+                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding LastSyncTimeDisplay}"
+                           FontSize="11"
+                           Opacity="0.6"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+    </Grid>
+  </DockPanel>
+</Window>
