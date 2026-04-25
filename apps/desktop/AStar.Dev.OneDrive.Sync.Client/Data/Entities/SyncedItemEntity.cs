@@ -14,6 +14,7 @@ public sealed class SyncedItemEntity
     public bool IsFolder { get; set; }
     public DateTimeOffset RemoteModifiedAt { get; set; }
     public string? ETag { get; set; }
+    public string? CTag { get; set; }
 
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }

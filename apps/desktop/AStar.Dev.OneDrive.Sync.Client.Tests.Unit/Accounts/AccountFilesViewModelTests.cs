@@ -122,15 +122,13 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var sut = BuildSut(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository);
 
         await sut.LoadCommand.ExecuteAsync(null);
-
-        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
-
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
 
         AccountEntity? savedEntity = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(e => savedEntity = e), Arg.Any<CancellationToken>());
 
         sut.RootFolders[0].Children[0].ToggleIncludeCommand.Execute(null);
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
 
         await repository.Received(2).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
         savedEntity.ShouldNotBeNull();
@@ -160,6 +158,164 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         savedEntity.ShouldNotBeNull();
         savedEntity!.SyncFolders.ShouldNotContain(f => f.FolderId == new OneDriveFolderId(ChildFolderId));
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_included_then_loaded_children_are_persisted_to_sync_folders()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var sut = BuildSut(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        AccountEntity? savedEntity = null;
+        await repository.UpsertAsync(Arg.Do<AccountEntity>(e => savedEntity = e), Arg.Any<CancellationToken>());
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        savedEntity.ShouldNotBeNull();
+        savedEntity!.SyncFolders.ShouldContain(f => f.FolderId == new OneDriveFolderId(FolderId));
+        savedEntity!.SyncFolders.ShouldContain(f => f.FolderId == new OneDriveFolderId(ChildFolderId));
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_included_then_sync_rules_are_written_for_loaded_children()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>());
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Include, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Include, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_folder_is_toggled_included_then_the_remote_item_id_is_stored_in_the_rule()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>());
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Include, FolderId, Arg.Any<CancellationToken>());
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Include, ChildFolderId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_excluded_then_only_the_parent_exclude_rule_is_written()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}", RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await syncRuleRepo.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName}/{ChildFolderName}", RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_excluded_then_child_rules_are_deleted_before_upserting()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).DeleteChildRulesAsync(Arg.Any<AccountId>(), $"/{FolderName}", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_excluded_then_only_parent_rule_is_upserted_not_child_rules()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), RuleType.Exclude, Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_parent_folder_is_toggled_included_then_child_rules_are_deleted_before_upserting()
+    {
+        var (authService, graphService, repository) = BuildMocksWithChild();
+
+        repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
+            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>());
+
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+
+        await syncRuleRepo.Received(1).DeleteChildRulesAsync(Arg.Any<AccountId>(), $"/{FolderName}", Arg.Any<CancellationToken>());
     }
 
     private static (IAuthService Auth, IGraphService Graph, IAccountRepository Repository) BuildMocks()

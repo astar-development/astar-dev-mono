@@ -66,7 +66,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
         try
         {
-            IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
+            var accounts = await _app.GetAccountsAsync();
             var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if(account is null)
@@ -96,7 +96,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     {
         await EnsureCacheRegisteredAsync();
 
-        IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
+        var accounts = await _app.GetAccountsAsync();
         var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
         if(account is not null)
@@ -107,7 +107,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     {
         await EnsureCacheRegisteredAsync();
 
-        IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
+        var accounts = await _app.GetAccountsAsync();
         return accounts
             .Select(a => a.HomeAccountId.Identifier)
             .ToList().AsReadOnly();

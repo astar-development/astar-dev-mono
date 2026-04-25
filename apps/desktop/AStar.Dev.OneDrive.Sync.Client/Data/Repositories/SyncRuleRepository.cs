@@ -16,23 +16,13 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
              .ToListAsync(cancellationToken);
     }
 
-    public async Task UpsertAsync(AccountId accountId, string remotePath, RuleType ruleType, CancellationToken cancellationToken)
+    public async Task UpsertAsync(AccountId accountId, string remotePath, RuleType ruleType, string? remoteItemId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        var existing = await db.SyncRules
-            .FirstOrDefaultAsync(r => r.AccountId == accountId && r.RemotePath == remotePath, cancellationToken);
-
-        if(existing is null)
-        {
-            _ = db.SyncRules.Add(new SyncRuleEntity { AccountId = accountId, RemotePath = remotePath, RuleType = ruleType });
-        }
-        else
-        {
-            existing.RuleType = ruleType;
-        }
-
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.Database.ExecuteSqlAsync(
+            $"INSERT INTO SyncRules (AccountId, RemotePath, RuleType, RemoteItemId) VALUES ({accountId.Id}, {remotePath}, {(int)ruleType}, {remoteItemId}) ON CONFLICT(AccountId, RemotePath) DO UPDATE SET RuleType = excluded.RuleType, RemoteItemId = COALESCE(excluded.RemoteItemId, RemoteItemId)",
+            cancellationToken);
     }
 
     public async Task DeleteAsync(AccountId accountId, string remotePath, CancellationToken cancellationToken)
@@ -51,5 +41,15 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
         _ = await db.SyncRules
                    .Where(r => r.AccountId == accountId)
                    .ExecuteDeleteAsync(cancellationToken);
+    }
+
+    public async Task DeleteChildRulesAsync(AccountId accountId, string parentPath, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        string pattern = parentPath + "/%";
+        _ = await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM SyncRules WHERE AccountId = {accountId.Id} AND RemotePath LIKE {pattern}",
+            cancellationToken);
     }
 }

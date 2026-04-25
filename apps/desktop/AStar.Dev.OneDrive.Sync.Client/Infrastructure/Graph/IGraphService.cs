@@ -4,71 +4,30 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
 public interface IGraphService
 {
-    /// <summary>
-    /// Returns the ID of the user's default drive (OneDrive for Business or Personal).
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The drive ID. (which is cached to reduce calls)</returns>
+    /// <summary>Returns the ID of the user's default drive (OneDrive for Business or Personal).</summary>
     Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default);
 
-    /// <summary>
-    /// Returns the immediate child folders of the root folder.
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The list of child folders.</returns>
+    /// <summary>Returns the immediate child folders of the root folder.</summary>
     Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default);
 
-    /// <summary>
-    /// Returns the immediate child folders of the given parent folder.
-    /// Used for lazy-loading the folder tree.
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="driveId">The ID of the drive.</param>
-    /// <param name="parentFolderId">The ID of the parent folder.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The list of child folders.</returns>
+    /// <summary>Returns the immediate child folders of the given parent folder. Used for lazy-loading the folder tree.</summary>
     Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default);
 
     /// <summary>Returns the user's OneDrive storage quota.</summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The total and used storage space.</returns>
     Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default);
 
-    /// <summary>
-    /// Returns all changes across the entire drive since the last delta link, or all items if no delta link is provided.
-    /// On HTTP 410 (delta link expired), throws <see cref="DeltaLinkExpiredException"/>.
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="deltaLink">The drive-level delta link for incremental sync, or null for a full enumeration.</param>
-    /// <param name="onPageFetched">Optional callback invoked after each page is retrieved; receives the 1-based page number.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The delta result containing all changed items and the next delta link.</returns>
-    Task<DeltaResult> GetDriveRootDeltaAsync(string accessToken, string? deltaLink, Action<int>? onPageFetched = null, CancellationToken ct = default);
+    /// <summary>Enumerates all descendants (files and folders) of the given folder. ETag and CTag are populated on each returned DeltaItem.</summary>
+    Task<List<DeltaItem>> EnumerateFolderAsync(string accessToken, string driveId, string folderId, string remotePath, CancellationToken ct = default);
 
-    /// <summary>
-    /// Fetches the pre-authenticated download URL for a specific drive item.
-    /// Use this when <c>@microsoft.graph.downloadUrl</c> is absent from a delta or children response.
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="itemId">The Graph item ID of the file.</param>
-    /// <param name="ct">The cancellation token.</param>
-    /// <returns>The download URL, or <see langword="null"/> if not available.</returns>
+    /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns null if the path does not exist.</summary>
+    Task<string?> GetFolderIdByPathAsync(string accessToken, string driveId, string remotePath, CancellationToken ct = default);
+
+    /// <summary>Fetches the pre-authenticated download URL for a specific drive item.</summary>
     Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default);
 
-    /// <summary>
-    /// Uploads a local file to OneDrive using a resumable upload session.
-    /// Handles all file sizes. Returns the remote item ID on success.
-    /// </summary>
+    /// <summary>Uploads a local file to OneDrive using a resumable upload session. Returns the remote item ID on success.</summary>
     Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default);
 
-    /// <summary>
-    /// Permanently deletes the specified item from OneDrive. This moves it to the recycle bin.
-    /// </summary>
-    /// <param name="accessToken">The access token for the authenticated user.</param>
-    /// <param name="itemId">The Graph item ID of the item to delete.</param>
-    /// <param name="ct">The cancellation token.</param>
+    /// <summary>Permanently deletes the specified item from OneDrive (moves it to the recycle bin).</summary>
     Task DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default);
 }
