@@ -15,7 +15,6 @@
         Icon="avares://AStar.Dev.OneDrive.Sync.Client/Assets/astar.png"
         Background="{DynamicResource BackgroundPrimaryBrush}"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="PreferSystemChrome"
         ExtendClientAreaTitleBarHeightHint="-1">
 
     <Window.Resources>
