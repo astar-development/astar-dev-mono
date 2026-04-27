@@ -13,7 +13,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 {
     private Timer? _timer;
     private TimeSpan _interval = TimeSpan.FromMinutes(60);
-    private int _runningFlag;
+    private long _runningFlag;
 
     public static readonly TimeSpan DefaultInterval = TimeSpan.FromMinutes(60);
 
@@ -48,7 +48,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// </summary>
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
-        if(_runningFlag == 1)
+        if (SyncIsAlreadyRunning())
             return;
 
         await RunSyncPassAsync(ct);
@@ -96,11 +96,13 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     // ReSharper disable once AsyncVoidMethod - Timer requires this signature
     private async void OnTimerTickAsync(object? state)
     {
-        if(_runningFlag == 1)
+        if (SyncIsAlreadyRunning())
             return;
 
         await RunSyncPassAsync(CancellationToken.None);
     }
+
+    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1;
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.Graph;
@@ -18,7 +19,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
         "eTag", "cTag", DownloadUrlKey
     ];
 
-    private readonly Dictionary<string, DriveContext> _cache = [];
+    private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
     public async Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
@@ -117,7 +118,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
 
         try
         {
-            var item = await client.Drives[driveId].Items[$"root:{remotePath}"]
+            var item = await client.Drives[driveId].Items[$"{RootPathMarker}:{remotePath}"]
                 .GetAsync(req => req.QueryParameters.Select = ["id"], ct);
 
             return item?.Id;

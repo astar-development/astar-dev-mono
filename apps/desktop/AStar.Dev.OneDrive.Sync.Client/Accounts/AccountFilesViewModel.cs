@@ -66,7 +66,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         {
             var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
 
-            if (authResult.IsError)
+            if (!authResult.IsSuccess)
             {
                 LoadError = authResult.ErrorMessage ?? "Authentication failed.";
                 HasLoadError = true;

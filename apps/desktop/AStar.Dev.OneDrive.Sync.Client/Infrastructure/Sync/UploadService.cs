@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
@@ -124,7 +125,8 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploa
 
             try
             {
-                using var content = new ByteArrayContent(chunk.ToArray());
+                var array = MemoryMarshal.TryGetArray(chunk, out var segment) ? segment : new ArraySegment<byte>(chunk.ToArray());
+                using var content = new ByteArrayContent(array.Array!, array.Offset, array.Count);
                 content.Headers.Add("Content-Range", $"bytes {rangeStart}-{rangeEnd}/{totalBytes}");
                 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.CurrentCulture));
 

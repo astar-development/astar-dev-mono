@@ -16,7 +16,6 @@ public sealed class AuthResultTests
 
         result.IsSuccess.ShouldBeTrue();
         result.IsCancelled.ShouldBeFalse();
-        result.IsError.ShouldBeFalse();
         result.AccessToken.ShouldBe(accessToken);
         result.AccountId.ShouldBe(accountId);
         result.DisplayName.ShouldBe(displayName);
@@ -27,11 +26,10 @@ public sealed class AuthResultTests
     [Fact]
     public void Cancelled_ShouldCreateCancelledResult()
     {
-        var result = AuthResult.Cancelled();
+        var result = AuthResult.Cancelled;
 
         result.IsCancelled.ShouldBeTrue();
         result.IsSuccess.ShouldBeFalse();
-        result.IsError.ShouldBeFalse();
         result.AccessToken.ShouldBeNull();
         result.AccountId.ShouldBeNull();
         result.DisplayName.ShouldBeNull();
@@ -46,7 +44,6 @@ public sealed class AuthResultTests
 
         var result = AuthResult.Failure(errorMessage);
 
-        result.IsError.ShouldBeTrue();
         result.IsSuccess.ShouldBeFalse();
         result.IsCancelled.ShouldBeFalse();
         result.ErrorMessage.ShouldBe(errorMessage);
@@ -84,31 +81,7 @@ public sealed class AuthResultTests
         var result = AuthResult.Failure(errorMessage);
 
         result.ErrorMessage.ShouldBe(errorMessage);
-        result.IsError.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void IsError_ShouldBeTrueWhenNotSuccessAndNotCancelled()
-    {
-        var result = AuthResult.Failure("Some error");
-
-        result.IsError.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void IsError_ShouldBeFalseWhenSuccess()
-    {
-        var result = AuthResult.Success("token", "account", "name", "email@test.com");
-
-        result.IsError.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void IsError_ShouldBeFalseWhenCancelled()
-    {
-        var result = AuthResult.Cancelled();
-
-        result.IsError.ShouldBeFalse();
+        result.IsSuccess.ShouldBeFalse();
     }
 
     [Fact]
@@ -123,7 +96,7 @@ public sealed class AuthResultTests
     [Fact]
     public void CancelledResult_ShouldNotBeEqual_ToFailureResult()
     {
-        var cancelledResult = AuthResult.Cancelled();
+        var cancelledResult = AuthResult.Cancelled;
         var failureResult = AuthResult.Failure("error message");
 
         cancelledResult.IsCancelled.ShouldNotBe(failureResult.IsCancelled);
@@ -133,7 +106,7 @@ public sealed class AuthResultTests
     public void SuccessResult_ShouldNotBeEqual_ToCancelledResult()
     {
         var successResult = AuthResult.Success("token", "account", "name", "email@test.com");
-        var cancelledResult = AuthResult.Cancelled();
+        var cancelledResult = AuthResult.Cancelled;
 
         successResult.IsSuccess.ShouldNotBe(cancelledResult.IsSuccess);
     }

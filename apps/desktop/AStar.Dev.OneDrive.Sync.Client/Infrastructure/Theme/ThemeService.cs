@@ -20,9 +20,13 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static readonly Uri _darkUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
     private Disposable? _systemWatcher;
 
+    ///<inheritdoc />
     public AppTheme CurrentTheme { get; private set; } = AppTheme.System;
+
+    ///<inheritdoc />
     public event EventHandler<AppTheme>? ThemeChanged;
 
+    ///<inheritdoc />
     public void Apply(AppTheme theme)
     {
         CurrentTheme = theme;
@@ -30,7 +34,7 @@ public sealed class ThemeService : IThemeService, IDisposable
         _systemWatcher?.Dispose();
         _systemWatcher = null;
 
-        if(theme == AppTheme.System)
+        if (theme == AppTheme.System)
         {
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light);
             WatchSystem();
@@ -52,7 +56,7 @@ public sealed class ThemeService : IThemeService, IDisposable
     private void WatchSystem()
     {
         var app = Application.Current;
-        if(app is null)
+        if (app is null)
             return;
 
         app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
@@ -62,7 +66,7 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private void OnActualThemeVariantChanged(object? sender, EventArgs e)
     {
-        if(CurrentTheme != AppTheme.System)
+        if (CurrentTheme != AppTheme.System)
             return;
         Dispatcher.UIThread.Post(() =>
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light));
@@ -71,7 +75,7 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static void ApplyVariant(AppTheme resolved)
     {
         var app = Application.Current;
-        if(app is null)
+        if (app is null)
             return;
 
         var targetUri = resolved == AppTheme.Dark ? _darkUri : _lightUri;
@@ -81,7 +85,7 @@ public sealed class ThemeService : IThemeService, IDisposable
             .OfType<ResourceInclude>()
             .FirstOrDefault(r => r.Source == _lightUri || r.Source == _darkUri);
 
-        if(existing is not null)
+        if (existing is not null)
             _ = merged.Remove(existing);
 
         merged.Add(new ResourceInclude(targetUri) { Source = targetUri });
