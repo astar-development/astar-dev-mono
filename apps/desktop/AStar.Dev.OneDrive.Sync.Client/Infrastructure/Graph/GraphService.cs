@@ -4,11 +4,10 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions;
-using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
-public sealed class GraphService(IUploadService uploadService) : IGraphService
+public sealed class GraphService(IUploadService uploadService, IGraphClientFactory graphClientFactory) : IGraphService
 {
     private const string RootPathMarker = "root:";
     private const string DownloadUrlKey = "@microsoft.graph.downloadUrl";
@@ -57,7 +56,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     /// <inheritdoc />
     public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
     {
-        var client = BuildClient(accessToken);
+        var client = graphClientFactory.CreateClient(accessToken);
 
         var result = await client.Drives[driveId].Items[parentFolderId].Children
             .GetAsync(req =>
@@ -103,7 +102,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     /// <inheritdoc />
     public async Task<List<DeltaItem>> EnumerateFolderAsync(string accessToken, string driveId, string folderId, string remotePath, CancellationToken ct = default)
     {
-        var client = BuildClient(accessToken);
+        var client = graphClientFactory.CreateClient(accessToken);
         List<DeltaItem> items = [];
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         await EnumerateSubFolderAsync(client, driveId, folderId, remotePath, items, visited, ct);
@@ -114,7 +113,7 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
     /// <inheritdoc />
     public async Task<string?> GetFolderIdByPathAsync(string accessToken, string driveId, string remotePath, CancellationToken ct = default)
     {
-        var client = BuildClient(accessToken);
+        var client = graphClientFactory.CreateClient(accessToken);
 
         try
         {
@@ -211,35 +210,24 @@ public sealed class GraphService(IUploadService uploadService) : IGraphService
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {
-        var graphServiceClient = BuildClient(accessToken);
+        var client = graphClientFactory.CreateClient(accessToken);
 
         if(_cache.TryGetValue(accessToken, out var cached))
-            return (graphServiceClient, cached);
+            return (client, cached);
 
-        var drive = await graphServiceClient.Me.Drive.GetAsync(cancellationToken: ct);
+        var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
 
         string driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve drive ID.");
 
-        var root = await graphServiceClient.Drives[driveId].Root.GetAsync(cancellationToken: ct);
+        var root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
 
         string rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve root item ID.");
 
         var driveContext = new DriveContext(driveId, rootId);
         _cache[accessToken] = driveContext;
 
-        return (graphServiceClient, driveContext);
+        return (client, driveContext);
     }
-
-    private static GraphServiceClient BuildClient(string accessToken)
-        => new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
 
     private sealed record DriveContext(string DriveId, string RootId);
-
-    private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
-    {
-        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default)
-            => Task.FromResult(token);
-
-        public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
-    }
 }

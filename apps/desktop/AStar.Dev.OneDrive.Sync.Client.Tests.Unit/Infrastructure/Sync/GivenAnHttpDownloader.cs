@@ -68,6 +68,26 @@ public sealed class GivenAnHttpDownloader
     }
 
     [Fact]
+    public async Task when_download_async_succeeds_then_file_last_write_time_matches_remote_modified()
+    {
+        string localPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        try
+        {
+            var sut = new HttpDownloader(CreateOkFactory());
+
+            await sut.DownloadAsync(DownloadUrl, localPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+            File.GetLastWriteTimeUtc(localPath).ShouldBe(RemoteModified.UtcDateTime);
+        }
+        finally
+        {
+            if(File.Exists(localPath))
+                File.Delete(localPath);
+        }
+    }
+
+    [Fact]
     public async Task when_download_async_succeeds_with_progress_then_progress_is_reported()
     {
         string localPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
