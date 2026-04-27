@@ -21,7 +21,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct);
 
-        if(authResult.IsError)
+        if(!authResult.IsSuccess)
         {
             RaiseProgress(account.Id.Id, 0, 0, authResult.ErrorMessage ?? "Auth failed", SyncState.Error);
             return;
@@ -37,6 +37,10 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         {
             await SyncAccountInternalAsync(account, authResult.AccessToken!, ct);
         }
+        catch (OperationCanceledException)
+        {
+            RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
+        }
         catch(Exception ex)
         {
             Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Email, ex.Message);
@@ -48,7 +52,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
     {
         var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
 
-        if(authResult.IsError)
+        if(!authResult.IsSuccess)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);

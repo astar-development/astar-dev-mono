@@ -1,3 +1,4 @@
+using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -21,12 +22,12 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
             .Create(entraIdOptions.Value.ClientId)
             .WithAuthority(entraIdOptions.Value.AuthorityForMicrosoftAccountsOnly)
             .WithRedirectUri(entraIdOptions.Value.RedirectUri)
-            .WithClientName("AStar.Dev.OneDrive.Sync")
-            .WithClientVersion("1.0.0")
+            .WithClientName(ApplicationMetadata.ApplicationName)
+            .WithClientVersion(Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0")
             .Build();
 
     private readonly ITokenCacheService _cacheService = cacheService;
-    private          bool                     _cacheRegistered;
+    private bool _cacheRegistered;
 
     public async Task<AuthResult> SignInInteractiveAsync(CancellationToken ct = default)
     {
@@ -42,19 +43,19 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
             return BuildSuccess(result);
         }
-        catch(MsalClientException ex) when(ex.ErrorCode is MsalError.AuthenticationCanceledError or "authentication_canceled" or "user_canceled")
+        catch (MsalClientException ex) when (ex.ErrorCode is MsalError.AuthenticationCanceledError or "authentication_canceled" or "user_canceled")
         {
-            return AuthResult.Cancelled();
+            return AuthResult.Cancelled;
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            return AuthResult.Cancelled();
+            return AuthResult.Cancelled;
         }
-        catch(MsalException ex)
+        catch (MsalException ex)
         {
             return AuthResult.Failure($"Authentication failed: {ex.Message}");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return AuthResult.Failure($"Unexpected error during sign-in: {ex.Message}");
         }
@@ -67,9 +68,9 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         try
         {
             var accounts = await _app.GetAccountsAsync();
-            var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-            if(account is null)
+            if (account is null)
                 return AuthResult.Failure("Account not found in token cache.");
 
             var result = await _app
@@ -78,15 +79,15 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
             return BuildSuccess(result);
         }
-        catch(MsalUiRequiredException)
+        catch (MsalUiRequiredException)
         {
             return AuthResult.Failure("Re-authentication required.");
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            return AuthResult.Cancelled();
+            return AuthResult.Cancelled;
         }
-        catch(MsalException ex)
+        catch (MsalException ex)
         {
             return AuthResult.Failure($"Token refresh failed: {ex.Message}");
         }
@@ -97,9 +98,9 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         await EnsureCacheRegisteredAsync();
 
         var accounts = await _app.GetAccountsAsync();
-        var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+        var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-        if(account is not null)
+        if (account is not null)
             await _app.RemoveAsync(account);
     }
 
@@ -108,14 +109,15 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         await EnsureCacheRegisteredAsync();
 
         var accounts = await _app.GetAccountsAsync();
+
         return accounts
-            .Select(a => a.HomeAccountId.Identifier)
+            .Select(account => account.HomeAccountId.Identifier)
             .ToList().AsReadOnly();
     }
 
     private async Task EnsureCacheRegisteredAsync()
     {
-        if(_cacheRegistered)
+        if (_cacheRegistered)
             return;
 
         await _cacheService.RegisterAsync(_app);
@@ -125,24 +127,20 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     private static AuthResult BuildSuccess(AuthenticationResult result)
     {
         string? displayName = result.Account.Username;
-        string? email       = result.Account.Username;
+        string? email = result.Account.Username;
 
-        if(result.ClaimsPrincipal is not null)
+        if (result.ClaimsPrincipal is not null)
         {
-            string? nameClaim  = result.ClaimsPrincipal.FindFirst("name")?.Value;
+            string? nameClaim = result.ClaimsPrincipal.FindFirst("name")?.Value;
             string? emailClaim = result.ClaimsPrincipal.FindFirst("preferred_username")?.Value
                                  ?? result.ClaimsPrincipal.FindFirst("email")?.Value;
 
-            if(!string.IsNullOrEmpty(nameClaim))
+            if (!string.IsNullOrEmpty(nameClaim))
                 displayName = nameClaim;
-            if(!string.IsNullOrEmpty(emailClaim))
+            if (!string.IsNullOrEmpty(emailClaim))
                 email = emailClaim;
         }
 
-        return AuthResult.Success(
-            accessToken: result.AccessToken,
-            accountId: result.Account.HomeAccountId.Identifier,
-            displayName: displayName,
-            email: email);
+        return AuthResult.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, displayName: displayName, email: email);
     }
 }

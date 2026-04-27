@@ -1,5 +1,3 @@
-#nullable enable
-
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 
 /// <summary>

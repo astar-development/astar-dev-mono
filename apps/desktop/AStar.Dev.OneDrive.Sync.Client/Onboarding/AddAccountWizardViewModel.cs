@@ -138,7 +138,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
                 SignInStatusText = "Sign-in cancelled.";
                 SignInHasError = false;
             }
-            else if(result.IsError)
+            else if(!result.IsSuccess)
             {
                 SignInStatusText = result.ErrorMessage ?? "Sign-in failed.";
                 SignInHasError = true;
