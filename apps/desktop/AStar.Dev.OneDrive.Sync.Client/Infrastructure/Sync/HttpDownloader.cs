@@ -8,16 +8,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttpDownloader
 {
-    private const string UserAgent         = "AStar.Dev.OneDrive.Sync/1.0";
-    private const int    MaxRetries        = 5;
-    private const double BaseDelaySeconds  = 2.0;
-    private const double MaxDelaySeconds   = 120.0;
+    private const string UserAgent        = "AStar.Dev.OneDrive.Sync/1.0";
+    private const int    MaxRetries       = 5;
+    private const double BaseDelaySeconds = 2.0;
+    private const double MaxDelaySeconds  = 120.0;
 
-    /// <summary>
-    /// Downloads the file at <paramref name="url"/> to <paramref name="localPath"/>.
-    /// Automatically retries on 429 with exponential backoff.
-    /// Preserves the remote last-modified timestamp on the local file.
-    /// </summary>
     /// <inheritdoc />
     public async Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
     {
@@ -40,9 +35,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if(attempt > MaxRetries)
-                    {
                         throw new HttpRequestException($"Rate limited after {MaxRetries} retries.");
-                    }
 
                     var delay = GetRetryDelay(response, attempt);
                     Serilog.Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
@@ -54,23 +47,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
 
                 _ = response.EnsureSuccessStatusCode();
 
-                string? dir = Path.GetDirectoryName(localPath);
-                if(!string.IsNullOrEmpty(dir))
-                    _ = Directory.CreateDirectory(dir);
+                EnsureDirectoryExists(localPath);
 
                 await using var stream = await response.Content.ReadAsStreamAsync(ct);
-                await using var file = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
-
-                byte[] buffer    = new byte[81920];
-                long written  = 0;
-                int  read;
-
-                while((read = await stream.ReadAsync(buffer, ct)) > 0)
-                {
-                    await file.WriteAsync(buffer.AsMemory(0, read), ct);
-                    written += read;
-                    progress?.Report(written);
-                }
+                await WriteToFileAsync(stream, localPath, progress, ct);
 
                 PreserveRemoteTimestamp(localPath, remoteModified);
 
@@ -89,6 +69,29 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
         }
     }
 
+    private static async Task WriteToFileAsync(Stream source, string localPath, IProgress<long>? progress, CancellationToken ct)
+    {
+        await using var file = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
+
+        byte[] buffer = new byte[81920];
+        long written  = 0;
+        int  read;
+
+        while((read = await source.ReadAsync(buffer, ct)) > 0)
+        {
+            await file.WriteAsync(buffer.AsMemory(0, read), ct);
+            written += read;
+            progress?.Report(written);
+        }
+    }
+
+    private static void EnsureDirectoryExists(string localPath)
+    {
+        string? dir = Path.GetDirectoryName(localPath);
+        if(!string.IsNullOrEmpty(dir))
+            _ = Directory.CreateDirectory(dir);
+    }
+
     private static void PreserveRemoteTimestamp(string localPath, DateTimeOffset remoteModified) => File.SetLastWriteTimeUtc(localPath, remoteModified.UtcDateTime);
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
@@ -96,7 +99,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
         if(response.Headers.RetryAfter?.Delta is { } delta)
             return delta + AddAdditionalSecondBackoff();
 
-        if (response.Headers.RetryAfter?.Date is not { } date) return GetBackoffDelay(attempt);
+        if(response.Headers.RetryAfter?.Date is not { } date) return GetBackoffDelay(attempt);
 
         var wait = date - DateTimeOffset.UtcNow;
         if(wait > TimeSpan.Zero)
@@ -110,12 +113,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
     private static TimeSpan GetBackoffDelay(int attempt)
     {
         double seconds = CalculateExponentialBackoff(attempt);
+        double jitter  = seconds * 0.2 * Random.Shared.NextDouble();
 
-        double jitter = seconds * 0.2 * Random.Shared.NextDouble();
         return TimeSpan.FromSeconds(seconds + jitter);
     }
 
-    private static double CalculateExponentialBackoff(int attempt)
-            => Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
-
+    private static double CalculateExponentialBackoff(int attempt) => Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
 }

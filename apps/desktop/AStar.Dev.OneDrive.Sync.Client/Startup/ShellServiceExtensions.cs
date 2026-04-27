@@ -32,6 +32,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISyncedItemRepository, SyncedItemRepository>();
         _ = services.AddSingleton<ITokenCacheService, TokenCacheService>();
         _ = services.AddSingleton<IAuthService, AuthService>();
+        _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddTransient<IStartupService, StartupService>();
         _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
