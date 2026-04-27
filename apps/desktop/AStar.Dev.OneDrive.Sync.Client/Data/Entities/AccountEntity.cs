@@ -15,5 +15,4 @@ public sealed class AccountEntity
     public long QuotaUsed { get; set; }
     public LocalSyncPath LocalSyncPath { get; set; } = LocalSyncPath.Restore(string.Empty);
     public ConflictPolicy ConflictPolicy { get; set; } = ConflictPolicy.Ignore;
-    public List<SyncFolderEntity> SyncFolders { get; set; } = [];
 }

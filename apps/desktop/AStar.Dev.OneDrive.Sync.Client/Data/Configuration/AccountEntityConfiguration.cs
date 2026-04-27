@@ -14,10 +14,6 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
                    .HasConversion(id => id.Id, str => new AccountId(str));
         _ = builder.Property(e => e.LocalSyncPath)
                    .HasConversion(path => path.Value, str => LocalSyncPath.Restore(str));
-        _ = builder.HasMany(a => a.SyncFolders)
-                   .WithOne(f => f.Account)
-                   .HasForeignKey(f => f.AccountId)
-                   .OnDelete(DeleteBehavior.Cascade);
         _ = builder.HasMany<SyncConflictEntity>()
                    .WithOne(c => c.Account)
                    .HasForeignKey(c => c.AccountId)

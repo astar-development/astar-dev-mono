@@ -68,7 +68,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
     public partial bool IsExpanded { get; set; } = true;
 
-    public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
+    public string ExpanderGlyph => IsExpanded ? "▾" : "▸";
 
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
@@ -101,7 +101,6 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             Email             = entity.Email,
             LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
             ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
             LastSyncedAt      = entity.LastSyncedAt
         };
 

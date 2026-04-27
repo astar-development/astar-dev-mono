@@ -15,7 +15,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
@@ -103,6 +103,9 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                 var entity = ToEntity(account);
                 await repository.UpsertAsync(entity, CancellationToken.None);
 
+                foreach(var (folderId, folderName) in account.FolderNames)
+                    await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, CancellationToken.None);
+
                 if(account.IsActive)
                     await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
 
@@ -114,6 +117,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     ActiveAccount = card;
 
                 AccountAdded?.Invoke(this, account);
+
                 return Unit.Default;
             })
             .TapErrorAsync(error => Serilog.Log.Error(error, "Error completing account onboarding wizard"));
@@ -183,6 +187,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         var card = new AccountCardViewModel(account);
         card.Selected += OnCardSelected;
         card.RemoveRequested += (_, accountCard) => RemoveAccountCommand.Execute(accountCard);
+
         return card;
     }
 
@@ -198,12 +203,6 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             QuotaTotal    = a.QuotaTotal,
             LocalSyncPath = a.LocalSyncPath ?? LocalSyncPath.Restore(string.Empty),
             ConflictPolicy = a.ConflictPolicy,
-            QuotaUsed     = a.QuotaUsed,
-            SyncFolders   = [.. a.SelectedFolderIds.Select(folderId => new SyncFolderEntity
-                {
-                    FolderId   = folderId,
-                    FolderName = a.FolderNames.GetValueOrDefault(folderId, string.Empty),
-                    AccountId  = a.Id
-                })]
+            QuotaUsed     = a.QuotaUsed
         };
 }

@@ -1,11 +1,12 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
-public sealed class StartupService(IAccountRepository repository, IAuthService authService) : IStartupService
+public sealed class StartupService(IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IAuthService authService) : IStartupService
 {
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
@@ -20,6 +21,8 @@ public sealed class StartupService(IAccountRepository repository, IAuthService a
             if(!cachedIds.Contains(entity.Id.Id))
                 continue;
 
+            var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, CancellationToken.None);
+
             accounts.Add(new OneDriveAccount
             {
                 Id                = entity.Id,
@@ -30,7 +33,7 @@ public sealed class StartupService(IAccountRepository repository, IAuthService a
                 LastSyncedAt      = entity.LastSyncedAt,
                 QuotaTotal        = entity.QuotaTotal,
                 QuotaUsed         = entity.QuotaUsed,
-                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+                SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
                 LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
                 ConflictPolicy    = entity.ConflictPolicy
             });
