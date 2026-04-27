@@ -15,7 +15,7 @@ public sealed class GivenAStatusBarViewModel
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncEventAggregator _syncEventAggregator = Substitute.For<ISyncEventAggregator>();
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, _syncEventAggregator);
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _syncEventAggregator);
 
     private static AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Email = email, DisplayName = displayName });
 

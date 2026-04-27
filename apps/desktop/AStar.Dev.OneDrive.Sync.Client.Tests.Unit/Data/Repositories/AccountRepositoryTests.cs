@@ -111,25 +111,6 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task UpsertAsync_WithSyncFolders_ShouldSyncCollections()
-    {
-        var (db, factory) = CreateInMemoryFactory();
-        var repository = new AccountRepository(factory);
-        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
-        _ = db.Accounts.Add(account);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var updatedAccount = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
-        updatedAccount.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-2") });
-        await repository.UpsertAsync(updatedAccount, TestContext.Current.CancellationToken);
-
-        var retrieved = await db.Accounts.AsNoTracking().Include(a => a.SyncFolders).FirstAsync(a => a.Id == new AccountId("user-1"), TestContext.Current.CancellationToken);
-        retrieved.SyncFolders.Count.ShouldBe(1);
-        retrieved.SyncFolders[0].FolderId.ShouldBe(new OneDriveFolderId("folder-2"));
-    }
-
-    [Fact]
     public async Task DeleteAsync_ShouldRemoveAccount()
     {
         var (db, factory) = CreateInMemoryFactory();
@@ -167,39 +148,6 @@ public sealed class AccountRepositoryTests
         {
             // Expected - in-memory provider doesn't support ExecuteUpdate
         }
-    }
-
-    [Fact]
-    public async Task GetAllAsync_IncludesSyncFolders()
-    {
-        var (db, factory) = CreateInMemoryFactory();
-        var repository = new AccountRepository(factory);
-        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
-        _ = db.Accounts.Add(account);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
-
-        _ = result[0].SyncFolders.ShouldNotBeNull();
-        result[0].SyncFolders.Count.ShouldBe(1);
-        result[0].SyncFolders[0].FolderId.ShouldBe(new OneDriveFolderId("folder-1"));
-    }
-
-    [Fact]
-    public async Task GetByIdAsync_IncludesSyncFolders()
-    {
-        var (db, factory) = CreateInMemoryFactory();
-        var repository = new AccountRepository(factory);
-        var account = new AccountEntity { Id = new AccountId("user-1"), Email = "user@outlook.com", DisplayName = "User" };
-        account.SyncFolders.Add(new SyncFolderEntity { AccountId = new AccountId("user-1"), FolderId = new OneDriveFolderId("folder-1") });
-        _ = db.Accounts.Add(account);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        var result = await repository.GetByIdAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
-
-        _ = result!.SyncFolders.ShouldNotBeNull();
-        result.SyncFolders.Count.ShouldBe(1);
     }
 
     private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory) CreateInMemoryFactory()

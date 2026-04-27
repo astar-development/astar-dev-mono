@@ -14,7 +14,6 @@ public static class ModelBuilderExtensions
         Type[] targetEntities =
         [
             typeof(AccountEntity),
-    typeof(SyncFolderEntity),
     typeof(SyncConflictEntity),
     typeof(SyncJobEntity),
         ];

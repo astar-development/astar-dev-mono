@@ -9,7 +9,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// Default interval: 60 minutes. Configurable via Settings.
 /// Manual sync can be triggered immediately via <see cref="TriggerNowAsync"/>.
 /// </summary>
-public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable, ISyncScheduler
+public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository) : IAsyncDisposable, ISyncScheduler
 {
     private Timer? _timer;
     private TimeSpan _interval = TimeSpan.FromMinutes(60);
@@ -63,6 +63,8 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         if(entity is null)
             return;
 
+        var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
+
         var account = new OneDriveAccount
         {
             Id                = entity.Id,
@@ -70,7 +72,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             Email             = entity.Email,
             LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
             ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+            SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
             LastSyncedAt      = entity.LastSyncedAt
         };
 
@@ -112,18 +114,21 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         try
         {
             var entities = await accountRepository.GetAllAsync(CancellationToken.None);
-            foreach(var account in entities.TakeWhile(_ => !ct.IsCancellationRequested).Select(entity => new OneDriveAccount
+            foreach(var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
             {
-                Id                = entity.Id,
-                DisplayName       = entity.DisplayName,
-                Email             = entity.Email,
-                AccentIndex       = entity.AccentIndex,
-                IsActive          = entity.IsActive,
-                LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                ConflictPolicy    = entity.ConflictPolicy,
-                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
-            }))
-            {
+                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
+                var account = new OneDriveAccount
+                {
+                    Id                = entity.Id,
+                    DisplayName       = entity.DisplayName,
+                    Email             = entity.Email,
+                    AccentIndex       = entity.AccentIndex,
+                    IsActive          = entity.IsActive,
+                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+                    ConflictPolicy    = entity.ConflictPolicy,
+                    SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
+                };
+
                 SyncStarted?.Invoke(this, account.Id.Id);
                 try
                 {

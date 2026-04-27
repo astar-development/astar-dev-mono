@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -137,26 +136,6 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             foreach(var item in affected)
                 await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
-
-            var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
-            if(entity is null)
-            {
-                Serilog.Log.Warning("[AccountFilesViewModel] Account {AccountId} not found in repository — SyncFolders not updated", _account.Id.Id);
-                return;
-            }
-
-            entity.SyncFolders = [.. CollectAllVisible(RootFolders)
-                .Where(f => f.IsIncluded)
-                .Select(f => new SyncFolderEntity
-                {
-                    FolderId   = new OneDriveFolderId(f.Id),
-                    FolderName = f.Name,
-                    AccountId  = _account.Id
-                })];
-
-            await _repository.UpsertAsync(entity, CancellationToken.None);
-
-            Serilog.Log.Debug("[AccountFilesViewModel] Folder selection persisted for account {AccountId}", _account.Id.Id);
         }
         catch(Exception ex)
         {

@@ -11,7 +11,6 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         return await db.Accounts
-          .Include(a => a.SyncFolders)
           .OrderBy(a => a.Email)
           .ToListAsync(cancellationToken);
     }
@@ -21,7 +20,6 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         return await db.Accounts
-          .Include(a => a.SyncFolders)
           .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
@@ -30,7 +28,6 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var existing = await db.Accounts
-            .Include(a => a.SyncFolders)
             .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken);
 
         if(existing is null)
@@ -40,18 +37,6 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         else
         {
             db.Entry(existing).CurrentValues.SetValues(account);
-
-            var toRemove = existing.SyncFolders
-                .Where(f => account.SyncFolders.All(nf => nf.FolderId != f.FolderId))
-                .ToList();
-
-            db.SyncFolders.RemoveRange(toRemove);
-
-            foreach(var newFolder in account.SyncFolders
-                .Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
-            {
-                existing.SyncFolders.Add(newFolder);
-            }
         }
 
         _ = await db.SaveChangesAsync(cancellationToken);
