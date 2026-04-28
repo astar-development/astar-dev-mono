@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -15,18 +14,19 @@ public static class OneDriveClientServiceExtensions
     ///     Adds MSAL authentication, token management, consent storage, auth state
     ///     notifications, OneDrive folder browsing, delta queries, and file operations to <paramref name="services" />.
     /// </summary>
-    public static IServiceCollection AddOneDriveClient(this IServiceCollection services, IOptions<EntraIdConfiguration> options)
+    public static IServiceCollection AddOneDriveClient(this IServiceCollection services)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        _ = services.AddSingleton<IPublicClientApplication>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<EntraIdConfiguration>>().Value;
 
-        var msalApp = PublicClientApplicationBuilder
-            .Create(options.Value.ClientId)
-            .WithAuthority(AzureCloudInstance.AzurePublic, "consumers")
-            .WithRedirectUri(options.Value.RedirectUri)
-            .Build();
+            return PublicClientApplicationBuilder
+                .Create(options.ClientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, "consumers")
+                .WithRedirectUri(options.RedirectUri)
+                .Build();
+        });
 
-        _ = services.AddSingleton<IPublicClientApplication>(msalApp);
-        _ = services.AddSingleton<IFileSystem, FileSystem>();
         _ = services.AddHttpClient();
 
         return services;

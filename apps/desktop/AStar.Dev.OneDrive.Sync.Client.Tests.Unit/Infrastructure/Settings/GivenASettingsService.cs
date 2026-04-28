@@ -10,9 +10,11 @@ public sealed class GivenASettingsService
         new SettingsService().ShouldBeAssignableTo<ISettingsService>();
 
     [Fact]
-    public async Task when_load_async_is_called_then_result_implements_isettings_service()
+    public async Task when_load_async_is_called_then_service_still_implements_isettings_service()
     {
-        var service = await SettingsService.LoadAsync();
+        var service = new SettingsService();
+
+        await service.LoadAsync();
 
         service.ShouldBeAssignableTo<ISettingsService>();
     }
