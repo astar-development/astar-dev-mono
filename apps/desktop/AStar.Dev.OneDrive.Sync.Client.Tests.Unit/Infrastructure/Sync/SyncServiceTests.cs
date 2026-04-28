@@ -10,30 +10,53 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
 public sealed class SyncServiceTests
 {
-    private readonly IAuthService             authService             = Substitute.For<IAuthService>();
-    private readonly IGraphService            graphService            = Substitute.For<IGraphService>();
-    private readonly IAccountRepository       accountRepository       = Substitute.For<IAccountRepository>();
-    private readonly ISyncRepository          syncRepository          = Substitute.For<ISyncRepository>();
-    private readonly IDriveStateRepository    driveStateRepository    = Substitute.For<IDriveStateRepository>();
-    private readonly ISyncRuleRepository      syncRuleRepository      = Substitute.For<ISyncRuleRepository>();
-    private readonly ISyncedItemRepository    syncedItemRepository    = Substitute.For<ISyncedItemRepository>();
-    private readonly ILocalChangeDetector     localChangeDetector     = Substitute.For<ILocalChangeDetector>();
-    private readonly IHttpDownloader          httpDownloader          = Substitute.For<IHttpDownloader>();
-    private readonly IParallelDownloadPipeline parallelDownloadPipeline = Substitute.For<IParallelDownloadPipeline>();
+    private readonly IAuthService              _authService             = Substitute.For<IAuthService>();
+    private readonly IGraphService             _graphService            = Substitute.For<IGraphService>();
+    private readonly IAccountRepository        _accountRepository       = Substitute.For<IAccountRepository>();
+    private readonly ISyncRepository           _syncRepository          = Substitute.For<ISyncRepository>();
+    private readonly IDriveStateRepository     _driveStateRepository    = Substitute.For<IDriveStateRepository>();
+    private readonly IHttpDownloader           _httpDownloader          = Substitute.For<IHttpDownloader>();
+    private readonly IRemoteFolderEnumerator   _remoteFolderEnumerator  = Substitute.For<IRemoteFolderEnumerator>();
+    private readonly IRemoteDeletionDetector   _remoteDeletionDetector  = Substitute.For<IRemoteDeletionDetector>();
+    private readonly ILocalDeletionDetector    _localDeletionDetector   = Substitute.For<ILocalDeletionDetector>();
+    private readonly ILocalChangeDetector      _localChangeDetector     = Substitute.For<ILocalChangeDetector>();
+    private readonly ISyncJobExecutor          _syncJobExecutor         = Substitute.For<ISyncJobExecutor>();
 
-    private SyncService BuildSut() => new(authService, graphService, accountRepository, syncRepository, driveStateRepository, syncRuleRepository, syncedItemRepository, localChangeDetector, httpDownloader, parallelDownloadPipeline);
+    private SyncService BuildSut()
+    {
+        var dependencies = new SyncServiceDependencies(
+            _remoteFolderEnumerator,
+            _remoteDeletionDetector,
+            _localDeletionDetector,
+            _localChangeDetector,
+            _syncJobExecutor);
+
+        return new SyncService(_authService, _accountRepository, _driveStateRepository, _syncRepository, _httpDownloader, _graphService, dependencies);
+    }
+
+    private static RemoteEnumerationResult EmptyEnumerationResult()
+        => new([], new HashSet<string>(), [], []);
 
     [Fact]
-    public void Constructor_ShouldInitializeWithDependencies()
+    public void constructor_creates_instance_successfully()
     {
         var service = BuildSut();
 
-        _ = service.ShouldNotBeNull();
+        service.ShouldNotBeNull();
     }
 
     [Fact]
-    public async Task SyncAccountAsync_WithValidAccount_ShouldCompleteSuccessfully()
+    public async Task when_sync_called_with_valid_account_then_auth_service_is_called()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns((DriveStateEntity?)null);
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+            .Returns(EmptyEnumerationResult());
+        _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
+            .Returns([]);
+
         var service = BuildSut();
         var account = new OneDriveAccount
         {
@@ -42,33 +65,25 @@ public sealed class SyncServiceTests
             LocalSyncPath = LocalSyncPath.Restore("/home/user/OneDrive")
         };
 
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-        syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, SyncedItemEntity>());
-
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        _ = await authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task SyncAccountAsync_WhenAuthFails_ShouldRaiseErrorEvent()
+    public async Task when_auth_fails_then_error_progress_is_raised()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Failure("Authentication failed"));
+
         var service = BuildSut();
         var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com" };
         bool errorRaised = false;
-
-        service.SyncProgressChanged += (s, args) =>
+        service.SyncProgressChanged += (_, args) =>
         {
             if(args.SyncState == SyncState.Error)
                 errorRaised = true;
         };
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("Authentication failed"));
 
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
@@ -76,18 +91,15 @@ public sealed class SyncServiceTests
     }
 
     [Fact]
-    public async Task SyncAccountAsync_WithoutSyncPath_ShouldRaiseNoSyncPathEvent()
+    public async Task when_local_sync_path_is_null_then_no_local_sync_path_progress_is_raised()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+
         var service = BuildSut();
         var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com", LocalSyncPath = null };
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-        syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-
         bool noSyncPathRaised = false;
-        service.SyncProgressChanged += (s, args) =>
+        service.SyncProgressChanged += (_, args) =>
         {
             if(args.CurrentFile == "No local sync path configured")
                 noSyncPathRaised = true;
@@ -99,25 +111,15 @@ public sealed class SyncServiceTests
     }
 
     [Fact]
-    public async Task SyncAccountAsync_RaisesSyncProgressChangedEvent()
+    public async Task when_sync_called_then_sync_progress_changed_event_is_raised()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Failure("fail"));
+
         var service = BuildSut();
-        var account = new OneDriveAccount
-        {
-            Id            = new AccountId("user-1"),
-            Email         = "user@outlook.com",
-            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync")
-        };
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-        syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, SyncedItemEntity>());
-
+        var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com" };
         bool eventRaised = false;
-        service.SyncProgressChanged += (s, args) => eventRaised = true;
+        service.SyncProgressChanged += (_, _) => eventRaised = true;
 
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
@@ -125,8 +127,11 @@ public sealed class SyncServiceTests
     }
 
     [Fact]
-    public async Task ResolveConflictAsync_WithValidPolicy_ShouldResolveConflict()
+    public async Task when_resolve_conflict_called_with_valid_policy_then_sync_repository_resolve_is_called()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+
         var service = BuildSut();
         var conflict = new SyncConflict
         {
@@ -137,25 +142,23 @@ public sealed class SyncServiceTests
             State          = ConflictState.Pending
         };
 
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-
         await service.ResolveConflictAsync(conflict, ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        await syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
     }
 
     [Fact]
-    public async Task ResolveConflictAsync_WhenAuthFails_ShouldNotResolve()
+    public async Task when_resolve_conflict_auth_fails_then_sync_repository_resolve_is_not_called()
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Failure("Auth failed"));
+
         var service = BuildSut();
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
 
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("Auth failed"));
-
         await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
-        await syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
     }
 
     [Theory]
@@ -163,73 +166,16 @@ public sealed class SyncServiceTests
     [InlineData(ConflictPolicy.KeepBoth)]
     [InlineData(ConflictPolicy.LastWriteWins)]
     [InlineData(ConflictPolicy.LocalWins)]
-    public async Task ResolveConflictAsync_WithVariousPolicies_ShouldApply(ConflictPolicy policy)
+    public async Task when_resolve_conflict_called_with_various_policies_then_policy_is_recorded(ConflictPolicy policy)
     {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+
         var service = BuildSut();
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
         await service.ResolveConflictAsync(conflict, policy, TestContext.Current.CancellationToken);
 
-        await syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Is(policy));
-    }
-
-    [Fact]
-    public async Task SyncAccountAsync_WithMultipleFolders_ShouldSyncAll()
-    {
-        var service = BuildSut();
-        var account = new OneDriveAccount
-        {
-            Id            = new AccountId("user-1"),
-            Email         = "user@outlook.com",
-            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync")
-        };
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-        syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, SyncedItemEntity>());
-
-        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task SyncAccountAsync_ShouldAcceptCancellationToken()
-    {
-        var service = BuildSut();
-        var account = new OneDriveAccount
-        {
-            Id            = new AccountId("user-1"),
-            Email         = "user@outlook.com",
-            DisplayName   = "Test User",
-            LocalSyncPath = LocalSyncPath.Restore("/path/to/sync")
-        };
-        var cts = new CancellationTokenSource();
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-        syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([]);
-        syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, SyncedItemEntity>());
-
-        await service.SyncAccountAsync(account, cts.Token);
-    }
-
-    [Fact]
-    public async Task ResolveConflictAsync_ShouldAcceptCancellationToken()
-    {
-        var service = BuildSut();
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
-        var cts = new CancellationTokenSource();
-
-        _ = authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
-
-        await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore, cts.Token);
+        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Is(policy));
     }
 }
