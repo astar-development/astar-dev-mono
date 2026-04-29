@@ -105,18 +105,19 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldReturnSettingsService()
+    public async Task LoadAsync_ShouldNotThrow()
     {
-        var service = await SettingsService.LoadAsync();
+        var service = new SettingsService();
 
-        _ = service.ShouldNotBeNull();
-        _ = service.ShouldBeOfType<SettingsService>();
+        await Should.NotThrowAsync(() => service.LoadAsync());
     }
 
     [Fact]
     public async Task LoadAsync_ShouldInitializeCurrentSettings()
     {
-        var service = await SettingsService.LoadAsync();
+        var service = new SettingsService();
+
+        await service.LoadAsync();
 
         _ = service.Current.ShouldNotBeNull();
     }

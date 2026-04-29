@@ -9,7 +9,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
@@ -47,13 +46,11 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISyncScheduler, SyncScheduler>();
         _ = services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         _ = services.AddSingleton<ISyncEventAggregator, SyncEventAggregator>();
-        _ = services.AddTransient<ISettingsService, SettingsService>();
+        _ = services.AddSingleton<ISettingsService, SettingsService>();
         _ = services.AddTransient<IThemeService, ThemeService>();
         _ = services.AddTransient<IParallelDownloadPipeline, ParallelDownloadPipeline>();
-        using var scope = services.BuildServiceProvider().CreateScope();
-        var settingsService = scope.ServiceProvider.GetRequiredService<IOptions<EntraIdConfiguration>>();
-
-        _ = services.AddOneDriveClient(settingsService);
+        _ = services.AddTransient<IAppBootstrapper, AppBootstrapper>();
+        _ = services.AddOneDriveClient();
 
         return services;
     }

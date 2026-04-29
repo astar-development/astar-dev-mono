@@ -29,6 +29,13 @@ public sealed class ThemeService : IThemeService, IDisposable
     ///<inheritdoc />
     public void Apply(AppTheme theme)
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => Apply(theme));
+
+            return;
+        }
+
         CurrentTheme = theme;
 
         _systemWatcher?.Dispose();

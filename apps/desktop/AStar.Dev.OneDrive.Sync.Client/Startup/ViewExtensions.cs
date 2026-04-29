@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using AStar.Dev.OneDrive.Sync.Client.Splash;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
@@ -14,6 +15,7 @@ public static class ViewExtensions
 {
     public static IServiceCollection AddViews(this IServiceCollection services)
     {
+        _ = services.AddTransient<SplashWindow>();
         _ = services.AddSingleton<MainWindow>();
         _ = services.AddSingleton<AccountsView>();
         _ = services.AddSingleton<ActivityView>();

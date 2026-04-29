@@ -5,10 +5,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
 public static class ConflictResolver
 {
-    public static ConflictOutcome Resolve(
-        ConflictPolicy policy,
-        DateTimeOffset localModified,
-        DateTimeOffset remoteModified)
+    public static ConflictOutcome Resolve(ConflictPolicy policy, DateTimeOffset localModified, DateTimeOffset remoteModified)
         => policy switch
         {
             ConflictPolicy.Ignore => ConflictOutcome.Skip,

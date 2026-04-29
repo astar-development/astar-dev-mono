@@ -1,44 +1,48 @@
 using System.Text.Json;
 using AStar.Dev.Utilities;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
+/// <inheritdoc />
 public sealed class SettingsService : ISettingsService
 {
-    private static readonly JsonSerializerOptions _jsonOpts = new()
+    private static readonly JsonSerializerOptions JsonOpts = new()
     {
         WriteIndented        = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly string _path = ApplicationMetadata.ApplicationName.ApplicationDirectory().CombinePath("settings.json");
+    private readonly string path = ApplicationMetadata.ApplicationName.ApplicationDirectory().CombinePath("settings.json");
 
+    /// <inheritdoc />
     public AppSettings Current { get; private set; } = new();
 
+    /// <inheritdoc />
     public event EventHandler<AppSettings>? SettingsChanged;
 
-    public static async Task<SettingsService> LoadAsync()
+    /// <inheritdoc />
+    public async Task LoadAsync()
     {
-        var svc = new SettingsService();
-        if (!File.Exists(svc._path)) return svc;
+        if (!File.Exists(path))
+            return;
 
         try
         {
-            await using var stream = File.OpenRead(svc._path);
-            svc.Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, _jsonOpts) ?? new AppSettings();
+            await using var stream = File.OpenRead(path);
+            Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts).ConfigureAwait(false) ?? new AppSettings();
         }
         catch (Exception ex)
         {
-            Serilog.Log.Warning(ex, "[SettingsService] Failed to deserialize settings from {Path}; using defaults", svc._path);
-            svc.Current = new AppSettings();
+            Serilog.Log.Warning(ex, "[SettingsService] Failed to deserialize settings from {Path}; using defaults", path);
+            Current = new AppSettings();
         }
-
-        return svc;
     }
 
+    /// <inheritdoc />
     public async Task SaveAsync()
     {
-        await using var stream = File.Create(_path);
-        await JsonSerializer.SerializeAsync(stream, Current, _jsonOpts);
+        await using var stream = File.Create(path);
+        await JsonSerializer.SerializeAsync(stream, Current, JsonOpts).ConfigureAwait(false);
         SettingsChanged?.Invoke(this, Current);
     }
 }
