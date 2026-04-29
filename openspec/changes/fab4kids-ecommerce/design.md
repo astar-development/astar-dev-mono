@@ -5,6 +5,7 @@ The mono-repo already contains an Astro 5 + Vue + Node site (`apps/web/astar-dev
 The existing placeholder (`apps/web/fab4kids.placeholder`) is a React SPA with no SSR, no SEO, and no commerce. It is deleted wholesale; nothing is migrated from it.
 
 Constraints:
+
 - Single deployable unit (Astro/Node) on Azure App Service — no separate API service
 - Near-zero cold start: product and category pages must be pre-rendered (SSG); only dynamic endpoints touch Node at runtime
 - UK GDPR compliance required before launch
@@ -13,6 +14,7 @@ Constraints:
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Pre-rendered (SSG) homepage, category, and product pages for instant load and SEO
 - Stripe hosted checkout (PCI compliance offloaded to Stripe)
 - Digital delivery via signed Azure Blob Storage URLs emailed with Resend
@@ -23,6 +25,7 @@ Constraints:
 - CI/CD via new `fab4kids-deploy.yml` GitHub Actions workflow
 
 **Non-Goals:**
+
 - User accounts / order history (post-MVP)
 - Newsletter delivery integration (email capture only; provider chosen post-MVP)
 - Physical goods fulfilment
@@ -115,6 +118,6 @@ Rollback: the placeholder is in git history; revert the deletion commit and rede
 ## Open Questions
 
 - **Newsletter storage**: Where are captured emails stored until a provider is chosen? Options: Sanity document, Azure Table Storage, or a simple Astro API route writing to a file. Needs a decision before the newsletter-capture spec is implemented.
-- **Resend domain**: Is `fab4kids.co.uk` (or equivalent) available and DNS-configurable for Resend DKIM? Needs verification before email delivery is tested.
+- **Resend domain**: Is `fab-4-kids.co.uk` (or equivalent) available and DNS-configurable for Resend DKIM? Needs verification before email delivery is tested.
 - **Azure Web App name**: Confirm `fab4kids` is available in the target Azure subscription before creating infrastructure.
 - **Product file naming / organisation**: Define Azure Blob container structure (e.g., `/{subject}/{ks}/{slug}.pdf`) before upload tooling is built.

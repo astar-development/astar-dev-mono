@@ -53,7 +53,7 @@ jobs:
           SANITY_PROJECT_ID: ${{ secrets.FAB4KIDS_SANITY_PROJECT_ID }}
           SANITY_DATASET: ${{ secrets.FAB4KIDS_SANITY_DATASET }}
           SANITY_API_TOKEN: ${{ secrets.FAB4KIDS_SANITY_API_TOKEN }}
-          PUBLIC_SITE_URL: https://fab4kids.co.uk
+          PUBLIC_SITE_URL: https://fab-4-kids.co.uk
 
       - name: Verify build output
         run: |
@@ -82,7 +82,7 @@ jobs:
 
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fab4kids.co.uk/)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fab-4-kids.co.uk/)
           if [ "$STATUS" != "200" ]; then
             echo "Health check failed with status $STATUS"
             exit 1
