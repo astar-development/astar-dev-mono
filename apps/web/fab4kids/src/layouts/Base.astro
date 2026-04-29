@@ -9,6 +9,7 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
+const appInsightsConnString = import.meta.env.PUBLIC_APPINSIGHTS_CONNECTION_STRING ?? '';
 ---
 
 <!DOCTYPE html>
@@ -51,19 +52,58 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
     </main>
     <slot name="footer" />
     <CookieBanner client:load />
-    <script is:inline>
-      window.addEventListener('cookie-consent-accepted', () => {
-        const s = document.createElement('script');
-        s.src = 'https://js.stripe.com/v3/';
-        s.async = true;
-        document.head.appendChild(s);
-      });
-      if (localStorage.getItem('fab4kids-cookie-consent') === 'accepted') {
-        const s = document.createElement('script');
-        s.src = 'https://js.stripe.com/v3/';
-        s.async = true;
-        document.head.appendChild(s);
-      }
+    <script is:inline define:vars={{ appInsightsConnString }}>
+      (function () {
+        var CONSENT_KEY = 'fab4kids-cookie-consent';
+        var appInsightsLoading = false;
+
+        function loadStripe() {
+          var s = document.createElement('script');
+          s.src = 'https://js.stripe.com/v3/';
+          s.async = true;
+          document.head.appendChild(s);
+        }
+
+        function loadAppInsights(withCookies) {
+          if (!appInsightsConnString) return;
+          if (window.appInsights && window.appInsights.__loaded) {
+            if (withCookies && window.appInsights.__cookieless) {
+              window.appInsights.config.isCookieUseDisabled = false;
+              window.appInsights.__cookieless = false;
+            }
+            return;
+          }
+          if (appInsightsLoading) return;
+          appInsightsLoading = true;
+          var script = document.createElement('script');
+          script.src = 'https://js.monitor.azure.com/scripts/b/ai.2.min.js';
+          script.onload = function () {
+            if (!window.Microsoft || !window.Microsoft.ApplicationInsights) return;
+            var sdk = new window.Microsoft.ApplicationInsights.ApplicationInsights({
+              config: {
+                connectionString: appInsightsConnString,
+                disableCookiesUsage: !withCookies,
+                enableAutoRouteTracking: false,
+              }
+            });
+            sdk.loadAppInsights();
+            sdk.trackPageView();
+            sdk.__loaded = true;
+            sdk.__cookieless = !withCookies;
+            window.appInsights = sdk;
+          };
+          document.head.appendChild(script);
+        }
+
+        var alreadyAccepted = localStorage.getItem(CONSENT_KEY) === 'accepted';
+        loadAppInsights(alreadyAccepted);
+        if (alreadyAccepted) loadStripe();
+
+        window.addEventListener('cookie-consent-accepted', function () {
+          loadAppInsights(true);
+          loadStripe();
+        });
+      })();
     </script>
   </body>
 </html>
