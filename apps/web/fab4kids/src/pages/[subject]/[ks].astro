@@ -1,64 +1,65 @@
 ---
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import PageLayout from '@/layouts/PageLayout.astro';
-import { ProductCard } from '@/components/ProductCard.tsx';
-import { getProductsBySubjectAndKS } from '@/lib/sanity.ts';
-import { SUBJECTS, SUBJECT_LABELS, KEY_STAGES, KEY_STAGE_LABELS } from '@/lib/constants.ts';
-import type { Subject, KeyStage } from '@/types/index.ts';
+import { getAllCategories, getCategoryBySlug, getSubcategoryBySlug, toSlug } from '@/lib/pdfs.ts';
+import { PdfCard } from '@/components/PdfCard.tsx';
 
 export const prerender = true;
 
 export const getStaticPaths = (async () => {
-  return SUBJECTS.flatMap((subject) =>
-    KEY_STAGES.map((ks) => ({ params: { subject, ks } })),
+  return getAllCategories().flatMap((category) =>
+    category.subcategories.map((sub) => ({
+      params: { subject: toSlug(category.name), ks: toSlug(sub.name) },
+    })),
   );
 }) satisfies GetStaticPaths;
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { subject, ks } = Astro.params as { subject: Subject; ks: KeyStage };
-const products = await getProductsBySubjectAndKS(subject, ks);
-const subjectLabel = SUBJECT_LABELS[subject];
-const ksLabel = KEY_STAGE_LABELS[ks];
+const { subject, ks } = Astro.params as { subject: string; ks: string };
+const category = getCategoryBySlug(subject)!;
+const subcategory = getSubcategoryBySlug(subject, ks)!;
 ---
 
 <PageLayout
-  title={`${subjectLabel} ${ksLabel} Resources`}
-  description={`Browse ${subjectLabel} resources for ${ksLabel} on fab4kids.`}
+  title={`${category.name} ${subcategory.name} Resources`}
+  description={`Browse ${category.name} PDF resources for ${subcategory.name} on fab4kids.`}
 >
   <section class="hero">
     <div class="container">
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <ol>
           <li><a href="/">Home</a></li>
-          <li><a href={`/${subject}`}>{subjectLabel}</a></li>
-          <li aria-current="page">{ksLabel}</li>
+          <li><a href={`/${subject}`}>{category.name}</a></li>
+          <li aria-current="page">{subcategory.name}</li>
         </ol>
       </nav>
-      <h1 class="hero__title">{subjectLabel} — {ksLabel} Resources</h1>
-      <p class="hero__subtitle">{ksLabel} {subjectLabel} resources for teachers and parents.</p>
+      <h1 class="hero__title">{category.name} — {subcategory.name} Resources</h1>
+      <p class="hero__subtitle">{subcategory.name} {category.name} resources for teachers and parents.</p>
     </div>
   </section>
 
-  <section class="catalogue">
+  <section class="catalogue" data-pagefind-body>
     <div class="container">
       <div class="catalogue__header">
-        <a href={`/${subject}`} class="back-link" aria-label={`Back to all ${subjectLabel} resources`}>
-          ← All {subjectLabel}
+        <a href={`/${subject}`} class="back-link" aria-label={`Back to all ${category.name} resources`}>
+          ← All {category.name}
         </a>
       </div>
 
-      {products.length === 0 ? (
+      {subcategory.files.length === 0 ? (
         <div class="empty-state">
-          <p>No {subjectLabel} {ksLabel} resources yet. Check back soon!</p>
-          <a href={`/${subject}`} class="btn btn--secondary">Back to {subjectLabel}</a>
+          <p>No {category.name} {subcategory.name} resources yet. Check back soon!</p>
+          <a href={`/${subject}`} class="btn btn--secondary">Back to {category.name}</a>
         </div>
       ) : (
-        <div class="product-grid">
-          {products.map((product) => (
-            <ProductCard product={product} />
+        <ul class="pdf-list">
+          {subcategory.files.map((file) => (
+            <li>
+              <PdfCard client:load file={file} />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   </section>
@@ -133,10 +134,11 @@ const ksLabel = KEY_STAGE_LABELS[ks];
     color: var(--color-primary);
   }
 
-  .product-grid {
+  .pdf-list {
+    list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
   }
 
   .empty-state {

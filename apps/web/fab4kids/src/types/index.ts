@@ -46,3 +46,22 @@ export interface DeliveryLink {
   url: string;
   expiresAt: string;
 }
+
+export interface PdfFile {
+  id: number;
+  name: string;
+  url: string;
+  price: number;
+}
+
+export interface PdfSubcategory {
+  id: number;
+  name: string;
+  files: PdfFile[];
+}
+
+export interface PdfCategory {
+  id: number;
+  name: string;
+  subcategories: PdfSubcategory[];
+}

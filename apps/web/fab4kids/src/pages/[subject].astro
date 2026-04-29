@@ -1,38 +1,36 @@
 ---
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
 import PageLayout from '@/layouts/PageLayout.astro';
-import { ProductCard } from '@/components/ProductCard.tsx';
-import { getProductsBySubject } from '@/lib/sanity.ts';
-import { SUBJECTS, SUBJECT_LABELS, KEY_STAGES, KEY_STAGE_LABELS } from '@/lib/constants.ts';
-import type { Subject } from '@/types/index.ts';
+import { getAllCategories, getCategoryBySlug, toSlug } from '@/lib/pdfs.ts';
+import { PdfCard } from '@/components/PdfCard.tsx';
 
 export const prerender = true;
 
 export const getStaticPaths = (async () => {
-  return SUBJECTS.map((subject) => ({ params: { subject } }));
+  return getAllCategories().map((category) => ({ params: { subject: toSlug(category.name) } }));
 }) satisfies GetStaticPaths;
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { subject } = Astro.params as { subject: Subject };
-const products = await getProductsBySubject(subject);
-const subjectLabel = SUBJECT_LABELS[subject];
+const { subject } = Astro.params as { subject: string };
+const category = getCategoryBySlug(subject)!;
+const hasFiles = category.subcategories.some((sub) => sub.files.length > 0);
 ---
 
 <PageLayout
-  title={`${subjectLabel} Resources`}
-  description={`Browse all ${subjectLabel} resources for KS1–KS4 on fab4kids.`}
+  title={`${category.name} Resources`}
+  description={`Browse all ${category.name} PDF resources on fab4kids.`}
 >
   <section class="hero">
     <div class="container">
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <ol>
           <li><a href="/">Home</a></li>
-          <li aria-current="page">{subjectLabel}</li>
+          <li aria-current="page">{category.name}</li>
         </ol>
       </nav>
-      <h1 class="hero__title">{subjectLabel} Resources</h1>
-      <p class="hero__subtitle">Browse all {subjectLabel} resources for KS1–KS4.</p>
+      <h1 class="hero__title">{category.name} Resources</h1>
+      <p class="hero__subtitle">Browse all {category.name} PDF resources.</p>
     </div>
   </section>
 
@@ -43,9 +41,9 @@ const subjectLabel = SUBJECT_LABELS[subject];
           <li>
             <a href={`/${subject}`} class="ks-tab ks-tab--active" aria-current="page">All</a>
           </li>
-          {KEY_STAGES.map((ks) => (
+          {category.subcategories.map((sub) => (
             <li>
-              <a href={`/${subject}/${ks}`} class="ks-tab">{KEY_STAGE_LABELS[ks]}</a>
+              <a href={`/${subject}/${toSlug(sub.name)}`} class="ks-tab">{sub.name}</a>
             </li>
           ))}
         </ul>
@@ -53,19 +51,28 @@ const subjectLabel = SUBJECT_LABELS[subject];
     </div>
   </section>
 
-  <section class="catalogue">
+  <section class="catalogue" data-pagefind-body>
     <div class="container">
-      {products.length === 0 ? (
+      {!hasFiles ? (
         <div class="empty-state">
-          <p>No {subjectLabel} resources available yet. Check back soon!</p>
+          <p>No {category.name} resources available yet. Check back soon!</p>
           <a href="/" class="btn btn--secondary">Back to home</a>
         </div>
       ) : (
-        <div class="product-grid">
-          {products.map((product) => (
-            <ProductCard product={product} />
-          ))}
-        </div>
+        category.subcategories.map((sub) => sub.files.length > 0 && (
+          <div class="subcategory-section">
+            <h2 class="subcategory-title">
+              <a href={`/${subject}/${toSlug(sub.name)}`}>{sub.name}</a>
+            </h2>
+            <ul class="pdf-list">
+              {sub.files.map((file) => (
+                <li>
+                  <PdfCard client:load file={file} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
       )}
     </div>
   </section>
@@ -170,10 +177,31 @@ const subjectLabel = SUBJECT_LABELS[subject];
     padding-block: 2.5rem;
   }
 
-  .product-grid {
+  .subcategory-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .subcategory-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+  }
+
+  .subcategory-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .subcategory-title a:hover {
+    color: var(--color-primary);
+  }
+
+  .pdf-list {
+    list-style: none;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
   }
 
   .empty-state {
