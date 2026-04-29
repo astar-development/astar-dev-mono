@@ -31,10 +31,11 @@ const appInsightsConnString = import.meta.env.PUBLIC_APPINSIGHTS_CONNECTION_STRI
     />
     <script is:inline>
       (function () {
-        const VALID_THEMES = ['light', 'dark', 'colourful'];
-        const stored = localStorage.getItem('fab4kids-theme');
-        let theme;
-        if (stored !== null && VALID_THEMES.includes(stored)) {
+        var VALID_THEMES = ['light', 'dark', 'colourful'];
+        var stored;
+        try { stored = localStorage.getItem('fab4kids-theme'); } catch (_) {}
+        var theme;
+        if (stored !== null && stored !== undefined && VALID_THEMES.indexOf(stored) !== -1) {
           theme = stored;
         } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
           theme = 'dark';
@@ -95,7 +96,11 @@ const appInsightsConnString = import.meta.env.PUBLIC_APPINSIGHTS_CONNECTION_STRI
           document.head.appendChild(script);
         }
 
-        var alreadyAccepted = localStorage.getItem(CONSENT_KEY) === 'accepted';
+        var alreadyAccepted = false;
+        try {
+          alreadyAccepted = localStorage.getItem(CONSENT_KEY) === 'accepted';
+        } catch (_) {}
+
         loadAppInsights(alreadyAccepted);
         if (alreadyAccepted) loadStripe();
 

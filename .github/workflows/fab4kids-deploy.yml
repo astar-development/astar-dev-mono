@@ -50,10 +50,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          SANITY_PROJECT_ID: ${{ secrets.FAB4KIDS_SANITY_PROJECT_ID }}
-          SANITY_DATASET: ${{ secrets.FAB4KIDS_SANITY_DATASET }}
-          SANITY_API_TOKEN: ${{ secrets.FAB4KIDS_SANITY_API_TOKEN }}
           PUBLIC_SITE_URL: https://fab-4-kids.co.uk
+          PUBLIC_APPINSIGHTS_CONNECTION_STRING: ${{ secrets.APPINSIGHTS_CONNECTION_STRING }}
 
       - name: Verify build output
         run: |
