@@ -1,0 +1,69 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Maths",
+      "subcategories": [
+        {
+          "id": 1,
+          "name": "KS1",
+          "files": [
+            {
+              "id": 1,
+              "name": "File 1",
+              "url": "pdfs/file1.pdf"
+            },
+            {
+              "id": 2,
+              "name": "File 2",
+              "url": "pdfs/file2.pdf"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "KS2",
+          "files": [
+            {
+              "id": 3,
+              "name": "File 3",
+              "url": "pdfs/file3.pdf"
+            },
+            {
+              "id": 4,
+              "name": "File 4",
+              "url": "pdfs/file4.pdf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "English",
+      "subcategories": [
+        {
+          "id": 3,
+          "name": "KS1",
+          "files": [
+            {
+              "id": 5,
+              "name": "File 5",
+              "url": "pdfs/file5.pdf"
+            },
+            {
+              "id": 6,
+              "name": "File 6",
+              "url": "pdfs/file6.pdf"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "KS2",
+          "files": []
+        }
+      ]
+    }
+  ]
+}
