@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -21,6 +22,7 @@ public sealed class SyncServiceTests
     private readonly ILocalDeletionDetector    _localDeletionDetector   = Substitute.For<ILocalDeletionDetector>();
     private readonly ILocalChangeDetector      _localChangeDetector     = Substitute.For<ILocalChangeDetector>();
     private readonly ISyncJobExecutor          _syncJobExecutor         = Substitute.For<ISyncJobExecutor>();
+    private readonly IFileSystem               _fileSystem              = Substitute.For<IFileSystem>();
 
     private SyncService BuildSut()
     {
@@ -31,7 +33,7 @@ public sealed class SyncServiceTests
             _localChangeDetector,
             _syncJobExecutor);
 
-        return new SyncService(_authService, _accountRepository, _driveStateRepository, _syncRepository, _httpDownloader, _graphService, dependencies);
+        return new SyncService(_authService, _accountRepository, _driveStateRepository, _syncRepository, _httpDownloader, _graphService, dependencies, _fileSystem);
     }
 
     private static RemoteEnumerationResult EmptyEnumerationResult()

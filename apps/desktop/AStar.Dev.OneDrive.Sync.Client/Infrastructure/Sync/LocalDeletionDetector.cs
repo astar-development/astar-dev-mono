@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -6,7 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository) : ILocalDeletionDetector
+public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem) : ILocalDeletionDetector
 {
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, string accessToken, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
@@ -15,7 +16,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
         {
             if(knownItem.IsFolder) continue;
             if(ct.IsCancellationRequested) break;
-            if(File.Exists(knownItem.LocalPath)) continue;
+            if(fileSystem.File.Exists(knownItem.LocalPath)) continue;
 
             Serilog.Log.Information("[LocalDeletionDetector] Local file deleted — removing remote: {Path}", knownItem.RemotePath);
 

@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -6,7 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository) : IRemoteDeletionDetector
+public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem) : IRemoteDeletionDetector
 {
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct)
@@ -33,18 +34,18 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
 
         if(knownItem.IsFolder)
         {
-            if(Directory.Exists(localPath))
+            if(fileSystem.Directory.Exists(localPath))
             {
                 Serilog.Log.Information("[RemoteDeletionDetector] Remote folder deleted — removing local: {Path}", localPath);
-                Directory.Delete(localPath, recursive: true);
+                fileSystem.Directory.Delete(localPath, recursive: true);
             }
         }
         else
         {
-            if(File.Exists(localPath))
+            if(fileSystem.File.Exists(localPath))
             {
                 Serilog.Log.Information("[RemoteDeletionDetector] Remote file deleted — removing local: {Path}", localPath);
-                File.Delete(localPath);
+                fileSystem.File.Delete(localPath);
             }
         }
 

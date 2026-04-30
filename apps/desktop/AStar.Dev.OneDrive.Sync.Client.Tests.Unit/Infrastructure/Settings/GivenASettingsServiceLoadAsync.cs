@@ -2,22 +2,35 @@ using System.Text.Json;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Settings;
 
 public sealed class GivenASettingsServiceLoadAsync
 {
+    private const string SettingsPath = "/app/settings.json";
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    private static void WriteSettingsFile(string filePath, AppSettings settings) =>
-        File.WriteAllText(filePath, JsonSerializer.Serialize(settings, JsonOpts));
+    private static MockFileSystem CreateMockFsWithSettings(AppSettings settings)
+    {
+        var mockFs = new MockFileSystem();
+        mockFs.AddDirectory("/app");
+        mockFs.AddFile(SettingsPath, new MockFileData(JsonSerializer.Serialize(settings, JsonOpts)));
+
+        return mockFs;
+    }
+
+    private static MockFileSystem CreateEmptyMockFs()
+    {
+        var mockFs = new MockFileSystem();
+        mockFs.AddDirectory("/app");
+
+        return mockFs;
+    }
 
     [Fact]
     public async Task when_settings_file_does_not_exist_then_current_uses_defaults_after_load()
     {
-        using var tempDir = new TemporaryDirectory();
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var sut = new SettingsService(CreateEmptyMockFs(), SettingsPath);
 
         await sut.LoadAsync();
 
@@ -28,10 +41,8 @@ public sealed class GivenASettingsServiceLoadAsync
     [Fact]
     public async Task when_valid_json_file_exists_then_current_is_populated_after_load()
     {
-        using var tempDir = new TemporaryDirectory();
         var expected = new AppSettings { Theme = AppTheme.Dark, SyncIntervalMinutes = 15, Locale = "fr-FR" };
-        WriteSettingsFile(tempDir.SettingsFilePath, expected);
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var sut = new SettingsService(CreateMockFsWithSettings(expected), SettingsPath);
 
         await sut.LoadAsync();
 
@@ -43,9 +54,9 @@ public sealed class GivenASettingsServiceLoadAsync
     [Fact]
     public async Task when_json_file_is_malformed_then_current_uses_defaults_after_load()
     {
-        using var tempDir = new TemporaryDirectory();
-        File.WriteAllText(tempDir.SettingsFilePath, "{ this is not valid json }}}");
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var mockFs = CreateEmptyMockFs();
+        mockFs.AddFile(SettingsPath, new MockFileData("{ this is not valid json }}}"));
+        var sut = new SettingsService(mockFs, SettingsPath);
 
         await sut.LoadAsync();
 
@@ -56,9 +67,9 @@ public sealed class GivenASettingsServiceLoadAsync
     [Fact]
     public async Task when_json_file_is_malformed_then_no_exception_is_thrown()
     {
-        using var tempDir = new TemporaryDirectory();
-        File.WriteAllText(tempDir.SettingsFilePath, "not json at all");
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var mockFs = CreateEmptyMockFs();
+        mockFs.AddFile(SettingsPath, new MockFileData("not json at all"));
+        var sut = new SettingsService(mockFs, SettingsPath);
 
         await Should.NotThrowAsync(() => sut.LoadAsync());
     }
@@ -66,9 +77,9 @@ public sealed class GivenASettingsServiceLoadAsync
     [Fact]
     public async Task when_json_file_deserializes_to_null_then_current_uses_defaults()
     {
-        using var tempDir = new TemporaryDirectory();
-        File.WriteAllText(tempDir.SettingsFilePath, "null");
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var mockFs = CreateEmptyMockFs();
+        mockFs.AddFile(SettingsPath, new MockFileData("null"));
+        var sut = new SettingsService(mockFs, SettingsPath);
 
         await sut.LoadAsync();
 
@@ -78,13 +89,12 @@ public sealed class GivenASettingsServiceLoadAsync
     [Fact]
     public async Task when_load_async_is_called_multiple_times_then_current_reflects_latest_file_content()
     {
-        using var tempDir = new TemporaryDirectory();
-        WriteSettingsFile(tempDir.SettingsFilePath, new AppSettings { Theme = AppTheme.Light });
-        var sut = new SettingsService(tempDir.SettingsFilePath);
+        var mockFs = CreateMockFsWithSettings(new AppSettings { Theme = AppTheme.Light });
+        var sut = new SettingsService(mockFs, SettingsPath);
         await sut.LoadAsync();
         sut.Current.Theme.ShouldBe(AppTheme.Light);
 
-        WriteSettingsFile(tempDir.SettingsFilePath, new AppSettings { Theme = AppTheme.Dark });
+        mockFs.File.WriteAllText(SettingsPath, JsonSerializer.Serialize(new AppSettings { Theme = AppTheme.Dark }, JsonOpts));
         await sut.LoadAsync();
 
         sut.Current.Theme.ShouldBe(AppTheme.Dark);

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
@@ -22,12 +23,13 @@ public static class ConflictResolver
     /// Generates a "keep both" filename by appending a timestamp suffix.
     /// e.g. report.docx → report (local 2024-01-15 14-32).docx
     /// </summary>
-    public static string MakeKeepBothName(string localPath, DateTimeOffset localModified)
+    public static string MakeKeepBothName(string localPath, DateTimeOffset localModified, IFileSystem fileSystem)
     {
-        string dir       = Path.GetDirectoryName(localPath) ?? string.Empty;
-        string stem      = Path.GetFileNameWithoutExtension(localPath);
-        string ext       = Path.GetExtension(localPath);
+        string dir       = fileSystem.Path.GetDirectoryName(localPath) ?? string.Empty;
+        string stem      = fileSystem.Path.GetFileNameWithoutExtension(localPath);
+        string ext       = fileSystem.Path.GetExtension(localPath);
         string timestamp = localModified.LocalDateTime.ToString("yyyy-MM-dd HH-mm", CultureInfo.CurrentCulture);
-        return Path.Combine(dir, $"{stem} (local {timestamp}){ext}");
+
+        return fileSystem.Path.Combine(dir, $"{stem} (local {timestamp}){ext}");
     }
 }

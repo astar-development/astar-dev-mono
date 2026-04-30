@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
@@ -16,15 +17,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 /// (libsecret on Linux, DPAPI on Windows, Keychain on macOS).
 /// Falls back to plaintext with a warning on unsupported platforms.
 /// </summary>
-public sealed class TokenCacheService : ITokenCacheService
+public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheService
 {
     private const int KeyringTimeoutSeconds = 5;
 
-    public TokenCacheService()
-    {
-        CacheDirectory = GetPlatformCacheDirectory();
-        _ = Directory.CreateDirectory(CacheDirectory);
-    }
+    public TokenCacheService() : this(new FileSystem()) { }
+
+    public string CacheDirectory { get; } = InitialiseCacheDirectory(fileSystem);
 
     /// <summary>
     /// Registers the file-backed cache with the given
@@ -58,6 +57,7 @@ public sealed class TokenCacheService : ITokenCacheService
                     .CreateAsync(keyringProperties)
                     .WaitAsync(cts.Token);
                 helper.RegisterCache(app.UserTokenCache);
+
                 return;
             }
             catch(Exception ex)
@@ -66,7 +66,6 @@ public sealed class TokenCacheService : ITokenCacheService
                     "[TokenCache] Keyring unavailable, falling back to plaintext cache");
             }
 
-            // Fallback — separate builder with only unprotected file
             storageProperties = new StorageCreationPropertiesBuilder(
                     $"{ApplicationMetadata.ApplicationNameLowered}.plaintext",
                     CacheDirectory)
@@ -75,7 +74,6 @@ public sealed class TokenCacheService : ITokenCacheService
         }
         else
         {
-            // Windows / macOS — use keychain/DPAPI
             storageProperties = new StorageCreationPropertiesBuilder(
                     $"{ApplicationMetadata.ApplicationNameLowered}.msalcache",
                     CacheDirectory)
@@ -89,9 +87,15 @@ public sealed class TokenCacheService : ITokenCacheService
         cacheHelper.RegisterCache(app.UserTokenCache);
     }
 
-    public string CacheDirectory { get; }
+    private static string InitialiseCacheDirectory(IFileSystem fs)
+    {
+        string directory = GetPlatformCacheDirectory(fs);
+        _ = fs.Directory.CreateDirectory(directory);
 
-    private static string GetPlatformCacheDirectory()
+        return directory;
+    }
+
+    private static string GetPlatformCacheDirectory(IFileSystem fs)
     {
         string appData = Environment.GetFolderPath(
             OperatingSystem.IsWindows()
@@ -99,9 +103,9 @@ public sealed class TokenCacheService : ITokenCacheService
                 : Environment.SpecialFolder.UserProfile);
 
         return OperatingSystem.IsWindows()
-            ? Path.Combine(appData, ApplicationMetadata.ApplicationNameLowered)
+            ? fs.Path.Combine(appData, ApplicationMetadata.ApplicationNameLowered)
             : OperatingSystem.IsMacOS()
-                ? Path.Combine(appData, "Library", "Application Support", ApplicationMetadata.ApplicationNameLowered)
-                : Path.Combine(appData, ".config", ApplicationMetadata.ApplicationNameLowered);
+                ? fs.Path.Combine(appData, "Library", "Application Support", ApplicationMetadata.ApplicationNameLowered)
+                : fs.Path.Combine(appData, ".config", ApplicationMetadata.ApplicationNameLowered);
     }
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
@@ -17,7 +18,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploadService
+public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
 
@@ -31,7 +32,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploa
     /// </summary>
     public async Task<string> UploadAsync(GraphServiceClient client, string driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
     {
-        var fileInfo = new FileInfo(localPath);
+        var fileInfo = fileSystem.FileInfo.New(localPath);
         if(!fileInfo.Exists)
         {
             throw new FileNotFoundException($"Local file not found: {localPath}");
@@ -86,7 +87,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploa
     private async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
     {
         using var http = httpClientFactory.CreateClient();
-        await using var file = File.OpenRead(localPath);
+        await using var file = fileSystem.File.OpenRead(localPath);
         byte[] buffer    = new byte[ChunkSize10Mb];
         long uploaded  = 0L;
 
@@ -199,5 +200,4 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory) : IUploa
 
         return TimeSpan.FromSeconds(seconds + jitter);
     }
-
 }

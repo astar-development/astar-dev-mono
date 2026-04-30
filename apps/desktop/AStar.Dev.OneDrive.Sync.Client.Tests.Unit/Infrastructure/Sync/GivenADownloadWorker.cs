@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -14,8 +15,9 @@ public sealed class GivenADownloadWorker
     private readonly IHttpDownloader  _downloader     = Substitute.For<IHttpDownloader>();
     private readonly IGraphService    _graphService   = Substitute.For<IGraphService>();
     private readonly ISyncRepository  _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly IFileSystem      _fileSystem     = Substitute.For<IFileSystem>();
 
-    private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository);
+    private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository, _fileSystem);
 
     private static SyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file") => new()
     {

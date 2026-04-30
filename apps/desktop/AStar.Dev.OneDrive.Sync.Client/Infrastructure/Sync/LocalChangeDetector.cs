@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
@@ -7,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// Scans local sync directories for files that are new or modified relative to the last synced state.
 /// Uses <see cref="SyncedItemEntity.RemoteModifiedAt"/> as the baseline for conflict/modification detection.
 /// </summary>
-public sealed class LocalChangeDetector : ILocalChangeDetector
+public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDetector
 {
     /// <inheritdoc />
     public List<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup)
@@ -18,7 +19,7 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
         {
             string localFolderPath = BuildLocalPath(localBasePath, rule.RemotePath);
 
-            if(!Directory.Exists(localFolderPath))
+            if(!fileSystem.Directory.Exists(localFolderPath))
                 continue;
 
             ScanDirectory(accountId, localBasePath, localFolderPath, rules, localPathLookup, jobs);
@@ -29,18 +30,18 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
         return jobs;
     }
 
-    private static void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup, List<SyncJob> jobs)
+    private void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup, List<SyncJob> jobs)
     {
         try
         {
-            foreach(string filePath in Directory.EnumerateFiles(localDir))
+            foreach(string filePath in fileSystem.Directory.EnumerateFiles(localDir))
             {
-                var info = new FileInfo(filePath);
+                var info = fileSystem.FileInfo.New(filePath);
 
                 if(IsFileToSkip(info))
                     continue;
 
-                string remotePath = $"/{Path.GetRelativePath(localBasePath, filePath).Replace(Path.DirectorySeparatorChar, '/')}";
+                string remotePath = $"/{fileSystem.Path.GetRelativePath(localBasePath, filePath).Replace(fileSystem.Path.DirectorySeparatorChar, '/')}";
 
                 if(!SyncRuleEvaluator.IsIncluded(remotePath, rules))
                     continue;
@@ -69,13 +70,13 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
                 });
             }
 
-            foreach(string subDir in Directory.EnumerateDirectories(localDir))
+            foreach(string subDir in fileSystem.Directory.EnumerateDirectories(localDir))
             {
-                var dirInfo = new DirectoryInfo(subDir);
+                var dirInfo = fileSystem.DirectoryInfo.New(subDir);
                 if(dirInfo.Attributes.HasFlag(FileAttributes.Hidden) || dirInfo.Name.StartsWith('.'))
                     continue;
 
-                string subRemotePath = $"/{Path.GetRelativePath(localBasePath, subDir).Replace(Path.DirectorySeparatorChar, '/')}";
+                string subRemotePath = $"/{fileSystem.Path.GetRelativePath(localBasePath, subDir).Replace(fileSystem.Path.DirectorySeparatorChar, '/')}";
 
                 if(!SyncRuleEvaluator.IsIncluded(subRemotePath, rules))
                     continue;
@@ -93,10 +94,10 @@ public sealed class LocalChangeDetector : ILocalChangeDetector
         }
     }
 
-    private static string BuildLocalPath(string localBasePath, string remotePath)
-        => Path.Combine(localBasePath, remotePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+    private string BuildLocalPath(string localBasePath, string remotePath)
+        => fileSystem.Path.Combine(localBasePath, remotePath.TrimStart('/').Replace('/', fileSystem.Path.DirectorySeparatorChar));
 
-    private static bool IsFileToSkip(FileInfo info)
+    private static bool IsFileToSkip(IFileInfo info)
         => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.') || IsTemporaryFile(info.Extension);
 
     private static bool IsTemporaryFile(string extension)

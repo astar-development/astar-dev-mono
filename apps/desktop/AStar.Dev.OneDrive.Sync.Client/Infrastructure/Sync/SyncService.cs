@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -7,7 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, SyncServiceDependencies dependencies) : ISyncService
+public sealed class SyncService(IAuthService authService, IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, SyncServiceDependencies dependencies, IFileSystem fileSystem) : ISyncService
 {
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
     public event EventHandler<JobCompletedEventArgs>?  JobCompleted;
@@ -140,9 +141,9 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 break;
 
             case ConflictOutcome.KeepBoth:
-                string keepBothName = ConflictResolver.MakeKeepBothName(conflict.LocalPath, conflict.LocalModified);
-                if(File.Exists(conflict.LocalPath))
-                    File.Move(conflict.LocalPath, keepBothName);
+                string keepBothName = ConflictResolver.MakeKeepBothName(conflict.LocalPath, conflict.LocalModified, fileSystem);
+                if(fileSystem.File.Exists(conflict.LocalPath))
+                    fileSystem.File.Move(conflict.LocalPath, keepBothName);
                 break;
         }
     }
