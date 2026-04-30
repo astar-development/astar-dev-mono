@@ -10,11 +10,9 @@ public static class LocalizationExtensions
     {
         public IServiceCollection AddLocalizationServices()
         {
-#pragma warning disable CA1859
-            ILocalizationService locService = new LocalizationService();
-#pragma warning restore CA1859
+            var locService = new LocalizationService();
             locService.Initialise(new CultureInfo("en-GB"));
-            services.AddSingleton(locService);
+            services.AddSingleton<ILocalizationService>(locService);
 
             return services;
         }

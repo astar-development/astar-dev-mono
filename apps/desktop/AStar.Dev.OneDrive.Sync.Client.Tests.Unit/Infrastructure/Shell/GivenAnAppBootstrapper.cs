@@ -126,11 +126,12 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     public async Task when_bootstrap_async_is_called_then_progress_messages_are_reported()
     {
         var reported = new List<string>();
+        var progress = Substitute.For<IProgress<string>>();
+        progress.When(p => p.Report(Arg.Any<string>())).Do(call => reported.Add(call.Arg<string>()));
         var sut = CreateSut();
 
-        await sut.BootstrapAsync(new Progress<string>(msg => reported.Add(msg)), TestContext.Current.CancellationToken);
+        await sut.BootstrapAsync(progress, TestContext.Current.CancellationToken);
 
-        reported.ShouldNotBeEmpty();
         reported.Count.ShouldBeGreaterThanOrEqualTo(3);
     }
 

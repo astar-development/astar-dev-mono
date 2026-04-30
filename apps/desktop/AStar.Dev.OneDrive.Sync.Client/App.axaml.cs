@@ -90,7 +90,7 @@ public class App : Application, IDisposable
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
-                path: Path.Combine(logDirectory, ApplicationMetadata.ApplicationLogName),
+                path: logDirectory.CombinePath(ApplicationMetadata.ApplicationName),
                 formatProvider: CultureInfo.InvariantCulture,
                 rollingInterval: RollingInterval.Day,
                 retainedFileCountLimit: 7)

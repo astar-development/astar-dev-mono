@@ -4,7 +4,7 @@ using AStar.Dev.Utilities;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class SettingsService : ISettingsService
+public sealed class SettingsService(string? settingsFilePath = null) : ISettingsService
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -12,7 +12,7 @@ public sealed class SettingsService : ISettingsService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly string path = ApplicationMetadata.ApplicationName.ApplicationDirectory().CombinePath("settings.json");
+    private readonly string path = settingsFilePath ?? ApplicationMetadata.ApplicationName.ApplicationDirectory().CombinePath("settings.json");
 
     /// <inheritdoc />
     public AppSettings Current { get; private set; } = new();

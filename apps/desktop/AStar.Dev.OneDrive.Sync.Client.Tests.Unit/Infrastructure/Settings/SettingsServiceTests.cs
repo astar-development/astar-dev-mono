@@ -1,16 +1,21 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Settings;
 
 [Collection("SettingsService")]
-public sealed class SettingsServiceTests
+public sealed class SettingsServiceTests : IDisposable
 {
+    private readonly TemporaryDirectory tempDir = new();
+
+    public void Dispose() => tempDir.Dispose();
+
     [Fact]
     public void Constructor_ShouldInitializeWithDefaultSettings()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         _ = service.Current.ShouldNotBeNull();
         service.Current.Theme.ShouldBe(AppTheme.System);
@@ -22,7 +27,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public void Current_ShouldReturnAppSettings()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         var settings = service.Current;
 
@@ -33,7 +38,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public void Theme_ShouldBeSettable()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.Theme = AppTheme.Dark;
 
@@ -43,7 +48,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public void Locale_ShouldBeSettable()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.Locale = "fr-FR";
 
@@ -53,7 +58,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public void DefaultConflictPolicy_ShouldBeSettable()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.DefaultConflictPolicy = ConflictPolicy.LastWriteWins;
 
@@ -63,7 +68,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public void SyncIntervalMinutes_ShouldBeSettable()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.SyncIntervalMinutes = 30;
 
@@ -73,10 +78,9 @@ public sealed class SettingsServiceTests
     [Fact]
     public async Task SaveAsync_ShouldInvokeSettingsChangedEvent()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
         bool eventRaised = false;
         AppSettings? changedSettings = null;
-
         service.SettingsChanged += (s, settings) =>
         {
             eventRaised = true;
@@ -94,7 +98,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public async Task SaveAsync_ShouldPersistSettings()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
         service.Current.Locale = "de-DE";
         service.Current.SyncIntervalMinutes = 45;
 
@@ -107,7 +111,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public async Task LoadAsync_ShouldNotThrow()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         await Should.NotThrowAsync(() => service.LoadAsync());
     }
@@ -115,7 +119,7 @@ public sealed class SettingsServiceTests
     [Fact]
     public async Task LoadAsync_ShouldInitializeCurrentSettings()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         await service.LoadAsync();
 
@@ -128,7 +132,7 @@ public sealed class SettingsServiceTests
     [InlineData(AppTheme.Dark)]
     public void Theme_ShouldSupportAllThemeValues(AppTheme theme)
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.Theme = theme;
 
@@ -142,7 +146,7 @@ public sealed class SettingsServiceTests
     [InlineData("es-ES")]
     public void Locale_ShouldSupportDifferentCultures(string locale)
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.Locale = locale;
 
@@ -156,7 +160,7 @@ public sealed class SettingsServiceTests
     [InlineData(ConflictPolicy.LocalWins)]
     public void DefaultConflictPolicy_ShouldSupportAllPolicies(ConflictPolicy policy)
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.DefaultConflictPolicy = policy;
 
@@ -170,7 +174,7 @@ public sealed class SettingsServiceTests
     [InlineData(120)]
     public void SyncIntervalMinutes_ShouldSupportDifferentIntervals(int minutes)
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
         service.Current.SyncIntervalMinutes = minutes;
 
@@ -180,30 +184,25 @@ public sealed class SettingsServiceTests
     [Fact]
     public void MultipleSettingsChanges_ShouldMaintainState()
     {
-        var service = new SettingsService();
-        var theme = AppTheme.Dark;
-        string locale = "fr-FR";
-        var policy = ConflictPolicy.KeepBoth;
-        int interval = 45;
+        var service = new SettingsService(tempDir.SettingsFilePath);
 
-        service.Current.Theme = theme;
-        service.Current.Locale = locale;
-        service.Current.DefaultConflictPolicy = policy;
-        service.Current.SyncIntervalMinutes = interval;
+        service.Current.Theme = AppTheme.Dark;
+        service.Current.Locale = "fr-FR";
+        service.Current.DefaultConflictPolicy = ConflictPolicy.KeepBoth;
+        service.Current.SyncIntervalMinutes = 45;
 
-        service.Current.Theme.ShouldBe(theme);
-        service.Current.Locale.ShouldBe(locale);
-        service.Current.DefaultConflictPolicy.ShouldBe(policy);
-        service.Current.SyncIntervalMinutes.ShouldBe(interval);
+        service.Current.Theme.ShouldBe(AppTheme.Dark);
+        service.Current.Locale.ShouldBe("fr-FR");
+        service.Current.DefaultConflictPolicy.ShouldBe(ConflictPolicy.KeepBoth);
+        service.Current.SyncIntervalMinutes.ShouldBe(45);
     }
 
     [Fact]
     public async Task SaveAsync_WithMultipleChanges_ShouldEventIncludeAllChanges()
     {
-        var service = new SettingsService();
+        var service = new SettingsService(tempDir.SettingsFilePath);
         bool eventRaised = false;
         AppSettings? changedSettings = null;
-
         service.SettingsChanged += (s, settings) =>
         {
             eventRaised = true;
