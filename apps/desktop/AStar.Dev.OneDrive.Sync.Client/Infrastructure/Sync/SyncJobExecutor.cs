@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -6,7 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, IParallelDownloadPipeline parallelDownloadPipeline) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, IParallelDownloadPipeline parallelDownloadPipeline, IFileSystem fileSystem) : ISyncJobExecutor
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, string accessToken, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
@@ -45,7 +46,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             }
             else if(job.Direction == SyncDirection.Upload && job.UploadedRemoteItemId is not null)
             {
-                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, job, remotePath);
+                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, job, remotePath, fileSystem);
                 await syncedItemRepository.UpsertAsync(entity, ct);
                 syncedItems[job.UploadedRemoteItemId] = entity;
             }

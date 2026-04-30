@@ -1,10 +1,11 @@
+using System.IO.Abstractions;
 using System.Text.Json;
 using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class SettingsService(string? settingsFilePath = null) : ISettingsService
+public sealed class SettingsService(IFileSystem fileSystem, string? settingsFilePath = null) : ISettingsService
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -23,12 +24,12 @@ public sealed class SettingsService(string? settingsFilePath = null) : ISettings
     /// <inheritdoc />
     public async Task LoadAsync()
     {
-        if (!File.Exists(path))
+        if (!fileSystem.File.Exists(path))
             return;
 
         try
         {
-            await using var stream = File.OpenRead(path);
+            await using var stream = fileSystem.File.OpenRead(path);
             Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts).ConfigureAwait(false) ?? new AppSettings();
         }
         catch (Exception ex)
@@ -41,7 +42,7 @@ public sealed class SettingsService(string? settingsFilePath = null) : ISettings
     /// <inheritdoc />
     public async Task SaveAsync()
     {
-        await using var stream = File.Create(path);
+        await using var stream = fileSystem.File.Create(path);
         await JsonSerializer.SerializeAsync(stream, Current, JsonOpts).ConfigureAwait(false);
         SettingsChanged?.Invoke(this, Current);
     }

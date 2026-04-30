@@ -1,3 +1,5 @@
+using System.IO.Abstractions;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// A new HttpClient is obtained from IHttpClientFactory per download call so the
 /// factory can rotate and dispose handlers freely without this class holding stale references.
 /// </summary>
-public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttpDownloader
+public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSystem fileSystem) : IHttpDownloader
 {
     private const string UserAgent        = "AStar.Dev.OneDrive.Sync/1.0";
     private const int    MaxRetries       = 5;
@@ -69,9 +71,9 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
         }
     }
 
-    private static async Task WriteToFileAsync(Stream source, string localPath, IProgress<long>? progress, CancellationToken ct)
+    private async Task WriteToFileAsync(Stream source, string localPath, IProgress<long>? progress, CancellationToken ct)
     {
-        await using var file = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
+        await using var file = fileSystem.FileStream.New(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
 
         byte[] buffer = new byte[81920];
         long written  = 0;
@@ -85,14 +87,14 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory) : IHttp
         }
     }
 
-    private static void EnsureDirectoryExists(string localPath)
+    private void EnsureDirectoryExists(string localPath)
     {
-        string? dir = Path.GetDirectoryName(localPath);
+        string? dir = fileSystem.Path.GetDirectoryName(localPath);
         if(!string.IsNullOrEmpty(dir))
-            _ = Directory.CreateDirectory(dir);
+            _ = fileSystem.Directory.CreateDirectory(dir);
     }
 
-    private static void PreserveRemoteTimestamp(string localPath, DateTimeOffset remoteModified) => File.SetLastWriteTimeUtc(localPath, remoteModified.UtcDateTime);
+    private void PreserveRemoteTimestamp(string localPath, DateTimeOffset remoteModified) => fileSystem.File.SetLastWriteTimeUtc(localPath, remoteModified.UtcDateTime);
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {

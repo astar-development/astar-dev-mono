@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -18,7 +19,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader) : IParallelDownloadPipeline
+public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, IHttpDownloader downloader, IFileSystem fileSystem) : IParallelDownloadPipeline
 {
     private readonly Lock _lock = new();
 
@@ -61,7 +62,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         }
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => new DownloadWorker(id, downloader, graphService, syncRepository)
+            .Select(id => new DownloadWorker(id, downloader, graphService, syncRepository, fileSystem)
             .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
             .ToList();
 

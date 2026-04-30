@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -8,7 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem) : ObservableObject
 {
     public ObservableCollection<Accounts.AccountFilesViewModel> Tabs { get; } = [];
 
@@ -32,7 +33,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
             return;
 
         var tab = new Accounts.AccountFilesViewModel(
-            account, authService, graphService, repository, syncRuleRepository);
+            account, authService, graphService, repository, syncRuleRepository, fileSystem);
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,

@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -36,6 +37,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private readonly ISettingsService settingsServiceForViewModel = Substitute.For<ISettingsService>();
     private readonly IThemeService themeServiceForViewModel = Substitute.For<IThemeService>();
     private readonly ISyncScheduler schedulerForViewModel = Substitute.For<ISyncScheduler>();
+    private readonly IFileSystem fileSystem = Substitute.For<IFileSystem>();
     private readonly SqliteConnection sqliteConnection;
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
 
@@ -62,7 +64,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private MainWindowViewModel CreateMainWindowViewModel()
     {
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, syncRuleRepository, syncEventAggregator);
-        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository);
+        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator);
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository);

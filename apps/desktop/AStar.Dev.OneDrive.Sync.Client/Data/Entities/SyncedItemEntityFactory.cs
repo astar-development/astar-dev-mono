@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
@@ -37,7 +38,7 @@ public static class SyncedItemEntityFactory
         };
 
     /// <summary>Creates a tracking entity for a successfully completed upload job.</summary>
-    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, SyncJob job, string remotePath)
+    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, SyncJob job, string remotePath, IFileSystem fileSystem)
         => new()
         {
             AccountId        = accountId,
@@ -46,6 +47,6 @@ public static class SyncedItemEntityFactory
             RemotePath       = remotePath,
             LocalPath        = job.LocalPath,
             IsFolder         = false,
-            RemoteModifiedAt = new DateTimeOffset(new FileInfo(job.LocalPath).LastWriteTimeUtc, TimeSpan.Zero)
+            RemoteModifiedAt = new DateTimeOffset(fileSystem.FileInfo.New(job.LocalPath).LastWriteTimeUtc, TimeSpan.Zero)
         };
 }

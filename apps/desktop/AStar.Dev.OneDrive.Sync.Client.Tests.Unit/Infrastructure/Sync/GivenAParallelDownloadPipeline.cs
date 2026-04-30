@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -15,8 +16,9 @@ public sealed class GivenAParallelDownloadPipeline
     private readonly IHttpDownloader  _downloader     = Substitute.For<IHttpDownloader>();
     private readonly IGraphService    _graphService   = Substitute.For<IGraphService>();
     private readonly ISyncRepository  _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly IFileSystem      _fileSystem     = Substitute.For<IFileSystem>();
 
-    private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader);
+    private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader, _fileSystem);
 
     private static SyncJob MakeDownloadJob(string relativePath = "folder/file.txt") => new()
     {

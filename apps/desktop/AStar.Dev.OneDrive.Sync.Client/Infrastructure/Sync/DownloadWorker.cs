@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -10,7 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// <see cref="ChannelReader{T}"/> and executes them.
 /// Multiple workers run concurrently — one per degree of parallelism.
 /// </summary>
-public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository)
+public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository, IFileSystem fileSystem)
 {
     public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
@@ -75,8 +76,8 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                 break;
 
             case SyncDirection.Delete:
-                if(File.Exists(job.LocalPath))
-                    File.Delete(job.LocalPath);
+                if(fileSystem.File.Exists(job.LocalPath))
+                    fileSystem.File.Delete(job.LocalPath);
                 break;
         }
     }

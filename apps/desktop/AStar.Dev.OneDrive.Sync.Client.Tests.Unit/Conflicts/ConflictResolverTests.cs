@@ -5,6 +5,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
 
 public sealed class ConflictResolverTests
 {
+    private static readonly MockFileSystem MockFs = new();
+
     [Fact]
     public void Resolve_WithIgnorePolicy_ShouldReturnSkip()
     {
@@ -53,7 +55,7 @@ public sealed class ConflictResolverTests
     public void Resolve_WithLastWriteWins_LocalIsNewer_ShouldReturnUseLocal()
     {
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
-        var localModified = DateTimeOffset.UtcNow; // Newer
+        var localModified = DateTimeOffset.UtcNow;
 
         var outcome = ConflictResolver.Resolve(ConflictPolicy.LastWriteWins, localModified, remoteModified);
 
@@ -64,7 +66,7 @@ public sealed class ConflictResolverTests
     public void Resolve_WithLastWriteWins_RemoteIsNewer_ShouldReturnUseRemote()
     {
         var localModified = DateTimeOffset.UtcNow.AddMinutes(-10);
-        var remoteModified = DateTimeOffset.UtcNow; // Newer
+        var remoteModified = DateTimeOffset.UtcNow;
 
         var outcome = ConflictResolver.Resolve(ConflictPolicy.LastWriteWins, localModified, remoteModified);
 
@@ -75,10 +77,9 @@ public sealed class ConflictResolverTests
     public void Resolve_WithLastWriteWins_SameTimes_ShouldReturnUseLocal()
     {
         var timestamp = DateTimeOffset.UtcNow;
-        var localModified = timestamp;
-        var remoteModified = timestamp;
 
-        var outcome = ConflictResolver.Resolve(ConflictPolicy.LastWriteWins, localModified, remoteModified);
+        var outcome = ConflictResolver.Resolve(ConflictPolicy.LastWriteWins, timestamp, timestamp);
+
         outcome.ShouldBe(ConflictOutcome.UseLocal);
     }
 
@@ -142,7 +143,7 @@ public sealed class ConflictResolverTests
         string localPath = "/home/jason/Documents/report.docx";
         var localModified = new DateTimeOffset(2024, 1, 15, 14, 32, 0, TimeSpan.Zero);
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
 
         result.ShouldContain("report");
         result.ShouldContain("docx");
@@ -157,7 +158,7 @@ public sealed class ConflictResolverTests
         string localPath = "/home/jason/My Documents/My Report.docx";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
 
         result.ShouldContain("My Report");
         result.ShouldEndWith(".docx");
@@ -169,7 +170,7 @@ public sealed class ConflictResolverTests
         string localPath = "/home/jason/Documents/README";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
 
         result.ShouldContain("README");
         result.ShouldContain("local");
@@ -181,7 +182,7 @@ public sealed class ConflictResolverTests
         string localPath = "/home/jason/file.tar.gz";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
 
         result.ShouldContain("file.tar");
         result.ShouldEndWith(".gz");
@@ -194,8 +195,8 @@ public sealed class ConflictResolverTests
         var time1 = new DateTimeOffset(2024, 1, 15, 14, 32, 0, TimeSpan.Zero);
         var time2 = new DateTimeOffset(2024, 1, 16, 14, 32, 0, TimeSpan.Zero);
 
-        string result1 = ConflictResolver.MakeKeepBothName(localPath, time1);
-        string result2 = ConflictResolver.MakeKeepBothName(localPath, time2);
+        string result1 = ConflictResolver.MakeKeepBothName(localPath, time1, MockFs);
+        string result2 = ConflictResolver.MakeKeepBothName(localPath, time2, MockFs);
 
         result1.ShouldNotBe(result2);
         result1.ShouldContain("2024-01-15");
@@ -208,7 +209,7 @@ public sealed class ConflictResolverTests
         string localPath = "/home/jason/Documents/report.docx";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
 
         string? resultDir = Path.GetDirectoryName(result);
         string? originalDir = Path.GetDirectoryName(localPath);

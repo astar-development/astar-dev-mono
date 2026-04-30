@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -11,7 +12,7 @@ using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
@@ -146,13 +147,13 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node)
         => ViewActivityRequested?.Invoke(this, node);
 
-    private static void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
+    private void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
     {
-        string path = Path.Combine(
+        string path = fileSystem.Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "OneDrive", node.Name);
 
-        if (!Directory.Exists(path))
+        if (!fileSystem.Directory.Exists(path))
             return;
 
         string opener = OperatingSystem.IsWindows() ? "explorer"

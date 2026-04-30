@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -8,7 +9,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository) : IRemoteFolderEnumerator
+public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
     public async Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, Func<SyncConflict, Task> onConflict, CancellationToken ct)
@@ -75,15 +76,15 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
                 syncedItems.TryGetValue(item.Id, out var knownItem);
 
-                if(knownItem?.ETag is not null && knownItem.ETag == item.ETag && File.Exists(localPath))
+                if(knownItem?.ETag is not null && knownItem.ETag == item.ETag && fileSystem.File.Exists(localPath))
                 {
                     Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.RelativePath);
                     continue;
                 }
 
-                if(knownItem is not null && File.Exists(localPath))
+                if(knownItem is not null && fileSystem.File.Exists(localPath))
                 {
-                    var localModified = new DateTimeOffset(new FileInfo(localPath).LastWriteTimeUtc, TimeSpan.Zero);
+                    var localModified = new DateTimeOffset(fileSystem.FileInfo.New(localPath).LastWriteTimeUtc, TimeSpan.Zero);
                     bool isConflict   = localModified > knownItem.RemoteModifiedAt.AddSeconds(5);
 
                     if(isConflict)
@@ -93,7 +94,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                         continue;
                     }
                 }
-                else if(knownItem is null && File.Exists(localPath))
+                else if(knownItem is null && fileSystem.File.Exists(localPath))
                 {
                     Serilog.Log.Debug("[RemoteFolderEnumerator] File exists locally without SyncedItemEntity — treating as synced: {Path}", localPath);
                     var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.RelativePath ?? item.Name, localPath);
@@ -123,14 +124,14 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     private async Task HandleFolderAsync(AccountId accountId, DeltaItem item, string remotePath, string localBasePath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
         string localPath = BuildLocalPath(localBasePath, remotePath.TrimStart('/'));
-        _ = Directory.CreateDirectory(localPath);
+        _ = fileSystem.Directory.CreateDirectory(localPath);
 
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         await syncedItemRepository.UpsertAsync(entity, ct);
         syncedItems[item.Id] = entity;
     }
 
-    private static async Task HandleConflictAsync(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified, SyncConflict conflict, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict)
+    private async Task HandleConflictAsync(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified, SyncConflict conflict, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict)
     {
         await onConflict(conflict);
 
@@ -165,14 +166,14 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                     RelativePath   = item.RelativePath ?? item.Name,
                     LocalPath      = localPath,
                     Direction      = SyncDirection.Upload,
-                    FileSize       = new FileInfo(localPath).Length,
+                    FileSize       = fileSystem.FileInfo.New(localPath).Length,
                     RemoteModified = localModified
                 });
                 break;
 
             case ConflictOutcome.KeepBoth:
-                string newName = ConflictResolver.MakeKeepBothName(localPath, localModified);
-                File.Move(localPath, newName);
+                string newName = ConflictResolver.MakeKeepBothName(localPath, localModified, fileSystem);
+                fileSystem.File.Move(localPath, newName);
                 downloadJobs.Add(new SyncJob
                 {
                     AccountId      = account.Id.Id,
@@ -192,7 +193,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     private static string? TryResolveFromSyncedItems(Dictionary<string, SyncedItemEntity> syncedItems, string remotePath)
         => syncedItems.Values.FirstOrDefault(i => i.IsFolder && string.Equals(i.RemotePath, remotePath, StringComparison.OrdinalIgnoreCase))?.RemoteItemId.Id;
 
-    private static SyncConflict BuildConflict(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified)
+    private SyncConflict BuildConflict(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified)
         => new()
         {
             AccountId      = account.Id.Id,
@@ -202,10 +203,10 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             LocalPath      = localPath,
             LocalModified  = localModified,
             RemoteModified = item.LastModified ?? DateTimeOffset.MinValue,
-            LocalSize      = new FileInfo(localPath).Length,
+            LocalSize      = fileSystem.FileInfo.New(localPath).Length,
             RemoteSize     = item.Size
         };
 
-    private static string BuildLocalPath(string localBasePath, string relativePath)
-        => Path.Combine(localBasePath, relativePath.Replace('/', Path.DirectorySeparatorChar));
+    private string BuildLocalPath(string localBasePath, string relativePath)
+        => fileSystem.Path.Combine(localBasePath, relativePath.Replace('/', fileSystem.Path.DirectorySeparatorChar));
 }

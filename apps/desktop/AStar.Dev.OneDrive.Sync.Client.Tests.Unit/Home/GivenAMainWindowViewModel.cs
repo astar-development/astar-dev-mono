@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -28,6 +29,7 @@ public sealed class GivenAMainWindowViewModel
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
     private readonly ISyncService _syncService = Substitute.For<ISyncService>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
 
     public GivenAMainWindowViewModel()
     {
@@ -36,7 +38,7 @@ public sealed class GivenAMainWindowViewModel
     }
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _syncEventAggregator);
-    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>());
+    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator);
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
