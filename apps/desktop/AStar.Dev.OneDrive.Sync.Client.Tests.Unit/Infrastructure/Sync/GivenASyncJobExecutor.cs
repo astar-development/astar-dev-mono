@@ -23,16 +23,7 @@ public sealed class GivenASyncJobExecutor
     private SyncJobExecutor CreateSut(MockFileSystem mockFs) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFs);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
-        => new()
-        {
-            AccountId      = "user-1",
-            RemoteItemId   = remoteId,
-            RelativePath   = "Documents/file.txt",
-            LocalPath      = localPath,
-            Direction      = direction,
-            FileSize       = 100L,
-            RemoteModified = DateTimeOffset.UtcNow.AddDays(-1)
-        };
+        => SyncJobFactory.Create(accountId: "user-1", folderId: "", remoteItemId: remoteId, relativePath: "Documents/file.txt", localPath: localPath, direction: direction, fileSize: 100L, remoteModified: DateTimeOffset.UtcNow.AddDays(-1));
 
     [Fact]
     public async Task when_jobs_list_is_empty_then_pipeline_is_not_called()

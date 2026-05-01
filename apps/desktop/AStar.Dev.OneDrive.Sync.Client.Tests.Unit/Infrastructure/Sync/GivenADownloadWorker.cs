@@ -19,15 +19,8 @@ public sealed class GivenADownloadWorker
 
     private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository, _fileSystem);
 
-    private static SyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file") => new()
-    {
-        RemoteItemId   = ItemId,
-        RelativePath   = "Desktop/file.txt",
-        LocalPath      = "/tmp/file.txt",
-        Direction      = SyncDirection.Download,
-        DownloadUrl    = downloadUrl,
-        RemoteModified = DateTimeOffset.UtcNow
-    };
+    private static SyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
+        => SyncJobFactory.Create(remoteItemId: ItemId, relativePath: "Desktop/file.txt", localPath: "/tmp/file.txt", direction: SyncDirection.Download, remoteModified: DateTimeOffset.UtcNow, downloadUrl: downloadUrl, accountId: "", folderId: "", fileSize: 0);
 
     private static async Task<(List<SyncJob> Completed, List<string?> Errors)> RunWorkerWithJobsAsync(DownloadWorker worker, IEnumerable<SyncJob> jobs, CancellationToken ct)
     {
@@ -128,15 +121,7 @@ public sealed class GivenADownloadWorker
     [Fact]
     public async Task when_upload_job_is_processed_then_graph_service_upload_is_called()
     {
-        var job = new SyncJob
-        {
-            RemoteItemId   = ItemId,
-            FolderId       = "folder-1",
-            RelativePath   = "Desktop/file.txt",
-            LocalPath      = "/tmp/file.txt",
-            Direction      = SyncDirection.Upload,
-            RemoteModified = DateTimeOffset.UtcNow
-        };
+        var job = SyncJobFactory.Create(remoteItemId: ItemId, folderId: "folder-1", relativePath: "Desktop/file.txt", localPath: "/tmp/file.txt", direction: SyncDirection.Upload, remoteModified: DateTimeOffset.UtcNow, accountId: "", fileSize: 0);
 
         _graphService.UploadFileAsync(AccessToken, job.LocalPath, Arg.Any<string>(), job.FolderId, Arg.Any<CancellationToken>())
             .Returns("remote-item-id");
@@ -149,14 +134,7 @@ public sealed class GivenADownloadWorker
     [Fact]
     public async Task when_delete_job_is_processed_then_no_downloader_or_graph_download_calls_are_made()
     {
-        var job = new SyncJob
-        {
-            RemoteItemId   = ItemId,
-            RelativePath   = "Desktop/file.txt",
-            LocalPath      = "/tmp/nonexistent-file-that-does-not-exist.txt",
-            Direction      = SyncDirection.Delete,
-            RemoteModified = DateTimeOffset.UtcNow
-        };
+        var job = SyncJobFactory.Create(remoteItemId: ItemId, relativePath: "Desktop/file.txt", localPath: "/tmp/nonexistent-file-that-does-not-exist.txt", direction: SyncDirection.Delete, remoteModified: DateTimeOffset.UtcNow, accountId: "", folderId: "", fileSize: 0);
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 

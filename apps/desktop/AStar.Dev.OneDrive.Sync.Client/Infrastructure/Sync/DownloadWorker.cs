@@ -13,6 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository, IFileSystem fileSystem)
 {
+    /// <summary>Runs the worker, draining all jobs from <paramref name="reader"/> until the channel is complete or <paramref name="ct"/> is cancelled.</summary>
     public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
         await foreach(var job in reader.ReadAllAsync(ct))
@@ -28,10 +29,11 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             string? error   = null;
             bool     success = false;
+            var currentJob = job;
 
             try
             {
-                await ExecuteJobAsync(job, accessToken, ct);
+                currentJob = await ExecuteJobAsync(job, accessToken, ct);
                 success = true;
                 await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed);
             }
@@ -48,12 +50,12 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             }
             finally
             {
-                onJobComplete(job, success, error);
+                onJobComplete(currentJob, success, error);
             }
         }
     }
 
-    private async Task ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private async Task<SyncJob> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
     {
         switch(job.Direction)
         {
@@ -65,20 +67,25 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                     job.LocalPath,
                     job.RemoteModified,
                     ct: ct);
-                break;
+
+                return job;
 
             case SyncDirection.Upload:
                 string remotePath = job.DownloadUrl ?? job.RelativePath;
-
-                job.UploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
+                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
 
                 Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
-                break;
+
+                return job with { UploadedRemoteItemId = uploadedRemoteItemId };
 
             case SyncDirection.Delete:
                 if(fileSystem.File.Exists(job.LocalPath))
                     fileSystem.File.Delete(job.LocalPath);
-                break;
+
+                return job;
+
+            default:
+                return job;
         }
     }
 

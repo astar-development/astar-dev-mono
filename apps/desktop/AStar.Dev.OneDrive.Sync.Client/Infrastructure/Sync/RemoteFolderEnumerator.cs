@@ -104,18 +104,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                     continue;
                 }
 
-                downloadJobs.Add(new SyncJob
-                {
-                    AccountId      = account.Id.Id,
-                    FolderId       = string.Empty,
-                    RemoteItemId   = item.Id,
-                    RelativePath   = item.RelativePath ?? item.Name,
-                    LocalPath      = localPath,
-                    Direction      = SyncDirection.Download,
-                    DownloadUrl    = item.DownloadUrl,
-                    FileSize       = item.Size,
-                    RemoteModified = item.LastModified ?? DateTimeOffset.MinValue
-                });
+                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
             }
         }
 
@@ -144,49 +133,17 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 break;
 
             case ConflictOutcome.UseRemote:
-                downloadJobs.Add(new SyncJob
-                {
-                    AccountId      = account.Id.Id,
-                    FolderId       = string.Empty,
-                    RemoteItemId   = item.Id,
-                    RelativePath   = item.RelativePath ?? item.Name,
-                    LocalPath      = localPath,
-                    Direction      = SyncDirection.Download,
-                    DownloadUrl    = item.DownloadUrl,
-                    FileSize       = item.Size,
-                    RemoteModified = item.LastModified ?? DateTimeOffset.MinValue
-                });
+                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
                 break;
 
             case ConflictOutcome.UseLocal:
-                downloadJobs.Add(new SyncJob
-                {
-                    AccountId      = account.Id.Id,
-                    FolderId       = string.Empty,
-                    RemoteItemId   = item.Id,
-                    RelativePath   = item.RelativePath ?? item.Name,
-                    LocalPath      = localPath,
-                    Direction      = SyncDirection.Upload,
-                    FileSize       = fileSystem.FileInfo.New(localPath).Length,
-                    RemoteModified = localModified
-                });
+                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Upload, fileSystem.FileInfo.New(localPath).Length, localModified));
                 break;
 
             case ConflictOutcome.KeepBoth:
                 string newName = ConflictResolver.MakeKeepBothName(localPath, localModified, fileSystem);
                 fileSystem.File.Move(localPath, newName);
-                downloadJobs.Add(new SyncJob
-                {
-                    AccountId      = account.Id.Id,
-                    FolderId       = string.Empty,
-                    RemoteItemId   = item.Id,
-                    RelativePath   = item.RelativePath ?? item.Name,
-                    LocalPath      = localPath,
-                    Direction      = SyncDirection.Download,
-                    DownloadUrl    = item.DownloadUrl,
-                    FileSize       = item.Size,
-                    RemoteModified = item.LastModified ?? DateTimeOffset.MinValue
-                });
+                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
                 break;
         }
     }

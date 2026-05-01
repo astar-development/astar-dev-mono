@@ -4,10 +4,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Models;
 
 public sealed class SyncJobTests
 {
+    private static SyncJob CreateMinimalJob() => SyncJobFactory.Create(accountId: "", folderId: "", remoteItemId: "", relativePath: "", localPath: "", direction: default, fileSize: 0, remoteModified: default);
+
     [Fact]
     public void Constructor_ShouldInitializeWithDefaultValues()
     {
-        var syncJob = new SyncJob();
+        var syncJob = CreateMinimalJob();
 
         syncJob.Id.ShouldNotBe(Guid.Empty);
         syncJob.AccountId.ShouldBe(string.Empty);
@@ -28,8 +30,8 @@ public sealed class SyncJobTests
     [Fact]
     public void Id_ShouldBeUnique()
     {
-        var job1 = new SyncJob();
-        var job2 = new SyncJob();
+        var job1 = CreateMinimalJob();
+        var job2 = CreateMinimalJob();
 
         job1.Id.ShouldNotBe(job2.Id);
     }
@@ -46,19 +48,9 @@ public sealed class SyncJobTests
         var direction = SyncDirection.Download;
         long fileSize = 1024L;
         var remoteModified = DateTimeOffset.UtcNow.AddHours(-1);
+        var queuedAt = DateTimeOffset.UtcNow;
 
-        var syncJob = new SyncJob
-        {
-            Id = id,
-            AccountId = accountId,
-            FolderId = folderId,
-            RemoteItemId = remoteItemId,
-            RelativePath = relativePath,
-            LocalPath = localPath,
-            Direction = direction,
-            FileSize = fileSize,
-            RemoteModified = remoteModified
-        };
+        var syncJob = SyncJobFactory.Create(accountId, folderId, remoteItemId, relativePath, localPath, direction, fileSize, remoteModified) with { Id = id, QueuedAt = queuedAt };
 
         syncJob.Id.ShouldBe(id);
         syncJob.AccountId.ShouldBe(accountId);
@@ -72,12 +64,9 @@ public sealed class SyncJobTests
     }
 
     [Fact]
-    public void State_ShouldBeSettable()
+    public void when_copied_with_new_state_then_state_is_updated()
     {
-        var syncJob = new SyncJob
-        {
-            State = SyncJobState.InProgress
-        };
+        var syncJob = CreateMinimalJob() with { State = SyncJobState.InProgress };
 
         syncJob.State.ShouldBe(SyncJobState.InProgress);
     }
@@ -90,43 +79,37 @@ public sealed class SyncJobTests
     [InlineData(SyncJobState.Skipped)]
     public void State_ShouldSupportAllStates(SyncJobState state)
     {
-        var syncJob = new SyncJob
-        {
-            State = state
-        };
+        var syncJob = CreateMinimalJob() with { State = state };
 
         syncJob.State.ShouldBe(state);
     }
 
     [Fact]
-    public void ErrorMessage_ShouldBeSettable()
+    public void when_copied_with_error_message_then_error_message_is_set()
     {
-        var syncJob = new SyncJob();
         string errorMessage = "File is locked by another process";
 
-        syncJob.ErrorMessage = errorMessage;
+        var syncJob = CreateMinimalJob() with { ErrorMessage = errorMessage };
 
         syncJob.ErrorMessage.ShouldBe(errorMessage);
     }
 
     [Fact]
-    public void DownloadUrl_ShouldBeSettable()
+    public void when_copied_with_download_url_then_download_url_is_set()
     {
-        var syncJob = new SyncJob();
         string downloadUrl = "https://graph.microsoft.com/v1.0/drives/abc123/items/xyz789/content";
 
-        syncJob.DownloadUrl = downloadUrl;
+        var syncJob = CreateMinimalJob() with { DownloadUrl = downloadUrl };
 
         syncJob.DownloadUrl.ShouldBe(downloadUrl);
     }
 
     [Fact]
-    public void CompletedAt_ShouldBeSettable()
+    public void when_copied_with_completed_at_then_completed_at_is_set()
     {
-        var syncJob = new SyncJob();
         var completedAt = DateTimeOffset.UtcNow;
 
-        syncJob.CompletedAt = completedAt;
+        var syncJob = CreateMinimalJob() with { CompletedAt = completedAt };
 
         syncJob.CompletedAt.ShouldBe(completedAt);
     }
@@ -137,7 +120,7 @@ public sealed class SyncJobTests
     [InlineData(SyncDirection.Delete)]
     public void Direction_ShouldSupportAllDirections(SyncDirection direction)
     {
-        var syncJob = new SyncJob { Direction = direction };
+        var syncJob = SyncJobFactory.Create(accountId: "", folderId: "", remoteItemId: "", relativePath: "", localPath: "", direction: direction, fileSize: 0, remoteModified: default);
 
         syncJob.Direction.ShouldBe(direction);
     }
@@ -147,7 +130,7 @@ public sealed class SyncJobTests
     {
         var beforeCreation = DateTimeOffset.UtcNow;
 
-        var syncJob = new SyncJob();
+        var syncJob = CreateMinimalJob();
 
         syncJob.QueuedAt.ShouldBeGreaterThanOrEqualTo(beforeCreation);
         syncJob.QueuedAt.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
@@ -158,8 +141,8 @@ public sealed class SyncJobTests
     {
         var id = Guid.NewGuid();
         var queuedAt = DateTimeOffset.UtcNow;
-        var job1 = new SyncJob { Id = id, AccountId = "account-123", QueuedAt = queuedAt };
-        var job2 = new SyncJob { Id = id, AccountId = "account-123", QueuedAt = queuedAt };
+        var job1 = CreateMinimalJob() with { Id = id, AccountId = "account-123", QueuedAt = queuedAt };
+        var job2 = CreateMinimalJob() with { Id = id, AccountId = "account-123", QueuedAt = queuedAt };
 
         job1.ShouldBe(job2);
     }
@@ -168,8 +151,8 @@ public sealed class SyncJobTests
     public void IsRecord_ShouldDifferOnPropertyChange()
     {
         var id = Guid.NewGuid();
-        var job1 = new SyncJob { Id = id, AccountId = "account-123" };
-        var job2 = new SyncJob { Id = id, AccountId = "account-456" };
+        var job1 = CreateMinimalJob() with { Id = id, AccountId = "account-123" };
+        var job2 = CreateMinimalJob() with { Id = id, AccountId = "account-456" };
 
         job1.ShouldNotBe(job2);
     }
@@ -177,14 +160,7 @@ public sealed class SyncJobTests
     [Fact]
     public void DownloadJob_ShouldHaveCorrectProperties()
     {
-        var downloadJob = new SyncJob
-        {
-            AccountId = "account-123",
-            FolderId = "folder-456",
-            RemoteItemId = "item-789",
-            Direction = SyncDirection.Download,
-            State = SyncJobState.Queued
-        };
+        var downloadJob = SyncJobFactory.Create(accountId: "account-123", folderId: "folder-456", remoteItemId: "item-789", relativePath: "", localPath: "", direction: SyncDirection.Download, fileSize: 0, remoteModified: default);
 
         downloadJob.Direction.ShouldBe(SyncDirection.Download);
         downloadJob.State.ShouldBe(SyncJobState.Queued);
@@ -193,14 +169,7 @@ public sealed class SyncJobTests
     [Fact]
     public void UploadJob_ShouldHaveCorrectProperties()
     {
-        var uploadJob = new SyncJob
-        {
-            AccountId = "account-123",
-            FolderId = "folder-456",
-            RemoteItemId = "item-789",
-            Direction = SyncDirection.Upload,
-            State = SyncJobState.Queued
-        };
+        var uploadJob = SyncJobFactory.Create(accountId: "account-123", folderId: "folder-456", remoteItemId: "item-789", relativePath: "", localPath: "", direction: SyncDirection.Upload, fileSize: 0, remoteModified: default);
 
         uploadJob.Direction.ShouldBe(SyncDirection.Upload);
         uploadJob.State.ShouldBe(SyncJobState.Queued);
@@ -209,14 +178,7 @@ public sealed class SyncJobTests
     [Fact]
     public void DeleteJob_ShouldHaveCorrectProperties()
     {
-        var deleteJob = new SyncJob
-        {
-            AccountId = "account-123",
-            FolderId = "folder-456",
-            RemoteItemId = "item-789",
-            Direction = SyncDirection.Delete,
-            State = SyncJobState.Queued
-        };
+        var deleteJob = SyncJobFactory.Create(accountId: "account-123", folderId: "folder-456", remoteItemId: "item-789", relativePath: "", localPath: "", direction: SyncDirection.Delete, fileSize: 0, remoteModified: default);
 
         deleteJob.Direction.ShouldBe(SyncDirection.Delete);
         deleteJob.State.ShouldBe(SyncJobState.Queued);

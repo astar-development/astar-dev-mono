@@ -31,7 +31,7 @@ public sealed class GivenASyncEventAggregator
         var sut = CreateSut();
         JobCompletedEventArgs? captured = null;
         sut.JobCompleted += (_, args) => captured = args;
-        var job = new SyncJob { AccountId = "acc-2" };
+        var job = SyncJobFactory.Create(accountId: "acc-2", folderId: "", remoteItemId: "", relativePath: "", localPath: "", direction: default, fileSize: 0, remoteModified: default);
         var eventArgs = new JobCompletedEventArgs(job);
 
         _syncService.JobCompleted += Raise.EventWith(eventArgs);
