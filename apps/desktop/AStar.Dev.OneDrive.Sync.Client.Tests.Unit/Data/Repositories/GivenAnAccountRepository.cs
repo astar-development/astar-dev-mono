@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
-public sealed class AccountRepositoryTests
+public sealed class GivenAnAccountRepository
 {
     [Fact]
-    public async Task GetAllAsync_WithNoAccounts_ShouldReturnEmptyList()
+    public async Task when_getting_all_with_no_accounts_then_empty_list_is_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -21,7 +21,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task GetAllAsync_WithSingleAccount_ShouldReturnAccount()
+    public async Task when_getting_all_with_single_account_then_account_is_returned()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -36,7 +36,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task GetAllAsync_ShouldReturnAccountsOrderedByEmail()
+    public async Task when_getting_all_then_accounts_are_ordered_by_email()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -56,7 +56,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithExistingId_ShouldReturnSome()
+    public async Task when_getting_by_id_with_existing_id_then_some_is_returned()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -71,7 +71,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithNonExistingId_ShouldReturnNone()
+    public async Task when_getting_by_id_with_non_existing_id_then_none_is_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -82,7 +82,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task UpsertAsync_WithNewAccount_ShouldInsert()
+    public async Task when_upserting_new_account_then_account_is_inserted()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -96,7 +96,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task UpsertAsync_WithExistingAccount_ShouldUpdate()
+    public async Task when_upserting_existing_account_then_account_is_updated()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -112,7 +112,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task DeleteAsync_ShouldRemoveAccount()
+    public async Task when_deleting_account_then_account_is_removed()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -126,12 +126,11 @@ public sealed class AccountRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteDelete
         }
     }
 
     [Fact]
-    public async Task SetActiveAccountAsync_ShouldSetOneAccountActive()
+    public async Task when_setting_active_account_then_one_account_is_active()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -147,7 +146,6 @@ public sealed class AccountRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
