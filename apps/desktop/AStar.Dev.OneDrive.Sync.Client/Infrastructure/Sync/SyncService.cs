@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -21,9 +22,12 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct);
 
-        if(!authResult.IsSuccess)
+        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
         {
-            RaiseProgress(account.Id.Id, 0, 0, authResult.ErrorMessage ?? "Auth failed", SyncState.Error);
+            var errorMessage = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
+                ? failed.Message
+                : "Auth failed";
+            RaiseProgress(account.Id.Id, 0, 0, errorMessage, SyncState.Error);
             return;
         }
 
@@ -35,7 +39,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         try
         {
-            await SyncAccountInternalAsync(account, authResult.AccessToken!, ct);
+            await SyncAccountInternalAsync(account, authOk.Value.AccessToken, ct);
         }
         catch(OperationCanceledException)
         {
@@ -52,12 +56,12 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     {
         var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
 
-        if(!authResult.IsSuccess)
+        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, authResult.AccessToken!, ct);
+        await ApplyConflictOutcomeAsync(conflict, outcome, authOk.Value.AccessToken, ct);
         await syncRepository.ResolveConflictAsync(conflict.Id, policy);
     }
 

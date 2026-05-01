@@ -49,7 +49,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
     private void SetupAuthSuccess() =>
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
 
     private void SetupDeepSyncPrerequisites()
     {
@@ -74,7 +74,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             {
                 authCallOrder.Add("auth");
 
-                return Task.FromResult(AuthResult.Failure("fail"));
+                return Task.FromResult(AuthResultFactory.Failure("fail"));
             });
 
         var sut = CreateSut();
@@ -93,7 +93,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     public async Task when_sync_starts_then_authenticating_progress_has_syncing_state()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("fail"));
+            .Returns(AuthResultFactory.Failure("fail"));
 
         SyncState? capturedState = null;
         var sut = CreateSut();
@@ -109,11 +109,10 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     [Fact]
-    public async Task when_auth_fails_with_null_error_message_then_progress_message_is_auth_failed()
+    public async Task when_auth_returns_cancelled_result_then_progress_message_is_auth_failed()
     {
-        var authResult = new AuthResult(false, false, null, null, null, null, null);
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(authResult);
+            .Returns(AuthResultFactory.Cancelled());
 
         string? capturedMessage = null;
         var sut = CreateSut();
@@ -132,7 +131,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     public async Task when_auth_fails_with_error_message_then_that_message_appears_in_progress_with_error_state()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("Custom error message"));
+            .Returns(AuthResultFactory.Failure("Custom error message"));
 
         string? capturedMessage = null;
         SyncState? capturedState = null;

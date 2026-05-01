@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Onboarding;
 
 public sealed class GivenAnAddAccountWizardViewModel
 {
-    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly IAuthService  _authService  = Substitute.For<IAuthService>();
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
 
     private AddAccountWizardViewModel CreateSut() => new(_authService, _graphService);
@@ -16,7 +16,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     private async Task SignInAsync(AddAccountWizardViewModel sut)
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("fake-token", "account-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("fake-token", "account-1", "Test User", "test@example.com"));
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
     }
@@ -265,5 +265,153 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
 
         sut.NextLabel.ShouldBe("Next");
+    }
+
+    [Fact]
+    public async Task when_sign_in_succeeds_then_is_signed_in_is_true()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.IsSignedIn.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_sign_in_succeeds_then_sign_in_status_text_contains_email()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInStatusText.ShouldContain("test@example.com");
+    }
+
+    [Fact]
+    public async Task when_sign_in_succeeds_then_sign_in_has_error_is_false()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInHasError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_sign_in_succeeds_then_confirmed_display_name_is_set()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.ConfirmedDisplayName.ShouldBe("Test User");
+    }
+
+    [Fact]
+    public async Task when_sign_in_succeeds_then_confirmed_email_is_set()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.ConfirmedEmail.ShouldBe("test@example.com");
+    }
+
+    [Fact]
+    public async Task when_sign_in_is_cancelled_then_is_signed_in_remains_false()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Cancelled());
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.IsSignedIn.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_sign_in_is_cancelled_then_sign_in_status_text_is_sign_in_cancelled()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Cancelled());
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInStatusText.ShouldBe("Sign-in cancelled.");
+    }
+
+    [Fact]
+    public async Task when_sign_in_is_cancelled_then_sign_in_has_error_is_false()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Cancelled());
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInHasError.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_sign_in_fails_then_sign_in_status_text_is_the_failure_message()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Failure("MSAL token request failed"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInStatusText.ShouldBe("MSAL token request failed");
+    }
+
+    [Fact]
+    public async Task when_sign_in_fails_then_sign_in_has_error_is_true()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Failure("MSAL token request failed"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInHasError.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_sign_in_fails_then_is_signed_in_remains_false()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Failure("MSAL token request failed"));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.IsSignedIn.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_sign_in_is_in_progress_and_open_browser_is_called_again_then_second_call_is_ignored()
+    {
+        var tcs = new TaskCompletionSource<AStar.Dev.Functional.Extensions.Result<AuthResult, AuthError>>();
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => tcs.Task);
+        var sut = CreateSut();
+
+        var firstCall = sut.OpenBrowserCommand.ExecuteAsync(null);
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+        tcs.SetResult(AuthResultFactory.Success("token", "acc-1", "User", "user@example.com"));
+        await firstCall;
+
+        await _authService.Received(1).SignInInteractiveAsync(Arg.Any<CancellationToken>());
     }
 }

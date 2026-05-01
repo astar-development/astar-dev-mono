@@ -190,7 +190,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var repository   = Substitute.For<IAccountRepository>();
 
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success(AccessToken, AccountIdString, "Test User", "test@test.com"));
+            .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, "Test User", "test@test.com"));
 
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns(DriveId);

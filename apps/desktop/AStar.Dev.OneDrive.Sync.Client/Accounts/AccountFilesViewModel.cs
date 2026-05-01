@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -67,14 +68,16 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         {
             var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
 
-            if (!authResult.IsSuccess)
+            if(authResult is not Result<AuthResult, AuthError>.Ok ok)
             {
-                LoadError = authResult.ErrorMessage ?? "Authentication failed.";
+                LoadError = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
+                    ? failed.Message
+                    : "Authentication failed.";
                 HasLoadError = true;
                 return;
             }
 
-            _accessToken = authResult.AccessToken!;
+            _accessToken = ok.Value.AccessToken;
             _driveId = await _graphService.GetDriveIdAsync(_accessToken);
 
             var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);

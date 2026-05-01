@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -133,26 +134,26 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         {
             var result = await authService.SignInInteractiveAsync(_authCts.Token);
 
-            if(result.IsCancelled)
+            switch(result)
             {
-                SignInStatusText = "Sign-in cancelled.";
-                SignInHasError = false;
-            }
-            else if(!result.IsSuccess)
-            {
-                SignInStatusText = result.ErrorMessage ?? "Sign-in failed.";
-                SignInHasError = true;
-            }
-            else
-            {
-                _accountId = result.AccountId!;
-                _accessToken = result.AccessToken;
-                ConfirmedDisplayName = result.DisplayName ?? string.Empty;
-                ConfirmedEmail = result.Email ?? string.Empty;
-                IsSignedIn = true;
-                SignInStatusText = $"Signed in as {ConfirmedEmail}";
-                SignInHasError = false;
-                NextCommand.NotifyCanExecuteChanged();
+                case Result<AuthResult, AuthError>.Ok ok:
+                    _accountId = ok.Value.AccountId;
+                    _accessToken = ok.Value.AccessToken;
+                    ConfirmedDisplayName = ok.Value.DisplayName;
+                    ConfirmedEmail = ok.Value.Email;
+                    IsSignedIn = true;
+                    SignInStatusText = $"Signed in as {ConfirmedEmail}";
+                    SignInHasError = false;
+                    NextCommand.NotifyCanExecuteChanged();
+                    break;
+                case Result<AuthResult, AuthError>.Error { Reason: AuthCancelledError }:
+                    SignInStatusText = "Sign-in cancelled.";
+                    SignInHasError = false;
+                    break;
+                case Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }:
+                    SignInStatusText = failed.Message;
+                    SignInHasError = true;
+                    break;
             }
         }
         finally

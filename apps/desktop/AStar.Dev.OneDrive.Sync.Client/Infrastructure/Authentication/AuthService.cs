@@ -1,4 +1,5 @@
 using System.Reflection;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -29,7 +30,8 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     private readonly ITokenCacheService _cacheService = cacheService;
     private bool _cacheRegistered;
 
-    public async Task<AuthResult> SignInInteractiveAsync(CancellationToken ct = default)
+    /// <inheritdoc />
+    public async Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken ct = default)
     {
         await EnsureCacheRegisteredAsync();
 
@@ -45,23 +47,24 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         }
         catch (MsalClientException ex) when (ex.ErrorCode is MsalError.AuthenticationCanceledError or "authentication_canceled" or "user_canceled")
         {
-            return AuthResult.Cancelled;
+            return AuthResultFactory.Cancelled();
         }
         catch (OperationCanceledException)
         {
-            return AuthResult.Cancelled;
+            return AuthResultFactory.Cancelled();
         }
         catch (MsalException ex)
         {
-            return AuthResult.Failure($"Authentication failed: {ex.Message}");
+            return AuthResultFactory.Failure($"Authentication failed: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return AuthResult.Failure($"Unexpected error during sign-in: {ex.Message}");
+            return AuthResultFactory.Failure($"Unexpected error during sign-in: {ex.Message}");
         }
     }
 
-    public async Task<AuthResult> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
+    /// <inheritdoc />
+    public async Task<Result<AuthResult, AuthError>> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
     {
         await EnsureCacheRegisteredAsync();
 
@@ -71,7 +74,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
             var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if (account is null)
-                return AuthResult.Failure("Account not found in token cache.");
+                return AuthResultFactory.Failure("Account not found in token cache.");
 
             var result = await _app
                 .AcquireTokenSilent(entraIdOptions.Value.Scopes, account)
@@ -81,18 +84,19 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         }
         catch (MsalUiRequiredException)
         {
-            return AuthResult.Failure("Re-authentication required.");
+            return AuthResultFactory.Failure("Re-authentication required.");
         }
         catch (OperationCanceledException)
         {
-            return AuthResult.Cancelled;
+            return AuthResultFactory.Cancelled();
         }
         catch (MsalException ex)
         {
-            return AuthResult.Failure($"Token refresh failed: {ex.Message}");
+            return AuthResultFactory.Failure($"Token refresh failed: {ex.Message}");
         }
     }
 
+    /// <inheritdoc />
     public async Task SignOutAsync(string accountId, CancellationToken ct = default)
     {
         await EnsureCacheRegisteredAsync();
@@ -104,6 +108,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
             await _app.RemoveAsync(account);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetCachedAccountIdsAsync()
     {
         await EnsureCacheRegisteredAsync();
@@ -124,7 +129,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         _cacheRegistered = true;
     }
 
-    private static AuthResult BuildSuccess(AuthenticationResult result)
+    private static Result<AuthResult, AuthError> BuildSuccess(AuthenticationResult result)
     {
         string? displayName = result.Account.Username;
         string? email = result.Account.Username;
@@ -141,6 +146,6 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
                 email = emailClaim;
         }
 
-        return AuthResult.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, displayName: displayName, email: email);
+        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, displayName: displayName ?? result.Account.Username, email: email ?? result.Account.Username);
     }
 }

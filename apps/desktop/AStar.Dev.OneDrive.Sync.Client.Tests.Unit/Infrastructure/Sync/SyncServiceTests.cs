@@ -51,7 +51,7 @@ public sealed class SyncServiceTests
     public async Task when_sync_called_with_valid_account_then_auth_service_is_called()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns((DriveStateEntity?)null);
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
@@ -76,7 +76,7 @@ public sealed class SyncServiceTests
     public async Task when_auth_fails_then_error_progress_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("Authentication failed"));
+            .Returns(AuthResultFactory.Failure("Authentication failed"));
 
         var service = BuildSut();
         var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com" };
@@ -96,7 +96,7 @@ public sealed class SyncServiceTests
     public async Task when_local_sync_path_is_null_then_no_local_sync_path_progress_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
 
         var service = BuildSut();
         var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com", LocalSyncPath = null };
@@ -116,7 +116,7 @@ public sealed class SyncServiceTests
     public async Task when_sync_called_then_sync_progress_changed_event_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("fail"));
+            .Returns(AuthResultFactory.Failure("fail"));
 
         var service = BuildSut();
         var account = new OneDriveAccount { Id = new AccountId("user-1"), Email = "user@outlook.com" };
@@ -132,7 +132,7 @@ public sealed class SyncServiceTests
     public async Task when_resolve_conflict_called_with_valid_policy_then_sync_repository_resolve_is_called()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
 
         var service = BuildSut();
         var conflict = new SyncConflict
@@ -153,7 +153,7 @@ public sealed class SyncServiceTests
     public async Task when_resolve_conflict_auth_fails_then_sync_repository_resolve_is_not_called()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Failure("Auth failed"));
+            .Returns(AuthResultFactory.Failure("Auth failed"));
 
         var service = BuildSut();
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
@@ -171,7 +171,7 @@ public sealed class SyncServiceTests
     public async Task when_resolve_conflict_called_with_various_policies_then_policy_is_recorded(ConflictPolicy policy)
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
 
         var service = BuildSut();
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };

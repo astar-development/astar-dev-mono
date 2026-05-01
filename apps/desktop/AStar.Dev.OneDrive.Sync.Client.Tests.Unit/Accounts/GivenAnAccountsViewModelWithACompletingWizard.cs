@@ -12,14 +12,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountsViewModelWithACompletingWizard
 {
-    private const string AccessToken = "token-123";
+    private const string AccessToken  = "token-123";
     private const string AccountIdStr = "account-1";
-    private const string DisplayName = "Test User";
-    private const string Email = "test@outlook.com";
-    private const string FolderId1 = "f1";
-    private const string FolderName1 = "Documents";
-    private const string FolderId2 = "f2";
-    private const string FolderName2 = "Desktop";
+    private const string DisplayName  = "Test User";
+    private const string Email        = "test@outlook.com";
+    private const string FolderId1    = "f1";
+    private const string FolderName1  = "Documents";
+    private const string FolderId2    = "f2";
+    private const string FolderName2  = "Desktop";
 
     [Fact]
     public async Task when_wizard_completes_with_selected_folders_then_sync_rules_are_written_to_sync_rule_repository()
@@ -94,13 +94,13 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
 
     private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, ISyncRuleRepository SyncRuleRepo) BuildMocks()
     {
-        var authService = Substitute.For<IAuthService>();
+        var authService  = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
-        var repository = Substitute.For<IAccountRepository>();
+        var repository   = Substitute.For<IAccountRepository>();
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
 
         authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResult.Success(AccessToken, AccountIdStr, DisplayName, Email));
+            .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, DisplayName, Email));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]);
