@@ -11,10 +11,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 public sealed class SyncService(IAuthService authService, IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, SyncServiceDependencies dependencies, IFileSystem fileSystem) : ISyncService
 {
+    /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
-    public event EventHandler<JobCompletedEventArgs>?  JobCompleted;
-    public event EventHandler<SyncConflict>?           ConflictDetected;
 
+    /// <inheritdoc />
+    public event EventHandler<JobCompletedEventArgs>? JobCompleted;
+
+    /// <inheritdoc />
+    public event EventHandler<SyncConflict>? ConflictDetected;
+
+    /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Email);
@@ -22,7 +28,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct);
 
-        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
+        if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
         {
             var errorMessage = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
                 ? failed.Message
@@ -31,7 +37,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
             return;
         }
 
-        if(account.LocalSyncPath is null)
+        if (account.LocalSyncPath is null)
         {
             RaiseProgress(account.Id.Id, 0, 0, "No local sync path configured", SyncState.Error);
             return;
@@ -41,22 +47,23 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         {
             await SyncAccountInternalAsync(account, authOk.Value.AccessToken, ct);
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Email, ex.Message);
             RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
         }
     }
 
+    /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
         var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
 
-        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
+        if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
@@ -71,7 +78,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                              .OrElseAsync(new DriveStateEntity { AccountId = account.Id });
 
         driveState.LastSyncStartedAt = DateTimeOffset.UtcNow;
-        driveState.DeltaLink         = null;
+        driveState.DeltaLink = null;
         await driveStateRepository.UpsertAsync(driveState, ct);
 
         var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(
@@ -84,7 +91,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
             },
             ct);
 
-        if(enumerationResult.HadNoRules)
+        if (enumerationResult.HadNoRules)
         {
             RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
             return;
@@ -96,14 +103,14 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", SyncState.Syncing);
         await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, enumerationResult.SyncedItems, ct);
 
-        var localPathLookup = enumerationResult.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
-        var uploadJobs      = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.LocalSyncPath!.Value, enumerationResult.Rules, localPathLookup);
+        var syncedItemsByLocalPath = enumerationResult.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
+        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.LocalSyncPath!.Value, enumerationResult.Rules, syncedItemsByLocalPath);
 
         var allJobs = new List<SyncJob>(enumerationResult.DownloadJobs.Count + uploadJobs.Count);
         allJobs.AddRange(enumerationResult.DownloadJobs);
         allJobs.AddRange(uploadJobs);
 
-        if(allJobs.Count > 0)
+        if (allJobs.Count > 0)
         {
             RaiseProgress(account.Id.Id, 0, allJobs.Count, $"Syncing {allJobs.Count} file(s)...", SyncState.Syncing);
             await dependencies.JobExecutor.ExecuteAsync(
@@ -135,7 +142,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
     private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accessToken, CancellationToken ct)
     {
-        switch(outcome)
+        switch (outcome)
         {
             case ConflictOutcome.UseRemote:
                 string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
@@ -146,7 +153,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
             case ConflictOutcome.KeepBoth:
                 string keepBothName = ConflictResolver.MakeKeepBothName(conflict.LocalPath, conflict.LocalModified, fileSystem);
-                if(fileSystem.File.Exists(conflict.LocalPath))
+                if (fileSystem.File.Exists(conflict.LocalPath))
                     fileSystem.File.Move(conflict.LocalPath, keepBothName);
                 break;
         }

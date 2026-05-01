@@ -172,29 +172,15 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         {
             foreach(var item in page.Value)
             {
-                string itemPath = string.IsNullOrEmpty(relativePath)
-                    ? item.Name ?? string.Empty
-                    : $"{relativePath}/{item.Name}";
+                string itemPath = BuildRelativePath(relativePath, item);
 
-                items.Add(new DeltaItem(
-                    Id: item.Id!,
-                    DriveId: item.ParentReference?.DriveId ?? string.Empty,
-                    Name: item.Name ?? string.Empty,
-                    ParentId: item.ParentReference?.Id,
-                    IsFolder: item.Folder is not null,
-                    IsDeleted: false,
-                    Size: item.Size ?? 0L,
-                    LastModified: item.LastModifiedDateTime,
-                    DownloadUrl: ExtractDownloadUrl(item),
-                    RelativePath: itemPath,
-                    ETag: item.ETag,
-                    CTag: item.CTag));
+                items.Add(MapToDeltaItem(item, itemPath));
 
-                if(item.Folder is not null && item.Id is not null)
+                if (item.Folder is not null && item.Id is not null)
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, ct);
             }
 
-            if(page.OdataNextLink is null)
+            if (page.OdataNextLink is null)
                 break;
 
             page = await client.Drives[driveId].Items[parentId].Children
@@ -202,6 +188,14 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 .GetAsync(cancellationToken: ct);
         }
     }
+
+    private static string BuildRelativePath(string relativePath, DriveItem item) => string.IsNullOrEmpty(relativePath)
+                        ? item.Name ?? string.Empty
+                        : $"{relativePath}/{item.Name}";
+    private static DeltaItem MapToDeltaItem(DriveItem item, string itemPath) =>
+         new(item.Id!, item.ParentReference?.DriveId ?? string.Empty, item.Name ?? string.Empty, item.ParentReference?.Id,
+            IsFolder: item.Folder is not null, IsDeleted: false, item.Size ?? 0L, item.LastModifiedDateTime, DownloadUrl: ExtractDownloadUrl(item),
+            RelativePath: itemPath, item.ETag, item.CTag);
 
     private static string? ExtractDownloadUrl(DriveItem item)
         => item.AdditionalData?.TryGetValue(DownloadUrlKey, out var url) is true

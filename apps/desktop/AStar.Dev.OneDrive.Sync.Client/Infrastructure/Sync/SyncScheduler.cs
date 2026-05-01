@@ -17,11 +17,18 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     private TimeSpan _interval = TimeSpan.FromMinutes(60);
     private long _runningFlag;
 
+    /// <summary>
+    /// Default interval for scheduled sync passes. Can be overridden by providing a different interval to StartSync or SetInterval.
+    /// </summary>
     public static readonly TimeSpan DefaultInterval = TimeSpan.FromMinutes(60);
 
+    /// <inheritdoc />
     public event EventHandler<string>? SyncStarted;
+
+    /// <inheritdoc />
     public event EventHandler<string>? SyncCompleted;
 
+    /// <inheritdoc />
     public void StartSync(TimeSpan? interval = null)
     {
         _interval = interval ?? DefaultInterval;
@@ -37,17 +44,17 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
+    /// <inheritdoc />
     public void StopSync() => _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
+    /// <inheritdoc />
     public void SetInterval(TimeSpan interval)
     {
         _interval = interval;
         _ = (_timer?.Change(interval, interval));
     }
 
-    /// <summary>
-    /// Triggers an immediate sync for all accounts outside the normal schedule.
-    /// </summary>
+    /// <inheritdoc />
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
         if (SyncIsAlreadyRunning())
@@ -56,9 +63,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         await RunSyncPassAsync(ct);
     }
 
-    /// <summary>
-    /// Triggers an immediate sync for a single account identified by its raw string ID.
-    /// </summary>
+    /// <inheritdoc />
     public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
         => await accountRepository.GetByIdAsync(new AccountId(accountId), ct)
             .TapAsync(async entity =>
@@ -67,9 +72,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 await TriggerAccountAsync(MapEntityToAccount(entity, rules), ct);
             });
 
-    /// <summary>
-    /// Triggers an immediate sync for a single account.
-    /// </summary>
+    /// <inheritdoc />
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         SyncStarted?.Invoke(this, account.Id.Id);

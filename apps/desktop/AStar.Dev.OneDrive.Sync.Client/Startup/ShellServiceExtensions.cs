@@ -29,7 +29,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAuthService, AuthService>();
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<IGraphService, GraphService>();
-        _ = services.AddTransient<IStartupService, StartupService>();
+        _ = services.AddSingleton<IStartupService, StartupService>();
         _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
         _ = services.AddSingleton<IUploadService, UploadService>();
         _ = services.AddSingleton<ILocalChangeDetector, LocalChangeDetector>();
@@ -43,9 +43,9 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         _ = services.AddSingleton<ISyncEventAggregator, SyncEventAggregator>();
         _ = services.AddSingleton<ISettingsService, SettingsService>();
-        _ = services.AddTransient<IThemeService, ThemeService>();
-        _ = services.AddTransient<IParallelDownloadPipeline, ParallelDownloadPipeline>();
-        _ = services.AddTransient<IAppBootstrapper, AppBootstrapper>();
+        _ = services.AddSingleton<IThemeService, ThemeService>();
+        _ = services.AddSingleton<IParallelDownloadPipeline, ParallelDownloadPipeline>();
+        _ = services.AddSingleton<IAppBootstrapper, AppBootstrapper>();
         _ = services.AddOneDriveClient();
 
         return services;

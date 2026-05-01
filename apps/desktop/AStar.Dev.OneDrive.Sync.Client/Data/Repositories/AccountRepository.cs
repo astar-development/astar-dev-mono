@@ -5,8 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
+/// <summary>
+/// Repository for managing accounts in the database.
+/// </summary>
+/// <param name="dbFactory">The database context factory.</param>
 public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory) : IAccountRepository
 {
+    /// <inheritdoc/>
     public async Task<List<AccountEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -16,6 +21,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
           .ToListAsync(cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task<Option<AccountEntity>> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -25,6 +31,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         return entity is not null ? Option.Some(entity) : Option.None<AccountEntity>();
     }
 
+    /// <inheritdoc/>
     public async Task UpsertAsync(AccountEntity account, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -44,12 +51,14 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         _ = await db.SaveChangesAsync(cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task DeleteAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         _ = await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken);
     }
 
+    /// <inheritdoc/>
     public async Task SetActiveAccountAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
