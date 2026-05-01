@@ -309,6 +309,116 @@ public sealed class GivenASyncScheduler
         raisedId.ShouldBe(accountIdStr);
     }
 
+    [Fact]
+    public async Task when_trigger_account_by_id_then_all_entity_fields_mapped_to_account()
+    {
+        const string accountIdStr = "account-map-test";
+        var lastSyncedAt = new DateTimeOffset(2025, 1, 15, 10, 30, 0, TimeSpan.Zero);
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
+        {
+            Id            = new AccountId(accountIdStr),
+            DisplayName   = "Map Test User",
+            Email         = "maptest@outlook.com",
+            AccentIndex   = 3,
+            IsActive      = true,
+            LastSyncedAt  = lastSyncedAt,
+            LocalSyncPath = LocalSyncPath.Restore("/sync/path"),
+            ConflictPolicy = ConflictPolicy.Ignore,
+        }));
+        var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
+
+        await mockSyncService.Received(1).SyncAccountAsync(
+            Arg.Is<OneDriveAccount>(a =>
+                a.Id == new AccountId(accountIdStr) &&
+                a.DisplayName == "Map Test User" &&
+                a.Email == "maptest@outlook.com" &&
+                a.AccentIndex == 3 &&
+                a.IsActive == true &&
+                a.LastSyncedAt == lastSyncedAt &&
+                a.LocalSyncPath != null &&
+                a.ConflictPolicy == ConflictPolicy.Ignore),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_trigger_account_by_id_and_local_sync_path_empty_then_mapped_account_has_null_local_sync_path()
+    {
+        const string accountIdStr = "account-no-path";
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
+        {
+            Id            = new AccountId(accountIdStr),
+            DisplayName   = "No Path User",
+            Email         = "nopath@outlook.com",
+            LocalSyncPath = LocalSyncPath.Restore(string.Empty),
+        }));
+        var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
+
+        await mockSyncService.Received(1).SyncAccountAsync(
+            Arg.Is<OneDriveAccount>(a => a.LocalSyncPath == null),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_trigger_account_by_id_and_rules_have_include_entries_then_selected_folder_ids_populated()
+    {
+        const string accountIdStr = "account-with-rules";
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
+        {
+            Id          = new AccountId(accountIdStr),
+            DisplayName = "Rules User",
+            Email       = "rules@outlook.com",
+        }));
+        var rulesRepo = Substitute.For<ISyncRuleRepository>();
+        rulesRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(new List<SyncRuleEntity>
+            {
+                new() { RuleType = RuleType.Include, RemoteItemId = "folder-1" },
+                new() { RuleType = RuleType.Include, RemoteItemId = "folder-2" },
+                new() { RuleType = RuleType.Exclude, RemoteItemId = "folder-3" },
+                new() { RuleType = RuleType.Include, RemoteItemId = null },
+            });
+        var scheduler = new SyncScheduler(mockSyncService, mockRepository, rulesRepo);
+
+        await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
+
+        await mockSyncService.Received(1).SyncAccountAsync(
+            Arg.Is<OneDriveAccount>(a => a.SelectedFolderIds.Count == 2),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_trigger_now_and_entity_has_accent_index_then_mapped_account_has_correct_accent_index()
+    {
+        const string accountIdStr = "account-accent";
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new AccountEntity
+        {
+            Id          = new AccountId(accountIdStr),
+            DisplayName = "Accent User",
+            Email       = "accent@outlook.com",
+            AccentIndex = 5,
+            IsActive    = true,
+        }]);
+        var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        await mockSyncService.Received(1).SyncAccountAsync(
+            Arg.Is<OneDriveAccount>(a => a.AccentIndex == 5 && a.IsActive == true),
+            Arg.Any<CancellationToken>());
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
