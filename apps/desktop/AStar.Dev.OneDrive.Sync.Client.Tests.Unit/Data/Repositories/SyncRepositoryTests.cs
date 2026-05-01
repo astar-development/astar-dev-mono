@@ -8,6 +8,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
 public sealed class SyncRepositoryTests
 {
+    private static SyncJob MinimalJob(string accountId = "user-1", string folderId = "", SyncJobState state = SyncJobState.Queued)
+        => SyncJobFactory.Create(accountId: accountId, folderId: folderId, remoteItemId: "", relativePath: "", localPath: "", direction: default, fileSize: 0, remoteModified: default) with { State = state };
+
     [Fact]
     public async Task EnqueueJobsAsync_WithEmptyList_ShouldNotThrow()
     {
@@ -24,8 +27,8 @@ public sealed class SyncRepositoryTests
         var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-1", State = SyncJobState.Queued },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-2", State = SyncJobState.Queued }
+            MinimalJob(folderId: "folder-1"),
+            MinimalJob(folderId: "folder-2")
         };
 
         await repository.EnqueueJobsAsync(jobs);
@@ -51,9 +54,9 @@ public sealed class SyncRepositoryTests
         var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-1", State = SyncJobState.Queued },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-2", State = SyncJobState.Completed },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", FolderId = "folder-3", State = SyncJobState.Failed }
+            MinimalJob(folderId: "folder-1", state: SyncJobState.Queued),
+            MinimalJob(folderId: "folder-2", state: SyncJobState.Completed),
+            MinimalJob(folderId: "folder-3", state: SyncJobState.Failed)
         };
         await repository.EnqueueJobsAsync(jobs);
 
@@ -71,9 +74,9 @@ public sealed class SyncRepositoryTests
         var now = DateTimeOffset.UtcNow;
         var jobs = new List<SyncJob>
         {
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued, QueuedAt = now.AddSeconds(3) },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued, QueuedAt = now.AddSeconds(1) },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued, QueuedAt = now.AddSeconds(2) }
+            MinimalJob() with { QueuedAt = now.AddSeconds(3) },
+            MinimalJob() with { QueuedAt = now.AddSeconds(1) },
+            MinimalJob() with { QueuedAt = now.AddSeconds(2) }
         };
         await repository.EnqueueJobsAsync(jobs);
 
@@ -90,7 +93,7 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
+        var job = MinimalJob() with { Id = jobId };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -109,7 +112,7 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
+        var job = MinimalJob() with { Id = jobId };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -128,7 +131,7 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = new SyncJob { Id = jobId, AccountId = "user-1", State = SyncJobState.Queued };
+        var job = MinimalJob() with { Id = jobId };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -148,9 +151,9 @@ public sealed class SyncRepositoryTests
         var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Completed },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued },
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Completed }
+            MinimalJob(state: SyncJobState.Completed),
+            MinimalJob(state: SyncJobState.Queued),
+            MinimalJob(state: SyncJobState.Completed)
         };
         await repository.EnqueueJobsAsync(jobs);
 
@@ -290,8 +293,8 @@ public sealed class SyncRepositoryTests
         var repository = new SyncRepository(factory);
         var jobs = new List<SyncJob>
         {
-            new() { Id = Guid.NewGuid(), AccountId = "user-1", State = SyncJobState.Queued },
-            new() { Id = Guid.NewGuid(), AccountId = "user-2", State = SyncJobState.Queued }
+            MinimalJob(accountId: "user-1"),
+            MinimalJob(accountId: "user-2")
         };
         await repository.EnqueueJobsAsync(jobs);
 

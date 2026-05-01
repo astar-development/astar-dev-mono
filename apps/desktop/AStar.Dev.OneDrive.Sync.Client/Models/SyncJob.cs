@@ -4,21 +4,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Models;
 /// Represents a single file operation queued by the sync engine.
 /// Created from delta query results and processed in order.
 /// </summary>
-public sealed record SyncJob
-{
-    public Guid Id { get; init; } = Guid.NewGuid();
-    public string AccountId { get; init; } = string.Empty;
-    public string FolderId { get; init; } = string.Empty;
-    public string RemoteItemId { get; init; } = string.Empty;
-    public string RelativePath { get; init; } = string.Empty;
-    public string LocalPath { get; init; } = string.Empty;
-    public SyncDirection Direction { get; init; }
-    public SyncJobState State { get; set; } = SyncJobState.Queued;
-    public string? ErrorMessage { get; set; }
-    public string? DownloadUrl { get; set; }
-    public long FileSize { get; init; }
-    public DateTimeOffset RemoteModified { get; init; }
-    public DateTimeOffset QueuedAt { get; init; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset? CompletedAt { get; set; }
-    public string? UploadedRemoteItemId { get; set; }
-}
+public sealed record SyncJob(string AccountId, string FolderId, string RemoteItemId, string RelativePath, string LocalPath, SyncDirection Direction, long FileSize, DateTimeOffset RemoteModified,
+    Guid Id, DateTimeOffset QueuedAt, SyncJobState State = SyncJobState.Queued, string? ErrorMessage = null, string? DownloadUrl = null, DateTimeOffset? CompletedAt = null,
+    string? UploadedRemoteItemId = null);

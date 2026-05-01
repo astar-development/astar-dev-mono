@@ -57,18 +57,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
 
                 string relativePathForUpload = remotePath.TrimStart('/');
 
-                jobs.Add(new SyncJob
-                {
-                    AccountId      = accountId,
-                    FolderId       = string.Empty,
-                    RemoteItemId   = known?.RemoteItemId.Id ?? string.Empty,
-                    RelativePath   = relativePathForUpload,
-                    LocalPath      = filePath,
-                    Direction      = SyncDirection.Upload,
-                    FileSize       = info.Length,
-                    RemoteModified = localModified,
-                    DownloadUrl    = relativePathForUpload
-                });
+                jobs.Add(SyncJobFactory.Create(accountId, string.Empty, known?.RemoteItemId.Id ?? string.Empty, relativePathForUpload, filePath, SyncDirection.Upload, info.Length, localModified, downloadUrl: relativePathForUpload));
             }
 
             foreach(string subDir in fileSystem.Directory.EnumerateDirectories(localDir))

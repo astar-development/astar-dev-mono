@@ -20,14 +20,8 @@ public sealed class GivenAParallelDownloadPipeline
 
     private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader, _fileSystem);
 
-    private static SyncJob MakeDownloadJob(string relativePath = "folder/file.txt") => new()
-    {
-        RelativePath   = relativePath,
-        LocalPath      = "/tmp/test-file.txt",
-        Direction      = SyncDirection.Download,
-        DownloadUrl    = "https://example.com/file",
-        RemoteModified = DateTimeOffset.UtcNow
-    };
+    private static SyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
+        => SyncJobFactory.Create(accountId: "", folderId: "", remoteItemId: "", relativePath: relativePath, localPath: "/tmp/test-file.txt", direction: SyncDirection.Download, fileSize: 0, remoteModified: DateTimeOffset.UtcNow, downloadUrl: "https://example.com/file");
 
     [Fact]
     public async Task when_job_list_is_empty_then_on_progress_is_never_called()

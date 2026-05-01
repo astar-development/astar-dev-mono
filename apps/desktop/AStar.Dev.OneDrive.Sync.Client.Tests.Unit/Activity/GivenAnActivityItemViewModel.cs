@@ -13,15 +13,8 @@ public sealed class GivenAnActivityItemViewModel
     private const string ErrorMessageValue = "Network timeout";
     private const long FileSizeValue = 2048L;
 
-    private static SyncJob BuildSyncJob(SyncDirection direction = SyncDirection.Download, string relativePath = RelativePathValue, DateTimeOffset? completedAt = null, string? errorMessage = null) => new()
-    {
-        AccountId = AccountIdValue,
-        Direction = direction,
-        RelativePath = relativePath,
-        FileSize = FileSizeValue,
-        CompletedAt = completedAt,
-        ErrorMessage = errorMessage
-    };
+    private static SyncJob BuildSyncJob(SyncDirection direction = SyncDirection.Download, string relativePath = RelativePathValue, DateTimeOffset? completedAt = null, string? errorMessage = null)
+        => SyncJobFactory.Create(accountId: AccountIdValue, folderId: "", remoteItemId: "", relativePath: relativePath, localPath: "", direction: direction, fileSize: FileSizeValue, remoteModified: default) with { CompletedAt = completedAt, ErrorMessage = errorMessage };
 
     private static SyncConflict BuildSyncConflict(string relativePath = RelativePathValue, DateTimeOffset? detectedAt = null) => new()
     {
