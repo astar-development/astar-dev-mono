@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -90,21 +91,20 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     {
         AddRecentActivity(new ActivityItemViewModel { FileName = _localizationService.GetLocal("Sync.Starting") });
 
-        var entity = await _repository.GetByIdAsync(_account.Id, CancellationToken.None);
-        if(entity is null)
-            return;
-
-        var fullAccount = new OneDriveAccount
-        {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-            ConflictPolicy    = entity.ConflictPolicy,
-            LastSyncedAt      = entity.LastSyncedAt
-        };
-
-        await _scheduler.TriggerAccountAsync(fullAccount);
+        await _repository.GetByIdAsync(_account.Id, CancellationToken.None)
+            .TapAsync(async entity =>
+            {
+                var fullAccount = new OneDriveAccount
+                {
+                    Id                = entity.Id,
+                    DisplayName       = entity.DisplayName,
+                    Email             = entity.Email,
+                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+                    ConflictPolicy    = entity.ConflictPolicy,
+                    LastSyncedAt      = entity.LastSyncedAt
+                };
+                await _scheduler.TriggerAccountAsync(fullAccount);
+            });
     }
 
     public void UpdateSyncState(SyncState state, int conflicts)

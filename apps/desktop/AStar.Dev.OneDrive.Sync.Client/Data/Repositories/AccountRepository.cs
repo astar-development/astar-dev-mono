@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +16,13 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
           .ToListAsync(cancellationToken);
     }
 
-    public async Task<AccountEntity?> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
+    public async Task<Option<AccountEntity>> GetByIdAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        return await db.Accounts
-          .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+
+        return entity is not null ? Option.Some(entity) : Option.None<AccountEntity>();
     }
 
     public async Task UpsertAsync(AccountEntity account, CancellationToken cancellationToken)

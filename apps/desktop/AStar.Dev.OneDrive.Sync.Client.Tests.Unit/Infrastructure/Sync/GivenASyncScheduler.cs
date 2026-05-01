@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -245,14 +246,14 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "account-456";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
             Id = new AccountId(accountIdStr),
             DisplayName = "Test User",
             Email = "test@outlook.com",
             LocalSyncPath = LocalSyncPath.Restore("/some/path"),
             ConflictPolicy = ConflictPolicy.Ignore,
-        });
+        }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
 
         await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
@@ -268,7 +269,7 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "missing-account";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns((AccountEntity?)null);
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.None<AccountEntity>());
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
 
         await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
@@ -282,7 +283,7 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" });
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
         string? raisedId = null;
         scheduler.SyncStarted += (_, id) => raisedId = id;
@@ -298,7 +299,7 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" });
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
         string? raisedId = null;
         scheduler.SyncCompleted += (_, id) => raisedId = id;

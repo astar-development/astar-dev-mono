@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -58,26 +59,22 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// Triggers an immediate sync for a single account identified by its raw string ID.
     /// </summary>
     public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
-    {
-        var entity = await accountRepository.GetByIdAsync(new AccountId(accountId), ct).ConfigureAwait(false);
-        if(entity is null)
-            return;
-
-        var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
-
-        var account = new OneDriveAccount
-        {
-            Id                = entity.Id,
-            DisplayName       = entity.DisplayName,
-            Email             = entity.Email,
-            LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-            ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
-            LastSyncedAt      = entity.LastSyncedAt
-        };
-
-        await TriggerAccountAsync(account, ct).ConfigureAwait(false);
-    }
+        => await accountRepository.GetByIdAsync(new AccountId(accountId), ct)
+            .TapAsync(async entity =>
+            {
+                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct);
+                var account = new OneDriveAccount
+                {
+                    Id                = entity.Id,
+                    DisplayName       = entity.DisplayName,
+                    Email             = entity.Email,
+                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+                    ConflictPolicy    = entity.ConflictPolicy,
+                    SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
+                    LastSyncedAt      = entity.LastSyncedAt
+                };
+                await TriggerAccountAsync(account, ct);
+            });
 
     /// <summary>
     /// Triggers an immediate sync for a single account.

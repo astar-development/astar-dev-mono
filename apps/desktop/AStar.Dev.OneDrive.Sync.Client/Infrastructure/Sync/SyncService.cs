@@ -120,12 +120,12 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
             RaiseProgress(account.Id.Id, 0, 0, "No changes", SyncState.Idle);
         }
 
-        var accountEntity = await accountRepository.GetByIdAsync(account.Id, ct);
-        if(accountEntity is not null)
-        {
-            accountEntity.LastSyncedAt = DateTimeOffset.UtcNow;
-            await accountRepository.UpsertAsync(accountEntity, ct);
-        }
+        await accountRepository.GetByIdAsync(account.Id, ct)
+            .TapAsync(async entity =>
+            {
+                entity.LastSyncedAt = DateTimeOffset.UtcNow;
+                await accountRepository.UpsertAsync(entity, ct);
+            });
 
         account.LastSyncedAt = DateTimeOffset.UtcNow;
 

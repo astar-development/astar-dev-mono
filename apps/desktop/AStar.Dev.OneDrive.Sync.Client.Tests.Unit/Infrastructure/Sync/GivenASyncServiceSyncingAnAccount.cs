@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -61,7 +62,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns((AccountEntity?)null);
+            .Returns(Option.None<AccountEntity>());
     }
 
     [Fact]
@@ -299,7 +300,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupDeepSyncPrerequisites();
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new AccountEntity { Id = new AccountId("user-1") });
+            .Returns(Option.Some(new AccountEntity { Id = new AccountId("user-1") }));
 
         var sut = CreateSut();
 

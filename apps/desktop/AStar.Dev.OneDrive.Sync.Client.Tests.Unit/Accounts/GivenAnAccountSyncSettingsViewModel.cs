@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -138,7 +139,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_and_entity_is_not_found_then_upsert_is_not_called()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns((AccountEntity?)null);
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.None<AccountEntity>());
         var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: SyncPathValue), repository);
 
         await sut.SaveCommand.ExecuteAsync(null);
@@ -150,7 +151,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_a_valid_path_and_entity_exists_then_upsert_is_called_once()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
         sut.LocalSyncPath = SyncPathValue;
 
@@ -163,7 +164,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_a_valid_path_then_entity_local_sync_path_value_is_updated()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
@@ -179,7 +180,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_a_valid_path_then_entity_conflict_policy_is_updated()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
@@ -196,7 +197,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_a_valid_path_then_account_model_local_sync_path_is_non_null_with_correct_value()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
         var sut = new AccountSyncSettingsViewModel(account, repository);
         sut.LocalSyncPath = SyncPathValue;
@@ -211,7 +212,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_an_empty_path_then_upsert_is_still_called()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
         sut.LocalSyncPath = string.Empty;
 
@@ -224,7 +225,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_an_empty_path_then_entity_local_sync_path_value_is_empty_string()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
@@ -240,7 +241,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_a_whitespace_path_then_entity_local_sync_path_value_is_empty_string()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
@@ -256,7 +257,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public async Task when_save_is_executed_with_an_empty_path_then_account_model_local_sync_path_is_null()
     {
         var repository = Substitute.For<IAccountRepository>();
-        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(BuildEntity());
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
         var sut = new AccountSyncSettingsViewModel(account, repository);
         sut.LocalSyncPath = string.Empty;

@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -55,7 +56,7 @@ public sealed class AccountRepositoryTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithExistingId_ShouldReturnAccount()
+    public async Task GetByIdAsync_WithExistingId_ShouldReturnSome()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
@@ -65,19 +66,19 @@ public sealed class AccountRepositoryTests
 
         var result = await repository.GetByIdAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
-        _ = result.ShouldNotBeNull();
-        result.Email.ShouldBe("user@outlook.com");
+        result.IsSome().ShouldBeTrue();
+        result.Match(entity => entity.Email, () => string.Empty).ShouldBe("user@outlook.com");
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithNonExistingId_ShouldReturnNull()
+    public async Task GetByIdAsync_WithNonExistingId_ShouldReturnNone()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new AccountRepository(factory);
 
         var result = await repository.GetByIdAsync(new AccountId("non-existent"), TestContext.Current.CancellationToken);
 
-        result.ShouldBeNull();
+        result.IsNone().ShouldBeTrue();
     }
 
     [Fact]

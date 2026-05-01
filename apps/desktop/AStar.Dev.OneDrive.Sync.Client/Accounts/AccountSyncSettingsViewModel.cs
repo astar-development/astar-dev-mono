@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -42,12 +43,12 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
         account.LocalSyncPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<LocalSyncPath?>(p => p, _ => null);
         account.ConflictPolicy = ConflictPolicy;
 
-        var entity = await repository.GetByIdAsync(account.Id, CancellationToken.None);
-        if(entity is null)
-            return;
-
-        entity.LocalSyncPath = account.LocalSyncPath ?? Domain.LocalSyncPath.Restore(string.Empty);
-        entity.ConflictPolicy = ConflictPolicy;
-        await repository.UpsertAsync(entity, CancellationToken.None);
+        await repository.GetByIdAsync(account.Id, CancellationToken.None)
+            .TapAsync(async entity =>
+            {
+                entity.LocalSyncPath = account.LocalSyncPath ?? Domain.LocalSyncPath.Restore(string.Empty);
+                entity.ConflictPolicy = ConflictPolicy;
+                await repository.UpsertAsync(entity, CancellationToken.None);
+            });
     }
 }

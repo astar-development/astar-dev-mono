@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -54,7 +55,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -77,7 +78,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -100,7 +101,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -123,7 +124,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -145,7 +146,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -167,7 +168,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocksWithChild();
 
         repository.GetByIdAsync(new AccountId(AccountIdString), Arg.Any<CancellationToken>())
-            .Returns(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore));
+            .Returns(Option.Some(BuildStoredEntity(LocalSyncPathString, ConflictPolicy.Ignore)));
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
