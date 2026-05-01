@@ -12,7 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDetector
 {
     /// <inheritdoc />
-    public List<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup)
+    public IReadOnlyList<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup)
     {
         List<SyncJob> jobs = [];
 

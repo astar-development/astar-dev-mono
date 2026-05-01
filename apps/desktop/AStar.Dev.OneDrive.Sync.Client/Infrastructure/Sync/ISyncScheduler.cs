@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public interface ISyncScheduler
+public interface                                                                                                            ISyncScheduler
 {
     /// <summary>
     /// Runs scheduled sync passes for all connected accounts.

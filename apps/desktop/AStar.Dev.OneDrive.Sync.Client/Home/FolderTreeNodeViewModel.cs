@@ -67,7 +67,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
-        
+
         _accessToken = accessToken;
         _driveId = driveId;
     }
@@ -118,41 +118,22 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private async Task EnsureChildrenLoadedAsync()
     {
-        if(_childrenLoaded)
-            return;
+        if(_childrenLoaded) return;
 
         IsLoadingChildren = true;
         try
         {
-            var folders = await _graphService
-                .GetChildFoldersAsync(_accessToken, _driveId, Id);
+            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id);
 
             Children.Clear();
             foreach(var f in folders)
             {
-                string childRemotePath = $"{RemotePath}/{f.Name}";
-
-                var childNode = new FolderTreeNode(
-                    Id:          f.Id,
-                    Name:        f.Name,
-                    ParentId:    f.ParentId,
-                    AccountId:   string.Empty,
-                    RemotePath:  childRemotePath,
-                    SyncState:   SyncState,
-                    HasChildren: true);
-
-                var childVm = new FolderTreeNodeViewModel(
-                    childNode, _graphService, _accessToken, _driveId, Depth + 1);
-
-                childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
-                childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
-                childVm.ViewActivityRequested += (s, e) => ViewActivityRequested?.Invoke(s, e);
+                var childVm = CreateChildFolderTreeViewModel(f);
 
                 Children.Add(childVm);
             }
 
-            if(Children.Count == 0)
-                HasChildren = false;
+            if (Children.Count == 0) HasChildren = false;
 
             _childrenLoaded = true;
         }
@@ -161,4 +142,27 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
             IsLoadingChildren = false;
         }
     }
+
+    private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(DriveFolder f)
+    {
+        string childRemotePath = $"{RemotePath}/{f.Name}";
+        var childNode = MapDriveFolderToChildNode(f, childRemotePath);
+        var childVm = CreateChildFolderTreeViewModel(childNode);
+
+        return childVm;
+    }
+
+    private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
+    {
+        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, Depth + 1);
+
+        childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
+        childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
+        childVm.ViewActivityRequested += (s, e) => ViewActivityRequested?.Invoke(s, e);
+
+        return childVm;
+    }
+
+    private FolderTreeNode MapDriveFolderToChildNode(DriveFolder f, string childRemotePath)
+        => new(f.Id, f.Name, f.ParentId, AccountId: string.Empty, RemotePath: childRemotePath, SyncState, HasChildren: true);
 }

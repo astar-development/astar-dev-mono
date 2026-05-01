@@ -5,8 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
+/// <summary>
+/// Repository for managing sync jobs and conflicts in the database.
+/// </summary>
+/// <param name="dbFactory">The database context factory.</param>
 public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : ISyncRepository
 {
+    /// <inheritdoc/>
     public async Task EnqueueJobsAsync(IEnumerable<SyncJob> jobs)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -31,6 +36,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
         _ = await db.SaveChangesAsync();
     }
 
+    /// <inheritdoc/>
     public async Task<List<SyncJobEntity>> GetPendingJobsAsync(AccountId accountId)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -42,6 +48,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
           .ToListAsync();
     }
 
+    /// <inheritdoc/>
     public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? stateError = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -57,6 +64,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
                         : null));
     }
 
+    /// <inheritdoc/>
     public async Task ClearCompletedJobsAsync(AccountId accountId)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -66,6 +74,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
           .ExecuteDeleteAsync();
     }
 
+    /// <inheritdoc/>
     public async Task AddConflictAsync(SyncConflict conflict)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -89,6 +98,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
         _ = await db.SaveChangesAsync();
     }
 
+    /// <inheritdoc/>
     public async Task<List<SyncConflictEntity>> GetPendingConflictsAsync(AccountId accountId)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -100,6 +110,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
           .ToListAsync();
     }
 
+    /// <inheritdoc/>
     public async Task ResolveConflictAsync(Guid conflictId, ConflictPolicy resolution)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
@@ -112,6 +123,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
                 .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
     }
 
+    /// <inheritdoc/>
     public async Task<int> GetPendingConflictCountAsync(AccountId accountId)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
