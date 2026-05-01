@@ -1,4 +1,5 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -63,17 +64,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             .TapAsync(async entity =>
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct);
-                var account = new OneDriveAccount
-                {
-                    Id                = entity.Id,
-                    DisplayName       = entity.DisplayName,
-                    Email             = entity.Email,
-                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                    ConflictPolicy    = entity.ConflictPolicy,
-                    SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
-                    LastSyncedAt      = entity.LastSyncedAt
-                };
-                await TriggerAccountAsync(account, ct);
+                await TriggerAccountAsync(MapEntityToAccount(entity, rules), ct);
             });
 
     /// <summary>
@@ -103,6 +94,19 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1;
 
+    private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
+    {
+        Id                = entity.Id,
+        DisplayName       = entity.DisplayName,
+        Email             = entity.Email,
+        AccentIndex       = entity.AccentIndex,
+        IsActive          = entity.IsActive,
+        LastSyncedAt      = entity.LastSyncedAt,
+        LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+        ConflictPolicy    = entity.ConflictPolicy,
+        SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
+    };
+
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
         if(Interlocked.Exchange(ref _runningFlag, 1) == 1)
@@ -114,17 +118,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             foreach(var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
-                var account = new OneDriveAccount
-                {
-                    Id                = entity.Id,
-                    DisplayName       = entity.DisplayName,
-                    Email             = entity.Email,
-                    AccentIndex       = entity.AccentIndex,
-                    IsActive          = entity.IsActive,
-                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                    ConflictPolicy    = entity.ConflictPolicy,
-                    SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
-                };
+                var account = MapEntityToAccount(entity, rules);
 
                 SyncStarted?.Invoke(this, account.Id.Id);
                 try
