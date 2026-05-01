@@ -1,7 +1,7 @@
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 /// <summary>
-/// Outcome of an authentication operation.
-/// Use the static factory methods rather than constructing directly.
+/// The success payload returned when authentication succeeds.
+/// Use <see cref="AuthResultFactory"/> to obtain a <see cref="AStar.Dev.Functional.Extensions.Result{TSuccess,TError}"/> wrapping this value.
 /// </summary>
-public sealed record AuthResult(bool IsSuccess, bool IsCancelled, string? AccessToken, string? AccountId, string? DisplayName, string? Email, string? ErrorMessage);
+public sealed record AuthResult(string AccessToken, string AccountId, string DisplayName, string Email);
