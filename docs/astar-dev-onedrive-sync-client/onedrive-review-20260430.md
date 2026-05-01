@@ -2,13 +2,13 @@
 
 ## Summary
 
-| Severity | Count |
-|---|---|
-| Blocker | 5 |
-| Critical | 11 |
-| Major | 28 |
-| Minor | 19 |
-| Trivial | 6 |
+| Severity  | Count  |
+| --------- | ------ |
+| Blocker   | 5      |
+| Critical  | 11     |
+| Major     | 28     |
+| Minor     | 19     |
+| Trivial   | 6      |
 | **Total** | **69** |
 
 **Overall verdict: Request Changes.** The codebase is structurally sound and well-tested in many areas, but it has a confirmed SQL injection risk (Blocker), duplicate repository registrations that would cause runtime `IDbContextFactory` contention, widespread missing `ConfigureAwait(false)` in infrastructure code, several `async void` event handlers without fire-and-forget safety, pervasive absence of XML docs on public API surfaces, significant technical-type folder organisation violations, multiple test classes using the wrong naming convention, and a suppressed compiler warning without documented justification.
@@ -17,7 +17,7 @@
 
 ## Blocker Issues
 
-- [ ] **[Data/Repositories/SyncRuleRepository.cs:24]** Blocker — `ExecuteSqlAsync` with string interpolation: the `$"INSERT INTO SyncRules ... VALUES ({accountId.Id}, {remotePath} ...)"` interpolation embeds raw user-supplied strings directly into SQL. Although EF Core's `ExecuteSqlAsync` with `$""` does use `FormattableString` parameterisation for the whole interpolated string, the `remotePath` value comes from `rule.RemotePath` which is user-supplied folder-path data from OneDrive; review carefully that all inputs are parameterised. `DeleteChildRulesAsync` at line 51 concatenates `string pattern = parentPath + "/%"` then passes it as an interpolated parameter — the concatenation happens outside the interpolation boundary, meaning EF Core correctly parameterises the already-concatenated string. Confirm EF Core treats every `{...}` hole in `ExecuteSqlAsync` as a `SqlParameter`. If the EF version pre-dates that guarantee, the call at line 24 is a full SQL injection. Fix: use `ExecuteSqlAsync` with separately declared `SqliteParameter` objects or switch to a strongly-typed LINQ expression (possible for upsert with `ExecuteUpdate` + `Add` pattern matching the other repositories).
+- [x] **[Data/Repositories/SyncRuleRepository.cs:24]** Blocker — `ExecuteSqlAsync` with string interpolation: the `$"INSERT INTO SyncRules ... VALUES ({accountId.Id}, {remotePath} ...)"` interpolation embeds raw user-supplied strings directly into SQL. Although EF Core's `ExecuteSqlAsync` with `$""` does use `FormattableString` parameterisation for the whole interpolated string, the `remotePath` value comes from `rule.RemotePath` which is user-supplied folder-path data from OneDrive; review carefully that all inputs are parameterised. `DeleteChildRulesAsync` at line 51 concatenates `string pattern = parentPath + "/%"` then passes it as an interpolated parameter — the concatenation happens outside the interpolation boundary, meaning EF Core correctly parameterises the already-concatenated string. Confirm EF Core treats every `{...}` hole in `ExecuteSqlAsync` as a `SqlParameter`. If the EF version pre-dates that guarantee, the call at line 24 is a full SQL injection. Fix: use `ExecuteSqlAsync` with separately declared `SqliteParameter` objects or switch to a strongly-typed LINQ expression (possible for upsert with `ExecuteUpdate` + `Add` pattern matching the other repositories).
 
 - [x] **[Data/PersistenceServiceExtensions.cs] + [Startup/ShellServiceExtensions.cs:28-32]** Blocker — All five repository interfaces (`IAccountRepository`, `ISyncRepository`, `IDriveStateRepository`, `ISyncRuleRepository`, `ISyncedItemRepository`) are registered **twice** as singletons: once in `AddPersistence()` (called from `App.axaml.cs:66`) and again in `AddShell()` (called from `App.axaml.cs:78`). Two competing singleton registrations for the same interface means the DI container resolves whichever was registered last; all consumers that received the first registration hold a different instance than those that received the second. This will cause data-consistency bugs that are extremely hard to trace. Fix: remove all repository registrations from `ShellServiceExtensions` — `AddPersistence` is the canonical location.
 
@@ -25,7 +25,7 @@
 
 - [x] **[App.axaml.cs:93]** Blocker — `Path.Combine(logDirectory, ApplicationMetadata.ApplicationLogName)` uses `Path.Combine` instead of the repo-mandated `CombinePath` extension from `AStar.Dev.Utilities`. `Path.Combine` can silently drop all preceding components if any argument begins with a directory separator; `CombinePath` guards against this. The `logDirectory` value is constructed correctly on line 84 using `CombinePath`, but the File sink path at line 93 reverts to the forbidden API. Fix: `logDirectory.CombinePath(ApplicationMetadata.ApplicationLogName)`.
 
-- [ ] **[Infrastructure/Sync/LocalChangeDetector.cs:43,97] + [Infrastructure/Sync/RemoteFolderEnumerator.cs:210] + [Accounts/AccountFilesViewModel.cs:151]** Blocker — `Path.Combine` used instead of `CombinePath` in multiple places throughout the sync engine: `LocalChangeDetector.BuildLocalPath` (line 97), `RemoteFolderEnumerator.BuildLocalPath` (line 210), and `AccountFilesViewModel.OnOpenInFileManager` (line 151). Each is a repo-rule violation that can silently produce wrong paths. Fix: replace all with the `CombinePath` extension.
+- [x] **[Infrastructure/Sync/LocalChangeDetector.cs:43,97] + [Infrastructure/Sync/RemoteFolderEnumerator.cs:210] + [Accounts/AccountFilesViewModel.cs:151]** Blocker — `Path.Combine` used instead of `CombinePath` in multiple places throughout the sync engine: `LocalChangeDetector.BuildLocalPath` (line 97), `RemoteFolderEnumerator.BuildLocalPath` (line 210), and `AccountFilesViewModel.OnOpenInFileManager` (line 151). Each is a repo-rule violation that can silently produce wrong paths. Fix: replace all with the `CombinePath` extension.
 
 ---
 
@@ -130,7 +130,7 @@ private async void OnTimerTickAsync(object? state)
 
 - [ ] **[Data/Repositories/AccountRepository.cs] + [SyncRuleRepository.cs]** Major — Repositories use manual null checks and nullable returns instead of `Option<T>` from `AStar.Dev.Functional.Extensions`. Fix: return `Option<T>` from single-item lookups (`GetByIdAsync`, `GetActiveAsync`, etc.).
 
-- [ ] **[Infrastructure/Authentication/AuthService.cs]** Major — `AuthService` returns raw nullable `AuthResult?` and uses manual null checks rather than `Result<AuthResult>` from `AStar.Dev.Functional.Extensions`. Fix: return `Result<AuthResult>` and propagate errors functionally.
+- [x] **[Infrastructure/Authentication/AuthService.cs]** Major — `AuthService` returns raw nullable `AuthResult?` and uses manual null checks rather than `Result<AuthResult>` from `AStar.Dev.Functional.Extensions`. Fix: return `Result<AuthResult>` and propagate errors functionally.
 
 ---
 
