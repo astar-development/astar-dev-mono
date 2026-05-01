@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
@@ -13,12 +14,12 @@ public interface IAccountRepository
     Task<List<AccountEntity>> GetAllAsync(CancellationToken cancellationToken);
 
     /// <summary>
-    /// Returns the account with the specified ID, or null if no such account exists.
+    /// Returns the account with the specified ID, or <see cref="Option{T}.None"/> if no such account exists.
     /// </summary>
     /// <param name="id">The account ID.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The account, or null if not found.</returns>
-    Task<AccountEntity?> GetByIdAsync(AccountId id, CancellationToken cancellationToken);
+    /// <returns><see cref="Option{T}.Some"/> containing the account, or <see cref="Option{T}.None"/> if not found.</returns>
+    Task<Option<AccountEntity>> GetByIdAsync(AccountId id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Inserts a new account or updates an existing one with the same ID.
