@@ -56,7 +56,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns((DriveStateEntity?)null);
+            .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
@@ -157,7 +157,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns((DriveStateEntity?)null);
+            .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<RemoteEnumerationResult>(new OperationCanceledException()));
 
@@ -184,7 +184,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns((DriveStateEntity?)null);
+            .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<RemoteEnumerationResult>(new InvalidOperationException("unexpected")));
 
@@ -211,7 +211,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns((DriveStateEntity?)null);
+            .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true));
 

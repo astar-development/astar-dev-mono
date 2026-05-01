@@ -68,7 +68,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     private async Task SyncAccountInternalAsync(OneDriveAccount account, string token, CancellationToken ct)
     {
         var driveState = await driveStateRepository.GetByAccountIdAsync(account.Id, ct)
-                         ?? new DriveStateEntity { AccountId = account.Id };
+                             .OrElseAsync(new DriveStateEntity { AccountId = account.Id });
 
         driveState.LastSyncStartedAt = DateTimeOffset.UtcNow;
         driveState.DeltaLink         = null;
