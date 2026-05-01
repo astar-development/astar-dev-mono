@@ -344,4 +344,32 @@ public sealed class GivenALocalChangeDetector
 
         jobs.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void when_include_rule_has_multi_level_remote_path_then_local_path_starts_with_base_path()
+    {
+        var mockFs = new MockFileSystem();
+        mockFs.AddFile($"{BasePath}/Documents/2024/report.txt", new MockFileData("data"));
+        var sut = CreateSut(mockFs);
+        var rules = new[] { Rule("/Documents/2024", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.Count.ShouldBe(1);
+        jobs[0].LocalPath.ShouldStartWith(BasePath);
+    }
+
+    [Fact]
+    public void when_include_rule_has_multi_level_remote_path_then_local_path_contains_full_relative_structure()
+    {
+        var mockFs = new MockFileSystem();
+        mockFs.AddFile($"{BasePath}/Documents/2024/report.txt", new MockFileData("data"));
+        var sut = CreateSut(mockFs);
+        var rules = new[] { Rule("/Documents/2024", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.Count.ShouldBe(1);
+        jobs[0].RelativePath.ShouldBe("Documents/2024/report.txt");
+    }
 }

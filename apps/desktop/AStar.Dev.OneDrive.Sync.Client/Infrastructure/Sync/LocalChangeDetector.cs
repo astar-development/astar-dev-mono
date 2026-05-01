@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -94,8 +95,8 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
         }
     }
 
-    private string BuildLocalPath(string localBasePath, string remotePath)
-        => fileSystem.Path.Combine(localBasePath, remotePath.TrimStart('/').Replace('/', fileSystem.Path.DirectorySeparatorChar));
+    private static string BuildLocalPath(string localBasePath, string remotePath)
+        => localBasePath.CombinePath(remotePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
     private static bool IsFileToSkip(IFileInfo info)
         => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.') || IsTemporaryFile(info.Extension);

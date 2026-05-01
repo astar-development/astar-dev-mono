@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -207,6 +208,6 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             RemoteSize     = item.Size
         };
 
-    private string BuildLocalPath(string localBasePath, string relativePath)
-        => fileSystem.Path.Combine(localBasePath, relativePath.Replace('/', fileSystem.Path.DirectorySeparatorChar));
+    private static string BuildLocalPath(string localBasePath, string relativePath)
+        => localBasePath.CombinePath(relativePath.Replace('/', Path.DirectorySeparatorChar));
 }

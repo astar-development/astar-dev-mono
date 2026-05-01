@@ -267,4 +267,34 @@ public sealed class GivenARemoteFolderEnumerator
         result.Rules.ShouldHaveSingleItem();
         result.Rules[0].RemotePath.ShouldBe("/Documents");
     }
+
+    [Fact]
+    public async Task when_remote_file_item_has_nested_relative_path_then_download_job_local_path_starts_with_base_path()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([FileItem("item-a", "report.txt", "/Documents/2024/report.txt")]);
+        var sut = CreateSut(new MockFileSystem());
+
+        var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.DownloadJobs.ShouldHaveSingleItem();
+        result.DownloadJobs[0].LocalPath.ShouldStartWith(BasePath);
+    }
+
+    [Fact]
+    public async Task when_remote_file_item_has_nested_relative_path_then_download_job_local_path_does_not_equal_base_path()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([FileItem("item-a", "report.txt", "/Documents/2024/report.txt")]);
+        var sut = CreateSut(new MockFileSystem());
+
+        var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.DownloadJobs.ShouldHaveSingleItem();
+        result.DownloadJobs[0].LocalPath.ShouldNotBe(BasePath);
+    }
 }
