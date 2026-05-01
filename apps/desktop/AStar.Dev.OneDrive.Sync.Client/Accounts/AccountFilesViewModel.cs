@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -149,9 +150,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
     {
-        string path = fileSystem.Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "OneDrive", node.Name);
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive", node.Name);
 
         if (!fileSystem.Directory.Exists(path))
             return;

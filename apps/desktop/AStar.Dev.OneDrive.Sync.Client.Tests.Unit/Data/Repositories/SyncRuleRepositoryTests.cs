@@ -174,6 +174,32 @@ public sealed class GivenASyncRuleRepository : IDisposable
         remaining.Count.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task when_upsert_is_called_with_null_remote_item_id_then_no_exception_is_thrown()
+    {
+        await SeedAccountAsync();
+        var repository = new SyncRuleRepository(_factory);
+
+        var act = async () => await repository.UpsertAsync(new AccountId(AccountIdString), "/Photos", RuleType.Include, null, TestContext.Current.CancellationToken);
+
+        await act.ShouldNotThrowAsync();
+    }
+
+    [Fact]
+    public async Task when_delete_child_rules_is_called_and_no_children_exist_then_parent_rule_is_unchanged()
+    {
+        await SeedAccountAsync();
+        _seedingContext.SyncRules.Add(new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = "/Photos", RuleType = RuleType.Include });
+        await _seedingContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var repository = new SyncRuleRepository(_factory);
+        await repository.DeleteChildRulesAsync(new AccountId(AccountIdString), "/Photos", TestContext.Current.CancellationToken);
+
+        var rules = await _seedingContext.SyncRules.AsNoTracking().Where(r => r.AccountId == new AccountId(AccountIdString)).ToListAsync(TestContext.Current.CancellationToken);
+        rules.Count.ShouldBe(1);
+        rules[0].RemotePath.ShouldBe("/Photos");
+    }
+
     private async Task SeedAccountAsync(string accountId = AccountIdString)
     {
         if(await _seedingContext.Accounts.AnyAsync(a => a.Id == new AccountId(accountId), TestContext.Current.CancellationToken))
