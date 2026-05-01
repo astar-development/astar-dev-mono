@@ -88,22 +88,20 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     {
         using var http = httpClientFactory.CreateClient();
         await using var file = fileSystem.File.OpenRead(localPath);
-        byte[] buffer    = new byte[ChunkSize10Mb];
-        long uploaded  = 0L;
+        byte[] buffer = new byte[ChunkSize10Mb];
+        long uploaded = 0L;
 
         while(uploaded < totalBytes)
         {
             ct.ThrowIfCancellationRequested();
 
-            int bytesToRead = (int)Math.Min(ChunkSize10Mb, totalBytes - uploaded);
-            int bytesRead   = await file.ReadAsync(
-                buffer.AsMemory(0, bytesToRead), ct);
+            int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct);
 
             if(bytesRead == 0)
                 break;
 
-            long rangeEnd  = uploaded + bytesRead - 1;
-            string? itemId    = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
+            long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
+            string? itemId = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
 
             uploaded += bytesRead;
             progress?.Report(uploaded);
@@ -114,6 +112,15 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         throw new InvalidOperationException("Upload completed without receiving item ID from Graph API.");
     }
+
+    private static async Task<int> ReadChunkAsync(Stream file, byte[] buffer, long totalBytes, long uploaded, CancellationToken ct)
+    {
+        int bytesToRead = (int)Math.Min(ChunkSize10Mb, totalBytes - uploaded);
+
+        return await file.ReadAsync(buffer.AsMemory(0, bytesToRead), ct);
+    }
+
+    private static long ComputeRangeEnd(long uploaded, int bytesRead) => uploaded + bytesRead - 1;
 
     private static async Task<string?> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
     {
