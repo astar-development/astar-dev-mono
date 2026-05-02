@@ -94,7 +94,7 @@ All `bin/` and `obj/` folders redirect to `artifacts/` at the repo root. Do not 
 
 ### Versioning
 
-- Version is injected by CI at publish time via `-p:Version=$(GitTag)`; local builds use the fallback `0.0.1-local`
+- Version is injected by CI at publish time via `-p:Version=$(GitTag)`; local builds use the fallback `0.1.0`
 - Single repo-wide version tag: all packages in a release share the same version
 - Tag format: `v1.2.3` (triggers `nuget-publish.yml`)
 - Pre-release: `v2.0.0-beta.1`

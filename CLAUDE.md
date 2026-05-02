@@ -10,11 +10,7 @@ Mono-repo, all AStar Development products: **Blazor** web apps, **astro** web ap
 
 ```bash
 dotnet restore
-
 dotnet build
-or
-dotnet build --configuration Release
-
 dotnet build packages/core/[PackageName]
 dotnet build apps/web/[AppName].Blazor
 
@@ -28,8 +24,6 @@ dotnet clean && dotnet build
 dotnet test
 
 dotnet test tests/[ProjectName].Tests
-
-dotnet test --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
 ```
 
 Coverage → `TestResults/`.
@@ -46,7 +40,7 @@ cd apps/web/[appname] && npm run dev
 
 ## Logging
 
-Logging NEVER afterthought. .Net or JavaScript — MUST implement day one. See @.claude/agents/c-sharp-senior-developer.md (.Net) or @.claude/agents/javascript-senior-developer.md.md (JS). ALL logging MUST go to Azure Application Insights unless instructed otherwise. Use `AStar.Dev.Logging.Extensions` (`LogMessage` class) for compile-time templates. No suitable template? ADD IT. Avoid `logger.Log...`. No JS equivalent exists; log anyway.
+Logging NEVER afterthought. ALL logging MUST go to Azure Application Insights unless instructed otherwise. For C#, use `AStar.Dev.Logging.Extensions` (`LogMessage` class) for compile-time templates. No suitable template? ADD IT. Avoid `logger.Log...`. No JS equivalent exists; log anyway.
 
 ## Dependency Injection
 
@@ -54,7 +48,7 @@ DI NEVER afterthought. Language supports it? MUST implement from start.
 
 ## NuGet projects
 
-Mono-repo has many NuGet projects deployed to GitHub and NuGet.org:
+Mono-repo has many C# NuGet projects deployed to GitHub and NuGet.org. Top 3 that MUST be used:
 
 - AStar.Dev.Functional.Extensions: Result<T>, Option<T>, Map<Async>, Bind<Async> etc. ALWAYS use when practicable.
 - AStar.Dev.Logging.Extensions: Compile-time `LogMessage` format + logging extensions. ALWAYS use when practicable.
@@ -80,22 +74,21 @@ infra/terraform/
 tests/        # Repo-wide integration/E2E tests
 ```
 
-### Centralized Build Configuration
+### C# Centralized Build Configuration
 
 All `.csproj` inherit from three root files — never duplicate settings already defined there:
 
-- **`Directory.Build.props`** — Target framework (`net10.0`), nullable reference types, `TreatWarningsAsErrors=true`, output paths to `artifacts/`, shared NuGet metadata
-- **`Directory.Build.targets`** — Source Link, package metadata validation (requires `Description`, `PackageTags`, `PackageLicenseExpression`), project naming enforcement (`AStar.Dev.*` prefix), VSTest blame mode
-- **`Directory.Packages.props`** — Central Package Management (CPM): all NuGet versions declared here; `.csproj` files reference without versions
+- **`Directory.Build.props`**
+- **`Directory.Build.targets`**
+- **`Directory.Packages.props`**
 
 ### Build Output
 
-All `bin/` and `obj/` redirect to `artifacts/` at repo root. Don't look for binaries inside individual project dirs.
+ALL `bin/` and `obj/` redirect to `artifacts/` at repo root.
 
 ### Versioning
 
-- CI injects version at publish via `-p:Version=$(GitTag)`; local builds fallback to `0.0.1-local`
-- Single repo-wide version tag: all packages in release share same version
+- CI injects version at publish via `-p:Version=$(GitTag)`; local builds fallback to `0.1.0`
 - Tag format: `v1.2.3` (triggers `nuget-publish.yml`)
 - Pre-release: `v2.0.0-beta.1`
 
@@ -104,7 +97,7 @@ All `bin/` and `obj/` redirect to `artifacts/` at repo root. Don't look for bina
 - Naming: `AStar.Dev.[Area].[Name]`
 - Published to GitHub Packages and NuGet.org via CI
 - Symbol packages (`.snupkg`) published alongside `.nupkg`
-- **No manual `dotnet pack` / `dotnet nuget push` for releases** — use tag workflow
+- **No manual release** — use tag workflow
 - Local dev: use `<ProjectReference>` not `<PackageReference>` to avoid publish cycles
 
 ### Avalonia / Blazor / C# / .NET Patterns
@@ -116,16 +109,6 @@ C# updates: use @.claude/agentsc-sharp-senior-developer.md subagent.
 
 - Eliminate "what" comments by extracting well-named methods — NOT by moving them into XML docs.
 - Blank line before every `return` (except `return` directly after `if`/`else`).
-- ReactiveUI issues: prefer `RxAppBuilder`/`RxSchedulers` over NuGet downgrades.
-- Testing internals with NSubstitute: account for proxy limitations on `internal` classes.
-
-### CI/CD Workflows
-
-| Workflow            | Trigger                                                     |
-| ------------------- | ----------------------------------------------------------- |
-| `dotnet-ci.yml`     | Push/PR touching `.cs`, `.csproj`, `*.slnx`, MSBuild config |
-| `nuget-publish.yml` | Push of a `v*` tag                                          |
-| `infra-deploy.yml`  | Push/PR touching `infra/**`                                 |
 
 ### Conventions
 
@@ -139,43 +122,31 @@ C# updates: use @.claude/agentsc-sharp-senior-developer.md subagent.
 - **XML Comments**: all public methods/properties
     - Classes implementing interface: use `<inheritdoc />`, not class-level docs.
 
-## Before Starting Any Task
+## Before Starting ANY Task
 
 Two steps **MANDATORY** before single line of code. No exceptions, including spikes.
 
 1. **Branch first** — run `git branch`, confirm not on `main`. If on main, create branch:
 
     ```bash
-    git checkout -b feature/short-description
+    git checkout -b feature/short-description<-issue-number>
     ```
 
-    Naming: `feature/...`, `bug/...`, `doc/...`. Never commit to `main`. See @docs/git-instructions.md.
+    Naming: `feature/...`, `bug/...`, `doc/...`. NEVER commit to `main`. See @docs/git-instructions.md.
 
-2. **Tests MANDATORY** — every coding task needs test project. New code MUST have tests covering all branches wherever possible.
+2. **Tests MANDATORY** — EVERY coding task MUST follow TDD. COMMIT FAILING TEST BEFORE writing production code.
 
 ## Branching & Commits
 
-- NEVER commit to `main`. Always branch first.
-- NEVER commit code with failing tests or build errors.
-- Human signals completion (`perfect`, `thanks`, `lgtm`) → STOP editing unless asked.
-
-## Workflow Discipline
-
-- Non-trivial change? State plan, confirm with human first.
-- Don't spend entire session exploring. Timebox, then implement.
-- Verify shell working directory before creating migrations or path-sensitive artifacts.
-- EF Core migrations: always include Designer file.
+ALL development work MUST follow the GIT rules in: @docs/git-instructions.md
 
 ## Definition of Done
 
 Before any coding task complete — commits and PRs included:
 
 1. `dotnet build` affected projects — zero errors, zero warnings
-2. `dotnet test` affected test projects — all pass
+2. `dotnet test` affected test projects — all pass except new TDD `RED` tests. COMMIT failing tests.
+3. Write MINIMAL production code to pass test(s)
 3. Request human review BEFORE committing.
 4. Human requests changes? Implement, re-request review.
 5. ONLY after human approval: commit to branch, raise GitHub PR.
-
-## Additional Instructions
-
-- Git workflow: @docs/git-instructions.md

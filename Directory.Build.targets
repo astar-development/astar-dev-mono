@@ -99,7 +99,7 @@
 
 
   <!-- ── Warn on local version fallback ────────────────────────────────────
-    The '0.0.1-local' version in Directory.Build.props is a fallback for
+    The '0.1.0' version in Directory.Build.props is a fallback for
     developer builds. This target warns (not errors) if a packable project
     is packed with that version, which usually means someone ran
     `dotnet pack` locally without supplying a version.
