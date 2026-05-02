@@ -9,20 +9,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
-public enum WizardStep { SignIn, SelectFolders, Confirm }
-
-public sealed partial class WizardFolderItem(string id, string name) : ObservableObject
-{
-    public string Id { get; } = id;
-    public string Name { get; } = name;
-
-    [ObservableProperty]
-    public partial bool IsSelected { get; set; } = true;
-}
-
 public sealed partial class AddAccountWizardViewModel(IAuthService authService, IGraphService graphService) : ObservableObject, IDisposable
 {
-    private string  _accountId   = string.Empty;
+    private string _accountId = string.Empty;
     private string? _accessToken;
     private CancellationTokenSource? _authCts;
 
@@ -82,16 +71,16 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private void Back()
     {
-        if(CurrentStep == WizardStep.SelectFolders)
+        if (CurrentStep == WizardStep.SelectFolders)
             CurrentStep = WizardStep.SignIn;
-        else if(CurrentStep == WizardStep.Confirm)
+        else if (CurrentStep == WizardStep.Confirm)
             CurrentStep = WizardStep.SelectFolders;
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     private async Task NextAsync()
     {
-        switch(CurrentStep)
+        switch (CurrentStep)
         {
             case WizardStep.SignIn:
                 CurrentStep = WizardStep.SelectFolders;
@@ -112,7 +101,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private void SkipFolders()
     {
-        foreach(var f in Folders)
+        foreach (var f in Folders)
             f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
@@ -121,12 +110,10 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
-        if(IsWaitingForAuth)
+        if (IsWaitingForAuth)
             return;
-
-        SignInHasError = false;
-        SignInStatusText = "Waiting for sign-in ...";
-        IsWaitingForAuth = true;
+            
+        SetInitialSignInState();
 
         _authCts = new CancellationTokenSource();
 
@@ -134,43 +121,70 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         {
             var result = await authService.SignInInteractiveAsync(_authCts.Token);
 
-            switch(result)
+            switch (result)
             {
-                case Result<AuthResult, AuthError>.Ok ok:
-                    _accountId = ok.Value.AccountId;
-                    _accessToken = ok.Value.AccessToken;
-                    ConfirmedDisplayName = ok.Value.DisplayName;
-                    ConfirmedEmail = ok.Value.Email;
-                    IsSignedIn = true;
-                    SignInStatusText = $"Signed in as {ConfirmedEmail}";
-                    SignInHasError = false;
-                    NextCommand.NotifyCanExecuteChanged();
+                case Result<AuthResult, AuthError>.Ok successfulLoginResult:
+                    UpdateSuccessfulLoginState(successfulLoginResult);
                     break;
                 case Result<AuthResult, AuthError>.Error { Reason: AuthCancelledError }:
-                    SignInStatusText = "Sign-in cancelled.";
-                    SignInHasError = false;
+                    SetCancelledLoginState();
                     break;
                 case Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }:
-                    SignInStatusText = failed.Message;
-                    SignInHasError = true;
+                    SetFailedLoginState(failed);
                     break;
             }
         }
         finally
         {
-            IsWaitingForAuth = false;
-            _authCts.Dispose();
-            _authCts = null;
+            SetFinalSignInState();
         }
     }
 
+    private void SetFailedLoginState(AuthFailedError failed)
+    {
+        SignInStatusText = failed.Message;
+        SignInHasError = true;
+    }
+
+    private void SetCancelledLoginState()
+    {
+        SignInStatusText = "Sign-in cancelled.";
+        SignInHasError = false;
+    }
+
+    private void UpdateSuccessfulLoginState(Result<AuthResult, AuthError>.Ok successfulLoginResult)
+    {
+        _accountId = successfulLoginResult.Value.AccountId;
+        _accessToken = successfulLoginResult.Value.AccessToken;
+        ConfirmedDisplayName = successfulLoginResult.Value.DisplayName;
+        ConfirmedEmail = successfulLoginResult.Value.Email;
+        IsSignedIn = true;
+        SignInStatusText = $"Signed in as {ConfirmedEmail}";
+        SignInHasError = false;
+        NextCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SetFinalSignInState()
+    {
+        IsWaitingForAuth = false;
+        _authCts?.Dispose();
+        _authCts = null;
+    }
+
+    private void SetInitialSignInState()
+    {
+        SignInHasError = false;
+        SignInStatusText = "Waiting for sign-in ...";
+        IsWaitingForAuth = true;
+    }
+
     public event EventHandler<OneDriveAccount>? Completed;
-    public event EventHandler?                  Cancelled;
+    public event EventHandler? Cancelled;
 
     [RelayCommand]
     private async Task CancelAsync()
     {
-        if(_authCts is not null)
+        if (_authCts is not null)
             await _authCts.CancelAsync();
 
         Cancelled?.Invoke(this, EventArgs.Empty);
@@ -178,7 +192,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
     private async Task LoadFoldersAsync()
     {
-        if(_accessToken is null)
+        if (_accessToken is null)
             return;
 
         IsLoadingFolders = true;
@@ -190,7 +204,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
             var driveFolders = await graphService
                 .GetRootFoldersAsync(_accessToken);
 
-            foreach(var f in driveFolders)
+            foreach (var f in driveFolders)
             {
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {
@@ -198,7 +212,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
                 });
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             FolderLoadError = $"Could not load folders: {ex.Message}";
         }
@@ -215,11 +229,11 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     {
         var account = new OneDriveAccount
         {
-            Id                = new AccountId(_accountId),
-            DisplayName       = ConfirmedDisplayName,
-            Email             = ConfirmedEmail,
+            Id = new AccountId(_accountId),
+            DisplayName = ConfirmedDisplayName,
+            Email = ConfirmedEmail,
             SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => new OneDriveFolderId(f.Id))],
-            FolderNames       = Folders
+            FolderNames = Folders
                 .Where(f => f.IsSelected)
                 .ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
         };
