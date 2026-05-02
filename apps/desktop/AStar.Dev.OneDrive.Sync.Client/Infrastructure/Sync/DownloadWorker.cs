@@ -25,7 +25,7 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                 workerId, job.Direction, job.RelativePath);
 
             await syncRepository.UpdateJobStateAsync(
-                job.Id, SyncJobState.InProgress);
+                job.Id, SyncJobState.InProgress).ConfigureAwait(false);
 
             string? error   = null;
             bool     success = false;
@@ -33,20 +33,20 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             try
             {
-                currentJob = await ExecuteJobAsync(job, accessToken, ct);
+                currentJob = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
                 success = true;
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed);
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed).ConfigureAwait(false);
             }
             catch(OperationCanceledException)
             {
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Queued);
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Queued).ConfigureAwait(false);
                 throw;
             }
             catch(Exception ex)
             {
                 error = ex.Message;
                 Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path}", workerId, ex.GetType().Name, ex.Message, job.LocalPath);
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message);
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message).ConfigureAwait(false);
             }
             finally
             {
@@ -66,13 +66,13 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                     downloadUrl,
                     job.LocalPath,
                     job.RemoteModified,
-                    ct: ct);
+                    ct: ct).ConfigureAwait(false);
 
                 return job;
 
             case SyncDirection.Upload:
                 string remotePath = job.DownloadUrl ?? job.RelativePath;
-                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
+                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct).ConfigureAwait(false);
 
                 Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
 
