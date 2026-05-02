@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.IO.Abstractions;
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 

@@ -1,5 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 

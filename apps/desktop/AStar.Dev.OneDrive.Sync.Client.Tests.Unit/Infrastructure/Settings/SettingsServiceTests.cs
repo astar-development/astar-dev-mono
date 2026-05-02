@@ -1,8 +1,8 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Settings;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Settings;
 
 [Collection("SettingsService")]
 public sealed class SettingsServiceTests

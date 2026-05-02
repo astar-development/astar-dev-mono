@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>
 /// Represents a single file operation queued by the sync engine.

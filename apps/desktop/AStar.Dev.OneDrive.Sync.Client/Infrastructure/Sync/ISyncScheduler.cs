@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 

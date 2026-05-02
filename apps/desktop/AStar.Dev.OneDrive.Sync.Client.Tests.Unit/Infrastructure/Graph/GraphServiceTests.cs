@@ -5,7 +5,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Graph;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
 
 public sealed class GivenAGraphService : IDisposable
 {

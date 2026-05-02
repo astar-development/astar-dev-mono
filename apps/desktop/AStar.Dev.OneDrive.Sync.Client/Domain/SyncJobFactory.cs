@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>Creates <see cref="SyncJob"/> instances with auto-generated identity fields.</summary>
 public static class SyncJobFactory

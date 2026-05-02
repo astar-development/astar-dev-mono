@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>
 /// Determines how bidirectional sync conflicts are resolved.
