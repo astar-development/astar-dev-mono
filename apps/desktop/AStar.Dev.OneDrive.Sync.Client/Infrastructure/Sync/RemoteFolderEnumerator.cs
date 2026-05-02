@@ -25,7 +25,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveId     = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveId     = await graphService.GetDriveIdAsync(account.Id.Id, accessToken, ct).ConfigureAwait(false);
 
         var includeRules     = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules

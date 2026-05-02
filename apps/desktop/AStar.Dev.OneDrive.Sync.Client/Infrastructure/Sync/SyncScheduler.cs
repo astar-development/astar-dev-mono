@@ -92,7 +92,14 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         if (SyncIsAlreadyRunning())
             return;
 
-        await RunSyncPassAsync(CancellationToken.None);
+        try
+        {
+            await RunSyncPassAsync(CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "[SyncScheduler] Unhandled exception in timer callback: {Error}", ex.Message);
+        }
     }
 
     private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1;

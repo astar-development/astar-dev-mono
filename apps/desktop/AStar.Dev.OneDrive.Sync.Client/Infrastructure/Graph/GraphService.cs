@@ -21,13 +21,13 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
-    public async Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
-        => (await ResolveClientWithDriveContextAsync(accessToken, ct)).Ctx.DriveId;
+    public async Task<string> GetDriveIdAsync(string accountId, string accessToken, CancellationToken ct = default)
+        => (await ResolveClientWithDriveContextAsync(accountId, accessToken, ct)).Ctx.DriveId;
 
     /// <inheritdoc />
-    public async Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
+    public async Task<List<DriveFolder>> GetRootFoldersAsync(string accountId, string accessToken, CancellationToken ct = default)
     {
-        (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accountId, accessToken, ct);
 
         var response = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
             .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
@@ -87,9 +87,9 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default)
+    public async Task<(long Total, long Used)> GetQuotaAsync(string accountId, string accessToken, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accountId, accessToken, ct);
 
         var drive = await client.Drives[ctx.DriveId]
             .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
@@ -129,9 +129,9 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
+    public async Task<string?> GetDownloadUrlAsync(string accountId, string accessToken, string itemId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accountId, accessToken, ct);
 
         var item = await client.Drives[ctx.DriveId].Items[itemId]
             .GetAsync(req => req.QueryParameters.Select = [DownloadUrlKey], ct)
@@ -146,17 +146,17 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
+    public async Task<string> UploadFileAsync(string accountId, string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accountId, accessToken, ct);
 
         return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
     }
 
     /// <inheritdoc />
-    public async Task DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default)
+    public async Task DeleteItemAsync(string accountId, string accessToken, string itemId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accountId, accessToken, ct);
         await client.Drives[ctx.DriveId].Items[itemId].DeleteAsync(cancellationToken: ct);
     }
 
@@ -202,11 +202,11 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             ? url?.ToString()
             : null;
 
-    private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
+    private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accountId, string accessToken, CancellationToken ct)
     {
         var client = graphClientFactory.CreateClient(accessToken);
 
-        if(_cache.TryGetValue(accessToken, out var cached))
+        if(_cache.TryGetValue(accountId, out var cached))
             return (client, cached);
 
         var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
@@ -218,7 +218,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         string rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve root item ID.");
 
         var driveContext = new DriveContext(driveId, rootId);
-        _cache[accessToken] = driveContext;
+        _cache[accountId] = driveContext;
 
         return (client, driveContext);
     }

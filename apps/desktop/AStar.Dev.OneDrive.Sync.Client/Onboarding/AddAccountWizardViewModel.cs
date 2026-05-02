@@ -202,7 +202,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         try
         {
             var driveFolders = await graphService
-                .GetRootFoldersAsync(_accessToken);
+                .GetRootFoldersAsync(_accountId, _accessToken);
 
             foreach (var f in driveFolders)
             {

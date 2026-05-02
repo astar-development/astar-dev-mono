@@ -71,7 +71,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         try
         {
             var accounts = await _app.GetAccountsAsync();
-            var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            var account = accounts.FirstOrDefault(a => a.HomeAccountId?.Identifier == accountId);
 
             if (account is null)
                 return AuthResultFactory.Failure("Account not found in token cache.");
@@ -102,7 +102,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         await EnsureCacheRegisteredAsync();
 
         var accounts = await _app.GetAccountsAsync();
-        var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+        var account = accounts.FirstOrDefault(a => a.HomeAccountId?.Identifier == accountId);
 
         if (account is not null)
             await _app.RemoveAsync(account);

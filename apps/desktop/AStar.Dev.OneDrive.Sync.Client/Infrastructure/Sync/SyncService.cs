@@ -89,18 +89,18 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, authOk.Value.AccessToken, ct).ConfigureAwait(false);
+        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.AccountId, authOk.Value.AccessToken, ct).ConfigureAwait(false);
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
     
 
-    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accessToken, CancellationToken ct)
+    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
     {
         switch (outcome)
         {
             case ConflictOutcome.UseRemote:
-                string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
+                string downloadUrl = await graphService.GetDownloadUrlAsync(accountId, accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
                     ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.RemoteItemId}).");
 
                 await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct).ConfigureAwait(false);

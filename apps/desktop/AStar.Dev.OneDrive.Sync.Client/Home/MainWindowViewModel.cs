@@ -136,27 +136,45 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     }
 
     private async void OnAccountSelectedAsync(object? sender, AccountCardViewModel card)
-        => await Try.RunAsync(async () =>
-            {
-                ActiveSection = NavSection.Files;
-                await files.ActivateAccountAsync(card.Id);
-                await activity.SetActiveAccountAsync(card.Id, card.Email);
-                return Unit.Default;
-            })
-            .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
+    {
+        try
+        {
+            await Try.RunAsync(async () =>
+                {
+                    ActiveSection = NavSection.Files;
+                    await files.ActivateAccountAsync(card.Id);
+                    await activity.SetActiveAccountAsync(card.Id, card.Email);
+                    return Unit.Default;
+                })
+                .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "[MainWindowViewModel.OnAccountSelectedAsync] Unhandled exception: {Error}", ex.Message);
+        }
+    }
 
     private async void OnAccountAddedAsync(object? sender, OneDriveAccount account)
-        => await Try.RunAsync(async () =>
-            {
-                files.AddAccount(account);
-                dashboard.AddAccount(account);
-                settings.AddAccount(account);
-                ActiveSection = NavSection.Files;
-                await files.ActivateAccountAsync(account.Id.Id);
-                await activity.SetActiveAccountAsync(account.Id.Id, account.Email);
-                return Unit.Default;
-            })
-            .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
+    {
+        try
+        {
+            await Try.RunAsync(async () =>
+                {
+                    files.AddAccount(account);
+                    dashboard.AddAccount(account);
+                    settings.AddAccount(account);
+                    ActiveSection = NavSection.Files;
+                    await files.ActivateAccountAsync(account.Id.Id);
+                    await activity.SetActiveAccountAsync(account.Id.Id, account.Email);
+                    return Unit.Default;
+                })
+                .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "[MainWindowViewModel.OnAccountAddedAsync] Unhandled exception: {Error}", ex.Message);
+        }
+    }
 
     private void OnAccountRemoved(object? sender, string accountId)
     {

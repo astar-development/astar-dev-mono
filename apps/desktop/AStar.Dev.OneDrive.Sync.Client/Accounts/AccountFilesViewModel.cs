@@ -78,7 +78,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             }
 
             _accessToken = ok.Value.AccessToken;
-            _driveId = await _graphService.GetDriveIdAsync(_accessToken);
+            _driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken);
 
             var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
             var includedPaths = existingRules
@@ -86,7 +86,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 .Select(r => r.RemotePath)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            var folders = await _graphService.GetRootFoldersAsync(_accessToken);
+            var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken);
 
             foreach (var f in folders)
             {
@@ -129,22 +129,29 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         try
         {
-            var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
+            try
+            {
+                var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
 
-            Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
+                Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
 
-            await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
+                await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
-            var affected = ruleType == RuleType.Include
-                ? CollectAllVisible([node])
-                : [node];
+                var affected = ruleType == RuleType.Include
+                    ? CollectAllVisible([node])
+                    : [node];
 
-            foreach(var item in affected)
-                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
+                foreach(var item in affected)
+                    await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
+            }
+            catch(Exception ex)
+            {
+                Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
+            }
         }
         catch(Exception ex)
         {
-            Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
+            Serilog.Log.Error(ex, "[AccountFilesViewModel.OnIncludeToggledAsync] Unhandled exception: {Error}", ex.Message);
         }
     }
 
