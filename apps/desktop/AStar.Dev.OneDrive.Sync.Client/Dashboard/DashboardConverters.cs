@@ -2,7 +2,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Converters;
+namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
 /// <summary>Returns red when conflict count > 0, otherwise primary text colour.</summary>
 public sealed class ConflictCountToColorConverter : IValueConverter
