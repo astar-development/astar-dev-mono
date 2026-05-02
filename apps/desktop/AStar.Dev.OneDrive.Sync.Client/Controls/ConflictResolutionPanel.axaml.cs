@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using ConflictItemViewModel = AStar.Dev.OneDrive.Sync.Client.Conflicts.ConflictItemViewModel;

@@ -65,13 +65,13 @@ applications, and ~50 published **NuGet packages**.
 
 ## Prerequisites
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| .NET SDK | 10.0.x | Pinned via `global.json`. Install from [dot.net](https://dot.net) |
-| Node.js | 24.x LTS | Required for Next.js apps only |
-| Terraform | 1.10.x | Required for infra changes only. Install via [tfenv](https://github.com/tfutils/tfenv) |
-| Rider | Latest | Recommended .NET IDE |
-| VS Code | Latest | With extensions from `.vscode/extensions.json` |
+| Tool      | Version  | Notes                                                                                  |
+| --------- | -------- | -------------------------------------------------------------------------------------- |
+| .NET SDK  | 10.0.x   | Pinned via `global.json`. Install from [dot.net](https://dot.net)                      |
+| Node.js   | 24.x LTS | Required for Next.js apps only                                                         |
+| Terraform | 1.10.x   | Required for infra changes only. Install via [tfenv](https://github.com/tfutils/tfenv) |
+| Rider     | Latest   | Recommended .NET IDE                                                                   |
+| VS Code   | Latest   | With extensions from `.vscode/extensions.json`                                         |
 
 > **First time with VS Code?** Open the repo and accept the prompt to install recommended
 > extensions — everything in `.vscode/extensions.json` will be installed automatically.
@@ -230,6 +230,7 @@ git push origin v1.2.3
 ```
 
 The workflow will:
+
 1. Build in Release with the tag-derived version
 2. Run all tests (blocks publish if any fail)
 3. Pack all packable projects
@@ -264,10 +265,10 @@ published version.
 
 Terraform configuration lives in `infra/terraform/`. There are two environments:
 
-| Environment | Folder | Apply trigger |
-|-------------|--------|---------------|
-| Staging | `infra/terraform/staging/` | Merge to `main` |
-| Production | `infra/terraform/prod/` | Merge to `main` + required reviewer approval |
+| Environment | Folder                     | Apply trigger                                |
+| ----------- | -------------------------- | -------------------------------------------- |
+| Staging     | `infra/terraform/staging/` | Merge to `main`                              |
+| Production  | `infra/terraform/prod/`    | Merge to `main` + required reviewer approval |
 
 ### Running Terraform locally
 
@@ -287,11 +288,11 @@ terraform apply              # Staging only — prod requires CI approval gate
 
 ## CI/CD
 
-| Workflow | File | Trigger |
-|----------|------|---------|
-| .NET build + test | `dotnet-ci.yml` | Push/PR touching `.cs`, `.csproj`, `*.slnx`, MSBuild config |
-| NuGet publish | `nuget-publish.yml` | Push of a `v*` tag |
-| Infra deploy | `infra-deploy.yml` | Push/PR touching `infra/**` |
+| Workflow          | File                | Trigger                                                     |
+| ----------------- | ------------------- | ----------------------------------------------------------- |
+| .NET build + test | `dotnet-ci.yml`     | Push/PR touching `.cs`, `.csproj`, `*.slnx`, MSBuild config |
+| NuGet publish     | `nuget-publish.yml` | Push of a `v*` tag                                          |
+| Infra deploy      | `infra-deploy.yml`  | Push/PR touching `infra/**`                                 |
 
 All workflows require explicit permissions and run with least-privilege
 `GITHUB_TOKEN` scopes. See each workflow file for details.
@@ -330,12 +331,12 @@ for the tagging workflow.
 
 ### Branch strategy
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Always deployable. Direct pushes require passing CI. |
-| `release/x.y` | Release stabilisation branches |
-| `feat/...` | Feature branches — short-lived, merged via PR |
-| `fix/...` | Bug fix branches |
+| Branch        | Purpose                                              |
+| ------------- | ---------------------------------------------------- |
+| `main`        | Always deployable. Direct pushes require passing CI. |
+| `release/x.y` | Release stabilisation branches                       |
+| `feat/...`    | Feature branches — short-lived, merged via PR        |
+| `fix/...`     | Bug fix branches                                     |
 
 ### Commit messages
 
@@ -359,7 +360,7 @@ Your GitHub Packages credentials have expired or the PAT has been revoked.
 Re-run the `dotnet nuget add source` command from [First-time setup](#first-time-setup)
 with a fresh PAT.
 
-**Build fails with `Version '0.0.1-local' detected` warning**
+**Build fails with `Version '0.1.0' detected` warning**
 You ran `dotnet pack` without supplying a version. Supply one explicitly:
 `dotnet pack -p:Version=1.2.3` or use the CI tag-based workflow.
 

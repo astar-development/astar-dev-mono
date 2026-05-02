@@ -1,5 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Conflicts;
 

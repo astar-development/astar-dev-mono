@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 

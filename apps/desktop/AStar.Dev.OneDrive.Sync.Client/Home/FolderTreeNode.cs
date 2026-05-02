@@ -1,10 +1,10 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public enum FolderSyncState
 {
     Excluded,
     Included,
-    Partial,    // some children included, some excluded
+    Partial,
     Syncing,
     Synced,
     Conflict,

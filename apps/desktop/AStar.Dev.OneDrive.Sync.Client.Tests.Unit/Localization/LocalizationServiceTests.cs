@@ -1,7 +1,7 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Localization;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Localization;
 
 public sealed class LocalizationServiceTests
 {

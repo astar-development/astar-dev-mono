@@ -1,6 +1,7 @@
-using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
 public sealed class DeltaItemTests
 {
@@ -82,7 +83,7 @@ public sealed class DeltaItemTests
     [Fact]
     public void DeltaItem_LargeSize_IsValid()
     {
-        long largeSize = 1_099_511_627_776L; // 1TB
+        long largeSize = 1_099_511_627_776L;
 
         var item = new DeltaItem("id", "drive", "large.iso", "parent", false, false, largeSize, DateTimeOffset.UtcNow, "url");
 
@@ -342,7 +343,7 @@ public class SyncConflictTests
     [Fact]
     public void SyncConflict_LocalSizeCanBeLarge()
     {
-        long largeSize = 1_073_741_824L; // 1GB
+        long largeSize = 1_073_741_824L;
 
         var conflict = new SyncConflict { LocalSize = largeSize };
 

@@ -1,7 +1,7 @@
 using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class HttpDownloaderBackoffTests
 {

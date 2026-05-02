@@ -1,7 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-using AStar.Dev.OneDrive.Sync.Client.Models;
 using Avalonia.Media;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;

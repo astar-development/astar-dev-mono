@@ -1,6 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Theme;
 
 public sealed class ThemeServiceTests
 {

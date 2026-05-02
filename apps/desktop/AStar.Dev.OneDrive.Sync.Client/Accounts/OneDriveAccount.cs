@@ -1,6 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed class OneDriveAccount
 {
