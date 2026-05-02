@@ -1,7 +1,7 @@
 using System.Globalization;
 using Avalonia.Data.Converters;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Converters;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>Converts tree depth (int) to left-margin indentation width.</summary>
 public sealed class DepthToIndentConverter : IValueConverter
