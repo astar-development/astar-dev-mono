@@ -40,9 +40,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if(ct.IsCancellationRequested)
                 break;
 
-            var folderId = rule.RemoteItemId
-                ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-                ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct);
+            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId, ct);
 
             if(folderId is null)
             {
@@ -50,65 +48,84 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 continue;
             }
 
-            if(folderId != rule.RemoteItemId)
-            {
-                Serilog.Log.Debug("[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {Path}", rule.RemotePath);
-                await syncRuleRepository.UpsertAsync(account.Id, rule.RemotePath, RuleType.Include, folderId, ct);
-            }
-
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Email);
             var items = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct);
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", items.Count, rule.RemotePath);
 
-            foreach(var item in items.TakeWhile(_ => !ct.IsCancellationRequested))
-            {
-                seenRemoteIds.Add(item.Id);
-
-                if(!SyncRuleEvaluator.IsIncluded(item.RelativePath ?? item.Name, rules))
-                    continue;
-
-                if(item.IsFolder)
-                {
-                    await HandleFolderAsync(account.Id, item, item.RelativePath ?? item.Name, account.LocalSyncPath!.Value, syncedItems, ct);
-                    continue;
-                }
-
-                string localPath = BuildLocalPath(account.LocalSyncPath!.Value, (item.RelativePath ?? item.Name).TrimStart('/'));
-
-                syncedItems.TryGetValue(item.Id, out var knownItem);
-
-                if(knownItem?.ETag is not null && knownItem.ETag == item.ETag && fileSystem.File.Exists(localPath))
-                {
-                    Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.RelativePath);
-                    continue;
-                }
-
-                if(knownItem is not null && fileSystem.File.Exists(localPath))
-                {
-                    var localModified = new DateTimeOffset(fileSystem.FileInfo.New(localPath).LastWriteTimeUtc, TimeSpan.Zero);
-                    bool isConflict   = localModified > knownItem.RemoteModifiedAt.AddSeconds(5);
-
-                    if(isConflict)
-                    {
-                        var conflict = BuildConflict(account, item, localPath, localModified);
-                        await HandleConflictAsync(account, item, localPath, localModified, conflict, downloadJobs, onConflict);
-                        continue;
-                    }
-                }
-                else if(knownItem is null && fileSystem.File.Exists(localPath))
-                {
-                    Serilog.Log.Debug("[RemoteFolderEnumerator] File exists locally without SyncedItemEntity — treating as synced: {Path}", localPath);
-                    var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.RelativePath ?? item.Name, localPath);
-                    await syncedItemRepository.UpsertAsync(phantomItem, ct);
-                    syncedItems[item.Id] = phantomItem;
-                    continue;
-                }
-
-                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
-            }
+            await ProcessItemsForRuleAsync(account, items, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct);
         }
 
         return new RemoteEnumerationResult(downloadJobs, seenRemoteIds, syncedItems, rules);
+    }
+
+    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, string accessToken, string driveId, CancellationToken ct)
+    {
+        var folderId = rule.RemoteItemId
+            ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
+            ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct);
+
+        if(folderId is not null && folderId != rule.RemoteItemId)
+        {
+            Serilog.Log.Debug("[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {Path}", rule.RemotePath);
+            await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, ct);
+        }
+
+        return folderId;
+    }
+
+    private async Task ProcessItemsForRuleAsync(OneDriveAccount account, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict, HashSet<string> seenRemoteIds, CancellationToken ct)
+    {
+        foreach(var item in items.TakeWhile(_ => !ct.IsCancellationRequested))
+        {
+            seenRemoteIds.Add(item.Id);
+
+            if(!SyncRuleEvaluator.IsIncluded(item.RelativePath ?? item.Name, rules))
+                continue;
+
+            if(item.IsFolder)
+            {
+                await HandleFolderAsync(account.Id, item, item.RelativePath ?? item.Name, account.LocalSyncPath!.Value, syncedItems, ct);
+                continue;
+            }
+
+            await ProcessFileItemAsync(account, item, rules, syncedItems, downloadJobs, onConflict, ct);
+        }
+    }
+
+    private async Task ProcessFileItemAsync(OneDriveAccount account, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict, CancellationToken ct)
+    {
+        string localPath = BuildLocalPath(account.LocalSyncPath!.Value, (item.RelativePath ?? item.Name).TrimStart('/'));
+
+        syncedItems.TryGetValue(item.Id, out var knownItem);
+
+        if(knownItem?.ETag is not null && knownItem.ETag == item.ETag && fileSystem.File.Exists(localPath))
+        {
+            Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.RelativePath);
+            return;
+        }
+
+        if(knownItem is not null && fileSystem.File.Exists(localPath))
+        {
+            var localModified = new DateTimeOffset(fileSystem.FileInfo.New(localPath).LastWriteTimeUtc, TimeSpan.Zero);
+            bool isConflict   = localModified > knownItem.RemoteModifiedAt.AddSeconds(5);
+
+            if(isConflict)
+            {
+                var conflict = BuildConflict(account, item, localPath, localModified);
+                await HandleConflictAsync(account, item, localPath, localModified, conflict, downloadJobs, onConflict);
+                return;
+            }
+        }
+        else if(knownItem is null && fileSystem.File.Exists(localPath))
+        {
+            Serilog.Log.Debug("[RemoteFolderEnumerator] File exists locally without SyncedItemEntity — treating as synced: {Path}", localPath);
+            var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.RelativePath ?? item.Name, localPath);
+            await syncedItemRepository.UpsertAsync(phantomItem, ct);
+            syncedItems[item.Id] = phantomItem;
+            return;
+        }
+
+        downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
     }
 
     private async Task HandleFolderAsync(AccountId accountId, DeltaItem item, string remotePath, string localBasePath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
