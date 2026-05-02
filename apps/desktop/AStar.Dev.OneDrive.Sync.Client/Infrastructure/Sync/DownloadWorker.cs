@@ -14,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository, IFileSystem fileSystem)
 {
     /// <summary>Runs the worker, draining all jobs from <paramref name="reader"/> until the channel is complete or <paramref name="ct"/> is cancelled.</summary>
-    public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+    public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
         await foreach(var job in reader.ReadAllAsync(ct))
         {
@@ -33,7 +33,7 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             try
             {
-                currentJob = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
+                currentJob = await ExecuteJobAsync(job, accountId, accessToken, ct).ConfigureAwait(false);
                 success = true;
                 await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed).ConfigureAwait(false);
             }
@@ -55,12 +55,12 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
         }
     }
 
-    private async Task<SyncJob> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private async Task<SyncJob> ExecuteJobAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         switch(job.Direction)
         {
             case SyncDirection.Download:
-                string downloadUrl = await ResolveDownloadUrlAsync(job, accessToken, ct);
+                string downloadUrl = await ResolveDownloadUrlAsync(job, accountId, accessToken, ct);
 
                 await downloader.DownloadAsync(
                     downloadUrl,
@@ -72,7 +72,7 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             case SyncDirection.Upload:
                 string remotePath = job.DownloadUrl ?? job.RelativePath;
-                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct).ConfigureAwait(false);
+                string uploadedRemoteItemId = await graphService.UploadFileAsync(accountId, accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct).ConfigureAwait(false);
 
                 Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
 
@@ -89,14 +89,14 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
         }
     }
 
-    private async Task<string> ResolveDownloadUrlAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private async Task<string> ResolveDownloadUrlAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         if(job.DownloadUrl is not null)
             return job.DownloadUrl;
 
         Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.RelativePath);
 
-        var url = await graphService.GetDownloadUrlAsync(accessToken, job.RemoteItemId, ct).ConfigureAwait(false);
+        var url = await graphService.GetDownloadUrlAsync(accountId, accessToken, job.RemoteItemId, ct).ConfigureAwait(false);
 
         return url ?? throw new InvalidOperationException($"No download URL could be resolved for '{job.RelativePath}' (itemId={job.RemoteItemId}).");
     }

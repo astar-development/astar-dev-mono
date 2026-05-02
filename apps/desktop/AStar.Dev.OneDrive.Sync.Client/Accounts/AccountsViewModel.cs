@@ -88,39 +88,48 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     }
 
     private async void OnWizardCompletedAsync(object? sender, OneDriveAccount account)
-        => await Try.RunAsync(async () =>
-            {
-                CloseWizard();
-
-                account.AccentIndex = Accounts.Count % 6;
-                account.IsActive = Accounts.Count == 0;
-                if(account.LocalSyncPath is null)
+    {
+        try
+        {
+            await Try.RunAsync(async () =>
                 {
-                    var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
-                    account.LocalSyncPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
-                }
+                    CloseWizard();
 
-                var entity = ToEntity(account);
-                await repository.UpsertAsync(entity, CancellationToken.None);
+                    account.AccentIndex = Accounts.Count % 6;
+                    account.IsActive = Accounts.Count == 0;
+                    if(account.LocalSyncPath is null)
+                    {
+                        var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
+                        account.LocalSyncPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
+                    }
 
-                foreach(var (folderId, folderName) in account.FolderNames)
-                    await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, CancellationToken.None);
+                    var entity = ToEntity(account);
+                    await repository.UpsertAsync(entity, CancellationToken.None);
 
-                if(account.IsActive)
-                    await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
+                    foreach(var (folderId, folderName) in account.FolderNames)
+                        await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, CancellationToken.None);
 
-                var card = BuildCard(account);
-                Accounts.Add(card);
-                OnPropertyChanged(nameof(HasAccounts));
+                    if(account.IsActive)
+                        await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
 
-                if(account.IsActive)
-                    ActiveAccount = card;
+                    var card = BuildCard(account);
+                    Accounts.Add(card);
+                    OnPropertyChanged(nameof(HasAccounts));
 
-                AccountAdded?.Invoke(this, account);
+                    if(account.IsActive)
+                        ActiveAccount = card;
 
-                return Unit.Default;
-            })
-            .TapErrorAsync(error => Serilog.Log.Error(error, "Error completing account onboarding wizard"));
+                    AccountAdded?.Invoke(this, account);
+
+                    return Unit.Default;
+                })
+                .TapErrorAsync(error => Serilog.Log.Error(error, "Error completing account onboarding wizard"));
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "[AccountsViewModel.OnWizardCompletedAsync] Unhandled exception: {Error}", ex.Message);
+        }
+    }
 
     private void OnWizardCancelled(object? sender, EventArgs e) => CloseWizard();
 
@@ -135,15 +144,22 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         Wizard = null;
     }
 
-    private void OnCardSelected(object? sender, AccountCardViewModel card)
+    private async void OnCardSelected(object? sender, AccountCardViewModel card)
     {
-        foreach(var accountCard in Accounts)
-            accountCard.IsActive = accountCard == card;
+        try
+        {
+            foreach(var accountCard in Accounts)
+                accountCard.IsActive = accountCard == card;
 
-        ActiveAccount = card;
-        AccountSelected?.Invoke(this, card);
+            ActiveAccount = card;
+            AccountSelected?.Invoke(this, card);
 
-        _ = repository.SetActiveAccountAsync(new AccountId(card.Id), CancellationToken.None);
+            await repository.SetActiveAccountAsync(new AccountId(card.Id), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "[AccountsViewModel.OnCardSelected] Failed to set active account: {Error}", ex.Message);
+        }
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
