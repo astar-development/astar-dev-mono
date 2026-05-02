@@ -15,7 +15,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     /// <inheritdoc />
     public async Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, ct);
+        var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false);
 
         if(rules.Count == 0)
         {
@@ -24,8 +24,8 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             return new RemoteEnumerationResult([], new HashSet<string>(StringComparer.OrdinalIgnoreCase), [], [], HadNoRules: true);
         }
 
-        var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct);
-        var driveId     = await graphService.GetDriveIdAsync(accessToken, ct);
+        var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
+        var driveId     = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
 
         var includeRules     = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules
@@ -40,7 +40,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if(ct.IsCancellationRequested)
                 break;
 
-            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId, ct);
+            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId, ct).ConfigureAwait(false);
 
             if(folderId is null)
             {
@@ -49,10 +49,10 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Email);
-            var items = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct);
+            var items = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct).ConfigureAwait(false);
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", items.Count, rule.RemotePath);
 
-            await ProcessItemsForRuleAsync(account, items, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct);
+            await ProcessItemsForRuleAsync(account, items, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct).ConfigureAwait(false);
         }
 
         return new RemoteEnumerationResult(downloadJobs, seenRemoteIds, syncedItems, rules);
@@ -62,12 +62,12 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     {
         var folderId = rule.RemoteItemId
             ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-            ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct);
+            ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct).ConfigureAwait(false);
 
         if(folderId is not null && folderId != rule.RemoteItemId)
         {
             Serilog.Log.Debug("[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {Path}", rule.RemotePath);
-            await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, ct);
+            await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, ct).ConfigureAwait(false);
         }
 
         return folderId;
@@ -84,11 +84,11 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
             if(item.IsFolder)
             {
-                await HandleFolderAsync(account.Id, item, item.RelativePath ?? item.Name, account.LocalSyncPath!.Value, syncedItems, ct);
+                await HandleFolderAsync(account.Id, item, item.RelativePath ?? item.Name, account.LocalSyncPath!.Value, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
 
-            await ProcessFileItemAsync(account, item, rules, syncedItems, downloadJobs, onConflict, ct);
+            await ProcessFileItemAsync(account, item, rules, syncedItems, downloadJobs, onConflict, ct).ConfigureAwait(false);
         }
     }
 
@@ -112,7 +112,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if(isConflict)
             {
                 var conflict = BuildConflict(account, item, localPath, localModified);
-                await HandleConflictAsync(account, item, localPath, localModified, conflict, downloadJobs, onConflict);
+                await HandleConflictAsync(account, item, localPath, localModified, conflict, downloadJobs, onConflict).ConfigureAwait(false);
                 return;
             }
         }
@@ -120,7 +120,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         {
             Serilog.Log.Debug("[RemoteFolderEnumerator] File exists locally without SyncedItemEntity — treating as synced: {Path}", localPath);
             var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.RelativePath ?? item.Name, localPath);
-            await syncedItemRepository.UpsertAsync(phantomItem, ct);
+            await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
             syncedItems[item.Id] = phantomItem;
             return;
         }
@@ -134,13 +134,13 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         _ = fileSystem.Directory.CreateDirectory(localPath);
 
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
-        await syncedItemRepository.UpsertAsync(entity, ct);
+        await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
         syncedItems[item.Id] = entity;
     }
 
     private async Task HandleConflictAsync(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified, SyncConflict conflict, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict)
     {
-        await onConflict(conflict);
+        await onConflict(conflict).ConfigureAwait(false);
 
         var outcome = ConflictResolver.Resolve(account.ConflictPolicy, localModified, item.LastModified ?? DateTimeOffset.MinValue);
 

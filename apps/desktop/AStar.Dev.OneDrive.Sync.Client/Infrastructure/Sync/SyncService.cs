@@ -27,7 +27,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
-        var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct);
+        var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
 
         if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
         {
@@ -46,7 +46,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         try
         {
-            await SyncAccountInternalAsync(account, authOk.Value.AccessToken, ct);
+            await SyncAccountInternalAsync(account, authOk.Value.AccessToken, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -62,35 +62,35 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
+        var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct).ConfigureAwait(false);
 
         if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, authOk.Value.AccessToken, ct);
-        await syncRepository.ResolveConflictAsync(conflict.Id, policy);
+        await ApplyConflictOutcomeAsync(conflict, outcome, authOk.Value.AccessToken, ct).ConfigureAwait(false);
+        await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
     private async Task SyncAccountInternalAsync(OneDriveAccount account, string token, CancellationToken ct)
     {
         var driveState = await driveStateRepository.GetByAccountIdAsync(account.Id, ct)
-                             .OrElseAsync(new DriveStateEntity { AccountId = account.Id });
+                             .OrElseAsync(new DriveStateEntity { AccountId = account.Id }).ConfigureAwait(false);
 
         driveState.LastSyncStartedAt = DateTimeOffset.UtcNow;
         driveState.DeltaLink = null;
-        await driveStateRepository.UpsertAsync(driveState, ct);
+        await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
         var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(
             account,
             token,
             async conflict =>
             {
-                await syncRepository.AddConflictAsync(conflict);
+                await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
                 ConflictDetected?.Invoke(this, conflict);
             },
-            ct);
+            ct).ConfigureAwait(false);
 
         if (enumerationResult.HadNoRules)
         {
@@ -99,10 +99,10 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         }
 
         RaiseProgress(account.Id.Id, 0, 0, "Detecting remote deletions...", SyncState.Syncing);
-        await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, enumerationResult.SyncedItems, enumerationResult.SeenRemoteIds, enumerationResult.Rules, ct);
+        await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, enumerationResult.SyncedItems, enumerationResult.SeenRemoteIds, enumerationResult.Rules, ct).ConfigureAwait(false);
 
         RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", SyncState.Syncing);
-        await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, enumerationResult.SyncedItems, ct);
+        await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, enumerationResult.SyncedItems, ct).ConfigureAwait(false);
 
         var syncedItemsByLocalPath = enumerationResult.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
         var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.LocalSyncPath!.Value, enumerationResult.Rules, syncedItemsByLocalPath);
@@ -121,7 +121,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 enumerationResult.SyncedItems,
                 args => SyncProgressChanged?.Invoke(this, args),
                 args => JobCompleted?.Invoke(this, args),
-                ct);
+                ct).ConfigureAwait(false);
         }
         else
         {
@@ -132,8 +132,8 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
             .TapAsync(async entity =>
             {
                 entity.LastSyncedAt = DateTimeOffset.UtcNow;
-                await accountRepository.UpsertAsync(entity, ct);
-            });
+                await accountRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
+            }).ConfigureAwait(false);
 
         account.LastSyncedAt = DateTimeOffset.UtcNow;
 
@@ -149,7 +149,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
                     ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.RemoteItemId}).");
 
-                await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct);
+                await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct).ConfigureAwait(false);
                 break;
 
             case ConflictOutcome.KeepBoth:
