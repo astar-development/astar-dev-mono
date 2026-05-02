@@ -8,9 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Startup;
 
-/// <summary>
-/// When refactored, this class will disappear but "baby steps"
-/// </summary>
 public static class ViewExtensions
 {
     public static IServiceCollection AddViews(this IServiceCollection services)

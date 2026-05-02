@@ -7,7 +7,7 @@ public interface ILocalChangeDetector
 {
     /// <summary>
     /// Scans local directories matching the supplied inclusion rules and returns upload jobs
-    /// for files that are new (not in <paramref name="localPathLookup"/>) or modified since they were last synced.
+    /// for files that are new (not in <paramref name="syncedItemsByLocalPath"/>) or modified since they were last synced.
     /// </summary>
-    IReadOnlyList<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup);
+    IReadOnlyList<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItemsByLocalPath);
 }

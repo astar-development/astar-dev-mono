@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -67,31 +68,38 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         Conflicts.Clear();
         FilteredLog.Clear();
 
-        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId));
-
-        foreach(var entity in persistedConflicts)
-        {
-            var model = new SyncConflict
-            {
-                Id             = entity.Id,
-                AccountId      = entity.AccountId.Id,
-                FolderId       = entity.FolderId.Id,
-                RemoteItemId   = entity.RemoteItemId.Id,
-                RelativePath   = entity.RelativePath,
-                LocalPath      = entity.LocalPath,
-                LocalModified  = entity.LocalModified,
-                RemoteModified = entity.RemoteModified,
-                LocalSize      = entity.LocalSize,
-                RemoteSize     = entity.RemoteSize,
-                DetectedAt     = entity.DetectedAt
-            };
-
-            AddConflict(model);
-        }
+        await LoadPersistedConflictsAsync(accountId);
 
         RebuildFilteredLog();
         ConflictCount = Conflicts.Count;
     }
+
+    private async Task LoadPersistedConflictsAsync(string accountId)
+    {
+        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId));
+
+        foreach(var entity in persistedConflicts)
+        {
+            var model = MapConflictEntityToViewModel(entity);
+            AddConflict(model);
+        }
+    }
+
+    private static SyncConflict MapConflictEntityToViewModel(SyncConflictEntity entity)
+        => new SyncConflict
+        {
+            Id             = entity.Id,
+            AccountId      = entity.AccountId.Id,
+            FolderId       = entity.FolderId.Id,
+            RemoteItemId   = entity.RemoteItemId.Id,
+            RelativePath   = entity.RelativePath,
+            LocalPath      = entity.LocalPath,
+            LocalModified  = entity.LocalModified,
+            RemoteModified = entity.RemoteModified,
+            LocalSize      = entity.LocalSize,
+            RemoteSize     = entity.RemoteSize,
+            DetectedAt     = entity.DetectedAt
+        };
 
     /// <summary>Called when a sync job completes.</summary>
     public void AddActivityItem(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>

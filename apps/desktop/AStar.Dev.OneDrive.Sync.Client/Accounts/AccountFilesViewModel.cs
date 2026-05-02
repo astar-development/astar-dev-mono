@@ -80,39 +80,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             _accessToken = ok.Value.AccessToken;
             _driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken);
 
-            var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
-            var includedPaths = existingRules
-                .Where(r => r.RuleType == RuleType.Include)
-                .Select(r => r.RemotePath)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken);
-
-            foreach (var f in folders)
-            {
-                string remotePath = $"/{f.Name}";
-                var syncState = includedPaths.Contains(remotePath)
-                    ? FolderSyncState.Included
-                    : FolderSyncState.Excluded;
-
-                var node = new FolderTreeNode(
-                    Id: f.Id,
-                    Name: f.Name,
-                    ParentId: f.ParentId,
-                    AccountId: _account.Id.Id,
-                    RemotePath: remotePath,
-                    SyncState: syncState,
-                    HasChildren: true);
-
-                var vm = new FolderTreeNodeViewModel(
-                    node, _graphService, _accessToken, _driveId);
-
-                vm.IncludeToggled += OnIncludeToggledAsync;
-                vm.ViewActivityRequested += OnViewActivityRequested;
-                vm.OpenInFileManagerRequested += OnOpenInFileManager;
-
-                RootFolders.Add(vm);
-            }
+            var includedPaths = await LoadRulesAsync();
+            await BuildRootFoldersAsync(includedPaths);
         }
         catch (Exception ex)
         {
@@ -122,6 +91,47 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private async Task<HashSet<string>> LoadRulesAsync()
+    {
+        var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
+
+        return existingRules
+            .Where(r => r.RuleType == RuleType.Include)
+            .Select(r => r.RemotePath)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
+    {
+        var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken!);
+
+        foreach (var f in folders)
+        {
+            string remotePath = $"/{f.Name}";
+            var syncState = includedPaths.Contains(remotePath)
+                ? FolderSyncState.Included
+                : FolderSyncState.Excluded;
+
+            var node = new FolderTreeNode(
+                Id: f.Id,
+                Name: f.Name,
+                ParentId: f.ParentId,
+                AccountId: _account.Id.Id,
+                RemotePath: remotePath,
+                SyncState: syncState,
+                HasChildren: true);
+
+            var vm = new FolderTreeNodeViewModel(
+                node, _graphService, _accessToken!, _driveId!);
+
+            vm.IncludeToggled += OnIncludeToggledAsync;
+            vm.ViewActivityRequested += OnViewActivityRequested;
+            vm.OpenInFileManagerRequested += OnOpenInFileManager;
+
+            RootFolders.Add(vm);
         }
     }
 

@@ -12,7 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDetector
 {
     /// <inheritdoc />
-    public IReadOnlyList<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup)
+    public IReadOnlyList<SyncJob> DetectNewAndModifiedFiles(string accountId, string localBasePath, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItemsByLocalPath)
     {
         List<SyncJob> jobs = [];
 
@@ -23,7 +23,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
             if(!fileSystem.Directory.Exists(localFolderPath))
                 continue;
 
-            ScanDirectory(accountId, localBasePath, localFolderPath, rules, localPathLookup, jobs);
+            ScanDirectory(accountId, localBasePath, localFolderPath, rules, syncedItemsByLocalPath, jobs);
         }
 
         Serilog.Log.Information("[LocalChangeDetector] Found {Count} local new/modified files under {Path}", jobs.Count, localBasePath);
@@ -31,7 +31,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
         return jobs;
     }
 
-    private void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> localPathLookup, List<SyncJob> jobs)
+    private void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItemsByLocalPath, List<SyncJob> jobs)
     {
         try
         {
@@ -49,7 +49,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
 
                 var localModified = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero);
 
-                if(localPathLookup.TryGetValue(filePath, out var known))
+                if(syncedItemsByLocalPath.TryGetValue(filePath, out var known))
                 {
                     if(localModified <= known.RemoteModifiedAt.AddSeconds(5))
                         continue;
@@ -71,7 +71,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
                 if(!SyncRuleEvaluator.IsIncluded(subRemotePath, rules))
                     continue;
 
-                ScanDirectory(accountId, localBasePath, subDir, rules, localPathLookup, jobs);
+                ScanDirectory(accountId, localBasePath, subDir, rules, syncedItemsByLocalPath, jobs);
             }
         }
         catch(UnauthorizedAccessException ex)

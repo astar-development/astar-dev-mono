@@ -2,7 +2,7 @@ using System.Collections.Frozen;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
-public sealed class FeatureAvailabilityService : IFeatureAvailabilityService
+public sealed class FeatureAvailabilityService : IFeatureAvailabilityService, IFeatureRegistrar
 {
     private readonly HashSet<NavSection> _pendingSections = [];
     private FrozenSet<NavSection>? _frozenSections;
