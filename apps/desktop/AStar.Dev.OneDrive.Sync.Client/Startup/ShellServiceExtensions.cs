@@ -21,6 +21,7 @@ internal static class ShellServiceExtensions
         featureAvailability.Freeze();
 
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
+        _ = services.AddSingleton<IFeatureRegistrar>(featureAvailability);
 
         _ = services.AddSingleton(inMemoryLogSink);
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
@@ -51,14 +52,16 @@ internal static class ShellServiceExtensions
         return services;
     }
 
-    private static void RegisterAvailableFeatures(FeatureAvailabilityService service)
+#pragma warning disable CA1859
+    private static void RegisterAvailableFeatures(IFeatureRegistrar registrar)
+#pragma warning restore CA1859
     {
-        service.Register(NavSection.Dashboard);
-        service.Register(NavSection.Accounts);
-        service.Register(NavSection.Activity);
-        service.Register(NavSection.Conflicts);
-        service.Register(NavSection.LogViewer);
-        service.Register(NavSection.Settings);
-        service.Register(NavSection.Help);
+        registrar.Register(NavSection.Dashboard);
+        registrar.Register(NavSection.Accounts);
+        registrar.Register(NavSection.Activity);
+        registrar.Register(NavSection.Conflicts);
+        registrar.Register(NavSection.LogViewer);
+        registrar.Register(NavSection.Settings);
+        registrar.Register(NavSection.Help);
     }
 }
