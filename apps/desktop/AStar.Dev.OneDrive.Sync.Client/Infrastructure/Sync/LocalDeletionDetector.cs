@@ -22,7 +22,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
 
             try
             {
-                await graphService.DeleteItemAsync(accountId.Id, accessToken, remoteId, ct);
+                await graphService.DeleteItemAsync(accessToken, remoteId, ct);
                 await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
             }
             catch(Exception ex)

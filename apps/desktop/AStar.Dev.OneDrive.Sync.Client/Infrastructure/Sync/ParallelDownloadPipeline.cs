@@ -63,7 +63,7 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
 
         var workers = Enumerable.Range(1, workerCount)
             .Select(id => new DownloadWorker(id, downloader, graphService, syncRepository, fileSystem)
-            .RunAsync(channel.Reader, accountId, accessToken, OnJobComplete, ct))
+            .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
             .ToList();
 
         try
