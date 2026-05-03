@@ -79,7 +79,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             }
 
             _accessToken = ok.Value.AccessToken;
-            _driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken);
+            _driveId = await _graphService.GetDriveIdAsync(_accessToken);
 
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);
@@ -107,7 +107,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
     {
-        var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken!);
+        var folders = await _graphService.GetRootFoldersAsync(_accessToken!);
 
         foreach (var f in folders)
         {
