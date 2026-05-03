@@ -12,8 +12,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 public sealed class SyncService(IAuthService authService, IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, SyncServiceDependencies dependencies, IFileSystem fileSystem) : ISyncService
 {
-    private readonly SyncPassOrchestrator syncPassOrchestrator = new(accountRepository, driveStateRepository, dependencies);
-
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
 
@@ -48,25 +46,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         try
         {
-            var didRun = await syncPassOrchestrator.OrchestrateAsync(
-                account,
-                authOk.Value.AccessToken,
-                async conflict =>
-                {
-                    await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
-                    ConflictDetected?.Invoke(this, conflict);
-                },
-                args => SyncProgressChanged?.Invoke(this, args),
-                args => JobCompleted?.Invoke(this, args),
-                ct).ConfigureAwait(false);
-
-            if (!didRun)
-                RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
-            else
-            {
-                Serilog.Log.Information("[SyncService] Sync complete for {Email}", account.Email);
-                RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
-            }
+            await SyncAccountInternalAsync(account, authOk.Value.AccessToken, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -93,7 +73,73 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
-    
+    private async Task SyncAccountInternalAsync(OneDriveAccount account, string token, CancellationToken ct)
+    {
+        var driveState = await driveStateRepository.GetByAccountIdAsync(account.Id, ct)
+                             .OrElseAsync(new DriveStateEntity { AccountId = account.Id }).ConfigureAwait(false);
+
+        driveState.LastSyncStartedAt = DateTimeOffset.UtcNow;
+        driveState.DeltaLink = null;
+        await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
+
+        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(
+            account,
+            token,
+            async conflict =>
+            {
+                await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
+                ConflictDetected?.Invoke(this, conflict);
+            },
+            ct).ConfigureAwait(false);
+
+        if (enumerationResult.HadNoRules)
+        {
+            RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
+            return;
+        }
+
+        RaiseProgress(account.Id.Id, 0, 0, "Detecting remote deletions...", SyncState.Syncing);
+        await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, enumerationResult.SyncedItems, enumerationResult.SeenRemoteIds, enumerationResult.Rules, ct).ConfigureAwait(false);
+
+        RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", SyncState.Syncing);
+        await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, enumerationResult.SyncedItems, ct).ConfigureAwait(false);
+
+        var syncedItemsByLocalPath = enumerationResult.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
+        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.LocalSyncPath!.Value, enumerationResult.Rules, syncedItemsByLocalPath);
+
+        var allJobs = new List<SyncJob>(enumerationResult.DownloadJobs.Count + uploadJobs.Count);
+        allJobs.AddRange(enumerationResult.DownloadJobs);
+        allJobs.AddRange(uploadJobs);
+
+        if (allJobs.Count > 0)
+        {
+            RaiseProgress(account.Id.Id, 0, allJobs.Count, $"Syncing {allJobs.Count} file(s)...", SyncState.Syncing);
+            await dependencies.JobExecutor.ExecuteAsync(
+                account,
+                token,
+                allJobs,
+                enumerationResult.SyncedItems,
+                args => SyncProgressChanged?.Invoke(this, args),
+                args => JobCompleted?.Invoke(this, args),
+                ct).ConfigureAwait(false);
+        }
+        else
+        {
+            RaiseProgress(account.Id.Id, 0, 0, "No changes", SyncState.Idle);
+        }
+
+        await accountRepository.GetByIdAsync(account.Id, ct)
+            .TapAsync(async entity =>
+            {
+                entity.LastSyncedAt = DateTimeOffset.UtcNow;
+                await accountRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+        account.LastSyncedAt = DateTimeOffset.UtcNow;
+
+        Serilog.Log.Information("[SyncService] Sync complete for {Email}", account.Email);
+        RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
+    }
 
     private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
     {
