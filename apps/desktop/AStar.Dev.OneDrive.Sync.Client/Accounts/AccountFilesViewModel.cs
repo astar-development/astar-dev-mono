@@ -74,6 +74,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                     ? failed.Message
                     : "Authentication failed.";
                 HasLoadError = true;
+                
                 return;
             }
 
@@ -115,17 +116,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 ? FolderSyncState.Included
                 : FolderSyncState.Excluded;
 
-            var node = new FolderTreeNode(
-                Id: f.Id,
-                Name: f.Name,
-                ParentId: f.ParentId,
-                AccountId: _account.Id.Id,
-                RemotePath: remotePath,
-                SyncState: syncState,
-                HasChildren: true);
+            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
 
-            var vm = new FolderTreeNodeViewModel(
-                node, _graphService, _accessToken!, _driveId!);
+            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, _driveId!);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;

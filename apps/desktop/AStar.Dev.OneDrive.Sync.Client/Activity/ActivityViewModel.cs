@@ -86,7 +86,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     }
 
     private static SyncConflict MapConflictEntityToViewModel(SyncConflictEntity entity)
-        => new SyncConflict
+        => new()
         {
             Id             = entity.Id,
             AccountId      = entity.AccountId.Id,

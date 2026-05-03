@@ -148,7 +148,7 @@ public sealed class TokenCacheServiceTests
     {
         var tasks = new List<Task>();
         var services = new List<TokenCacheService>();
-        object lockObj = new object();
+        object lockObj = new();
 
         for (int i = 0; i < 10; i++)
         {
