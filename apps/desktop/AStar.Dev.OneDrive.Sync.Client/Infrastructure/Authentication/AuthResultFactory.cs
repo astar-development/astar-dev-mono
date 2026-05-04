@@ -13,12 +13,5 @@ public static class AuthResultFactory
 
     /// <summary>Returns a successful authentication result containing the token and account details.</summary>
     public static Result<AuthResult, AuthError> Success(string accessToken, string accountId, string displayName, string email)
-    {
-        ArgumentNullException.ThrowIfNull(accessToken);
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(displayName);
-        ArgumentNullException.ThrowIfNull(email);
-
-        return new Result<AuthResult, AuthError>.Ok(new AuthResult(accessToken, accountId, displayName, email));
-    }
+         => new Result<AuthResult, AuthError>.Ok(new AuthResult(accessToken, accountId, displayName, email));
 }

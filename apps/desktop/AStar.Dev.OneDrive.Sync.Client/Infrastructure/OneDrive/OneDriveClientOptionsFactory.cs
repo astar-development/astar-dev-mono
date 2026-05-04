@@ -5,10 +5,5 @@ public static class OneDriveClientOptionsFactory
 {
     /// <summary>Creates a new <see cref="OneDriveClientOptions"/> instance.</summary>
     public static OneDriveClientOptions Create(string azureClientId, Uri redirectUri)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(azureClientId);
-        ArgumentNullException.ThrowIfNull(redirectUri);
-
-        return new OneDriveClientOptions { AzureClientId = azureClientId, RedirectUri = redirectUri };
-    }
+        => new() { AzureClientId = azureClientId, RedirectUri = redirectUri };
 }

@@ -12,8 +12,6 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
     /// <inheritdoc />
     public async Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(progress);
-
         try
         {
             progress.Report("Migrating database…");

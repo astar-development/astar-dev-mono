@@ -170,15 +170,4 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         exception.ShouldBeOfType<InvalidOperationException>();
         exception!.Message.ShouldBe("Settings failure");
     }
-
-    [Fact]
-    public async Task when_bootstrap_async_called_with_null_progress_then_argument_null_exception_is_thrown()
-    {
-        var sut = CreateSut();
-
-        var exception = await Record.ExceptionAsync(() => sut.BootstrapAsync(null!, TestContext.Current.CancellationToken));
-
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
-    }
 }
