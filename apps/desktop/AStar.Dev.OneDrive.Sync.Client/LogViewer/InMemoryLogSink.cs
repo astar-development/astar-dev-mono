@@ -38,8 +38,6 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     /// <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
     public void Emit(LogEvent logEvent)
     {
-        ArgumentNullException.ThrowIfNull(logEvent);
-
         var entry = ToLogEntry(logEvent);
         _entries.Enqueue(entry);
 

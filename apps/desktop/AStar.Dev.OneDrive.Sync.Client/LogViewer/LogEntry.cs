@@ -10,9 +10,5 @@ public static class LogEntryFactory
 {
     /// <summary>Creates a <see cref="LogEntry"/> with the supplied values.</summary>
     public static LogEntry Create(DateTimeOffset timestamp, LogEventLevel level, string renderedMessage, string? accountId)
-    {
-        ArgumentNullException.ThrowIfNull(renderedMessage);
-
-        return new LogEntry(timestamp, level, renderedMessage, accountId);
-    }
+        => new(timestamp, level, renderedMessage, accountId);
 }

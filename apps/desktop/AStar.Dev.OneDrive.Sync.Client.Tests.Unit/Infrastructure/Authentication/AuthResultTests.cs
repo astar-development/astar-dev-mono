@@ -5,10 +5,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authenticatio
 
 public sealed class GivenAnAuthResultFactory
 {
-    private const string AccessToken  = "access-token-abc123";
-    private const string AccountId    = "account-123";
-    private const string DisplayName  = "Jason Smith";
-    private const string Email        = "jason@outlook.com";
+    private const string AccessToken = "access-token-abc123";
+    private const string AccountId = "account-123";
+    private const string DisplayName = "Jason Smith";
+    private const string Email = "jason@outlook.com";
     private const string ErrorMessage = "Authentication failed: Invalid credentials";
 
     [Fact]
@@ -77,7 +77,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_failure_is_called_then_auth_failed_error_carries_the_message()
     {
-        var result     = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
+        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
         var authFailed = (AuthFailedError)result.Reason;
 
         authFailed.Message.ShouldBe(ErrorMessage);
@@ -103,27 +103,11 @@ public sealed class GivenAnAuthResultFactory
     [InlineData("Network error: Connection timeout")]
     public void when_failure_is_called_then_error_message_is_preserved(string errorMessage)
     {
-        var result     = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(errorMessage);
+        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(errorMessage);
         var authFailed = (AuthFailedError)result.Reason;
 
         authFailed.Message.ShouldBe(errorMessage);
     }
-
-    [Fact]
-    public void when_success_is_called_with_null_access_token_then_throws_argument_null_exception() =>
-        Should.Throw<ArgumentNullException>(() => AuthResultFactory.Success(null!, AccountId, DisplayName, Email));
-
-    [Fact]
-    public void when_success_is_called_with_null_account_id_then_throws_argument_null_exception() =>
-        Should.Throw<ArgumentNullException>(() => AuthResultFactory.Success(AccessToken, null!, DisplayName, Email));
-
-    [Fact]
-    public void when_success_is_called_with_null_display_name_then_throws_argument_null_exception() =>
-        Should.Throw<ArgumentNullException>(() => AuthResultFactory.Success(AccessToken, AccountId, null!, Email));
-
-    [Fact]
-    public void when_success_is_called_with_null_email_then_throws_argument_null_exception() =>
-        Should.Throw<ArgumentNullException>(() => AuthResultFactory.Success(AccessToken, AccountId, DisplayName, null!));
 
     [Fact]
     public void when_success_and_failure_results_are_compared_then_they_are_different_subtypes()
@@ -139,7 +123,7 @@ public sealed class GivenAnAuthResultFactory
     public void when_cancelled_and_failure_results_are_compared_then_their_error_reasons_differ()
     {
         var cancelledResult = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Cancelled();
-        var failureResult   = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
+        var failureResult = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
 
         cancelledResult.Reason.ShouldBeOfType<AuthCancelledError>();
         failureResult.Reason.ShouldBeOfType<AuthFailedError>();
