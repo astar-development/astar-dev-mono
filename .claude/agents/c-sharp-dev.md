@@ -85,6 +85,9 @@ For legacy code: apply if the refactor is small; otherwise raise a GitHub issue.
 
 Omitting it causes `AVLN2100` build errors.
 
+- Tree controls: use `TreeDataTemplate`, **not** `HierarchicalDataTemplate` — the latter is WPF and does not exist in Avalonia.
+- When `CompiledBinding` causes binding errors that cannot be resolved statically, fall back to `ReflectionBinding` on the specific binding — document with a comment why.
+
 ### Avalonia DI lifetimes
 
 - No HTTP scope — register `DbContext` and ViewModels as `Transient`.
@@ -104,6 +107,7 @@ Omitting it causes `AVLN2100` build errors.
 - Migrations in the infra project that owns the `DbContext`.
 - Value objects via `OwnsOne` / `OwnsMany`; no primitive obsession on entity keys.
 - Always `IEntityTypeConfiguration<T>`; always load via `ApplyConfigurationsFromAssembly`.
+- **Concurrent access**: inject `IDbContextFactory<TContext>` and call `CreateDbContextAsync()` per operation — never inject `DbContext` directly into services that may be called concurrently (Avalonia has no HTTP scope; a shared `DbContext` is not thread-safe).
 
 ### Logging (Serilog)
 
