@@ -150,7 +150,7 @@ public sealed class GivenARemoteFolderEnumerator
         var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.DownloadJobs.ShouldHaveSingleItem();
-        result.DownloadJobs[0].RemoteItemId.ShouldBe("item-a");
+        result.DownloadJobs[0].Remote.RemoteItemId.Id.ShouldBe("item-a");
         result.DownloadJobs[0].Direction.ShouldBe(SyncDirection.Download);
     }
 
@@ -280,7 +280,7 @@ public sealed class GivenARemoteFolderEnumerator
         var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.DownloadJobs.ShouldHaveSingleItem();
-        result.DownloadJobs[0].LocalPath.ShouldStartWith(BasePath);
+        result.DownloadJobs[0].Target.LocalPath.ShouldStartWith(BasePath);
     }
 
     [Fact]
@@ -295,6 +295,6 @@ public sealed class GivenARemoteFolderEnumerator
         var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.DownloadJobs.ShouldHaveSingleItem();
-        result.DownloadJobs[0].LocalPath.ShouldNotBe(BasePath);
+        result.DownloadJobs[0].Target.LocalPath.ShouldNotBe(BasePath);
     }
 }

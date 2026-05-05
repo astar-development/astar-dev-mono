@@ -15,7 +15,7 @@ public sealed class GivenAnActivityItemViewModel
 
     private static SyncJob BuildSyncJob(SyncDirection direction = SyncDirection.Download, string relativePath = RelativePathValue, DateTimeOffset? completedAt = null, string? errorMessage = null)
     {
-        var remote = RemoteItemRefFactory.Create(AccountIdValue, "", "");
+        var remote = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", relativePath);
         var metadata = SyncFileMetadataFactory.Create(FileSizeValue, default);
         var status = SyncJobStatusFactory.Create() with { CompletedAt = completedAt, ErrorMessage = errorMessage };

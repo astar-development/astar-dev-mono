@@ -31,12 +31,12 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public string TypeIcon => Type switch
     {
-        ActivityItemType.Downloaded => "\u2193",
-        ActivityItemType.Uploaded => "\u2191",
-        ActivityItemType.Deleted => "\u00D7",
-        ActivityItemType.Conflict => "\u26A0",
-        ActivityItemType.Error => "\u26A0",
-        _ => "\u2022"
+        ActivityItemType.Downloaded => "↓",
+        ActivityItemType.Uploaded => "↑",
+        ActivityItemType.Deleted => "×",
+        ActivityItemType.Conflict => "⚠",
+        ActivityItemType.Error => "⚠",
+        _ => "•"
     };
 
     public string TimeAgoText
@@ -59,11 +59,11 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public static ActivityItemViewModel FromJob(SyncJob job, string accountEmail, string folderName = "") => new()
     {
-        AccountId = job.AccountId,
+        AccountId = job.Remote.AccountId.Id,
         AccountEmail = accountEmail,
         FolderName = folderName,
-        FileName = Path.GetFileName(job.RelativePath),
-        RelativePath = job.RelativePath,
+        FileName = Path.GetFileName(job.Target.RelativePath),
+        RelativePath = job.Target.RelativePath,
         Type = job.Direction switch
         {
             SyncDirection.Download => ActivityItemType.Downloaded,
@@ -71,9 +71,9 @@ public sealed partial class ActivityItemViewModel : ObservableObject
             SyncDirection.Delete => ActivityItemType.Deleted,
             _ => ActivityItemType.Info
         },
-        FileSize = job.FileSize,
-        OccurredAt = job.CompletedAt ?? DateTimeOffset.UtcNow,
-        ErrorMessage = job.ErrorMessage
+        FileSize = job.Metadata.FileSize,
+        OccurredAt = job.Status.CompletedAt ?? DateTimeOffset.UtcNow,
+        ErrorMessage = job.Status.ErrorMessage
     };
 
     public static ActivityItemViewModel FromConflict(SyncConflict conflict, string accountEmail, string folderName) => new()

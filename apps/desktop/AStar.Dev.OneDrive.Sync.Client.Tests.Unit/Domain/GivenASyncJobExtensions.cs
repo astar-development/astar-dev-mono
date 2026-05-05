@@ -6,7 +6,7 @@ public sealed class GivenASyncJobExtensions
 {
     private static SyncJob CreateMinimalJob()
     {
-        var remote = RemoteItemRefFactory.Create("account-123", "folder-456", "item-789");
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         var target = SyncFileTargetFactory.Create("/home/user/file.txt", "file.txt");
         var metadata = SyncFileMetadataFactory.Create(1024L, DateTimeOffset.UtcNow.AddHours(-1));
         var status = SyncJobStatusFactory.Create();

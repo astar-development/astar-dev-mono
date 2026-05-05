@@ -18,18 +18,18 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
 
         var entities = jobs.Select(j => new SyncJobEntity
         {
-            Id             = j.Id,
-            AccountId      = new AccountId(j.AccountId),
-            FolderId       = new OneDriveFolderId(j.FolderId),
-            RemoteItemId   = new OneDriveItemId(j.RemoteItemId),
-            RelativePath   = j.RelativePath,
-            LocalPath      = j.LocalPath,
+            Id             = j.Status.Id,
+            AccountId      = j.Remote.AccountId,
+            FolderId       = j.Remote.FolderId,
+            RemoteItemId   = j.Remote.RemoteItemId,
+            RelativePath   = j.Target.RelativePath,
+            LocalPath      = j.Target.LocalPath,
             Direction      = j.Direction,
-            State          = j.State,
+            State          = j.Status.State,
             DownloadUrl    = j.DownloadUrl,
-            FileSize       = j.FileSize,
-            RemoteModified = j.RemoteModified,
-            QueuedAt       = j.QueuedAt
+            FileSize       = j.Metadata.FileSize,
+            RemoteModified = j.Metadata.RemoteModified,
+            QueuedAt       = j.Status.QueuedAt
         });
 
         db.SyncJobs.AddRange(entities);

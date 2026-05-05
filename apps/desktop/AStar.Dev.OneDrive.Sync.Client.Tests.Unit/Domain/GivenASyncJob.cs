@@ -2,11 +2,11 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
-public sealed class SyncJobTests
+public sealed class GivenASyncJob
 {
     private static SyncJob CreateMinimalJob()
     {
-        var remote = RemoteItemRefFactory.Create("", "", "");
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create();
@@ -27,7 +27,7 @@ public sealed class SyncJobTests
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.AccountId.ShouldBe(string.Empty);
+        syncJob.Remote.AccountId.Id.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class SyncJobTests
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.FolderId.ShouldBe(string.Empty);
+        syncJob.Remote.FolderId.Id.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class SyncJobTests
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.RemoteItemId.ShouldBe(string.Empty);
+        syncJob.Remote.RemoteItemId.Id.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -148,16 +148,16 @@ public sealed class SyncJobTests
         const string localPath = "/home/jason/Documents/report.pdf";
         const long fileSize = 1024L;
 
-        var remote = RemoteItemRefFactory.Create(accountId, folderId, remoteItemId);
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(remoteItemId));
         var target = SyncFileTargetFactory.Create(localPath, relativePath);
         var metadata = SyncFileMetadataFactory.Create(fileSize, remoteModified);
         var status = SyncJobStatusFactory.Create();
         var syncJob = SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status) with { Status = status with { Id = jobId, QueuedAt = queuedAt } };
 
         syncJob.Status.Id.ShouldBe(jobId);
-        syncJob.Remote.AccountId.ShouldBe(accountId);
-        syncJob.Remote.FolderId.ShouldBe(folderId);
-        syncJob.Remote.RemoteItemId.ShouldBe(remoteItemId);
+        syncJob.Remote.AccountId.Id.ShouldBe(accountId);
+        syncJob.Remote.FolderId.Id.ShouldBe(folderId);
+        syncJob.Remote.RemoteItemId.Id.ShouldBe(remoteItemId);
         syncJob.Target.RelativePath.ShouldBe(relativePath);
         syncJob.Target.LocalPath.ShouldBe(localPath);
         syncJob.Direction.ShouldBe(SyncDirection.Download);
@@ -224,7 +224,7 @@ public sealed class SyncJobTests
     [InlineData(SyncDirection.Delete)]
     public void when_direction_is_set_then_all_directions_are_supported(SyncDirection direction)
     {
-        var remote = RemoteItemRefFactory.Create("", "", "");
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create();
@@ -250,7 +250,7 @@ public sealed class SyncJobTests
     {
         var jobId = Guid.NewGuid();
         var queuedAt = DateTimeOffset.UtcNow;
-        var remote = RemoteItemRefFactory.Create("account-123", "", "");
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt };
@@ -268,8 +268,8 @@ public sealed class SyncJobTests
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt };
-        var job1 = SyncJobFactory.Create(RemoteItemRefFactory.Create("account-123", "", ""), target, metadata, default, status);
-        var job2 = SyncJobFactory.Create(RemoteItemRefFactory.Create("account-456", "", ""), target, metadata, default, status);
+        var job1 = SyncJobFactory.Create(RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId(""), new OneDriveItemId("")), target, metadata, default, status);
+        var job2 = SyncJobFactory.Create(RemoteItemRefFactory.Create(new AccountId("account-456"), new OneDriveFolderId(""), new OneDriveItemId("")), target, metadata, default, status);
 
         job1.ShouldNotBe(job2);
     }
@@ -277,7 +277,7 @@ public sealed class SyncJobTests
     [Fact]
     public void when_direction_is_download_then_state_defaults_to_queued()
     {
-        var remote = RemoteItemRefFactory.Create("account-123", "folder-456", "item-789");
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create();
@@ -291,7 +291,7 @@ public sealed class SyncJobTests
     [Fact]
     public void when_direction_is_upload_then_state_defaults_to_queued()
     {
-        var remote = RemoteItemRefFactory.Create("account-123", "folder-456", "item-789");
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create();
@@ -305,7 +305,7 @@ public sealed class SyncJobTests
     [Fact]
     public void when_direction_is_delete_then_state_defaults_to_queued()
     {
-        var remote = RemoteItemRefFactory.Create("account-123", "folder-456", "item-789");
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create();

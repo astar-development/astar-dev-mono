@@ -31,13 +31,18 @@ public sealed class GivenASyncEventAggregator
         var sut = CreateSut();
         JobCompletedEventArgs? captured = null;
         sut.JobCompleted += (_, args) => captured = args;
-        var job = SyncJobFactory.Create(accountId: "acc-2", folderId: "", remoteItemId: "", relativePath: "", localPath: "", direction: default, fileSize: 0, remoteModified: default);
+
+        var remote = RemoteItemRefFactory.Create(new AccountId("acc-2"), new OneDriveFolderId(""), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var status = SyncJobStatusFactory.Create();
+        var job = SyncJobFactory.Create(remote, target, metadata, default, status);
         var eventArgs = new JobCompletedEventArgs(job);
 
         _syncService.JobCompleted += Raise.EventWith(eventArgs);
 
         captured.ShouldNotBeNull();
-        captured.Job.AccountId.ShouldBe("acc-2");
+        captured.Job.Remote.AccountId.Id.ShouldBe("acc-2");
     }
 
     [Fact]

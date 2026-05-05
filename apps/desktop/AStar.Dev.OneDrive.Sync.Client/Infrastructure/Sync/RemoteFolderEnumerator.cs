@@ -125,7 +125,12 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             return;
         }
 
-        downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
+        var remote = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
+        var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+        var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+        var status = SyncJobStatusFactory.Create();
+
+        downloadJobs.Add(SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, downloadUrl: item.DownloadUrl));
     }
 
     private async Task HandleFolderAsync(AccountId accountId, DeltaItem item, string remotePath, string localBasePath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
@@ -150,17 +155,33 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 break;
 
             case ConflictOutcome.UseRemote:
-                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
+                var remoteR = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
+                var targetR = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var metadataR = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+                var statusR = SyncJobStatusFactory.Create();
+
+                downloadJobs.Add(SyncJobFactory.Create(remoteR, targetR, metadataR, SyncDirection.Download, statusR, downloadUrl: item.DownloadUrl));
                 break;
 
             case ConflictOutcome.UseLocal:
-                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Upload, fileSystem.FileInfo.New(localPath).Length, localModified));
+                var remoteL = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
+                var targetL = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var metadataL = SyncFileMetadataFactory.Create(fileSystem.FileInfo.New(localPath).Length, localModified);
+                var statusL = SyncJobStatusFactory.Create();
+
+                downloadJobs.Add(SyncJobFactory.Create(remoteL, targetL, metadataL, SyncDirection.Upload, statusL));
                 break;
 
             case ConflictOutcome.KeepBoth:
                 string newName = ConflictResolver.MakeKeepBothName(localPath, localModified, fileSystem);
                 fileSystem.File.Move(localPath, newName);
-                downloadJobs.Add(SyncJobFactory.Create(account.Id.Id, string.Empty, item.Id, item.RelativePath ?? item.Name, localPath, SyncDirection.Download, item.Size, item.LastModified ?? DateTimeOffset.MinValue, downloadUrl: item.DownloadUrl));
+
+                var remoteK = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
+                var targetK = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var metadataK = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+                var statusK = SyncJobStatusFactory.Create();
+
+                downloadJobs.Add(SyncJobFactory.Create(remoteK, targetK, metadataK, SyncDirection.Download, statusK, downloadUrl: item.DownloadUrl));
                 break;
         }
     }

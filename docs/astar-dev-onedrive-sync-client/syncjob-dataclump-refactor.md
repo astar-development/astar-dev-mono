@@ -9,7 +9,8 @@ Extracting them into named records:
 - reduces parameter count (15 → 7)
 - names the concept, not just the values
 - reveals intent at construction and read sites
-- makes `SyncJobFactory.Create` signature shorter with no call-site disruption (factory signature is the public API; internal record structure is an implementation detail)
+- makes `SyncJobFactory.Create` signature shorter; call sites migrate to per-concept factory methods, making construction self-documenting
+- replaces verbose nested `with` state updates with named transition extension methods (`Complete()`, `Fail()`)
 
 This is independent of — and complementary to — the `SyncDirection` discriminated union refactor described in `syncjob-refactor.md`.
 
@@ -71,15 +72,16 @@ This is independent of — and complementary to — the `SyncDirection` discrimi
 
 **Question answered:** *What is this job's identity and current execution state?*
 
-**Tradeoff:** State updates currently use flat `with`:
-```csharp
-job with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow }
-```
-After extraction they become nested:
+**Tradeoff addressed via extension methods:** Naively, state updates become nested `with`:
 ```csharp
 job with { Status = job.Status with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow } }
 ```
-This is safe and correct — C# `with` preserves the concrete type — but it is more verbose. Recommended regardless, since the cohesion gain outweighs the verbosity cost.
+This is eliminated by `SyncJobExtensions` — see section below. Call sites reduce to:
+```csharp
+job.Complete()
+job.Fail(error)
+success ? job.Complete() : job.Fail(error)
+```
 
 ---
 
@@ -186,6 +188,26 @@ public static class SyncJobStatusFactory
 
 ---
 
+### `SyncJobExtensions.cs`
+
+Extension methods on `SyncJob` for state transitions. Eliminates nested `with` at every call site; names the intent, not the mechanism.
+
+```csharp
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+
+/// <summary>State-transition extensions for <see cref="SyncJob"/>.</summary>
+public static class SyncJobExtensions
+{
+    /// <summary>Returns a copy of <paramref name="job"/> transitioned to <see cref="SyncJobState.Completed"/>.</summary>
+    public static SyncJob Complete(this SyncJob job) => job with { Status = job.Status with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow } };
+
+    /// <summary>Returns a copy of <paramref name="job"/> transitioned to <see cref="SyncJobState.Failed"/>.</summary>
+    public static SyncJob Fail(this SyncJob job, string? errorMessage = null) => job with { Status = job.Status with { State = SyncJobState.Failed, ErrorMessage = errorMessage, CompletedAt = DateTimeOffset.UtcNow } };
+}
+```
+
+---
+
 ## Updated `SyncJob.cs`
 
 ```csharp
@@ -228,16 +250,15 @@ public static class SyncJobFactory
 
 ### Call-site pattern
 
-Every call site must build each argument via its own factory:
+Build each argument explicitly before the final factory call:
 
 ```csharp
-SyncJobFactory.Create(
-    RemoteItemRefFactory.Create(account.Id.Id, string.Empty, item.Id),
-    SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name),
-    SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue),
-    SyncDirection.Download,
-    SyncJobStatusFactory.Create(),
-    downloadUrl: item.DownloadUrl);
+var remote = RemoteItemRefFactory.Create(account.Id.Id, string.Empty, item.Id);
+var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+var status = SyncJobStatusFactory.Create();
+
+SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, downloadUrl: item.DownloadUrl);
 ```
 
 ---
@@ -275,13 +296,22 @@ job with { UploadedRemoteItemId = uploadedId }
 job with { UploadedRemoteItemId = uploadedId }
 ```
 
-Status updates — nest into `Status`:
+Status transitions — use `SyncJobExtensions`:
 ```csharp
-// before
+// before — completed
 job with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow }
-
 // after
-job with { Status = job.Status with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow } }
+job.Complete()
+
+// before — failed
+job with { State = SyncJobState.Failed, ErrorMessage = error, CompletedAt = DateTimeOffset.UtcNow }
+// after
+job.Fail(error)
+
+// before — conditional (ParallelDownloadPipeline pattern)
+job with { State = success ? SyncJobState.Completed : SyncJobState.Failed, ErrorMessage = error, CompletedAt = DateTimeOffset.UtcNow }
+// after
+success ? job.Complete() : job.Fail(error)
 ```
 
 ### Files requiring changes
@@ -292,6 +322,7 @@ All files affected are internal to the desktop client project.
 |------|-----------------|
 | `Domain/SyncJob.cs` | Replace with grouped record |
 | `Domain/SyncJobFactory.cs` | New signature — accepts record objects, not primitives |
+| `Domain/SyncJobExtensions.cs` | New file — `Complete()` and `Fail(error?)` transition extension methods |
 | `Infrastructure/Sync/LocalChangeDetector.cs` | `SyncJobFactory.Create(accountId, ...)` → build args via sub-factories |
 | `Infrastructure/Sync/RemoteFolderEnumerator.cs` | `SyncJobFactory.Create(account.Id.Id, ...)` × 4 calls → build args via sub-factories |
 | `Data/Repositories/SyncRepository.cs` | `j.AccountId` → `j.Remote.AccountId` etc. (entity mapping block) |
@@ -307,14 +338,15 @@ All files affected are internal to the desktop client project.
 ## Implementation Order
 
 1. Add new record and factory files (`RemoteItemRef`, `SyncFileTarget`, `SyncFileMetadata`, `SyncJobStatus` and their factories) — compiles immediately alongside old `SyncJob`.
-2. Replace `SyncJob.cs` with the 7-parameter version and update `SyncJobFactory.cs` with new record-object signature — project fails to build.
-3. Fix `LocalChangeDetector` — replace flat `SyncJobFactory.Create` call with sub-factory arguments.
-4. Fix `RemoteFolderEnumerator` — replace 4 flat `SyncJobFactory.Create` calls with sub-factory arguments.
-5. Fix `SyncRepository.EnqueueJobsAsync` mapping block.
-6. Fix `DownloadWorker` property accesses.
-7. Fix `SyncJobExecutor` and `ParallelDownloadPipeline` `with` expressions.
-8. Fix `ActivityItemViewModel.FromJob`.
-9. Fix `SyncedItemEntityFactory`.
-10. Fix test helper methods (`MakeJob`, `BuildSyncJob`, `MinimalJob`, `CreateMinimalJob`) — update both call sites and property access chains.
-11. `dotnet build` — zero errors, zero warnings.
-12. `dotnet test` — all existing tests pass.
+2. Add `SyncJobExtensions.cs` — compiles immediately (references only `SyncJob` which still exists).
+3. Replace `SyncJob.cs` with the 7-parameter version and update `SyncJobFactory.cs` with new record-object signature — project fails to build.
+4. Fix `LocalChangeDetector` — replace flat `SyncJobFactory.Create` call with sub-factory arguments.
+5. Fix `RemoteFolderEnumerator` — replace 4 flat `SyncJobFactory.Create` calls with sub-factory arguments.
+6. Fix `SyncRepository.EnqueueJobsAsync` mapping block.
+7. Fix `DownloadWorker` property accesses.
+8. Fix `SyncJobExecutor` (`args.Job.Status.State`) and `ParallelDownloadPipeline` (`success ? job.Complete() : job.Fail(error)`).
+9. Fix `ActivityItemViewModel.FromJob`.
+10. Fix `SyncedItemEntityFactory`.
+11. Fix test helper methods (`MakeJob`, `BuildSyncJob`, `MinimalJob`, `CreateMinimalJob`) — update both call sites and property access chains.
+12. `dotnet build` — zero errors, zero warnings.
+13. `dotnet test` — all existing tests pass.

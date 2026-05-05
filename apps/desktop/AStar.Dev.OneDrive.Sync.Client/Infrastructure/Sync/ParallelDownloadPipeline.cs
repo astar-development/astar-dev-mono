@@ -49,14 +49,9 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
                 completedSoFar = done;
             }
 
-            var completedJob = job with
-            {
-                State = success ? SyncJobState.Completed : SyncJobState.Failed,
-                ErrorMessage = error,
-                CompletedAt = DateTimeOffset.UtcNow
-            };
+            var completedJob = success ? job.Complete() : job.Fail(error);
 
-            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
+            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.Target.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
 
             onJobCompleted(new JobCompletedEventArgs(completedJob));
         }

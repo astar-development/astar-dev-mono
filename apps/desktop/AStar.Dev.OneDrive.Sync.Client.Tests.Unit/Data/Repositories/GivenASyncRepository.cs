@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
-public sealed class SyncRepositoryTests
+public sealed class GivenASyncRepository
 {
     private static SyncJob MinimalJob(string accountId = "user-1", string folderId = "", SyncJobState state = SyncJobState.Queued)
     {
-        var remote = RemoteItemRefFactory.Create(accountId, folderId, "");
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var status = SyncJobStatusFactory.Create() with { State = state };
@@ -18,7 +18,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task EnqueueJobsAsync_WithEmptyList_ShouldNotThrow()
+    public async Task when_enqueue_jobs_is_called_with_empty_list_then_no_exception_is_thrown()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -27,7 +27,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task EnqueueJobsAsync_WithJobs_ShouldInsertAll()
+    public async Task when_enqueue_jobs_is_called_with_jobs_then_all_are_inserted()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -43,7 +43,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingJobsAsync_WithNoJobs_ShouldReturnEmpty()
+    public async Task when_get_pending_jobs_is_called_with_no_jobs_then_result_is_empty()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -54,7 +54,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingJobsAsync_ShouldReturnOnlyQueuedJobs()
+    public async Task when_get_pending_jobs_is_called_then_only_queued_jobs_are_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -73,20 +73,19 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingJobsAsync_ShouldReturnJobsOrderedByQueuedAt()
+    public async Task when_get_pending_jobs_is_called_then_jobs_are_ordered_by_queued_at()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var now = DateTimeOffset.UtcNow;
-        var baseStatus = SyncJobStatusFactory.Create();
-        var remote = RemoteItemRefFactory.Create("user-1", "", "");
+        var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var jobs = new List<SyncJob>
         {
-            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(3) }),
-            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(1) }),
-            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(2) })
+            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(3) }),
+            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(1) }),
+            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(2) })
         };
         await repository.EnqueueJobsAsync(jobs);
 
@@ -98,7 +97,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateJobStateAsync_ShouldUpdateState()
+    public async Task when_update_job_state_is_called_then_state_is_updated()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -117,7 +116,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateJobStateAsync_WithCompletedState_ShouldSetCompletedAt()
+    public async Task when_update_job_state_is_called_with_completed_state_then_completed_at_is_set()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -136,7 +135,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task UpdateJobStateAsync_WithErrorMessage_ShouldSetError()
+    public async Task when_update_job_state_is_called_with_error_message_then_error_is_set()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -155,7 +154,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task ClearCompletedJobsAsync_ShouldRemoveCompletedJobs()
+    public async Task when_clear_completed_jobs_is_called_then_completed_jobs_are_removed()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -177,7 +176,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task AddConflictAsync_ShouldInsertConflict()
+    public async Task when_add_conflict_is_called_then_conflict_is_inserted()
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -197,7 +196,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingConflictsAsync_ShouldReturnOnlyPendingConflicts()
+    public async Task when_get_pending_conflicts_is_called_then_only_pending_conflicts_are_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -214,7 +213,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingConflictsAsync_ShouldReturnOrderedByDetectedAt()
+    public async Task when_get_pending_conflicts_is_called_then_conflicts_are_ordered_by_detected_at()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -231,7 +230,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task ResolveConflictAsync_ShouldUpdateState()
+    public async Task when_resolve_conflict_is_called_then_state_is_updated()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -248,7 +247,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task ResolveConflictAsync_ShouldSetResolvedAt()
+    public async Task when_resolve_conflict_is_called_then_resolved_at_is_set()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -265,7 +264,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingConflictCountAsync_WithNoPendingConflicts_ShouldReturnZero()
+    public async Task when_get_pending_conflict_count_is_called_with_no_pending_conflicts_then_zero_is_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -276,7 +275,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingConflictCountAsync_ShouldReturnOnlyPendingCount()
+    public async Task when_get_pending_conflict_count_is_called_then_only_pending_count_is_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
@@ -294,7 +293,7 @@ public sealed class SyncRepositoryTests
     }
 
     [Fact]
-    public async Task GetPendingJobsAsync_DifferentAccountsIsolated()
+    public async Task when_get_pending_jobs_is_called_for_different_accounts_then_results_are_isolated()
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);

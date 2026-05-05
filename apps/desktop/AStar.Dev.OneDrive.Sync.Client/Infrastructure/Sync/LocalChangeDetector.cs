@@ -57,7 +57,12 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem) : ILocalChangeDe
 
                 string relativePathForUpload = remotePath.TrimStart('/');
 
-                jobs.Add(SyncJobFactory.Create(accountId, string.Empty, known?.RemoteItemId.Id ?? string.Empty, relativePathForUpload, filePath, SyncDirection.Upload, info.Length, localModified, downloadUrl: relativePathForUpload));
+                var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(string.Empty), known?.RemoteItemId ?? new OneDriveItemId(string.Empty));
+                var target = SyncFileTargetFactory.Create(filePath, relativePathForUpload);
+                var metadata = SyncFileMetadataFactory.Create(info.Length, localModified);
+                var status = SyncJobStatusFactory.Create();
+
+                jobs.Add(SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status, downloadUrl: relativePathForUpload));
             }
 
             foreach(string subDir in fileSystem.Directory.EnumerateDirectories(localDir))

@@ -22,10 +22,10 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             Serilog.Log.Debug(
                 "[Worker {Id}] Processing {Direction} {Path}",
-                workerId, job.Direction, job.RelativePath);
+                workerId, job.Direction, job.Target.RelativePath);
 
             await syncRepository.UpdateJobStateAsync(
-                job.Id, SyncJobState.InProgress).ConfigureAwait(false);
+                job.Status.Id, SyncJobState.InProgress).ConfigureAwait(false);
 
             string? error   = null;
             bool     success = false;
@@ -35,18 +35,18 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             {
                 currentJob = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
                 success = true;
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed).ConfigureAwait(false);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed).ConfigureAwait(false);
             }
             catch(OperationCanceledException)
             {
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Queued).ConfigureAwait(false);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued).ConfigureAwait(false);
                 throw;
             }
             catch(Exception ex)
             {
                 error = ex.Message;
-                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path}", workerId, ex.GetType().Name, ex.Message, job.LocalPath);
-                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message).ConfigureAwait(false);
+                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path}", workerId, ex.GetType().Name, ex.Message, job.Target.LocalPath);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, ex.Message).ConfigureAwait(false);
             }
             finally
             {
@@ -64,23 +64,23 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
                 await downloader.DownloadAsync(
                     downloadUrl,
-                    job.LocalPath,
-                    job.RemoteModified,
+                    job.Target.LocalPath,
+                    job.Metadata.RemoteModified,
                     ct: ct).ConfigureAwait(false);
 
                 return job;
 
             case SyncDirection.Upload:
-                string remotePath = job.DownloadUrl ?? job.RelativePath;
-                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct).ConfigureAwait(false);
+                string remotePath = job.DownloadUrl ?? job.Target.RelativePath;
+                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.Target.LocalPath, remotePath, parentFolderId: job.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
 
-                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
+                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.Target.RelativePath);
 
                 return job with { UploadedRemoteItemId = uploadedRemoteItemId };
 
             case SyncDirection.Delete:
-                if(fileSystem.File.Exists(job.LocalPath))
-                    fileSystem.File.Delete(job.LocalPath);
+                if(fileSystem.File.Exists(job.Target.LocalPath))
+                    fileSystem.File.Delete(job.Target.LocalPath);
 
                 return job;
 
@@ -94,10 +94,10 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
         if(job.DownloadUrl is not null)
             return job.DownloadUrl;
 
-        Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.RelativePath);
+        Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.Target.RelativePath);
 
-        var url = await graphService.GetDownloadUrlAsync(accessToken, job.RemoteItemId, ct).ConfigureAwait(false);
+        var url = await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
-        return url ?? throw new InvalidOperationException($"No download URL could be resolved for '{job.RelativePath}' (itemId={job.RemoteItemId}).");
+        return url ?? throw new InvalidOperationException($"No download URL could be resolved for '{job.Target.RelativePath}' (itemId={job.Remote.RemoteItemId.Id}).");
     }
 }
