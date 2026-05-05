@@ -29,12 +29,12 @@ public static class SyncedItemEntityFactory
         => new()
         {
             AccountId        = accountId,
-            RemoteItemId     = new OneDriveItemId(job.RemoteItemId),
+            RemoteItemId     = job.Remote.RemoteItemId,
             RemoteParentId   = string.Empty,
             RemotePath       = remotePath,
-            LocalPath        = job.LocalPath,
+            LocalPath        = job.Target.LocalPath,
             IsFolder         = false,
-            RemoteModifiedAt = job.RemoteModified
+            RemoteModifiedAt = job.Metadata.RemoteModified
         };
 
     /// <summary>Creates a tracking entity for a successfully completed upload job.</summary>
@@ -45,8 +45,8 @@ public static class SyncedItemEntityFactory
             RemoteItemId     = new OneDriveItemId(job.UploadedRemoteItemId!),
             RemoteParentId   = string.Empty,
             RemotePath       = remotePath,
-            LocalPath        = job.LocalPath,
+            LocalPath        = job.Target.LocalPath,
             IsFolder         = false,
-            RemoteModifiedAt = new DateTimeOffset(fileSystem.FileInfo.New(job.LocalPath).LastWriteTimeUtc, TimeSpan.Zero)
+            RemoteModifiedAt = new DateTimeOffset(fileSystem.FileInfo.New(job.Target.LocalPath).LastWriteTimeUtc, TimeSpan.Zero)
         };
 }

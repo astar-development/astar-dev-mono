@@ -26,7 +26,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             onProgress,
             args =>
             {
-                if(args.Job.State == SyncJobState.Completed)
+                if(args.Job.Status.State == SyncJobState.Completed)
                     successfulJobs.Add(args.Job);
 
                 onJobCompleted(args);
@@ -37,13 +37,13 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
         foreach(var job in successfulJobs)
         {
-            var remotePath = NormaliseRemotePath(job.RelativePath);
+            var remotePath = NormaliseRemotePath(job.Target.RelativePath);
 
             if(job.Direction == SyncDirection.Download)
             {
                 var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, job, remotePath);
                 await syncedItemRepository.UpsertAsync(entity, ct);
-                syncedItems[job.RemoteItemId] = entity;
+                syncedItems[job.Remote.RemoteItemId.Id] = entity;
             }
             else if(job.Direction == SyncDirection.Upload && job.UploadedRemoteItemId is not null)
             {

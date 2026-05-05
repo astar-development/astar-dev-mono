@@ -90,7 +90,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].AccountId.ShouldBe(AccountId);
+        jobs[0].Remote.AccountId.Id.ShouldBe(AccountId);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].LocalPath.ShouldBe(filePath);
+        jobs[0].Target.LocalPath.ShouldBe(filePath);
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].RelativePath.ShouldBe("Documents/report.txt");
+        jobs[0].Target.RelativePath.ShouldBe("Documents/report.txt");
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].DownloadUrl.ShouldBe(jobs[0].RelativePath);
+        jobs[0].DownloadUrl.ShouldBe(jobs[0].Target.RelativePath);
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].FolderId.ShouldBe(string.Empty);
+        jobs[0].Remote.FolderId.Id.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -220,7 +220,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
 
-        jobs[0].RemoteItemId.ShouldBe(knownRemoteItemId);
+        jobs[0].Remote.RemoteItemId.Id.ShouldBe(knownRemoteItemId);
     }
 
     [Fact]
@@ -311,7 +311,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].RelativePath.ShouldBe("Documents/Reports/q1.txt");
+        jobs[0].Target.RelativePath.ShouldBe("Documents/Reports/q1.txt");
     }
 
     [Fact]
@@ -355,7 +355,7 @@ public sealed class GivenALocalChangeDetector
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
         jobs.Count.ShouldBe(1);
-        jobs[0].LocalPath.ShouldStartWith(BasePath);
+        jobs[0].Target.LocalPath.ShouldStartWith(BasePath);
     }
 
     [Fact]
@@ -369,6 +369,6 @@ public sealed class GivenALocalChangeDetector
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
         jobs.Count.ShouldBe(1);
-        jobs[0].RelativePath.ShouldBe("Documents/2024/report.txt");
+        jobs[0].Target.RelativePath.ShouldBe("Documents/2024/report.txt");
     }
 }

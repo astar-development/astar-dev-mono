@@ -23,7 +23,14 @@ public sealed class GivenASyncJobExecutor
     private SyncJobExecutor CreateSut(MockFileSystem mockFs) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFs);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
-        => SyncJobFactory.Create(accountId: "user-1", folderId: "", remoteItemId: remoteId, relativePath: "Documents/file.txt", localPath: localPath, direction: direction, fileSize: 100L, remoteModified: DateTimeOffset.UtcNow.AddDays(-1));
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(""), new OneDriveItemId(remoteId));
+        var target = SyncFileTargetFactory.Create(localPath, "Documents/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1));
+        var status = SyncJobStatusFactory.Create();
+
+        return SyncJobFactory.Create(remote, target, metadata, direction, status);
+    }
 
     [Fact]
     public async Task when_jobs_list_is_empty_then_pipeline_is_not_called()
@@ -49,14 +56,14 @@ public sealed class GivenASyncJobExecutor
     [Fact]
     public async Task when_pipeline_completes_download_job_successfully_then_synced_item_is_upserted()
     {
-        var job = MakeJob("item-1", SyncDirection.Download) with { State = SyncJobState.Queued };
+        var job = MakeJob("item-1", SyncDirection.Download);
         var jobs = new List<SyncJob> { job };
 
         _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<string>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
             .Do(call =>
             {
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job with { State = SyncJobState.Completed }));
+                onJobCompleted(new JobCompletedEventArgs(job.Complete()));
             });
 
         var sut = CreateSut(new MockFileSystem());
@@ -79,7 +86,7 @@ public sealed class GivenASyncJobExecutor
             .Do(call =>
             {
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job with { State = SyncJobState.Completed, UploadedRemoteItemId = "uploaded-remote-id" }));
+                onJobCompleted(new JobCompletedEventArgs(job.Complete() with { UploadedRemoteItemId = "uploaded-remote-id" }));
             });
 
         var sut = CreateSut(mockFs);
@@ -99,7 +106,7 @@ public sealed class GivenASyncJobExecutor
             .Do(call =>
             {
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job with { State = SyncJobState.Failed, ErrorMessage = "disk full" }));
+                onJobCompleted(new JobCompletedEventArgs(job.Fail("disk full")));
             });
 
         var sut = CreateSut(new MockFileSystem());

@@ -14,7 +14,14 @@ public sealed class GivenAnActivityItemViewModel
     private const long FileSizeValue = 2048L;
 
     private static SyncJob BuildSyncJob(SyncDirection direction = SyncDirection.Download, string relativePath = RelativePathValue, DateTimeOffset? completedAt = null, string? errorMessage = null)
-        => SyncJobFactory.Create(accountId: AccountIdValue, folderId: "", remoteItemId: "", relativePath: relativePath, localPath: "", direction: direction, fileSize: FileSizeValue, remoteModified: default) with { CompletedAt = completedAt, ErrorMessage = errorMessage };
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(""), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", relativePath);
+        var metadata = SyncFileMetadataFactory.Create(FileSizeValue, default);
+        var status = SyncJobStatusFactory.Create() with { CompletedAt = completedAt, ErrorMessage = errorMessage };
+
+        return SyncJobFactory.Create(remote, target, metadata, direction, status);
+    }
 
     private static SyncConflict BuildSyncConflict(string relativePath = RelativePathValue, DateTimeOffset? detectedAt = null) => new()
     {

@@ -20,7 +20,14 @@ public sealed class GivenADownloadWorker
     private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository, _fileSystem);
 
     private static SyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
-        => SyncJobFactory.Create(remoteItemId: ItemId, relativePath: "Desktop/file.txt", localPath: "/tmp/file.txt", direction: SyncDirection.Download, remoteModified: DateTimeOffset.UtcNow, downloadUrl: downloadUrl, accountId: "", folderId: "", fileSize: 0);
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
+        var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
+        var status = SyncJobStatusFactory.Create();
+
+        return SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, downloadUrl: downloadUrl);
+    }
 
     private static async Task<(List<SyncJob> Completed, List<string?> Errors)> RunWorkerWithJobsAsync(DownloadWorker worker, IEnumerable<SyncJob> jobs, CancellationToken ct)
     {
@@ -50,7 +57,7 @@ public sealed class GivenADownloadWorker
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _downloader.Received(1).DownloadAsync(url, job.LocalPath, job.RemoteModified, ct: Arg.Any<CancellationToken>());
+        await _downloader.Received(1).DownloadAsync(url, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -65,7 +72,7 @@ public sealed class GivenADownloadWorker
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
         await _graphService.Received(1).GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>());
-        await _downloader.Received(1).DownloadAsync(fetchedUrl, job.LocalPath, job.RemoteModified, ct: Arg.Any<CancellationToken>());
+        await _downloader.Received(1).DownloadAsync(fetchedUrl, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -94,7 +101,7 @@ public sealed class GivenADownloadWorker
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Id, SyncJobState.Failed, Arg.Any<string>());
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, Arg.Any<string>());
     }
 
     [Fact]
@@ -104,7 +111,7 @@ public sealed class GivenADownloadWorker
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Id, SyncJobState.Completed);
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed);
     }
 
     [Fact]
@@ -121,20 +128,28 @@ public sealed class GivenADownloadWorker
     [Fact]
     public async Task when_upload_job_is_processed_then_graph_service_upload_is_called()
     {
-        var job = SyncJobFactory.Create(remoteItemId: ItemId, folderId: "folder-1", relativePath: "Desktop/file.txt", localPath: "/tmp/file.txt", direction: SyncDirection.Upload, remoteModified: DateTimeOffset.UtcNow, accountId: "", fileSize: 0);
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId("folder-1"), new OneDriveItemId(ItemId));
+        var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
+        var status = SyncJobStatusFactory.Create();
+        var job = SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status);
 
-        _graphService.UploadFileAsync(AccessToken, job.LocalPath, Arg.Any<string>(), job.FolderId, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
             .Returns("remote-item-id");
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).UploadFileAsync(AccessToken, job.LocalPath, Arg.Any<string>(), job.FolderId, Arg.Any<CancellationToken>());
+        await _graphService.Received(1).UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_delete_job_is_processed_then_no_downloader_or_graph_download_calls_are_made()
     {
-        var job = SyncJobFactory.Create(remoteItemId: ItemId, relativePath: "Desktop/file.txt", localPath: "/tmp/nonexistent-file-that-does-not-exist.txt", direction: SyncDirection.Delete, remoteModified: DateTimeOffset.UtcNow, accountId: "", folderId: "", fileSize: 0);
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
+        var target = SyncFileTargetFactory.Create("/tmp/nonexistent-file-that-does-not-exist.txt", "Desktop/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
+        var status = SyncJobStatusFactory.Create();
+        var job = SyncJobFactory.Create(remote, target, metadata, SyncDirection.Delete, status);
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 

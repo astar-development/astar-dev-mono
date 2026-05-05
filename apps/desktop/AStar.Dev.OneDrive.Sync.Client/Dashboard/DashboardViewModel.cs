@@ -118,8 +118,8 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.AccountId);
-        string accountEmail = section?.Email ?? args.Job.AccountId;
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.Remote.AccountId.Id);
+        string accountEmail = section?.Email ?? args.Job.Remote.AccountId.Id;
         var item = ActivityItemViewModel.FromJob(args.Job, accountEmail);
         AddActivityItem(item);
     }
