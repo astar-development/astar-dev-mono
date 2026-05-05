@@ -8,7 +8,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 public sealed class SyncRepositoryTests
 {
     private static SyncJob MinimalJob(string accountId = "user-1", string folderId = "", SyncJobState state = SyncJobState.Queued)
-        => SyncJobFactory.Create(accountId: accountId, folderId: folderId, remoteItemId: "", relativePath: "", localPath: "", direction: default, fileSize: 0, remoteModified: default) with { State = state };
+    {
+        var remote = RemoteItemRefFactory.Create(accountId, folderId, "");
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var status = SyncJobStatusFactory.Create() with { State = state };
+
+        return SyncJobFactory.Create(remote, target, metadata, default, status);
+    }
 
     [Fact]
     public async Task EnqueueJobsAsync_WithEmptyList_ShouldNotThrow()
@@ -71,11 +78,15 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var now = DateTimeOffset.UtcNow;
+        var baseStatus = SyncJobStatusFactory.Create();
+        var remote = RemoteItemRefFactory.Create("user-1", "", "");
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
         var jobs = new List<SyncJob>
         {
-            MinimalJob() with { QueuedAt = now.AddSeconds(3) },
-            MinimalJob() with { QueuedAt = now.AddSeconds(1) },
-            MinimalJob() with { QueuedAt = now.AddSeconds(2) }
+            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(3) }),
+            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(1) }),
+            SyncJobFactory.Create(remote, target, metadata, default, baseStatus with { QueuedAt = now.AddSeconds(2) })
         };
         await repository.EnqueueJobsAsync(jobs);
 
@@ -92,7 +103,8 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = MinimalJob() with { Id = jobId };
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -101,7 +113,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
@@ -111,7 +122,8 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = MinimalJob() with { Id = jobId };
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -120,7 +132,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
@@ -130,7 +141,8 @@ public sealed class SyncRepositoryTests
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var jobId = Guid.NewGuid();
-        var job = MinimalJob() with { Id = jobId };
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
         await repository.EnqueueJobsAsync(new[] { job });
 
         try
@@ -139,7 +151,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
@@ -162,7 +173,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteDelete
         }
     }
 
@@ -234,7 +244,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
@@ -252,7 +261,6 @@ public sealed class SyncRepositoryTests
         }
         catch(InvalidOperationException)
         {
-            // Expected - in-memory provider doesn't support ExecuteUpdate
         }
     }
 
