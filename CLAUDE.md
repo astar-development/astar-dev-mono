@@ -16,6 +16,9 @@ dotnet build apps/web/[AppName].Blazor
 
 # If Directory.Build.props changes aren't taking effect
 dotnet clean && dotnet build
+
+# If build fails mysteriously after a refactor (stale generated files, changed base props)
+dotnet clean && rm -rf artifacts/ && dotnet build
 ```
 
 ## Test Commands
@@ -150,3 +153,31 @@ Before any coding task complete — commits and PRs included:
 3. Request human review BEFORE committing.
 4. Human requests changes? Implement, re-request review.
 5. ONLY after human approval: commit to branch, raise GitHub PR.
+
+## Verification Before Declaring Done
+
+NEVER say "fixed", "done", or "complete" without explicit evidence:
+
+- Run `dotnet build` — zero errors required.
+- Run `dotnet test` — zero failures (excluding committed RED tests).
+- Trace the original bug/requirement through the code path and state in plain text WHY the change addresses it at the root cause.
+- For sync/download bugs specifically: confirm the full flow (Graph API → persistence → sync logic) before touching any code. Write a failing reproducing test first; declare done only when it turns green.
+
+Say "I believe this is fixed because…" — never just "fixed".
+
+## Subagent Usage
+
+- Use `c-sharp-qa` subagent for adding or expanding tests in C# files.
+- Use `c-sharp-dev` subagent for implementing C# features.
+- Use `c-sharp-reviewer` subagent for code review.
+- When a subagent drifts off task or produces wrong output, take over directly — do not re-prompt the same agent repeatedly.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
