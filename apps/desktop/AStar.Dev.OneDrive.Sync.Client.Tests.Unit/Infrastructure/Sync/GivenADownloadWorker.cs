@@ -19,14 +19,31 @@ public sealed class GivenADownloadWorker
 
     private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository, _fileSystem);
 
-    private static SyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
+    private static DownloadSyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
     {
         var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
         var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
         var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
-        var status = SyncJobStatusFactory.Create();
 
-        return SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, downloadUrl: downloadUrl);
+        return SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl);
+    }
+
+    private static UploadSyncJob MakeUploadJob(string folderId = "folder-1")
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(folderId), new OneDriveItemId(ItemId));
+        var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
+
+        return SyncJobFactory.CreateUpload(remote, target, metadata);
+    }
+
+    private static DeleteSyncJob MakeDeleteJob(string localPath = "/tmp/nonexistent-file-that-does-not-exist.txt")
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
+        var target = SyncFileTargetFactory.Create(localPath, "Desktop/file.txt");
+        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
+
+        return SyncJobFactory.CreateDelete(remote, target, metadata);
     }
 
     private static async Task<(List<SyncJob> Completed, List<string?> Errors)> RunWorkerWithJobsAsync(DownloadWorker worker, IEnumerable<SyncJob> jobs, CancellationToken ct)
@@ -128,11 +145,7 @@ public sealed class GivenADownloadWorker
     [Fact]
     public async Task when_upload_job_is_processed_then_graph_service_upload_is_called()
     {
-        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId("folder-1"), new OneDriveItemId(ItemId));
-        var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
-        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
-        var status = SyncJobStatusFactory.Create();
-        var job = SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status);
+        var job = MakeUploadJob();
 
         _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
             .Returns("remote-item-id");
@@ -145,11 +158,7 @@ public sealed class GivenADownloadWorker
     [Fact]
     public async Task when_delete_job_is_processed_then_no_downloader_or_graph_download_calls_are_made()
     {
-        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
-        var target = SyncFileTargetFactory.Create("/tmp/nonexistent-file-that-does-not-exist.txt", "Desktop/file.txt");
-        var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
-        var status = SyncJobStatusFactory.Create();
-        var job = SyncJobFactory.Create(remote, target, metadata, SyncDirection.Delete, status);
+        var job = MakeDeleteJob();
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
