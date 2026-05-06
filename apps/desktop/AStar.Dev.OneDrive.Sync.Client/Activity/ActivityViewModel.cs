@@ -90,8 +90,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         {
             Id             = entity.Id,
             Remote         = RemoteItemRefFactory.Create(entity.AccountId, entity.FolderId, entity.RemoteItemId),
-            RelativePath   = entity.RelativePath,
-            LocalPath      = entity.LocalPath,
+            Target         = SyncFileTargetFactory.Create(entity.LocalPath, entity.RelativePath),
             LocalModified  = entity.LocalModified,
             RemoteModified = entity.RemoteModified,
             LocalSize      = entity.LocalSize,

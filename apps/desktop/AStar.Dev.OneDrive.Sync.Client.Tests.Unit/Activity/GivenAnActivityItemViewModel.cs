@@ -35,7 +35,7 @@ public sealed class GivenAnActivityItemViewModel
     private static SyncConflict BuildSyncConflict(string relativePath = RelativePathValue, DateTimeOffset? detectedAt = null) => new()
     {
         Remote = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
-        RelativePath = relativePath,
+        Target = SyncFileTargetFactory.Create("", relativePath),
         DetectedAt = detectedAt ?? DateTimeOffset.UtcNow
     };
 

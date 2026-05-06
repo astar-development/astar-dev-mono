@@ -99,15 +99,15 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         {
             case ConflictOutcome.UseRemote:
                 string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).");
+                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.Target.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).");
 
-                await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct).ConfigureAwait(false);
+                await httpDownloader.DownloadAsync(downloadUrl, conflict.Target.LocalPath, conflict.RemoteModified, ct: ct).ConfigureAwait(false);
                 break;
 
             case ConflictOutcome.KeepBoth:
-                string keepBothName = ConflictResolver.MakeKeepBothName(conflict.LocalPath, conflict.LocalModified, fileSystem);
-                if (fileSystem.File.Exists(conflict.LocalPath))
-                    fileSystem.File.Move(conflict.LocalPath, keepBothName);
+                string keepBothName = ConflictResolver.MakeKeepBothName(conflict.Target.LocalPath, conflict.LocalModified, fileSystem);
+                if (fileSystem.File.Exists(conflict.Target.LocalPath))
+                    fileSystem.File.Move(conflict.Target.LocalPath, keepBothName);
                 break;
         }
     }

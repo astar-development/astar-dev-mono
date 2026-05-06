@@ -81,8 +81,8 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         AccountId = conflict.Remote.AccountId.Id,
         AccountEmail = accountEmail,
         FolderName = folderName,
-        FileName = Path.GetFileName(conflict.RelativePath),
-        RelativePath = conflict.RelativePath,
+        FileName = Path.GetFileName(conflict.Target.RelativePath),
+        RelativePath = conflict.Target.RelativePath,
         Type = ActivityItemType.Conflict,
         OccurredAt = conflict.DetectedAt
     };
