@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
@@ -112,7 +114,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     {
         if (IsWaitingForAuth)
             return;
-            
+
         SetInitialSignInState();
 
         _authCts = new CancellationTokenSource();

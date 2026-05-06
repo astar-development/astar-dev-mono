@@ -2,6 +2,8 @@ using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.Utilities;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 

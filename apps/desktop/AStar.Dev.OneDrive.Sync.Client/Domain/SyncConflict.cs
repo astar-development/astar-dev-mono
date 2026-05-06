@@ -1,6 +1,8 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
-public enum ConflictState { Pending, Resolved, Skipped }
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>
 /// Represents a file conflict detected during a delta sync pass.

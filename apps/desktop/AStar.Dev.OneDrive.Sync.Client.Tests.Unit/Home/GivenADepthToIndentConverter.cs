@@ -1,9 +1,7 @@
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
-using Avalonia.Media;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Converters;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public sealed class GivenADepthToIndentConverter
 {
