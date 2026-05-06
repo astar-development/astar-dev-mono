@@ -100,7 +100,7 @@ jobs:
         run: |
           mkdir -p TestResults
 
-          mapfile -t projects < <(find tests -name '*.csproj')
+          mapfile -t projects < <(find . -name '*.Tests*.csproj')
 
           for proj in "${projects[@]}"; do
             echo "Running tests for $proj"
