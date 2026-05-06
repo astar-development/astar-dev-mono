@@ -61,8 +61,7 @@ public sealed class GivenASyncConflict
         {
             Id = id,
             Remote = remote,
-            RelativePath = relativePath,
-            LocalPath = localPath,
+            Target = SyncFileTargetFactory.Create(localPath, relativePath),
             LocalModified = now.AddHours(-1),
             RemoteModified = now,
             LocalSize = 1024,
@@ -74,10 +73,21 @@ public sealed class GivenASyncConflict
         conflict.Remote.AccountId.Id.ShouldBe("account-123");
         conflict.Remote.FolderId.Id.ShouldBe("folder-456");
         conflict.Remote.RemoteItemId.Id.ShouldBe("item-789");
-        conflict.RelativePath.ShouldBe(relativePath);
-        conflict.LocalPath.ShouldBe(localPath);
+        conflict.Target.RelativePath.ShouldBe(relativePath);
+        conflict.Target.LocalPath.ShouldBe(localPath);
         conflict.LocalSize.ShouldBe(1024);
         conflict.RemoteSize.ShouldBe(2048);
+    }
+
+    [Fact]
+    public void when_target_is_set_then_local_path_and_relative_path_are_accessible_via_target()
+    {
+        var target = SyncFileTargetFactory.Create("/home/user/docs/report.pdf", "docs/report.pdf");
+
+        var conflict = new SyncConflict { Target = target };
+
+        conflict.Target.LocalPath.ShouldBe("/home/user/docs/report.pdf");
+        conflict.Target.RelativePath.ShouldBe("docs/report.pdf");
     }
 
     [Fact]
