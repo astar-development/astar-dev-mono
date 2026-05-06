@@ -5,7 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Settings;
 
 [Collection("SettingsService")]
-public sealed class SettingsServiceTests
+public sealed class GivenASettingsServiceWithDefaults
 {
     private const string SettingsPath = "/app/settings.json";
 
@@ -18,7 +18,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeWithDefaultSettings()
+    public void when_constructed_then_settings_have_default_values()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -30,7 +30,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void Current_ShouldReturnAppSettings()
+    public void when_current_is_read_then_it_is_app_settings()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -41,7 +41,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void Theme_ShouldBeSettable()
+    public void when_theme_is_set_then_it_is_preserved()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -51,7 +51,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void Locale_ShouldBeSettable()
+    public void when_locale_is_set_then_it_is_preserved()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -61,7 +61,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void DefaultConflictPolicy_ShouldBeSettable()
+    public void when_default_conflict_policy_is_set_then_it_is_preserved()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -71,7 +71,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void SyncIntervalMinutes_ShouldBeSettable()
+    public void when_sync_interval_minutes_is_set_then_it_is_preserved()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -81,7 +81,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task SaveAsync_ShouldInvokeSettingsChangedEvent()
+    public async Task when_save_async_called_then_settings_changed_event_is_raised()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
         bool eventRaised = false;
@@ -101,7 +101,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task SaveAsync_ShouldPersistSettings()
+    public async Task when_save_async_called_then_settings_are_persisted()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
         service.Current.Locale = "de-DE";
@@ -114,7 +114,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldNotThrow()
+    public async Task when_load_async_called_then_no_exception_is_thrown()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -122,7 +122,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldInitializeCurrentSettings()
+    public async Task when_load_async_called_then_current_settings_is_not_null()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -135,7 +135,7 @@ public sealed class SettingsServiceTests
     [InlineData(AppTheme.System)]
     [InlineData(AppTheme.Light)]
     [InlineData(AppTheme.Dark)]
-    public void Theme_ShouldSupportAllThemeValues(AppTheme theme)
+    public void when_any_theme_is_set_then_it_is_preserved(AppTheme theme)
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -149,7 +149,7 @@ public sealed class SettingsServiceTests
     [InlineData("fr-FR")]
     [InlineData("de-DE")]
     [InlineData("es-ES")]
-    public void Locale_ShouldSupportDifferentCultures(string locale)
+    public void when_any_locale_is_set_then_it_is_preserved(string locale)
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -163,7 +163,7 @@ public sealed class SettingsServiceTests
     [InlineData(ConflictPolicy.KeepBoth)]
     [InlineData(ConflictPolicy.LastWriteWins)]
     [InlineData(ConflictPolicy.LocalWins)]
-    public void DefaultConflictPolicy_ShouldSupportAllPolicies(ConflictPolicy policy)
+    public void when_any_conflict_policy_is_set_then_it_is_preserved(ConflictPolicy policy)
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -177,7 +177,7 @@ public sealed class SettingsServiceTests
     [InlineData(30)]
     [InlineData(60)]
     [InlineData(120)]
-    public void SyncIntervalMinutes_ShouldSupportDifferentIntervals(int minutes)
+    public void when_any_sync_interval_is_set_then_it_is_preserved(int minutes)
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -187,7 +187,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public void MultipleSettingsChanges_ShouldMaintainState()
+    public void when_multiple_settings_are_changed_then_all_are_maintained()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
 
@@ -203,7 +203,7 @@ public sealed class SettingsServiceTests
     }
 
     [Fact]
-    public async Task SaveAsync_WithMultipleChanges_ShouldEventIncludeAllChanges()
+    public async Task when_save_async_called_after_multiple_changes_then_event_includes_all_changes()
     {
         var service = new SettingsService(CreateMockFs(), SettingsPath);
         bool eventRaised = false;

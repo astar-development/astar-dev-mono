@@ -3,10 +3,10 @@ using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
 
-public sealed class TokenCacheServiceTests
+public sealed class GivenATokenCacheService
 {
     [Fact]
-    public void Constructor_ShouldCreateCacheDirectory()
+    public void when_constructed_then_cache_directory_is_set()
     {
         _ = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
@@ -17,7 +17,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void Constructor_ShouldSetCacheDirectoryProperty()
+    public void when_constructed_then_cache_directory_property_is_not_null()
     {
         var service = new TokenCacheService();
 
@@ -25,7 +25,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheDirectory_ShouldNotBeEmpty()
+    public void when_cache_directory_is_read_then_it_is_not_empty()
     {
         var service = new TokenCacheService();
 
@@ -33,7 +33,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheDirectory_ShouldContainAppName()
+    public void when_cache_directory_is_read_then_it_contains_app_name()
     {
         var service = new TokenCacheService();
 
@@ -41,7 +41,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_WithValidApp_ShouldNotThrow()
+    public async Task when_register_async_called_with_valid_app_then_no_exception_is_thrown()
     {
         var mockApp = Substitute.For<IPublicClientApplication>();
         var mockCache = Substitute.For<ITokenCache>();
@@ -58,7 +58,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_ShouldCallUserTokenCache()
+    public async Task when_register_async_called_then_user_token_cache_is_accessed()
     {
         var mockApp = Substitute.For<IPublicClientApplication>();
         var mockCache = Substitute.For<ITokenCache>();
@@ -78,7 +78,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeOnlyOnce()
+    public void when_two_instances_are_created_then_they_share_the_same_cache_directory()
     {
         var service1 = new TokenCacheService();
         var service2 = new TokenCacheService();
@@ -92,7 +92,7 @@ public sealed class TokenCacheServiceTests
     [InlineData("path1")]
     [InlineData("path2")]
     [InlineData("different/path")]
-    public void CacheDirectory_ShouldBePlatformSpecific(string _)
+    public void when_cache_directory_is_read_then_it_is_platform_specific(string _)
     {
         var service = new TokenCacheService();
 
@@ -102,7 +102,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void Constructor_ShouldMaintainCacheDirectoryConsistency()
+    public void when_cache_directory_is_read_twice_then_same_value_is_returned()
     {
         var service = new TokenCacheService();
         string cachedDir = service.CacheDirectory;
@@ -110,7 +110,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheDirectory_ShouldBeAbsolutePath()
+    public void when_cache_directory_is_read_then_it_is_an_absolute_path()
     {
         var service = new TokenCacheService();
 
@@ -119,7 +119,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheDirectory_ShouldBeReadOnly()
+    public void when_cache_directory_property_is_inspected_then_it_has_no_setter()
     {
         var service = new TokenCacheService();
 
@@ -130,7 +130,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public async Task RegisterAsync_ShouldHandleNullGracefully()
+    public async Task when_register_async_called_with_null_then_null_reference_exception_is_thrown()
     {
         var service = new TokenCacheService();
         try
@@ -144,7 +144,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public async Task Constructor_ShouldBeThreadSafe()
+    public async Task when_multiple_instances_are_created_concurrently_then_all_share_same_cache_directory()
     {
         var tasks = new List<Task>();
         var services = new List<TokenCacheService>();
@@ -174,7 +174,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void GetPlatformCacheDirectory_ShouldReturnValidPath()
+    public void when_cache_directory_is_read_then_path_is_rooted()
     {
         var service = new TokenCacheService();
 
@@ -183,7 +183,7 @@ public sealed class TokenCacheServiceTests
     }
 
     [Fact]
-    public void CacheDirectory_ShouldMatchPlatformConvention()
+    public void when_cache_directory_is_read_then_it_matches_platform_convention()
     {
         var service = new TokenCacheService();
         string cacheDir = service.CacheDirectory;

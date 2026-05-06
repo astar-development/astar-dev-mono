@@ -11,6 +11,5 @@ public sealed class AccountEntity
     public DateTimeOffset? LastSyncedAt { get; set; }
     public long QuotaTotal { get; set; }
     public long QuotaUsed { get; set; }
-    public LocalSyncPath LocalSyncPath { get; set; } = LocalSyncPath.Restore(string.Empty);
-    public ConflictPolicy ConflictPolicy { get; set; } = ConflictPolicy.Ignore;
+    public AccountSyncConfig SyncConfig { get; set; } = AccountSyncConfigFactory.Default;
 }

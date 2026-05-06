@@ -40,7 +40,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
             return;
         }
 
-        if (account.LocalSyncPath is null)
+        if (account.SyncConfig is null)
         {
             RaiseProgress(account.Id.Id, 0, 0, "No local sync path configured", SyncState.Error);
             return;
@@ -92,8 +92,6 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         await ApplyConflictOutcomeAsync(conflict, outcome, conflict.AccountId, authOk.Value.AccessToken, ct).ConfigureAwait(false);
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
-
-    
 
     private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
     {

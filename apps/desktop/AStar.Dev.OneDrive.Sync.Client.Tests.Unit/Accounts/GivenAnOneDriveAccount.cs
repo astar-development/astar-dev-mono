@@ -3,10 +3,10 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
-public sealed class OneDriveAccountTests
+public sealed class GivenAnOneDriveAccount
 {
     [Fact]
-    public void Constructor_ShouldInitializeWithDefaultValues()
+    public void when_constructed_then_all_properties_have_default_values()
     {
         var account = new OneDriveAccount();
 
@@ -19,12 +19,11 @@ public sealed class OneDriveAccountTests
         account.QuotaUsed.ShouldBe(0L);
         account.IsActive.ShouldBeFalse();
         account.FolderNames.ShouldBeEmpty();
-        account.LocalSyncPath.ShouldBeNull();
-        account.ConflictPolicy.ShouldBe(ConflictPolicy.Ignore);
+        account.SyncConfig.ShouldBeNull();
     }
 
     [Fact]
-    public void Id_WhenExplicitlySet_ShouldBePreserved()
+    public void when_id_is_set_then_it_is_preserved()
     {
         var id = new AccountId("unique-account-id");
         var account = new OneDriveAccount { Id = id };
@@ -34,7 +33,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void DisplayName_ShouldBeSettable()
+    public void when_profile_display_name_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         string displayName = "Jason Smith";
@@ -45,7 +44,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void Email_ShouldBeSettable()
+    public void when_profile_email_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         string email = "jason@outlook.com";
@@ -56,7 +55,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void AccentIndex_ShouldBeSettable()
+    public void when_accent_index_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         int accentIndex = 3;
@@ -67,7 +66,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void SelectedFolderIds_ShouldBeModifiable()
+    public void when_folder_id_is_added_then_it_is_in_selected_folder_ids()
     {
         var account = new OneDriveAccount();
         var folderId = new OneDriveFolderId("folder-123");
@@ -78,7 +77,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void LastSyncedAt_ShouldBeSettable()
+    public void when_last_synced_at_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         var lastSyncedAt = DateTimeOffset.UtcNow;
@@ -89,7 +88,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void QuotaTotal_ShouldBeSettable()
+    public void when_quota_total_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         long quotaTotal = 1_099_511_627_776L;
@@ -100,7 +99,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void QuotaUsed_ShouldBeSettable()
+    public void when_quota_used_is_set_then_it_is_preserved()
     {
         var account = new OneDriveAccount();
         long quotaUsed = 549_755_813_888L;
@@ -111,7 +110,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void IsActive_ShouldBeSettable()
+    public void when_is_active_is_set_to_true_then_it_is_true()
     {
         var account = new OneDriveAccount
         {
@@ -122,7 +121,7 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void FolderNames_ShouldBeModifiable()
+    public void when_folder_name_is_set_then_it_is_in_folder_names()
     {
         var account = new OneDriveAccount();
         var folderId = new OneDriveFolderId("folder-123");
@@ -134,26 +133,28 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void LocalSyncPath_ShouldBeSettableViaFactory()
+    public void when_sync_config_is_set_via_factory_then_local_sync_path_is_preserved()
     {
         var account = new OneDriveAccount();
         string rawPath = "/home/jason/OneDrive";
+        var path = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
 
-        account.LocalSyncPath = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
+        account.SyncConfig = path is null ? null : AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, path);
 
-        account.LocalSyncPath.ShouldNotBeNull();
-        account.LocalSyncPath!.Value.ShouldBe(rawPath);
+        account.SyncConfig.ShouldNotBeNull();
+        account.SyncConfig!.LocalSyncPath.Value.ShouldBe(rawPath);
     }
 
     [Fact]
-    public void ConflictPolicy_ShouldBeSettable()
+    public void when_sync_config_is_created_with_conflict_policy_then_it_is_preserved()
     {
+        var path = LocalSyncPath.Restore("/home/user/OneDrive");
         var account = new OneDriveAccount
         {
-            ConflictPolicy = ConflictPolicy.LastWriteWins
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, path)
         };
 
-        account.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
+        account.SyncConfig!.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
     }
 
     [Theory]
@@ -161,18 +162,19 @@ public sealed class OneDriveAccountTests
     [InlineData(ConflictPolicy.KeepBoth)]
     [InlineData(ConflictPolicy.LastWriteWins)]
     [InlineData(ConflictPolicy.LocalWins)]
-    public void ConflictPolicy_ShouldSupportMultiplePolicies(ConflictPolicy policy)
+    public void when_sync_config_is_created_with_any_conflict_policy_then_it_is_preserved(ConflictPolicy policy)
     {
+        var path = LocalSyncPath.Restore("/home/user/OneDrive");
         var account = new OneDriveAccount
         {
-            ConflictPolicy = policy
+            SyncConfig = AccountSyncConfigFactory.Create(policy, path)
         };
 
-        account.ConflictPolicy.ShouldBe(policy);
+        account.SyncConfig!.ConflictPolicy.ShouldBe(policy);
     }
 
     [Fact]
-    public void MultipleProperties_ShouldMaintainState()
+    public void when_multiple_properties_are_set_then_they_are_all_maintained()
     {
         var account = new OneDriveAccount();
         string displayName = "Jason Smith";

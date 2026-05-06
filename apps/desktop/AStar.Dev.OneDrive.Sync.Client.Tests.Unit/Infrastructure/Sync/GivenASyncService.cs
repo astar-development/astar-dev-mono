@@ -10,7 +10,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
-public sealed class SyncServiceTests
+public sealed class GivenASyncService
 {
     private readonly IAuthService              _authService             = Substitute.For<IAuthService>();
     private readonly IGraphService             _graphService            = Substitute.For<IGraphService>();
@@ -41,7 +41,7 @@ public sealed class SyncServiceTests
         => new([], new HashSet<string>(), [], []);
 
     [Fact]
-    public void constructor_creates_instance_successfully()
+    public void when_constructed_then_instance_is_not_null()
     {
         var service = BuildSut();
 
@@ -63,9 +63,9 @@ public sealed class SyncServiceTests
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id            = new AccountId("user-1"),
-            Profile       = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-            LocalSyncPath = LocalSyncPath.Restore("/home/user/OneDrive")
+            Id         = new AccountId("user-1"),
+            Profile    = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
 
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
@@ -94,13 +94,13 @@ public sealed class SyncServiceTests
     }
 
     [Fact]
-    public async Task when_local_sync_path_is_null_then_no_local_sync_path_progress_is_raised()
+    public async Task when_sync_config_is_null_then_no_local_sync_path_progress_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
         var service = BuildSut();
-        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), LocalSyncPath = null };
+        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), SyncConfig = null };
         bool noSyncPathRaised = false;
         service.SyncProgressChanged += (_, args) =>
         {

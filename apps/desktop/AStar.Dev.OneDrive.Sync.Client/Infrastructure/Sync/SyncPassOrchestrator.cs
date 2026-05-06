@@ -36,7 +36,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, syncedItemsDict, ct).ConfigureAwait(false);
 
         var syncedItemsByLocalPath = syncedItemsDict.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
-        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.LocalSyncPath!.Value, enumerationResult.Rules, syncedItemsByLocalPath);
+        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.SyncConfig!.LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
 
         var allJobs = new List<SyncJob>(enumerationResult.DownloadJobs.Count + uploadJobs.Count);
         allJobs.AddRange(enumerationResult.DownloadJobs);

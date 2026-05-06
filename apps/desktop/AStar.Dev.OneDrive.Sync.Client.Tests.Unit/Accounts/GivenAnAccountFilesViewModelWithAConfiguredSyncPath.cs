@@ -214,19 +214,19 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     private static OneDriveAccount BuildAccount(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id             = new AccountId(AccountIdString),
-            Profile        = AccountProfileFactory.Create("Test User", "test@test.com"),
-            LocalSyncPath  = string.IsNullOrEmpty(localSyncPath) ? null : LocalSyncPath.Restore(localSyncPath),
-            ConflictPolicy = conflictPolicy
+            Id         = new AccountId(AccountIdString),
+            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            SyncConfig = string.IsNullOrEmpty(localSyncPath)
+                ? null
+                : AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath))
         };
 
     private static AccountEntity BuildStoredEntity(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id             = new AccountId(AccountIdString),
-            Profile        = AccountProfileFactory.Create("Test User", "test@test.com"),
-            LocalSyncPath  = LocalSyncPath.Restore(localSyncPath),
-            ConflictPolicy = conflictPolicy
+            Id         = new AccountId(AccountIdString),
+            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            SyncConfig = AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath))
         };
 
     private static AccountFilesViewModel BuildSut(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository)

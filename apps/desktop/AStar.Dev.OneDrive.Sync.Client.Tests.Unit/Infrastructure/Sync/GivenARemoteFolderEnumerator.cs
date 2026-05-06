@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -28,9 +27,9 @@ public sealed class GivenARemoteFolderEnumerator
 
     private static OneDriveAccount CreateAccount() => new()
     {
-        Id             = new AccountId("user-1"),
-        Profile        = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        LocalSyncPath  = LocalSyncPath.Restore(BasePath),
+        Id                = new AccountId("user-1"),
+        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(BasePath)),
         SelectedFolderIds = []
     };
 

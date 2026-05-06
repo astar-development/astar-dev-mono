@@ -84,7 +84,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
             if(item.IsFolder)
             {
-                await HandleFolderAsync(account.Id, item, item.Path.EffectivePath, account.LocalSyncPath!.Value, syncedItems, ct).ConfigureAwait(false);
+                await HandleFolderAsync(account.Id, item, item.Path.EffectivePath, account.SyncConfig!.LocalSyncPath.Value, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
 
@@ -94,7 +94,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
     private async Task ProcessFileItemAsync(OneDriveAccount account, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        string localPath = BuildLocalPath(account.LocalSyncPath!.Value, item.Path.EffectivePath.TrimStart('/'));
+        string localPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
 
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
 
@@ -146,7 +146,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     {
         await onConflict(conflict).ConfigureAwait(false);
 
-        var outcome = ConflictResolver.Resolve(account.ConflictPolicy, localModified, item.LastModified ?? DateTimeOffset.MinValue);
+        var outcome = ConflictResolver.Resolve(account.SyncConfig!.ConflictPolicy, localModified, item.LastModified ?? DateTimeOffset.MinValue);
 
         switch(outcome)
         {
