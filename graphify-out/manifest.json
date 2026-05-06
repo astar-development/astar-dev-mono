@@ -227,10 +227,6 @@
     "mtime": 1776423348.9958782,
     "hash": "fa34bd8f054c1261af706d6ad2fb8b6f"
   },
-  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Domain/ComplexModelsTests.cs": {
-    "mtime": 1777746975.3228104,
-    "hash": "de08a390237ad6f5119c7d5825779f0d"
-  },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Domain/GivenARemoteItemRef.cs": {
     "mtime": 1778006581.3209724,
     "hash": "982aef23b847a47a4a741e2eb93c46ab"
@@ -258,6 +254,10 @@
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Domain/GivenATypedSyncJob.cs": {
     "mtime": 1778043936.1402829,
     "hash": "d162da405fc1bc628d51c433efa2a781"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Domain/ComplexModelsTests.cs": {
+    "mtime": 1778046575.6860342,
+    "hash": "44815c4d267b973bf414149211c64939"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Home/GivenAFolderTreeNodeViewModel.cs": {
     "mtime": 1777746975.3228104,
@@ -288,8 +288,8 @@
     "hash": "1501ab122d0c7c4de89017f980d3f902"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Graph/GraphServiceTests.cs": {
-    "mtime": 1777746975.3238103,
-    "hash": "388a2b16f3ff15b06862e3ce31a6aa9c"
+    "mtime": 1778046575.6870341,
+    "hash": "3dccc9a4b94f3b8011aed743b275ca6a"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Settings/GivenASettingsService.cs": {
     "mtime": 1777580929.7431958,
@@ -371,10 +371,6 @@
     "mtime": 1778043936.1412828,
     "hash": "93bbd1a7ece77a103c4fcf3bf37d3636"
   },
-  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Sync/GivenARemoteFolderEnumerator.cs": {
-    "mtime": 1778043936.1412828,
-    "hash": "39ba01e7196988e8f9dc4aa5c182f337"
-  },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Sync/GivenASyncEventAggregator.cs": {
     "mtime": 1778043936.1412828,
     "hash": "271c6a8bd61e159ba6199e071606fbe8"
@@ -382,6 +378,10 @@
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Sync/GivenASyncJobExecutor.cs": {
     "mtime": 1778043936.1412828,
     "hash": "89fcc4329282775893b963d9dd607983"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Sync/GivenARemoteFolderEnumerator.cs": {
+    "mtime": 1778046575.6870341,
+    "hash": "f530d33a53d9ad25a2fb1d888e95de8a"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Theme/ThemeServiceTests.cs": {
     "mtime": 1777746975.3248103,
@@ -620,8 +620,8 @@
     "hash": "bdffd5ee2e76558c41628a9126d63ac2"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Data/Entities/SyncedItemEntityFactory.cs": {
-    "mtime": 1778043936.1412828,
-    "hash": "d0d22a24309f294aabb38c85d81649a0"
+    "mtime": 1778046575.6870341,
+    "hash": "5a0cdb530a9e5971e9a2041b2ecccc0b"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Data/Repositories/ISyncedItemRepository.cs": {
     "mtime": 1776786859.150803,
@@ -847,13 +847,13 @@
     "mtime": 1777314480.5665903,
     "hash": "92c36139f38d39de9697306be4d5de58"
   },
-  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Graph/GraphService.cs": {
-    "mtime": 1777840719.3556736,
-    "hash": "5c6fbe9200952d41bdcdf1ae12bcbcc9"
-  },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Graph/IGraphService.cs": {
     "mtime": 1777840719.3556736,
     "hash": "d3c621101bbbde14a678a80b996f6a8e"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Graph/GraphService.cs": {
+    "mtime": 1778046575.6870341,
+    "hash": "89c44f03c798abfc1f113b176df2cee0"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/AvaloniaUiDispatcher.cs": {
     "mtime": 1776423349.0120945,
@@ -975,13 +975,13 @@
     "mtime": 1778043936.1422827,
     "hash": "657303b31cda587dad2b7c6fc3e8a9ef"
   },
-  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/RemoteFolderEnumerator.cs": {
-    "mtime": 1778043936.1422827,
-    "hash": "83dc0b55fb0b6a1cb4f8c12bec0bebe3"
-  },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/SyncJobExecutor.cs": {
     "mtime": 1778043936.1422827,
     "hash": "9708d17f3d965e9ea447c2d77e770465"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/RemoteFolderEnumerator.cs": {
+    "mtime": 1778046575.6870341,
+    "hash": "90b4d017006e7adfb0a87e3a41dc861d"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Localization/ILocalizationService.cs": {
     "mtime": 1776423349.0134485,
@@ -1063,10 +1063,6 @@
     "mtime": 1777746975.32881,
     "hash": "c5f18c362ccaf4cba0cbac20ba7a0da4"
   },
-  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/DeltaItem.cs": {
-    "mtime": 1777746975.32881,
-    "hash": "f9ccb1836ee2446c29bc71f4b57dcfe7"
-  },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/DeltaResult.cs": {
     "mtime": 1777746975.32881,
     "hash": "44a83cbfb25034448c9a904144538575"
@@ -1138,6 +1134,30 @@
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/SyncJobFactory.cs": {
     "mtime": 1778043936.1412828,
     "hash": "dab301f3a6c67e77194bc131c6d1de29"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/ItemPath.cs": {
+    "mtime": 1778046118.953025,
+    "hash": "e45e018c079c8d0e29e87583e601773f"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/ItemPathFactory.cs": {
+    "mtime": 1778046122.780744,
+    "hash": "9b54c7c059845da693bc28a2ed33c4a3"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/VersionInfo.cs": {
+    "mtime": 1778046126.499471,
+    "hash": "7bef0e9bd242de0b807ffa277818bad7"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/VersionInfoFactory.cs": {
+    "mtime": 1778046130.137204,
+    "hash": "21b7d5a735c262e5962fcb1d908ae7e7"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/DeltaItemFactory.cs": {
+    "mtime": 1778046136.0807676,
+    "hash": "1e9c44c65229bf79167f4cc8cc1bb894"
+  },
+  "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Domain/DeltaItem.cs": {
+    "mtime": 1778046575.6870341,
+    "hash": "941593ba76d6f3e060c3b1eb89fed67c"
   },
   "/home/jbarden/repos/astar-dev-mono/apps/desktop/AStar.Dev.OneDrive.Sync.Client/Splash/SplashWindow.axaml.cs": {
     "mtime": 1776423349.01565,
@@ -1992,8 +2012,8 @@
     "hash": "c6948df4a2e09c8878c249169642d2e4"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Attributes.Tests.Unit/Debug/net10.0/AStar.Dev.Source.Generators.Attributes.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.1204164,
-    "hash": "87788cda4f93c98df67ee93dee9aadc4"
+    "mtime": 1778046142.421302,
+    "hash": "20e26f51c15f477e00ac9db323e1e582"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Attributes.Tests.Unit/Release/net10.0/AStar.Dev.Source.Generators.Attributes.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.7342012,
@@ -2024,8 +2044,8 @@
     "hash": "e73f9b6822c68003169ad26a9750f4f0"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Functional.Extensions.Tests.Unit/Debug/net10.0/AStar.Dev.Functional.Extensions.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.2364068,
-    "hash": "77e1330a1d4b8f3dd36c0ace725e649e"
+    "mtime": 1778046142.8092737,
+    "hash": "7a0e29c9168a6efc75300d00a7a413c7"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Functional.Extensions.Tests.Unit/Release/net10.0/AStar.Dev.Functional.Extensions.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.34123,
@@ -2048,8 +2068,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Logging.Extensions/Debug/net10.0/AStar.Dev.Logging.Extensions.AssemblyInfo.cs": {
-    "mtime": 1778043958.7434468,
-    "hash": "86c7c22329e8e151cc6b4e81a1c06b85"
+    "mtime": 1778046142.6742835,
+    "hash": "4e0b477da322b97577894f036488f212"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Logging.Extensions/Release/net10.0/AStar.Dev.Logging.Extensions.GlobalUsings.g.cs": {
     "mtime": 1775050040.5952113,
@@ -2072,8 +2092,8 @@
     "hash": "24bec189e1e13a2c973c53fa6ba63f56"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Utilities.Tests.Unit/Debug/net10.0/AStar.Dev.Utilities.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043958.6614535,
-    "hash": "a5446e64e97397de966dc6a430daa160"
+    "mtime": 1778046142.5512927,
+    "hash": "cff6bc0f3ccad5992f09f8788be53b28"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Utilities.Tests.Unit/Release/net10.0/AStar.Dev.Utilities.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.787197,
@@ -2096,8 +2116,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Utilities/Debug/net10.0/AStar.Dev.Utilities.AssemblyInfo.cs": {
-    "mtime": 1778043958.8744364,
-    "hash": "5bf25f4f32e082b3aa59f34b7ba11c83"
+    "mtime": 1778046141.5563657,
+    "hash": "706b8e6f3f9bedfafd3285bde0ff0bc4"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Utilities/Release/net10.0/AStar.Dev.Utilities.GlobalUsings.g.cs": {
     "mtime": 1774954974.9343736,
@@ -2120,8 +2140,8 @@
     "hash": "c450f22be0b131ea5beb7b8eaf4a2dd5"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Logging.Extensions.Tests.Unit/Debug/net10.0/AStar.Dev.Logging.Extensions.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.4763873,
-    "hash": "8e2a77a86eb56f50e39168c4b65ec439"
+    "mtime": 1778046143.0842535,
+    "hash": "d4311e54b93aab317bd9b07f4a9da094"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Logging.Extensions.Tests.Unit/Release/net10.0/AStar.Dev.Logging.Extensions.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.5902116,
@@ -2144,8 +2164,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators/Debug/netstandard2.0/AStar.Dev.Source.Generators.AssemblyInfo.cs": {
-    "mtime": 1778043958.6854515,
-    "hash": "6f9e03affacf2290a5c8aa36fad2e425"
+    "mtime": 1778046142.5652916,
+    "hash": "ca1ac13496b2c8eef78839d4be8602da"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators/Release/netstandard2.0/AStar.Dev.Source.Generators.GlobalUsings.g.cs": {
     "mtime": 1775050041.0161803,
@@ -2168,8 +2188,8 @@
     "hash": "81b61b5746f6d9db0b73336f0f5b9070"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Tests.Unit/Debug/net10.0/AStar.Dev.Source.Generators.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.1524136,
-    "hash": "30c7ff0c653afed37721eb305e6a51f5"
+    "mtime": 1778046142.7462783,
+    "hash": "ac5857487602074ab761933c779a5118"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Tests.Unit/Debug/net10.0/generated/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.StrongIdCodeGeneration.StrongIdGenerator/UserId_StrongId.g.cs": {
     "mtime": 1776255686.6884735,
@@ -2204,8 +2224,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Sample/Debug/net10.0/AStar.Dev.Source.Generators.Sample.AssemblyInfo.cs": {
-    "mtime": 1778043958.6744525,
-    "hash": "ff7547446a6476235baa6b9bca1bb7be"
+    "mtime": 1778046142.560292,
+    "hash": "c5ba8fe0817fe2ab40b672ce380d5a23"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Sample/Release/net10.0/AStar.Dev.Source.Generators.Sample.GlobalUsings.g.cs": {
     "mtime": 1775050040.88519,
@@ -2220,8 +2240,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.FluentAssignments/Debug/net10.0/AStar.Dev.FluentAssignments.AssemblyInfo.cs": {
-    "mtime": 1778043958.014506,
-    "hash": "57a15a40179b795516f8c5f35c0448e5"
+    "mtime": 1778046142.574291,
+    "hash": "a463dd2419d31ff2ffeef3a43e3e51f9"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.FluentAssignments/Release/net10.0/AStar.Dev.FluentAssignments.GlobalUsings.g.cs": {
     "mtime": 1775050040.6052105,
@@ -2236,8 +2256,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Attributes/Debug/netstandard2.0/AStar.Dev.Source.Generators.Attributes.AssemblyInfo.cs": {
-    "mtime": 1778043958.8144412,
-    "hash": "e9e6fedf60c7f42968fb2a17ef562a3d"
+    "mtime": 1778046141.9253385,
+    "hash": "dcd387a1b28146984705b3f5323b519c"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Generators.Attributes/Release/netstandard2.0/AStar.Dev.Source.Generators.Attributes.GlobalUsings.g.cs": {
     "mtime": 1775050040.829194,
@@ -2252,8 +2272,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Analyzers/Debug/netstandard2.0/AStar.Dev.Source.Analyzers.AssemblyInfo.cs": {
-    "mtime": 1778043958.2204895,
-    "hash": "ba89579e074bbdbc4076caffffeee932"
+    "mtime": 1778046142.0213315,
+    "hash": "c6cab9e97c7f54c504ea72d341837df4"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Source.Analyzers/Release/netstandard2.0/AStar.Dev.Source.Analyzers.GlobalUsings.g.cs": {
     "mtime": 1775050040.8351936,
@@ -2268,8 +2288,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Functional.Extensions/Debug/netstandard2.1/AStar.Dev.Functional.Extensions.AssemblyInfo.cs": {
-    "mtime": 1778043958.126497,
-    "hash": "606462298ea60a02b4ee7fed62dbb050"
+    "mtime": 1778046141.7813492,
+    "hash": "a35b8655050c3a945fad3d1e7d17ea44"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Functional.Extensions/Release/netstandard2.1/AStar.Dev.Functional.Extensions.GlobalUsings.g.cs": {
     "mtime": 1774954974.930374,
@@ -2292,8 +2312,8 @@
     "hash": "76cf31bce05b56ca3c23db148963d92f"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Api.HealthChecks.Tests.Unit/Debug/net10.0/AStar.Dev.Api.HealthChecks.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.4173923,
-    "hash": "fc65921446d37e381e094bd697dd170d"
+    "mtime": 1778046143.065255,
+    "hash": "129213c79ce13613f1641fe62c9b47e6"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Api.HealthChecks.Tests.Unit/Release/net10.0/AStar.Dev.Api.HealthChecks.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.3562288,
@@ -2316,8 +2336,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Technical.Debt.Reporting/Debug/net10.0/AStar.Dev.Technical.Debt.Reporting.AssemblyInfo.cs": {
-    "mtime": 1778043958.6164572,
-    "hash": "2a2390a85d9a2566a2fa74ecdeeea24f"
+    "mtime": 1778046142.3463078,
+    "hash": "e8d692f38b5c305bc4fd80524c7545fc"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Technical.Debt.Reporting/Release/net10.0/AStar.Dev.Technical.Debt.Reporting.GlobalUsings.g.cs": {
     "mtime": 1775050040.7072031,
@@ -2340,8 +2360,8 @@
     "hash": "326c598579b0e604c1b910cb44ac8a65"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.FluentAssignments.Tests.Unit/Debug/net10.0/AStar.Dev.FluentAssignments.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.6663718,
-    "hash": "87a0222c328080b34b10d13af4c9728c"
+    "mtime": 1778046143.2322426,
+    "hash": "68b360a8789554ad12ec2045de901537"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.FluentAssignments.Tests.Unit/Release/net10.0/AStar.Dev.FluentAssignments.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.61421,
@@ -2364,8 +2384,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Clock/Debug/net10.0/AStar.Dev.Clock.AssemblyInfo.cs": {
-    "mtime": 1778043959.1894107,
-    "hash": "4f06c7b337d169f1af784712c2c40a61"
+    "mtime": 1778046142.287312,
+    "hash": "ba0b4ca201a6cd25835e4ed807ec62fd"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Clock/Release/net10.0/AStar.Dev.Clock.GlobalUsings.g.cs": {
     "mtime": 1775050040.3222313,
@@ -2380,8 +2400,8 @@
     "hash": "3ca3ba71f186b61cb901145d168ce1fd"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Api.HealthChecks/Debug/net10.0/AStar.Dev.Api.HealthChecks.AssemblyInfo.cs": {
-    "mtime": 1778043959.0394228,
-    "hash": "8a5ea69181622426d7e4e90bf2e9709e"
+    "mtime": 1778046142.656602,
+    "hash": "e5eaa7f8cb4910ed6cf6513d5987d696"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Api.HealthChecks/Release/net10.0/AStar.Dev.Api.HealthChecks.GlobalUsings.g.cs": {
     "mtime": 1775050040.4832196,
@@ -2404,8 +2424,8 @@
     "hash": "e82de5ad491e76090105ce5cae9b1693"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Guard.Clauses.Tests.Unit/Debug/net10.0/AStar.Dev.Guard.Clauses.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.727367,
-    "hash": "73f529bbe5223c3e7df81706af01856d"
+    "mtime": 1778046142.355307,
+    "hash": "0747e5a8cbe58bb7dd23399d42d715f2"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Guard.Clauses.Tests.Unit/Release/net10.0/AStar.Dev.Guard.Clauses.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775050040.7931967,
@@ -2428,8 +2448,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Guard.Clauses/Debug/net10.0/AStar.Dev.Guard.Clauses.AssemblyInfo.cs": {
-    "mtime": 1778043958.6074579,
-    "hash": "0e4ebf269608930b9c824b2fd8ee085f"
+    "mtime": 1778046142.7342792,
+    "hash": "a7c5c8e3125d30c7e095e9ee8a9ad3fc"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.Guard.Clauses/Release/net10.0/AStar.Dev.Guard.Clauses.GlobalUsings.g.cs": {
     "mtime": 1775050040.724202,
@@ -2772,8 +2792,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.File.App/Debug/net10.0/AStar.Dev.File.App.AssemblyInfo.cs": {
-    "mtime": 1778043959.07542,
-    "hash": "94158f51361e764bbb622c8e4bf0aef1"
+    "mtime": 1778046142.2205882,
+    "hash": "e87f7bfb486a89c54b9ae80727b5ee99"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.File.App/Release/net10.0/AStar.Dev.File.App.GlobalUsings.g.cs": {
     "mtime": 1775751866.5522406,
@@ -2796,8 +2816,8 @@
     "hash": "4f420ffc4b51dd8a3bdd007e83804227"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.File.App.Tests.Unit/Debug/net10.0/AStar.Dev.File.App.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043959.4163923,
-    "hash": "22cea99133fa103ced588b44f5add167"
+    "mtime": 1778046142.8542705,
+    "hash": "885331f83b794ce450fd537912bd19a6"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.File.App.Tests.Unit/Release/net10.0/AStar.Dev.File.App.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1775751866.474247,
@@ -2836,8 +2856,8 @@
     "hash": "004c25979a5d1dcf32654c8337e06dc4"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Debug/net10.0/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.AssemblyInfo.cs": {
-    "mtime": 1778043937.3241868,
-    "hash": "107bafd53ce4693bf8088df3c27d304c"
+    "mtime": 1778046142.883268,
+    "hash": "d7f976ceea237885b18de712617d3e57"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Release/net10.0/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.GlobalUsings.g.cs": {
     "mtime": 1777753578.0367737,
@@ -2860,8 +2880,8 @@
     "hash": "98926837ba69930b8428d861944bcd0a"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.OneDrive.Sync.Client/Debug/net10.0/AStar.Dev.OneDrive.Sync.Client.AssemblyInfo.cs": {
-    "mtime": 1778043959.3923943,
-    "hash": "1cd2ee8d902e16a2ffb5fd1431232461"
+    "mtime": 1778046120.5359087,
+    "hash": "9812ec2a9af1a8ababac375fb29607b6"
   },
   "/home/jbarden/repos/astar-dev-mono/artifacts/obj/AStar.Dev.OneDrive.Sync.Client/Debug/net10.0/generated/Avalonia.Generators/Avalonia.Generators.NameGenerator.AvaloniaNameSourceGenerator/AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsView.g.cs": {
     "mtime": 1776255765.0871563,
