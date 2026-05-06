@@ -38,7 +38,7 @@ packages.lock.json
 *.sln.docstates
 .vs/
 launchSettings.json
-
+**/graphify-out/*
 # Publish output
 **/publish/
 **/PublishOutput/
