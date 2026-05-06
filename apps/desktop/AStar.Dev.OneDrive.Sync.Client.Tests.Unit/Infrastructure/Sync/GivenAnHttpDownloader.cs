@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 

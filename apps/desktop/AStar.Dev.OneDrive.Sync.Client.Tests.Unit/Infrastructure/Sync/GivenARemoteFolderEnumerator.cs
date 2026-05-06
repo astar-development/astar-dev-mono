@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;

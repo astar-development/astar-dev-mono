@@ -1,4 +1,3 @@
-using System.Net.Http;
 using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
