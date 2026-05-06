@@ -115,7 +115,7 @@ jobs:
 
       - name: Test
         run: |
-          for proj in $(find tests -name '*Unit*.csproj'); do
+          for proj in $(find tests -name '*.csproj'); do
             echo "Running tests for $proj"
             dotnet test "$proj" \
               --no-build \
