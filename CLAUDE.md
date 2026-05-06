@@ -150,9 +150,9 @@ Before any coding task complete — commits and PRs included:
 1. `dotnet build` affected projects — zero errors, zero warnings
 2. `dotnet test` affected test projects — all pass except new TDD `RED` tests. COMMIT failing tests.
 3. Write MINIMAL production code to pass test(s)
-3. Request human review BEFORE committing.
-4. Human requests changes? Implement, re-request review.
-5. ONLY after human approval: commit to branch, raise GitHub PR.
+4. Request human review BEFORE committing.
+5. Human requests changes? Implement, re-request review.
+6. ONLY after human approval: commit to branch, raise GitHub PR.
 
 ## Verification Before Declaring Done
 

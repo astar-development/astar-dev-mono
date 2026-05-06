@@ -115,13 +115,16 @@ jobs:
 
       - name: Test
         run: |
-          dotnet test \
-            --no-build \
-            --configuration Release \
-            --logger "trx;LogFileName=results.trx" \
-            --results-directory ./TestResults \
-            --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+          for proj in $(find tests -name '*Unit*.csproj'); do
+            echo "Running tests for $proj"
+            dotnet test "$proj" \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=$(basename $proj).trx" \
+              --results-directory ./TestResults \
+              --collect:"XPlat Code Coverage" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+          done
 
       # dorny/test-reporter does not yet support Node.js 24.
       # Replaced with the official GitHub test-reporter action which is
