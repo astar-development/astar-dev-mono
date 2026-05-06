@@ -2,10 +2,10 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
-public sealed class DeltaItemTests
+public sealed class GivenADeltaItem
 {
     [Fact]
-    public void DeltaItem_AllPropertiesCanBeSet()
+    public void when_created_with_all_properties_then_they_are_preserved()
     {
         string id = "file-123";
         string driveId = "drive-456";
@@ -43,7 +43,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_CanBeCreated_WithoutRelativePath()
+    public void when_created_without_relative_path_then_relative_path_is_null()
     {
         var item = DeltaItemFactory.Create(
             new OneDriveItemId("file-123"),
@@ -61,7 +61,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_DeletedItem_ShouldHaveIsDeletedTrue()
+    public void when_created_as_deleted_then_is_deleted_is_true()
     {
         var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", null, ItemPathFactory.Create("name"), false, true, 0, null, null, VersionInfoFactory.Create(null, null));
 
@@ -69,7 +69,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_Folder_ShouldHaveIsFolderTrue()
+    public void when_created_as_folder_then_is_folder_is_true()
     {
         var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("Documents"), true, false, 0, null, null, VersionInfoFactory.Create(null, null));
 
@@ -77,7 +77,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_File_ShouldHaveIsFolderFalse()
+    public void when_created_as_file_then_is_folder_is_false()
     {
         var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("file.txt"), false, false, 1024, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
@@ -85,7 +85,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_ZeroSize_IsValid()
+    public void when_size_is_zero_then_it_is_preserved()
     {
         var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("empty.txt"), false, false, 0, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
@@ -93,7 +93,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_LargeSize_IsValid()
+    public void when_size_is_large_then_it_is_preserved()
     {
         long largeSize = 1_099_511_627_776L;
 
@@ -103,7 +103,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_WithoutLastModified_ShouldBeNull()
+    public void when_last_modified_is_null_then_it_is_null()
     {
         var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 0, null, "url", VersionInfoFactory.Create(null, null));
 
@@ -111,7 +111,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_IsRecord_ShouldSupportValueEquality()
+    public void when_two_instances_have_same_values_then_they_are_equal()
     {
         var item1 = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
         var item2 = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, item1.LastModified, "url", VersionInfoFactory.Create(null, null));
@@ -120,7 +120,7 @@ public sealed class DeltaItemTests
     }
 
     [Fact]
-    public void DeltaItem_DeletedFile_ShouldDifferFromNonDeleted()
+    public void when_deleted_flag_differs_then_instances_are_not_equal()
     {
         var timestamp = DateTimeOffset.UtcNow;
         var active = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, timestamp, "url", VersionInfoFactory.Create(null, null));

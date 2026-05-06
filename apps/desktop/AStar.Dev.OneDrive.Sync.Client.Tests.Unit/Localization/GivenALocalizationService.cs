@@ -3,10 +3,10 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Localization;
 
-public sealed class LocalizationServiceTests
+public sealed class GivenALocalizationService
 {
     [Fact]
-    public void Constructor_ShouldInitializeWithFallbackCulture()
+    public void when_constructed_then_culture_defaults_to_en_GB()
     {
         var service = new LocalizationService();
 
@@ -14,7 +14,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Constructor_ShouldDiscoverAvailableCultures()
+    public void when_constructed_then_available_cultures_includes_en_GB()
     {
         var service = new LocalizationService();
 
@@ -23,7 +23,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public async Task InitialiseAsync_WithoutArgument_ShouldUseFallbackCulture()
+    public async Task when_initialise_called_without_argument_then_culture_defaults_to_en_GB()
     {
         var service = new LocalizationService();
 
@@ -33,7 +33,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public async Task InitialiseAsync_WithFallbackCulture_ShouldSucceed()
+    public async Task when_initialise_called_with_fallback_culture_then_it_succeeds()
     {
         var service = new LocalizationService();
         var culture = new CultureInfo("en-GB");
@@ -44,7 +44,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithValidKey_ShouldReturnValue()
+    public void when_get_local_called_with_valid_key_then_value_is_returned()
     {
         var service = new LocalizationService();
         string key = "App.Title";
@@ -56,7 +56,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithInvalidKey_ShouldReturnKeyAsFallback()
+    public void when_get_local_called_with_invalid_key_then_key_is_returned_as_fallback()
     {
         var service = new LocalizationService();
         string key = "NonExistent.Key";
@@ -67,7 +67,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithMultipleKeys_ShouldReturnSameValuesForSameKeys()
+    public void when_get_local_called_multiple_times_with_same_key_then_same_value_is_returned()
     {
         var service = new LocalizationService();
         string key = "App.Title";
@@ -79,7 +79,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithFormatArguments_ShouldFormatString()
+    public void when_get_local_called_with_format_arguments_then_string_is_not_null()
     {
         var service = new LocalizationService();
         string key = "Format.Test";
@@ -91,7 +91,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithEmptyKey_ShouldReturnEmptyString()
+    public void when_get_local_called_with_empty_key_then_empty_string_is_returned()
     {
         var service = new LocalizationService();
 
@@ -101,7 +101,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithNullKey_ShouldReturnNullKey()
+    public void when_get_local_called_with_null_key_then_argument_null_exception_is_thrown()
     {
         var service = new LocalizationService();
 
@@ -117,7 +117,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public async Task SetCultureAsync_WithFallbackCulture_ShouldChangeCulture()
+    public async Task when_set_culture_async_called_with_en_GB_then_current_culture_is_en_GB()
     {
         var service = new LocalizationService();
         var targetCulture = new CultureInfo("en-GB");
@@ -128,7 +128,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public async Task SetCultureAsync_WithSameCulture_ShouldNotRaiseEvent()
+    public async Task when_set_culture_async_called_with_same_culture_then_culture_changed_event_is_not_raised()
     {
         var service = new LocalizationService();
         bool eventRaised = false;
@@ -142,7 +142,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void CultureInfo_ShouldBeReadOnly()
+    public void when_current_culture_is_read_then_it_is_not_null()
     {
         var service = new LocalizationService();
         var originalCulture = service.CurrentCulture;
@@ -150,7 +150,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void AvailableCultures_ShouldBeReadOnly()
+    public void when_available_cultures_is_read_then_it_is_not_null()
     {
         var service = new LocalizationService();
 
@@ -161,7 +161,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void Get_WithMultipleFormatArguments_ShouldHandleCorrectly()
+    public void when_get_local_called_with_multiple_format_arguments_then_non_null_result_is_returned()
     {
         var service = new LocalizationService();
         string key = "Format.MultiArg";
@@ -172,7 +172,7 @@ public sealed class LocalizationServiceTests
     }
 
     [Fact]
-    public void CurrentCulture_ShouldNotBeRapidlyChanged()
+    public void when_current_culture_is_read_then_name_is_not_empty()
     {
         var service = new LocalizationService();
         var originalCulture = service.CurrentCulture;

@@ -2,10 +2,10 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
-public class FolderTreeNodeTests
+public sealed class GivenAFolderTreeNode
 {
     [Fact]
-    public void FolderTreeNode_CanBeCreatedWithAllProperties()
+    public void when_created_with_all_properties_then_they_are_preserved()
     {
         string id = "folder-123";
         string name = "Documents";
@@ -22,7 +22,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_DefaultSyncState_ShouldBeExcluded()
+    public void when_created_with_defaults_then_sync_state_is_excluded()
     {
         var node = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs");
 
@@ -30,7 +30,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_DefaultHasChildren_ShouldBeTrue()
+    public void when_created_with_defaults_then_has_children_is_true()
     {
         var node = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs");
 
@@ -38,7 +38,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_CanBeCreatedWithCustomState()
+    public void when_created_with_custom_state_then_sync_state_is_set()
     {
         var node = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Included);
 
@@ -46,7 +46,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_CanBeCreatedWithNoChildren()
+    public void when_created_with_no_children_then_has_children_is_false()
     {
         var node = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Excluded, HasChildren: false);
 
@@ -61,7 +61,7 @@ public class FolderTreeNodeTests
     [InlineData(FolderSyncState.Synced)]
     [InlineData(FolderSyncState.Conflict)]
     [InlineData(FolderSyncState.Error)]
-    public void FolderTreeNode_ShouldSupportAllSyncStates(FolderSyncState state)
+    public void when_created_with_any_sync_state_then_it_is_preserved(FolderSyncState state)
     {
         var node = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", state);
 
@@ -69,7 +69,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_RootFolder_CanHaveNullParentId()
+    public void when_root_folder_is_created_then_parent_id_is_null()
     {
         var node = new FolderTreeNode("root-id", "OneDrive", null, "account", "/OneDrive");
 
@@ -77,7 +77,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_IsRecord_ShouldSupportValueEquality()
+    public void when_two_instances_have_same_values_then_they_are_equal()
     {
         var node1 = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Included);
         var node2 = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Included);
@@ -86,7 +86,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_DifferentStateShouldNotBeEqual()
+    public void when_two_instances_have_different_states_then_they_are_not_equal()
     {
         var node1 = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Included);
         var node2 = new FolderTreeNode("id", "Docs", "parent", "account", "/Docs", FolderSyncState.Excluded);
@@ -95,7 +95,7 @@ public class FolderTreeNodeTests
     }
 
     [Fact]
-    public void FolderTreeNode_NestedFolderStructure_ShouldMaintainHierarchy()
+    public void when_nested_structure_is_created_then_hierarchy_is_maintained()
     {
         var root = new FolderTreeNode("root-id", "OneDrive", null, "account", "/OneDrive");
         var child = new FolderTreeNode("child-id", "Documents", "root-id", "account", "/OneDrive/Documents");

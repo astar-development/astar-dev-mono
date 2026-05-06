@@ -10,7 +10,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
-public sealed class SyncServiceTests
+public sealed class GivenASyncService
 {
     private readonly IAuthService              _authService             = Substitute.For<IAuthService>();
     private readonly IGraphService             _graphService            = Substitute.For<IGraphService>();
@@ -41,7 +41,7 @@ public sealed class SyncServiceTests
         => new([], new HashSet<string>(), [], []);
 
     [Fact]
-    public void constructor_creates_instance_successfully()
+    public void when_constructed_then_instance_is_not_null()
     {
         var service = BuildSut();
 

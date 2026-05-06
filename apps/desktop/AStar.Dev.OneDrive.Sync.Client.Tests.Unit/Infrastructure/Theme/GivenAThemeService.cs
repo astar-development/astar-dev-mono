@@ -2,10 +2,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Theme;
 
-public sealed class ThemeServiceTests
+public sealed class GivenAThemeService
 {
     [Fact]
-    public void Constructor_ShouldInitializeWithSystemTheme()
+    public void when_constructed_then_current_theme_is_system()
     {
         var service = new ThemeService();
 
@@ -13,7 +13,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_WithLightTheme_ShouldChangeCurrentTheme()
+    public void when_apply_called_with_light_theme_then_current_theme_is_light()
     {
         var service = new ThemeService();
 
@@ -23,7 +23,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_WithDarkTheme_ShouldChangeCurrentTheme()
+    public void when_apply_called_with_dark_theme_then_current_theme_is_dark()
     {
         var service = new ThemeService();
 
@@ -33,7 +33,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_WithSystemTheme_ShouldChangeCurrentTheme()
+    public void when_apply_called_with_system_theme_then_current_theme_is_system()
     {
         var service = new ThemeService();
 
@@ -43,7 +43,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_ShouldRaiseThemeChangedEvent()
+    public void when_apply_called_then_theme_changed_event_is_raised()
     {
         var service = new ThemeService();
         bool eventRaised = false;
@@ -65,7 +65,7 @@ public sealed class ThemeServiceTests
     [InlineData(AppTheme.Light)]
     [InlineData(AppTheme.Dark)]
     [InlineData(AppTheme.System)]
-    public void Apply_WithAnyTheme_ShouldRaiseEvent(AppTheme theme)
+    public void when_apply_called_with_any_theme_then_event_is_raised(AppTheme theme)
     {
         var service = new ThemeService();
         bool eventRaised = false;
@@ -78,7 +78,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_MultipleTimesWithSameTheme_ShouldRaiseEventEachTime()
+    public void when_apply_called_multiple_times_with_same_theme_then_event_is_raised_each_time()
     {
         var service = new ThemeService();
         int eventCount = 0;
@@ -93,7 +93,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_AlternatingThemes_ShouldUpdateCurrentThemeCorrectly()
+    public void when_apply_called_with_alternating_themes_then_current_theme_updates_correctly()
     {
         var service = new ThemeService();
 
@@ -109,7 +109,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void ThemeService_ShouldBeDisposable()
+    public void when_service_is_checked_then_it_is_disposable()
     {
         var service = new ThemeService();
 
@@ -117,7 +117,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Dispose_ShouldNotThrow()
+    public void when_dispose_called_then_no_exception_is_thrown()
     {
         var service = new ThemeService();
 
@@ -125,7 +125,7 @@ public sealed class ThemeServiceTests
     }
 
     [Fact]
-    public void Apply_AfterDispose_BehaviorIsUndefined()
+    public void when_apply_called_after_dispose_then_object_disposed_exception_may_be_thrown()
     {
         var service = new ThemeService();
         service.Dispose();

@@ -2,10 +2,10 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
-public class SyncConflictTests
+public sealed class GivenASyncConflict
 {
     [Fact]
-    public void SyncConflict_NewInstance_ShouldHaveUniqueId()
+    public void when_created_then_id_is_unique()
     {
         var conflict1 = new SyncConflict();
         var conflict2 = new SyncConflict();
@@ -14,7 +14,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_NewInstance_ShouldHavePendingState()
+    public void when_created_then_state_is_pending()
     {
         var conflict = new SyncConflict();
 
@@ -22,7 +22,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_NewInstance_ShouldHaveNoResolution()
+    public void when_created_then_resolution_is_null()
     {
         var conflict = new SyncConflict();
 
@@ -30,7 +30,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_NewInstance_ShouldHaveCurrentDetectedTime()
+    public void when_created_then_detected_at_is_approximately_now()
     {
         var before = DateTimeOffset.UtcNow.AddMilliseconds(-100);
 
@@ -41,7 +41,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_NewInstance_ShouldNotBeResolved()
+    public void when_created_then_resolved_at_is_null()
     {
         var conflict = new SyncConflict();
 
@@ -49,7 +49,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_CanSetPropertiesViaInit()
+    public void when_all_properties_are_set_then_they_are_preserved()
     {
         var id = Guid.NewGuid();
         string accountId = "account-123";
@@ -85,7 +85,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_CanBeResolved()
+    public void when_resolved_then_state_and_resolution_and_resolved_at_are_set()
     {
         var conflict = new SyncConflict { State = ConflictState.Pending };
 
@@ -99,7 +99,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_CanBeSkipped()
+    public void when_skipped_then_state_is_skipped()
     {
         var conflict = new SyncConflict { State = ConflictState.Pending };
 
@@ -112,7 +112,7 @@ public class SyncConflictTests
     [InlineData(ConflictState.Pending)]
     [InlineData(ConflictState.Resolved)]
     [InlineData(ConflictState.Skipped)]
-    public void SyncConflict_ShouldSupportAllStates(ConflictState state)
+    public void when_state_is_set_then_it_is_preserved(ConflictState state)
     {
         var conflict = new SyncConflict { State = state };
 
@@ -120,7 +120,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_LocalSizeCanBeLarge()
+    public void when_local_size_is_large_then_it_is_preserved()
     {
         long largeSize = 1_073_741_824L;
 
@@ -130,7 +130,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_CanTrackVersionConflict()
+    public void when_local_is_older_than_remote_then_version_conflict_is_tracked()
     {
         var now = DateTimeOffset.UtcNow;
 
@@ -147,7 +147,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_WithoutResolution_ShouldHaveNullResolution()
+    public void when_resolution_is_not_set_then_it_is_null()
     {
         var conflict = new SyncConflict { State = ConflictState.Pending };
 
@@ -155,7 +155,7 @@ public class SyncConflictTests
     }
 
     [Fact]
-    public void SyncConflict_WithResolution_ShouldHaveNonNullResolution()
+    public void when_resolution_is_set_then_it_is_not_null()
     {
         var conflict = new SyncConflict
         {

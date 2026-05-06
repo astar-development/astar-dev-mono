@@ -3,10 +3,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
-public sealed class HttpDownloaderBackoffTests
+public sealed class GivenAnHttpDownloaderBackoff
 {
     [Fact]
-    public void GetBackoffDelay_Attempt1_ShouldBeBetweenBaseAndBaseWithJitter()
+    public void when_attempt_is_1_then_backoff_delay_is_between_2_and_2_point_4_seconds()
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
@@ -17,7 +17,7 @@ public sealed class HttpDownloaderBackoffTests
     }
 
     [Fact]
-    public void GetBackoffDelay_Attempt2_ShouldBeDoubleAttempt1()
+    public void when_attempt_is_2_then_backoff_delay_is_between_4_and_4_point_8_seconds()
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
@@ -29,7 +29,7 @@ public sealed class HttpDownloaderBackoffTests
     }
 
     [Fact]
-    public void GetBackoffDelay_IncreasingAttempts_ShouldExponentiallyIncrease()
+    public void when_attempts_increase_then_delays_increase_exponentially()
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
@@ -49,7 +49,7 @@ public sealed class HttpDownloaderBackoffTests
     }
 
     [Fact]
-    public void GetBackoffDelay_CappedAt120Seconds()
+    public void when_attempt_is_10_then_delay_is_capped_at_144_seconds()
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
@@ -58,7 +58,7 @@ public sealed class HttpDownloaderBackoffTests
     }
 
     [Fact]
-    public void GetBackoffDelay_WithJitter_ShouldHaveVariability()
+    public void when_called_multiple_times_then_delays_have_variability()
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
@@ -79,7 +79,7 @@ public sealed class HttpDownloaderBackoffTests
     [InlineData(3, 8.0, 9.6)]      // 8s base, 20% = 1.6s jitter
     [InlineData(4, 16.0, 19.2)]    // 16s base, 20% = 3.2s jitter
     [InlineData(5, 32.0, 38.4)]    // 32s base, 20% = 6.4s jitter
-    public void GetBackoffDelay_RespectsCeilingAndJitter(int attempt, double minSeconds, double maxSeconds)
+    public void when_attempt_is_specified_then_delay_respects_ceiling_and_jitter(int attempt, double minSeconds, double maxSeconds)
     {
         var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
         _ = method.ShouldNotBeNull();
