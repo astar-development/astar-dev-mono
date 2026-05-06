@@ -27,9 +27,14 @@ public sealed class GivenASyncJobExecutor
         var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(""), new OneDriveItemId(remoteId));
         var target = SyncFileTargetFactory.Create(localPath, "Documents/file.txt");
         var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1));
-        var status = SyncJobStatusFactory.Create();
 
-        return SyncJobFactory.Create(remote, target, metadata, direction, status);
+        return direction switch
+        {
+            SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
+            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
+        };
     }
 
     [Fact]
@@ -79,14 +84,14 @@ public sealed class GivenASyncJobExecutor
         var mockFs = new MockFileSystem();
         mockFs.AddFile(UploadFilePath, new MockFileData("data"));
 
-        var job = MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
+        var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
         var jobs = new List<SyncJob> { job };
 
         _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<string>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
             .Do(call =>
             {
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job.Complete() with { UploadedRemoteItemId = "uploaded-remote-id" }));
+                onJobCompleted(new JobCompletedEventArgs(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" }));
             });
 
         var sut = CreateSut(mockFs);

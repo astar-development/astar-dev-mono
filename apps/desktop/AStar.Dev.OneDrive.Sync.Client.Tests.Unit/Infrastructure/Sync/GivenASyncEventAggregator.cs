@@ -35,8 +35,7 @@ public sealed class GivenASyncEventAggregator
         var remote = RemoteItemRefFactory.Create(new AccountId("acc-2"), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
-        var status = SyncJobStatusFactory.Create();
-        var job = SyncJobFactory.Create(remote, target, metadata, default, status);
+        var job = SyncJobFactory.CreateDownload(remote, target, metadata);
         var eventArgs = new JobCompletedEventArgs(job);
 
         _syncService.JobCompleted += Raise.EventWith(eventArgs);

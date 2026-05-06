@@ -21,8 +21,8 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             ct.ThrowIfCancellationRequested();
 
             Serilog.Log.Debug(
-                "[Worker {Id}] Processing {Direction} {Path}",
-                workerId, job.Direction, job.Target.RelativePath);
+                "[Worker {Id}] Processing {JobType} {Path}",
+                workerId, job.GetType().Name, job.Target.RelativePath);
 
             await syncRepository.UpdateJobStateAsync(
                 job.Status.Id, SyncJobState.InProgress).ConfigureAwait(false);
@@ -57,39 +57,32 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
     private async Task<SyncJob> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
     {
-        switch(job.Direction)
+        switch(job)
         {
-            case SyncDirection.Download:
-                string downloadUrl = await ResolveDownloadUrlAsync(job, accessToken, ct);
+            case DownloadSyncJob downloadJob:
+                string downloadUrl = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct);
+                await downloader.DownloadAsync(downloadUrl, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
 
-                await downloader.DownloadAsync(
-                    downloadUrl,
-                    job.Target.LocalPath,
-                    job.Metadata.RemoteModified,
-                    ct: ct).ConfigureAwait(false);
+                return downloadJob;
 
-                return job;
+            case UploadSyncJob uploadJob:
+                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
+                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, uploadJob.Target.RelativePath);
 
-            case SyncDirection.Upload:
-                string remotePath = job.DownloadUrl ?? job.Target.RelativePath;
-                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, job.Target.LocalPath, remotePath, parentFolderId: job.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
+                return uploadJob with { UploadedRemoteItemId = uploadedRemoteItemId };
 
-                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.Target.RelativePath);
+            case DeleteSyncJob deleteJob:
+                if(fileSystem.File.Exists(deleteJob.Target.LocalPath))
+                    fileSystem.File.Delete(deleteJob.Target.LocalPath);
 
-                return job with { UploadedRemoteItemId = uploadedRemoteItemId };
-
-            case SyncDirection.Delete:
-                if(fileSystem.File.Exists(job.Target.LocalPath))
-                    fileSystem.File.Delete(job.Target.LocalPath);
-
-                return job;
+                return deleteJob;
 
             default:
                 return job;
         }
     }
 
-    private async Task<string> ResolveDownloadUrlAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private async Task<string> ResolveDownloadUrlAsync(DownloadSyncJob job, string accessToken, CancellationToken ct)
     {
         if(job.DownloadUrl is not null)
             return job.DownloadUrl;

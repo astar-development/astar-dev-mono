@@ -18,9 +18,18 @@ public sealed class GivenAnActivityItemViewModel
         var remote = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", relativePath);
         var metadata = SyncFileMetadataFactory.Create(FileSizeValue, default);
-        var status = SyncJobStatusFactory.Create() with { CompletedAt = completedAt, ErrorMessage = errorMessage };
 
-        return SyncJobFactory.Create(remote, target, metadata, direction, status);
+        SyncJob baseJob = direction switch
+        {
+            SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
+            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
+        };
+
+        var status = baseJob.Status with { CompletedAt = completedAt, ErrorMessage = errorMessage };
+
+        return baseJob with { Status = status };
     }
 
     private static SyncConflict BuildSyncConflict(string relativePath = RelativePathValue, DateTimeOffset? detectedAt = null) => new()

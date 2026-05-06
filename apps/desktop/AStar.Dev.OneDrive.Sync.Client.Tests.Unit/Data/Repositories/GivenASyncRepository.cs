@@ -12,9 +12,9 @@ public sealed class GivenASyncRepository
         var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("", "");
         var metadata = SyncFileMetadataFactory.Create(0L, default);
-        var status = SyncJobStatusFactory.Create() with { State = state };
+        var job = SyncJobFactory.CreateDownload(remote, target, metadata);
 
-        return SyncJobFactory.Create(remote, target, metadata, default, status);
+        return job with { Status = job.Status with { State = state } };
     }
 
     [Fact]
@@ -83,9 +83,9 @@ public sealed class GivenASyncRepository
         var metadata = SyncFileMetadataFactory.Create(0L, default);
         var jobs = new List<SyncJob>
         {
-            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(3) }),
-            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(1) }),
-            SyncJobFactory.Create(remote, target, metadata, default, SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(2) })
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(3) } },
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(1) } },
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(2) } }
         };
         await repository.EnqueueJobsAsync(jobs);
 

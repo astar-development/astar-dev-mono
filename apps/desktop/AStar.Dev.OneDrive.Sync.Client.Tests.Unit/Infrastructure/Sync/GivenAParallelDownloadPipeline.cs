@@ -19,14 +19,13 @@ public sealed class GivenAParallelDownloadPipeline
 
     private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader, _fileSystem);
 
-    private static SyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
+    private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
     {
         var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(""));
         var target = SyncFileTargetFactory.Create("/tmp/test-file.txt", relativePath);
         var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
-        var status = SyncJobStatusFactory.Create();
 
-        return SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, downloadUrl: "https://example.com/file");
+        return SyncJobFactory.CreateDownload(remote, target, metadata, "https://example.com/file");
     }
 
     [Fact]

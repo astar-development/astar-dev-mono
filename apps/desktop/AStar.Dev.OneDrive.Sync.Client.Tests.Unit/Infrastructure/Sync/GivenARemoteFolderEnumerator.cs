@@ -151,7 +151,7 @@ public sealed class GivenARemoteFolderEnumerator
 
         result.DownloadJobs.ShouldHaveSingleItem();
         result.DownloadJobs[0].Remote.RemoteItemId.Id.ShouldBe("item-a");
-        result.DownloadJobs[0].Direction.ShouldBe(SyncDirection.Download);
+        result.DownloadJobs[0].ShouldBeOfType<DownloadSyncJob>();
     }
 
     [Fact]

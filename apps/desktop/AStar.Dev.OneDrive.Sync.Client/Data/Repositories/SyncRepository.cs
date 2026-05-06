@@ -24,9 +24,15 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
             RemoteItemId   = j.Remote.RemoteItemId,
             RelativePath   = j.Target.RelativePath,
             LocalPath      = j.Target.LocalPath,
-            Direction      = j.Direction,
+            Direction      = j switch
+            {
+                DownloadSyncJob => SyncDirection.Download,
+                UploadSyncJob   => SyncDirection.Upload,
+                DeleteSyncJob   => SyncDirection.Delete,
+                _               => throw new System.Diagnostics.UnreachableException()
+            },
             State          = j.Status.State,
-            DownloadUrl    = j.DownloadUrl,
+            DownloadUrl    = (j as DownloadSyncJob)?.DownloadUrl,
             FileSize       = j.Metadata.FileSize,
             RemoteModified = j.Metadata.RemoteModified,
             QueuedAt       = j.Status.QueuedAt
