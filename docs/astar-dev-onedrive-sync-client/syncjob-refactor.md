@@ -11,6 +11,8 @@ Replacing the `SyncDirection` enum with a discriminated union of three `SyncJob`
 - replaces runtime enum-switch with compile-time type dispatch (pattern matching)
 - aligns with the established `AuthError` DU pattern already in this codebase
 
+> **Note:** The data clump refactor (`syncjob-dataclump-refactor.md`) is complete. `SyncJob` already uses grouped records — `RemoteItemRef Remote`, `SyncFileTarget Target`, `SyncFileMetadata Metadata`, `SyncJobStatus Status` — instead of 15 flat primitives. All signatures and examples below reflect this.
+
 ---
 
 ## Proposed Type Hierarchy
@@ -24,69 +26,19 @@ namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 /// Base type for all sync file operations queued by the sync engine.
 /// Construct via <see cref="SyncJobFactory"/> — never use derived constructors directly.
 /// </summary>
-public abstract record SyncJob(
-    string AccountId,
-    string FolderId,
-    string RemoteItemId,
-    string RelativePath,
-    string LocalPath,
-    long FileSize,
-    DateTimeOffset RemoteModified,
-    Guid Id,
-    DateTimeOffset QueuedAt,
-    SyncJobState State = SyncJobState.Queued,
-    string? ErrorMessage = null,
-    DateTimeOffset? CompletedAt = null);
+public abstract record SyncJob(RemoteItemRef Remote, SyncFileTarget Target, SyncFileMetadata Metadata, SyncJobStatus Status);
 
 /// <summary>Download a remote file to the local path.</summary>
-public sealed record DownloadSyncJob(
-    string AccountId,
-    string FolderId,
-    string RemoteItemId,
-    string RelativePath,
-    string LocalPath,
-    long FileSize,
-    DateTimeOffset RemoteModified,
-    Guid Id,
-    DateTimeOffset QueuedAt,
-    string DownloadUrl,
-    SyncJobState State = SyncJobState.Queued,
-    string? ErrorMessage = null,
-    DateTimeOffset? CompletedAt = null)
-    : SyncJob(AccountId, FolderId, RemoteItemId, RelativePath, LocalPath, FileSize, RemoteModified, Id, QueuedAt, State, ErrorMessage, CompletedAt);
+public sealed record DownloadSyncJob(RemoteItemRef Remote, SyncFileTarget Target, SyncFileMetadata Metadata, SyncJobStatus Status, string DownloadUrl)
+    : SyncJob(Remote, Target, Metadata, Status);
 
 /// <summary>Upload a local file to OneDrive.</summary>
-public sealed record UploadSyncJob(
-    string AccountId,
-    string FolderId,
-    string RemoteItemId,
-    string RelativePath,
-    string LocalPath,
-    long FileSize,
-    DateTimeOffset RemoteModified,
-    Guid Id,
-    DateTimeOffset QueuedAt,
-    SyncJobState State = SyncJobState.Queued,
-    string? ErrorMessage = null,
-    DateTimeOffset? CompletedAt = null,
-    string? UploadedRemoteItemId = null)
-    : SyncJob(AccountId, FolderId, RemoteItemId, RelativePath, LocalPath, FileSize, RemoteModified, Id, QueuedAt, State, ErrorMessage, CompletedAt);
+public sealed record UploadSyncJob(RemoteItemRef Remote, SyncFileTarget Target, SyncFileMetadata Metadata, SyncJobStatus Status, string? UploadedRemoteItemId = null)
+    : SyncJob(Remote, Target, Metadata, Status);
 
 /// <summary>Delete a local file that no longer exists on OneDrive.</summary>
-public sealed record DeleteSyncJob(
-    string AccountId,
-    string FolderId,
-    string RemoteItemId,
-    string RelativePath,
-    string LocalPath,
-    long FileSize,
-    DateTimeOffset RemoteModified,
-    Guid Id,
-    DateTimeOffset QueuedAt,
-    SyncJobState State = SyncJobState.Queued,
-    string? ErrorMessage = null,
-    DateTimeOffset? CompletedAt = null)
-    : SyncJob(AccountId, FolderId, RemoteItemId, RelativePath, LocalPath, FileSize, RemoteModified, Id, QueuedAt, State, ErrorMessage, CompletedAt);
+public sealed record DeleteSyncJob(RemoteItemRef Remote, SyncFileTarget Target, SyncFileMetadata Metadata, SyncJobStatus Status)
+    : SyncJob(Remote, Target, Metadata, Status);
 ```
 
 Key changes from current `SyncJob`:
@@ -94,8 +46,11 @@ Key changes from current `SyncJob`:
 - `DownloadUrl` lifted from nullable on base to **required** on `DownloadSyncJob`
 - `UploadedRemoteItemId` lifted from nullable on base to optional on `UploadSyncJob` only
 - `DeleteSyncJob` carries no extra fields — clean
+- Flat primitives replaced with grouped records — `Remote`, `Target`, `Metadata`, `Status` (data clump refactor already complete)
 
 ### Factory — `SyncJobFactory.cs`
+
+`SyncJobStatusFactory.Create()` is called internally — callers never pass `Id` or `QueuedAt` directly.
 
 ```csharp
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -104,20 +59,34 @@ namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 public static class SyncJobFactory
 {
     /// <inheritdoc cref="DownloadSyncJob"/>
-    public static DownloadSyncJob CreateDownload(string accountId, string folderId, string remoteItemId, string relativePath, string localPath, long fileSize, DateTimeOffset remoteModified, string downloadUrl)
-        => new(accountId, folderId, remoteItemId, relativePath, localPath, fileSize, remoteModified, Guid.NewGuid(), DateTimeOffset.UtcNow, downloadUrl);
+    public static DownloadSyncJob CreateDownload(RemoteItemRef remote, SyncFileTarget target, SyncFileMetadata metadata, string downloadUrl)
+        => new(remote, target, metadata, SyncJobStatusFactory.Create(), downloadUrl);
 
     /// <inheritdoc cref="UploadSyncJob"/>
-    public static UploadSyncJob CreateUpload(string accountId, string folderId, string remoteItemId, string relativePath, string localPath, long fileSize, DateTimeOffset remoteModified)
-        => new(accountId, folderId, remoteItemId, relativePath, localPath, fileSize, remoteModified, Guid.NewGuid(), DateTimeOffset.UtcNow);
+    public static UploadSyncJob CreateUpload(RemoteItemRef remote, SyncFileTarget target, SyncFileMetadata metadata)
+        => new(remote, target, metadata, SyncJobStatusFactory.Create());
 
     /// <inheritdoc cref="DeleteSyncJob"/>
-    public static DeleteSyncJob CreateDelete(string accountId, string folderId, string remoteItemId, string relativePath, string localPath, long fileSize, DateTimeOffset remoteModified)
-        => new(accountId, folderId, remoteItemId, relativePath, localPath, fileSize, remoteModified, Guid.NewGuid(), DateTimeOffset.UtcNow);
+    public static DeleteSyncJob CreateDelete(RemoteItemRef remote, SyncFileTarget target, SyncFileMetadata metadata)
+        => new(remote, target, metadata, SyncJobStatusFactory.Create());
 }
 ```
 
-`DownloadUrl` becomes a required parameter on `CreateDownload` — callers that currently pass `null` will fail to compile, surfacing all incomplete constructions.
+`DownloadUrl` is a required parameter on `CreateDownload` — callers that currently pass `null` will fail to compile, surfacing all incomplete constructions.
+
+### Call-site pattern
+
+Build each grouped record argument before the factory call:
+
+```csharp
+var remote = RemoteItemRefFactory.Create(account.Id.Id, string.Empty, item.Id);
+var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+
+SyncJobFactory.CreateDownload(remote, target, metadata, item.DownloadUrl);
+SyncJobFactory.CreateUpload(remote, target, metadata);
+SyncJobFactory.CreateDelete(remote, target, metadata);
+```
 
 ---
 
@@ -143,16 +112,16 @@ All production classes that consume `SyncJob`, `SyncDirection`, or `SyncJobState
 
 | File | Impact | Change Required |
 |------|--------|-----------------|
-| `Domain/SyncJob.cs` | **High** | Complete replacement — abstract base + 3 sealed records |
-| `Domain/SyncJobFactory.cs` | **High** | Redesign — `Create` → `CreateDownload` / `CreateUpload` / `CreateDelete` |
-| `Infrastructure/Sync/DownloadWorker.cs` | **High** | `switch (job.Direction)` → `switch (job) { case DownloadSyncJob d: ... }` |
+| `Domain/SyncJob.cs` | **High** | Complete replacement — abstract base + 3 sealed records (grouped-record params already in place) |
+| `Domain/SyncJobFactory.cs` | **High** | Redesign — `Create` → `CreateDownload` / `CreateUpload` / `CreateDelete`; each takes grouped records, calls `SyncJobStatusFactory.Create()` internally |
+| `Infrastructure/Sync/DownloadWorker.cs` | **High** | `switch (job.Direction)` → `switch (job) { case DownloadSyncJob d: ... }`; access `d.DownloadUrl` directly (no null-check needed) |
 | `Data/Repositories/SyncRepository.cs` | **High** | Entity mapping must derive direction from job type; extract `DownloadUrl` / `UploadedRemoteItemId` by type |
 | `Infrastructure/Sync/SyncJobExecutor.cs` | **Medium** | Direction equality check → `is DownloadSyncJob` / `is UploadSyncJob` |
 | `Activity/ActivityItemViewModel.cs` | **Medium** | Direction switch expression → type switch |
-| `Infrastructure/Sync/RemoteFolderEnumerator.cs` | **Medium** | `SyncJobFactory.Create(..., SyncDirection.Download, ...)` → `SyncJobFactory.CreateDownload(...)` |
-| `Infrastructure/Sync/LocalChangeDetector.cs` | **Medium** | Factory call → `SyncJobFactory.CreateUpload(...)` |
+| `Infrastructure/Sync/RemoteFolderEnumerator.cs` | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, ...)` → `SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl)` |
+| `Infrastructure/Sync/LocalChangeDetector.cs` | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status)` → `SyncJobFactory.CreateUpload(remote, target, metadata)` |
 | `Data/Entities/SyncJobEntity.cs` | **Medium** | `Direction` property still needed for persistence; source now derived via mapping, not copied directly |
-| `Infrastructure/Sync/ParallelDownloadPipeline.cs` | **Medium** | `job with { State = ..., CompletedAt = ... }` — derived type preserved via `with`; verify no base-type `with` expression loses subtype |
+| `Infrastructure/Sync/ParallelDownloadPipeline.cs` | **Medium** | `job.Complete()` / `job.Fail(error)` already correct (via `SyncJobExtensions`); verify `with` on upcast `SyncJob` ref preserves concrete type |
 | `Infrastructure/Sync/RemoteEnumerationResult.cs` | **Low** | Holds `IReadOnlyList<SyncJob>` — base type unchanged |
 | `Infrastructure/Sync/ILocalChangeDetector.cs` | **Low** | Returns `IReadOnlyList<SyncJob>` — unchanged |
 | `Infrastructure/Sync/ISyncJobExecutor.cs` | **Low** | Accepts `IReadOnlyList<SyncJob>` — unchanged |
@@ -190,10 +159,18 @@ Option A is zero-migration and keeps the int index intact.
 C# `with` on a positional record returns the **same concrete type**. `DownloadSyncJob` stays `DownloadSyncJob` after:
 
 ```csharp
-job with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow }
+job with { UploadedRemoteItemId = uploadedId }
 ```
 
 This is safe as long as `job` is the concrete type (not upcast to `SyncJob`). If `ParallelDownloadPipeline` holds the job as `SyncJob`, a cast is required before applying `with`. Audit all `with` usages.
+
+State transitions use `SyncJobExtensions` (already implemented — no nested `with` needed at call sites):
+
+```csharp
+job.Complete()      // DownloadSyncJob stays DownloadSyncJob
+job.Fail(error)     // concrete type preserved
+success ? job.Complete() : job.Fail(error)
+```
 
 ### Pattern Matching Replacement
 
@@ -219,13 +196,25 @@ switch (job)
 
 The compiler enforces exhaustiveness when `SyncJob` is abstract and all derived types are sealed in the same assembly.
 
+### Property access chains — unchanged
+
+All property accesses on `SyncJob` use the grouped-record paths established by the data clump refactor:
+
+| Property | Access |
+|----------|--------|
+| Remote identity | `job.Remote.AccountId`, `job.Remote.FolderId`, `job.Remote.RemoteItemId` |
+| Local paths | `job.Target.LocalPath`, `job.Target.RelativePath` |
+| File attributes | `job.Metadata.FileSize`, `job.Metadata.RemoteModified` |
+| Job lifecycle | `job.Status.Id`, `job.Status.State`, `job.Status.QueuedAt`, `job.Status.CompletedAt`, `job.Status.ErrorMessage` |
+| Direction-specific | `d.DownloadUrl` (on `DownloadSyncJob`), `u.UploadedRemoteItemId` (on `UploadSyncJob`) |
+
 ---
 
 ## Suggested Implementation Order
 
-1. **Domain** — replace `SyncJob.cs` (abstract + 3 sealed records), update `SyncJobFactory.cs`. Commit failing build as TDD red.
+1. **Domain** — replace `SyncJob.cs` (abstract base + 3 sealed records using grouped-record params) and update `SyncJobFactory.cs` (`Create` → `CreateDownload` / `CreateUpload` / `CreateDelete`, each taking grouped records). Grouped records and `SyncJobExtensions` are already in `Domain/` — no new files needed. Commit failing build as TDD red.
 2. **Factory call sites** — `RemoteFolderEnumerator`, `LocalChangeDetector`. Restore compile.
-3. **Pipeline** — `DownloadWorker` switch, `ParallelDownloadPipeline` `with` expressions, `SyncJobExecutor` direction checks.
+3. **Pipeline** — `DownloadWorker` switch, `ParallelDownloadPipeline` `with` expression audit, `SyncJobExecutor` direction checks.
 4. **Data layer** — `SyncRepository` mapping, `SyncJobEntity` direction derivation, `ModelBuilderExtensions`.
 5. **UI** — `ActivityItemViewModel` type switch.
 6. **Cleanup** — relocate `SyncDirection` enum to `Data/` as `internal`; update `SyncedItemEntityFactory` parameter types if narrowing is worthwhile.
