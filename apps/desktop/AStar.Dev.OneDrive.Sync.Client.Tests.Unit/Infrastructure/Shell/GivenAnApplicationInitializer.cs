@@ -46,7 +46,7 @@ public sealed class GivenAnApplicationInitializer
         => new(_startupService, accounts, files, dashboard, activity, settings);
 
     private static OneDriveAccount BuildAccount(string id = "acc-1", string email = "user@test.com", bool isActive = false)
-        => new() { Id = new AccountId(id), DisplayName = "Test User", Email = email, IsActive = isActive, SelectedFolderIds = [] };
+        => new() { Id = new AccountId(id), Profile = AccountProfileFactory.Create("Test User", email), IsActive = isActive, SelectedFolderIds = [] };
 
     [Fact]
     public async Task when_initialized_then_accounts_are_restored_from_startup_service()

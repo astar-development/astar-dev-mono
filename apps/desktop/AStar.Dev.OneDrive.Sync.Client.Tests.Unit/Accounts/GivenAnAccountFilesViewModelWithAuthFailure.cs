@@ -13,9 +13,8 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
 
     private static OneDriveAccount BuildAccount() => new()
     {
-        Id          = new AccountId(AccountIdString),
-        DisplayName = "Test User",
-        Email       = "test@test.com"
+        Id      = new AccountId(AccountIdString),
+        Profile = AccountProfileFactory.Create("Test User", "test@test.com")
     };
 
     private static AccountFilesViewModel BuildSut(IAuthService authService)
@@ -109,7 +108,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
         var authService  = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", AccountIdString, "Test User", "test@test.com"));
+            .Returns(AuthResultFactory.Success("token", AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns("drive-1");
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns([]);
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();

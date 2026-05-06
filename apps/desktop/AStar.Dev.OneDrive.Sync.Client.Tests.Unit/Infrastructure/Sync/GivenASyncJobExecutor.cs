@@ -17,7 +17,7 @@ public sealed class GivenASyncJobExecutor
     private readonly OneDriveAccount _account = new()
     {
         Id    = new AccountId("user-1"),
-        Email = "user@outlook.com"
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com")
     };
 
     private SyncJobExecutor CreateSut(MockFileSystem mockFs) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFs);

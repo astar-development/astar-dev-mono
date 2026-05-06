@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -156,8 +156,8 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     {
         _accountId = successfulLoginResult.Value.AccountId;
         _accessToken = successfulLoginResult.Value.AccessToken;
-        ConfirmedDisplayName = successfulLoginResult.Value.DisplayName;
-        ConfirmedEmail = successfulLoginResult.Value.Email;
+        ConfirmedDisplayName = successfulLoginResult.Value.Profile.DisplayName;
+        ConfirmedEmail = successfulLoginResult.Value.Profile.Email;
         IsSignedIn = true;
         SignInStatusText = $"Signed in as {ConfirmedEmail}";
         SignInHasError = false;
@@ -230,8 +230,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         var account = new OneDriveAccount
         {
             Id = new AccountId(_accountId),
-            DisplayName = ConfirmedDisplayName,
-            Email = ConfirmedEmail,
+            Profile = AccountProfileFactory.Create(ConfirmedDisplayName, ConfirmedEmail),
             SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => new OneDriveFolderId(f.Id))],
             FolderNames = Folders
                 .Where(f => f.IsSelected)

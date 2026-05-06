@@ -1,4 +1,5 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
@@ -12,6 +13,6 @@ public static class AuthResultFactory
     public static Result<AuthResult, AuthError> Failure(string message) => new Result<AuthResult, AuthError>.Error(new AuthFailedError(message));
 
     /// <summary>Returns a successful authentication result containing the token and account details.</summary>
-    public static Result<AuthResult, AuthError> Success(string accessToken, string accountId, string displayName, string email)
-         => new Result<AuthResult, AuthError>.Ok(new AuthResult(accessToken, accountId, displayName, email));
+    public static Result<AuthResult, AuthError> Success(string accessToken, string accountId, AccountProfile profile)
+         => new Result<AuthResult, AuthError>.Ok(new AuthResult(accessToken, accountId, profile));
 }

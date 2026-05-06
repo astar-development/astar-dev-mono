@@ -25,8 +25,8 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string Id => _model.Id.Id;
-    public string DisplayName => _model.DisplayName;
-    public string Email => _model.Email;
+    public string DisplayName => _model.Profile.DisplayName;
+    public string Email => _model.Profile.Email;
     public Color AccentColor => Color.Parse(PaletteHex(_model.AccentIndex));
 
     /// <summary>
@@ -37,15 +37,15 @@ public sealed partial class AccountCardViewModel : ObservableObject
     {
         get
         {
-            string[] parts = _model.DisplayName
+            string[] parts = _model.Profile.DisplayName
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             return parts.Length >= 2
                 ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
-                : _model.DisplayName.Length > 0
-                    ? _model.DisplayName[0].ToString().ToUpperInvariant()
-                    : _model.Email.Length > 0
-                        ? _model.Email[0].ToString().ToUpperInvariant()
+                : _model.Profile.DisplayName.Length > 0
+                    ? _model.Profile.DisplayName[0].ToString().ToUpperInvariant()
+                    : _model.Profile.Email.Length > 0
+                        ? _model.Profile.Email[0].ToString().ToUpperInvariant()
                         : "?";
         }
     }

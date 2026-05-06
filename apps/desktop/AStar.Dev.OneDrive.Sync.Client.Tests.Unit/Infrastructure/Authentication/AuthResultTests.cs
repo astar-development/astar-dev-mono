@@ -1,4 +1,5 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
@@ -11,15 +12,17 @@ public sealed class GivenAnAuthResultFactory
     private const string Email = "jason@outlook.com";
     private const string ErrorMessage = "Authentication failed: Invalid credentials";
 
+    private static AccountProfile Profile => AccountProfileFactory.Create(DisplayName, Email);
+
     [Fact]
     public void when_success_is_called_then_result_is_ok() =>
-        AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email)
+        AuthResultFactory.Success(AccessToken, AccountId, Profile)
             .ShouldBeOfType<Result<AuthResult, AuthError>.Ok>();
 
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_access_token()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email);
+        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.AccessToken.ShouldBe(AccessToken);
     }
@@ -27,7 +30,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_account_id()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email);
+        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.AccountId.ShouldBe(AccountId);
     }
@@ -35,17 +38,17 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_display_name()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email);
+        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
-        result.Value.DisplayName.ShouldBe(DisplayName);
+        result.Value.Profile.DisplayName.ShouldBe(DisplayName);
     }
 
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_email()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email);
+        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
-        result.Value.Email.ShouldBe(Email);
+        result.Value.Profile.Email.ShouldBe(Email);
     }
 
     [Fact]
@@ -89,12 +92,12 @@ public sealed class GivenAnAuthResultFactory
     [InlineData("token-3", "account-3", "User Three", "user3@outlook.com")]
     public void when_success_is_called_then_all_token_and_account_data_are_preserved(string accessToken, string accountId, string displayName, string email)
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(accessToken, accountId, displayName, email);
+        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(accessToken, accountId, AccountProfileFactory.Create(displayName, email));
 
         result.Value.AccessToken.ShouldBe(accessToken);
         result.Value.AccountId.ShouldBe(accountId);
-        result.Value.DisplayName.ShouldBe(displayName);
-        result.Value.Email.ShouldBe(email);
+        result.Value.Profile.DisplayName.ShouldBe(displayName);
+        result.Value.Profile.Email.ShouldBe(email);
     }
 
     [Theory]
@@ -112,7 +115,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_and_failure_results_are_compared_then_they_are_different_subtypes()
     {
-        var successResult = AuthResultFactory.Success(AccessToken, AccountId, DisplayName, Email);
+        var successResult = AuthResultFactory.Success(AccessToken, AccountId, Profile);
         var failureResult = AuthResultFactory.Failure(ErrorMessage);
 
         successResult.ShouldBeOfType<Result<AuthResult, AuthError>.Ok>();

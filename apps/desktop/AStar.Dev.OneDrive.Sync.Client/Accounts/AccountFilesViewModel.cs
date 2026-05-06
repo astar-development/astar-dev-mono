@@ -26,12 +26,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => _account.Id.Id;
-    public string DisplayName => _account.DisplayName;
-    public string Email => _account.Email;
+    public string DisplayName => _account.Profile.DisplayName;
+    public string Email => _account.Profile.Email;
 
-    public string TabLabel => _account.DisplayName.Length > 0
-                                 ? _account.DisplayName
-                                 : _account.Email;
+    public string TabLabel => _account.Profile.DisplayName.Length > 0
+                                 ? _account.Profile.DisplayName
+                                 : _account.Profile.Email;
 
     public int AccentIndex => _account.AccentIndex;
 

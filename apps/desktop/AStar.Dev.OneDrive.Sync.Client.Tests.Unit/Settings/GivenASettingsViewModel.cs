@@ -40,8 +40,7 @@ public sealed class GivenASettingsViewModel
     private static OneDriveAccount BuildAccount(string accountId) => new()
     {
         Id = new AccountId(accountId),
-        DisplayName = "Test User",
-        Email = "test@example.com"
+        Profile = AccountProfileFactory.Create("Test User", "test@example.com")
     };
 
     [Fact]

@@ -12,6 +12,11 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.Id)
                    .HasConversion(id => id.Id, str => new AccountId(str));
+        _ = builder.ComplexProperty(e => e.Profile, p =>
+        {
+            _ = p.Property(prof => prof.DisplayName).HasColumnName("DisplayName");
+            _ = p.Property(prof => prof.Email).HasColumnName("Email");
+        });
         _ = builder.Property(e => e.LocalSyncPath)
                    .HasConversion(path => path.Value, str => LocalSyncPath.Restore(str));
         _ = builder.HasMany<SyncConflictEntity>()

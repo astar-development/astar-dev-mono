@@ -35,7 +35,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, Accou
             if(activeAccount is not null)
             {
                 await files.ActivateAccountAsync(activeAccount.Id.Id).ConfigureAwait(false);
-                await activity.SetActiveAccountAsync(activeAccount.Id.Id, activeAccount.Email).ConfigureAwait(false);
+                await activity.SetActiveAccountAsync(activeAccount.Id.Id, activeAccount.Profile.Email).ConfigureAwait(false);
             }
         }
         catch(Exception ex)

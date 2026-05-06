@@ -99,7 +99,7 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
 
         authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, DisplayName, Email));
+            .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]);

@@ -16,8 +16,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     private static OneDriveAccount BuildAccount(string? localSyncPath = null, ConflictPolicy conflictPolicy = ConflictPolicy.Ignore, int accentIndex = 0) => new()
     {
         Id = new AccountId(AccountIdValue),
-        DisplayName = DisplayNameValue,
-        Email = EmailValue,
+        Profile = AccountProfileFactory.Create(DisplayNameValue, EmailValue),
         AccentIndex = accentIndex,
         LocalSyncPath = localSyncPath is null ? null : LocalSyncPath.Restore(localSyncPath),
         ConflictPolicy = conflictPolicy
@@ -26,8 +25,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     private static AccountEntity BuildEntity(string localSyncPath = "") => new()
     {
         Id = new AccountId(AccountIdValue),
-        DisplayName = DisplayNameValue,
-        Email = EmailValue
+        Profile = AccountProfileFactory.Create(DisplayNameValue, EmailValue)
     };
 
     [Fact]

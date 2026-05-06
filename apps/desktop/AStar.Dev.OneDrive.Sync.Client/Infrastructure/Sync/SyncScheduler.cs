@@ -107,8 +107,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {
         Id                = entity.Id,
-        DisplayName       = entity.DisplayName,
-        Email             = entity.Email,
+        Profile           = entity.Profile,
         AccentIndex       = entity.AccentIndex,
         IsActive          = entity.IsActive,
         LastSyncedAt      = entity.LastSyncedAt,

@@ -93,7 +93,7 @@ public sealed class GivenASyncScheduler
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Email = "test@example.com", DisplayName = "test" }]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Profile = AccountProfileFactory.Create("test", "test@example.com") }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
 
@@ -107,7 +107,7 @@ public sealed class GivenASyncScheduler
     {
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Email = "test@example.com", DisplayName = "test" }]);
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Profile = AccountProfileFactory.Create("test", "test@example.com") }]);
 
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
 
@@ -229,8 +229,7 @@ public sealed class GivenASyncScheduler
         var account = new OneDriveAccount
         {
             Id = new AccountId("account-123"),
-            Email = "test@outlook.com",
-            DisplayName = "Test User"
+            Profile = AccountProfileFactory.Create("Test User", "test@outlook.com")
         };
 
         await scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
@@ -248,10 +247,9 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id = new AccountId(accountIdStr),
-            DisplayName = "Test User",
-            Email = "test@outlook.com",
-            LocalSyncPath = LocalSyncPath.Restore("/some/path"),
+            Id             = new AccountId(accountIdStr),
+            Profile        = AccountProfileFactory.Create("Test User", "test@outlook.com"),
+            LocalSyncPath  = LocalSyncPath.Restore("/some/path"),
             ConflictPolicy = ConflictPolicy.Ignore,
         }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
@@ -283,7 +281,7 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" }));
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test", "test@test.com") }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
         string? raisedId = null;
         scheduler.SyncStarted += (_, id) => raisedId = id;
@@ -299,7 +297,7 @@ public sealed class GivenASyncScheduler
         const string accountIdStr = "account-789";
         var mockSyncService = Substitute.For<ISyncService>();
         var mockRepository = Substitute.For<IAccountRepository>();
-        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), DisplayName = "Test", Email = "test@test.com" }));
+        _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test", "test@test.com") }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
         string? raisedId = null;
         scheduler.SyncCompleted += (_, id) => raisedId = id;
@@ -319,8 +317,7 @@ public sealed class GivenASyncScheduler
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
             Id            = new AccountId(accountIdStr),
-            DisplayName   = "Map Test User",
-            Email         = "maptest@outlook.com",
+            Profile       = AccountProfileFactory.Create("Map Test User", "maptest@outlook.com"),
             AccentIndex   = 3,
             IsActive      = true,
             LastSyncedAt  = lastSyncedAt,
@@ -334,8 +331,8 @@ public sealed class GivenASyncScheduler
         await mockSyncService.Received(1).SyncAccountAsync(
             Arg.Is<OneDriveAccount>(a =>
                 a.Id == new AccountId(accountIdStr) &&
-                a.DisplayName == "Map Test User" &&
-                a.Email == "maptest@outlook.com" &&
+                a.Profile.DisplayName == "Map Test User" &&
+                a.Profile.Email == "maptest@outlook.com" &&
                 a.AccentIndex == 3 &&
                 a.IsActive == true &&
                 a.LastSyncedAt == lastSyncedAt &&
@@ -353,8 +350,7 @@ public sealed class GivenASyncScheduler
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
             Id            = new AccountId(accountIdStr),
-            DisplayName   = "No Path User",
-            Email         = "nopath@outlook.com",
+            Profile       = AccountProfileFactory.Create("No Path User", "nopath@outlook.com"),
             LocalSyncPath = LocalSyncPath.Restore(string.Empty),
         }));
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
@@ -374,9 +370,8 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id          = new AccountId(accountIdStr),
-            DisplayName = "Rules User",
-            Email       = "rules@outlook.com",
+            Id      = new AccountId(accountIdStr),
+            Profile = AccountProfileFactory.Create("Rules User", "rules@outlook.com"),
         }));
         var rulesRepo = Substitute.For<ISyncRuleRepository>();
         rulesRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -405,8 +400,7 @@ public sealed class GivenASyncScheduler
         _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new AccountEntity
         {
             Id          = new AccountId(accountIdStr),
-            DisplayName = "Accent User",
-            Email       = "accent@outlook.com",
+            Profile     = AccountProfileFactory.Create("Accent User", "accent@outlook.com"),
             AccentIndex = 5,
             IsActive    = true,
         }]);

@@ -29,7 +29,7 @@ public sealed class GivenARemoteFolderEnumerator
     private static OneDriveAccount CreateAccount() => new()
     {
         Id             = new AccountId("user-1"),
-        Email          = "user@outlook.com",
+        Profile        = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
         LocalSyncPath  = LocalSyncPath.Restore(BasePath),
         SelectedFolderIds = []
     };

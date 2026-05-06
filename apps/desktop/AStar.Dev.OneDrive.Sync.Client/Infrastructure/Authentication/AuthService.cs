@@ -1,5 +1,6 @@
 using System.Reflection;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -146,6 +147,6 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
                 email = emailClaim;
         }
 
-        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, displayName: displayName ?? result.Account.Username, email: email ?? result.Account.Username);
+        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, profile: AccountProfileFactory.Create(displayName ?? result.Account.Username, email ?? result.Account.Username));
     }
 }

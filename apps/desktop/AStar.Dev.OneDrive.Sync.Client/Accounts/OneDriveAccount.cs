@@ -7,11 +7,8 @@ public sealed class OneDriveAccount
     /// <summary>Stable identifier — the Microsoft account object ID from MSAL.</summary>
     public AccountId Id { get; init; }
 
-    /// <summary>Display name from the Microsoft profile (e.g. "Jason Smith").</summary>
-    public string DisplayName { get; set; } = string.Empty;
-
-    /// <summary>Email / UPN (e.g. jason@outlook.com).</summary>
-    public string Email { get; set; } = string.Empty;
+    /// <summary>Display name and email from the Microsoft profile.</summary>
+    public AccountProfile Profile { get; set; } = AccountProfileFactory.Empty;
 
     /// <summary>
     /// Index into the fixed accent colour palette (0–5).

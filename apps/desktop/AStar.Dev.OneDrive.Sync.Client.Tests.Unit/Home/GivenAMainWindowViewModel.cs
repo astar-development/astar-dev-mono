@@ -103,7 +103,7 @@ public sealed class GivenAMainWindowViewModel
     {
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
-        accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), DisplayName = "Test User", Email = "test@example.com" });
+        accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") });
         var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
 
         await sut.SyncNowCommand.ExecuteAsync(null);

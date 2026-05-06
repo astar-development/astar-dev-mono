@@ -99,7 +99,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     account.IsActive = Accounts.Count == 0;
                     if(account.LocalSyncPath is null)
                     {
-                        var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Email);
+                        var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Profile.Email);
                         account.LocalSyncPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
                     }
 
@@ -211,8 +211,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         => new()
         {
             Id            = a.Id,
-            DisplayName   = a.DisplayName,
-            Email         = a.Email,
+            Profile       = a.Profile,
             AccentIndex   = a.AccentIndex,
             IsActive      = a.IsActive,
             LastSyncedAt  = a.LastSyncedAt,

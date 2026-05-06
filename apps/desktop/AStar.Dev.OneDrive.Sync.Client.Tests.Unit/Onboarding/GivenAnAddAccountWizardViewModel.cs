@@ -16,7 +16,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     private async Task SignInAsync(AddAccountWizardViewModel sut)
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("fake-token", "account-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("fake-token", "account-1", AccountProfileFactory.Create("Test User", "test@example.com")));
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
     }
@@ -271,7 +271,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_succeeds_then_is_signed_in_is_true()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -283,7 +283,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_succeeds_then_sign_in_status_text_contains_email()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -295,7 +295,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_succeeds_then_sign_in_has_error_is_false()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -307,7 +307,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_succeeds_then_confirmed_display_name_is_set()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -319,7 +319,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_succeeds_then_confirmed_email_is_set()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "acc-1", "Test User", "test@example.com"));
+            .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -409,7 +409,7 @@ public sealed class GivenAnAddAccountWizardViewModel
 
         var firstCall = sut.OpenBrowserCommand.ExecuteAsync(null);
         await sut.OpenBrowserCommand.ExecuteAsync(null);
-        tcs.SetResult(AuthResultFactory.Success("token", "acc-1", "User", "user@example.com"));
+        tcs.SetResult(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("User", "user@example.com")));
         await firstCall;
 
         await _authService.Received(1).SignInInteractiveAsync(Arg.Any<CancellationToken>());
