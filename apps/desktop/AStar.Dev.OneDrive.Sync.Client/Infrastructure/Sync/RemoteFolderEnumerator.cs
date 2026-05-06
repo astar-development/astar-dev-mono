@@ -77,14 +77,14 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     {
         foreach(var item in items.TakeWhile(_ => !ct.IsCancellationRequested))
         {
-            seenRemoteIds.Add(item.Id);
+            seenRemoteIds.Add(item.Id.Id);
 
-            if(!SyncRuleEvaluator.IsIncluded(item.RelativePath ?? item.Name, rules))
+            if(!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
                 continue;
 
             if(item.IsFolder)
             {
-                await HandleFolderAsync(account.Id, item, item.RelativePath ?? item.Name, account.LocalSyncPath!.Value, syncedItems, ct).ConfigureAwait(false);
+                await HandleFolderAsync(account.Id, item, item.Path.EffectivePath, account.LocalSyncPath!.Value, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
 
@@ -94,13 +94,13 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
     private async Task ProcessFileItemAsync(OneDriveAccount account, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        string localPath = BuildLocalPath(account.LocalSyncPath!.Value, (item.RelativePath ?? item.Name).TrimStart('/'));
+        string localPath = BuildLocalPath(account.LocalSyncPath!.Value, item.Path.EffectivePath.TrimStart('/'));
 
-        syncedItems.TryGetValue(item.Id, out var knownItem);
+        syncedItems.TryGetValue(item.Id.Id, out var knownItem);
 
-        if(knownItem?.ETag is not null && knownItem.ETag == item.ETag && fileSystem.File.Exists(localPath))
+        if(knownItem?.ETag is not null && knownItem.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
         {
-            Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.RelativePath);
+            Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.Path.RelativePath);
             return;
         }
 
@@ -119,14 +119,14 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         else if(knownItem is null && fileSystem.File.Exists(localPath))
         {
             Serilog.Log.Debug("[RemoteFolderEnumerator] File exists locally without SyncedItemEntity — treating as synced: {Path}", localPath);
-            var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.RelativePath ?? item.Name, localPath);
+            var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.Path.EffectivePath, localPath);
             await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
-            syncedItems[item.Id] = phantomItem;
+            syncedItems[item.Id.Id] = phantomItem;
             return;
         }
 
-        var remote = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
-        var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+        var remote = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id);
+        var target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
         var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
 
         downloadJobs.Add(SyncJobFactory.CreateDownload(remote, target, metadata, item.DownloadUrl));
@@ -139,7 +139,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
-        syncedItems[item.Id] = entity;
+        syncedItems[item.Id.Id] = entity;
     }
 
     private async Task HandleConflictAsync(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified, SyncConflict conflict, List<SyncJob> downloadJobs, Func<SyncConflict, Task> onConflict)
@@ -154,16 +154,16 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 break;
 
             case ConflictOutcome.UseRemote:
-                var remoteR = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
-                var targetR = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var remoteR = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id);
+                var targetR = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
                 var metadataR = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
 
                 downloadJobs.Add(SyncJobFactory.CreateDownload(remoteR, targetR, metadataR, item.DownloadUrl));
                 break;
 
             case ConflictOutcome.UseLocal:
-                var remoteL = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
-                var targetL = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var remoteL = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id);
+                var targetL = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
                 var metadataL = SyncFileMetadataFactory.Create(fileSystem.FileInfo.New(localPath).Length, localModified);
 
                 downloadJobs.Add(SyncJobFactory.CreateUpload(remoteL, targetL, metadataL));
@@ -173,8 +173,8 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 string newName = ConflictResolver.MakeKeepBothName(localPath, localModified, fileSystem);
                 fileSystem.File.Move(localPath, newName);
 
-                var remoteK = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), new OneDriveItemId(item.Id));
-                var targetK = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
+                var remoteK = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id);
+                var targetK = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
                 var metadataK = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
 
                 downloadJobs.Add(SyncJobFactory.CreateDownload(remoteK, targetK, metadataK, item.DownloadUrl));
@@ -190,8 +190,8 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         {
             AccountId      = account.Id.Id,
             FolderId       = string.Empty,
-            RemoteItemId   = item.Id,
-            RelativePath   = item.RelativePath ?? item.Name,
+            RemoteItemId   = item.Id.Id,
+            RelativePath   = item.Path.EffectivePath,
             LocalPath      = localPath,
             LocalModified  = localModified,
             RemoteModified = item.LastModified ?? DateTimeOffset.MinValue,

@@ -38,10 +38,10 @@ public sealed class GivenARemoteFolderEnumerator
         => new() { RemotePath = remotePath, RuleType = RuleType.Include, RemoteItemId = remoteItemId };
 
     private static DeltaItem FileItem(string id, string name, string? relativePath = null, string? etag = null)
-        => new(id, "drive-1", name, null, false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, relativePath ?? name, etag);
+        => DeltaItemFactory.Create(new OneDriveItemId(id), "drive-1", null, ItemPathFactory.Create(name, relativePath ?? name), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
 
     private static DeltaItem FolderItem(string id, string name, string? relativePath = null)
-        => new(id, "drive-1", name, null, true, false, 0L, null, null, relativePath ?? name);
+        => DeltaItemFactory.Create(new OneDriveItemId(id), "drive-1", null, ItemPathFactory.Create(name, relativePath ?? name), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));
 
     [Fact]
     public async Task when_no_rules_configured_then_result_has_no_rules_flag_set()
@@ -206,7 +206,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([new DeltaItem("item-a", "drive-1", "a.txt", null, false, false, 100L, remoteModified, null, "/Documents/a.txt")]);
+            .Returns([DeltaItemFactory.Create(new OneDriveItemId("item-a"), "drive-1", null, ItemPathFactory.Create("a.txt", "/Documents/a.txt"), false, false, 100L, remoteModified, null, VersionInfoFactory.Create(null, null))]);
 
         var conflictsDetected = new List<SyncConflict>();
         var sut = CreateSut(mockFs);

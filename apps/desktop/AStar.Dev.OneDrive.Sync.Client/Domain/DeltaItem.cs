@@ -1,15 +1,4 @@
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
-public sealed record DeltaItem(
-    string Id,
-    string DriveId,
-    string Name,
-    string? ParentId,
-    bool IsFolder,
-    bool IsDeleted,
-    long Size,
-    DateTimeOffset? LastModified,
-    string? DownloadUrl,
-    string? RelativePath = null,
-    string? ETag = null,
-    string? CTag = null);
+/// <summary>Represents a single item returned by the Microsoft Graph delta API.</summary>
+public sealed record DeltaItem(OneDriveItemId Id, string DriveId, OneDriveFolderId? ParentId, ItemPath Path, bool IsFolder, bool IsDeleted, long Size, DateTimeOffset? LastModified, string? DownloadUrl, VersionInfo VersionInfo);

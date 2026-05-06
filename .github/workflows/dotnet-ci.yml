@@ -128,7 +128,7 @@ jobs:
       # Node 24 compatible and produces the same PR annotations and
       # Actions summary output.
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
         if: always()
         with:
           files: TestResults/**/*.trx

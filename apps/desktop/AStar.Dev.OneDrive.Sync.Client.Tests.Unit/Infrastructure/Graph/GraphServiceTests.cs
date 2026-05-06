@@ -229,9 +229,9 @@ public sealed class GivenAGraphService : IDisposable
         var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, AnyDriveId, AnyFolderId, "root", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(3);
-        result.ShouldContain(i => i.Id == "file-root");
-        result.ShouldContain(i => i.Id == "subfolder-001" && i.IsFolder);
-        result.ShouldContain(i => i.Id == "file-sub");
+        result.ShouldContain(i => i.Id.Id == "file-root");
+        result.ShouldContain(i => i.Id.Id == "subfolder-001" && i.IsFolder);
+        result.ShouldContain(i => i.Id.Id == "file-sub");
     }
 
     [Fact]
@@ -263,8 +263,8 @@ public sealed class GivenAGraphService : IDisposable
         var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, AnyDriveId, AnyFolderId, "root", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
-        result.ShouldContain(i => i.Id == "subfolder-A");
-        result.ShouldContain(i => i.Id == AnyFolderId);
+        result.ShouldContain(i => i.Id.Id == "subfolder-A");
+        result.ShouldContain(i => i.Id.Id == AnyFolderId);
     }
 
     [Fact]

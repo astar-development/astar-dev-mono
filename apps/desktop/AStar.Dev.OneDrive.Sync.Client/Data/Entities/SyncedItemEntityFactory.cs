@@ -14,14 +14,14 @@ public static class SyncedItemEntityFactory
         => new()
         {
             AccountId        = accountId,
-            RemoteItemId     = new OneDriveItemId(item.Id),
-            RemoteParentId   = item.ParentId ?? string.Empty,
+            RemoteItemId     = item.Id,
+            RemoteParentId   = item.ParentId?.Id ?? string.Empty,
             RemotePath       = remotePath,
             LocalPath        = localPath,
             IsFolder         = item.IsFolder,
             RemoteModifiedAt = item.LastModified ?? DateTimeOffset.MinValue,
-            ETag             = item.ETag,
-            CTag             = item.CTag
+            ETag             = item.VersionInfo.ETag,
+            CTag             = item.VersionInfo.CTag
         };
 
     /// <summary>Creates a tracking entity for a successfully completed download job.</summary>
