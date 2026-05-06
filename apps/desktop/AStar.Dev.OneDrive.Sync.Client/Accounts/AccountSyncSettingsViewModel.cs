@@ -12,8 +12,8 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
 {
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string AccountId => account.Id.Id;
-    public string Email => account.Email;
-    public string DisplayName => account.DisplayName;
+    public string Email => account.Profile.Email;
+    public string DisplayName => account.Profile.DisplayName;
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty]

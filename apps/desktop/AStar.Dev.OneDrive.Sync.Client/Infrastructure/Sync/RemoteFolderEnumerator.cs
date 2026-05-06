@@ -19,7 +19,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         if(rules.Count == 0)
         {
-            Serilog.Log.Information("[RemoteFolderEnumerator] No sync rules configured for {Email} — nothing to sync", account.Email);
+            Serilog.Log.Information("[RemoteFolderEnumerator] No sync rules configured for {Email} — nothing to sync", account.Profile.Email);
 
             return new RemoteEnumerationResult([], new HashSet<string>(StringComparer.OrdinalIgnoreCase), [], [], HadNoRules: true);
         }
@@ -48,7 +48,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 continue;
             }
 
-            Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Email);
+            Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Profile.Email);
             var items = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct).ConfigureAwait(false);
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", items.Count, rule.RemotePath);
 

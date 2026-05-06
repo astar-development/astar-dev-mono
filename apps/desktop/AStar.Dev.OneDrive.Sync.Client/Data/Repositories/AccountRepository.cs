@@ -17,7 +17,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         return await db.Accounts
-          .OrderBy(a => a.Email)
+          .OrderBy(a => a.Profile.Email)
           .ToListAsync(cancellationToken);
     }
 

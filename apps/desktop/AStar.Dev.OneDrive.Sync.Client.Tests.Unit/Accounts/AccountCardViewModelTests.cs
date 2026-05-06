@@ -162,7 +162,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_refresh_from_model_called_then_display_name_property_changed_is_raised()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-12"), DisplayName = "Alice" };
+        var model = new OneDriveAccount { Id = new AccountId("account-12"), Profile = AccountProfileFactory.Create("Alice", string.Empty) };
         var sut = new AccountCardViewModel(model);
         var propertyChangedRaised = false;
 
@@ -180,7 +180,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_refresh_from_model_called_then_email_property_changed_is_raised()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-13"), Email = "alice@outlook.com" };
+        var model = new OneDriveAccount { Id = new AccountId("account-13"), Profile = AccountProfileFactory.Create(string.Empty, "alice@outlook.com") };
         var sut = new AccountCardViewModel(model);
         var propertyChangedRaised = false;
 
@@ -198,7 +198,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_refresh_from_model_called_then_initials_property_changed_is_raised()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-14"), DisplayName = "Bob Smith" };
+        var model = new OneDriveAccount { Id = new AccountId("account-14"), Profile = AccountProfileFactory.Create("Bob Smith", string.Empty) };
         var sut = new AccountCardViewModel(model);
         var propertyChangedRaised = false;
 
@@ -288,7 +288,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_has_two_parts_then_initials_are_first_letter_of_each()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-19"), DisplayName = "Alice Smith" };
+        var model = new OneDriveAccount { Id = new AccountId("account-19"), Profile = AccountProfileFactory.Create("Alice Smith", string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 
@@ -298,7 +298,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_is_single_word_then_initials_are_first_letter()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-20"), DisplayName = "Alice" };
+        var model = new OneDriveAccount { Id = new AccountId("account-20"), Profile = AccountProfileFactory.Create("Alice", string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 
@@ -308,7 +308,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_is_empty_and_email_provided_then_initials_are_first_letter_of_email()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-21"), DisplayName = "", Email = "bob@outlook.com" };
+        var model = new OneDriveAccount { Id = new AccountId("account-21"), Profile = AccountProfileFactory.Create(string.Empty, "bob@outlook.com") };
 
         var sut = new AccountCardViewModel(model);
 
@@ -318,7 +318,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_and_email_are_empty_then_initials_are_question_mark()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-22"), DisplayName = "", Email = "" };
+        var model = new OneDriveAccount { Id = new AccountId("account-22"), Profile = AccountProfileFactory.Create(string.Empty, string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 
@@ -328,7 +328,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_has_multiple_words_then_initials_use_first_and_last()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-23"), DisplayName = "John Michael Smith" };
+        var model = new OneDriveAccount { Id = new AccountId("account-23"), Profile = AccountProfileFactory.Create("John Michael Smith", string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 
@@ -338,7 +338,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_initials_are_derived_from_display_name_then_they_are_uppercase()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-24"), DisplayName = "alice smith" };
+        var model = new OneDriveAccount { Id = new AccountId("account-24"), Profile = AccountProfileFactory.Create("alice smith", string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 
@@ -348,7 +348,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_initials_are_derived_from_email_then_they_are_uppercase()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-25"), DisplayName = "", Email = "alice@outlook.com" };
+        var model = new OneDriveAccount { Id = new AccountId("account-25"), Profile = AccountProfileFactory.Create(string.Empty, "alice@outlook.com") };
 
         var sut = new AccountCardViewModel(model);
 
@@ -474,7 +474,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_display_name_contains_extra_whitespace_then_initials_ignore_empty_parts()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-36"), DisplayName = "Alice    Smith" };
+        var model = new OneDriveAccount { Id = new AccountId("account-36"), Profile = AccountProfileFactory.Create("Alice    Smith", string.Empty) };
 
         var sut = new AccountCardViewModel(model);
 

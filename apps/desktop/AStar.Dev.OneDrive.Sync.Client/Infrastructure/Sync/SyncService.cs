@@ -26,7 +26,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
-        Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Email);
+        Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Profile.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
         var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
@@ -64,7 +64,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
             else
             {
-                Serilog.Log.Information("[SyncService] Sync complete for {Email}", account.Email);
+                Serilog.Log.Information("[SyncService] Sync complete for {Email}", account.Profile.Email);
                 RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
             }
         }
@@ -74,7 +74,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Email, ex.Message);
+            Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Profile.Email, ex.Message);
             RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
         }
     }

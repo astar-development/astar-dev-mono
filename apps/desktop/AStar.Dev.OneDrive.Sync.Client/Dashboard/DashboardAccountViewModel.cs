@@ -18,8 +18,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string AccountId => _account.Id.Id;
-    public string DisplayName => _account.DisplayName;
-    public string Email => _account.Email;
+    public string DisplayName => _account.Profile.DisplayName;
+    public string Email => _account.Profile.Email;
     public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(_account.AccentIndex);
     public Avalonia.Media.Color AccentColor => Avalonia.Media.Color.Parse(AccentHex);
 
@@ -96,12 +96,11 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             {
                 var fullAccount = new OneDriveAccount
                 {
-                    Id                = entity.Id,
-                    DisplayName       = entity.DisplayName,
-                    Email             = entity.Email,
-                    LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                    ConflictPolicy    = entity.ConflictPolicy,
-                    LastSyncedAt      = entity.LastSyncedAt
+                    Id            = entity.Id,
+                    Profile       = entity.Profile,
+                    LocalSyncPath = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
+                    ConflictPolicy = entity.ConflictPolicy,
+                    LastSyncedAt  = entity.LastSyncedAt
                 };
                 await _scheduler.TriggerAccountAsync(fullAccount);
             });

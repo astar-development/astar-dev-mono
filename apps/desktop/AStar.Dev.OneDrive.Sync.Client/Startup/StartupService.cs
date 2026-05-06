@@ -26,8 +26,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
             accounts.Add(new OneDriveAccount
             {
                 Id                = entity.Id,
-                DisplayName       = entity.DisplayName,
-                Email             = entity.Email,
+                Profile           = entity.Profile,
                 AccentIndex       = entity.AccentIndex,
                 IsActive          = entity.IsActive,
                 LastSyncedAt      = entity.LastSyncedAt,

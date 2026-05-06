@@ -10,8 +10,8 @@ public sealed class OneDriveAccountTests
     {
         var account = new OneDriveAccount();
 
-        account.DisplayName.ShouldBe(string.Empty);
-        account.Email.ShouldBe(string.Empty);
+        account.Profile.DisplayName.ShouldBe(string.Empty);
+        account.Profile.Email.ShouldBe(string.Empty);
         account.AccentIndex.ShouldBe(0);
         account.SelectedFolderIds.ShouldBeEmpty();
         account.LastSyncedAt.ShouldBeNull();
@@ -39,9 +39,9 @@ public sealed class OneDriveAccountTests
         var account = new OneDriveAccount();
         string displayName = "Jason Smith";
 
-        account.DisplayName = displayName;
+        account.Profile = AccountProfileFactory.Create(displayName, string.Empty);
 
-        account.DisplayName.ShouldBe(displayName);
+        account.Profile.DisplayName.ShouldBe(displayName);
     }
 
     [Fact]
@@ -50,9 +50,9 @@ public sealed class OneDriveAccountTests
         var account = new OneDriveAccount();
         string email = "jason@outlook.com";
 
-        account.Email = email;
+        account.Profile = AccountProfileFactory.Create(string.Empty, email);
 
-        account.Email.ShouldBe(email);
+        account.Profile.Email.ShouldBe(email);
     }
 
     [Fact]
@@ -181,15 +181,14 @@ public sealed class OneDriveAccountTests
         long quotaTotal = 1_099_511_627_776L;
         long quotaUsed = 549_755_813_888L;
 
-        account.DisplayName = displayName;
-        account.Email = email;
+        account.Profile = AccountProfileFactory.Create(displayName, email);
         account.AccentIndex = accentIndex;
         account.QuotaTotal = quotaTotal;
         account.QuotaUsed = quotaUsed;
         account.IsActive = true;
 
-        account.DisplayName.ShouldBe(displayName);
-        account.Email.ShouldBe(email);
+        account.Profile.DisplayName.ShouldBe(displayName);
+        account.Profile.Email.ShouldBe(email);
         account.AccentIndex.ShouldBe(accentIndex);
         account.QuotaTotal.ShouldBe(quotaTotal);
         account.QuotaUsed.ShouldBe(quotaUsed);

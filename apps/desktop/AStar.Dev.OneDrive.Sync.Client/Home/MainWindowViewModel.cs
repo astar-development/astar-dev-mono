@@ -165,7 +165,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     settings.AddAccount(account);
                     ActiveSection = NavSection.Files;
                     await files.ActivateAccountAsync(account.Id.Id);
-                    await activity.SetActiveAccountAsync(account.Id.Id, account.Email);
+                    await activity.SetActiveAccountAsync(account.Id.Id, account.Profile.Email);
                     return Unit.Default;
                 })
                 .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));

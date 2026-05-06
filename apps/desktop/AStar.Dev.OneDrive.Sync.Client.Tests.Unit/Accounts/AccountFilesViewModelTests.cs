@@ -190,7 +190,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var repository   = Substitute.For<IAccountRepository>();
 
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, "Test User", "test@test.com"));
+            .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns(DriveId);
@@ -215,8 +215,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         => new()
         {
             Id             = new AccountId(AccountIdString),
-            DisplayName    = "Test User",
-            Email          = "test@test.com",
+            Profile        = AccountProfileFactory.Create("Test User", "test@test.com"),
             LocalSyncPath  = string.IsNullOrEmpty(localSyncPath) ? null : LocalSyncPath.Restore(localSyncPath),
             ConflictPolicy = conflictPolicy
         };
@@ -225,8 +224,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         => new()
         {
             Id             = new AccountId(AccountIdString),
-            DisplayName    = "Test User",
-            Email          = "test@test.com",
+            Profile        = AccountProfileFactory.Create("Test User", "test@test.com"),
             LocalSyncPath  = LocalSyncPath.Restore(localSyncPath),
             ConflictPolicy = conflictPolicy
         };

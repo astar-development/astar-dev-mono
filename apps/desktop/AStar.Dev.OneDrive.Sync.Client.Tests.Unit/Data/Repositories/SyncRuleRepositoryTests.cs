@@ -204,7 +204,7 @@ public sealed class GivenASyncRuleRepository : IDisposable
         if(await _seedingContext.Accounts.AnyAsync(a => a.Id == new AccountId(accountId), TestContext.Current.CancellationToken))
             return;
 
-        _seedingContext.Accounts.Add(new AccountEntity { Id = new AccountId(accountId), Email = $"{accountId}@test.com", DisplayName = accountId });
+        _seedingContext.Accounts.Add(new AccountEntity { Id = new AccountId(accountId), Profile = AccountProfileFactory.Create(accountId, $"{accountId}@test.com") });
         await _seedingContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 }

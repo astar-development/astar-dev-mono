@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -16,7 +17,7 @@ public sealed class GivenAStatusBarViewModel
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _syncEventAggregator);
 
-    private static AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Email = email, DisplayName = displayName });
+    private static AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Profile = AccountProfileFactory.Create(displayName, email) });
 
     [Fact]
     public void when_active_account_is_null_then_has_account_is_false()

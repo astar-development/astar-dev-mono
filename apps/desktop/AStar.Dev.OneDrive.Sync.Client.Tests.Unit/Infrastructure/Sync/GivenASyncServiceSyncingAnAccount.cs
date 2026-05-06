@@ -40,7 +40,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
         Id            = new AccountId("user-1"),
-        Email         = "user@outlook.com",
+        Profile       = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
         LocalSyncPath = LocalSyncPath.Restore(localSyncPath),
         SelectedFolderIds = []
     };
@@ -50,7 +50,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
     private void SetupAuthSuccess() =>
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
     private void SetupDeepSyncPrerequisites()
     {

@@ -50,7 +50,7 @@ public sealed class GivenASyncServiceResolvingConflicts
     public async Task when_auth_succeeds_then_sync_repository_resolve_is_called()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(AuthResultFactory.Success("token", "user-1", "User", "user@outlook.com"));
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
         var sut = CreateSut();
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
