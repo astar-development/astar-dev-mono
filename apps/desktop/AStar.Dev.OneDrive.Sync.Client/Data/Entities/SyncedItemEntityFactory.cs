@@ -20,8 +20,7 @@ public static class SyncedItemEntityFactory
             LocalPath        = localPath,
             IsFolder         = item.IsFolder,
             RemoteModifiedAt = item.LastModified ?? DateTimeOffset.MinValue,
-            ETag             = item.VersionInfo.ETag,
-            CTag             = item.VersionInfo.CTag
+            Tags             = item.VersionInfo
         };
 
     /// <summary>Creates a tracking entity for a successfully completed download job.</summary>

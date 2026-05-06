@@ -98,7 +98,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
 
-        if(knownItem?.ETag is not null && knownItem.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
+        if(knownItem?.Tags.ETag is not null && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
         {
             Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.Path.RelativePath);
             return;

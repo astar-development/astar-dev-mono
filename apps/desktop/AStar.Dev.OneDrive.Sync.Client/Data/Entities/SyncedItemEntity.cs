@@ -13,8 +13,7 @@ public sealed class SyncedItemEntity
     public string LocalPath { get; set; } = string.Empty;
     public bool IsFolder { get; set; }
     public DateTimeOffset RemoteModifiedAt { get; set; }
-    public string? ETag { get; set; }
-    public string? CTag { get; set; }
+    public VersionInfo Tags { get; set; } = new(null, null);
 
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }

@@ -162,11 +162,11 @@ public sealed class GivenARemoteFolderEnumerator
 
         var knownItem = new SyncedItemEntity
         {
-            AccountId      = new AccountId("user-1"),
-            RemoteItemId   = new OneDriveItemId("item-a"),
-            RemotePath     = "/Documents/a.txt",
-            LocalPath      = localFile,
-            ETag           = "etag-123",
+            AccountId        = new AccountId("user-1"),
+            RemoteItemId     = new OneDriveItemId("item-a"),
+            RemotePath       = "/Documents/a.txt",
+            LocalPath        = localFile,
+            Tags             = VersionInfoFactory.Create("etag-123", null),
             RemoteModifiedAt = DateTimeOffset.UtcNow.AddDays(-1)
         };
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
