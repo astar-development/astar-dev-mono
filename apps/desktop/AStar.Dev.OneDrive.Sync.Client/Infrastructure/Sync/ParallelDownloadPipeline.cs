@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;

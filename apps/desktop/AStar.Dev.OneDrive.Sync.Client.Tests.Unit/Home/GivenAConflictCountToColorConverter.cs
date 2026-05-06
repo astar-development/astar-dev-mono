@@ -2,7 +2,7 @@ using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using Avalonia.Media;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Converters;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public sealed class GivenAConflictCountToColorConverter
 {

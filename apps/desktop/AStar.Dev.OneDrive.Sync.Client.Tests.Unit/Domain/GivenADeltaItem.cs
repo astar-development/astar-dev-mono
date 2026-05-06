@@ -1,4 +1,6 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 

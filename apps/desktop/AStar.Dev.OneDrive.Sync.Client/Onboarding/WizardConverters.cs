@@ -2,7 +2,7 @@ using System.Globalization;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Converters;
+namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 /// <summary>Converts bool to accent colour (active) or muted (inactive) — used for tab indicators.</summary>
 public sealed class BoolToAccentConverter : IValueConverter

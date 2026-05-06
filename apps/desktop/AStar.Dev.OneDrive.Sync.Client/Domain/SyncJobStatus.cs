@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>Identity and execution state of a sync job.</summary>
