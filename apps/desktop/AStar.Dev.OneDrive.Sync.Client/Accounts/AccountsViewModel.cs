@@ -217,8 +217,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             AccentIndex  = a.AccentIndex,
             IsActive     = a.IsActive,
             LastSyncedAt = a.LastSyncedAt,
-            QuotaTotal   = a.QuotaTotal,
-            QuotaUsed    = a.QuotaUsed,
+            Quota        = a.Quota,
             SyncConfig   = a.SyncConfig ?? AccountSyncConfigFactory.Default
         };
 }

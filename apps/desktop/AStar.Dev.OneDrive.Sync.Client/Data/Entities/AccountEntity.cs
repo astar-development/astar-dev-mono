@@ -9,7 +9,6 @@ public sealed class AccountEntity
     public int AccentIndex { get; set; }
     public bool IsActive { get; set; }
     public DateTimeOffset? LastSyncedAt { get; set; }
-    public long QuotaTotal { get; set; }
-    public long QuotaUsed { get; set; }
+    public StorageQuota Quota { get; set; } = StorageQuotaFactory.Unknown;
     public AccountSyncConfig SyncConfig { get; set; } = AccountSyncConfigFactory.Default;
 }

@@ -24,14 +24,11 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(_account.AccentIndex);
     public Avalonia.Media.Color AccentColor => Avalonia.Media.Color.Parse(AccentHex);
 
-    public long QuotaTotal => _account.QuotaTotal;
-    public long QuotaUsed => _account.QuotaUsed;
-    public double StorageFraction => QuotaTotal > 0
-        ? Math.Clamp((double)QuotaUsed / QuotaTotal, 0, 1)
-        : 0;
-
-    public string StorageText => QuotaTotal > 0
-        ? $"{QuotaUsed.FileSizeToText()} / {QuotaTotal.FileSizeToText()}"
+    public long QuotaTotal => _account.Quota.TotalBytes;
+    public long QuotaUsed => _account.Quota.UsedBytes;
+    public double StorageFraction => _account.Quota.Fraction();
+    public string StorageText => _account.Quota.TotalBytes > 0
+        ? $"{_account.Quota.UsedBytes.FileSizeToText()} / {_account.Quota.TotalBytes.FileSizeToText()}"
         : "Unknown";
 
     [ObservableProperty]
