@@ -1,16 +1,16 @@
 # Graph Report - astar-dev-mono  (2026-05-06)
 
 ## Corpus Check
-- 816 files · ~234,583 words
+- 821 files · ~234,779 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4130 nodes · 5078 edges · 680 communities (348 shown, 332 thin omitted)
+- 4141 nodes · 5084 edges · 680 communities (350 shown, 330 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.79)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e5257ecb`
+- Built from commit: `0faea718`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -80,7 +80,6 @@
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Assembly Cultureinfo|Assembly Cultureinfo]]
 - [[_COMMUNITY_Accounts Givenanaccountsviewmodelwithacompletingwizard Givenanaccountsviewmodelwithacompletingwizard|Accounts Givenanaccountsviewmodelwithacompletingwizard Givenanaccountsviewmodelwithacompletingwizard]]
-- [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
@@ -154,7 +153,6 @@
 - [[_COMMUNITY_File File Services|File File Services]]
 - [[_COMMUNITY_File File Services|File File Services]]
 - [[_COMMUNITY_File File Services|File File Services]]
-- [[_COMMUNITY_File File Services|File File Services]]
 - [[_COMMUNITY_Authentication Itokencacheservice Itokencacheservice|Authentication Itokencacheservice Itokencacheservice]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
@@ -205,9 +203,9 @@
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Components Header Test|Components Header Test]]
 - [[_COMMUNITY_Telemetry Test Defaultclient|Telemetry Test Defaultclient]]
-- [[_COMMUNITY_Components Resendlinksform Resendlinksform|Components Resendlinksform Resendlinksform]]
 - [[_COMMUNITY_Components Contactform|Components Contactform]]
 - [[_COMMUNITY_Affiliate Award Winner|Affiliate Award Winner]]
+- [[_COMMUNITY_File File Models|File File Models]]
 - [[_COMMUNITY_File File Services|File File Services]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
 - [[_COMMUNITY_Onedrive Sync Client|Onedrive Sync Client]]
@@ -409,8 +407,6 @@
 - [[_COMMUNITY_Community 392|Community 392]]
 - [[_COMMUNITY_Community 393|Community 393]]
 - [[_COMMUNITY_Community 394|Community 394]]
-- [[_COMMUNITY_Community 395|Community 395]]
-- [[_COMMUNITY_Community 396|Community 396]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `OptionShould` - 90 edges
@@ -441,7 +437,7 @@
 - **.NET best practices blog cluster** — blog_clean_architecture, blog_tdd_dotnet, clean_arch_dependency_rule, tdd_design_driver [INFERRED 0.85]
 - **Distributed pipeline tech stack** — pipeline_azure_functions, pipeline_cosmos_db, pipeline_app_insights [EXTRACTED 1.00]
 
-## Communities (680 total, 332 thin omitted)
+## Communities (680 total, 330 thin omitted)
 
 ### Community 0 - "Web API & Checkout"
 Cohesion: 0.06
@@ -449,49 +445,49 @@ Nodes (43): POST(), makeRequest(), makeWebhookRequest(), validSessionEvent(), bu
 
 ### Community 2 - "Activity ViewModel (OneDrive)"
 Cohesion: 0.05
-Nodes (15): ConcurrentQueue, Disposable, GivenAGraphService, NullScope, IDisposable, ILogEntryProvider, ILogEventSink, IThemeService (+7 more)
+Nodes (15): AppDbContext, Disposable, NullScope, IDisposable, IThemeService, AddAccountWizardViewModel, ReactiveObject, GivenASyncRuleRepository (+7 more)
 
 ### Community 3 - "Activity Item ViewModel Tests"
 Cohesion: 0.05
-Nodes (13): Color, BoolToExcludeIncludeLabelConverter, BoolToExcludeIncludeTooltipConverter, FilePathToBitmapConverter, IntZeroToBoolConverter, SyncStateToBadgeBackgroundConverter, SyncStateToBadgeForegroundConverter, SyncStateToForegroundConverter (+5 more)
+Nodes (15): AuthService, GraphService, SyncService, ILoggerAstar, AuthService, GraphClientFactory, StaticAccessTokenProvider, TestTokenProvider (+7 more)
 
 ### Community 4 - "Accounts & Activity Views"
-Cohesion: 0.07
-Nodes (9): AppDbContext, FileViewerServiceShould, FileViewerService, IDbContextFactory, IFileDeleteService, GivenASyncRuleRepository, FileDeleteService, SqliteConnection (+1 more)
+Cohesion: 0.05
+Nodes (13): Color, BoolToExcludeIncludeLabelConverter, BoolToExcludeIncludeTooltipConverter, FilePathToBitmapConverter, IntZeroToBoolConverter, SyncStateToBadgeBackgroundConverter, SyncStateToBadgeForegroundConverter, SyncStateToForegroundConverter (+5 more)
 
 ### Community 5 - "Account Files ViewModel"
-Cohesion: 0.08
-Nodes (7): GraphClientFactory, StaticAccessTokenProvider, TestTokenProvider, WireMockGraphClientFactory, IAccessTokenProvider, IGraphClientFactory, GivenAnAddAccountWizardViewModel
+Cohesion: 0.05
+Nodes (19): AStar.Dev.Api.HealthChecks.AutoGenerated, AStar.Dev.Conflict.Resolution.Tests.Unit.AutoGenerated, AStar.Dev.Counter.Tests.Unit.AutoGenerated, AStar.Dev.File.App.Tests.Unit.AutoGenerated, AStar.Dev.FluentAssignments.Tests.Unit.AutoGenerated, AStar.Dev.Functional.Extensions.Tests.Unit.AutoGenerated, AStar.Dev.Guard.Clauses.AutoGenerated, AStar.Dev.Logging.Extensions.Tests.Unit.AutoGenerated (+11 more)
 
 ### Community 6 - "App Bootstrapping"
 Cohesion: 0.05
 Nodes (19): AStar.Dev.Api.HealthChecks, AStar.Dev.Conflict.Resolution.Tests.Unit, AStar.Dev.Counter.Tests.Unit, AStar.Dev.File.App.Tests.Unit, AStar.Dev.FluentAssignments.Tests.Unit, AStar.Dev.Functional.Extensions.Tests.Unit, AStar.Dev.Guard.Clauses, AStar.Dev.Logging.Extensions.Tests.Unit (+11 more)
 
 ### Community 7 - "Value Converters"
-Cohesion: 0.05
-Nodes (19): AStar.Dev.Api.HealthChecks.AutoGenerated, AStar.Dev.Conflict.Resolution.Tests.Unit.AutoGenerated, AStar.Dev.Counter.Tests.Unit.AutoGenerated, AStar.Dev.File.App.Tests.Unit.AutoGenerated, AStar.Dev.FluentAssignments.Tests.Unit.AutoGenerated, AStar.Dev.Functional.Extensions.Tests.Unit.AutoGenerated, AStar.Dev.Guard.Clauses.AutoGenerated, AStar.Dev.Logging.Extensions.Tests.Unit.AutoGenerated (+11 more)
-
-### Community 9 - "Graph Service & Downloads"
 Cohesion: 0.08
-Nodes (7): double, DepthToIndentConverter, IHttpDownloader, IUploadService, GivenAParallelDownloadPipeline, HttpDownloader, UploadService
+Nodes (7): double, DepthToIndentConverter, IHttpDownloader, IUploadService, GivenADownloadWorker, HttpDownloader, UploadService
+
+### Community 8 - "Sync Repository & Detection"
+Cohesion: 0.06
+Nodes (13): ActivityViewModel, TokenCacheService, ConcurrentQueue, IFileScannerService, ILogEntryProvider, ILogEventSink, int, ITokenCacheService (+5 more)
+
+### Community 10 - "DB Context & Infra Misc"
+Cohesion: 0.09
+Nodes (6): AccountFilesViewModel, IGraphService, ISyncRuleRepository, SyncRuleRepository, GivenARemoteFolderEnumerator, OneDriveTreeNodeViewModel
 
 ### Community 11 - "Dashboard ViewModel"
 Cohesion: 0.07
 Nodes (6): AccountId, ISyncedItemRepository, SyncedItemRepository, GivenALocalDeletionDetector, GivenARemoteDeletionDetector, GivenASyncRuleEvaluator
 
 ### Community 12 - "Account Card ViewModel Tests"
-Cohesion: 0.11
-Nodes (4): AccountFilesViewModel, ISyncRuleRepository, SyncRuleRepository, GivenARemoteFolderEnumerator
-
-### Community 13 - "Delta Item Domain Tests"
 Cohesion: 0.05
 Nodes (10): MainWindow, MainWindow, MainWindow, MainWindow, SplashWindow, SplashWindowViewModel, DeletePendingWindow, MainWindow (+2 more)
 
-### Community 15 - "EF Core Migrations"
+### Community 14 - "Sync Scheduler & File Metadata"
 Cohesion: 0.06
 Nodes (3): DeltaItemTests, FolderTreeNodeTests, SyncConflictTests
 
-### Community 16 - "Sync Job Domain Tests"
+### Community 15 - "EF Core Migrations"
 Cohesion: 0.05
 Nodes (25): AccountCardViewModel, AStar.Dev.OneDrive.Sync.Client.Accounts, AccountCardViewModel, AStar.Dev.OneDrive.Sync.Client.Accounts, ActivityViewModel, AStar.Dev.OneDrive.Sync.Client.Activity, AStar.Dev.OneDrive.Sync.Client.Conflicts, ConflictItemViewModel (+17 more)
 
@@ -503,216 +499,208 @@ Nodes (21): AsyncRelayCommand, AccountFilesViewModel, AStar.Dev.OneDrive.Sync.Cl
 Cohesion: 0.21
 Nodes (14): AddToCartButton(), CartApp(), formatPrice(), handleCheckout(), handleRemove(), onCartUpdated(), PdfCard(), addToCart() (+6 more)
 
-### Community 28 - "Fab4Kids Cart Components"
+### Community 22 - "UI Dispatcher & Sync Events"
+Cohesion: 0.1
+Nodes (6): GivenAStatusBarViewModel, ISyncEventAggregator, IUiDispatcher, AvaloniaUiDispatcher, InlineUiDispatcher, SyncEventAggregator
+
+### Community 26 - "Account Card ViewModel"
+Cohesion: 0.11
+Nodes (6): AccountCardViewModel, IParallelDownloadPipeline, Lock, OneDriveAccount, GivenASyncJobExecutor, ParallelDownloadPipeline
+
+### Community 32 - "Sync Service Account Tests"
 Cohesion: 0.11
 Nodes (4): ObservableAsPropertyHelper, OneDriveTreeNodeViewModel, SyncFolderItemViewModel, MainWindowViewModel
 
 ### Community 37 - "OneDrive Account Tests"
-Cohesion: 0.14
-Nodes (6): AccountCardViewModel>, AccountsViewModel, AccountsViewModel, AStar.Dev.OneDrive.Sync.Client.Accounts, MainWindowViewModel, ViewModelExtensions
+Cohesion: 0.1
+Nodes (7): AttributeConstants, EncryptionExtensions, LocalSyncPathFactory, ApplicationMetadata, string, StrongIdCodeGenerator, CompilationHelpers
 
-### Community 38 - "Auth Token Cache Tests"
-Cohesion: 0.11
-Nodes (8): AutoRegisterOptionsPartialAnalyzer, AttributeConstants, EncryptionExtensions, DiagnosticAnalyzer, DiagnosticDescriptor, ApplicationMetadata, string, CompilationHelpers
-
-### Community 39 - "Sync Pass Orchestrator Tests"
+### Community 42 - "Onedrive Sync Client"
 Cohesion: 0.15
 Nodes (4): IIncrementalGenerator, OptionsBindingGenerator, ServiceRegistrationGenerator, StrongIdGenerator
 
-### Community 43 - "File Filetypeclassifiertests Filetypeclassifiertests"
+### Community 47 - "File Filedeleteserviceshould Filedeleteserviceshould"
 Cohesion: 0.13
 Nodes (7): Assembly, CultureInfo, Dictionary, IFileTypeClassifier, ILocalizationService, LocalizationService, FileTypeClassifier
 
-### Community 46 - "Blog Clean Architecture"
-Cohesion: 0.15
-Nodes (4): IUiDispatcher, AvaloniaUiDispatcher, GivenASyncEventAggregator, InlineUiDispatcher
-
-### Community 50 - "Onedrive Sync Client"
-Cohesion: 0.17
-Nodes (4): AuthService, TokenCacheService, IPublicClientApplication, ITokenCacheService
-
-### Community 51 - "Onedrive Sync Client"
+### Community 53 - "Dashboard Dashboardviewmodel Dashboardviewmodel"
 Cohesion: 0.13
 Nodes (8): AppDbContextModelSnapshot, AStar.Dev.OneDrive.Sync.Client.Data.Migrations, AStar.Dev.File.App.Migrations, FileAppDbContextModelSnapshot, AnotherOneDriveSync.Data.Migrations, AStar.Dev.Spikes.SqliteSyncState.Migrations, SyncDbContextModelSnapshot, ModelSnapshot
 
-### Community 62 - "Onedrive Sync Client"
+### Community 60 - "Onedrive Sync Client"
 Cohesion: 0.2
 Nodes (3): IAsyncDisposable, SyncScheduler, Timer
 
-### Community 64 - "Accounts Givenanaccountsviewmodelwithacompletingwizard Givenanaccountsviewmodelwithacompletingwizard"
+### Community 63 - "Assembly Cultureinfo"
 Cohesion: 0.13
 Nodes (5): SyncDbContext, SyncDbContext, AppDbContext, FileAppDbContext, DbContext
 
-### Community 67 - "Onedrive Sync Client"
+### Community 66 - "Onedrive Sync Client"
 Cohesion: 0.13
 Nodes (5): SyncDbContextFactory, SyncDbContextFactory, AppDbContextDesignTimeFactory, DesignTimeDbContextFactory, IDesignTimeDbContextFactory
 
-### Community 68 - "Onedrive Sync Client"
+### Community 67 - "Onedrive Sync Client"
 Cohesion: 0.16
 Nodes (15): Clean Architecture in Practice, TDD in .NET: Why It Still Matters, Distributed Pipeline Rebuild Case Study, Architecture Decision Record (ADR), Clean Architecture Dependency Rule, Domain Model as Source of Truth, Result<T> Type for Error Handling, Use Case as Unit of Work Pattern (+7 more)
 
-### Community 69 - "File Scannedfiledisplayitemtests Scannedfiledisplayitemtests"
+### Community 71 - "File Viewlocator Viewlocator"
 Cohesion: 0.14
 Nodes (5): HealthCheckExtensions, ObjectExtensions, ISettingsService, JsonSerializerOptions, SettingsService
 
 ### Community 72 - "File File Migrations"
-Cohesion: 0.15
-Nodes (11): bool, Regex, RegexRunnerFactory, SearchValues, AStar.Dev.OneDrive.Sync.Client.LogViewer, EmailRegex_0, PiiScrubber, RunnerFactory (+3 more)
+Cohesion: 0.27
+Nodes (3): FileViewerServiceShould, FileViewerService, IDbContextFactory
 
 ### Community 74 - "Onedrive Sync Client"
 Cohesion: 0.23
-Nodes (4): GraphClientFactory, IAuthService, IRemoteFolderEnumerator, GivenASyncServiceResolvingConflicts
+Nodes (3): HttpMessageHandler, FakeHttpMessageHandler, GivenAnHttpDownloader
 
 ### Community 76 - "Onedrive Sync Client"
+Cohesion: 0.23
+Nodes (4): GraphClientFactory, IAuthService, IRemoteFolderEnumerator, GivenASyncServiceResolvingConflicts
+
+### Community 77 - "Onedrive Sync Client"
+Cohesion: 0.17
+Nodes (6): App, bool, CancellationTokenSource, SearchValues, Utilities, TimeSpan
+
+### Community 81 - "Onedrive Sync Client"
 Cohesion: 0.15
 Nodes (5): AccountsView, DashboardView, FolderTreeItemView, AddAccountWizardView, UserControl
 
-### Community 77 - "Onedrive Sync Client"
-Cohesion: 0.23
-Nodes (3): HttpMessageHandler, FakeHttpMessageHandler, GivenAnHttpDownloader
-
-### Community 86 - "Data Appdbcontext Appdbcontext"
+### Community 84 - "Components Themeswitcher Themeswitcher"
 Cohesion: 0.17
 Nodes (4): AccountSyncSettingsViewModel, ViewModelBase, ObservableObject, WizardFolderItem
 
-### Community 89 - "Onedrive Sync Client"
+### Community 92 - "Onedrive Sync Client"
 Cohesion: 0.32
 Nodes (4): ThemeSwitcher(), readStoredTheme(), mockMatchMedia(), useTheme()
 
-### Community 94 - "Onedrive Sync Client"
+### Community 95 - "Accountcardviewmodel Accountsviewmodel"
 Cohesion: 0.18
 Nodes (3): ViewLocator, ViewLocator, IDataTemplate
 
-### Community 95 - "Accountcardviewmodel Accountsviewmodel"
-Cohesion: 0.24
-Nodes (5): IFileScannerService, int, Counter, FileScannerService, ViewWindowViewModel
+### Community 98 - "Onedrive Sync Client"
+Cohesion: 0.25
+Nodes (5): AccountCardViewModel>, AccountsViewModel, AccountsViewModel, AStar.Dev.OneDrive.Sync.Client.Accounts, ViewModelExtensions
 
-### Community 103 - "Onedrive Sync Client"
+### Community 101 - "Onedrive Sync Client"
 Cohesion: 0.18
 Nodes (6): AutoRegisterEndpointAttribute, AutoRegisterOptionsAttribute, AutoRegisterServiceAttribute, StrongIdAttribute, RefactorAttribute, Attribute
 
-### Community 112 - "Clock Program Program"
-Cohesion: 0.2
-Nodes (3): GraphService, IGraphService, OneDriveTreeNodeViewModel
-
-### Community 113 - "File Filescannerserviceshould Filescannerserviceshould"
+### Community 111 - "Fileapp Favicon"
 Cohesion: 0.2
 Nodes (3): DateTimeOffset, GivenASyncFileMetadata, long
 
-### Community 116 - "File File Migrations"
-Cohesion: 0.2
-Nodes (5): FrozenSet, HashSet, IFeatureAvailabilityService, IFeatureRegistrar, FeatureAvailabilityService
+### Community 113 - "File Filescannerserviceshould Filescannerserviceshould"
+Cohesion: 0.22
+Nodes (7): Regex, RegexRunnerFactory, AStar.Dev.OneDrive.Sync.Client.LogViewer, EmailRegex_0, PiiScrubber, RunnerFactory, System.Text.RegularExpressions.Generated
 
-### Community 119 - "Onedrive Sync Client"
+### Community 114 - "File Program Program"
 Cohesion: 0.2
 Nodes (3): App, Application, TestApp
 
-### Community 120 - "Conflicts Conflictresolver Conflictresolver"
-Cohesion: 0.22
-Nodes (3): ILoggerAstar, FakeLogger, ILogger
+### Community 115 - "File File Migrations"
+Cohesion: 0.2
+Nodes (5): FrozenSet, HashSet, IFeatureAvailabilityService, IFeatureRegistrar, FeatureAvailabilityService
 
-### Community 121 - "Data Persistenceserviceextensions Persistenceserviceextensions"
-Cohesion: 0.22
-Nodes (3): ReactiveObject, ScannedFileDisplayItem, ViewModelBase
-
-### Community 124 - "Onedrive Sync Client"
+### Community 125 - "Onedrive Sync Client"
 Cohesion: 0.28
 Nodes (3): ISyncService, SyncService, SyncPassOrchestrator
 
-### Community 129 - "Onedrive Sync Client"
-Cohesion: 0.25
-Nodes (3): Control, AnalogClockControl, DispatcherTimer
-
-### Community 134 - "Onedrive Sync Client"
+### Community 127 - "Onedrive Sync Client"
 Cohesion: 0.53
 Nodes (7): cachePathFor(), fetchFromNuGet(), formatDownloads(), getFeaturedPackages(), getPackageData(), readCache(), writeCache()
 
-### Community 135 - "File Unittest1 Unittest1"
+### Community 128 - "Onedrive Sync Client"
 Cohesion: 0.31
 Nodes (3): None, Option, Some
 
-### Community 145 - "Onedrive Sync Client"
+### Community 136 - "File File Services"
+Cohesion: 0.25
+Nodes (3): Control, AnalogClockControl, DispatcherTimer
+
+### Community 152 - "Onedrive Sync Client"
 Cohesion: 0.25
 Nodes (6): AStar.Dev.OneDrive.Sync.Client.Controls, IconRailButton, Button, PathIcon, Rectangle, TextBlock
 
-### Community 156 - "Onedrive Sync Client"
+### Community 153 - "Onedrive Sync Client"
 Cohesion: 0.25
-Nodes (4): SyncSessionEntityConfiguration, SyncFolder, SyncFolderConfiguration, IEntityTypeConfiguration
+Nodes (4): ConflictQueueItemEntityConfiguration, DriveItemMetadata, DriveItemMetadataConfiguration, IEntityTypeConfiguration
 
-### Community 162 - "Onedrive Sync Client"
+### Community 159 - "Onedrive Sync Client"
 Cohesion: 0.29
 Nodes (3): EventArgs, JobCompletedEventArgs, SyncProgressEventArgs
 
-### Community 173 - "Accounts Accountsettings Accountsettings"
+### Community 170 - "Clock Analogclockcontrol"
 Cohesion: 0.48
 Nodes (3): CookieBanner(), getStoredConsent(), storeConsent()
 
-### Community 178 - "Onedrive Sync Client"
-Cohesion: 0.33
-Nodes (3): IParallelDownloadPipeline, Lock, ParallelDownloadPipeline
-
-### Community 186 - "Onedrive Sync Client"
+### Community 183 - "Onedrive Sync Client"
 Cohesion: 0.47
 Nodes (3): Error, Ok, Result
 
+### Community 191 - "Components Contactform"
+Cohesion: 0.33
+Nodes (3): AutoRegisterOptionsPartialAnalyzer, DiagnosticAnalyzer, DiagnosticDescriptor
+
 ### Community 196 - "Onedrive Sync Client"
 Cohesion: 0.33
-Nodes (3): Migration, AddAppSettings, AnotherOneDriveSync.Data.Migrations
+Nodes (3): Migration, AStar.Dev.Spikes.SqliteSyncState.Migrations, InitialCreate
 
-### Community 239 - "Community 239"
+### Community 237 - "Components Themeswitcher"
 Cohesion: 0.4
 Nodes (3): AdditionalText, SourceText, TestAdditionalFile
 
-### Community 242 - "Community 242"
+### Community 241 - "Community 241"
 Cohesion: 0.4
 Nodes (3): AStar.Dev.OneDrive.Sync.Client.Home, FilesView, ItemsControl
 
-### Community 249 - "Community 249"
+### Community 246 - "Community 246"
 Cohesion: 0.4
 Nodes (5): AStar.Dev Website Favicon, AStar.Dev.File.App Logo for GitHub Actions, AStar.Dev.File.App Monochrome Logo, AStar.Dev.File.App Thumbnail, AStar Development Brand Logo
 
-### Community 307 - "Community 307"
+### Community 303 - "Community 303"
 Cohesion: 0.5
 Nodes (3): CommunityToolkit.Mvvm.ComponentModel.__Internals, __KnownINotifyPropertyChangingArgs, PropertyChangingEventArgs
 
-### Community 308 - "Community 308"
+### Community 304 - "Community 304"
 Cohesion: 0.5
 Nodes (3): CommunityToolkit.Mvvm.ComponentModel.__Internals, __KnownINotifyPropertyChangedArgs, PropertyChangedEventArgs
 
-### Community 309 - "Community 309"
+### Community 305 - "Community 305"
 Cohesion: 0.5
 Nodes (3): ActivityTab>, ActivityViewModel, AStar.Dev.OneDrive.Sync.Client.Activity
 
-### Community 310 - "Community 310"
+### Community 306 - "Community 306"
 Cohesion: 0.5
 Nodes (3): ActivityItemType?>, ActivityViewModel, AStar.Dev.OneDrive.Sync.Client.Activity
 
-### Community 311 - "Community 311"
+### Community 307 - "Community 307"
 Cohesion: 0.5
 Nodes (3): AsyncRelayCommand<string>, AStar.Dev.OneDrive.Sync.Client.Home, FilesViewModel
 
-### Community 312 - "Community 312"
+### Community 308 - "Community 308"
 Cohesion: 0.5
 Nodes (3): AStar.Dev.OneDrive.Sync.Client.Home, MainWindowViewModel, NavSection>
 
-### Community 373 - "Community 373"
+### Community 371 - "Community 371"
 Cohesion: 0.67
 Nodes (3): AnalogClockControl, AStar.Dev.Clock Avalonia App, AStar.Dev.Clock README
 
 ## Knowledge Gaps
 - **161 isolated node(s):** `DispatcherTimer`, `FileTypeClassifier`, `FileViewerService`, `FolderPickerService`, `FileDeleteService` (+156 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **332 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **330 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `string` connect `Auth Token Cache Tests` to `Activity ViewModel (OneDrive)`, `Community 259`, `Accounts & Activity Views`, `Onedrive Sync Client`, `Community 258`, `Sync Repository & Detection`, `Graph Service & Downloads`, `Dashboard ViewModel`, `Account Card ViewModel Tests`, `Settings ViewModel Tests`, `Sync Scheduler Tests`, `Onedrive Sync Client`, `Converter Tests (Depth/Conflict)`, `Graph Service Tests`, `Fab4Kids Cart Components`, `EF Entity Configuration`, `Localization Service Tests`, `Sync Pass Orchestrator Tests`, `Controls Givenaniconrailbutton Givenaniconrailbutton`, `File Filetypeclassifiertests Filetypeclassifiertests`, `Onedrive Sync Client`, `Accounts Accountsyncsettingsviewmodel Accountsyncsettingsviewmodel`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `File Scannedfiledisplayitemtests Scannedfiledisplayitemtests`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Data Appdbcontextdesigntimefactory Appdbcontextdesigntimefactory`, `Conflicts Conflictitemviewmodel Conflictitemviewmodel`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `File File Services`, `File Program Program`, `File File Migrations`, `File File Services`, `Community 255`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
-- **Why does `int` connect `Accountcardviewmodel Accountsviewmodel` to `File Viewer Service Tests`, `Activity ViewModel (OneDrive)`, `Graph Service & Downloads`, `Onedrive Sync Client`, `Sync Scheduler Tests`, `File File Services`, `Onedrive Sync Client`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Why does `OptionShould` connect `File Viewer Service Tests` to `Accountcardviewmodel Accountsviewmodel`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `string` connect `OneDrive Account Tests` to `Activity ViewModel (OneDrive)`, `Activity Item ViewModel Tests`, `Onedrive Sync Client`, `Value Converters`, `Sync Repository & Detection`, `DB Context & Infra Misc`, `Dashboard ViewModel`, `Settings ViewModel Tests`, `Sync Scheduler Tests`, `Onedrive Sync Client`, `Graph Service Tests`, `Account Card ViewModel`, `Remote Folder Enumerator Tests`, `Fab4Kids Cart Components`, `Conflict Resolver Tests`, `Sync Service Account Tests`, `Sync Pass Orchestrator Tests`, `Controls Givenaniconrailbutton Givenaniconrailbutton`, `Onedrive Sync Client`, `Accounts Accountsviewmodel Accountsviewmodel`, `Blog Clean Architecture`, `File Filedeleteserviceshould Filedeleteserviceshould`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Components Contactform`, `Onedrive Sync Client`, `File Viewlocator Viewlocator`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Onedrive Sync Client`, `Conflicts Conflictitemviewmodel Conflictitemviewmodel`, `File Folderpickerserviceshould Folderpickerserviceshould`, `Onedrive Sync Client`, `Content Config`, `Clock Program Program`, `File File Migrations`, `Community 252`?**
+  _High betweenness centrality (0.122) - this node is a cross-community bridge._
+- **Why does `int` connect `Sync Repository & Detection` to `Clock Program Program`, `File Viewer Service Tests`, `Sync Scheduler Tests`, `Value Converters`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+- **Why does `OptionShould` connect `File Viewer Service Tests` to `Sync Repository & Detection`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **What connects `DispatcherTimer`, `FileTypeClassifier`, `FileViewerService` to the rest of the system?**
   _161 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Web API & Checkout` be split into smaller, more focused modules?**
