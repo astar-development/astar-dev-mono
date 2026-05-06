@@ -189,8 +189,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         => new()
         {
             Remote         = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id),
-            RelativePath   = item.Path.EffectivePath,
-            LocalPath      = localPath,
+            Target         = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath),
             LocalModified  = localModified,
             RemoteModified = item.LastModified ?? DateTimeOffset.MinValue,
             LocalSize      = fileSystem.FileInfo.New(localPath).Length,

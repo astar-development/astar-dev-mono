@@ -10,8 +10,7 @@ public sealed class SyncConflict
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public RemoteItemRef Remote { get; init; } = RemoteItemRefFactory.Create(new AccountId(string.Empty), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty));
-    public string RelativePath { get; init; } = string.Empty;
-    public string LocalPath { get; init; } = string.Empty;
+    public SyncFileTarget Target { get; init; } = SyncFileTargetFactory.Create(string.Empty, string.Empty);
 
     public DateTimeOffset LocalModified { get; init; }
     public DateTimeOffset RemoteModified { get; init; }

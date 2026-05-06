@@ -13,8 +13,8 @@ public sealed partial class ConflictItemViewModel(
 {
     public Guid Id => conflict.Id;
     public string AccountId => conflict.Remote.AccountId.Id;
-    public string FileName => Path.GetFileName(conflict.RelativePath);
-    public string RelativePath => conflict.RelativePath;
+    public string FileName => Path.GetFileName(conflict.Target.RelativePath);
+    public string RelativePath => conflict.Target.RelativePath;
     public DateTimeOffset LocalModified => conflict.LocalModified;
     public DateTimeOffset RemoteModified => conflict.RemoteModified;
     public long LocalSize => conflict.LocalSize;
