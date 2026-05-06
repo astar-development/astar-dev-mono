@@ -30,8 +30,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
                 AccentIndex       = entity.AccentIndex,
                 IsActive          = entity.IsActive,
                 LastSyncedAt      = entity.LastSyncedAt,
-                QuotaTotal        = entity.QuotaTotal,
-                QuotaUsed         = entity.QuotaUsed,
+                Quota             = entity.Quota,
                 SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))],
                 SyncConfig        = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null
             });

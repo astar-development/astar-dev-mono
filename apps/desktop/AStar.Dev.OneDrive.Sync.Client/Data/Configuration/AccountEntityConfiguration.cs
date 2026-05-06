@@ -17,6 +17,11 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
             _ = p.Property(prof => prof.DisplayName).HasColumnName("DisplayName");
             _ = p.Property(prof => prof.Email).HasColumnName("Email");
         });
+        _ = builder.ComplexProperty(e => e.Quota, q =>
+        {
+            _ = q.Property(s => s.TotalBytes).HasColumnName("QuotaTotal");
+            _ = q.Property(s => s.UsedBytes).HasColumnName("QuotaUsed");
+        });
         _ = builder.ComplexProperty(e => e.SyncConfig, s =>
         {
             _ = s.Property(cfg => cfg.ConflictPolicy).HasColumnName("ConflictPolicy");

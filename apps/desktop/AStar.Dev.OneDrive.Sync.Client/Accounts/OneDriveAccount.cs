@@ -25,11 +25,8 @@ public sealed class OneDriveAccount
     /// <summary>UTC timestamp of the last successful delta sync.</summary>
     public DateTimeOffset? LastSyncedAt { get; set; }
 
-    /// <summary>Total OneDrive quota in bytes (refreshed periodically).</summary>
-    public long QuotaTotal { get; set; }
-
-    /// <summary>Used OneDrive quota in bytes.</summary>
-    public long QuotaUsed { get; set; }
+    /// <summary>OneDrive storage quota refreshed periodically from the Graph API.</summary>
+    public StorageQuota Quota { get; set; } = StorageQuotaFactory.Unknown;
 
     /// <summary>Whether this account is currently active / selected in the UI.</summary>
     public bool IsActive { get; set; }

@@ -15,8 +15,8 @@ public sealed class GivenAnOneDriveAccount
         account.AccentIndex.ShouldBe(0);
         account.SelectedFolderIds.ShouldBeEmpty();
         account.LastSyncedAt.ShouldBeNull();
-        account.QuotaTotal.ShouldBe(0L);
-        account.QuotaUsed.ShouldBe(0L);
+        account.Quota.TotalBytes.ShouldBe(0L);
+        account.Quota.UsedBytes.ShouldBe(0L);
         account.IsActive.ShouldBeFalse();
         account.FolderNames.ShouldBeEmpty();
         account.SyncConfig.ShouldBeNull();
@@ -88,25 +88,25 @@ public sealed class GivenAnOneDriveAccount
     }
 
     [Fact]
-    public void when_quota_total_is_set_then_it_is_preserved()
+    public void when_quota_is_set_then_total_bytes_is_preserved()
     {
         var account = new OneDriveAccount();
-        long quotaTotal = 1_099_511_627_776L;
+        long totalBytes = 1_099_511_627_776L;
 
-        account.QuotaTotal = quotaTotal;
+        account.Quota = StorageQuotaFactory.Create(totalBytes, 0L);
 
-        account.QuotaTotal.ShouldBe(quotaTotal);
+        account.Quota.TotalBytes.ShouldBe(totalBytes);
     }
 
     [Fact]
-    public void when_quota_used_is_set_then_it_is_preserved()
+    public void when_quota_is_set_then_used_bytes_is_preserved()
     {
         var account = new OneDriveAccount();
-        long quotaUsed = 549_755_813_888L;
+        long usedBytes = 549_755_813_888L;
 
-        account.QuotaUsed = quotaUsed;
+        account.Quota = StorageQuotaFactory.Create(1_099_511_627_776L, usedBytes);
 
-        account.QuotaUsed.ShouldBe(quotaUsed);
+        account.Quota.UsedBytes.ShouldBe(usedBytes);
     }
 
     [Fact]
@@ -185,15 +185,14 @@ public sealed class GivenAnOneDriveAccount
 
         account.Profile = AccountProfileFactory.Create(displayName, email);
         account.AccentIndex = accentIndex;
-        account.QuotaTotal = quotaTotal;
-        account.QuotaUsed = quotaUsed;
+        account.Quota = StorageQuotaFactory.Create(quotaTotal, quotaUsed);
         account.IsActive = true;
 
         account.Profile.DisplayName.ShouldBe(displayName);
         account.Profile.Email.ShouldBe(email);
         account.AccentIndex.ShouldBe(accentIndex);
-        account.QuotaTotal.ShouldBe(quotaTotal);
-        account.QuotaUsed.ShouldBe(quotaUsed);
+        account.Quota.TotalBytes.ShouldBe(quotaTotal);
+        account.Quota.UsedBytes.ShouldBe(quotaUsed);
         account.IsActive.ShouldBeTrue();
     }
 }
