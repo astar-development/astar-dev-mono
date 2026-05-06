@@ -208,7 +208,7 @@ public sealed class GivenASyncPassOrchestrator
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
 
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
+        var conflict = new SyncConflict { Id = Guid.NewGuid(), Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
         var callbackInvoked = false;
 
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())

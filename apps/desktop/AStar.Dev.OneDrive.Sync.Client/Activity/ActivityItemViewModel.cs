@@ -78,7 +78,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public static ActivityItemViewModel FromConflict(SyncConflict conflict, string accountEmail, string folderName) => new()
     {
-        AccountId = conflict.AccountId,
+        AccountId = conflict.Remote.AccountId.Id,
         AccountEmail = accountEmail,
         FolderName = folderName,
         FileName = Path.GetFileName(conflict.RelativePath),

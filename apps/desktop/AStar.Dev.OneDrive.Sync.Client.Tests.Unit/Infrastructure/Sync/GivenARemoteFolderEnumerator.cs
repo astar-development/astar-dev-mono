@@ -217,7 +217,7 @@ public sealed class GivenARemoteFolderEnumerator
         }, TestContext.Current.CancellationToken);
 
         conflictsDetected.ShouldHaveSingleItem();
-        conflictsDetected[0].RemoteItemId.ShouldBe("item-a");
+        conflictsDetected[0].Remote.RemoteItemId.Id.ShouldBe("item-a");
     }
 
     [Fact]

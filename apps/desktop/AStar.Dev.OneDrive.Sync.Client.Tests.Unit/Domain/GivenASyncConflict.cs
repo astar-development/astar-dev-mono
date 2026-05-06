@@ -52,9 +52,7 @@ public sealed class GivenASyncConflict
     public void when_all_properties_are_set_then_they_are_preserved()
     {
         var id = Guid.NewGuid();
-        string accountId = "account-123";
-        string folderId = "folder-456";
-        string remoteItemId = "item-789";
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         string relativePath = "Documents/report.pdf";
         string localPath = "/home/jason/Documents/report.pdf";
         var now = DateTimeOffset.UtcNow;
@@ -62,9 +60,7 @@ public sealed class GivenASyncConflict
         var conflict = new SyncConflict
         {
             Id = id,
-            AccountId = accountId,
-            FolderId = folderId,
-            RemoteItemId = remoteItemId,
+            Remote = remote,
             RelativePath = relativePath,
             LocalPath = localPath,
             LocalModified = now.AddHours(-1),
@@ -75,9 +71,9 @@ public sealed class GivenASyncConflict
         };
 
         conflict.Id.ShouldBe(id);
-        conflict.AccountId.ShouldBe(accountId);
-        conflict.FolderId.ShouldBe(folderId);
-        conflict.RemoteItemId.ShouldBe(remoteItemId);
+        conflict.Remote.AccountId.Id.ShouldBe("account-123");
+        conflict.Remote.FolderId.Id.ShouldBe("folder-456");
+        conflict.Remote.RemoteItemId.Id.ShouldBe("item-789");
         conflict.RelativePath.ShouldBe(relativePath);
         conflict.LocalPath.ShouldBe(localPath);
         conflict.LocalSize.ShouldBe(1024);

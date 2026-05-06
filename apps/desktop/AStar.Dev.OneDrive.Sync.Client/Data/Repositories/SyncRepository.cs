@@ -88,9 +88,9 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
         _ = db.SyncConflicts.Add(new SyncConflictEntity
         {
             Id             = conflict.Id,
-            AccountId      = new AccountId(conflict.AccountId),
-            FolderId       = new OneDriveFolderId(conflict.FolderId),
-            RemoteItemId   = new OneDriveItemId(conflict.RemoteItemId),
+            AccountId      = conflict.Remote.AccountId,
+            FolderId       = conflict.Remote.FolderId,
+            RemoteItemId   = conflict.Remote.RemoteItemId,
             RelativePath   = conflict.RelativePath,
             LocalPath      = conflict.LocalPath,
             LocalModified  = conflict.LocalModified,

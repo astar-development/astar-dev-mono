@@ -50,12 +50,12 @@ public sealed class GivenASyncEventAggregator
         var sut = CreateSut();
         SyncConflict? captured = null;
         sut.ConflictDetected += (_, conflict) => captured = conflict;
-        var conflict = new SyncConflict { AccountId = "acc-3" };
+        var conflict = new SyncConflict { Remote = RemoteItemRefFactory.Create(new AccountId("acc-3"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
 
         _syncService.ConflictDetected += Raise.Event<EventHandler<SyncConflict>>(this, conflict);
 
         captured.ShouldNotBeNull();
-        captured.AccountId.ShouldBe("acc-3");
+        captured.Remote.AccountId.Id.ShouldBe("acc-3");
     }
 
     [Fact]

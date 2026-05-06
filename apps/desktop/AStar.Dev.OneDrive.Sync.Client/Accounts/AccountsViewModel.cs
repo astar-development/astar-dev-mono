@@ -190,7 +190,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
-        var card = Accounts.FirstOrDefault(a => a.Id == conflict.AccountId);
+        var card = Accounts.FirstOrDefault(a => a.Id == conflict.Remote.AccountId.Id);
         if(card is null)
             return;
 
