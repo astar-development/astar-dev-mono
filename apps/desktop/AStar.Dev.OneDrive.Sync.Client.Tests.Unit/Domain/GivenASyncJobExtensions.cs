@@ -4,14 +4,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
 public sealed class GivenASyncJobExtensions
 {
-    private static SyncJob CreateMinimalJob()
+    private static DownloadSyncJob CreateMinimalJob()
     {
         var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
         var target = SyncFileTargetFactory.Create("/home/user/file.txt", "file.txt");
         var metadata = SyncFileMetadataFactory.Create(1024L, DateTimeOffset.UtcNow.AddHours(-1));
-        var status = SyncJobStatusFactory.Create();
 
-        return SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status);
+        return SyncJobFactory.CreateDownload(remote, target, metadata);
     }
 
     [Fact]
@@ -42,16 +41,15 @@ public sealed class GivenASyncJobExtensions
     {
         var job = CreateMinimalJob();
 
-        var completed = job.Complete();
+        var completed = (DownloadSyncJob)job.Complete();
 
         completed.Remote.ShouldBe(job.Remote);
         completed.Target.ShouldBe(job.Target);
         completed.Metadata.ShouldBe(job.Metadata);
-        completed.Direction.ShouldBe(job.Direction);
+        completed.ShouldBeOfType<DownloadSyncJob>();
         completed.Status.Id.ShouldBe(job.Status.Id);
         completed.Status.QueuedAt.ShouldBe(job.Status.QueuedAt);
         completed.DownloadUrl.ShouldBe(job.DownloadUrl);
-        completed.UploadedRemoteItemId.ShouldBe(job.UploadedRemoteItemId);
     }
 
     [Fact]

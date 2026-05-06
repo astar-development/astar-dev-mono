@@ -38,7 +38,7 @@ public static class SyncedItemEntityFactory
         };
 
     /// <summary>Creates a tracking entity for a successfully completed upload job.</summary>
-    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, SyncJob job, string remotePath, IFileSystem fileSystem)
+    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, UploadSyncJob job, string remotePath, IFileSystem fileSystem)
         => new()
         {
             AccountId        = accountId,

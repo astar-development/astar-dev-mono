@@ -39,17 +39,17 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
         {
             var remotePath = NormaliseRemotePath(job.Target.RelativePath);
 
-            if(job.Direction == SyncDirection.Download)
+            if(job is DownloadSyncJob)
             {
                 var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, job, remotePath);
                 await syncedItemRepository.UpsertAsync(entity, ct);
                 syncedItems[job.Remote.RemoteItemId.Id] = entity;
             }
-            else if(job.Direction == SyncDirection.Upload && job.UploadedRemoteItemId is not null)
+            else if(job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is not null)
             {
-                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, job, remotePath, fileSystem);
+                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, remotePath, fileSystem);
                 await syncedItemRepository.UpsertAsync(entity, ct);
-                syncedItems[job.UploadedRemoteItemId] = entity;
+                syncedItems[uploadJob.UploadedRemoteItemId] = entity;
             }
         }
     }

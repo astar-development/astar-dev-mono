@@ -121,7 +121,7 @@ public sealed class GivenALocalChangeDetector
     }
 
     [Fact]
-    public void when_new_file_is_not_in_lookup_then_job_direction_is_upload()
+    public void when_new_file_is_not_in_lookup_then_job_is_upload_sync_job()
     {
         var mockFs = new MockFileSystem();
         mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
@@ -130,11 +130,11 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Direction.ShouldBe(SyncDirection.Upload);
+        jobs[0].ShouldBeOfType<UploadSyncJob>();
     }
 
     [Fact]
-    public void when_new_file_is_not_in_lookup_then_job_download_url_equals_relative_path()
+    public void when_new_file_is_not_in_lookup_then_job_relative_path_is_used_for_upload_target()
     {
         var mockFs = new MockFileSystem();
         mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
@@ -143,7 +143,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].DownloadUrl.ShouldBe(jobs[0].Target.RelativePath);
+        jobs[0].Target.RelativePath.ShouldBe("Documents/report.txt");
     }
 
     [Fact]

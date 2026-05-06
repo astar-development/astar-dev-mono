@@ -64,12 +64,12 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         FolderName = folderName,
         FileName = Path.GetFileName(job.Target.RelativePath),
         RelativePath = job.Target.RelativePath,
-        Type = job.Direction switch
+        Type = job switch
         {
-            SyncDirection.Download => ActivityItemType.Downloaded,
-            SyncDirection.Upload => ActivityItemType.Uploaded,
-            SyncDirection.Delete => ActivityItemType.Deleted,
-            _ => ActivityItemType.Info
+            DownloadSyncJob => ActivityItemType.Downloaded,
+            UploadSyncJob   => ActivityItemType.Uploaded,
+            DeleteSyncJob   => ActivityItemType.Deleted,
+            _               => ActivityItemType.Info
         },
         FileSize = job.Metadata.FileSize,
         OccurredAt = job.Status.CompletedAt ?? DateTimeOffset.UtcNow,
