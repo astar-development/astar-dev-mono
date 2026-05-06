@@ -63,9 +63,9 @@ public sealed class SyncServiceTests
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id            = new AccountId("user-1"),
-            Profile       = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-            LocalSyncPath = LocalSyncPath.Restore("/home/user/OneDrive")
+            Id         = new AccountId("user-1"),
+            Profile    = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
 
         await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
@@ -94,13 +94,13 @@ public sealed class SyncServiceTests
     }
 
     [Fact]
-    public async Task when_local_sync_path_is_null_then_no_local_sync_path_progress_is_raised()
+    public async Task when_sync_config_is_null_then_no_local_sync_path_progress_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
         var service = BuildSut();
-        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), LocalSyncPath = null };
+        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), SyncConfig = null };
         bool noSyncPathRaised = false;
         service.SyncProgressChanged += (_, args) =>
         {

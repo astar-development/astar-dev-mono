@@ -111,8 +111,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         AccentIndex       = entity.AccentIndex,
         IsActive          = entity.IsActive,
         LastSyncedAt      = entity.LastSyncedAt,
-        LocalSyncPath     = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-        ConflictPolicy    = entity.ConflictPolicy,
+        SyncConfig        = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
         SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
     };
 

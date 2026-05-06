@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -96,11 +97,10 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             {
                 var fullAccount = new OneDriveAccount
                 {
-                    Id            = entity.Id,
-                    Profile       = entity.Profile,
-                    LocalSyncPath = entity.LocalSyncPath.Value.Length > 0 ? entity.LocalSyncPath : null,
-                    ConflictPolicy = entity.ConflictPolicy,
-                    LastSyncedAt  = entity.LastSyncedAt
+                    Id           = entity.Id,
+                    Profile      = entity.Profile,
+                    SyncConfig   = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
+                    LastSyncedAt = entity.LastSyncedAt
                 };
                 await _scheduler.TriggerAccountAsync(fullAccount);
             });

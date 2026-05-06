@@ -19,8 +19,7 @@ public sealed class OneDriveAccountTests
         account.QuotaUsed.ShouldBe(0L);
         account.IsActive.ShouldBeFalse();
         account.FolderNames.ShouldBeEmpty();
-        account.LocalSyncPath.ShouldBeNull();
-        account.ConflictPolicy.ShouldBe(ConflictPolicy.Ignore);
+        account.SyncConfig.ShouldBeNull();
     }
 
     [Fact]
@@ -134,26 +133,28 @@ public sealed class OneDriveAccountTests
     }
 
     [Fact]
-    public void LocalSyncPath_ShouldBeSettableViaFactory()
+    public void SyncConfig_ShouldBeSettableViaFactory()
     {
         var account = new OneDriveAccount();
         string rawPath = "/home/jason/OneDrive";
+        var path = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
 
-        account.LocalSyncPath = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
+        account.SyncConfig = path is null ? null : AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, path);
 
-        account.LocalSyncPath.ShouldNotBeNull();
-        account.LocalSyncPath!.Value.ShouldBe(rawPath);
+        account.SyncConfig.ShouldNotBeNull();
+        account.SyncConfig!.LocalSyncPath.Value.ShouldBe(rawPath);
     }
 
     [Fact]
-    public void ConflictPolicy_ShouldBeSettable()
+    public void SyncConfig_ConflictPolicy_ShouldBeSettable()
     {
+        var path = LocalSyncPath.Restore("/home/user/OneDrive");
         var account = new OneDriveAccount
         {
-            ConflictPolicy = ConflictPolicy.LastWriteWins
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, path)
         };
 
-        account.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
+        account.SyncConfig!.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
     }
 
     [Theory]
@@ -161,14 +162,15 @@ public sealed class OneDriveAccountTests
     [InlineData(ConflictPolicy.KeepBoth)]
     [InlineData(ConflictPolicy.LastWriteWins)]
     [InlineData(ConflictPolicy.LocalWins)]
-    public void ConflictPolicy_ShouldSupportMultiplePolicies(ConflictPolicy policy)
+    public void SyncConfig_ShouldSupportMultiplePolicies(ConflictPolicy policy)
     {
+        var path = LocalSyncPath.Restore("/home/user/OneDrive");
         var account = new OneDriveAccount
         {
-            ConflictPolicy = policy
+            SyncConfig = AccountSyncConfigFactory.Create(policy, path)
         };
 
-        account.ConflictPolicy.ShouldBe(policy);
+        account.SyncConfig!.ConflictPolicy.ShouldBe(policy);
     }
 
     [Fact]

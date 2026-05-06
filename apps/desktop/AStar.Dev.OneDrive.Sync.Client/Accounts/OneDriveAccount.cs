@@ -37,11 +37,6 @@ public sealed class OneDriveAccount
     /// <summary>Maps folder ID to display name — kept in sync with SelectedFolderIds.</summary>
     public Dictionary<OneDriveFolderId, string> FolderNames { get; set; } = [];
 
-    /// <summary>Validated local path where files are synced. Null means not yet configured.</summary>
-    public LocalSyncPath? LocalSyncPath { get; set; }
-    
-    /// <summary>
-    /// User's chosen conflict resolution policy for this account. Defaults to "Ignore" (keep both versions and rename the new one).
-    /// </summary>
-    public ConflictPolicy ConflictPolicy { get; set; } = ConflictPolicy.Ignore;
+    /// <summary>Sync behaviour configuration. Null means not yet configured.</summary>
+    public AccountSyncConfig? SyncConfig { get; set; }
 }

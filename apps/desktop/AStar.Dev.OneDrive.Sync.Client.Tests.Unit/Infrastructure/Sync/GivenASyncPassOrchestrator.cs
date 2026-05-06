@@ -31,9 +31,9 @@ public sealed class GivenASyncPassOrchestrator
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
-        Id = new AccountId("user-1"),
-        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        LocalSyncPath = LocalSyncPath.Restore(localSyncPath),
+        Id                = new AccountId("user-1"),
+        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
         SelectedFolderIds = []
     };
 

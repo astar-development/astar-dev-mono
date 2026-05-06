@@ -17,10 +17,11 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty]
-    public partial string LocalSyncPath { get; set; } = account.LocalSyncPath?.Value ?? string.Empty;
+    public partial string LocalSyncPath { get; set; } = account.SyncConfig?.LocalSyncPath.Value ?? string.Empty;
 
     [ObservableProperty]
-    public partial ConflictPolicy ConflictPolicy { get; set; } = account.ConflictPolicy;
+    public partial ConflictPolicy ConflictPolicy { get; set; } = account.SyncConfig?.ConflictPolicy ?? ConflictPolicy.Ignore;
+
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
     [
         new(ConflictPolicy.Ignore,        "Ignore",          "Skip conflicts — leave both unchanged"),
@@ -40,14 +41,13 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
     [RelayCommand]
     private async Task SaveAsync()
     {
-        account.LocalSyncPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<LocalSyncPath?>(p => p, _ => null);
-        account.ConflictPolicy = ConflictPolicy;
+        var resolvedPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<Domain.LocalSyncPath?>(p => p, _ => null);
+        account.SyncConfig = resolvedPath is null ? null : AccountSyncConfigFactory.Create(ConflictPolicy, resolvedPath);
 
         await repository.GetByIdAsync(account.Id, CancellationToken.None)
             .TapAsync(async entity =>
             {
-                entity.LocalSyncPath = account.LocalSyncPath ?? Domain.LocalSyncPath.Restore(string.Empty);
-                entity.ConflictPolicy = ConflictPolicy;
+                entity.SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy, resolvedPath ?? Domain.LocalSyncPath.Restore(string.Empty));
                 await repository.UpsertAsync(entity, CancellationToken.None);
             });
     }

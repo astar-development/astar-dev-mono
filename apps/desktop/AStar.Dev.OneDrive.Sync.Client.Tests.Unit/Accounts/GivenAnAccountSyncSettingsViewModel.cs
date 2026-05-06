@@ -18,8 +18,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         Id = new AccountId(AccountIdValue),
         Profile = AccountProfileFactory.Create(DisplayNameValue, EmailValue),
         AccentIndex = accentIndex,
-        LocalSyncPath = localSyncPath is null ? null : LocalSyncPath.Restore(localSyncPath),
-        ConflictPolicy = conflictPolicy
+        SyncConfig = AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath ?? string.Empty)),
     };
 
     private static AccountEntity BuildEntity(string localSyncPath = "") => new()
@@ -170,7 +169,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.LocalSyncPath.Value.ShouldBe(SyncPathValue);
+        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(SyncPathValue);
     }
 
     [Fact]
@@ -187,7 +186,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.ConflictPolicy.ShouldBe(ConflictPolicy.RemoteWins);
+        captured!.SyncConfig.ConflictPolicy.ShouldBe(ConflictPolicy.RemoteWins);
     }
 
     [Fact]
@@ -201,8 +200,8 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        account.LocalSyncPath.ShouldNotBeNull();
-        account.LocalSyncPath!.Value.ShouldBe(SyncPathValue);
+        account.SyncConfig.ShouldNotBeNull();
+        account.SyncConfig!.LocalSyncPath.Value.ShouldBe(SyncPathValue);
     }
 
     [Fact]
@@ -231,7 +230,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.LocalSyncPath.Value.ShouldBe(string.Empty);
+        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -247,11 +246,11 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.LocalSyncPath.Value.ShouldBe(string.Empty);
+        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
-    public async Task when_save_is_executed_with_an_empty_path_then_account_model_local_sync_path_is_null()
+    public async Task when_save_is_executed_with_an_empty_path_then_account_model_sync_config_is_null()
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
@@ -261,6 +260,6 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        account.LocalSyncPath.ShouldBeNull();
+        account.SyncConfig.ShouldBeNull();
     }
 }

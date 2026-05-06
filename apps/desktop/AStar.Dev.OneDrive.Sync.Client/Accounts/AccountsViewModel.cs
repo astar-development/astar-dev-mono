@@ -97,10 +97,12 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
                     account.AccentIndex = Accounts.Count % 6;
                     account.IsActive = Accounts.Count == 0;
-                    if(account.LocalSyncPath is null)
+                    if(account.SyncConfig is null)
                     {
                         var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Profile.Email);
-                        account.LocalSyncPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
+                        var resolvedPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
+                        if(resolvedPath is not null)
+                            account.SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, resolvedPath);
                     }
 
                     var entity = ToEntity(account);
@@ -210,14 +212,13 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     private static AccountEntity ToEntity(OneDriveAccount a)
         => new()
         {
-            Id            = a.Id,
-            Profile       = a.Profile,
-            AccentIndex   = a.AccentIndex,
-            IsActive      = a.IsActive,
-            LastSyncedAt  = a.LastSyncedAt,
-            QuotaTotal    = a.QuotaTotal,
-            LocalSyncPath = a.LocalSyncPath ?? LocalSyncPath.Restore(string.Empty),
-            ConflictPolicy = a.ConflictPolicy,
-            QuotaUsed     = a.QuotaUsed
+            Id           = a.Id,
+            Profile      = a.Profile,
+            AccentIndex  = a.AccentIndex,
+            IsActive     = a.IsActive,
+            LastSyncedAt = a.LastSyncedAt,
+            QuotaTotal   = a.QuotaTotal,
+            QuotaUsed    = a.QuotaUsed,
+            SyncConfig   = a.SyncConfig ?? AccountSyncConfigFactory.Default
         };
 }

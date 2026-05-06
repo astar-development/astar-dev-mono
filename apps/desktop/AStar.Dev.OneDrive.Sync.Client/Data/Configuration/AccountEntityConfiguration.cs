@@ -17,8 +17,13 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
             _ = p.Property(prof => prof.DisplayName).HasColumnName("DisplayName");
             _ = p.Property(prof => prof.Email).HasColumnName("Email");
         });
-        _ = builder.Property(e => e.LocalSyncPath)
-                   .HasConversion(path => path.Value, str => LocalSyncPath.Restore(str));
+        _ = builder.ComplexProperty(e => e.SyncConfig, s =>
+        {
+            _ = s.Property(cfg => cfg.ConflictPolicy).HasColumnName("ConflictPolicy");
+            _ = s.Property(cfg => cfg.LocalSyncPath)
+                 .HasConversion(path => path.Value, str => LocalSyncPath.Restore(str))
+                 .HasColumnName("LocalSyncPath");
+        });
         _ = builder.HasMany<SyncConflictEntity>()
                    .WithOne(c => c.Account)
                    .HasForeignKey(c => c.AccountId)
