@@ -35,8 +35,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             existing.LocalPath        = item.LocalPath;
             existing.IsFolder         = item.IsFolder;
             existing.RemoteModifiedAt = item.RemoteModifiedAt;
-            existing.ETag             = item.ETag;
-            existing.CTag             = item.CTag;
+            existing.Tags             = item.Tags;
         }
 
         _ = await db.SaveChangesAsync(cancellationToken);
