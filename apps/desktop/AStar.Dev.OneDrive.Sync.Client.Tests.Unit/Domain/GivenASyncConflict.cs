@@ -62,10 +62,7 @@ public sealed class GivenASyncConflict
             Id = id,
             Remote = remote,
             Target = SyncFileTargetFactory.Create(localPath, relativePath),
-            LocalModified = now.AddHours(-1),
-            RemoteModified = now,
-            LocalSize = 1024,
-            RemoteSize = 2048,
+            Snapshot = ConflictSnapshotFactory.Create(now.AddHours(-1), 1024, now, 2048),
             DetectedAt = now
         };
 
@@ -75,8 +72,8 @@ public sealed class GivenASyncConflict
         conflict.Remote.RemoteItemId.Id.ShouldBe("item-789");
         conflict.Target.RelativePath.ShouldBe(relativePath);
         conflict.Target.LocalPath.ShouldBe(localPath);
-        conflict.LocalSize.ShouldBe(1024);
-        conflict.RemoteSize.ShouldBe(2048);
+        conflict.Snapshot.LocalSize.ShouldBe(1024);
+        conflict.Snapshot.RemoteSize.ShouldBe(2048);
     }
 
     [Fact]
@@ -130,9 +127,9 @@ public sealed class GivenASyncConflict
     {
         long largeSize = 1_073_741_824L;
 
-        var conflict = new SyncConflict { LocalSize = largeSize };
+        var conflict = new SyncConflict { Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.MinValue, largeSize, DateTimeOffset.MinValue, 0L) };
 
-        conflict.LocalSize.ShouldBe(largeSize);
+        conflict.Snapshot.LocalSize.ShouldBe(largeSize);
     }
 
     [Fact]
@@ -142,14 +139,11 @@ public sealed class GivenASyncConflict
 
         var conflict = new SyncConflict
         {
-            LocalModified = now.AddHours(-2),
-            RemoteModified = now,
-            LocalSize = 1024,
-            RemoteSize = 2048
+            Snapshot = ConflictSnapshotFactory.Create(now.AddHours(-2), 1024, now, 2048)
         };
 
-        conflict.LocalModified.ShouldBeLessThan(conflict.RemoteModified);
-        conflict.LocalSize.ShouldNotBe(conflict.RemoteSize);
+        conflict.Snapshot.LocalModified.ShouldBeLessThan(conflict.Snapshot.RemoteModified);
+        conflict.Snapshot.LocalSize.ShouldNotBe(conflict.Snapshot.RemoteSize);
     }
 
     [Fact]

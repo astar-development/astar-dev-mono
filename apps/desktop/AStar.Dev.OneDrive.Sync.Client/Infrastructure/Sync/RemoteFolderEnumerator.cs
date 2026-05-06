@@ -188,12 +188,9 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     private SyncConflict BuildConflict(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified)
         => new()
         {
-            Remote         = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id),
-            Target         = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath),
-            LocalModified  = localModified,
-            RemoteModified = item.LastModified ?? DateTimeOffset.MinValue,
-            LocalSize      = fileSystem.FileInfo.New(localPath).Length,
-            RemoteSize     = item.Size
+            Remote   = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id),
+            Target   = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath),
+            Snapshot = ConflictSnapshotFactory.Create(localModified, fileSystem.FileInfo.New(localPath).Length, item.LastModified ?? DateTimeOffset.MinValue, item.Size)
         };
 
     private static string BuildLocalPath(string localBasePath, string relativePath)

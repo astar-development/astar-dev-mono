@@ -93,10 +93,10 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
             RemoteItemId   = conflict.Remote.RemoteItemId,
             RelativePath   = conflict.Target.RelativePath,
             LocalPath      = conflict.Target.LocalPath,
-            LocalModified  = conflict.LocalModified,
-            RemoteModified = conflict.RemoteModified,
-            LocalSize      = conflict.LocalSize,
-            RemoteSize     = conflict.RemoteSize,
+            LocalModified  = conflict.Snapshot.LocalModified,
+            RemoteModified = conflict.Snapshot.RemoteModified,
+            LocalSize      = conflict.Snapshot.LocalSize,
+            RemoteSize     = conflict.Snapshot.RemoteSize,
             State          = conflict.State,
             DetectedAt     = conflict.DetectedAt
         });
