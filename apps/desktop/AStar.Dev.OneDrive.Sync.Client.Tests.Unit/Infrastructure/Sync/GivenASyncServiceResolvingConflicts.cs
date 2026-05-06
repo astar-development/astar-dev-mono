@@ -40,7 +40,7 @@ public sealed class GivenASyncServiceResolvingConflicts
     private static SyncConflict CreateConflict() => new()
     {
         Id             = Guid.NewGuid(),
-        AccountId      = "user-1",
+        Remote         = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
         LocalModified  = DateTimeOffset.UtcNow,
         RemoteModified = DateTimeOffset.UtcNow.AddMinutes(-5),
         State          = ConflictState.Pending

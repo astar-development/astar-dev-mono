@@ -12,7 +12,7 @@ public sealed partial class ConflictItemViewModel(
     ISyncService syncService) : ObservableObject
 {
     public Guid Id => conflict.Id;
-    public string AccountId => conflict.AccountId;
+    public string AccountId => conflict.Remote.AccountId.Id;
     public string FileName => Path.GetFileName(conflict.RelativePath);
     public string RelativePath => conflict.RelativePath;
     public DateTimeOffset LocalModified => conflict.LocalModified;

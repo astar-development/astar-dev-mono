@@ -9,9 +9,7 @@ public enum ConflictState { Pending, Resolved, Skipped }
 public sealed class SyncConflict
 {
     public Guid Id { get; init; } = Guid.NewGuid();
-    public string AccountId { get; init; } = string.Empty;
-    public string FolderId { get; init; } = string.Empty;
-    public string RemoteItemId { get; init; } = string.Empty;
+    public RemoteItemRef Remote { get; init; } = RemoteItemRefFactory.Create(new AccountId(string.Empty), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty));
     public string RelativePath { get; init; } = string.Empty;
     public string LocalPath { get; init; } = string.Empty;
 

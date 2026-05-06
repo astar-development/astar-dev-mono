@@ -7,6 +7,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
 
 public sealed class GivenASyncRepository
 {
+    private static SyncConflict MinimalConflict(string accountId = "user-1", string folderId = "", ConflictState state = ConflictState.Pending, DateTimeOffset detectedAt = default)
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(string.Empty));
+
+        return new SyncConflict { Id = Guid.NewGuid(), Remote = remote, State = state, DetectedAt = detectedAt == default ? DateTimeOffset.UtcNow : detectedAt };
+    }
+
     private static SyncJob MinimalJob(string accountId = "user-1", string folderId = "", SyncJobState state = SyncJobState.Queued)
     {
         var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(""));
@@ -180,13 +187,7 @@ public sealed class GivenASyncRepository
     {
         var (db, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
-        var conflict = new SyncConflict
-        {
-            Id = Guid.NewGuid(),
-            AccountId = "user-1",
-            FolderId = "folder-1",
-            State = ConflictState.Pending
-        };
+        var conflict = MinimalConflict(folderId: "folder-1");
 
         await repository.AddConflictAsync(conflict);
 
@@ -200,8 +201,8 @@ public sealed class GivenASyncRepository
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
-        var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
-        var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Resolved };
+        var conflict1 = MinimalConflict();
+        var conflict2 = MinimalConflict(state: ConflictState.Resolved);
 
         await repository.AddConflictAsync(conflict1);
         await repository.AddConflictAsync(conflict2);
@@ -218,8 +219,8 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var now = DateTimeOffset.UtcNow;
-        var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending, DetectedAt = now.AddSeconds(2) };
-        var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending, DetectedAt = now.AddSeconds(1) };
+        var conflict1 = MinimalConflict(detectedAt: now.AddSeconds(2));
+        var conflict2 = MinimalConflict(detectedAt: now.AddSeconds(1));
 
         await repository.AddConflictAsync(conflict1);
         await repository.AddConflictAsync(conflict2);
@@ -234,7 +235,7 @@ public sealed class GivenASyncRepository
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
+        var conflict = MinimalConflict();
         await repository.AddConflictAsync(conflict);
 
         try
@@ -251,7 +252,7 @@ public sealed class GivenASyncRepository
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
+        var conflict = MinimalConflict();
         await repository.AddConflictAsync(conflict);
 
         try
@@ -279,9 +280,9 @@ public sealed class GivenASyncRepository
     {
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
-        var conflict1 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
-        var conflict2 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Pending };
-        var conflict3 = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1", State = ConflictState.Resolved };
+        var conflict1 = MinimalConflict();
+        var conflict2 = MinimalConflict();
+        var conflict3 = MinimalConflict(state: ConflictState.Resolved);
 
         await repository.AddConflictAsync(conflict1);
         await repository.AddConflictAsync(conflict2);

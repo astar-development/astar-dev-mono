@@ -128,7 +128,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.AccountId);
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
         if(section is null)
             return;
 

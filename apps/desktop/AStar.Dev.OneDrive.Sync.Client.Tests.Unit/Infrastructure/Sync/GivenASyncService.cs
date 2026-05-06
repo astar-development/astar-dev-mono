@@ -139,7 +139,7 @@ public sealed class GivenASyncService
         var conflict = new SyncConflict
         {
             Id             = Guid.NewGuid(),
-            AccountId      = "user-1",
+            Remote         = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
             LocalModified  = DateTimeOffset.UtcNow,
             RemoteModified = DateTimeOffset.UtcNow.AddMinutes(-5),
             State          = ConflictState.Pending
@@ -157,7 +157,7 @@ public sealed class GivenASyncService
             .Returns(AuthResultFactory.Failure("Auth failed"));
 
         var service = BuildSut();
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
+        var conflict = new SyncConflict { Id = Guid.NewGuid(), Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
 
         await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
 
@@ -175,7 +175,7 @@ public sealed class GivenASyncService
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
         var service = BuildSut();
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
+        var conflict = new SyncConflict { Id = Guid.NewGuid(), Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
 
         await service.ResolveConflictAsync(conflict, policy, TestContext.Current.CancellationToken);
 

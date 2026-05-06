@@ -82,14 +82,14 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct).ConfigureAwait(false);
+        var authResult = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
 
         if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.AccountId, authOk.Value.AccessToken, ct).ConfigureAwait(false);
+        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, authOk.Value.AccessToken, ct).ConfigureAwait(false);
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
@@ -98,8 +98,8 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         switch (outcome)
         {
             case ConflictOutcome.UseRemote:
-                string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.RemoteItemId, ct).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.RemoteItemId}).");
+                string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).");
 
                 await httpDownloader.DownloadAsync(downloadUrl, conflict.LocalPath, conflict.RemoteModified, ct: ct).ConfigureAwait(false);
                 break;
