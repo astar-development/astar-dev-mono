@@ -15,16 +15,16 @@ public sealed partial class ConflictItemViewModel(
     public string AccountId => conflict.Remote.AccountId.Id;
     public string FileName => Path.GetFileName(conflict.Target.RelativePath);
     public string RelativePath => conflict.Target.RelativePath;
-    public DateTimeOffset LocalModified => conflict.LocalModified;
-    public DateTimeOffset RemoteModified => conflict.RemoteModified;
-    public long LocalSize => conflict.LocalSize;
-    public long RemoteSize => conflict.RemoteSize;
+    public DateTimeOffset LocalModified => conflict.Snapshot.LocalModified;
+    public DateTimeOffset RemoteModified => conflict.Snapshot.RemoteModified;
+    public long LocalSize => conflict.Snapshot.LocalSize;
+    public long RemoteSize => conflict.Snapshot.RemoteSize;
     public DateTimeOffset DetectedAt => conflict.DetectedAt;
 
-    public string LocalModifiedText => FormatDateTime(conflict.LocalModified);
-    public string RemoteModifiedText => FormatDateTime(conflict.RemoteModified);
-    public string LocalSizeText => conflict.LocalSize.FileSizeToText();
-    public string RemoteSizeText => conflict.RemoteSize.FileSizeToText();
+    public string LocalModifiedText => FormatDateTime(conflict.Snapshot.LocalModified);
+    public string RemoteModifiedText => FormatDateTime(conflict.Snapshot.RemoteModified);
+    public string LocalSizeText => conflict.Snapshot.LocalSize.FileSizeToText();
+    public string RemoteSizeText => conflict.Snapshot.RemoteSize.FileSizeToText();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPanelOpen))]

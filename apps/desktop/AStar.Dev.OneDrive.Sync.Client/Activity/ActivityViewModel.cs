@@ -88,14 +88,11 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     private static SyncConflict MapConflictEntityToViewModel(SyncConflictEntity entity)
         => new()
         {
-            Id             = entity.Id,
-            Remote         = RemoteItemRefFactory.Create(entity.AccountId, entity.FolderId, entity.RemoteItemId),
-            Target         = SyncFileTargetFactory.Create(entity.LocalPath, entity.RelativePath),
-            LocalModified  = entity.LocalModified,
-            RemoteModified = entity.RemoteModified,
-            LocalSize      = entity.LocalSize,
-            RemoteSize     = entity.RemoteSize,
-            DetectedAt     = entity.DetectedAt
+            Id         = entity.Id,
+            Remote     = RemoteItemRefFactory.Create(entity.AccountId, entity.FolderId, entity.RemoteItemId),
+            Target     = SyncFileTargetFactory.Create(entity.LocalPath, entity.RelativePath),
+            Snapshot   = ConflictSnapshotFactory.Create(entity.LocalModified, entity.LocalSize, entity.RemoteModified, entity.RemoteSize),
+            DetectedAt = entity.DetectedAt
         };
 
     /// <summary>Called when a sync job completes.</summary>
