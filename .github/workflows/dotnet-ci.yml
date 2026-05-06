@@ -1,9 +1,3 @@
-# ════════════════════════════════════════════════════════════════════════════
-# dotnet-ci.yml
-# Triggers on any push or PR that touches .NET source, packages, or tests.
-# Builds the entire solution and runs all test projects.
-# ════════════════════════════════════════════════════════════════════════════
-
 name: .NET CI
 
 on:
@@ -12,23 +6,20 @@ on:
       - main
       - 'release/**'
     paths:
-      # Any C# source, project, or solution file
       - 'apps/**/*.cs'
       - 'apps/**/*.csproj'
-      - 'apps/**/*.axaml'        # Avalonia XAML
-      - 'apps/**/*.razor'        # Blazor components
+      - 'apps/**/*.axaml'
+      - 'apps/**/*.razor'
       - 'packages/**/*.cs'
       - 'packages/**/*.csproj'
       - 'tests/**/*.cs'
       - 'tests/**/*.csproj'
-      # Root MSBuild / NuGet config — changing these affects everything
       - 'Directory.Build.props'
       - 'Directory.Build.targets'
       - 'Directory.Packages.props'
       - 'global.json'
       - 'NuGet.Config'
       - '*.slnx'
-      # This workflow file itself
       - '.github/workflows/dotnet-ci.yml'
 
   pull_request:
@@ -52,37 +43,29 @@ on:
       - '*.slnx'
       - '.github/workflows/dotnet-ci.yml'
 
-# Least-privilege permissions — only grant what each job actually needs.
-# This overrides the repo-level default (which is often too broad).
 permissions:
-  contents: read          # Checkout the repo
-  checks: write           # Publish test results via dorny/test-reporter
-  pull-requests: write    # Allow test-reporter to annotate PRs with failures
+  contents: read
+  checks: write
+  pull-requests: write
 
-# Cancel any in-progress run for the same branch/PR when a new push arrives.
-# Saves CI minutes and keeps the queue clean.
 concurrency:
   group: dotnet-ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  DOTNET_NOLOGO: true                  # Suppress the SDK banner in logs
+  DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
-  NUGET_XMLDOC_MODE: skip              # Faster restore — skips XML doc download
+  NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-
   build-and-test:
     name: Build & test
-    # Avalonia desktop apps require a display server on Linux CI.
-    # ubuntu-latest with xvfb handles this cleanly and is the fastest/cheapest runner.
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
@@ -113,29 +96,31 @@ jobs:
             --configuration Release \
             -p:TreatWarningsAsErrors=true
 
-      - name: Test
+      - name: Test (per project)
         run: |
-          for proj in $(find tests -name '*.csproj'); do
+          mkdir -p TestResults
+
+          mapfile -t projects < <(find tests -name '*.csproj')
+
+          for proj in "${projects[@]}"; do
             echo "Running tests for $proj"
+
             proj_dir=$(dirname "$proj")
             proj_name=$(basename "$proj" .csproj)
 
-            (
-              cd "$proj_dir"
-              dotnet test \
-                --no-build \
-                --configuration Release \
-                --logger "trx;LogFileName=$proj_name.trx" \
-                --results-directory "$GITHUB_WORKSPACE/TestResults" \
-                --collect:"XPlat Code Coverage" \
-                -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-            )
+            cd "$proj_dir"
+
+            dotnet test \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=$proj_name.trx" \
+              --results-directory "$GITHUB_WORKSPACE/TestResults" \
+              --collect:"XPlat Code Coverage" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+            cd "$GITHUB_WORKSPACE"
           done
 
-      # dorny/test-reporter does not yet support Node.js 24.
-      # Replaced with the official GitHub test-reporter action which is
-      # Node 24 compatible and produces the same PR annotations and
-      # Actions summary output.
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2.23.0
         if: always()
