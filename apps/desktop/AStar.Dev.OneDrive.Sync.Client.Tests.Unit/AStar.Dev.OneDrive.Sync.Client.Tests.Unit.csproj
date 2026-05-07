@@ -13,7 +13,8 @@
     <Using Include="Xunit" />
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />
-    <Using Include="System.IO.Abstractions.TestingHelpers" />
+    <Using Include="Testably.Abstractions.Testing" />
+    <Using Include="Testably.Abstractions.Testing.Initializer" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +29,7 @@
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly"/>
     <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
-    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+    <PackageReference Include="Testably.Abstractions.Testing" />
     <PackageReference Include="WireMock.Net" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio">

@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
+using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -83,8 +84,8 @@ public sealed class GivenASyncJobExecutor
     [Fact]
     public async Task when_pipeline_completes_upload_job_with_remote_id_then_synced_item_is_upserted_with_uploaded_id()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(UploadFilePath, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(UploadFilePath).Which(m => m.HasStringContent("data"));
 
         var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
         var jobs = new List<SyncJob> { job };
@@ -96,7 +97,7 @@ public sealed class GivenASyncJobExecutor
                 onJobCompleted(new JobCompletedEventArgs(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" }));
             });
 
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.ExecuteAsync(_account, "token", jobs, [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 

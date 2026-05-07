@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.Graph" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
 
-    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+    <PackageReference Include="Testably.Abstractions" />
 
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />

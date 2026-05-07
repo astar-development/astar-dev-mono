@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
+using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -159,8 +160,8 @@ public sealed class GivenARemoteFolderEnumerator
     public async Task when_etag_matches_and_local_file_exists_then_no_download_job_is_created()
     {
         const string localFile = $"{BasePath}/Documents/a.txt";
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(localFile, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(localFile).Which(m => m.HasStringContent("data"));
 
         var knownItem = new SyncedItemEntity
         {
@@ -177,7 +178,7 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "a.txt", "/Documents/a.txt", etag: "etag-123")]);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         var result = await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
@@ -189,9 +190,9 @@ public sealed class GivenARemoteFolderEnumerator
     {
         const string localFile = $"{BasePath}/Documents/a.txt";
         var localWriteTime = DateTime.UtcNow;
-        var fileData = new MockFileData("modified locally") { LastWriteTime = localWriteTime };
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(localFile, fileData);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(localFile).Which(m => m.HasStringContent("modified locally"));
+        mockFileSystem.File.SetLastWriteTime(localFile, localWriteTime);
 
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
         var knownItem = new SyncedItemEntity
@@ -210,7 +211,7 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns([DeltaItemFactory.Create(new OneDriveItemId("item-a"), "drive-1", null, ItemPathFactory.Create("a.txt", "/Documents/a.txt"), false, false, 100L, remoteModified, null, VersionInfoFactory.Create(null, null))]);
 
         var conflictsDetected = new List<SyncConflict>();
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.EnumerateAsync(CreateAccount(), "token", conflict =>
         {
@@ -240,14 +241,14 @@ public sealed class GivenARemoteFolderEnumerator
     public async Task when_file_exists_locally_without_synced_item_then_phantom_item_is_upserted()
     {
         const string localFile = $"{BasePath}/Documents/phantom.txt";
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(localFile, new MockFileData("phantom"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(localFile).Which(m => m.HasStringContent("phantom"));
 
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-phantom", "phantom.txt", "/Documents/phantom.txt")]);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 

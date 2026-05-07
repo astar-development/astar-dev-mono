@@ -9,6 +9,7 @@ using WireMock.Types;
 using WireMockBodyType = WireMock.Types.BodyType;
 using WireMockRequest = WireMock.RequestBuilders.Request;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -56,12 +57,12 @@ public sealed class GivenAnUploadService
     [Fact]
     public async Task when_upload_async_is_called_with_pre_cancelled_token_then_operation_is_cancelled()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFilePath, new MockFileData(new byte[64]));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFilePath).Which(m => m.HasBytesContent(new byte[64]));
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), mockFs);
+        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), mockFileSystem);
 
         await Should.ThrowAsync<OperationCanceledException>(() =>
             sut.UploadAsync(BuildAnonymousGraphClient(), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: cts.Token));
@@ -70,8 +71,8 @@ public sealed class GivenAnUploadService
     [Fact]
     public async Task when_chunk_returns_201_created_with_item_id_then_item_id_is_returned()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFilePath, new MockFileData(new byte[64]));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFilePath).Which(m => m.HasBytesContent(new byte[64]));
         using var server = WireMockServer.Start();
 
         server.Given(WireMockRequest.Create().UsingPost())
@@ -80,7 +81,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithCallback(_ => Created201Response()));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFs);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -90,8 +91,8 @@ public sealed class GivenAnUploadService
     [Fact]
     public async Task when_chunk_returns_200_ok_with_item_id_then_item_id_is_returned()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFilePath, new MockFileData(new byte[64]));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFilePath).Which(m => m.HasBytesContent(new byte[64]));
         using var server = WireMockServer.Start();
 
         server.Given(WireMockRequest.Create().UsingPost())
@@ -100,7 +101,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithCallback(_ => Ok200Response()));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFs);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -112,8 +113,8 @@ public sealed class GivenAnUploadService
     {
         int chunkSizeBytes = 10 * 1024 * 1024;
         byte[] fileBytes = new byte[chunkSizeBytes + 64];
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFilePath, new MockFileData(fileBytes));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFilePath).Which(m => m.HasBytesContent(fileBytes));
         using var server = WireMockServer.Start();
 
         server.Given(WireMockRequest.Create().UsingPost())
@@ -128,7 +129,7 @@ public sealed class GivenAnUploadService
                       return callIndex == 0 ? Accepted202Response() : Created201Response();
                   }));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFs);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -140,8 +141,8 @@ public sealed class GivenAnUploadService
     public async Task when_upload_reports_progress_then_progress_is_reported_with_byte_count()
     {
         const int FileSize = 64;
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFilePath, new MockFileData(new byte[FileSize]));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFilePath).Which(m => m.HasBytesContent(new byte[FileSize]));
         using var server = WireMockServer.Start();
 
         server.Given(WireMockRequest.Create().UsingPost())
@@ -152,7 +153,7 @@ public sealed class GivenAnUploadService
 
         var reportedValues = new List<long>();
         var progress = new Progress<long>(reportedValues.Add);
-        var sut = new UploadService(CreateChunkClientFactory(), mockFs);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, progress, TestContext.Current.CancellationToken);
 
