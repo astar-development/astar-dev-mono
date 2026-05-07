@@ -15,7 +15,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private const string RootPathMarker = "root:";
     private const string DownloadUrlKey = "@microsoft.graph.downloadUrl";
 
-    private static readonly string[] ChildrenSelect =
+    private static readonly string[] _childrenSelect =
     [
         "id", "name", "folder", "file", "size", "lastModifiedDateTime", "parentReference",
         "eTag", "cTag", DownloadUrlKey
@@ -33,7 +33,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
         var response = await client.Drives[driveContext.DriveId.Value].Items[driveContext.RootId].Children
-            .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
+            .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
 
         List<DriveFolder> folders = [];
 
@@ -169,7 +169,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             return;
 
         var page = await client.Drives[driveId.Value].Items[parentId].Children
-            .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
+            .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
 
         while(page?.Value is not null)
         {

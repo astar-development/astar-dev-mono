@@ -67,7 +67,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
-
         _accessToken = accessToken;
         _driveId = driveId;
     }
