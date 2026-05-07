@@ -192,7 +192,7 @@
                                             <TextBox Grid.Column="0"
                                                      Text="{Binding LocalSyncPath}"
                                                      FontSize="{StaticResource FontSizeSm}"
-                                                     Watermark="e.g. /home/user/OneDrive/personal"
+                                                     PlaceholderText="e.g. /home/user/OneDrive/personal"
                                                      CornerRadius="{StaticResource RadiusMd}"/>
                                             <Button Grid.Column="2"
                                                     Content="Browse ..."
