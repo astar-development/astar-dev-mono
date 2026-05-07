@@ -6,7 +6,7 @@
         Width="400" Height="260"
         CanResize="False"
         ShowInTaskbar="False"
-        SystemDecorations="None"
+        WindowDecorations="None"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BackgroundPrimaryBrush}">
 
