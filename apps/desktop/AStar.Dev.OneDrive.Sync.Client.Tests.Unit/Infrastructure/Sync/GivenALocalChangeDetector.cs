@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Testably.Abstractions.Testing;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
@@ -19,9 +20,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_no_rules_are_provided_then_returns_empty_list()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddDirectory(BasePath);
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Directory.CreateDirectory(BasePath);
+        var sut = CreateSut(mockFileSystem);
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, [], EmptyLookup());
 
@@ -31,10 +32,10 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_only_exclude_rules_are_provided_then_returns_empty_list()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddDirectory($"{BasePath}/Documents");
-        mockFs.AddFile($"{BasePath}/Documents/file.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Directory.CreateDirectory($"{BasePath}/Documents");
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/file.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Exclude) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -45,9 +46,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_include_rule_maps_to_non_existent_directory_then_returns_empty_list()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddDirectory(BasePath);
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Directory.CreateDirectory(BasePath);
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/NonExistentFolder", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -58,9 +59,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_include_rule_directory_exists_but_is_empty_then_returns_empty_list()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddDirectory($"{BasePath}/Documents");
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Directory.CreateDirectory($"{BasePath}/Documents");
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -71,9 +72,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_upload_job_is_created()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -84,9 +85,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_has_correct_account_id()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -98,9 +99,9 @@ public sealed class GivenALocalChangeDetector
     public void when_new_file_is_not_in_lookup_then_job_has_correct_local_path()
     {
         const string filePath = $"{BasePath}/Documents/report.txt";
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(filePath, new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -111,9 +112,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_has_correct_relative_path()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -124,9 +125,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_is_upload_sync_job()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -137,9 +138,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_relative_path_is_used_for_upload_target()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -150,9 +151,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_folder_id_is_empty()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -165,15 +166,15 @@ public sealed class GivenALocalChangeDetector
     {
         const string filePath = $"{BasePath}/Documents/unchanged.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
-        var fileData = new MockFileData("data") { LastWriteTime = lastWrite };
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(filePath, fileData);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
         var remoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
             [filePath] = new() { RemoteModifiedAt = remoteModified, RemoteItemId = new OneDriveItemId("remote-id-1") }
         };
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
@@ -186,15 +187,15 @@ public sealed class GivenALocalChangeDetector
     {
         const string filePath = $"{BasePath}/Documents/modified.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
-        var fileData = new MockFileData("data") { LastWriteTime = lastWrite };
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(filePath, fileData);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
         var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
             [filePath] = new() { RemoteModifiedAt = staleRemoteModified, RemoteItemId = new OneDriveItemId("remote-id-2") }
         };
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
@@ -208,15 +209,15 @@ public sealed class GivenALocalChangeDetector
         const string knownRemoteItemId = "remote-id-known";
         const string filePath = $"{BasePath}/Documents/modified.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
-        var fileData = new MockFileData("data") { LastWriteTime = lastWrite };
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(filePath, fileData);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
         var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
             [filePath] = new() { RemoteModifiedAt = staleRemoteModified, RemoteItemId = new OneDriveItemId(knownRemoteItemId) }
         };
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
@@ -227,9 +228,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_file_name_starts_with_dot_then_file_is_skipped()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/.hidden-dotfile", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/.hidden-dotfile").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -240,9 +241,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_file_has_tmp_extension_then_file_is_skipped()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/download.tmp", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/download.tmp").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -253,9 +254,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_file_has_temp_extension_then_file_is_skipped()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/download.temp", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/download.temp").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -266,9 +267,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_file_has_partial_extension_then_file_is_skipped()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/download.partial", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/download.partial").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -279,9 +280,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_subdirectory_name_starts_with_dot_then_files_inside_are_not_scanned()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/.hidden-sub/secret.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/.hidden-sub/secret.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -292,9 +293,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_subdirectory_matches_include_rule_then_files_inside_are_scanned()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/Reports/q1.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/Reports/q1.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -305,9 +306,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_subdirectory_matches_include_rule_then_job_relative_path_reflects_subdirectory()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/Reports/q1.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/Reports/q1.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -318,9 +319,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_subdirectory_is_not_matched_by_any_rule_then_files_inside_are_not_scanned()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/Private/confidential.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/Private/confidential.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[]
         {
             Rule("/Documents", RuleType.Include),
@@ -335,9 +336,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_file_remote_path_does_not_match_any_sync_rule_then_file_is_skipped()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Photos", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -348,9 +349,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_include_rule_has_multi_level_remote_path_then_local_path_starts_with_base_path()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/2024/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/2024/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents/2024", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
@@ -362,9 +363,9 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_include_rule_has_multi_level_remote_path_then_local_path_contains_full_relative_structure()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile($"{BasePath}/Documents/2024/report.txt", new MockFileData("data"));
-        var sut = CreateSut(mockFs);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/2024/report.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents/2024", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());

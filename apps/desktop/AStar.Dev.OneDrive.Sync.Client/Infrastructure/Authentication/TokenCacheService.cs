@@ -21,8 +21,6 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
 {
     private const int KeyringTimeoutSeconds = 5;
 
-    public TokenCacheService() : this(new FileSystem()) { }
-
     public string CacheDirectory { get; } = InitialiseCacheDirectory(fileSystem);
 
     /// <summary>

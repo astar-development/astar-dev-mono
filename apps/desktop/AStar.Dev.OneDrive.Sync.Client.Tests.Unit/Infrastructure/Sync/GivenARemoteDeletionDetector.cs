@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Testably.Abstractions.Testing;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -22,47 +23,47 @@ public sealed class GivenARemoteDeletionDetector
     [Fact]
     public async Task when_remote_id_is_in_seen_set_then_local_file_is_not_deleted()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFile, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "item-1" };
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/file.txt"), TestContext.Current.CancellationToken);
 
-        mockFs.File.Exists(LocalFile).ShouldBeTrue();
+        mockFileSystem.File.Exists(LocalFile).ShouldBeTrue();
     }
 
     [Fact]
     public async Task when_remote_id_absent_and_local_file_exists_then_file_is_deleted()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFile, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/file.txt"), TestContext.Current.CancellationToken);
 
-        mockFs.File.Exists(LocalFile).ShouldBeFalse();
+        mockFileSystem.File.Exists(LocalFile).ShouldBeFalse();
     }
 
     [Fact]
     public async Task when_remote_id_absent_and_local_file_does_not_exist_then_no_exception_is_thrown()
     {
-        var mockFs = new MockFileSystem();
+        var mockFileSystem = new MockFileSystem();
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/gone.txt", LocalPath = $"{BaseDir}/gone.txt", IsFolder = false }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         var act = async () => await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/gone.txt"), TestContext.Current.CancellationToken);
 
@@ -74,31 +75,31 @@ public sealed class GivenARemoteDeletionDetector
     {
         const string localDir = $"{BaseDir}/subfolder";
         const string childFile = $"{localDir}/child.txt";
-        var mockFs = new MockFileSystem();
-        mockFs.AddDirectory(localDir);
-        mockFs.AddFile(childFile, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Directory.CreateDirectory(localDir);
+        mockFileSystem.Initialize().WithFile(childFile).Which(m => m.HasStringContent("data"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["folder-1"] = new() { RemoteItemId = new OneDriveItemId("folder-1"), RemotePath = "/subfolder", LocalPath = localDir, IsFolder = true }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/subfolder"), TestContext.Current.CancellationToken);
 
-        mockFs.Directory.Exists(localDir).ShouldBeFalse();
+        mockFileSystem.Directory.Exists(localDir).ShouldBeFalse();
     }
 
     [Fact]
     public async Task when_remote_id_absent_then_synced_item_repository_delete_is_called()
     {
-        var mockFs = new MockFileSystem();
+        var mockFileSystem = new MockFileSystem();
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = $"{BaseDir}/file.txt", IsFolder = false }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/file.txt"), TestContext.Current.CancellationToken);
 
@@ -108,18 +109,18 @@ public sealed class GivenARemoteDeletionDetector
     [Fact]
     public async Task when_remote_path_does_not_match_include_rules_then_item_is_not_treated_as_deleted()
     {
-        var mockFs = new MockFileSystem();
-        mockFs.AddFile(LocalFile, new MockFileData("data"));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/Other/other.txt", LocalPath = LocalFile, IsFolder = false }
         };
         var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var sut = CreateSut(mockFs);
+        var sut = CreateSut(mockFileSystem);
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/Documents"), TestContext.Current.CancellationToken);
 
-        mockFs.File.Exists(LocalFile).ShouldBeTrue();
+        mockFileSystem  .File.Exists(LocalFile).ShouldBeTrue();
         await _syncedItemRepository.DidNotReceive().DeleteByRemoteIdAsync(Arg.Any<AccountId>(), Arg.Any<OneDriveItemId>(), Arg.Any<CancellationToken>());
     }
 }

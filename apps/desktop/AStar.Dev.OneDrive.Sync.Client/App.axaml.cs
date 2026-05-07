@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
+using Testably.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
@@ -57,7 +58,8 @@ public class App : Application, IDisposable
     private static ServiceProvider BuildServiceProvider()
     {
         var inMemoryLogSink = new InMemoryLogSink();
-        ConfigureSerilog(inMemoryLogSink);
+        var fileSystem = new RealFileSystem();
+        ConfigureSerilog(inMemoryLogSink, fileSystem);
 
         var services = new ServiceCollection();
 
@@ -79,11 +81,11 @@ public class App : Application, IDisposable
         return services.BuildServiceProvider();
     }
 
-    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink)
+    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink, RealFileSystem fileSystem)
     {
         string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(ApplicationMetadata.ApplicationName, "logs");
 
-        _ = Directory.CreateDirectory(logDirectory);
+        _ = fileSystem.Directory.CreateDirectory(logDirectory);
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
