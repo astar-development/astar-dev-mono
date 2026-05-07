@@ -22,7 +22,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private readonly IAccountRepository _repository = repository;
     private readonly ISyncRuleRepository _syncRuleRepository = syncRuleRepository;
     private string? _accessToken;
-    private string? _driveId;
+    private Option<DriveId> _driveId = DriveIdFactory.Empty;
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => _account.Id.Id;
@@ -79,7 +79,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             }
 
             _accessToken = ok.Value.AccessToken;
-            _driveId = await _graphService.GetDriveIdAsync(_accessToken);
+            var driveId = await _graphService.GetDriveIdAsync(_accessToken);
+            _driveId = new Option<DriveId>.Some(driveId);
 
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);
@@ -118,7 +119,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
 
-            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, _driveId!);
+            var vm = _driveId.Match(
+                id => new FolderTreeNodeViewModel(node, _graphService, _accessToken!, id),
+                () => throw new InvalidOperationException("Drive ID not available."));
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;

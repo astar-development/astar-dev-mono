@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using WireMock.RequestBuilders;
@@ -65,7 +66,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetChildFoldersAsync(AnyAccessToken, AnyDriveId, AnyFolderId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetChildFoldersAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, cts.Token));
     }
 
     [Fact]
@@ -85,7 +86,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(AnyAccessToken, AnyDriveId, AnyFolderId, AnyRemotePath, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cts.Token));
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetFolderIdByPathAsync(AnyAccessToken, AnyDriveId, AnyRemotePath, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, cts.Token));
     }
 
     [Fact]
@@ -162,7 +163,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "itemNotFound", message = "The resource could not be found." } }));
 
-        var result = await CreateSut().GetFolderIdByPathAsync(AnyAccessToken, AnyDriveId, AnyRemotePath, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -225,7 +226,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, AnyDriveId, AnyFolderId, "root", TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(3);
         result.ShouldContain(i => i.Id.Id == "file-root");
@@ -259,7 +260,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, AnyDriveId, AnyFolderId, "root", TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result.ShouldContain(i => i.Id.Id == "subfolder-A");

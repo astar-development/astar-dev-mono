@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -23,7 +24,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<string, SyncedItemEntity>());
         _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("drive-1");
+            .Returns(new DriveId("drive-1"));
     }
 
     private RemoteFolderEnumerator CreateSut(MockFileSystem mockFs) => new(_graphService, _syncRuleRepository, _syncedItemRepository, mockFs);
@@ -40,10 +41,10 @@ public sealed class GivenARemoteFolderEnumerator
         => new() { RemotePath = remotePath, RuleType = RuleType.Include, RemoteItemId = remoteItemId };
 
     private static DeltaItem FileItem(string id, string name, string? relativePath = null, string? etag = null)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), "drive-1", null, ItemPathFactory.Create(name, relativePath ?? name), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
+        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(name, relativePath ?? name), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
 
     private static DeltaItem FolderItem(string id, string name, string? relativePath = null)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), "drive-1", null, ItemPathFactory.Create(name, relativePath ?? name), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));
+        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(name, relativePath ?? name), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));
 
     [Fact]
     public async Task when_no_rules_configured_then_result_has_no_rules_flag_set()
@@ -86,13 +87,13 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents")]);
-        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((string?)null);
         var sut = CreateSut(new MockFileSystem());
 
         await sut.EnumerateAsync(CreateAccount(), "token", _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -100,9 +101,9 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: null)]);
-        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("folder-resolved");
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -116,7 +117,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -130,7 +131,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -145,7 +146,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "a.txt", "/Documents/a.txt")]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -176,7 +177,7 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns(new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem });
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "a.txt", "/Documents/a.txt", etag: "etag-123")]);
         var sut = CreateSut(mockFileSystem);
 
@@ -207,8 +208,8 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns(new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem });
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns([DeltaItemFactory.Create(new OneDriveItemId("item-a"), "drive-1", null, ItemPathFactory.Create("a.txt", "/Documents/a.txt"), false, false, 100L, remoteModified, null, VersionInfoFactory.Create(null, null))]);
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([DeltaItemFactory.Create(new OneDriveItemId("item-a"), new DriveId("drive-1"), null, ItemPathFactory.Create("a.txt", "/Documents/a.txt"), false, false, 100L, remoteModified, null, VersionInfoFactory.Create(null, null))]);
 
         var conflictsDetected = new List<SyncConflict>();
         var sut = CreateSut(mockFileSystem);
@@ -228,7 +229,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FolderItem("subfolder-1", "Sub", "/Documents/Sub")]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -246,7 +247,7 @@ public sealed class GivenARemoteFolderEnumerator
 
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-phantom", "phantom.txt", "/Documents/phantom.txt")]);
         var sut = CreateSut(mockFileSystem);
 
@@ -260,7 +261,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -275,7 +276,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "report.txt", "/Documents/2024/report.txt")]);
         var sut = CreateSut(new MockFileSystem());
 
@@ -290,7 +291,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([FileItem("item-a", "report.txt", "/Documents/2024/report.txt")]);
         var sut = CreateSut(new MockFileSystem());
 

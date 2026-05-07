@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
@@ -30,7 +31,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     /// Uploads a local file to OneDrive using a resumable upload session.
     /// Returns the uploaded DriveItem ID on success.
     /// </summary>
-    public async Task<string> UploadAsync(GraphServiceClient client, string driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
+    public async Task<string> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
         if(!fileInfo.Exists)
@@ -40,7 +41,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         Serilog.Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        string sessionUrl = await CreateSessionWithRetryAsync(client, driveId, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
+        string sessionUrl = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
         string itemId = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
 

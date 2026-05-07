@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.Graph;
@@ -23,7 +24,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
-    public async Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
+    public async Task<DriveId> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
         => (await ResolveClientWithDriveContextAsync(accessToken, ct)).Ctx.DriveId;
 
     /// <inheritdoc />
@@ -31,7 +32,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     {
         (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var response = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
+        var response = await client.Drives[driveContext.DriveId.Value].Items[driveContext.RootId].Children
             .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
 
         List<DriveFolder> folders = [];
@@ -47,7 +48,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             if(page.OdataNextLink is null)
                 break;
 
-            page = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
+            page = await client.Drives[driveContext.DriveId.Value].Items[driveContext.RootId].Children
                 .WithUrl(page.OdataNextLink)
                 .GetAsync(cancellationToken: ct);
         }
@@ -56,11 +57,11 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
+    public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, DriveId driveId, string parentFolderId, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
 
-        var result = await client.Drives[driveId].Items[parentFolderId].Children
+        var result = await client.Drives[driveId.Value].Items[parentFolderId].Children
             .GetAsync(req =>
             {
                 req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
@@ -80,7 +81,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             if(page.OdataNextLink is null)
                 break;
 
-            page = await client.Drives[driveId].Items[parentFolderId].Children
+            page = await client.Drives[driveId.Value].Items[parentFolderId].Children
                 .WithUrl(page.OdataNextLink)
                 .GetAsync(cancellationToken: ct);
         }
@@ -93,7 +94,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var drive = await client.Drives[ctx.DriveId]
+        var drive = await client.Drives[ctx.DriveId.Value]
             .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
 
         return drive?.Quota is { Total: not null, Used: not null }
@@ -102,7 +103,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<List<DeltaItem>> EnumerateFolderAsync(string accessToken, string driveId, string folderId, string remotePath, CancellationToken ct = default)
+    public async Task<List<DeltaItem>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
         List<DeltaItem> items = [];
@@ -113,13 +114,13 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<string?> GetFolderIdByPathAsync(string accessToken, string driveId, string remotePath, CancellationToken ct = default)
+    public async Task<string?> GetFolderIdByPathAsync(string accessToken, DriveId driveId, string remotePath, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
 
         try
         {
-            var item = await client.Drives[driveId].Items[$"{RootPathMarker}:{remotePath}"]
+            var item = await client.Drives[driveId.Value].Items[$"{RootPathMarker}:{remotePath}"]
                 .GetAsync(req => req.QueryParameters.Select = ["id"], ct);
 
             return item?.Id;
@@ -135,7 +136,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var item = await client.Drives[ctx.DriveId].Items[itemId]
+        var item = await client.Drives[ctx.DriveId.Value].Items[itemId]
             .GetAsync(req => req.QueryParameters.Select = [DownloadUrlKey], ct)
             .ConfigureAwait(false);
 
@@ -159,15 +160,15 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     public async Task DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
-        await client.Drives[ctx.DriveId].Items[itemId].DeleteAsync(cancellationToken: ct);
+        await client.Drives[ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: ct);
     }
 
-    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, CancellationToken ct)
+    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, CancellationToken ct)
     {
         if(!visited.Add(parentId))
             return;
 
-        var page = await client.Drives[driveId].Items[parentId].Children
+        var page = await client.Drives[driveId.Value].Items[parentId].Children
             .GetAsync(req => req.QueryParameters.Select = ChildrenSelect, ct);
 
         while(page?.Value is not null)
@@ -178,14 +179,14 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
                 items.Add(MapToDeltaItem(item, itemPath));
 
-                if (item.Folder is not null && item.Id is not null)
+                if(item.Folder is not null && item.Id is not null)
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, ct);
             }
 
             if (page.OdataNextLink is null)
                 break;
 
-            page = await client.Drives[driveId].Items[parentId].Children
+            page = await client.Drives[driveId.Value].Items[parentId].Children
                 .WithUrl(page.OdataNextLink)
                 .GetAsync(cancellationToken: ct);
         }
@@ -197,7 +198,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
     private static DeltaItem MapToDeltaItem(DriveItem item, string itemPath) => DeltaItemFactory.Create(
         new OneDriveItemId(item.Id!),
-        item.ParentReference?.DriveId ?? string.Empty,
+        new DriveId(item.ParentReference?.DriveId ?? string.Empty),
         item.ParentReference?.Id is string pid ? new OneDriveFolderId(pid) : null,
         ItemPathFactory.Create(item.Name ?? string.Empty, itemPath),
         isFolder: item.Folder is not null,
@@ -221,9 +222,9 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
         var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
 
-        string driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve drive ID.");
+        var driveId = new DriveId(drive?.Id ?? throw new InvalidOperationException("Could not retrieve drive ID."));
 
-        var root = await client.Drives[driveId].Root.GetAsync(cancellationToken: ct);
+        var root = await client.Drives[driveId.Value].Root.GetAsync(cancellationToken: ct);
 
         string rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve root item ID.");
 
@@ -233,5 +234,5 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         return (client, driveContext);
     }
 
-    private sealed record DriveContext(string DriveId, string RootId);
+    private sealed record DriveContext(DriveId DriveId, string RootId);
 }
