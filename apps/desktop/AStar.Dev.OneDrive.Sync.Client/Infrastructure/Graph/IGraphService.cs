@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 
@@ -6,7 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public interface IGraphService
 {
     /// <summary>Returns the ID of the user's default drive (OneDrive for Business or Personal).</summary>
-    Task<DriveId> GetDriveIdAsync(string accessToken, CancellationToken ct = default);
+    Task<Result<DriveId, string>> GetDriveIdAsync(string accessToken, CancellationToken ct = default);
 
     /// <summary>Returns the immediate child folders of the root folder.</summary>
     Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default);
@@ -24,7 +25,7 @@ public interface IGraphService
     Task<string?> GetFolderIdByPathAsync(string accessToken, DriveId driveId, string remotePath, CancellationToken ct = default);
 
     /// <summary>Fetches the pre-authenticated download URL for a specific drive item.</summary>
-    Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default);
+    Task<Result<string, string>> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default);
 
     /// <summary>Uploads a local file to OneDrive using a resumable upload session. Returns the remote item ID on success.</summary>
     Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default);

@@ -1,4 +1,6 @@
 using System.IO.Abstractions;
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -16,7 +18,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
     private const double MaxDelaySeconds  = 120.0;
 
     /// <inheritdoc />
-    public async Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
+    public async Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         using var http = httpClientFactory.CreateClient();
         http.DefaultRequestHeaders.Add("User-Agent", UserAgent);
@@ -56,7 +58,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
                 PreserveRemoteTimestamp(localPath, remoteModified);
 
-                return;
+                return new Result<Unit, string>.Ok(Unit.Default);
             }
             catch(HttpRequestException) when(attempt <= MaxRetries)
             {

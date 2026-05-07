@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
@@ -31,7 +32,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     /// Uploads a local file to OneDrive using a resumable upload session.
     /// Returns the uploaded DriveItem ID on success.
     /// </summary>
-    public async Task<string> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
+    public async Task<Result<string, string>> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
         if(!fileInfo.Exists)
@@ -43,11 +44,11 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         string sessionUrl = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
-        string itemId = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
+        var uploadResult = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
 
-        Serilog.Log.Information("[UploadService] Upload complete: {Path} → {ItemId}", remotePath, itemId);
+        Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
 
-        return itemId;
+        return uploadResult;
     }
 
     private static async Task<string> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
@@ -85,7 +86,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             : session.UploadUrl;
     }
 
-    private async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
+    private async Task<Result<string, string>> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
     {
         using var http = httpClientFactory.CreateClient();
         await using var file = fileSystem.File.OpenRead(localPath);
@@ -108,10 +109,10 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             progress?.Report(uploaded);
 
             if(itemId is not null)
-                return itemId;
+                return new Result<string, string>.Ok(itemId);
         }
 
-        throw new InvalidOperationException("Upload completed without receiving item ID from Graph API.");
+        return new Result<string, string>.Error("Upload completed without receiving item ID from Graph API.");
     }
 
     private static async Task<int> ReadChunkAsync(Stream file, byte[] buffer, long totalBytes, long uploaded, CancellationToken ct)

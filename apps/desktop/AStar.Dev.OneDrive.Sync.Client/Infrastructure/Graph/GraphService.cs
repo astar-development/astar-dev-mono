@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -24,8 +25,8 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
-    public async Task<DriveId> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
-        => (await ResolveClientWithDriveContextAsync(accessToken, ct)).Ctx.DriveId;
+    public async Task<Result<DriveId, string>> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
+        => new Result<DriveId, string>.Ok((await ResolveClientWithDriveContextAsync(accessToken, ct)).Ctx.DriveId);
 
     /// <inheritdoc />
     public async Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
@@ -132,7 +133,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
+    public async Task<Result<string, string>> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
@@ -141,11 +142,12 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             .ConfigureAwait(false);
 
         if(item?.AdditionalData is null)
-            return null;
+            return new Result<string, string>.Error("No download URL available.");
 
-        return item.AdditionalData.TryGetValue(DownloadUrlKey, out var url)
-            ? url?.ToString()
-            : null;
+        if(!item.AdditionalData.TryGetValue(DownloadUrlKey, out var url) || url is null)
+            return new Result<string, string>.Error("No download URL available.");
+
+        return new Result<string, string>.Ok(url.ToString()!);
     }
 
     /// <inheritdoc />
@@ -153,7 +155,12 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     {
         (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
+        var uploadResult = await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
+
+        return uploadResult.Match(
+            itemId => itemId,
+            error  => throw new InvalidOperationException($"Upload failed: {error}")
+        );
     }
 
     /// <inheritdoc />

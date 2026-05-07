@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -24,7 +25,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<string, SyncedItemEntity>());
         _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new DriveId("drive-1"));
+            .Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
     }
 
     private RemoteFolderEnumerator CreateSut(MockFileSystem mockFs) => new(_graphService, _syncRuleRepository, _syncedItemRepository, mockFs);

@@ -79,8 +79,11 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             }
 
             _accessToken = ok.Value.AccessToken;
-            var driveId = await _graphService.GetDriveIdAsync(_accessToken);
-            _driveId = new Option<DriveId>.Some(driveId);
+            var driveIdResult = await _graphService.GetDriveIdAsync(_accessToken);
+            _driveId = new Option<DriveId>.Some(driveIdResult.Match(
+                id    => id,
+                error => throw new InvalidOperationException($"Failed to retrieve drive ID: {error}")
+            ));
 
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);

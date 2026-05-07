@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using WireMock.RequestBuilders;
@@ -278,6 +279,39 @@ public sealed class GivenAGraphService : IDisposable
         _ = await sut.GetDriveIdAsync(AnyAccessToken, ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_get_drive_id_is_called_and_graph_returns_null_drive_id_then_result_is_error()
+    {
+        _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = (string?)null }));
+
+        var result = await CreateSut().GetDriveIdAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_drive_id_is_called_and_graph_returns_null_root_item_id_then_result_is_error()
+    {
+        _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = "drive-001" }));
+        _server.Given(Request.Create().WithPath("/drives/drive-001/root").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = (string?)null }));
+
+        var result = await CreateSut().GetDriveIdAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
     }
 
     private void SetupDriveContext(string driveId, string rootId)

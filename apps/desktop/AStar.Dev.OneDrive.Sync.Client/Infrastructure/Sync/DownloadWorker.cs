@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using System.Threading.Channels;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -90,8 +91,11 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
         Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.Target.RelativePath);
 
-        var url = await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        var urlResult = await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
-        return url ?? throw new InvalidOperationException($"No download URL could be resolved for '{job.Target.RelativePath}' (itemId={job.Remote.RemoteItemId.Id}).");
+        return urlResult.Match(
+            url => url,
+            _   => throw new InvalidOperationException($"No download URL could be resolved for '{job.Target.RelativePath}' (itemId={job.Remote.RemoteItemId.Id}).")
+        );
     }
 }

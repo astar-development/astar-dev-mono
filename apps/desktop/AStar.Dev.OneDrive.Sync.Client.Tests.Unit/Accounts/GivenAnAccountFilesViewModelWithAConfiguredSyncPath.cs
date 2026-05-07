@@ -195,7 +195,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
-            .Returns(new DriveId(DriveIdValue));
+            .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(FolderId, FolderName)]);

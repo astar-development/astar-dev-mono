@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -27,7 +28,11 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveId = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveIdResult = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveId = driveIdResult.Match(
+            id    => id,
+            error => throw new InvalidOperationException($"Failed to retrieve drive ID: {error}")
+        );
 
         var includeRules     = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules

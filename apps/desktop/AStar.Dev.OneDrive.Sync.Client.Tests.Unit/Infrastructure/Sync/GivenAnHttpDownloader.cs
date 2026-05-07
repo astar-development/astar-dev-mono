@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
@@ -82,6 +83,27 @@ public sealed class GivenAnHttpDownloader
 
         reportedValues.ShouldNotBeEmpty();
         reportedValues[^1].ShouldBe(Encoding.UTF8.GetByteCount(FileContent));
+    }
+
+    [Fact]
+    public async Task when_download_is_rate_limited_beyond_max_retries_then_result_is_error()
+    {
+        var factory = CreateAlways429Factory();
+        var sut = new HttpDownloader(factory, new MockFileSystem());
+
+        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        var error = result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
+        error!.Reason.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    private static IHttpClientFactory CreateAlways429Factory()
+    {
+        var response = new HttpResponseMessage(System.Net.HttpStatusCode.TooManyRequests);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(new HttpClient(new FakeHttpMessageHandler(_ => response)));
+
+        return factory;
     }
 
     private sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

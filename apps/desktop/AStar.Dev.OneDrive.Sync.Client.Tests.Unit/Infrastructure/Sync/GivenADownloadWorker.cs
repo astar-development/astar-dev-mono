@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using System.Threading.Channels;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -87,7 +88,7 @@ public sealed class GivenADownloadWorker
         var job = MakeDownloadJob(downloadUrl: null);
 
         _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
-            .Returns(fetchedUrl);
+            .Returns(new Result<string, string>.Ok(fetchedUrl));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -101,7 +102,7 @@ public sealed class GivenADownloadWorker
         var job = MakeDownloadJob(downloadUrl: null);
 
         _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Result<string, string>.Error("no url"));
 
         var (completed, errors) = await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -117,7 +118,7 @@ public sealed class GivenADownloadWorker
         var job = MakeDownloadJob(downloadUrl: null);
 
         _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Result<string, string>.Error("no url"));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -168,4 +169,19 @@ public sealed class GivenADownloadWorker
         await _downloader.DidNotReceive().DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), ct: Arg.Any<CancellationToken>());
         await _graphService.DidNotReceive().GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task when_download_url_resolution_returns_result_error_then_error_message_from_result_is_propagated()
+    {
+        const string ResultErrorMessage = "No download URL available.";
+        var job = MakeDownloadJob(downloadUrl: null);
+
+        _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
+            .Returns(new Result<string, string>.Error(ResultErrorMessage));
+
+        var (_, errors) = await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
+
+        errors[0].ShouldBe(ResultErrorMessage);
+    }
+
 }

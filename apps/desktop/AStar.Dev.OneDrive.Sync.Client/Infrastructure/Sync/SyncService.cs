@@ -98,8 +98,11 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         switch (outcome)
         {
             case ConflictOutcome.UseRemote:
-                string downloadUrl = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.Target.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).");
+                var urlResult = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+                string downloadUrl = urlResult.Match(
+                    url   => url,
+                    _     => throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.Target.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).")
+                );
 
                 await httpDownloader.DownloadAsync(downloadUrl, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
                 break;
