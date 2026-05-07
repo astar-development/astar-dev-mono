@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
@@ -10,7 +11,7 @@ public sealed class GivenADeltaItem
     public void when_created_with_all_properties_then_they_are_preserved()
     {
         string id = "file-123";
-        string driveId = "drive-456";
+        var driveId = new DriveId("drive-456");
         string name = "document.docx";
         string parentId = "folder-789";
         bool isFolder = false;
@@ -49,7 +50,7 @@ public sealed class GivenADeltaItem
     {
         var item = DeltaItemFactory.Create(
             new OneDriveItemId("file-123"),
-            "drive-456",
+            new DriveId("drive-456"),
             new OneDriveFolderId("folder-789"),
             ItemPathFactory.Create("document.docx"),
             false,
@@ -65,7 +66,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_created_as_deleted_then_is_deleted_is_true()
     {
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", null, ItemPathFactory.Create("name"), false, true, 0, null, null, VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("name"), false, true, 0, null, null, VersionInfoFactory.Create(null, null));
 
         item.IsDeleted.ShouldBeTrue();
     }
@@ -73,7 +74,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_created_as_folder_then_is_folder_is_true()
     {
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("Documents"), true, false, 0, null, null, VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("Documents"), true, false, 0, null, null, VersionInfoFactory.Create(null, null));
 
         item.IsFolder.ShouldBeTrue();
     }
@@ -81,7 +82,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_created_as_file_then_is_folder_is_false()
     {
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("file.txt"), false, false, 1024, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("file.txt"), false, false, 1024, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
         item.IsFolder.ShouldBeFalse();
     }
@@ -89,7 +90,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_size_is_zero_then_it_is_preserved()
     {
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("empty.txt"), false, false, 0, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("empty.txt"), false, false, 0, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
         item.Size.ShouldBe(0);
     }
@@ -99,7 +100,7 @@ public sealed class GivenADeltaItem
     {
         long largeSize = 1_099_511_627_776L;
 
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("large.iso"), false, false, largeSize, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("large.iso"), false, false, largeSize, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
         item.Size.ShouldBe(largeSize);
     }
@@ -107,7 +108,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_last_modified_is_null_then_it_is_null()
     {
-        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 0, null, "url", VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 0, null, "url", VersionInfoFactory.Create(null, null));
 
         item.LastModified.ShouldBeNull();
     }
@@ -115,8 +116,8 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_two_instances_have_same_values_then_they_are_equal()
     {
-        var item1 = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
-        var item2 = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, item1.LastModified, "url", VersionInfoFactory.Create(null, null));
+        var item1 = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
+        var item2 = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, item1.LastModified, "url", VersionInfoFactory.Create(null, null));
 
         item1.ShouldBe(item2);
     }
@@ -125,8 +126,8 @@ public sealed class GivenADeltaItem
     public void when_deleted_flag_differs_then_instances_are_not_equal()
     {
         var timestamp = DateTimeOffset.UtcNow;
-        var active = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, timestamp, "url", VersionInfoFactory.Create(null, null));
-        var deleted = DeltaItemFactory.Create(new OneDriveItemId("id"), "drive", new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, true, 100, timestamp, "url", VersionInfoFactory.Create(null, null));
+        var active = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, false, 100, timestamp, "url", VersionInfoFactory.Create(null, null));
+        var deleted = DeltaItemFactory.Create(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), false, true, 100, timestamp, "url", VersionInfoFactory.Create(null, null));
 
         active.ShouldNotBe(deleted);
     }

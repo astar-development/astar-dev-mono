@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -15,7 +16,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     private const string AccountIdString  = "account-1";
     private const string LocalSyncPathString = "/configured/sync/path";
     private const string AccessToken      = "token-abc";
-    private const string DriveId          = "drive-1";
+    private const string DriveIdValue      = "drive-1";
     private const string FolderId         = "folder-1";
     private const string FolderName       = "Photos";
     private const string ChildFolderId    = "folder-1-child";
@@ -194,7 +195,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
-            .Returns(DriveId);
+            .Returns(new DriveId(DriveIdValue));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(FolderId, FolderName)]);
@@ -206,7 +207,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     {
         var (authService, graphService, repository) = BuildMocks();
 
-        graphService.GetChildFoldersAsync(AccessToken, DriveId, FolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdValue), FolderId, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]);
 
         return (authService, graphService, repository);

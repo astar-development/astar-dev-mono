@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -26,7 +27,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveId     = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveId = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
 
         var includeRules     = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules
@@ -59,7 +60,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         return new RemoteEnumerationResult(downloadJobs, seenRemoteIds, syncedItems, rules);
     }
 
-    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, string accessToken, string driveId, CancellationToken ct)
+    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, string accessToken, DriveId driveId, CancellationToken ct)
     {
         var folderId = rule.RemoteItemId
             ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)

@@ -8,6 +8,7 @@ using WireMock.Util;
 using WireMock.Types;
 using WireMockBodyType = WireMock.Types.BodyType;
 using WireMockRequest = WireMock.RequestBuilders.Request;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Testably.Abstractions.Testing;
 
@@ -15,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenAnUploadService
 {
-    private const string DriveId        = "drive-001";
+    private const string DriveIdValue   = "drive-001";
     private const string ParentFolderId = "folder-001";
     private const string RemotePath     = "test-file.bin";
     private const string ExpectedItemId = "item-abc-123";
@@ -51,7 +52,7 @@ public sealed class GivenAnUploadService
         var sut = new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem());
 
         await Should.ThrowAsync<FileNotFoundException>(() =>
-            sut.UploadAsync(BuildAnonymousGraphClient(), DriveId, ParentFolderId, "/nonexistent/path/file.bin", RemotePath));
+            sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, "/nonexistent/path/file.bin", RemotePath));
     }
 
     [Fact]
@@ -65,7 +66,7 @@ public sealed class GivenAnUploadService
         var sut = new UploadService(Substitute.For<IHttpClientFactory>(), mockFileSystem);
 
         await Should.ThrowAsync<OperationCanceledException>(() =>
-            sut.UploadAsync(BuildAnonymousGraphClient(), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: cts.Token));
+            sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: cts.Token));
     }
 
     [Fact]
@@ -83,7 +84,7 @@ public sealed class GivenAnUploadService
 
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
-        string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+        string itemId = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
         itemId.ShouldBe(ExpectedItemId);
     }
@@ -103,7 +104,7 @@ public sealed class GivenAnUploadService
 
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
-        string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+        string itemId = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
         itemId.ShouldBe(ExpectedItemId);
     }
@@ -131,7 +132,7 @@ public sealed class GivenAnUploadService
 
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
-        string itemId = await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+        string itemId = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
         itemId.ShouldBe(ExpectedItemId);
         putCallCount.ShouldBe(2);
@@ -155,7 +156,7 @@ public sealed class GivenAnUploadService
         var progress = new Progress<long>(reportedValues.Add);
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
-        await sut.UploadAsync(BuildGraphClient(server), DriveId, ParentFolderId, LocalFilePath, RemotePath, progress, TestContext.Current.CancellationToken);
+        await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, progress, TestContext.Current.CancellationToken);
 
         await Task.Delay(50, TestContext.Current.CancellationToken);
 

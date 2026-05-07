@@ -10,7 +10,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {
     private readonly IGraphService _graphService;
     private readonly string        _accessToken;
-    private readonly string        _driveId;
+    private readonly DriveId       _driveId;
     private          bool          _childrenLoaded;
 
     public string Id { get; }
@@ -57,7 +57,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, string driveId, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
@@ -67,7 +67,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
-
         _accessToken = accessToken;
         _driveId = driveId;
     }

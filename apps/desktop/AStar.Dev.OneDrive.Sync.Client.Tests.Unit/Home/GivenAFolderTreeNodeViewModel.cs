@@ -7,7 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 public sealed class GivenAFolderTreeNodeViewModel
 {
     private const string AccessToken    = "token-abc";
-    private const string DriveId        = "drive-1";
+    private const string DriveIdString   = "drive-1";
     private const string RootFolderId   = "folder-root";
     private const string RootFolderName = "Documents";
     private const string ChildFolderId  = "folder-child";
@@ -111,7 +111,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var graphService = Substitute.For<IGraphService>();
 
-        graphService.GetChildFoldersAsync(AccessToken, DriveId, RootFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]);
 
         return graphService;
@@ -121,10 +121,10 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var graphService = Substitute.For<IGraphService>();
 
-        graphService.GetChildFoldersAsync(AccessToken, DriveId, RootFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]);
 
-        graphService.GetChildFoldersAsync(AccessToken, DriveId, ChildFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), ChildFolderId, Arg.Any<CancellationToken>())
             .Returns([new DriveFolder(GrandChildId, GrandChildName, ChildFolderId)]);
 
         return graphService;
@@ -147,6 +147,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState:   syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, AccessToken, DriveId);
+        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString));
     }
 }
