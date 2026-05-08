@@ -28,19 +28,17 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveIdResult = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveId = await graphService.GetDriveIdAsync(accessToken, ct)
+            .MatchAsync<DriveId, string, DriveId?>(
+                id => id,
+                error =>
+                {
+                    Serilog.Log.Error("[RemoteFolderEnumerator] {Error}", error);
+                    return null;
+                }).ConfigureAwait(false);
 
-        if(driveIdResult is not Result<DriveId, string>.Ok driveIdOk)
-        {
-            var error = driveIdResult is Result<DriveId, string>.Error driveIdError
-                ? driveIdError.Reason
-                : "Failed to retrieve drive ID.";
-            Serilog.Log.Error("[RemoteFolderEnumerator] {Error}", error);
-
+        if(driveId is null)
             return new RemoteEnumerationResult([], new HashSet<string>(StringComparer.OrdinalIgnoreCase), [], [], HadNoRules: false);
-        }
-
-        var driveId = driveIdOk.Value;
         var includeRules = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules
             .Where(rule => !includeRules.Any(other => other.RemotePath != rule.RemotePath && rule.RemotePath.StartsWith(other.RemotePath + "/", StringComparison.OrdinalIgnoreCase)))
@@ -54,7 +52,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if(ct.IsCancellationRequested)
                 break;
 
-            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId, ct).ConfigureAwait(false);
+            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId.Value, ct).ConfigureAwait(false);
 
             if(folderId is null)
             {
@@ -63,20 +61,21 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Profile.Email);
-            var itemsResult = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct).ConfigureAwait(false);
+            var items = await graphService.EnumerateFolderAsync(accessToken, driveId.Value, folderId, rule.RemotePath, ct)
+                .MatchAsync<List<DeltaItem>, string, List<DeltaItem>?>(
+                    deltaItems => deltaItems,
+                    error =>
+                    {
+                        Serilog.Log.Error("[RemoteFolderEnumerator] Failed to enumerate {Path}: {Error}", rule.RemotePath, error);
+                        return null;
+                    }).ConfigureAwait(false);
 
-            if(itemsResult is not Result<List<DeltaItem>, string>.Ok itemsOk)
-            {
-                var error = itemsResult is Result<List<DeltaItem>, string>.Error itemsError
-                    ? itemsError.Reason
-                    : "Failed to enumerate folder.";
-                Serilog.Log.Error("[RemoteFolderEnumerator] Failed to enumerate {Path}: {Error}", rule.RemotePath, error);
+            if(items is null)
                 continue;
-            }
 
-            Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", itemsOk.Value.Count, rule.RemotePath);
+            Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", items.Count, rule.RemotePath);
 
-            await ProcessItemsForRuleAsync(account, itemsOk.Value, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct).ConfigureAwait(false);
+            await ProcessItemsForRuleAsync(account, items, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct).ConfigureAwait(false);
         }
 
         return new RemoteEnumerationResult(downloadJobs, seenRemoteIds, syncedItems, rules);

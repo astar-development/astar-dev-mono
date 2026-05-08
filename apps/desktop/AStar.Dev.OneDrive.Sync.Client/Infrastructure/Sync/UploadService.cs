@@ -42,15 +42,17 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
-        if(sessionResult is not Result<string, string>.Ok sessionOk)
-            return sessionResult;
+        return await sessionResult.MatchAsync<Result<string, string>>(
+            async sessionUrl =>
+            {
+                var uploadResult = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
 
-        var uploadResult = await UploadChunksAsync(sessionOk.Value, localPath, fileInfo.Length, progress, ct);
+                if(uploadResult.Match(_ => true, _ => false))
+                    Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
 
-        if(uploadResult is Result<string, string>.Ok)
-            Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
-
-        return uploadResult;
+                return uploadResult;
+            },
+            error => new Result<string, string>.Error(error));
     }
 
     private static async Task<Result<string, string>> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
@@ -108,14 +110,15 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
             var chunkResult = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
 
-            if(chunkResult is Result<string?, string>.Error chunkError)
-                return new Result<string, string>.Error(chunkError.Reason);
+            var earlyReturn = chunkResult.Match<Result<string, string>?>(
+                itemId => itemId is not null ? new Result<string, string>.Ok(itemId) : null,
+                error => new Result<string, string>.Error(error));
+
+            if(earlyReturn is not null)
+                return earlyReturn;
 
             uploaded += bytesRead;
             progress?.Report(uploaded);
-
-            if(chunkResult is Result<string?, string>.Ok { Value: not null } chunkOk)
-                return new Result<string, string>.Ok(chunkOk.Value);
         }
 
         return new Result<string, string>.Error("Upload completed without receiving item ID from Graph API.");

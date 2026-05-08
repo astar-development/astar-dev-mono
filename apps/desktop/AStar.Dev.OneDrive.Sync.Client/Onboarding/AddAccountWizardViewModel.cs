@@ -203,18 +203,19 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
         try
         {
-            var foldersResult = await graphService.GetRootFoldersAsync(_accessToken);
+            var folders = await graphService.GetRootFoldersAsync(_accessToken)
+                .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                    f => f,
+                    error =>
+                    {
+                        FolderLoadError = $"Could not load folders: {error}";
+                        return null;
+                    });
 
-            if(foldersResult is not Result<List<DriveFolder>, string>.Ok foldersOk)
-            {
-                FolderLoadError = foldersResult is Result<List<DriveFolder>, string>.Error foldersError
-                    ? $"Could not load folders: {foldersError.Reason}"
-                    : "Could not load folders.";
-
+            if(folders is null)
                 return;
-            }
 
-            foreach(var f in foldersOk.Value)
+            foreach(var f in folders)
             {
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {

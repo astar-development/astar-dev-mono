@@ -47,6 +47,17 @@ File-scoped namespaces and implicit usings are global — never add redundant `u
 - Don't wrap `void` side-effects in `Result`.
 - Don't chain more than ~5 `.Bind`/`.Map` without naming intermediate results — extract a method.
 - Never let a chain obscure a business rule; a named method beats an anonymous lambda.
+- **Never await a `Task<Result<T,E>>` into an intermediate variable just to call `.Match()` on the next line.** Chain `.MatchAsync()` directly on the task. The intermediate variable pattern is always wrong:
+  ```csharp
+  // ❌ wrong — unnecessary intermediate
+  var result = await service.GetAsync(ct);
+  var value = result.Match<string?>(ok => ok.Value, _ => null);
+
+  // ✅ correct — chain directly
+  var value = await service.GetAsync(ct)
+      .MatchAsync<TSuccess, TError, string?>(ok => ok.Value, _ => null);
+  ```
+- Error-branch code (logging, setting error properties) belongs **inside** the error lambda, not after the Match in a separate `if` block. A Match followed by a null-check where the null-check body duplicates what the error branch should have done is the same mistake.
 
 ## Project conventions
 

@@ -123,21 +123,21 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         IsLoadingChildren = true;
         try
         {
-            var foldersResult = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id);
+            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id)
+                .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                    f => f,
+                    error =>
+                    {
+                        Serilog.Log.Warning("[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}", RemotePath, error);
+                        HasChildren = false;
+                        return null;
+                    });
 
-            if(foldersResult is not Result<List<DriveFolder>, string>.Ok foldersOk)
-            {
-                var error = foldersResult is Result<List<DriveFolder>, string>.Error foldersError
-                    ? foldersError.Reason
-                    : "Failed to load child folders.";
-                Serilog.Log.Warning("[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}", RemotePath, error);
-                HasChildren = false;
-
+            if(folders is null)
                 return;
-            }
 
             Children.Clear();
-            foreach(var f in foldersOk.Value)
+            foreach(var f in folders)
             {
                 var childVm = CreateChildFolderTreeViewModel(f);
 

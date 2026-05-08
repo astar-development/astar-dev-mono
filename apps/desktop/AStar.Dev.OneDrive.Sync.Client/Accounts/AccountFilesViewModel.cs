@@ -67,32 +67,33 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
+            _accessToken = await _authService.AcquireTokenSilentAsync(_account.Id.Id)
+                .MatchAsync<AuthResult, AuthError, string?>(
+                    ok => ok.AccessToken,
+                    error =>
+                    {
+                        LoadError = error is AuthFailedError failed ? failed.Message : "Authentication failed.";
+                        HasLoadError = true;
+                        return null;
+                    });
 
-            if(authResult is not Result<AuthResult, AuthError>.Ok ok)
-            {
-                LoadError = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
-                    ? failed.Message
-                    : "Authentication failed.";
-                HasLoadError = true;
-
+            if(_accessToken is null)
                 return;
-            }
 
-            _accessToken = ok.Value.AccessToken;
-            var driveIdResult = await _graphService.GetDriveIdAsync(_accessToken);
+            var driveId = await _graphService.GetDriveIdAsync(_accessToken)
+                .MatchAsync<DriveId, string, DriveId?>(
+                    id => id,
+                    error =>
+                    {
+                        LoadError = $"Failed to retrieve drive ID: {error}";
+                        HasLoadError = true;
+                        return null;
+                    });
 
-            if(driveIdResult is not Result<DriveId, string>.Ok driveIdOk)
-            {
-                LoadError = driveIdResult is Result<DriveId, string>.Error driveIdError
-                    ? $"Failed to retrieve drive ID: {driveIdError.Reason}"
-                    : "Failed to retrieve drive ID.";
-                HasLoadError = true;
-
+            if(driveId is null)
                 return;
-            }
 
-            _driveId = new Option<DriveId>.Some(driveIdOk.Value);
+            _driveId = new Option<DriveId>.Some(driveId.Value);
 
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);
@@ -120,21 +121,21 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
     {
-        var foldersResult = await _graphService.GetRootFoldersAsync(_accessToken!);
+        var folders = await _graphService.GetRootFoldersAsync(_accessToken!)
+            .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                f => f,
+                error =>
+                {
+                    Serilog.Log.Warning("[AccountFilesViewModel] Failed to load root folders for account {AccountId}: {Error}", _account.Id.Id, error);
+                    LoadError = error;
+                    HasLoadError = true;
+                    return null;
+                });
 
-        if(foldersResult is not Result<List<DriveFolder>, string>.Ok foldersOk)
-        {
-            var errorMessage = foldersResult is Result<List<DriveFolder>, string>.Error foldersError
-                ? foldersError.Reason
-                : "Failed to load root folders.";
-            Serilog.Log.Warning("[AccountFilesViewModel] Failed to load root folders for account {AccountId}: {Error}", _account.Id.Id, errorMessage);
-            LoadError = errorMessage;
-            HasLoadError = true;
-
+        if(folders is null)
             return;
-        }
 
-        foreach(var f in foldersOk.Value)
+        foreach(var f in folders)
         {
             string remotePath = $"/{f.Name}";
             var syncState = includedPaths.Contains(remotePath)

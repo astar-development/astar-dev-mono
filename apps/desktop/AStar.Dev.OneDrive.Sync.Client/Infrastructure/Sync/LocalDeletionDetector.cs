@@ -26,15 +26,18 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
             {
                 var deleteResult = await graphService.DeleteItemAsync(accessToken, remoteId, ct);
 
-                if(deleteResult is Result<Unit, string>.Ok)
-                {
-                    Serilog.Log.Debug("[LocalDeletionDetector] Deleted remote item {RemoteId}", remoteId);
-                    await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
-                }
-                else if(deleteResult is Result<Unit, string>.Error deleteError)
-                {
-                    Serilog.Log.Error("[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}", remoteId, deleteError.Reason);
-                }
+                await deleteResult.MatchAsync<Unit>(
+                    async _ =>
+                    {
+                        Serilog.Log.Debug("[LocalDeletionDetector] Deleted remote item {RemoteId}", remoteId);
+                        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
+                        return Unit.Default;
+                    },
+                    deleteError =>
+                    {
+                        Serilog.Log.Error("[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}", remoteId, deleteError);
+                        return Unit.Default;
+                    });
             }
             catch(Exception ex)
             {

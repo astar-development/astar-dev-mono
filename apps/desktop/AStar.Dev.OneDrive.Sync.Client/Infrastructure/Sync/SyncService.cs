@@ -30,17 +30,17 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Profile.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
-        var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
+        var accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
+            .MatchAsync<AuthResult, AuthError, string?>(
+                ok => ok.AccessToken,
+                error =>
+                {
+                    RaiseProgress(account.Id.Id, 0, 0, error is AuthFailedError failed ? failed.Message : "Auth failed", SyncState.Error);
+                    return null;
+                }).ConfigureAwait(false);
 
-        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
-        {
-            var errorMessage = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
-                ? failed.Message
-                : "Auth failed";
-            RaiseProgress(account.Id.Id, 0, 0, errorMessage, SyncState.Error);
-
+        if(accessToken is null)
             return;
-        }
 
         if(account.SyncConfig is null)
         {
@@ -53,7 +53,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
         {
             var didRun = await syncPassOrchestrator.OrchestrateAsync(
                 account,
-                authOk.Value.AccessToken,
+                accessToken,
                 async conflict =>
                 {
                     await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
@@ -85,14 +85,15 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var authResult = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
+        var accessToken = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct)
+            .MatchAsync<AuthResult, AuthError, string?>(ok => ok.AccessToken, _ => null).ConfigureAwait(false);
 
-        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
+        if(accessToken is null)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, authOk.Value.AccessToken, ct).ConfigureAwait(false);
+        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
@@ -108,11 +109,14 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                     {
                         var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
 
-                        if(downloadResult is Result<Unit, string>.Error downloadError)
-                        {
-                            Serilog.Log.Error("[SyncService] Download failed resolving conflict for {Path}: {Error}", conflict.Target.RelativePath, downloadError.Reason);
-                            RaiseProgress(accountId, 0, 0, downloadError.Reason, SyncState.Error);
-                        }
+                        downloadResult.Match<Unit>(
+                            _ => Unit.Default,
+                            downloadError =>
+                            {
+                                Serilog.Log.Error("[SyncService] Download failed resolving conflict for {Path}: {Error}", conflict.Target.RelativePath, downloadError);
+                                RaiseProgress(accountId, 0, 0, downloadError, SyncState.Error);
+                                return Unit.Default;
+                            });
                     },
                     error =>
                     {

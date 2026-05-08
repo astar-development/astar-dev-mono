@@ -35,17 +35,10 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
 
             try
             {
-                var jobResult = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
-
-                if(jobResult is Result<SyncJob, string>.Ok completedJobResult)
-                {
-                    currentJob = completedJobResult.Value;
-                    success = true;
-                }
-                else if(jobResult is Result<SyncJob, string>.Error jobErrorResult)
-                {
-                    error = jobErrorResult.Reason;
-                }
+                (currentJob, success, error) = await ExecuteJobAsync(job, accessToken, ct)
+                    .MatchAsync<SyncJob, string, (SyncJob, bool, string?)>(
+                        completedJob => (completedJob, true, null),
+                        reason => (currentJob, false, reason)).ConfigureAwait(false);
 
                 if(success)
                     await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed).ConfigureAwait(false);
@@ -77,40 +70,39 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
             case DownloadSyncJob downloadJob:
                 var urlResult = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct).ConfigureAwait(false);
 
-                if(urlResult is not Result<string, string>.Ok urlOk)
-                {
-                    var urlError = ((Result<string, string>.Error)urlResult).Reason;
-                    Serilog.Log.Error("[Worker {Id}] Could not resolve download URL for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, urlError);
+                return await urlResult.MatchAsync<Result<SyncJob, string>>(
+                    async url =>
+                    {
+                        var downloadResult = await downloader.DownloadAsync(url, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
 
-                    return new Result<SyncJob, string>.Error(urlError);
-                }
-
-                var downloadResult = await downloader.DownloadAsync(urlOk.Value, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
-
-                if(downloadResult is not Result<Unit, string>.Ok)
-                {
-                    var downloadError = ((Result<Unit, string>.Error)downloadResult).Reason;
-                    Serilog.Log.Error("[Worker {Id}] Download failed for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, downloadError);
-
-                    return new Result<SyncJob, string>.Error(downloadError);
-                }
-
-                return new Result<SyncJob, string>.Ok(downloadJob);
+                        return downloadResult.Match<Result<SyncJob, string>>(
+                            _ => new Result<SyncJob, string>.Ok(downloadJob),
+                            downloadError =>
+                            {
+                                Serilog.Log.Error("[Worker {Id}] Download failed for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, downloadError);
+                                return new Result<SyncJob, string>.Error(downloadError);
+                            });
+                    },
+                    urlError =>
+                    {
+                        Serilog.Log.Error("[Worker {Id}] Could not resolve download URL for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, urlError);
+                        return new Result<SyncJob, string>.Error(urlError);
+                    });
 
             case UploadSyncJob uploadJob:
                 var uploadResult = await graphService.UploadFileAsync(accessToken, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
 
-                if(uploadResult is not Result<string, string>.Ok uploadOk)
-                {
-                    var uploadError = ((Result<string, string>.Error)uploadResult).Reason;
-                    Serilog.Log.Error("[Worker {Id}] Upload failed for {Path}: {Error}", workerId, uploadJob.Target.RelativePath, uploadError);
-
-                    return new Result<SyncJob, string>.Error(uploadError);
-                }
-
-                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, uploadJob.Target.RelativePath);
-
-                return new Result<SyncJob, string>.Ok(uploadJob with { UploadedRemoteItemId = uploadOk.Value });
+                return uploadResult.Match<Result<SyncJob, string>>(
+                    itemId =>
+                    {
+                        Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, uploadJob.Target.RelativePath);
+                        return new Result<SyncJob, string>.Ok(uploadJob with { UploadedRemoteItemId = itemId });
+                    },
+                    uploadError =>
+                    {
+                        Serilog.Log.Error("[Worker {Id}] Upload failed for {Path}: {Error}", workerId, uploadJob.Target.RelativePath, uploadError);
+                        return new Result<SyncJob, string>.Error(uploadError);
+                    });
 
             case DeleteSyncJob deleteJob:
                 if(fileSystem.File.Exists(deleteJob.Target.LocalPath))
