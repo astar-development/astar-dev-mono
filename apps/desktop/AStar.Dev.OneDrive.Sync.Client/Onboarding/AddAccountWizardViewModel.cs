@@ -73,16 +73,16 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private void Back()
     {
-        if (CurrentStep == WizardStep.SelectFolders)
+        if(CurrentStep == WizardStep.SelectFolders)
             CurrentStep = WizardStep.SignIn;
-        else if (CurrentStep == WizardStep.Confirm)
+        else if(CurrentStep == WizardStep.Confirm)
             CurrentStep = WizardStep.SelectFolders;
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     private async Task NextAsync()
     {
-        switch (CurrentStep)
+        switch(CurrentStep)
         {
             case WizardStep.SignIn:
                 CurrentStep = WizardStep.SelectFolders;
@@ -103,7 +103,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private void SkipFolders()
     {
-        foreach (var f in Folders)
+        foreach(var f in Folders)
             f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
@@ -112,7 +112,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
-        if (IsWaitingForAuth)
+        if(IsWaitingForAuth)
             return;
 
         SetInitialSignInState();
@@ -123,7 +123,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         {
             var result = await authService.SignInInteractiveAsync(_authCts.Token);
 
-            switch (result)
+            switch(result)
             {
                 case Result<AuthResult, AuthError>.Ok successfulLoginResult:
                     UpdateSuccessfulLoginState(successfulLoginResult);
@@ -186,7 +186,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
     [RelayCommand]
     private async Task CancelAsync()
     {
-        if (_authCts is not null)
+        if(_authCts is not null)
             await _authCts.CancelAsync();
 
         Cancelled?.Invoke(this, EventArgs.Empty);
@@ -194,7 +194,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
     private async Task LoadFoldersAsync()
     {
-        if (_accessToken is null)
+        if(_accessToken is null)
             return;
 
         IsLoadingFolders = true;
@@ -203,10 +203,18 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
         try
         {
-            var driveFolders = await graphService
-                .GetRootFoldersAsync(_accessToken);
+            var foldersResult = await graphService.GetRootFoldersAsync(_accessToken);
 
-            foreach (var f in driveFolders)
+            if(foldersResult is not Result<List<DriveFolder>, string>.Ok foldersOk)
+            {
+                FolderLoadError = foldersResult is Result<List<DriveFolder>, string>.Error foldersError
+                    ? $"Could not load folders: {foldersError.Reason}"
+                    : "Could not load folders.";
+
+                return;
+            }
+
+            foreach(var f in foldersOk.Value)
             {
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {
@@ -214,7 +222,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
                 });
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             FolderLoadError = $"Could not load folders: {ex.Message}";
         }

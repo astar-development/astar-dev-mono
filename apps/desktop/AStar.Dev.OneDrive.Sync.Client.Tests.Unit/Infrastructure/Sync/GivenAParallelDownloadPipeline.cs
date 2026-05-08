@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -19,6 +20,12 @@ public sealed class GivenAParallelDownloadPipeline
     private readonly IGraphService    _graphService   = Substitute.For<IGraphService>();
     private readonly ISyncRepository  _syncRepository = Substitute.For<ISyncRepository>();
     private readonly IFileSystem      _fileSystem     = Substitute.For<IFileSystem>();
+
+    public GivenAParallelDownloadPipeline()
+    {
+        _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+    }
 
     private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader, _fileSystem);
 

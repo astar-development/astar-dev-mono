@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Reactive;
 using System.Threading.Channels;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -26,18 +27,30 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
                 "[Worker {Id}] Processing {JobType} {Path}",
                 workerId, job.GetType().Name, job.Target.RelativePath);
 
-            await syncRepository.UpdateJobStateAsync(
-                job.Status.Id, SyncJobState.InProgress).ConfigureAwait(false);
+            await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.InProgress).ConfigureAwait(false);
 
-            string? error   = null;
-            bool     success = false;
             var currentJob = job;
+            string? error = null;
+            bool success = false;
 
             try
             {
-                currentJob = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
-                success = true;
-                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed).ConfigureAwait(false);
+                var jobResult = await ExecuteJobAsync(job, accessToken, ct).ConfigureAwait(false);
+
+                if(jobResult is Result<SyncJob, string>.Ok completedJobResult)
+                {
+                    currentJob = completedJobResult.Value;
+                    success = true;
+                }
+                else if(jobResult is Result<SyncJob, string>.Error jobErrorResult)
+                {
+                    error = jobErrorResult.Reason;
+                }
+
+                if(success)
+                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed).ConfigureAwait(false);
+                else
+                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, error).ConfigureAwait(false);
             }
             catch(OperationCanceledException)
             {
@@ -57,45 +70,66 @@ public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGr
         }
     }
 
-    private async Task<SyncJob> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private async Task<Result<SyncJob, string>> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
     {
         switch(job)
         {
             case DownloadSyncJob downloadJob:
-                string downloadUrl = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct);
-                await downloader.DownloadAsync(downloadUrl, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
+                var urlResult = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct).ConfigureAwait(false);
 
-                return downloadJob;
+                if(urlResult is not Result<string, string>.Ok urlOk)
+                {
+                    var urlError = ((Result<string, string>.Error)urlResult).Reason;
+                    Serilog.Log.Error("[Worker {Id}] Could not resolve download URL for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, urlError);
+
+                    return new Result<SyncJob, string>.Error(urlError);
+                }
+
+                var downloadResult = await downloader.DownloadAsync(urlOk.Value, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
+
+                if(downloadResult is not Result<Unit, string>.Ok)
+                {
+                    var downloadError = ((Result<Unit, string>.Error)downloadResult).Reason;
+                    Serilog.Log.Error("[Worker {Id}] Download failed for {Path}: {Error}", workerId, downloadJob.Target.RelativePath, downloadError);
+
+                    return new Result<SyncJob, string>.Error(downloadError);
+                }
+
+                return new Result<SyncJob, string>.Ok(downloadJob);
 
             case UploadSyncJob uploadJob:
-                string uploadedRemoteItemId = await graphService.UploadFileAsync(accessToken, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
+                var uploadResult = await graphService.UploadFileAsync(accessToken, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, ct: ct).ConfigureAwait(false);
+
+                if(uploadResult is not Result<string, string>.Ok uploadOk)
+                {
+                    var uploadError = ((Result<string, string>.Error)uploadResult).Reason;
+                    Serilog.Log.Error("[Worker {Id}] Upload failed for {Path}: {Error}", workerId, uploadJob.Target.RelativePath, uploadError);
+
+                    return new Result<SyncJob, string>.Error(uploadError);
+                }
+
                 Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, uploadJob.Target.RelativePath);
 
-                return uploadJob with { UploadedRemoteItemId = uploadedRemoteItemId };
+                return new Result<SyncJob, string>.Ok(uploadJob with { UploadedRemoteItemId = uploadOk.Value });
 
             case DeleteSyncJob deleteJob:
                 if(fileSystem.File.Exists(deleteJob.Target.LocalPath))
                     fileSystem.File.Delete(deleteJob.Target.LocalPath);
 
-                return deleteJob;
+                return new Result<SyncJob, string>.Ok(deleteJob);
 
             default:
-                return job;
+                return new Result<SyncJob, string>.Ok(job);
         }
     }
 
-    private async Task<string> ResolveDownloadUrlAsync(DownloadSyncJob job, string accessToken, CancellationToken ct)
+    private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accessToken, CancellationToken ct)
     {
         if(job.DownloadUrl is not null)
-            return job.DownloadUrl;
+            return new Result<string, string>.Ok(job.DownloadUrl);
 
         Serilog.Log.Debug("[Worker {Id}] DownloadUrl absent for {Path} — fetching on-demand", workerId, job.Target.RelativePath);
 
-        var urlResult = await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
-
-        return urlResult.Match(
-            url => url,
-            _   => throw new InvalidOperationException($"No download URL could be resolved for '{job.Target.RelativePath}' (itemId={job.Remote.RemoteItemId.Id}).")
-        );
+        return await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
     }
 }

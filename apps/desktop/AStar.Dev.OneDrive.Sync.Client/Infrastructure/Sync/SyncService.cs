@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -31,18 +32,20 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
         var authResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
 
-        if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
+        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
         {
             var errorMessage = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
                 ? failed.Message
                 : "Auth failed";
             RaiseProgress(account.Id.Id, 0, 0, errorMessage, SyncState.Error);
+
             return;
         }
 
-        if (account.SyncConfig is null)
+        if(account.SyncConfig is null)
         {
             RaiseProgress(account.Id.Id, 0, 0, "No local sync path configured", SyncState.Error);
+
             return;
         }
 
@@ -60,7 +63,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 args => JobCompleted?.Invoke(this, args),
                 ct).ConfigureAwait(false);
 
-            if (!didRun)
+            if(!didRun)
                 RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
             else
             {
@@ -68,11 +71,11 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
                 RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
             }
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Profile.Email, ex.Message);
             RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
@@ -84,7 +87,7 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
     {
         var authResult = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
 
-        if (authResult is not Result<AuthResult, AuthError>.Ok authOk)
+        if(authResult is not Result<AuthResult, AuthError>.Ok authOk)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
@@ -95,21 +98,34 @@ public sealed class SyncService(IAuthService authService, IAccountRepository acc
 
     private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
     {
-        switch (outcome)
+        switch(outcome)
         {
             case ConflictOutcome.UseRemote:
                 var urlResult = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
-                string downloadUrl = urlResult.Match(
-                    url   => url,
-                    _     => throw new InvalidOperationException($"No download URL could be resolved for conflict item '{conflict.Target.RelativePath}' (itemId={conflict.Remote.RemoteItemId.Id}).")
-                );
 
-                await httpDownloader.DownloadAsync(downloadUrl, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
+                await urlResult.Match(
+                    async url =>
+                    {
+                        var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
+
+                        if(downloadResult is Result<Unit, string>.Error downloadError)
+                        {
+                            Serilog.Log.Error("[SyncService] Download failed resolving conflict for {Path}: {Error}", conflict.Target.RelativePath, downloadError.Reason);
+                            RaiseProgress(accountId, 0, 0, downloadError.Reason, SyncState.Error);
+                        }
+                    },
+                    error =>
+                    {
+                        Serilog.Log.Error("[SyncService] Could not resolve download URL for conflict item {Path}: {Error}", conflict.Target.RelativePath, error);
+                        RaiseProgress(accountId, 0, 0, error, SyncState.Error);
+
+                        return Task.CompletedTask;
+                    });
                 break;
 
             case ConflictOutcome.KeepBoth:
                 string keepBothName = ConflictResolver.MakeKeepBothName(conflict.Target.LocalPath, conflict.Snapshot.LocalModified, fileSystem);
-                if (fileSystem.File.Exists(conflict.Target.LocalPath))
+                if(fileSystem.File.Exists(conflict.Target.LocalPath))
                     fileSystem.File.Move(conflict.Target.LocalPath, keepBothName);
                 break;
         }

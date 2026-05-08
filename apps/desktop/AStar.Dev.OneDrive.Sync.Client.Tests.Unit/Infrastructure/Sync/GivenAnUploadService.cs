@@ -48,15 +48,6 @@ public sealed class GivenAnUploadService
         new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem()).ShouldBeAssignableTo<IUploadService>();
 
     [Fact]
-    public async Task when_upload_async_is_called_with_nonexistent_local_path_then_FileNotFoundException_is_thrown()
-    {
-        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem());
-
-        await Should.ThrowAsync<FileNotFoundException>(() =>
-            sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, "/nonexistent/path/file.bin", RemotePath));
-    }
-
-    [Fact]
     public async Task when_upload_async_is_called_with_pre_cancelled_token_then_operation_is_cancelled()
     {
         var mockFileSystem = new MockFileSystem();

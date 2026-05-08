@@ -1,5 +1,6 @@
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using WireMock.RequestBuilders;
@@ -150,9 +151,10 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccessToken, TestContext.Current.CancellationToken);
 
-        result.Count.ShouldBe(2);
-        result[0].Name.ShouldBe("AFolder");
-        result[1].Name.ShouldBe("ZFolder");
+        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        folders.Count.ShouldBe(2);
+        folders[0].Name.ShouldBe("AFolder");
+        folders[1].Name.ShouldBe("ZFolder");
     }
 
     [Fact]
@@ -179,8 +181,9 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = AnyDriveId }));
 
-        var (total, used) = await CreateSut().GetQuotaAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+        var quotaResult = await CreateSut().GetQuotaAsync(AnyAccessToken, TestContext.Current.CancellationToken);
 
+        var (total, used) = quotaResult.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Ok>()!.Value;
         total.ShouldBe(0L);
         used.ShouldBe(0L);
     }
@@ -197,7 +200,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDownloadUrlAsync(AnyAccessToken, AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeNull();
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
     }
 
     [Fact]
@@ -229,10 +232,11 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
 
-        result.Count.ShouldBe(3);
-        result.ShouldContain(i => i.Id.Id == "file-root");
-        result.ShouldContain(i => i.Id.Id == "subfolder-001" && i.IsFolder);
-        result.ShouldContain(i => i.Id.Id == "file-sub");
+        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
+        items.Count.ShouldBe(3);
+        items.ShouldContain(i => i.Id.Id == "file-root");
+        items.ShouldContain(i => i.Id.Id == "subfolder-001" && i.IsFolder);
+        items.ShouldContain(i => i.Id.Id == "file-sub");
     }
 
     [Fact]
@@ -263,9 +267,10 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
 
-        result.Count.ShouldBe(2);
-        result.ShouldContain(i => i.Id.Id == "subfolder-A");
-        result.ShouldContain(i => i.Id.Id == AnyFolderId);
+        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
+        items.Count.ShouldBe(2);
+        items.ShouldContain(i => i.Id.Id == "subfolder-A");
+        items.ShouldContain(i => i.Id.Id == AnyFolderId);
     }
 
     [Fact]

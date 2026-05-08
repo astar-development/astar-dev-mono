@@ -36,22 +36,24 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
         if(!fileInfo.Exists)
-        {
-            throw new FileNotFoundException($"Local file not found: {localPath}");
-        }
+            return new Result<string, string>.Error($"Local file not found: {localPath}");
 
         Serilog.Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        string sessionUrl = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
+        var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
-        var uploadResult = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
+        if(sessionResult is not Result<string, string>.Ok sessionOk)
+            return sessionResult;
 
-        Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
+        var uploadResult = await UploadChunksAsync(sessionOk.Value, localPath, fileInfo.Length, progress, ct);
+
+        if(uploadResult is Result<string, string>.Ok)
+            Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
 
         return uploadResult;
     }
 
-    private static async Task<string> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
+    private static async Task<Result<string, string>> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
     {
         string fileName = remotePath.Contains('/')
             ? remotePath[(remotePath.LastIndexOf('/') + 1)..]
@@ -81,9 +83,10 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             .CreateUploadSession
             .PostAsync(requestBody, cancellationToken: ct);
 
-        return session?.UploadUrl is null
-            ? throw new InvalidOperationException("Graph API did not return an upload session URL.")
-            : session.UploadUrl;
+        if(session?.UploadUrl is null)
+            return new Result<string, string>.Error("Graph API did not return an upload session URL.");
+
+        return new Result<string, string>.Ok(session.UploadUrl);
     }
 
     private async Task<Result<string, string>> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
@@ -103,13 +106,16 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 break;
 
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
-            string? itemId = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
+            var chunkResult = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
+
+            if(chunkResult is Result<string?, string>.Error chunkError)
+                return new Result<string, string>.Error(chunkError.Reason);
 
             uploaded += bytesRead;
             progress?.Report(uploaded);
 
-            if(itemId is not null)
-                return new Result<string, string>.Ok(itemId);
+            if(chunkResult is Result<string?, string>.Ok { Value: not null } chunkOk)
+                return new Result<string, string>.Ok(chunkOk.Value);
         }
 
         return new Result<string, string>.Error("Upload completed without receiving item ID from Graph API.");
@@ -124,7 +130,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
     private static long ComputeRangeEnd(long uploaded, int bytesRead) => uploaded + bytesRead - 1;
 
-    private static async Task<string?> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
+    private static async Task<Result<string?, string>> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
     {
         int attempt = 0;
 
@@ -145,9 +151,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if(attempt > MaxRetries)
-                    {
-                        throw new HttpRequestException($"Upload rate limited after {MaxRetries} retries.");
-                    }
+                        return new Result<string?, string>.Error($"Upload rate limited after {MaxRetries} retries.");
 
                     var delay = GetRetryDelay(response, attempt);
                     Serilog.Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
@@ -157,14 +161,14 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 }
 
                 if(response.StatusCode == System.Net.HttpStatusCode.Accepted)
-                    return null;
+                    return new Result<string?, string>.Ok(null);
 
                 if(response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
                     return await GetUploadedDocumentId(response, ct);
 
                 _ = response.EnsureSuccessStatusCode();
 
-                return null;
+                return new Result<string?, string>.Ok(null);
             }
             catch(HttpRequestException) when(attempt <= MaxRetries)
             {
@@ -176,15 +180,18 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         }
     }
 
-    private static async Task<string?> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<Result<string?, string>> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
     {
         string json = await response.Content.ReadAsStringAsync(ct);
         using var doc = System.Text.Json.JsonDocument.Parse(json);
 
-        return doc.RootElement
-            .GetProperty("id")
-            .GetString()
-            ?? throw new InvalidOperationException("Upload response missing item ID.");
+        if(!doc.RootElement.TryGetProperty("id", out var idElement))
+            return new Result<string?, string>.Error("Upload response missing item ID.");
+        var itemId = idElement.GetString();
+        if(itemId is null)
+            return new Result<string?, string>.Error("Upload response missing item ID.");
+
+        return new Result<string?, string>.Ok(itemId);
     }
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)

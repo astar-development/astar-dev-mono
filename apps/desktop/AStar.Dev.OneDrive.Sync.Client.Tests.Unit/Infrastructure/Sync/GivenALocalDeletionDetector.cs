@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -16,6 +17,12 @@ public sealed class GivenALocalDeletionDetector
     private readonly IGraphService         _graphService         = Substitute.For<IGraphService>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
     private readonly AccountId             _accountId            = new("user-1");
+
+    public GivenALocalDeletionDetector()
+    {
+        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+    }
 
     private LocalDeletionDetector CreateSut(MockFileSystem mockFs) => new(_graphService, _syncedItemRepository, mockFs);
 
@@ -84,8 +91,8 @@ public sealed class GivenALocalDeletionDetector
     public async Task when_graph_delete_throws_then_exception_is_caught_and_remaining_items_are_processed()
     {
         var mockFileSystem = new MockFileSystem();
-        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Is("item-fail"), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new HttpRequestException("network error")));
+        _graphService.When(x => x.DeleteItemAsync(Arg.Any<string>(), Arg.Is("item-fail"), Arg.Any<CancellationToken>()))
+            .Throw(new HttpRequestException("network error"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-fail"] = new() { RemoteItemId = new OneDriveItemId("item-fail"), RemotePath = "/fail.txt", LocalPath = $"{BaseDir}/fail.txt", IsFolder = false },

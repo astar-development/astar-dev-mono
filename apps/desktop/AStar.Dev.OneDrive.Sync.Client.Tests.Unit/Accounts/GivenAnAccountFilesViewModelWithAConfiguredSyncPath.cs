@@ -198,7 +198,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
-            .Returns([new DriveFolder(FolderId, FolderName)]);
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName)]));
 
         return (authService, graphService, repository);
     }
@@ -208,7 +208,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocks();
 
         graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdValue), FolderId, Arg.Any<CancellationToken>())
-            .Returns([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]);
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]));
 
         return (authService, graphService, repository);
     }

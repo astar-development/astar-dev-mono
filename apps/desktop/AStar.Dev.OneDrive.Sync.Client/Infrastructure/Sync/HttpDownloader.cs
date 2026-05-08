@@ -39,7 +39,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if(attempt > MaxRetries)
-                        throw new HttpRequestException($"Rate limited after {MaxRetries} retries.");
+                        return new Result<Unit, string>.Error($"Rate limited after {MaxRetries} retries.");
 
                     var delay = GetRetryDelay(response, attempt);
                     Serilog.Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);

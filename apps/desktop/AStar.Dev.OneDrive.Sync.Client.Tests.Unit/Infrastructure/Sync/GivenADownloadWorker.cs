@@ -21,6 +21,12 @@ public sealed class GivenADownloadWorker
     private readonly ISyncRepository  _syncRepository = Substitute.For<ISyncRepository>();
     private readonly IFileSystem      _fileSystem     = Substitute.For<IFileSystem>();
 
+    public GivenADownloadWorker()
+    {
+        _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+    }
+
     private DownloadWorker CreateSut(int workerId = 1) => new(workerId, _downloader, _graphService, _syncRepository, _fileSystem);
 
     private static DownloadSyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
@@ -102,7 +108,7 @@ public sealed class GivenADownloadWorker
         var job = MakeDownloadJob(downloadUrl: null);
 
         _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Error("no url"));
+            .Returns(new Result<string, string>.Error($"No download URL available for item {ItemId}."));
 
         var (completed, errors) = await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -152,7 +158,7 @@ public sealed class GivenADownloadWorker
         var job = MakeUploadJob();
 
         _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
-            .Returns("remote-item-id");
+            .Returns(new Result<string, string>.Ok("remote-item-id"));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
