@@ -91,7 +91,6 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
             return;
 
         section.UpdateSyncState(SyncState.Completed, section.ConflictCount);
-        section.AddRecentActivity(new ActivityItemViewModel { AccountId = accountId, FileName = "Sync complete", Type = ActivityItemType.Info });
 
         RecalculateGlobals();
     }

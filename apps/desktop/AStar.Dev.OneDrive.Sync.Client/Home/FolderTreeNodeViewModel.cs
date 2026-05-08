@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -49,7 +50,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [ObservableProperty]
     public partial bool HasChildren { get; set; }
 
-    public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
+    public string ExpanderGlyph => IsExpanded ? "▾" : "▸";
 
     public ObservableCollection<FolderTreeNodeViewModel> Children { get; } = [];
 
@@ -122,7 +123,18 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         IsLoadingChildren = true;
         try
         {
-            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id);
+            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id)
+                .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                    f => f,
+                    error =>
+                    {
+                        Serilog.Log.Warning("[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}", RemotePath, error);
+                        HasChildren = false;
+                        return null;
+                    });
+
+            if(folders is null)
+                return;
 
             Children.Clear();
             foreach(var f in folders)
@@ -132,7 +144,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
                 Children.Add(childVm);
             }
 
-            if (Children.Count == 0) HasChildren = false;
+            if(Children.Count == 0) HasChildren = false;
 
             _childrenLoaded = true;
         }
@@ -146,9 +158,8 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     {
         string childRemotePath = $"{RemotePath}/{f.Name}";
         var childNode = MapDriveFolderToChildNode(f, childRemotePath);
-        var childVm = CreateChildFolderTreeViewModel(childNode);
 
-        return childVm;
+        return CreateChildFolderTreeViewModel(childNode);
     }
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)

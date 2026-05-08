@@ -1,3 +1,6 @@
+using AStar.Dev.Functional.Extensions;
+using System.Reactive;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 public interface IHttpDownloader
@@ -7,5 +10,5 @@ public interface IHttpDownloader
     /// Automatically retries on 429 with exponential backoff.
     /// Preserves the remote last-modified timestamp on the local file.
     /// </summary>
-    Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default);
+    Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default);
 }

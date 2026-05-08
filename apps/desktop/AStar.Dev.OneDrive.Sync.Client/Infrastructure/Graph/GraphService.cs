@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -24,40 +26,51 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
 
     /// <inheritdoc />
-    public async Task<DriveId> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
-        => (await ResolveClientWithDriveContextAsync(accessToken, ct)).Ctx.DriveId;
-
-    /// <inheritdoc />
-    public async Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
+    public async Task<Result<DriveId, string>> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
     {
-        (var client, var driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
 
-        var response = await client.Drives[driveContext.DriveId.Value].Items[driveContext.RootId].Children
-            .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
-
-        List<DriveFolder> folders = [];
-
-        var page = response;
-        while(page?.Value is not null)
-        {
-            folders.AddRange(
-                page.Value
-                    .Where(i => i.Folder is not null)
-                    .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: i.ParentReference?.Id)));
-
-            if(page.OdataNextLink is null)
-                break;
-
-            page = await client.Drives[driveContext.DriveId.Value].Items[driveContext.RootId].Children
-                .WithUrl(page.OdataNextLink)
-                .GetAsync(cancellationToken: ct);
-        }
-
-        return [.. folders.OrderBy(f => f.Name)];
+        return contextResult.Match<Result<DriveId, string>>(
+            ctx => new Result<DriveId, string>.Ok(ctx.Ctx.DriveId),
+            error => new Result<DriveId, string>.Error(error));
     }
 
     /// <inheritdoc />
-    public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, DriveId driveId, string parentFolderId, CancellationToken ct = default)
+    public async Task<Result<List<DriveFolder>, string>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
+    {
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
+
+        return await contextResult.MatchAsync<Result<List<DriveFolder>, string>>(
+            async ctx =>
+            {
+                var response = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
+                    .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
+
+                List<DriveFolder> folders = [];
+
+                var page = response;
+                while(page?.Value is not null)
+                {
+                    folders.AddRange(
+                        page.Value
+                            .Where(i => i.Folder is not null)
+                            .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: i.ParentReference?.Id)));
+
+                    if(page.OdataNextLink is null)
+                        break;
+
+                    page = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
+                        .WithUrl(page.OdataNextLink)
+                        .GetAsync(cancellationToken: ct);
+                }
+
+                return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
+            },
+            error => new Result<List<DriveFolder>, string>.Error(error));
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<List<DriveFolder>, string>> GetChildFoldersAsync(string accessToken, DriveId driveId, string parentFolderId, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
 
@@ -86,31 +99,38 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 .GetAsync(cancellationToken: ct);
         }
 
-        return [.. folders.OrderBy(f => f.Name)];
+        return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
     }
 
     /// <inheritdoc />
-    public async Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default)
+    public async Task<Result<(long Total, long Used), string>> GetQuotaAsync(string accessToken, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
 
-        var drive = await client.Drives[ctx.DriveId.Value]
-            .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
+        return await contextResult.MatchAsync<Result<(long Total, long Used), string>>(
+            async ctx =>
+            {
+                var drive = await ctx.Client.Drives[ctx.Ctx.DriveId.Value]
+                    .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
 
-        return drive?.Quota is { Total: not null, Used: not null }
-            ? (drive.Quota.Total!.Value, drive.Quota.Used!.Value)
-            : (0L, 0L);
+                var quota = drive?.Quota is { Total: not null, Used: not null }
+                    ? (drive.Quota.Total!.Value, drive.Quota.Used!.Value)
+                    : (0L, 0L);
+
+                return new Result<(long Total, long Used), string>.Ok(quota);
+            },
+            error => new Result<(long Total, long Used), string>.Error(error));
     }
 
     /// <inheritdoc />
-    public async Task<List<DeltaItem>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, CancellationToken ct = default)
+    public async Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
         List<DeltaItem> items = [];
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         await EnumerateSubFolderAsync(client, driveId, folderId, remotePath, items, visited, ct);
 
-        return items;
+        return new Result<List<DeltaItem>, string>.Ok(items);
     }
 
     /// <inheritdoc />
@@ -132,35 +152,50 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<string?> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
+    public async Task<Result<string, string>> GetDownloadUrlAsync(string accessToken, string itemId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
 
-        var item = await client.Drives[ctx.DriveId.Value].Items[itemId]
-            .GetAsync(req => req.QueryParameters.Select = [DownloadUrlKey], ct)
-            .ConfigureAwait(false);
+        return await contextResult.MatchAsync<Result<string, string>>(
+            async ctx =>
+            {
+                var item = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId]
+                    .GetAsync(req => req.QueryParameters.Select = [DownloadUrlKey], ct)
+                    .ConfigureAwait(false);
 
-        if(item?.AdditionalData is null)
-            return null;
+                if(item?.AdditionalData is null)
+                    return new Result<string, string>.Error($"No download URL available for item {itemId}.");
 
-        return item.AdditionalData.TryGetValue(DownloadUrlKey, out var url)
-            ? url?.ToString()
-            : null;
+                if(!item.AdditionalData.TryGetValue(DownloadUrlKey, out var url) || url is null)
+                    return new Result<string, string>.Error($"No download URL available for item {itemId}.");
+
+                return new Result<string, string>.Ok(url.ToString()!);
+            },
+            error => new Result<string, string>.Error(error));
     }
 
     /// <inheritdoc />
-    public async Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
+    public async Task<Result<string, string>> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
 
-        return await uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
+        return await contextResult.MatchAsync<Result<string, string>>(
+            async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct).ConfigureAwait(false),
+            error => new Result<string, string>.Error(error));
     }
 
     /// <inheritdoc />
-    public async Task DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default)
+    public async Task<Result<Unit, string>> DeleteItemAsync(string accessToken, string itemId, CancellationToken ct = default)
     {
-        (var client, var ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
-        await client.Drives[ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: ct);
+        var contextResult = await ResolveClientWithDriveContextAsync(accessToken, ct).ConfigureAwait(false);
+
+        return await contextResult.MatchAsync<Result<Unit, string>>(
+            async ctx =>
+            {
+                await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: ct);
+                return new Result<Unit, string>.Ok(Unit.Default);
+            },
+            error => new Result<Unit, string>.Error(error));
     }
 
     private static async Task EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, CancellationToken ct)
@@ -183,7 +218,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, ct);
             }
 
-            if (page.OdataNextLink is null)
+            if(page.OdataNextLink is null)
                 break;
 
             page = await client.Drives[driveId.Value].Items[parentId].Children
@@ -213,25 +248,28 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             ? url?.ToString()
             : null;
 
-    private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
+    private async Task<Result<(GraphServiceClient Client, DriveContext Ctx), string>> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {
         var client = graphClientFactory.CreateClient(accessToken);
 
         if(_cache.TryGetValue(accessToken, out var cached))
-            return (client, cached);
+            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, cached));
 
         var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
 
-        var driveId = new DriveId(drive?.Id ?? throw new InvalidOperationException("Could not retrieve drive ID."));
+        if(drive?.Id is null)
+            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve drive ID.");
 
+        var driveId = new DriveId(drive.Id);
         var root = await client.Drives[driveId.Value].Root.GetAsync(cancellationToken: ct);
 
-        string rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve root item ID.");
+        if(root?.Id is null)
+            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve root item ID.");
 
-        var driveContext = new DriveContext(driveId, rootId);
+        var driveContext = new DriveContext(driveId, root.Id);
         _cache[accessToken] = driveContext;
 
-        return (client, driveContext);
+        return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, driveContext));
     }
 
     private sealed record DriveContext(DriveId DriveId, string RootId);

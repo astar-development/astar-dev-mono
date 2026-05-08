@@ -1,4 +1,6 @@
 using System.IO.Abstractions;
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -22,8 +24,20 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
 
             try
             {
-                await graphService.DeleteItemAsync(accessToken, remoteId, ct);
-                await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
+                var deleteResult = await graphService.DeleteItemAsync(accessToken, remoteId, ct);
+
+                await deleteResult.MatchAsync<Unit>(
+                    async _ =>
+                    {
+                        Serilog.Log.Debug("[LocalDeletionDetector] Deleted remote item {RemoteId}", remoteId);
+                        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
+                        return Unit.Default;
+                    },
+                    deleteError =>
+                    {
+                        Serilog.Log.Error("[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}", remoteId, deleteError);
+                        return Unit.Default;
+                    });
             }
             catch(Exception ex)
             {

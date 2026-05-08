@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -111,8 +113,8 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
         var graphService = Substitute.For<IGraphService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
-        graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new DriveId("drive-1"));
-        graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns([]);
+        graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
+        graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 

@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -27,22 +28,31 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveId = await graphService.GetDriveIdAsync(accessToken, ct).ConfigureAwait(false);
+        var driveId = await graphService.GetDriveIdAsync(accessToken, ct)
+            .MatchAsync<DriveId, string, DriveId?>(
+                id => id,
+                error =>
+                {
+                    Serilog.Log.Error("[RemoteFolderEnumerator] {Error}", error);
+                    return null;
+                }).ConfigureAwait(false);
 
-        var includeRules     = rules.Where(r => r.RuleType == RuleType.Include).ToList();
+        if(driveId is null)
+            return new RemoteEnumerationResult([], new HashSet<string>(StringComparer.OrdinalIgnoreCase), [], [], HadNoRules: false);
+        var includeRules = rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules
             .Where(rule => !includeRules.Any(other => other.RemotePath != rule.RemotePath && rule.RemotePath.StartsWith(other.RemotePath + "/", StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
-        List<SyncJob> downloadJobs  = [];
-        var seenRemoteIds           = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<SyncJob> downloadJobs = [];
+        var seenRemoteIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach(var rule in rootIncludeRules)
         {
             if(ct.IsCancellationRequested)
                 break;
 
-            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId, ct).ConfigureAwait(false);
+            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId.Value, ct).ConfigureAwait(false);
 
             if(folderId is null)
             {
@@ -51,7 +61,18 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerating {Path} for {Email}", rule.RemotePath, account.Profile.Email);
-            var items = await graphService.EnumerateFolderAsync(accessToken, driveId, folderId, rule.RemotePath, ct).ConfigureAwait(false);
+            var items = await graphService.EnumerateFolderAsync(accessToken, driveId.Value, folderId, rule.RemotePath, ct)
+                .MatchAsync<List<DeltaItem>, string, List<DeltaItem>?>(
+                    deltaItems => deltaItems,
+                    error =>
+                    {
+                        Serilog.Log.Error("[RemoteFolderEnumerator] Failed to enumerate {Path}: {Error}", rule.RemotePath, error);
+                        return null;
+                    }).ConfigureAwait(false);
+
+            if(items is null)
+                continue;
+
             Serilog.Log.Information("[RemoteFolderEnumerator] Enumerated {Count} items under {Path}", items.Count, rule.RemotePath);
 
             await ProcessItemsForRuleAsync(account, items, rules, syncedItems, downloadJobs, onConflict, seenRemoteIds, ct).ConfigureAwait(false);
@@ -103,6 +124,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         if(knownItem?.Tags.ETag is not null && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
         {
             Serilog.Log.Debug("[RemoteFolderEnumerator] ETag match — skipping unchanged file {Path}", item.Path.RelativePath);
+
             return;
         }
 
@@ -115,6 +137,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             {
                 var conflict = BuildConflict(account, item, localPath, localModified);
                 await HandleConflictAsync(account, item, localPath, localModified, conflict, downloadJobs, onConflict).ConfigureAwait(false);
+
                 return;
             }
         }
@@ -124,6 +147,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             var phantomItem = SyncedItemEntityFactory.Create(account.Id, item, item.Path.EffectivePath, localPath);
             await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
             syncedItems[item.Id.Id] = phantomItem;
+
             return;
         }
 

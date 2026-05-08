@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -102,7 +103,7 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
 
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
-            .Returns([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]);
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]));
 
         return (authService, graphService, repository, syncRuleRepo);
     }

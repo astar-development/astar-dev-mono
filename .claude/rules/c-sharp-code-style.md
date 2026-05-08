@@ -109,6 +109,21 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Use NSubstitute for mocking dependencies in tests. Avoid mocking when possible; prefer using real instances or test doubles.
 - Never add XML documentation or comments to test classes or test methods.
 
+## Functional Extensions (AStar.Dev.Functional.Extensions)
+
+- **Never** await a `Task<Result<T,E>>` into an intermediate variable just to call `.Match()` on the next line. Always chain `.MatchAsync()` directly on the task:
+  ```csharp
+  // ❌ wrong
+  var result = await service.GetAsync(ct);
+  var value = result.Match<string?>(ok => ok.Value, _ => null);
+
+  // ✅ correct
+  var value = await service.GetAsync(ct)
+      .MatchAsync<TSuccess, TError, string?>(ok => ok.Value, _ => null);
+  ```
+- Error-branch code (logging, setting properties, returning sentinel values) belongs **inside** the error lambda of `Match`/`MatchAsync`, not in a separate `if` block after the call.
+- Never use `is Result<T,E>.Ok` / `is not Result<T,E>.Ok` pattern matching in production code — use `Match` or `MatchAsync`.
+
 ## Utilities
 
 - The AStar.Dev.Utilities project has a plethora of helpers. Use them when suitable.

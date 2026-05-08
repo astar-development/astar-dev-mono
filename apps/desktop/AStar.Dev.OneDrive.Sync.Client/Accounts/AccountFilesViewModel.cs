@@ -4,6 +4,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.Utilities;
@@ -56,7 +57,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if (IsLoading)
+        if(IsLoading)
             return;
 
         IsLoading = true;
@@ -66,26 +67,38 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            var authResult = await _authService.AcquireTokenSilentAsync(_account.Id.Id);
+            _accessToken = await _authService.AcquireTokenSilentAsync(_account.Id.Id)
+                .MatchAsync<AuthResult, AuthError, string?>(
+                    ok => ok.AccessToken,
+                    error =>
+                    {
+                        LoadError = error is AuthFailedError failed ? failed.Message : "Authentication failed.";
+                        HasLoadError = true;
+                        return null;
+                    });
 
-            if(authResult is not Result<AuthResult, AuthError>.Ok ok)
-            {
-                LoadError = authResult is Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }
-                    ? failed.Message
-                    : "Authentication failed.";
-                HasLoadError = true;
-
+            if(_accessToken is null)
                 return;
-            }
 
-            _accessToken = ok.Value.AccessToken;
-            var driveId = await _graphService.GetDriveIdAsync(_accessToken);
-            _driveId = new Option<DriveId>.Some(driveId);
+            var driveId = await _graphService.GetDriveIdAsync(_accessToken)
+                .MatchAsync<DriveId, string, DriveId?>(
+                    id => id,
+                    error =>
+                    {
+                        LoadError = $"Failed to retrieve drive ID: {error}";
+                        HasLoadError = true;
+                        return null;
+                    });
+
+            if(driveId is null)
+                return;
+
+            _driveId = new Option<DriveId>.Some(driveId.Value);
 
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             LoadError = $"Failed to load folders: {ex.Message}";
             HasLoadError = true;
@@ -108,9 +121,21 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
     {
-        var folders = await _graphService.GetRootFoldersAsync(_accessToken!);
+        var folders = await _graphService.GetRootFoldersAsync(_accessToken!)
+            .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                f => f,
+                error =>
+                {
+                    Serilog.Log.Warning("[AccountFilesViewModel] Failed to load root folders for account {AccountId}: {Error}", _account.Id.Id, error);
+                    LoadError = error;
+                    HasLoadError = true;
+                    return null;
+                });
 
-        foreach (var f in folders)
+        if(folders is null)
+            return;
+
+        foreach(var f in folders)
         {
             string remotePath = $"/{f.Name}";
             var syncState = includedPaths.Contains(remotePath)
@@ -119,9 +144,14 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
 
-            var vm = _driveId.Match(
-                id => new FolderTreeNodeViewModel(node, _graphService, _accessToken!, id),
-                () => throw new InvalidOperationException("Drive ID not available."));
+            if(_driveId is not Option<DriveId>.Some driveIdSome)
+            {
+                Serilog.Log.Warning("[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountId}", _account.Id.Id);
+
+                return;
+            }
+
+            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveIdSome.Value);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;
@@ -168,7 +198,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive", node.Name);
 
-        if (!fileSystem.Directory.Exists(path))
+        if(!fileSystem.Directory.Exists(path))
             return;
 
         string opener = OperatingSystem.IsWindows() ? "explorer"
@@ -180,11 +210,11 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
     {
-        foreach (var node in nodes)
+        foreach(var node in nodes)
         {
             yield return node;
 
-            foreach (var descendant in CollectAllVisible(node.Children))
+            foreach(var descendant in CollectAllVisible(node.Children))
                 yield return descendant;
         }
     }
