@@ -26,6 +26,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Kiota.Abstractions" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly"/>
     <PackageReference Include="Microsoft.Kiota.Http.HttpClientLibrary" />
