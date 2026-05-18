@@ -38,6 +38,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILocalDeletionDetector, LocalDeletionDetector>();
         _ = services.AddSingleton<ISyncJobExecutor, SyncJobExecutor>();
         _ = services.AddSingleton<SyncServiceDependencies>();
+        _ = services.AddSingleton<ISyncPassOrchestrator, SyncPassOrchestrator>();
         _ = services.AddSingleton<ISyncService, SyncService>();
         _ = services.AddSingleton<ISyncScheduler, SyncScheduler>();
         _ = services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();

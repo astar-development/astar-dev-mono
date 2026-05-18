@@ -19,7 +19,7 @@ public sealed class GivenASyncPassOrchestrator
     private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
     private readonly ISyncJobExecutor _syncJobExecutor = Substitute.For<ISyncJobExecutor>();
 
-    private SyncPassOrchestrator CreateSut()
+    private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(
             _remoteFolderEnumerator,
@@ -177,6 +177,36 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
+    public async Task when_no_jobs_exist_then_no_changes_progress_is_raised()
+    {
+        SetupDeepSyncPrerequisites();
+
+        var progressMessages = new List<string>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+
+        progressMessages.ShouldContain("No changes");
+    }
+
+    [Fact]
+    public async Task when_enumeration_succeeds_then_progress_includes_detecting_remote_deletions_before_local_changes()
+    {
+        SetupDeepSyncPrerequisites();
+
+        var progressMessages = new List<string>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+
+        progressMessages.ShouldContain("Detecting remote deletions...");
+        progressMessages.ShouldContain("Detecting local changes...");
+        progressMessages.IndexOf("Detecting remote deletions...").ShouldBeLessThan(progressMessages.IndexOf("Detecting local changes..."));
+    }
+
+    [Fact]
     public async Task when_account_entity_exists_then_account_repository_upsert_is_called()
     {
         SetupDeepSyncPrerequisites();
@@ -218,6 +248,7 @@ public sealed class GivenASyncPassOrchestrator
             {
                 var callback = args.ArgAt<Func<SyncConflict, Task>>(2);
                 await callback(conflict);
+
                 return new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true);
             });
 

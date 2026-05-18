@@ -11,10 +11,8 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, SyncServiceDependencies dependencies, IFileSystem fileSystem) : ISyncService
+public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, ISyncPassOrchestrator syncPassOrchestrator, IFileSystem fileSystem) : ISyncService
 {
-    private readonly SyncPassOrchestrator syncPassOrchestrator = new(accountRepository, driveStateRepository, dependencies);
-
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
 
