@@ -172,6 +172,16 @@ Say "I believe this is fixed because…" — never just "fixed".
 - Use `c-sharp-reviewer` subagent for code review.
 - When a subagent drifts off task or produces wrong output, take over directly — do not re-prompt the same agent repeatedly.
 
+### Verifying Subagent Output
+
+After ANY subagent completes, verify before trusting its report:
+
+1. **Files**: `Read` every file the subagent claims to have written or modified — do NOT assume it succeeded.
+2. **Tests**: Re-run `dotnet test` yourself and paste actual output. Never accept a subagent's "all tests pass" summary as truth.
+3. **Diff**: Confirm the actual changes match what was requested.
+
+If verification fails, take over directly — do not re-prompt the same subagent.
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.

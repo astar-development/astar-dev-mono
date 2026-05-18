@@ -12,33 +12,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceResolvingConflicts
 {
-    private readonly IAuthService            _authService         = Substitute.For<IAuthService>();
-    private readonly ISyncRepository         _syncRepository      = Substitute.For<ISyncRepository>();
-    private readonly IRemoteFolderEnumerator _remoteFolderEnumerator = Substitute.For<IRemoteFolderEnumerator>();
-    private readonly IRemoteDeletionDetector _remoteDeletionDetector = Substitute.For<IRemoteDeletionDetector>();
-    private readonly ILocalDeletionDetector  _localDeletionDetector  = Substitute.For<ILocalDeletionDetector>();
-    private readonly ILocalChangeDetector    _localChangeDetector    = Substitute.For<ILocalChangeDetector>();
-    private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
+    private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
+    private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
+    private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
 
     private SyncService CreateSut()
-    {
-        var dependencies = new SyncServiceDependencies(
-            _remoteFolderEnumerator,
-            _remoteDeletionDetector,
-            _localDeletionDetector,
-            _localChangeDetector,
-            _syncJobExecutor);
-
-        return new SyncService(
-            _authService,
-            Substitute.For<IAccountRepository>(),
-            Substitute.For<IDriveStateRepository>(),
-            _syncRepository,
-            Substitute.For<IHttpDownloader>(),
-            Substitute.For<IGraphService>(),
-            dependencies,
-            Substitute.For<IFileSystem>());
-    }
+        => new(_authService, _syncRepository, Substitute.For<IHttpDownloader>(), Substitute.For<IGraphService>(), _syncPassOrchestrator, Substitute.For<IFileSystem>());
 
     private static SyncConflict CreateConflict() => new()
     {
