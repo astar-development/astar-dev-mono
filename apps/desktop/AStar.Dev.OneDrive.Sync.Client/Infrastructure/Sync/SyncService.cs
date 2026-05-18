@@ -90,30 +90,34 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
+        var applied = await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
 
-        await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
+        if(!applied)
+            return;
+
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
     }
 
-    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
+    private async Task<bool> ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
     {
         switch(outcome)
         {
             case ConflictOutcome.UseRemote:
                 var urlResult = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
-                await urlResult.Match(
+                return await urlResult.MatchAsync<bool>(
                     async url =>
                     {
                         var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
 
-                        downloadResult.Match<Unit>(
-                            _ => Unit.Default,
+                        return downloadResult.Match<bool>(
+                            _ => true,
                             downloadError =>
                             {
                                 Serilog.Log.Error("[SyncService] Download failed resolving conflict for {Path}: {Error}", conflict.Target.RelativePath, downloadError);
                                 RaiseProgress(accountId, 0, 0, downloadError, SyncState.Error);
-                                return Unit.Default;
+
+                                return false;
                             });
                     },
                     error =>
@@ -121,15 +125,18 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                         Serilog.Log.Error("[SyncService] Could not resolve download URL for conflict item {Path}: {Error}", conflict.Target.RelativePath, error);
                         RaiseProgress(accountId, 0, 0, error, SyncState.Error);
 
-                        return Task.CompletedTask;
-                    });
-                break;
+                        return false;
+                    }).ConfigureAwait(false);
 
             case ConflictOutcome.KeepBoth:
                 string keepBothName = ConflictResolver.MakeKeepBothName(conflict.Target.LocalPath, conflict.Snapshot.LocalModified, fileSystem);
                 if(fileSystem.File.Exists(conflict.Target.LocalPath))
                     fileSystem.File.Move(conflict.Target.LocalPath, keepBothName);
-                break;
+
+                return true;
+
+            default:
+                return true;
         }
     }
 
