@@ -7,8 +7,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 public sealed partial class AddAccountWizardViewModel(IAuthService authService, IGraphService graphService) : ObservableObject, IDisposable
@@ -238,15 +236,9 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
     private void Finish()
     {
-        var account = new OneDriveAccount
-        {
-            Id = new AccountId(_accountId),
-            Profile = AccountProfileFactory.Create(ConfirmedDisplayName, ConfirmedEmail),
-            SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => new OneDriveFolderId(f.Id))],
-            FolderNames = Folders
-                .Where(f => f.IsSelected)
-                .ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
-        };
+        var account = OneDriveAccountFactory.CreateFromWizardResult(
+            _accountId, AccountProfileFactory.Create(ConfirmedDisplayName, ConfirmedEmail),
+            Folders.Where(f => f.IsSelected));
         Completed?.Invoke(this, account);
     }
 
