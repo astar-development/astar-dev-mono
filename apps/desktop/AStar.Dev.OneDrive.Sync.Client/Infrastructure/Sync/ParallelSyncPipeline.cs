@@ -6,7 +6,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
-/// Orchestrates parallel file downloads using a bounded Channel.
+/// Orchestrates parallel file sync using a bounded Channel.
 ///
 /// Architecture:
 ///   Producer  — feeds SyncJob items into the channel one at a time,
@@ -17,10 +17,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository) : IParallelDownloadPipeline
+public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository) : ISyncPipeline
 {
-    private readonly Lock _lock = new();
-
     /// <inheritdoc />
     public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
     {
@@ -28,8 +26,7 @@ public sealed class ParallelDownloadPipeline(ISyncWorkerFactory workerFactory, I
         if(jobList.Count == 0)
             return;
 
-        int total = jobList.Count;
-        int done = 0;
+        var tracker = new SyncProgressTracker(jobList.Count, accountId, folderId);
 
         var channel = Channel.CreateBounded<SyncJob>(
             new BoundedChannelOptions(workerCount * 4)
@@ -39,24 +36,8 @@ public sealed class ParallelDownloadPipeline(ISyncWorkerFactory workerFactory, I
                 SingleWriter = true
             });
 
-        void OnJobComplete(SyncJob job, bool success, string? error)
-        {
-            int completedSoFar;
-            lock(_lock)
-            {
-                done++;
-                completedSoFar = done;
-            }
-
-            var completedJob = success ? job.Complete() : job.Fail(error);
-
-            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.Target.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
-
-            onJobCompleted(new JobCompletedEventArgs(completedJob));
-        }
-
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
+            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accessToken, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
             .ToList();
 
         try
@@ -83,12 +64,12 @@ public sealed class ParallelDownloadPipeline(ISyncWorkerFactory workerFactory, I
         }
         finally
         {
-            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
-            Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
+            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: tracker.Done, total: jobList.Count, currentFile: string.Empty, syncState: SyncState.Idle));
+            Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", tracker.Done, jobList.Count);
         }
 
         await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId));
 
-        Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
+        Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", tracker.Done, jobList.Count);
     }
 }
