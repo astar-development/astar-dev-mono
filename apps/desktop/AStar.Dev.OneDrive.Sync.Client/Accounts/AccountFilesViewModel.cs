@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.Utilities;
 using Avalonia.Media;
@@ -15,13 +16,14 @@ using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
     private readonly IGraphService _graphService = graphService;
     private readonly IAccountRepository _repository = repository;
     private readonly ISyncRuleRepository _syncRuleRepository = syncRuleRepository;
+    private readonly IFileManagerService _fileManagerService = fileManagerService;
     private string? _accessToken;
     private Option<DriveId> _driveId = DriveIdFactory.Empty;
 
@@ -168,29 +170,22 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         try
         {
-            try
-            {
-                var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
+            var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
 
-                Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
+            Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
 
-                await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
+            await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
-                var affected = ruleType == RuleType.Include
-                    ? CollectAllVisible([node])
-                    : [node];
+            var affected = ruleType == RuleType.Include
+                ? CollectAllVisible([node])
+                : [node];
 
-                foreach(var item in affected)
-                    await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
-            }
-            catch(Exception ex)
-            {
-                Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
-            }
+            foreach(var item in affected)
+                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
         }
         catch(Exception ex)
         {
-            Serilog.Log.Error(ex, "[AccountFilesViewModel.OnIncludeToggledAsync] Unhandled exception: {Error}", ex.Message);
+            Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
         }
     }
 
@@ -204,11 +199,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         if(!fileSystem.Directory.Exists(path))
             return;
 
-        string opener = OperatingSystem.IsWindows() ? "explorer"
-                   : OperatingSystem.IsMacOS() ? "open"
-                   : "xdg-open";
-
-        _ = System.Diagnostics.Process.Start(opener, path);
+        _fileManagerService.OpenFolder(path);
     }
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)

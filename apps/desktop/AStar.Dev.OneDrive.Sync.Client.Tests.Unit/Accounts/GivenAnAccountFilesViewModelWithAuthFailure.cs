@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
@@ -25,7 +26,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     {
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
 
-        return new AccountFilesViewModel(BuildAccount(), authService, Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>());
+        return new AccountFilesViewModel(BuildAccount(), authService, Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 
-        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>());
+        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
         await sut.LoadCommand.ExecuteAsync(null);
 

@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
@@ -69,7 +70,7 @@ public sealed class GivenAnAccountFilesViewModelWithDriveIdFetchFailure
         graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Error(DriveIdErrorMessage));
 
-        return new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>());
+        return new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
     }
 
     private static OneDriveAccount BuildAccount() => new()
