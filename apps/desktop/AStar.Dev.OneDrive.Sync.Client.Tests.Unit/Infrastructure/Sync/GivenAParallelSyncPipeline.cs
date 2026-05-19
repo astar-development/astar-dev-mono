@@ -8,7 +8,7 @@ using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItem
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
-public sealed class GivenAParallelDownloadPipeline
+public sealed class GivenAParallelSyncPipeline
 {
     private const string AccountIdValue = "account-1";
     private const string FolderIdValue  = "folder-1";
@@ -17,12 +17,12 @@ public sealed class GivenAParallelDownloadPipeline
     private readonly ISyncWorkerFactory _workerFactory = Substitute.For<ISyncWorkerFactory>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
 
-    public GivenAParallelDownloadPipeline()
+    public GivenAParallelSyncPipeline()
     {
         _workerFactory.Create(Arg.Any<int>()).Returns(_ => new SucceedingDownloadWorker());
     }
 
-    private ParallelDownloadPipeline CreateSut() => new(_workerFactory, _syncRepository);
+    private ParallelSyncPipeline CreateSut() => new(_workerFactory, _syncRepository);
 
     private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
     {

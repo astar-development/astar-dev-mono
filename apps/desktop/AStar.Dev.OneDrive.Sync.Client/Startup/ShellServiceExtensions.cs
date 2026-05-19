@@ -52,7 +52,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
         _ = services.AddSingleton<IJobHandler, DeleteJobHandler>();
         _ = services.AddSingleton<ISyncWorkerFactory, SyncWorkerFactory>();
-        _ = services.AddSingleton<IParallelDownloadPipeline, ParallelDownloadPipeline>();
+        _ = services.AddSingleton<ISyncPipeline, ParallelSyncPipeline>();
         _ = services.AddSingleton<IAppBootstrapper, AppBootstrapper>();
         _ = services.AddOneDriveClient();
 

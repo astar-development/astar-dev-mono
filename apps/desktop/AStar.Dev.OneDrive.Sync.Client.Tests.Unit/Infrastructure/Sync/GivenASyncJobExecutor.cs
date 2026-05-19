@@ -15,7 +15,7 @@ public sealed class GivenASyncJobExecutor
 
     private readonly ISyncRepository         _syncRepository         = Substitute.For<ISyncRepository>();
     private readonly ISyncedItemRepository   _syncedItemRepository   = Substitute.For<ISyncedItemRepository>();
-    private readonly IParallelDownloadPipeline _pipeline             = Substitute.For<IParallelDownloadPipeline>();
+    private readonly ISyncPipeline _pipeline             = Substitute.For<ISyncPipeline>();
 
     private readonly OneDriveAccount _account = new()
     {

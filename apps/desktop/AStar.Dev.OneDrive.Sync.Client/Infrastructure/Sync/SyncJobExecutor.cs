@@ -8,7 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, IParallelDownloadPipeline parallelDownloadPipeline, IFileSystem fileSystem) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem) : ISyncJobExecutor
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, string accessToken, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
@@ -20,7 +20,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
         var successfulJobs = new ConcurrentBag<SyncJob>();
 
-        await parallelDownloadPipeline.RunAsync(
+        await syncPipeline.RunAsync(
             jobs,
             accessToken,
             onProgress,
