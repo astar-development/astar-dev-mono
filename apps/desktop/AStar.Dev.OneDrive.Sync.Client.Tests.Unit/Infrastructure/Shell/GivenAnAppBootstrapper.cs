@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
@@ -62,7 +63,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
     private MainWindowViewModel CreateMainWindowViewModel()
     {
-        var accounts = new AccountsViewModel(authService, graphService, accountRepository, syncRuleRepository, syncEventAggregator);
+        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), syncEventAggregator);
         var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator);

@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
@@ -37,7 +38,7 @@ public sealed class GivenAMainWindowViewModel
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _syncEventAggregator);
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator);
     private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator);
