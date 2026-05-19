@@ -2,14 +2,15 @@ using System.Net;
 using System.Text;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenAnHttpDownloader
 {
-    private const string DownloadUrl   = "https://example.com/file.txt";
-    private const string FileContent   = "hello world";
-    private const string LocalPath     = "/tmp/downloaded-file.txt";
+    private const string DownloadUrl = "https://example.com/file.txt";
+    private const string FileContent = "hello world";
+    private const string LocalPath = "/tmp/downloaded-file.txt";
     private static readonly DateTimeOffset RemoteModified = new(2025, 6, 15, 12, 0, 0, TimeSpan.Zero);
 
     private static IHttpClientFactory CreateFactoryReturning(HttpResponseMessage response)
@@ -30,16 +31,18 @@ public sealed class GivenAnHttpDownloader
         return CreateFactoryReturning(response);
     }
 
+    private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>());
+
     [Fact]
     public void when_constructed_then_service_implements_ihttp_downloader() =>
-        new HttpDownloader(Substitute.For<IHttpClientFactory>(), new MockFileSystem()).ShouldBeAssignableTo<IHttpDownloader>();
+        CreateSut(Substitute.For<IHttpClientFactory>(), new MockFileSystem()).ShouldBeAssignableTo<IHttpDownloader>();
 
     [Fact]
     public async Task when_download_async_is_called_with_pre_cancelled_token_then_operation_is_cancelled()
     {
         var cts = new CancellationTokenSource();
         cts.Cancel();
-        var sut = new HttpDownloader(CreateOkFactory(), new MockFileSystem());
+        var sut = CreateSut(CreateOkFactory(), new MockFileSystem());
 
         await Should.ThrowAsync<OperationCanceledException>(
             () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
@@ -48,34 +51,34 @@ public sealed class GivenAnHttpDownloader
     [Fact]
     public async Task when_download_async_succeeds_then_file_is_written_with_correct_content()
     {
-        var mockFs = new MockFileSystem();
-        var sut = new HttpDownloader(CreateOkFactory(), mockFs);
+        var mockFileSystem = new MockFileSystem();
+        var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
-        mockFs.File.Exists(LocalPath).ShouldBeTrue();
-        string writtenContent = mockFs.File.ReadAllText(LocalPath);
+        mockFileSystem.File.Exists(LocalPath).ShouldBeTrue();
+        string writtenContent = mockFileSystem.File.ReadAllText(LocalPath);
         writtenContent.ShouldBe(FileContent);
     }
 
     [Fact]
     public async Task when_download_async_succeeds_then_file_last_write_time_matches_remote_modified()
     {
-        var mockFs = new MockFileSystem();
-        var sut = new HttpDownloader(CreateOkFactory(), mockFs);
+        var mockFileSystem = new MockFileSystem();
+        var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
-        mockFs.File.GetLastWriteTimeUtc(LocalPath).ShouldBe(RemoteModified.UtcDateTime);
+        mockFileSystem.File.GetLastWriteTimeUtc(LocalPath).ShouldBe(RemoteModified.UtcDateTime);
     }
 
     [Fact]
     public async Task when_download_async_succeeds_with_progress_then_progress_is_reported()
     {
-        var mockFs = new MockFileSystem();
+        var mockFileSystem = new MockFileSystem();
         var reportedValues = new List<long>();
         var progress = new Progress<long>(reportedValues.Add);
-        var sut = new HttpDownloader(CreateOkFactory(), mockFs);
+        var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, progress, TestContext.Current.CancellationToken);
 
@@ -89,7 +92,7 @@ public sealed class GivenAnHttpDownloader
     public async Task when_download_is_rate_limited_beyond_max_retries_then_result_is_error()
     {
         var factory = CreateAlways429Factory();
-        var sut = new HttpDownloader(factory, new MockFileSystem());
+        var sut = CreateSut(factory, new MockFileSystem());
 
         var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 

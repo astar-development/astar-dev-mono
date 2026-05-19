@@ -1,11 +1,13 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class UploadJobHandler(IGraphService graphService) : IJobHandler
+public sealed class UploadJobHandler(IGraphService graphService, ILogger<UploadJobHandler> logger) : IJobHandler
 {
     /// <inheritdoc />
     public bool CanHandle(SyncJob job) => job is UploadSyncJob;
@@ -19,13 +21,13 @@ public sealed class UploadJobHandler(IGraphService graphService) : IJobHandler
         return uploadResult.Match<Result<SyncJob, string>>(
             itemId =>
             {
-                Serilog.Log.Information("Uploaded {Path}", uploadJob.Target.RelativePath);
+                OneDriveSyncClientMessages.UploadCompleted(logger, uploadJob.Target.RelativePath);
 
                 return new Result<SyncJob, string>.Ok(uploadJob with { UploadedRemoteItemId = itemId });
             },
             uploadError =>
             {
-                Serilog.Log.Error("Upload failed for {Path}: {Error}", uploadJob.Target.RelativePath, uploadError);
+                OneDriveSyncClientMessages.UploadFailed(logger, uploadJob.Target.RelativePath, uploadError);
 
                 return new Result<SyncJob, string>.Error(uploadError);
             });

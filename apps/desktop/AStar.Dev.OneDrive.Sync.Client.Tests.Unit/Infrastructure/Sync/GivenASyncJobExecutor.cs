@@ -13,17 +13,17 @@ public sealed class GivenASyncJobExecutor
 {
     private const string UploadFilePath = "/sync-root/Documents/file.txt";
 
-    private readonly ISyncRepository         _syncRepository         = Substitute.For<ISyncRepository>();
-    private readonly ISyncedItemRepository   _syncedItemRepository   = Substitute.For<ISyncedItemRepository>();
-    private readonly ISyncPipeline _pipeline             = Substitute.For<ISyncPipeline>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
+    private readonly ISyncPipeline _pipeline = Substitute.For<ISyncPipeline>();
 
     private readonly OneDriveAccount _account = new()
     {
-        Id    = new AccountId("user-1"),
+        Id = new AccountId("user-1"),
         Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com")
     };
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFs) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFs);
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFileSystem);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
     {
@@ -34,9 +34,9 @@ public sealed class GivenASyncJobExecutor
         return direction switch
         {
             SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
-            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
-            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
-            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
+            SyncDirection.Upload => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _ => SyncJobFactory.CreateDownload(remote, target, metadata)
         };
     }
 

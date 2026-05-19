@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -9,9 +10,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 public sealed class GivenALocalChangeDetector
 {
     private const string AccountId = "acc-test-1";
-    private const string BasePath  = "/sync-root";
+    private const string BasePath = "/sync-root";
 
-    private static LocalChangeDetector CreateSut(MockFileSystem mockFs) => new(mockFs);
+    private static LocalChangeDetector CreateSut(MockFileSystem mockFileSystem) => new(mockFileSystem, Substitute.For<ILogger<LocalChangeDetector>>());
 
     private static SyncRuleEntity Rule(string remotePath, RuleType type) => new() { RemotePath = remotePath, RuleType = type };
 

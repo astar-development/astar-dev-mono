@@ -6,16 +6,20 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, ISyncEventAggregator syncEventAggregator, ILogger<AccountsViewModel> logger) : ObservableObject
 {
+    private readonly ILogger<AccountsViewModel> _logger = logger;
+
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
     [ObservableProperty]
@@ -59,12 +63,12 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     public void RestoreAccounts(IEnumerable<OneDriveAccount> accounts)
     {
-        foreach(var account in accounts)
+        foreach (var account in accounts)
         {
             var card = BuildCard(account);
             Accounts.Add(card);
 
-            if(account.IsActive)
+            if (account.IsActive)
                 ActiveAccount = card;
         }
 
@@ -80,7 +84,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
         _ = Accounts.Remove(card);
 
-        if(ActiveAccount == card)
+        if (ActiveAccount == card)
             ActiveAccount = Accounts.FirstOrDefault();
 
         OnPropertyChanged(nameof(HasAccounts));
@@ -96,7 +100,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     CloseWizard();
 
                     account.AccentIndex = Accounts.Count % 6;
-                    account.IsActive    = Accounts.Count == 0;
+                    account.IsActive = Accounts.Count == 0;
 
                     var finalisedAccount = await accountOnboardingService.CompleteOnboardingAsync(account, CancellationToken.None);
 
@@ -104,18 +108,18 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     Accounts.Add(card);
                     OnPropertyChanged(nameof(HasAccounts));
 
-                    if(finalisedAccount.IsActive)
+                    if (finalisedAccount.IsActive)
                         ActiveAccount = card;
 
                     AccountAdded?.Invoke(this, finalisedAccount);
 
                     return Unit.Default;
                 })
-                .TapErrorAsync(error => Serilog.Log.Error(error, "Error completing account onboarding wizard"));
+                .TapErrorAsync(error => OneDriveSyncClientMessages.AccountOnboardingWizardError(_logger, error));
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[AccountsViewModel.OnWizardCompletedAsync] Unhandled exception: {Error}", ex.Message);
+            OneDriveSyncClientMessages.AccountsViewModelWizardError(_logger, ex.Message, ex);
         }
     }
 
@@ -123,7 +127,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     private void CloseWizard()
     {
-        if(Wizard is not null)
+        if (Wizard is not null)
         {
             Wizard.Completed -= OnWizardCompletedAsync;
             Wizard.Cancelled -= OnWizardCancelled;
@@ -136,7 +140,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     {
         try
         {
-            foreach(var accountCard in Accounts)
+            foreach (var accountCard in Accounts)
                 accountCard.IsActive = accountCard == card;
 
             ActiveAccount = card;
@@ -146,43 +150,43 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[AccountsViewModel.OnCardSelected] Failed to set active account: {Error}", ex.Message);
+            OneDriveSyncClientMessages.AccountSetActiveFailed(_logger, ex.Message, ex);
         }
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
     {
         var card = Accounts.FirstOrDefault(a => a.Id == args.AccountId);
-        if(card is null)
+        if (card is null)
             return;
 
         card.SyncState = args.SyncState;
 
-        if(card.Id == ActiveAccount?.Id)
+        if (card.Id == ActiveAccount?.Id)
             ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnSyncCompleted(object? sender, string accountId)
     {
         var card = Accounts.FirstOrDefault(a => a.Id == accountId);
-        if(card is null)
+        if (card is null)
             return;
 
         card.SyncState = SyncState.Completed;
 
-        if(card.Id == ActiveAccount?.Id)
+        if (card.Id == ActiveAccount?.Id)
             ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
         var card = Accounts.FirstOrDefault(a => a.Id == conflict.Remote.AccountId.Id);
-        if(card is null)
+        if (card is null)
             return;
 
         card.ConflictCount++;
 
-        if(card.Id == ActiveAccount?.Id)
+        if (card.Id == ActiveAccount?.Id)
             ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -194,5 +198,4 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
         return card;
     }
-
 }

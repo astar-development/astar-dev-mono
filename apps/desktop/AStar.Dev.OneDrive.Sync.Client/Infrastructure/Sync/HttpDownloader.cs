@@ -1,6 +1,8 @@
 using System.IO.Abstractions;
 using System.Reactive;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -10,12 +12,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// A new HttpClient is obtained from IHttpClientFactory per download call so the
 /// factory can rotate and dispose handlers freely without this class holding stale references.
 /// </summary>
-public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSystem fileSystem) : IHttpDownloader
+public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<HttpDownloader> logger) : IHttpDownloader
 {
-    private const string UserAgent        = "AStar.Dev.OneDrive.Sync/1.0";
-    private const int    MaxRetries       = 5;
+    private const string UserAgent = "AStar.Dev.OneDrive.Sync/1.0";
+    private const int MaxRetries = 5;
     private const double BaseDelaySeconds = 2.0;
-    private const double MaxDelaySeconds  = 120.0;
+    private const double MaxDelaySeconds = 120.0;
 
     /// <inheritdoc />
     public async Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
@@ -25,7 +27,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
         int attempt = 0;
 
-        while(true)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -36,13 +38,13 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             {
                 response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
 
-                if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    if(attempt > MaxRetries)
+                    if (attempt > MaxRetries)
                         return new Result<Unit, string>.Error($"Rate limited after {MaxRetries} retries.");
 
                     var delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
+                    OneDriveSyncClientMessages.DownloadThrottled(logger, delay.TotalSeconds, attempt, MaxRetries);
 
                     response.Dispose();
                     await Task.Delay(delay, ct);
@@ -60,10 +62,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
                 return new Result<Unit, string>.Ok(Unit.Default);
             }
-            catch(HttpRequestException) when(attempt <= MaxRetries)
+            catch (HttpRequestException) when (attempt <= MaxRetries)
             {
                 var delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning("[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
+                OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, MaxRetries);
                 await Task.Delay(delay, ct);
             }
             finally
@@ -78,10 +80,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         await using var file = fileSystem.FileStream.New(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
 
         byte[] buffer = new byte[81920];
-        long written  = 0;
-        int  read;
+        long written = 0;
+        int read;
 
-        while((read = await source.ReadAsync(buffer, ct)) > 0)
+        while ((read = await source.ReadAsync(buffer, ct)) > 0)
         {
             await file.WriteAsync(buffer.AsMemory(0, read), ct);
             written += read;
@@ -92,7 +94,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
     private void EnsureDirectoryExists(string localPath)
     {
         string? dir = fileSystem.Path.GetDirectoryName(localPath);
-        if(!string.IsNullOrEmpty(dir))
+        if (!string.IsNullOrEmpty(dir))
             _ = fileSystem.Directory.CreateDirectory(dir);
     }
 
@@ -100,13 +102,13 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {
-        if(response.Headers.RetryAfter?.Delta is { } delta)
+        if (response.Headers.RetryAfter?.Delta is { } delta)
             return delta + AddAdditionalSecondBackoff();
 
-        if(response.Headers.RetryAfter?.Date is not { } date) return GetBackoffDelay(attempt);
+        if (response.Headers.RetryAfter?.Date is not { } date) return GetBackoffDelay(attempt);
 
         var wait = date - DateTimeOffset.UtcNow;
-        if(wait > TimeSpan.Zero)
+        if (wait > TimeSpan.Zero)
             return wait + AddAdditionalSecondBackoff();
 
         return GetBackoffDelay(attempt);
@@ -117,7 +119,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
     private static TimeSpan GetBackoffDelay(int attempt)
     {
         double seconds = CalculateExponentialBackoff(attempt);
-        double jitter  = seconds * 0.2 * Random.Shared.NextDouble();
+        double jitter = seconds * 0.2 * Random.Shared.NextDouble();
 
         return TimeSpan.FromSeconds(seconds + jitter);
     }

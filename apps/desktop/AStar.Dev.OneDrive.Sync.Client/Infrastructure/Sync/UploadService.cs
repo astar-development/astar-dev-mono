@@ -3,6 +3,8 @@ using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
@@ -20,12 +22,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem) : IUploadService
+public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger) : IUploadService
 {
-    private const int    ChunkSize10Mb                   = 10 * 1024 * 1024;
-    private const int    MaxRetries                      = 5;
-    private const double BaseDelaySeconds                = 2.0;
-    private const double MaxDelaySeconds                 = 120.0;
+    private const int ChunkSize10Mb = 10 * 1024 * 1024;
+    private const int MaxRetries = 5;
+    private const double BaseDelaySeconds = 2.0;
+    private const double MaxDelaySeconds = 120.0;
     private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
 
     /// <summary>
@@ -35,17 +37,22 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     public async Task<Result<string, string>> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
-        if(!fileInfo.Exists)
+        if (!fileInfo.Exists)
             return new Result<string, string>.Error($"Local file not found: {localPath}");
 
-        Serilog.Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
+        OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
         var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
         return await sessionResult.MatchAsync<Result<string, string>>(
             async sessionUrl =>
-                await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct)
-                    .TapAsync(_ => Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath)),
+            {
+                var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
+                if (result is Result<string, string>.Ok)
+                    OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath);
+
+                return result;
+            },
             error => new Result<string, string>.Error(error));
     }
 
@@ -79,7 +86,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             .CreateUploadSession
             .PostAsync(requestBody, cancellationToken: ct);
 
-        if(session?.UploadUrl is null)
+        if (session?.UploadUrl is null)
             return new Result<string, string>.Error("Graph API did not return an upload session URL.");
 
         return new Result<string, string>.Ok(session.UploadUrl);
@@ -95,14 +102,14 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         async Task<Result<string, string>> UploadNextChunkAsync(long uploaded)
         {
-            if(uploaded >= totalBytes)
+            if (uploaded >= totalBytes)
                 return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
 
             ct.ThrowIfCancellationRequested();
 
             int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct);
 
-            if(bytesRead == 0)
+            if (bytesRead == 0)
                 return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
 
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
@@ -113,7 +120,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     long newUploaded = uploaded + bytesRead;
                     progress?.Report(newUploaded);
 
-                    if(itemId is not null)
+                    if (itemId is not null)
                         return new Result<string, string>.Ok(itemId);
 
                     return await UploadNextChunkAsync(newUploaded);
@@ -130,11 +137,11 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
     private static long ComputeRangeEnd(long uploaded, int bytesRead) => uploaded + bytesRead - 1;
 
-    private static async Task<Result<string?, string>> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
+    private async Task<Result<string?, string>> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
     {
         int attempt = 0;
 
-        while(true)
+        while (true)
         {
             attempt++;
             ct.ThrowIfCancellationRequested();
@@ -148,32 +155,32 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
                 using var response = await http.PutAsync(sessionUrl, content, ct);
 
-                if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    if(attempt > MaxRetries)
+                    if (attempt > MaxRetries)
                         return new Result<string?, string>.Error($"Upload rate limited after {MaxRetries} retries.");
 
                     var delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                    OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
 
                     await Task.Delay(delay, ct);
                     continue;
                 }
 
-                if(response.StatusCode == System.Net.HttpStatusCode.Accepted)
+                if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
                     return new Result<string?, string>.Ok(null);
 
-                if(response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
+                if (response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
                     return await GetUploadedDocumentId(response, ct);
 
                 _ = response.EnsureSuccessStatusCode();
 
                 return new Result<string?, string>.Ok(null);
             }
-            catch(HttpRequestException) when(attempt <= MaxRetries)
+            catch (HttpRequestException) when (attempt <= MaxRetries)
             {
                 var delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning("[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
 
                 await Task.Delay(delay, ct);
             }
@@ -185,10 +192,10 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         string json = await response.Content.ReadAsStringAsync(ct);
         using var doc = System.Text.Json.JsonDocument.Parse(json);
 
-        if(!doc.RootElement.TryGetProperty("id", out var idElement))
+        if (!doc.RootElement.TryGetProperty("id", out var idElement))
             return new Result<string?, string>.Error("Upload response missing item ID.");
         string? itemId = idElement.GetString();
-        if(itemId is null)
+        if (itemId is null)
             return new Result<string?, string>.Error("Upload response missing item ID.");
 
         return new Result<string?, string>.Ok(itemId);
@@ -196,13 +203,13 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
     private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {
-        if(response.Headers.RetryAfter?.Delta is { } delta)
+        if (response.Headers.RetryAfter?.Delta is { } delta)
             return delta + TimeSpan.FromSeconds(1);
 
-        if(response.Headers.RetryAfter?.Date is { } date)
+        if (response.Headers.RetryAfter?.Date is { } date)
         {
             var wait = date - DateTimeOffset.UtcNow;
-            if(wait > TimeSpan.Zero)
+            if (wait > TimeSpan.Zero)
                 return wait + TimeSpan.FromSeconds(1);
         }
 

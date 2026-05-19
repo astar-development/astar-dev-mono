@@ -2,11 +2,13 @@ using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using AccountCardViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountCardViewModel;
 using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewModel;
 using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
@@ -15,8 +17,10 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar, ILogger<MainWindowViewModel> logger) : ObservableObject
 {
+    private readonly ILogger<MainWindowViewModel> _logger = logger;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
@@ -36,14 +40,14 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     private void Navigate(NavSection section) => ActiveSection = section;
 
     public object? ActiveView => ActiveSection switch
-            {
-                NavSection.Dashboard => DashboardViewInstance,
-                NavSection.Files     => FilesViewInstance,
-                NavSection.Activity  => ActivityViewInstance,
-                NavSection.Accounts  => AccountsViewInstance,
-                NavSection.Settings  => SettingsViewInstance,
-                _                    => null
-            };
+    {
+        NavSection.Dashboard => DashboardViewInstance,
+        NavSection.Files => FilesViewInstance,
+        NavSection.Activity => ActivityViewInstance,
+        NavSection.Accounts => AccountsViewInstance,
+        NavSection.Settings => SettingsViewInstance,
+        _ => null
+    };
 
     private DashboardView DashboardViewInstance
     {
@@ -116,13 +120,13 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 await initializer.InitializeAsync();
                 return Unit.Default;
             })
-            .TapErrorAsync(e => Serilog.Log.Fatal(e, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", e));
+            .TapErrorAsync(e => OneDriveSyncClientMessages.MainWindowInitializeFatal(_logger, e.Message, e));
 
     [RelayCommand]
     private async Task SyncNowAsync()
     {
         var active = accounts.ActiveAccount;
-        if(active is null)
+        if (active is null)
             return;
 
         await scheduler.TriggerAccountAsync(active.Id).ConfigureAwait(false);
@@ -146,11 +150,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(card.Id, card.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}", e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountSelectError(_logger, e.Message, e));
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[MainWindowViewModel.OnAccountSelectedAsync] Unhandled exception: {Error}", ex.Message);
+            OneDriveSyncClientMessages.AccountSelectUnhandledError(_logger, ex.Message, ex);
         }
     }
 
@@ -168,11 +172,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(account.Id.Id, account.Profile.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => Serilog.Log.Error(e, "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}", e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(_logger, e.Message, e));
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[MainWindowViewModel.OnAccountAddedAsync] Unhandled exception: {Error}", ex.Message);
+            OneDriveSyncClientMessages.AccountAddUnhandledError(_logger, ex.Message, ex);
         }
     }
 

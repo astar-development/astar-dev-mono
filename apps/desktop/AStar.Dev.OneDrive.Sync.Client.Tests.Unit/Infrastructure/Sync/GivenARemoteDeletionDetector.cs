@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -9,13 +10,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenARemoteDeletionDetector
 {
-    private const string BaseDir   = "/sync-root";
+    private const string BaseDir = "/sync-root";
     private const string LocalFile = $"{BaseDir}/file.txt";
 
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
-    private readonly AccountId             _accountId            = new("user-1");
+    private readonly AccountId _accountId = new("user-1");
 
-    private RemoteDeletionDetector CreateSut(MockFileSystem mockFs) => new(_syncedItemRepository, mockFs);
+    private RemoteDeletionDetector CreateSut(MockFileSystem mockFileSystem) => new(_syncedItemRepository, mockFileSystem, Substitute.For<ILogger<RemoteDeletionDetector>>());
 
     private static List<SyncRuleEntity> IncludeRules(params string[] paths)
         => paths.Select(p => new SyncRuleEntity { RemotePath = p, RuleType = RuleType.Include }).ToList();
@@ -120,7 +121,7 @@ public sealed class GivenARemoteDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/Documents"), TestContext.Current.CancellationToken);
 
-        mockFileSystem  .File.Exists(LocalFile).ShouldBeTrue();
+        mockFileSystem.File.Exists(LocalFile).ShouldBeTrue();
         await _syncedItemRepository.DidNotReceive().DeleteByRemoteIdAsync(Arg.Any<AccountId>(), Arg.Any<OneDriveItemId>(), Arg.Any<CancellationToken>());
     }
 }

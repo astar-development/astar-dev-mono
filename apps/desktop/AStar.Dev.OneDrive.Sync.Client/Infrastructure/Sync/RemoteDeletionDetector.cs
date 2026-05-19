@@ -1,29 +1,30 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
-
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem) : IRemoteDeletionDetector
+public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<RemoteDeletionDetector> logger) : IRemoteDeletionDetector
 {
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct)
     {
-        foreach(var (remoteId, knownItem) in syncedItems.ToList())
+        foreach (var (remoteId, knownItem) in syncedItems.ToList())
         {
-            if(ct.IsCancellationRequested)
+            if (ct.IsCancellationRequested)
                 break;
 
-            if(!SyncRuleEvaluator.IsIncluded(knownItem.RemotePath, rules))
+            if (!SyncRuleEvaluator.IsIncluded(knownItem.RemotePath, rules))
                 continue;
 
-            if(seenRemoteIds.Contains(remoteId))
+            if (seenRemoteIds.Contains(remoteId))
                 continue;
 
-            Serilog.Log.Information("[RemoteDeletionDetector] Remote item no longer present — treating as deleted: {Path}", knownItem.RemotePath);
+            OneDriveSyncClientMessages.RemoteDeletionDetectorNotPresent(logger, knownItem.RemotePath);
             await HandleRemoteDeleteAsync(accountId, knownItem, syncedItems, ct);
         }
     }
@@ -32,19 +33,19 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
     {
         string localPath = knownItem.LocalPath;
 
-        if(knownItem.IsFolder)
+        if (knownItem.IsFolder)
         {
-            if(fileSystem.Directory.Exists(localPath))
+            if (fileSystem.Directory.Exists(localPath))
             {
-                Serilog.Log.Information("[RemoteDeletionDetector] Remote folder deleted — removing local: {Path}", localPath);
+                OneDriveSyncClientMessages.RemoteDeletionDetectorFolderDeleted(logger, localPath);
                 fileSystem.Directory.Delete(localPath, recursive: true);
             }
         }
         else
         {
-            if(fileSystem.File.Exists(localPath))
+            if (fileSystem.File.Exists(localPath))
             {
-                Serilog.Log.Information("[RemoteDeletionDetector] Remote file deleted — removing local: {Path}", localPath);
+                OneDriveSyncClientMessages.RemoteDeletionDetectorFileDeleted(logger, localPath);
                 fileSystem.File.Delete(localPath);
             }
         }

@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
@@ -16,7 +17,7 @@ public sealed class GivenAStatusBarViewModel
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncEventAggregator _syncEventAggregator = Substitute.For<ISyncEventAggregator>();
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator);
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, Substitute.For<ILogger<AccountsViewModel>>());
 
     private static AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Profile = AccountProfileFactory.Create(displayName, email) });
 

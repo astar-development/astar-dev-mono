@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
@@ -75,6 +76,6 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManager
             Profile = AccountProfileFactory.Create("Test User", "test@test.com")
         };
 
-        return new AccountFilesViewModel(account, authService, graphService, repository, syncRuleRepo, fileSystem, fileManagerService);
+        return new AccountFilesViewModel(account, authService, graphService, repository, syncRuleRepo, fileSystem, fileManagerService, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
     }
 }

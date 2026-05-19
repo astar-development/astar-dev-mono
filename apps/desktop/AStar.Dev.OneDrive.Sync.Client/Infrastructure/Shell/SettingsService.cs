@@ -1,15 +1,17 @@
 using System.IO.Abstractions;
 using System.Text.Json;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class SettingsService(IFileSystem fileSystem, string? settingsFilePath = null) : ISettingsService
+public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsService> logger, string? settingsFilePath = null) : ISettingsService
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
-        WriteIndented        = true,
+        WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
@@ -34,7 +36,7 @@ public sealed class SettingsService(IFileSystem fileSystem, string? settingsFile
         }
         catch (Exception ex)
         {
-            Serilog.Log.Warning(ex, "[SettingsService] Failed to deserialize settings from {Path}; using defaults", path);
+            OneDriveSyncClientMessages.SettingsDeserializeFailed(logger, path, ex);
             Current = new AppSettings();
         }
     }

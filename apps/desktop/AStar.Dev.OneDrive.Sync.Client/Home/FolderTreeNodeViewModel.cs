@@ -4,15 +4,18 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {
     private readonly IGraphService _graphService;
-    private readonly string        _accessToken;
-    private readonly DriveId       _driveId;
-    private          bool          _childrenLoaded;
+    private readonly string _accessToken;
+    private readonly DriveId _driveId;
+    private readonly ILogger<FolderTreeNodeViewModel> _logger;
+    private bool _childrenLoaded;
 
     public string Id { get; }
     public string Name { get; }
@@ -58,7 +61,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
@@ -70,15 +73,16 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _graphService = graphService;
         _accessToken = accessToken;
         _driveId = driveId;
+        _logger = logger;
     }
 
     [RelayCommand]
     private async Task ToggleExpandAsync()
     {
-        if(!HasChildren)
+        if (!HasChildren)
             return;
 
-        if(!IsExpanded)
+        if (!IsExpanded)
         {
             await EnsureChildrenLoadedAsync();
             IsExpanded = true;
@@ -104,7 +108,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     {
         SyncState = state;
 
-        foreach(var child in Children)
+        foreach (var child in Children)
             child.ApplySyncStateRecursively(state);
     }
 
@@ -118,7 +122,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private async Task EnsureChildrenLoadedAsync()
     {
-        if(_childrenLoaded) return;
+        if (_childrenLoaded) return;
 
         IsLoadingChildren = true;
         try
@@ -128,23 +132,23 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
                     f => f,
                     error =>
                     {
-                        Serilog.Log.Warning("[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}", RemotePath, error);
+                        OneDriveSyncClientMessages.FolderChildrenLoadFailed(_logger, RemotePath, error);
                         HasChildren = false;
                         return null;
                     });
 
-            if(folders is null)
+            if (folders is null)
                 return;
 
             Children.Clear();
-            foreach(var f in folders)
+            foreach (var f in folders)
             {
                 var childVm = CreateChildFolderTreeViewModel(f);
 
                 Children.Add(childVm);
             }
 
-            if(Children.Count == 0) HasChildren = false;
+            if (Children.Count == 0) HasChildren = false;
 
             _childrenLoaded = true;
         }
@@ -164,7 +168,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, _logger, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);

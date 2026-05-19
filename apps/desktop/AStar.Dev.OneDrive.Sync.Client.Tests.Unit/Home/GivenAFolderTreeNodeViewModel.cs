@@ -2,6 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
@@ -148,6 +149,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState:   syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString));
+        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
     }
 }
