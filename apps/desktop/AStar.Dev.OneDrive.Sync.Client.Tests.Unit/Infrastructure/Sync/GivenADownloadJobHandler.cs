@@ -8,6 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenADownloadJobHandler
 {
+    private const string AccountId = "account-001";
     private const string AccessToken = "test-token";
     private const string ItemId = "item-abc";
 
@@ -79,7 +80,7 @@ public sealed class GivenADownloadJobHandler
         const string url = "https://example.com/direct";
         var job = MakeDownloadJob(url);
 
-        await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         await _downloader.Received(1).DownloadAsync(url, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
@@ -90,12 +91,12 @@ public sealed class GivenADownloadJobHandler
         const string fetchedUrl = "https://example.com/fetched";
         var job = MakeDownloadJob(downloadUrl: null);
 
-        _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok(fetchedUrl));
 
-        await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>());
+        await _graphService.Received(1).GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>());
         await _downloader.Received(1).DownloadAsync(fetchedUrl, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
 
@@ -105,10 +106,10 @@ public sealed class GivenADownloadJobHandler
         const string errorMessage = "No download URL available.";
         var job = MakeDownloadJob(downloadUrl: null);
 
-        _graphService.GetDownloadUrlAsync(AccessToken, ItemId, Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error(errorMessage));
 
-        var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeFalse();
         result.Match<string?>(_ => null, error => error).ShouldBe(errorMessage);
@@ -119,7 +120,7 @@ public sealed class GivenADownloadJobHandler
     {
         var job = MakeDownloadJob();
 
-        var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
     }
@@ -133,7 +134,7 @@ public sealed class GivenADownloadJobHandler
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<global::System.Reactive.Unit, string>.Error(downloadError));
 
-        var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         result.Match<string?>(_ => null, error => error).ShouldBe(downloadError);
     }

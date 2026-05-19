@@ -18,7 +18,7 @@ public sealed class GivenASyncRuleEvaluator
     [Fact]
     public void when_no_rules_then_path_is_excluded()
     {
-        var result = SyncRuleEvaluator.IsIncluded("/Documents", []);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents", []);
 
         result.ShouldBeFalse();
     }
@@ -28,7 +28,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents", rules);
 
         result.ShouldBeTrue();
     }
@@ -38,7 +38,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Documents", RuleType.Exclude) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents", rules);
 
         result.ShouldBeFalse();
     }
@@ -48,7 +48,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Photos", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Photos", rules);
 
         result.ShouldBeFalse();
     }
@@ -58,7 +58,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/Q1.pdf", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/Q1.pdf", rules);
 
         result.ShouldBeTrue();
     }
@@ -72,7 +72,7 @@ public sealed class GivenASyncRuleEvaluator
             Rule("/Documents/Private", RuleType.Exclude)
         };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/Private/secret.txt", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/Private/secret.txt", rules);
 
         result.ShouldBeFalse();
     }
@@ -86,7 +86,7 @@ public sealed class GivenASyncRuleEvaluator
             Rule("/Documents/Reports/Approved", RuleType.Include)
         };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/Approved/final.docx", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/Approved/final.docx", rules);
 
         result.ShouldBeTrue();
     }
@@ -100,7 +100,7 @@ public sealed class GivenASyncRuleEvaluator
             Rule("/Docs", RuleType.Exclude)
         };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Docs/file.txt", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Docs/file.txt", rules);
 
         result.ShouldBeFalse();
     }
@@ -110,7 +110,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Photos", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Photos", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Photos", rules);
 
         result.ShouldBeTrue();
     }
@@ -120,7 +120,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/Doc", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/file.txt", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/file.txt", rules);
 
         result.ShouldBeFalse();
     }
@@ -134,7 +134,7 @@ public sealed class GivenASyncRuleEvaluator
             Rule("/Documents/Reports", RuleType.Include)
         };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/q1.pdf", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/q1.pdf", rules);
 
         result.ShouldBeTrue();
     }
@@ -144,7 +144,7 @@ public sealed class GivenASyncRuleEvaluator
     {
         var rules = new[] { Rule("/documents", RuleType.Include) };
 
-        var result = SyncRuleEvaluator.IsIncluded("/Documents/file.txt", rules);
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/file.txt", rules);
 
         result.ShouldBeTrue();
     }

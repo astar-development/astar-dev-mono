@@ -37,7 +37,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
             });
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accessToken, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
+            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accountId, accessToken, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
             .ToList();
 
         try

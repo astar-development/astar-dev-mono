@@ -72,7 +72,7 @@ public sealed class GivenADeleteJobHandler
 
         _fileSystem.File.Exists(localPath).Returns(true);
 
-        await CreateSut().HandleAsync(job, string.Empty, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
 
         _fileSystem.File.Received(1).Delete(localPath);
     }
@@ -85,7 +85,7 @@ public sealed class GivenADeleteJobHandler
 
         _fileSystem.File.Exists(localPath).Returns(false);
 
-        await CreateSut().HandleAsync(job, string.Empty, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
 
         _fileSystem.File.DidNotReceive().Delete(Arg.Any<string>());
     }
@@ -95,7 +95,7 @@ public sealed class GivenADeleteJobHandler
     {
         var job = MakeDeleteJob();
 
-        var result = await CreateSut().HandleAsync(job, string.Empty, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
     }

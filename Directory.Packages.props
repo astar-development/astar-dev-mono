@@ -130,6 +130,7 @@
     <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.84.0" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="3.4.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
   </ItemGroup>
   <ItemGroup Label="HTTP and API">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />

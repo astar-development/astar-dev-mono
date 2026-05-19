@@ -8,6 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenAnUploadJobHandler
 {
+    private const string AccountId = "account-001";
     private const string AccessToken = "test-token";
     private const string ItemId = "item-abc";
 
@@ -71,10 +72,10 @@ public sealed class GivenAnUploadJobHandler
     {
         var job = MakeUploadJob();
 
-        _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("remote-item-id"));
 
-        var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
     }
@@ -84,12 +85,12 @@ public sealed class GivenAnUploadJobHandler
     {
         var job = MakeUploadJob();
 
-        _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("remote-item-id"));
 
-        await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>());
+        await _graphService.Received(1).UploadFileAsync(AccountId, AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -98,10 +99,10 @@ public sealed class GivenAnUploadJobHandler
         const string uploadError = "Upload failed: quota exceeded";
         var job = MakeUploadJob();
 
-        _graphService.UploadFileAsync(AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, AccessToken, job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error(uploadError));
 
-        var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
         result.Match<string?>(_ => null, error => error).ShouldBe(uploadError);
     }

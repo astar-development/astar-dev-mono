@@ -14,7 +14,7 @@ public sealed class GivenASplashWindowViewModel
     public void when_status_is_set_then_property_changed_is_raised()
     {
         var sut = new Client.Splash.SplashWindowViewModel();
-        var raised = false;
+        bool raised = false;
         sut.PropertyChanged += (_, args) =>
         {
             if (args.PropertyName == nameof(sut.Status))

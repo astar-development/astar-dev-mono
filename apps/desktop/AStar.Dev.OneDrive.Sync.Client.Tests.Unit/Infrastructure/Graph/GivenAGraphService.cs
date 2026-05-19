@@ -11,6 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
 
 public sealed class GivenAGraphService : IDisposable
 {
+    private const string AnyAccountId = "account-001";
     private const string AnyAccessToken = "any-access-token";
     private const string AnyDriveId = "drive-001";
     private const string AnyFolderId = "folder-001";
@@ -48,7 +49,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDriveIdAsync(AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, cts.Token));
     }
 
     [Fact]
@@ -58,7 +59,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetRootFoldersAsync(AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetRootFoldersAsync(AnyAccountId, AnyAccessToken, cts.Token));
     }
 
     [Fact]
@@ -78,7 +79,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetQuotaAsync(AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetQuotaAsync(AnyAccountId, AnyAccessToken, cts.Token));
     }
 
     [Fact]
@@ -108,7 +109,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDownloadUrlAsync(AnyAccessToken, AnyItemId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDownloadUrlAsync(AnyAccountId, AnyAccessToken, AnyItemId, cts.Token));
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.UploadFileAsync(AnyAccessToken, AnyLocalPath, AnyRemotePath, AnyFolderId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.UploadFileAsync(AnyAccountId, AnyAccessToken, AnyLocalPath, AnyRemotePath, AnyFolderId, cts.Token));
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.DeleteItemAsync(AnyAccessToken, AnyItemId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.DeleteItemAsync(AnyAccountId, AnyAccessToken, AnyItemId, cts.Token));
     }
 
     [Fact]
@@ -149,7 +150,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().GetRootFoldersAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
 
         var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
         folders.Count.ShouldBe(2);
@@ -166,7 +167,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "itemNotFound", message = "The resource could not be found." } }));
 
-        var result = await CreateSut().GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+        string? result = await CreateSut().GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -181,7 +182,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = AnyDriveId }));
 
-        var quotaResult = await CreateSut().GetQuotaAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+        var quotaResult = await CreateSut().GetQuotaAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
 
         var (total, used) = quotaResult.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Ok>()!.Value;
         total.ShouldBe(0L);
@@ -198,7 +199,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = AnyItemId }));
 
-        var result = await CreateSut().GetDownloadUrlAsync(AnyAccessToken, AnyItemId, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, AnyAccessToken, AnyItemId, TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<string, string>.Error>();
     }
@@ -280,8 +281,8 @@ public sealed class GivenAGraphService : IDisposable
         var ct = TestContext.Current.CancellationToken;
 
         var sut = CreateSut();
-        _ = await sut.GetDriveIdAsync(AnyAccessToken, ct);
-        _ = await sut.GetDriveIdAsync(AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
     }
@@ -295,7 +296,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = (string?)null }));
 
-        var result = await CreateSut().GetDriveIdAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
     }
@@ -314,9 +315,38 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = (string?)null }));
 
-        var result = await CreateSut().GetDriveIdAsync(AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_drive_context_is_resolved_with_same_account_id_but_different_tokens_then_me_drive_endpoint_is_called_only_once()
+    {
+        const string accountId = "account-001";
+        SetupDriveContext(AnyDriveId, "root-001");
+        var ct = TestContext.Current.CancellationToken;
+        var sut = CreateSut();
+
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(accountId, "refreshed-token", ct);
+
+        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_evict_cached_drive_context_is_called_then_subsequent_call_hits_me_drive_endpoint()
+    {
+        const string accountId = "account-001";
+        SetupDriveContext(AnyDriveId, "root-001");
+        var ct = TestContext.Current.CancellationToken;
+        var sut = CreateSut();
+
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        sut.EvictCachedDriveContext(accountId);
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+
+        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
     }
 
     private void SetupDriveContext(string driveId, string rootId)

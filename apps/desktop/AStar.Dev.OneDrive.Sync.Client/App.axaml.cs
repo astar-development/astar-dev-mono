@@ -16,6 +16,7 @@ using Serilog;
 using Serilog.Events;
 using Testably.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -83,19 +84,19 @@ public class App : Application, IDisposable
 
     private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink, RealFileSystem fileSystem)
     {
-        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(ApplicationMetadata.ApplicationName, "logs");
-
-        _ = fileSystem.Directory.CreateDirectory(logDirectory);
+        _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
-                path: logDirectory.CombinePath(ApplicationMetadata.ApplicationName),
-                formatProvider: CultureInfo.InvariantCulture,
+                formatter: new Serilog.Formatting.Json.JsonFormatter(),
+                path: $"{ApplicationDirectories.LogsDirectory}/log.txt",
                 rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7)
+                retainedFileCountLimit: 7,
+                shared: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(1))
             .WriteTo.Sink(inMemoryLogSink)
             .CreateLogger();
     }

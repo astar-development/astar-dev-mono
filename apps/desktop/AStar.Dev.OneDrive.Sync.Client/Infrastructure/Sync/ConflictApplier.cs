@@ -14,7 +14,7 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
         switch(outcome)
         {
             case ConflictOutcome.UseRemote:
-                return await ApplyUseRemoteAsync(conflict, accessToken, ct).ConfigureAwait(false);
+                return await ApplyUseRemoteAsync(conflict, accountId, accessToken, ct).ConfigureAwait(false);
 
             case ConflictOutcome.KeepBoth:
                 ApplyKeepBoth(conflict);
@@ -25,9 +25,9 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
         }
     }
 
-    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accessToken, CancellationToken ct)
+    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, string accessToken, CancellationToken ct)
     {
-        var urlResult = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        var urlResult = await graphService.GetDownloadUrlAsync(accountId, accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
         return await urlResult.MatchAsync<bool>(
             async url =>

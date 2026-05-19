@@ -42,7 +42,7 @@ public sealed class GivenASettingsService
     public async Task when_save_async_is_called_multiple_times_then_settings_changed_is_raised_each_time()
     {
         var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
-        var raiseCount = 0;
+        int raiseCount = 0;
         service.SettingsChanged += (_, _) => raiseCount++;
 
         await service.SaveAsync();

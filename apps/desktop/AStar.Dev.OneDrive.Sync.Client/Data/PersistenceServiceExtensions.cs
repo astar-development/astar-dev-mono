@@ -28,7 +28,7 @@ internal static class PersistenceServiceExtensions
 
     private static void ConfigureDbContext(DbContextOptionsBuilder builder)
     {
-        string dbPath = ApplicationMetadata.ApplicationNameLowered.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameLowered}.db");
+        string dbPath = ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameHyphenated}.db");
         _ = builder.UseSqlite($"Data Source={dbPath}");
     }
 }

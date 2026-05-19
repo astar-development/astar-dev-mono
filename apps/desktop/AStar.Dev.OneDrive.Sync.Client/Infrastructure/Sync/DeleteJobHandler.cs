@@ -11,7 +11,7 @@ public sealed class DeleteJobHandler(IFileSystem fileSystem) : IJobHandler
     public bool CanHandle(SyncJob job) => job is DeleteSyncJob;
 
     /// <inheritdoc />
-    public Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accessToken, CancellationToken ct)
+    public Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         var deleteJob = (DeleteSyncJob)job;
 

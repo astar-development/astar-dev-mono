@@ -64,7 +64,7 @@ public sealed class GivenASyncPassOrchestrator
 
         var sut     = CreateSut();
         var account = CreateAccount();
-        var token   = "token";
+        string token   = "token";
 
         await sut.OrchestrateAsync(account, token, _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
@@ -85,7 +85,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        var result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        bool result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         result.ShouldBeFalse();
     }
@@ -119,7 +119,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        var result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        bool result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
     }
@@ -247,7 +247,7 @@ public sealed class GivenASyncPassOrchestrator
             Id     = Guid.NewGuid(),
             Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty))
         };
-        var callbackInvoked = false;
+        bool callbackInvoked = false;
 
         _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(async args =>

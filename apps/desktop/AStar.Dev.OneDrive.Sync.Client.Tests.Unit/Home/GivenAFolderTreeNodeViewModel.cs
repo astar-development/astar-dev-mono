@@ -100,7 +100,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         await sut.ToggleExpandCommand.ExecuteAsync(null);
 
-        var eventCount = 0;
+        int eventCount = 0;
         sut.IncludeToggled += (_, _) => eventCount++;
 
         sut.ToggleIncludeCommand.Execute(null);

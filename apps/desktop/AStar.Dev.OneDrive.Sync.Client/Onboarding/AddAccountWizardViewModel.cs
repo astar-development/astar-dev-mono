@@ -203,7 +203,7 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
 
         try
         {
-            var folders = await graphService.GetRootFoldersAsync(_accessToken)
+            var folders = await graphService.GetRootFoldersAsync(_accountId, _accessToken)
                 .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                     f => f,
                     error =>

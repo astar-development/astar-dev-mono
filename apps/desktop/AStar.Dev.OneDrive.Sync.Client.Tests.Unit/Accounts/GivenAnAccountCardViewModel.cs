@@ -113,7 +113,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-9") };
         var sut = new AccountCardViewModel(model);
-        var eventRaised = false;
+        bool eventRaised = false;
         AccountCardViewModel? raisedViewModel = null;
 
         sut.Selected += (sender, viewModel) =>
@@ -133,7 +133,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-10") };
         var sut = new AccountCardViewModel(model);
-        var eventRaised = false;
+        bool eventRaised = false;
         AccountCardViewModel? raisedViewModel = null;
 
         sut.RemoveRequested += (sender, viewModel) =>
@@ -165,7 +165,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-12"), Profile = AccountProfileFactory.Create("Alice", string.Empty) };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -183,7 +183,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-13"), Profile = AccountProfileFactory.Create(string.Empty, "alice@outlook.com") };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -201,7 +201,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-14"), Profile = AccountProfileFactory.Create("Bob Smith", string.Empty) };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -219,7 +219,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-15"), IsActive = false };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -237,7 +237,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-16") };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -255,7 +255,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-17") };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {
@@ -273,7 +273,7 @@ public sealed class GivenAnAccountCardViewModel
     {
         var model = new OneDriveAccount { Id = new AccountId("account-18") };
         var sut = new AccountCardViewModel(model);
-        var propertyChangedRaised = false;
+        bool propertyChangedRaised = false;
 
         sut.PropertyChanged += (sender, args) =>
         {

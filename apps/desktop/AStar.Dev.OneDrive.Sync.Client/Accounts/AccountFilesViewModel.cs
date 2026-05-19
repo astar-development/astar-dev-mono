@@ -82,7 +82,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if(_accessToken is null)
                 return;
 
-            var driveId = await _graphService.GetDriveIdAsync(_accessToken)
+            var driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken)
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -123,7 +123,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
     {
-        var folders = await _graphService.GetRootFoldersAsync(_accessToken!)
+        var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken!)
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                 f => f,
                 error =>

@@ -4,6 +4,40 @@
         <name>AStar.Dev.Logging.Extensions</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Logging.Extensions.ApplicationMessages">
+            <summary>
+              Provides extension methods for logging common application lifecycle events, such as starting up and shutting down, with consistent formatting and event IDs.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ApplicationMessages.Starting(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an application starting-up.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="applicationName">The name of the application to log the starting up for.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ApplicationMessages.Stopping(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an application stopping.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="applicationName">The name of the application to log the stopping for.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ApplicationMessages.Stopping(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
+            <summary>
+                Logs an application stopping.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="applicationName">The name of the application to log the stopping for.</param>
+            <param name="memoryUsage">The final memory usage of the application.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.ApplicationMessages.StartupSuccessful(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a successful application start-up.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="applicationName">The name of the application to log the successful start-up for.</param>
+        </member>
         <member name="T:AStar.Dev.Logging.Extensions.AStarEventIds">
             <summary>
                 The <see cref="T:AStar.Dev.Logging.Extensions.AStarEventIds" /> class contains the defined <see cref="T:Microsoft.Extensions.Logging.EventId" /> events available for logging
@@ -113,7 +147,7 @@
         </member>
         <member name="T:AStar.Dev.Logging.Extensions.LogMessage">
             <summary>
-                Provides static methods for logging specific HTTP-related events using strongly-typed logging templates.
+              Provides extension methods for logging common application events, such as startup, shutdown, and errors, using strongly-typed log messages with structured logging support.
             </summary>
         </member>
         <member name="M:AStar.Dev.Logging.Extensions.LogMessage.PageView(Microsoft.Extensions.Logging.ILogger,System.String)">
@@ -136,7 +170,21 @@
             </summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="location">The location of the event.</param>
-            <param name="debugMessage">The debug message to log.</param>
+            <param name="message">The debug message to log.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Debug(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs a debug message for the specified location.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="message">The debug message to log.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an informational message for the specified location.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="message">The message to log.</param>
         </member>
         <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
             <summary>
@@ -144,18 +192,16 @@
             </summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="location">The location of the event.</param>
-            <param name="informationMessage">The information message to log.</param>
+            <param name="message">The information message to log.</param>
         </member>
-        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Information(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.String)">
             <summary>
-            Logs an informational message with details about a specific API call.
+                Logs an informational message for the specified location.
             </summary>
             <param name="logger">The logger to be used for logging the event.</param>
-            <param name="location">The location where the event occurred.</param>
-            <param name="httpRequest">A summary of the request.</param>
-            <param name="httpMethod">The HTTP Method (GET / POST etc.)</param>
-            <param name="apiEndpoint">The API Endpoint called.</param>
-            <param name="apiName">The name of the API.</param>
+            <param name="location">The location of the event.</param>
+            <param name="message">The information message to log.</param>
+            <param name="additionalInformation">The additional Information to log.</param>
         </member>
         <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Warning(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
             <summary>
@@ -163,7 +209,7 @@
             </summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="location">The location of the event.</param>
-            <param name="warningMessage">The warning message to log.</param>
+            <param name="message">The warning message to log.</param>
         </member>
         <member name="M:AStar.Dev.Logging.Extensions.LogMessage.LogException(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.String,System.String)">
             <summary>
@@ -225,9 +271,32 @@
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Too Many Requests.</param>
         </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.InternalServerError(Microsoft.Extensions.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+                Logs an error message for a Not Implemented (501) event, including the requested path.
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="path">The path of the HTTP request that caused the Not Implemented error.</param>
+            <param name="ex">The exception associated with the Not Implemented error.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Error(Microsoft.Extensions.Logging.ILogger,System.String,System.Exception)">
+            <summary>
+                Logs an application error event (EventId 505).
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="errorMessage">The error message to log.</param>
+            <param name="ex">The exception associated with the error.</param>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.Error(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>
+                Logs an application error event (EventId 506).
+            </summary>
+            <param name="logger">The logger to be used for logging the event.</param>
+            <param name="errorMessage">The error message to log.</param>
+        </member>
         <member name="M:AStar.Dev.Logging.Extensions.LogMessage.InternalServerError(Microsoft.Extensions.Logging.ILogger,System.String)">
             <summary>
-                Logs an error message for an Internal Server Error (500) event, including the requested path.
+                Logs an internal server error event (EventId 500).
             </summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Internal Server Error.</param>
@@ -273,11 +342,12 @@
             <param name="bytes">Total bytes transferred.</param>
             <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
         </member>
-        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.PartialFileDeletionFailed(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String)">
-            <summary>Logs a failure to delete a partial (incomplete) download file.</summary>
+        <member name="M:AStar.Dev.Logging.Extensions.LogMessage.MemoryUsage(Microsoft.Extensions.Logging.ILogger,System.Double)">
+            <summary>
+               Logs the current memory usage of the application in megabytes, providing insights into resource consumption for debugging and performance monitoring purposes.
+            </summary>
             <param name="logger">The logger.</param>
-            <param name="ex">The exception that prevented deletion.</param>
-            <param name="localPath">Path of the partial file.</param>
+            <param name="usedMemoryMB">The amount of memory used in megabytes.</param>
         </member>
         <member name="T:AStar.Dev.Logging.Extensions.Models.ApplicationInsights">
             <summary>

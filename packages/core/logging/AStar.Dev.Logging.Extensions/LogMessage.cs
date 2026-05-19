@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.Logging.Extensions;
 
 /// <summary>
-///     Provides static methods for logging specific HTTP-related events using strongly-typed logging templates.
+///   Provides extension methods for logging common application events, such as startup, shutdown, and errors, using strongly-typed log messages with structured logging support.
 /// </summary>
 public static partial class LogMessage
 {
@@ -28,39 +28,53 @@ public static partial class LogMessage
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
-    /// <param name="debugMessage">The debug message to log.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Debug, Message = "{Location} has raised: `{DebugMessage}`.")]
-    public static partial void Debug(ILogger logger, string location, string debugMessage);
+    /// <param name="message">The debug message to log.</param>
+    [LoggerMessage(EventId = 100, Level = LogLevel.Debug, Message = "{Location} has raised: `{message}`.")]
+
+    public static partial void Debug(ILogger logger, string location, string message);
+    /// <summary>
+    ///     Logs a debug message for the specified location.
+    /// </summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="message">The debug message to log.</param>
+    [LoggerMessage(EventId = 101, Level = LogLevel.Debug, Message = "Message: {message}")]
+    public static partial void Debug(ILogger logger, string message);
+
+    /// <summary>
+    ///     Logs an informational message for the specified location.
+    /// </summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="message">The message to log.</param>
+    [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "{message}.")]
+    public static partial void Information(ILogger logger, string message);
 
     /// <summary>
     ///     Logs an informational message for the specified location.
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
-    /// <param name="informationMessage">The information message to log.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "{Location} has raised: `{InformationMessage}`.")]
-    public static partial void Information(ILogger logger, string location, string informationMessage);
+    /// <param name="message">The information message to log.</param>
+    [LoggerMessage(EventId = 201, Level = LogLevel.Information, Message = "{Location} has raised: `{message}`.")]
+    public static partial void Information(ILogger logger, string location, string message);
 
     /// <summary>
-    /// Logs an informational message with details about a specific API call.
+    ///     Logs an informational message for the specified location.
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="location">The location where the event occurred.</param>
-    /// <param name="httpRequest">A summary of the request.</param>
-    /// <param name="httpMethod">The HTTP Method (GET / POST etc.)</param>
-    /// <param name="apiEndpoint">The API Endpoint called.</param>
-    /// <param name="apiName">The name of the API.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "{Location} - request: {HttpRequest}, Method: {HttpMethod}, apiEndpoint: {ApiEndpoint}, apiName: {ApiName}.")]
-    public static partial void Information(ILogger logger, string location, string httpRequest, string httpMethod, string apiEndpoint, string apiName);
+    /// <param name="location">The location of the event.</param>
+    /// <param name="message">The information message to log.</param>
+    /// <param name="additionalInformation">The additional Information to log.</param>
+    [LoggerMessage(EventId = 202, Level = LogLevel.Information, Message = "{Location} has raised: `{message}` with additional info: `{AdditionalInformation}`.")]
+    public static partial void Information(ILogger logger, string location, string message, string additionalInformation);
 
     /// <summary>
     ///     Logs a warning message for the specified location.
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
-    /// <param name="warningMessage">The warning message to log.</param>
-    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "{Location} has raised: `{WarningMessage}`.")]
-    public static partial void Warning(ILogger logger, string location, string warningMessage);
+    /// <param name="message">The warning message to log.</param>
+    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "{Location} has raised: `{message}`.")]
+    public static partial void Warning(ILogger logger, string location, string message);
 
     /// <summary>
     /// Logs a critical exception event, providing detailed information about the exception type, message, and stack trace.
@@ -131,7 +145,33 @@ public static partial class LogMessage
     public static partial void TooManyRequests(ILogger logger, string path);
 
     /// <summary>
-    ///     Logs an error message for an Internal Server Error (500) event, including the requested path.
+    ///     Logs an error message for a Not Implemented (501) event, including the requested path.
+    /// </summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="path">The path of the HTTP request that caused the Not Implemented error.</param>
+    /// <param name="ex">The exception associated with the Not Implemented error.</param>
+    [LoggerMessage(EventId = 501, Level = LogLevel.Error, Message = "Not Implemented (501) for `{Path}`")]
+    public static partial void InternalServerError(ILogger logger, string path, Exception ex);
+
+    /// <summary>
+    ///     Logs an application error event (EventId 505).
+    /// </summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="errorMessage">The error message to log.</param>
+    /// <param name="ex">The exception associated with the error.</param>
+    [LoggerMessage(EventId = 505, Level = LogLevel.Error, Message = "Error occurred : `{ErrorMessage}`")]
+    public static partial void Error(ILogger logger, string errorMessage, Exception ex);
+
+    /// <summary>
+    ///     Logs an application error event (EventId 506).
+    /// </summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="errorMessage">The error message to log.</param>
+    [LoggerMessage(EventId = 506, Level = LogLevel.Error, Message = "Error occurred : `{ErrorMessage}`")]
+    public static partial void Error(ILogger logger, string errorMessage);
+
+    /// <summary>
+    ///     Logs an internal server error event (EventId 500).
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="path">The path of the HTTP request that caused the Internal Server Error.</param>
@@ -174,7 +214,7 @@ public static partial class LogMessage
     /// <param name="logger">The logger.</param>
     /// <param name="bytes">Total bytes written to disk.</param>
     /// <param name="localPath">Destination path on the local file system.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Debug, Message = "Downloaded {Bytes} bytes to {LocalPath}")]
+    [LoggerMessage(EventId = 102, Level = LogLevel.Debug, Message = "Downloaded {Bytes} bytes to {LocalPath}")]
     public static partial void FileDownloaded(ILogger logger, long bytes, string localPath);
 
     /// <summary>Logs successful completion of a file upload (direct or chunked).</summary>
@@ -182,13 +222,14 @@ public static partial class LogMessage
     /// <param name="fileName">Name of the uploaded file.</param>
     /// <param name="bytes">Total bytes transferred.</param>
     /// <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Debug, Message = "Uploaded {FileName} ({Bytes} bytes) → remote id {RemoteItemId}")]
+    [LoggerMessage(EventId = 103, Level = LogLevel.Debug, Message = "Uploaded {FileName} ({Bytes} bytes) → remote id {RemoteItemId}")]
     public static partial void FileUploaded(ILogger logger, string fileName, long bytes, string remoteItemId);
 
-    /// <summary>Logs a failure to delete a partial (incomplete) download file.</summary>
+    /// <summary>
+    ///    Logs the current memory usage of the application in megabytes, providing insights into resource consumption for debugging and performance monitoring purposes.
+    /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="ex">The exception that prevented deletion.</param>
-    /// <param name="localPath">Path of the partial file.</param>
-    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "Failed to delete partial file at {LocalPath}")]
-    public static partial void PartialFileDeletionFailed(ILogger logger, Exception ex, string localPath);
+    /// <param name="usedMemoryMB">The amount of memory used in megabytes.</param>
+    [LoggerMessage(EventId = 104, Level = LogLevel.Debug, Message = "Memory usage: {UsedMemoryMB:F2} MB")]
+    public static partial void MemoryUsage(ILogger logger, double usedMemoryMB);
 }

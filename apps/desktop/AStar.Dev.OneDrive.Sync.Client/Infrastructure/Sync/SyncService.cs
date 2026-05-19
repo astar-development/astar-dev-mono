@@ -25,7 +25,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Profile.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
-        var accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
+        string? accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
             .MatchAsync<AuthResult, AuthError, string?>(
                 ok => ok.AccessToken,
                 error =>
@@ -46,7 +46,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
         try
         {
-            var didRun = await syncPassOrchestrator.OrchestrateAsync(
+            bool didRun = await syncPassOrchestrator.OrchestrateAsync(
                 account,
                 accessToken,
                 async conflict =>
@@ -80,14 +80,14 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var accessToken = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct)
+        string? accessToken = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct)
             .MatchAsync<AuthResult, AuthError, string?>(ok => ok.AccessToken, _ => null).ConfigureAwait(false);
 
         if(accessToken is null)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        var applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
+        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
 
         if(!applied)
         {

@@ -77,7 +77,7 @@ public sealed class GivenAnUploadService
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
-        var itemId = uploadResult.Match(id => id, _ => string.Empty);
+        string itemId = uploadResult.Match(id => id, _ => string.Empty);
 
         itemId.ShouldBe(ExpectedItemId);
     }
@@ -98,7 +98,7 @@ public sealed class GivenAnUploadService
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
-        var itemId = uploadResult.Match(id => id, _ => string.Empty);
+        string itemId = uploadResult.Match(id => id, _ => string.Empty);
 
         itemId.ShouldBe(ExpectedItemId);
     }
@@ -127,7 +127,7 @@ public sealed class GivenAnUploadService
         var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
-        var itemId = uploadResult.Match(id => id, _ => string.Empty);
+        string itemId = uploadResult.Match(id => id, _ => string.Empty);
 
         itemId.ShouldBe(ExpectedItemId);
         putCallCount.ShouldBe(2);

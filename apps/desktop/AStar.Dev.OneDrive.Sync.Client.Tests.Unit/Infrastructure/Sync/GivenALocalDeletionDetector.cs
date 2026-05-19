@@ -19,10 +19,8 @@ public sealed class GivenALocalDeletionDetector
     private readonly AccountId             _accountId            = new("user-1");
 
     public GivenALocalDeletionDetector()
-    {
-        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        => _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
-    }
 
     private LocalDeletionDetector CreateSut(MockFileSystem mockFs) => new(_graphService, _syncedItemRepository, mockFs);
 
@@ -39,7 +37,7 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, "token", syncedItems, TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -54,7 +52,7 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, "token", syncedItems, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).DeleteItemAsync(Arg.Is("token"), Arg.Is("item-1"), Arg.Any<CancellationToken>());
+        await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Is("token"), Arg.Is("item-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -84,14 +82,14 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, "token", syncedItems, TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_graph_delete_throws_then_exception_is_caught_and_remaining_items_are_processed()
     {
         var mockFileSystem = new MockFileSystem();
-        _graphService.When(x => x.DeleteItemAsync(Arg.Any<string>(), Arg.Is("item-fail"), Arg.Any<CancellationToken>()))
+        _graphService.When(x => x.DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Is("item-fail"), Arg.Any<CancellationToken>()))
             .Throw(new HttpRequestException("network error"));
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
@@ -102,6 +100,6 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, "token", syncedItems, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).DeleteItemAsync(Arg.Is("token"), Arg.Is("item-ok"), Arg.Any<CancellationToken>());
+        await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Is("token"), Arg.Is("item-ok"), Arg.Any<CancellationToken>());
     }
 }

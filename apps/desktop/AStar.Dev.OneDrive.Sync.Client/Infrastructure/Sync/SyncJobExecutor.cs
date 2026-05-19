@@ -37,7 +37,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
         foreach(var job in successfulJobs)
         {
-            var remotePath = NormaliseRemotePath(job.Target.RelativePath);
+            string remotePath = NormaliseRemotePath(job.Target.RelativePath);
 
             if(job is DownloadSyncJob)
             {

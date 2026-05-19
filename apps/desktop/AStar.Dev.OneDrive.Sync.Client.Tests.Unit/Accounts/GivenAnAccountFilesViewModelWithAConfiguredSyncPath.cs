@@ -41,7 +41,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocks();
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.LastWriteWins), authService, graphService, repository, syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
@@ -61,7 +61,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
@@ -84,7 +84,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
@@ -174,7 +174,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, repository, syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
@@ -195,10 +195,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
-        graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetDriveIdAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
-        graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetRootFoldersAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName)]));
 
         return (authService, graphService, repository);
@@ -236,7 +236,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     {
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         return new(account, authService, graphService, repository, syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
     }

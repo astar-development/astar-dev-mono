@@ -20,8 +20,8 @@ public sealed class GivenARemoteFolderEnumerator
     public GivenARemoteFolderEnumerator()
     {
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, SyncedItemEntity>());
-        _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
     }
 
@@ -60,7 +60,7 @@ public sealed class GivenARemoteFolderEnumerator
 
         await CreateSut().EnumerateAsync(CreateAccount(), "token", TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().GetDriveIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().GetDriveIdAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

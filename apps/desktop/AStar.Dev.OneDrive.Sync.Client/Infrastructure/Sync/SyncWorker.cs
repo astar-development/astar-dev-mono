@@ -13,7 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers, ISyncRepository syncRepository) : ISyncWorker
 {
     /// <inheritdoc />
-    public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+    public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
         await foreach(var job in reader.ReadAllAsync(ct))
         {
@@ -29,7 +29,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
 
             try
             {
-                (currentJob, success, error) = await ExecuteJobAsync(job, accessToken, ct)
+                (currentJob, success, error) = await ExecuteJobAsync(job, accountId, accessToken, ct)
                     .MatchAsync<SyncJob, string, (SyncJob, bool, string?)>(
                         completedJob => (completedJob, true, null),
                         reason => (currentJob, false, reason)).ConfigureAwait(false);
@@ -57,7 +57,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
         }
     }
 
-    private Task<Result<SyncJob, string>> ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
+    private Task<Result<SyncJob, string>> ExecuteJobAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         var handler = handlers.FirstOrDefault(h => h.CanHandle(job));
 
@@ -68,6 +68,6 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
             return Task.FromResult<Result<SyncJob, string>>(new Result<SyncJob, string>.Error($"No handler registered for job type '{job.GetType().Name}'."));
         }
 
-        return handler.HandleAsync(job, accessToken, ct);
+        return handler.HandleAsync(job, accountId, accessToken, ct);
     }
 }
