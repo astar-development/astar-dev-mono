@@ -10,6 +10,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Onboarding;
 
 public sealed class GivenAnAddAccountWizardViewModel
 {
+    private sealed record UnknownAuthError : AuthError;
+
     private readonly IAuthService  _authService  = Substitute.For<IAuthService>();
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
 
@@ -415,5 +417,41 @@ public sealed class GivenAnAddAccountWizardViewModel
         await firstCall;
 
         await _authService.Received(1).SignInInteractiveAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_sign_in_returns_unknown_error_type_then_sign_in_has_error_is_true()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInHasError.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_sign_in_returns_unknown_error_type_then_sign_in_status_text_is_set()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.SignInStatusText.ShouldNotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task when_sign_in_returns_unknown_error_type_then_is_signed_in_remains_false()
+    {
+        _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
+            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+        var sut = CreateSut();
+
+        await sut.OpenBrowserCommand.ExecuteAsync(null);
+
+        sut.IsSignedIn.ShouldBeFalse();
     }
 }

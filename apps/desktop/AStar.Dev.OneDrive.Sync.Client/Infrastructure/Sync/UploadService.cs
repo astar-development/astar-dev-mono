@@ -110,15 +110,19 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
             var chunkResult = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
 
+            bool chunkFailed = false;
             var earlyReturn = chunkResult.Match<Result<string, string>?>(
                 itemId => itemId is not null ? new Result<string, string>.Ok(itemId) : null,
-                error => new Result<string, string>.Error(error));
+                error => { chunkFailed = true; return new Result<string, string>.Error(error); });
 
-            if(earlyReturn is not null)
-                return earlyReturn;
+            if(chunkFailed)
+                return earlyReturn!;
 
             uploaded += bytesRead;
             progress?.Report(uploaded);
+
+            if(earlyReturn is not null)
+                return earlyReturn;
         }
 
         return new Result<string, string>.Error("Upload completed without receiving item ID from Graph API.");

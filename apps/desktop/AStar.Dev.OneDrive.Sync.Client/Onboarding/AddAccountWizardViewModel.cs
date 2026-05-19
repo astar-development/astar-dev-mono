@@ -122,23 +122,23 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         try
         {
             var result = await authService.SignInInteractiveAsync(_authCts.Token);
-
-            switch(result)
-            {
-                case Result<AuthResult, AuthError>.Ok successfulLoginResult:
-                    UpdateSuccessfulLoginState(successfulLoginResult);
-                    break;
-                case Result<AuthResult, AuthError>.Error { Reason: AuthCancelledError }:
-                    SetCancelledLoginState();
-                    break;
-                case Result<AuthResult, AuthError>.Error { Reason: AuthFailedError failed }:
-                    SetFailedLoginState(failed);
-                    break;
-            }
+            _ = result.Match<bool>(
+                ok    => { UpdateSuccessfulLoginState(ok); return true; },
+                error => { DispatchAuthError(error); return false; });
         }
         finally
         {
             SetFinalSignInState();
+        }
+    }
+
+    private void DispatchAuthError(AuthError error)
+    {
+        switch(error)
+        {
+            case AuthCancelledError: SetCancelledLoginState(); break;
+            case AuthFailedError failed: SetFailedLoginState(failed); break;
+            default: SetFailedLoginState(new AuthFailedError("Unexpected authentication error.")); break;
         }
     }
 
@@ -154,12 +154,12 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         SignInHasError = false;
     }
 
-    private void UpdateSuccessfulLoginState(Result<AuthResult, AuthError>.Ok successfulLoginResult)
+    private void UpdateSuccessfulLoginState(AuthResult authResult)
     {
-        _accountId = successfulLoginResult.Value.AccountId;
-        _accessToken = successfulLoginResult.Value.AccessToken;
-        ConfirmedDisplayName = successfulLoginResult.Value.Profile.DisplayName;
-        ConfirmedEmail = successfulLoginResult.Value.Profile.Email;
+        _accountId = authResult.AccountId;
+        _accessToken = authResult.AccessToken;
+        ConfirmedDisplayName = authResult.Profile.DisplayName;
+        ConfirmedEmail = authResult.Profile.Email;
         IsSignedIn = true;
         SignInStatusText = $"Signed in as {ConfirmedEmail}";
         SignInHasError = false;
