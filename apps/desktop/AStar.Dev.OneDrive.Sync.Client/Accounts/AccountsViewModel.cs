@@ -75,6 +75,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
     private async Task RemoveAccountAsync(AccountCardViewModel card)
     {
         await authService.SignOutAsync(card.Id);
+        graphService.EvictCachedDriveContext(card.Id);
         await repository.DeleteAsync(new AccountId(card.Id), CancellationToken.None);
 
         _ = Accounts.Remove(card);

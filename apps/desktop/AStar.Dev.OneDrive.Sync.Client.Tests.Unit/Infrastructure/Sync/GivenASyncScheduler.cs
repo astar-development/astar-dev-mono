@@ -374,13 +374,13 @@ public sealed class GivenASyncScheduler
         }));
         var rulesRepo = Substitute.For<ISyncRuleRepository>();
         rulesRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>
-            {
+            .Returns(
+            [
                 new() { RuleType = RuleType.Include, RemoteItemId = "folder-1" },
                 new() { RuleType = RuleType.Include, RemoteItemId = "folder-2" },
                 new() { RuleType = RuleType.Exclude, RemoteItemId = "folder-3" },
                 new() { RuleType = RuleType.Include, RemoteItemId = null },
-            });
+            ]);
         var scheduler = new SyncScheduler(mockSyncService, mockRepository, rulesRepo);
 
         await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
@@ -416,7 +416,7 @@ public sealed class GivenASyncScheduler
     {
         var repo = Substitute.For<ISyncRuleRepository>();
         repo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         return repo;
     }

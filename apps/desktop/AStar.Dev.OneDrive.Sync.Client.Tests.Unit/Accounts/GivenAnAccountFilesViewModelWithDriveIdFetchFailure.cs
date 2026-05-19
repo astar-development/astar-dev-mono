@@ -67,7 +67,7 @@ public sealed class GivenAnAccountFilesViewModelWithDriveIdFetchFailure
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
-        graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetDriveIdAsync(AccountIdString, AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Error(DriveIdErrorMessage));
 
         return new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());

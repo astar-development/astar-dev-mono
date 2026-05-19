@@ -11,10 +11,10 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
     public bool CanHandle(SyncJob job) => job is DownloadSyncJob;
 
     /// <inheritdoc />
-    public async Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accessToken, CancellationToken ct)
+    public async Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         var downloadJob = (DownloadSyncJob)job;
-        var urlResult = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct).ConfigureAwait(false);
+        var urlResult = await ResolveDownloadUrlAsync(downloadJob, accountId, accessToken, ct).ConfigureAwait(false);
 
         return await urlResult.MatchAsync<Result<SyncJob, string>>(
             async url =>
@@ -38,13 +38,13 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
             }).ConfigureAwait(false);
     }
 
-    private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accessToken, CancellationToken ct)
+    private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
         if(job.DownloadUrl is not null)
             return new Result<string, string>.Ok(job.DownloadUrl);
 
         Serilog.Log.Debug("DownloadUrl absent for {Path} — fetching on-demand", job.Target.RelativePath);
 
-        return await graphService.GetDownloadUrlAsync(accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        return await graphService.GetDownloadUrlAsync(accountId, accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
     }
 }

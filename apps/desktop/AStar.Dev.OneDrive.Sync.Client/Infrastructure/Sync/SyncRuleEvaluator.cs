@@ -19,7 +19,7 @@ public static class SyncRuleEvaluator
             if(!remotePath.StartsWith(rule.RemotePath, StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            var afterPrefix = remotePath.Length > rule.RemotePath.Length
+            char afterPrefix = remotePath.Length > rule.RemotePath.Length
                 ? remotePath[rule.RemotePath.Length]
                 : (char)0;
             if(remotePath.Length > rule.RemotePath.Length && afterPrefix != '/')

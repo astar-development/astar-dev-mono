@@ -32,19 +32,19 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
     {
         StorageCreationProperties storageProperties;
 
-        if(OperatingSystem.IsLinux())
+        if (OperatingSystem.IsLinux())
         {
             try
             {
                 var keyringProperties = new StorageCreationPropertiesBuilder(
-                        $"{ApplicationMetadata.ApplicationNameLowered}.bin",
+                        $"{ApplicationMetadata.ApplicationNameHyphenated}.bin",
                         CacheDirectory)
                     .WithLinuxKeyring(
-                        schemaName:  "dev.astar.onedrivesync",
-                        collection:  MsalCacheHelper.LinuxKeyRingDefaultCollection,
+                        schemaName: "dev.astar.onedrivesync",
+                        collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
                         secretLabel: "OneDrive Sync token cache",
-                        attribute1:  new KeyValuePair<string, string>("Version", "1"),
-                        attribute2:  new KeyValuePair<string, string>("ProductGroup", "AStar"))
+                        attribute1: new KeyValuePair<string, string>("Version", "1"),
+                        attribute2: new KeyValuePair<string, string>("ProductGroup", "AStar"))
                     .WithMacKeyChain(
                         serviceName: ApplicationMetadata.ApplicationName,
                         accountName: "MSALCache")
@@ -58,14 +58,14 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
 
                 return;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Serilog.Log.Warning(ex,
                     "[TokenCache] Keyring unavailable, falling back to plaintext cache");
             }
 
             storageProperties = new StorageCreationPropertiesBuilder(
-                    $"{ApplicationMetadata.ApplicationNameLowered}.plaintext",
+                    $"{ApplicationMetadata.ApplicationNameHyphenated}.plaintext",
                     CacheDirectory)
                 .WithLinuxUnprotectedFile()
                 .Build();
@@ -73,10 +73,10 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
         else
         {
             storageProperties = new StorageCreationPropertiesBuilder(
-                    $"{ApplicationMetadata.ApplicationNameLowered}.msalcache",
+                    $"{ApplicationMetadata.ApplicationNameHyphenated}.msalcache",
                     CacheDirectory)
                 .WithMacKeyChain(
-                    serviceName: ApplicationMetadata.ApplicationNameLowered,
+                    serviceName: ApplicationMetadata.ApplicationNameHyphenated,
                     accountName: "MSALCache")
                 .Build();
         }
@@ -101,9 +101,9 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
                 : Environment.SpecialFolder.UserProfile);
 
         return OperatingSystem.IsWindows()
-            ? fs.Path.Combine(appData, ApplicationMetadata.ApplicationNameLowered)
+            ? fs.Path.Combine(appData, ApplicationMetadata.ApplicationNameHyphenated)
             : OperatingSystem.IsMacOS()
-                ? fs.Path.Combine(appData, "Library", "Application Support", ApplicationMetadata.ApplicationNameLowered)
-                : fs.Path.Combine(appData, ".config", ApplicationMetadata.ApplicationNameLowered);
+                ? fs.Path.Combine(appData, "Library", "Application Support", ApplicationMetadata.ApplicationNameHyphenated)
+                : fs.Path.Combine(appData, ".config", ApplicationMetadata.ApplicationNameHyphenated);
     }
 }

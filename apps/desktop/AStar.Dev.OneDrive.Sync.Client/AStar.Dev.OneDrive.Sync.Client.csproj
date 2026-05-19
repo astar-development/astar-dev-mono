@@ -11,6 +11,10 @@
     <EmbeddedResource Include="Assets\Localization\*.json" />
   </ItemGroup>
 
+    <ItemGroup Label="Application Insights">
+        <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+    </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.ReactiveUI" />
@@ -24,10 +28,9 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="Microsoft.Kiota.Abstractions" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Microsoft.Identity.Client" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="OpenTelemetry.Api" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
 
     <PackageReference Include="Testably.Abstractions" />
@@ -36,18 +39,28 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
 
     <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Enrichers.Environment" />
+    <PackageReference Include="Serilog.Enrichers.Span" />
+    <PackageReference Include="Serilog.Expressions" />
     <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" />
     <PackageReference Include="Serilog.Sinks.Async" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
-    <PackageReference Include="Serilog.Settings.Configuration" />
   </ItemGroup>
+
+    <ItemGroup Label="MSAL">
+        <PackageReference Include="Microsoft.Identity.Client" />
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    </ItemGroup>
 
   <ItemGroup>
       <None Update="appsettings.json">
@@ -56,6 +69,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\functional\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
     <ProjectReference Include="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />

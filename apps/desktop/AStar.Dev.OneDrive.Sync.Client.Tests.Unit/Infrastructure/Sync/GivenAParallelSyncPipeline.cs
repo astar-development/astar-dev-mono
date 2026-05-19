@@ -202,7 +202,7 @@ public sealed class GivenAParallelSyncPipeline
 
     private sealed class SucceedingDownloadWorker : ISyncWorker
     {
-        public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+        public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
         {
             await foreach(var job in reader.ReadAllAsync(ct))
                 onJobComplete(job, true, null);

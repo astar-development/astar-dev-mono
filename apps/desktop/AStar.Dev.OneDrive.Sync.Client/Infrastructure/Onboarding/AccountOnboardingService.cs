@@ -13,15 +13,15 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
     /// <inheritdoc />
     public async Task<OneDriveAccount> CompleteOnboardingAsync(OneDriveAccount account, CancellationToken ct)
     {
-        if(account.SyncConfig is null)
+        if (account.SyncConfig is null)
             account.SyncConfig = ResolveDefaultSyncConfig(account.Profile.Email);
 
         await accountRepository.UpsertAsync(ToEntity(account), ct);
 
-        foreach(var (folderId, folderName) in account.FolderNames)
+        foreach (var (folderId, folderName) in account.FolderNames)
             await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, ct);
 
-        if(account.IsActive)
+        if (account.IsActive)
             await accountRepository.SetActiveAccountAsync(account.Id, ct);
 
         return account;
@@ -29,7 +29,7 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
 
     private static AccountSyncConfig? ResolveDefaultSyncConfig(string email)
     {
-        var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(email);
+        string defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);
 
         return LocalSyncPathFactory.Create(defaultPath)
             .Match<AccountSyncConfig?>(p => AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, p), _ => null);
@@ -38,12 +38,12 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
     private static AccountEntity ToEntity(OneDriveAccount account)
         => new()
         {
-            Id           = account.Id,
-            Profile      = account.Profile,
-            AccentIndex  = account.AccentIndex,
-            IsActive     = account.IsActive,
+            Id = account.Id,
+            Profile = account.Profile,
+            AccentIndex = account.AccentIndex,
+            IsActive = account.IsActive,
             LastSyncedAt = account.LastSyncedAt,
-            Quota        = account.Quota,
-            SyncConfig   = account.SyncConfig ?? AccountSyncConfigFactory.Default
+            Quota = account.Quota,
+            SyncConfig = account.SyncConfig ?? AccountSyncConfigFactory.Default
         };
 }

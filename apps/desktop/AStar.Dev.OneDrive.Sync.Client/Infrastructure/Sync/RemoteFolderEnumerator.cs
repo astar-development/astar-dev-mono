@@ -25,7 +25,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         var syncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
-        var driveId = await graphService.GetDriveIdAsync(accessToken, ct)
+        var driveId = await graphService.GetDriveIdAsync(account.Id.Id, accessToken, ct)
             .MatchAsync<DriveId, string, DriveId?>(
                 id => id,
                 error =>
@@ -50,7 +50,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if(ct.IsCancellationRequested)
                 break;
 
-            var folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId.Value, ct).ConfigureAwait(false);
+            string? folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, syncedItems, accessToken, driveId.Value, ct).ConfigureAwait(false);
 
             if(folderId is null)
             {
@@ -84,7 +84,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
     private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, string accessToken, DriveId driveId, CancellationToken ct)
     {
-        var folderId = rule.RemoteItemId
+        string? folderId = rule.RemoteItemId
             ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
             ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct).ConfigureAwait(false);
 

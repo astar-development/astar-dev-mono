@@ -187,7 +187,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         if(!doc.RootElement.TryGetProperty("id", out var idElement))
             return new Result<string?, string>.Error("Upload response missing item ID.");
-        var itemId = idElement.GetString();
+        string? itemId = idElement.GetString();
         if(itemId is null)
             return new Result<string?, string>.Error("Upload response missing item ID.");
 

@@ -60,14 +60,14 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManager
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
-        graphService.GetDriveIdAsync(AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetDriveIdAsync(AccountIdString, AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
-        graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetRootFoldersAsync(AccountIdString, AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName)]));
 
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(new List<SyncRuleEntity>());
+            .Returns([]);
 
         var account = new OneDriveAccount
         {
