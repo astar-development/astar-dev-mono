@@ -1,10 +1,9 @@
-using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -15,14 +14,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 public sealed class GivenASyncService
 {
     private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
-    private readonly IGraphService         _graphService         = Substitute.For<IGraphService>();
     private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
-    private readonly IHttpDownloader       _httpDownloader       = Substitute.For<IHttpDownloader>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IFileSystem           _fileSystem           = Substitute.For<IFileSystem>();
+    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
 
     private SyncService BuildSut()
-        => new(_authService, _syncRepository, _httpDownloader, _graphService, _syncPassOrchestrator, _fileSystem);
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier);
 
     [Fact]
     public void when_constructed_then_instance_is_not_null()
@@ -141,6 +138,8 @@ public sealed class GivenASyncService
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         var service = BuildSut();
         var conflict = new SyncConflict
@@ -179,6 +178,8 @@ public sealed class GivenASyncService
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         var service = BuildSut();
         var conflict = new SyncConflict { Id = Guid.NewGuid(), Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };

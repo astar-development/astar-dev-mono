@@ -32,6 +32,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IStartupService, StartupService>();
         _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
         _ = services.AddSingleton<IUploadService, UploadService>();
+        _ = services.AddSingleton<IConflictApplier, ConflictApplier>();
         _ = services.AddSingleton<ILocalChangeDetector, LocalChangeDetector>();
         _ = services.AddSingleton<IRemoteFolderEnumerator, RemoteFolderEnumerator>();
         _ = services.AddSingleton<IRemoteDeletionDetector, RemoteDeletionDetector>();
