@@ -66,12 +66,21 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     /// <inheritdoc />
     public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
-        => await accountRepository.GetByIdAsync(new AccountId(accountId), ct)
-            .TapAsync(async entity =>
+    {
+        var accountOption = await accountRepository.GetByIdAsync(new AccountId(accountId), ct).ConfigureAwait(false);
+
+        await accountOption.Match<Task>(
+            async entity =>
             {
-                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct);
-                await TriggerAccountAsync(MapEntityToAccount(entity, rules), ct);
+                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
+                await TriggerAccountAsync(MapEntityToAccount(entity, rules), ct).ConfigureAwait(false);
+            },
+            () =>
+            {
+                Serilog.Log.Warning("[SyncScheduler] TriggerAccountAsync called for unknown account {AccountId}", accountId);
+                return Task.CompletedTask;
             });
+    }
 
     /// <inheritdoc />
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
