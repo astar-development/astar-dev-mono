@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -25,7 +26,7 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
     }
 
-    private RemoteFolderEnumerator CreateSut() => new(_graphService, _syncRuleRepository, _syncedItemRepository);
+    private RemoteFolderEnumerator CreateSut() => new(_graphService, _syncRuleRepository, _syncedItemRepository, Substitute.For<ILogger<RemoteFolderEnumerator>>());
 
     private static OneDriveAccount CreateAccount() => new()
     {

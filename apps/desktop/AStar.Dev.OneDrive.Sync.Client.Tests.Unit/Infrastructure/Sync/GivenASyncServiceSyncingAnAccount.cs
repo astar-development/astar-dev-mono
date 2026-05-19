@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
@@ -17,7 +18,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier);
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>());
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {

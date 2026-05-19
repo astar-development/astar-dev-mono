@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -21,7 +22,7 @@ public sealed class GivenADownloadJobHandler
             .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
     }
 
-    private DownloadJobHandler CreateSut() => new(_downloader, _graphService);
+    private DownloadJobHandler CreateSut() => new(_downloader, _graphService, Substitute.For<ILogger<DownloadJobHandler>>());
 
     private static DownloadSyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
     {

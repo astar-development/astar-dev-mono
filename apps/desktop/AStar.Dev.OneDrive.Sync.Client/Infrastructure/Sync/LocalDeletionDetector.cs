@@ -4,23 +4,25 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem) : ILocalDeletionDetector
+public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<LocalDeletionDetector> logger) : ILocalDeletionDetector
 {
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, string accessToken, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
-        foreach(var (remoteId, knownItem) in syncedItems)
+        foreach (var (remoteId, knownItem) in syncedItems)
         {
-            if(knownItem.IsFolder) continue;
-            if(ct.IsCancellationRequested) break;
-            if(fileSystem.File.Exists(knownItem.LocalPath)) continue;
+            if (knownItem.IsFolder) continue;
+            if (ct.IsCancellationRequested) break;
+            if (fileSystem.File.Exists(knownItem.LocalPath)) continue;
 
-            Serilog.Log.Information("[LocalDeletionDetector] Local file deleted — removing remote: {Path}", knownItem.RemotePath);
+            OneDriveSyncClientMessages.LocalDeletionDetectorDeleted(logger, knownItem.RemotePath);
 
             try
             {
@@ -29,19 +31,19 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
                 await deleteResult.MatchAsync<Unit>(
                     async _ =>
                     {
-                        Serilog.Log.Debug("[LocalDeletionDetector] Deleted remote item {RemoteId}", remoteId);
+                        OneDriveSyncClientMessages.LocalDeletionDetectorRemoteDeleted(logger, remoteId);
                         await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
                         return Unit.Default;
                     },
                     deleteError =>
                     {
-                        Serilog.Log.Error("[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}", remoteId, deleteError);
+                        OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, remoteId, deleteError);
                         return Unit.Default;
                     });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Serilog.Log.Error(ex, "[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}", remoteId, ex.Message);
+                OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, remoteId, ex.Message, ex);
             }
         }
     }

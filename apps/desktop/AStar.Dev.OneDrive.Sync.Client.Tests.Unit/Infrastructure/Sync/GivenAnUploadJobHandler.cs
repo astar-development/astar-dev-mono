@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -14,7 +15,7 @@ public sealed class GivenAnUploadJobHandler
 
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
 
-    private UploadJobHandler CreateSut() => new(_graphService);
+    private UploadJobHandler CreateSut() => new(_graphService, NullLogger<UploadJobHandler>.Instance);
 
     private static UploadSyncJob MakeUploadJob(string folderId = "folder-1")
     {

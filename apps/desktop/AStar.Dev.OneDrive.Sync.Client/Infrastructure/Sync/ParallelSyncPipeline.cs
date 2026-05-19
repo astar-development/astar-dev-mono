@@ -1,6 +1,8 @@
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -17,13 +19,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository) : ISyncPipeline
+public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository, ILogger<ParallelSyncPipeline> logger) : ISyncPipeline
 {
     /// <inheritdoc />
     public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
     {
         var jobList = jobs.ToList();
-        if(jobList.Count == 0)
+        if (jobList.Count == 0)
             return;
 
         var tracker = new SyncProgressTracker(jobList.Count, accountId, folderId);
@@ -42,7 +44,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
 
         try
         {
-            foreach(var job in jobList)
+            foreach (var job in jobList)
             {
                 ct.ThrowIfCancellationRequested();
                 await channel.Writer.WriteAsync(job, ct);
@@ -56,20 +58,20 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
         try
         {
             await Task.WhenAll(workers);
-            Serilog.Log.Information("[Pipeline] All workers completed normally");
+            OneDriveSyncClientMessages.SyncPipelineCompleted(logger);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
+            OneDriveSyncClientMessages.SyncPipelineWorkerException(logger, ex.GetType().Name, ex.Message, ex);
         }
         finally
         {
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: tracker.Done, total: jobList.Count, currentFile: string.Empty, syncState: SyncState.Idle));
-            Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", tracker.Done, jobList.Count);
+            OneDriveSyncClientMessages.SyncPipelineFinalProgress(logger, tracker.Done, jobList.Count);
         }
 
         await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId));
 
-        Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", tracker.Done, jobList.Count);
+        OneDriveSyncClientMessages.SyncPipelineJobsProcessed(logger, tracker.Done, jobList.Count);
     }
 }

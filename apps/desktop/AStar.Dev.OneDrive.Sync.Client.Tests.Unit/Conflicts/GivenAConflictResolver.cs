@@ -5,7 +5,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Conflicts;
 
 public sealed class GivenAConflictResolver
 {
-    private static readonly MockFileSystem MockFs = new();
+    private static readonly MockFileSystem mockFileSystem = new();
 
     [Fact]
     public void when_resolving_with_ignore_policy_then_skip_is_returned()
@@ -143,7 +143,7 @@ public sealed class GivenAConflictResolver
         string localPath = "/home/jason/Documents/report.docx";
         var localModified = new DateTimeOffset(2024, 1, 15, 14, 32, 0, TimeSpan.Zero);
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, mockFileSystem);
 
         result.ShouldContain("report");
         result.ShouldContain("docx");
@@ -158,7 +158,7 @@ public sealed class GivenAConflictResolver
         string localPath = "/home/jason/My Documents/My Report.docx";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, mockFileSystem);
 
         result.ShouldContain("My Report");
         result.ShouldEndWith(".docx");
@@ -170,7 +170,7 @@ public sealed class GivenAConflictResolver
         string localPath = "/home/jason/Documents/README";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, mockFileSystem);
 
         result.ShouldContain("README");
         result.ShouldContain("local");
@@ -182,7 +182,7 @@ public sealed class GivenAConflictResolver
         string localPath = "/home/jason/file.tar.gz";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, mockFileSystem);
 
         result.ShouldContain("file.tar");
         result.ShouldEndWith(".gz");
@@ -195,8 +195,8 @@ public sealed class GivenAConflictResolver
         var time1 = new DateTimeOffset(2024, 1, 15, 14, 32, 0, TimeSpan.Zero);
         var time2 = new DateTimeOffset(2024, 1, 16, 14, 32, 0, TimeSpan.Zero);
 
-        string result1 = ConflictResolver.MakeKeepBothName(localPath, time1, MockFs);
-        string result2 = ConflictResolver.MakeKeepBothName(localPath, time2, MockFs);
+        string result1 = ConflictResolver.MakeKeepBothName(localPath, time1, mockFileSystem);
+        string result2 = ConflictResolver.MakeKeepBothName(localPath, time2, mockFileSystem);
 
         result1.ShouldNotBe(result2);
         result1.ShouldContain("2024-01-15");
@@ -209,7 +209,7 @@ public sealed class GivenAConflictResolver
         string localPath = "/home/jason/Documents/report.docx";
         var localModified = DateTimeOffset.UtcNow;
 
-        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, MockFs);
+        string result = ConflictResolver.MakeKeepBothName(localPath, localModified, mockFileSystem);
 
         string? resultDir = Path.GetDirectoryName(result);
         string? originalDir = Path.GetDirectoryName(localPath);

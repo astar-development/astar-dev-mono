@@ -5,10 +5,12 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using Microsoft.Extensions.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier) : ISyncService
+public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier, ILogger<SyncService> logger) : ISyncService
 {
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
@@ -22,7 +24,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
-        Serilog.Log.Information("[SyncService] SyncAccountAsync for {Email}", account.Profile.Email);
+        OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Profile.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
         string? accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
@@ -34,10 +36,10 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                     return null;
                 }).ConfigureAwait(false);
 
-        if(accessToken is null)
+        if (accessToken is null)
             return;
 
-        if(account.SyncConfig is null)
+        if (account.SyncConfig is null)
         {
             RaiseProgress(account.Id.Id, 0, 0, "No local sync path configured", SyncState.Error);
 
@@ -58,21 +60,21 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 args => JobCompleted?.Invoke(this, args),
                 ct).ConfigureAwait(false);
 
-            if(!didRun)
+            if (!didRun)
                 RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
             else
             {
-                Serilog.Log.Information("[SyncService] Sync complete for {Email}", account.Profile.Email);
+                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Profile.Email);
                 RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
             }
         }
-        catch(OperationCanceledException)
+        catch (OperationCanceledException)
         {
             RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[SyncService] Unhandled error syncing {Email}: {Error}", account.Profile.Email, ex.Message);
+            OneDriveSyncClientMessages.SyncServiceError(logger, account.Profile.Email, ex.Message, ex);
             RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
         }
     }
@@ -83,13 +85,13 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         string? accessToken = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct)
             .MatchAsync<AuthResult, AuthError, string?>(ok => ok.AccessToken, _ => null).ConfigureAwait(false);
 
-        if(accessToken is null)
+        if (accessToken is null)
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
         bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
 
-        if(!applied)
+        if (!applied)
         {
             RaiseProgress(conflict.Remote.AccountId.Id, 0, 0, "Conflict resolution failed", SyncState.Error);
 

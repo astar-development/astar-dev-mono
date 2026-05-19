@@ -12,11 +12,13 @@ using AStar.Dev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNodeViewModel;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, ILogger<FolderTreeNodeViewModel> folderTreeLogger) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
@@ -24,6 +26,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private readonly IAccountRepository _repository = repository;
     private readonly ISyncRuleRepository _syncRuleRepository = syncRuleRepository;
     private readonly IFileManagerService _fileManagerService = fileManagerService;
+    private readonly ILogger<AccountFilesViewModel> _logger = logger;
+    private readonly ILogger<FolderTreeNodeViewModel> _folderTreeLogger = folderTreeLogger;
     private string? _accessToken;
     private Option<DriveId> _driveId = DriveIdFactory.Empty;
 
@@ -59,7 +63,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if(IsLoading)
+        if (IsLoading)
             return;
 
         IsLoading = true;
@@ -79,7 +83,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                         return null;
                     });
 
-            if(_accessToken is null)
+            if (_accessToken is null)
                 return;
 
             var driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken)
@@ -92,7 +96,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                         return null;
                     });
 
-            if(driveId is null)
+            if (driveId is null)
                 return;
 
             _driveId = new Option<DriveId>.Some(driveId.Value);
@@ -100,7 +104,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             var includedPaths = await LoadRulesAsync();
             await BuildRootFoldersAsync(includedPaths);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             LoadError = $"Failed to load folders: {ex.Message}";
             HasLoadError = true;
@@ -128,27 +132,27 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 f => f,
                 error =>
                 {
-                    Serilog.Log.Warning("[AccountFilesViewModel] Failed to load root folders for account {AccountId}: {Error}", _account.Id.Id, error);
+                    OneDriveSyncClientMessages.RootFoldersLoadFailed(_logger, _account.Id.Id, error);
                     LoadError = error;
                     HasLoadError = true;
                     return null;
                 });
 
-        if(folders is null)
+        if (folders is null)
             return;
 
         var driveId = _driveId.Match<DriveId?>(
             id => id,
             () =>
             {
-                Serilog.Log.Warning("[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountId}", _account.Id.Id);
+                OneDriveSyncClientMessages.DriveIdNotAvailable(_logger, _account.Id.Id);
                 return null;
             });
 
-        if(driveId is null)
+        if (driveId is null)
             return;
 
-        foreach(var f in folders)
+        foreach (var f in folders)
         {
             string remotePath = $"/{f.Name}";
             var syncState = includedPaths.Contains(remotePath)
@@ -156,7 +160,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 : FolderSyncState.Excluded;
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveId.Value);
+            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveId.Value, _folderTreeLogger);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;
@@ -171,8 +175,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         try
         {
             var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
+            string ruleTypeName = ruleType.ToString();
 
-            Serilog.Log.Debug("[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})", ruleType, node.RemotePath, _account.Id.Id);
+            OneDriveSyncClientMessages.RulePersisting(_logger, ruleTypeName, node.RemotePath, _account.Id.Id);
 
             await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
@@ -180,12 +185,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 ? CollectAllVisible([node])
                 : [node];
 
-            foreach(var item in affected)
+            foreach (var item in affected)
                 await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}", _account.Id.Id, ex.Message);
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(_logger, _account.Id.Id, ex.Message, ex);
         }
     }
 
@@ -196,7 +201,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive", node.Name);
 
-        if(!fileSystem.Directory.Exists(path))
+        if (!fileSystem.Directory.Exists(path))
             return;
 
         _fileManagerService.OpenFolder(path);
@@ -204,11 +209,11 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
     {
-        foreach(var node in nodes)
+        foreach (var node in nodes)
         {
             yield return node;
 
-            foreach(var descendant in CollectAllVisible(node.Children))
+            foreach (var descendant in CollectAllVisible(node.Children))
                 yield return descendant;
         }
     }

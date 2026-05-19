@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -15,13 +16,13 @@ public sealed class GivenADownloadJobBuilder
 
     private readonly ISyncedItemRegistrar _syncedItemRegistrar = Substitute.For<ISyncedItemRegistrar>();
 
-    private DownloadJobBuilder CreateSut(MockFileSystem mockFs) => new(_syncedItemRegistrar, mockFs);
+    private DownloadJobBuilder CreateSut(MockFileSystem mockFileSystem) => new(_syncedItemRegistrar, mockFileSystem, Substitute.For<ILogger<DownloadJobBuilder>>());
 
     private static OneDriveAccount CreateAccount(ConflictPolicy policy = ConflictPolicy.Ignore) => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(policy, LocalSyncPath.Restore(BasePath)),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(policy, LocalSyncPath.Restore(BasePath)),
         SelectedFolderIds = []
     };
 
@@ -93,11 +94,11 @@ public sealed class GivenADownloadJobBuilder
 
         var knownItem = new SyncedItemEntity
         {
-            AccountId        = new AccountId("user-1"),
-            RemoteItemId     = new OneDriveItemId("item-a"),
-            RemotePath       = "/Documents/a.txt",
-            LocalPath        = localFile,
-            Tags             = VersionInfoFactory.Create("etag-123", null),
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
+            Tags = VersionInfoFactory.Create("etag-123", null),
             RemoteModifiedAt = DateTimeOffset.UtcNow.AddDays(-1)
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
@@ -122,10 +123,10 @@ public sealed class GivenADownloadJobBuilder
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
         var knownItem = new SyncedItemEntity
         {
-            AccountId        = new AccountId("user-1"),
-            RemoteItemId     = new OneDriveItemId("item-a"),
-            RemotePath       = "/Documents/a.txt",
-            LocalPath        = localFile,
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
@@ -214,10 +215,10 @@ public sealed class GivenADownloadJobBuilder
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
         var knownItem = new SyncedItemEntity
         {
-            AccountId        = new AccountId("user-1"),
-            RemoteItemId     = new OneDriveItemId("item-a"),
-            RemotePath       = "/Documents/a.txt",
-            LocalPath        = localFile,
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
@@ -243,10 +244,10 @@ public sealed class GivenADownloadJobBuilder
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
         var knownItem = new SyncedItemEntity
         {
-            AccountId        = new AccountId("user-1"),
-            RemoteItemId     = new OneDriveItemId("item-a"),
-            RemotePath       = "/Documents/a.txt",
-            LocalPath        = localFile,
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
@@ -272,10 +273,10 @@ public sealed class GivenADownloadJobBuilder
         var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-10);
         var knownItem = new SyncedItemEntity
         {
-            AccountId        = new AccountId("user-1"),
-            RemoteItemId     = new OneDriveItemId("item-a"),
-            RemotePath       = "/Documents/a.txt",
-            LocalPath        = localFile,
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };

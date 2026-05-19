@@ -1,5 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
+using NSubstitute;
 using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
@@ -11,7 +13,7 @@ public sealed class GivenATokenCacheService
     {
         _ = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         _ = service.ShouldNotBeNull();
         service.CacheDirectory.ShouldNotBeNullOrEmpty();
@@ -20,7 +22,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_constructed_then_cache_directory_property_is_not_null()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         _ = service.CacheDirectory.ShouldNotBeNull();
     }
@@ -28,7 +30,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_then_it_is_not_empty()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         service.CacheDirectory.Length.ShouldBeGreaterThan(0);
     }
@@ -36,7 +38,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_then_it_contains_app_name()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         service.CacheDirectory.ShouldContain("astar-dev-onedrive-sync");
     }
@@ -47,7 +49,7 @@ public sealed class GivenATokenCacheService
         var mockApp = Substitute.For<IPublicClientApplication>();
         var mockCache = Substitute.For<ITokenCache>();
         _ = mockApp.UserTokenCache.Returns(mockCache);
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
         try
         {
             await service.RegisterAsync(mockApp);
@@ -64,7 +66,7 @@ public sealed class GivenATokenCacheService
         var mockApp = Substitute.For<IPublicClientApplication>();
         var mockCache = Substitute.For<ITokenCache>();
         _ = mockApp.UserTokenCache.Returns(mockCache);
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         try
         {
@@ -81,8 +83,8 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_two_instances_are_created_then_they_share_the_same_cache_directory()
     {
-        var service1 = new TokenCacheService(new MockFileSystem());
-        var service2 = new TokenCacheService(new MockFileSystem());
+        var service1 = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
+        var service2 = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         _ = service1.ShouldNotBeNull();
         _ = service2.ShouldNotBeNull();
@@ -95,7 +97,7 @@ public sealed class GivenATokenCacheService
     [InlineData("different/path")]
     public void when_cache_directory_is_read_then_it_is_platform_specific(string _)
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         string cacheDir = service.CacheDirectory;
         cacheDir.ShouldNotBeNullOrEmpty();
@@ -105,7 +107,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_twice_then_same_value_is_returned()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
         string cachedDir = service.CacheDirectory;
         service.CacheDirectory.ShouldBe(cachedDir);
     }
@@ -113,7 +115,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_then_it_is_an_absolute_path()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         bool isAbsolute = Path.IsPathRooted(service.CacheDirectory);
         isAbsolute.ShouldBeTrue();
@@ -122,7 +124,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_property_is_inspected_then_it_has_no_setter()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         _ = service.CacheDirectory;
         var property = typeof(TokenCacheService).GetProperty("CacheDirectory");
@@ -133,7 +135,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public async Task when_register_async_called_with_null_then_null_reference_exception_is_thrown()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
         try
         {
             await service.RegisterAsync(null!);
@@ -155,7 +157,7 @@ public sealed class GivenATokenCacheService
         {
             var task = Task.Run(() =>
             {
-                var service = new TokenCacheService(new MockFileSystem());
+                var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
                 lock (lockObj)
                 {
                     services.Add(service);
@@ -177,7 +179,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_then_path_is_rooted()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
         service.CacheDirectory.ShouldNotBeNullOrEmpty();
         Path.IsPathRooted(service.CacheDirectory).ShouldBeTrue();
@@ -186,7 +188,7 @@ public sealed class GivenATokenCacheService
     [Fact]
     public void when_cache_directory_is_read_then_it_matches_platform_convention()
     {
-        var service = new TokenCacheService(new MockFileSystem());
+        var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
         string cacheDir = service.CacheDirectory;
         if (OperatingSystem.IsWindows())
         {

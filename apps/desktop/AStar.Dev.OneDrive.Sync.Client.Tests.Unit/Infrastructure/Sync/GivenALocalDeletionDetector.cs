@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging.Abstractions;
 using Testably.Abstractions.Testing;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -11,18 +12,18 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenALocalDeletionDetector
 {
-    private const string BaseDir   = "/sync-root";
+    private const string BaseDir = "/sync-root";
     private const string LocalFile = $"{BaseDir}/file.txt";
 
-    private readonly IGraphService         _graphService         = Substitute.For<IGraphService>();
+    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
-    private readonly AccountId             _accountId            = new("user-1");
+    private readonly AccountId _accountId = new("user-1");
 
     public GivenALocalDeletionDetector()
         => _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
 
-    private LocalDeletionDetector CreateSut(MockFileSystem mockFs) => new(_graphService, _syncedItemRepository, mockFs);
+    private LocalDeletionDetector CreateSut(MockFileSystem mockFileSystem) => new(_graphService, _syncedItemRepository, mockFileSystem, NullLogger<LocalDeletionDetector>.Instance);
 
     [Fact]
     public async Task when_local_file_still_exists_then_graph_delete_is_not_called()
@@ -94,7 +95,7 @@ public sealed class GivenALocalDeletionDetector
         var syncedItems = new Dictionary<string, SyncedItemEntity>
         {
             ["item-fail"] = new() { RemoteItemId = new OneDriveItemId("item-fail"), RemotePath = "/fail.txt", LocalPath = $"{BaseDir}/fail.txt", IsFolder = false },
-            ["item-ok"]   = new() { RemoteItemId = new OneDriveItemId("item-ok"),   RemotePath = "/ok.txt",   LocalPath = $"{BaseDir}/ok.txt",   IsFolder = false }
+            ["item-ok"] = new() { RemoteItemId = new OneDriveItemId("item-ok"), RemotePath = "/ok.txt", LocalPath = $"{BaseDir}/ok.txt", IsFolder = false }
         };
         var sut = CreateSut(mockFileSystem);
 

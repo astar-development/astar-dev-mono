@@ -3,11 +3,13 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel) : IAppBootstrapper
+public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
 {
     /// <inheritdoc />
     public async Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default)
@@ -32,7 +34,7 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
         }
         catch (Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[AppBootstrapper] Fatal error during bootstrap: {Message}", ex.Message);
+            OneDriveSyncClientMessages.BootstrapFatal(logger, ex.Message, ex);
             throw;
         }
     }

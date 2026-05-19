@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
@@ -8,7 +9,7 @@ public sealed class GivenASyncWorkerFactory
     private readonly IJobHandler _handler = Substitute.For<IJobHandler>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
 
-    private SyncWorkerFactory CreateSut() => new([_handler], _syncRepository);
+    private SyncWorkerFactory CreateSut() => new([_handler], _syncRepository, Substitute.For<ILogger<SyncWorker>>());
 
     [Fact]
     public void when_create_is_called_then_returns_non_null_worker()

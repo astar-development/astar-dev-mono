@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -18,7 +19,7 @@ public sealed class GivenASyncedItemRegistrar
     public GivenASyncedItemRegistrar()
         => _fileSystem.Directory.Returns(_mockDirectory);
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem);
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
 
     private static DeltaItem FolderItem(string id, string remotePath)
         => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));

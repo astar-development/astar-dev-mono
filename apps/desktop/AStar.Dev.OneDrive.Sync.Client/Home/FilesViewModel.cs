@@ -7,17 +7,18 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> accountFilesLogger, ILogger<FolderTreeNodeViewModel> folderTreeLogger) : ObservableObject
 {
-    public ObservableCollection<Accounts.AccountFilesViewModel> Tabs { get; } = [];
+    public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasTabs))]
     [NotifyPropertyChangedFor(nameof(HasNoAccounts))]
-    public partial Accounts.AccountFilesViewModel? ActiveTab { get; set; }
+    public partial AccountFilesViewModel? ActiveTab { get; set; }
 
     public bool HasTabs => Tabs.Count > 0;
     public bool HasNoAccounts => Tabs.Count == 0;
@@ -33,8 +34,8 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
         if(Tabs.Any(t => t.AccountId == account.Id.Id))
             return;
 
-        var tab = new Accounts.AccountFilesViewModel(
-            account, authService, graphService, repository, syncRuleRepository, fileSystem, fileManagerService);
+        var tab = new AccountFilesViewModel(
+            account, authService, graphService, repository, syncRuleRepository, fileSystem, fileManagerService, accountFilesLogger, folderTreeLogger);
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,
@@ -72,7 +73,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
         await tab.LoadCommand.ExecuteAsync(null);
     }
 
-    private void ActivateTab(Accounts.AccountFilesViewModel? tab)
+    private void ActivateTab(AccountFilesViewModel? tab)
     {
         foreach(var t in Tabs)
             t.IsActiveTab = t == tab;

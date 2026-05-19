@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 using ReactiveUnit = global::System.Reactive.Unit;
@@ -17,7 +18,7 @@ public sealed class GivenAConflictApplier
     private readonly IHttpDownloader _httpDownloader = Substitute.For<IHttpDownloader>();
     private readonly IFileSystem     _fileSystem     = Substitute.For<IFileSystem>();
 
-    private ConflictApplier CreateSut() => new(_httpDownloader, _graphService, _fileSystem);
+    private ConflictApplier CreateSut() => new(_httpDownloader, _graphService, _fileSystem, Substitute.For<ILogger<ConflictApplier>>());
 
     private static SyncConflict CreateUseRemoteConflict() => new()
     {

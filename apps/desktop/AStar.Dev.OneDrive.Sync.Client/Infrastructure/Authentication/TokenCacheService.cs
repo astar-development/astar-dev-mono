@@ -1,4 +1,6 @@
 using System.IO.Abstractions;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
@@ -17,7 +19,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 /// (libsecret on Linux, DPAPI on Windows, Keychain on macOS).
 /// Falls back to plaintext with a warning on unsupported platforms.
 /// </summary>
-public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheService
+public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCacheService> logger) : ITokenCacheService
 {
     private const int KeyringTimeoutSeconds = 5;
 
@@ -60,8 +62,7 @@ public sealed class TokenCacheService(IFileSystem fileSystem) : ITokenCacheServi
             }
             catch (Exception ex)
             {
-                Serilog.Log.Warning(ex,
-                    "[TokenCache] Keyring unavailable, falling back to plaintext cache");
+                OneDriveSyncClientMessages.TokenCacheFailed(logger, ex);
             }
 
             storageProperties = new StorageCreationPropertiesBuilder(

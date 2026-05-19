@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Settings;
@@ -27,10 +28,13 @@ public sealed class GivenASettingsServiceLoadAsync
         return mockFileSystem;
     }
 
+    private static SettingsService CreateService(MockFileSystem fileSystem)
+        => new(fileSystem, Substitute.For<ILogger<SettingsService>>(), SettingsPath);
+
     [Fact]
     public async Task when_settings_file_does_not_exist_then_current_uses_defaults_after_load()
     {
-        var sut = new SettingsService(CreateEmptyMockileSystem(), SettingsPath);
+        var sut = CreateService(CreateEmptyMockileSystem());
 
         await sut.LoadAsync();
 
@@ -42,7 +46,7 @@ public sealed class GivenASettingsServiceLoadAsync
     public async Task when_valid_json_file_exists_then_current_is_populated_after_load()
     {
         var expected = new AppSettings { Theme = AppTheme.Dark, SyncIntervalMinutes = 15, Locale = "fr-FR" };
-        var sut = new SettingsService(CreateMockFileSystemWithSettings(expected), SettingsPath);
+        var sut = CreateService(CreateMockFileSystemWithSettings(expected));
 
         await sut.LoadAsync();
 
@@ -56,7 +60,7 @@ public sealed class GivenASettingsServiceLoadAsync
     {
         var mockFileSystem = CreateEmptyMockileSystem();
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("{ this is not valid json }}}"));
-        var sut = new SettingsService(mockFileSystem, SettingsPath);
+        var sut = CreateService(mockFileSystem);
 
         await sut.LoadAsync();
 
@@ -69,7 +73,7 @@ public sealed class GivenASettingsServiceLoadAsync
     {
         var mockFileSystem = CreateEmptyMockileSystem();
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("not json at all"));
-        var sut = new SettingsService(mockFileSystem, SettingsPath);
+        var sut = CreateService(mockFileSystem);
 
         await Should.NotThrowAsync(() => sut.LoadAsync());
     }
@@ -79,7 +83,7 @@ public sealed class GivenASettingsServiceLoadAsync
     {
         var mockFileSystem = CreateEmptyMockileSystem();
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("null"));
-        var sut = new SettingsService(mockFileSystem, SettingsPath);
+        var sut = CreateService(mockFileSystem);
 
         await sut.LoadAsync();
 
@@ -90,7 +94,7 @@ public sealed class GivenASettingsServiceLoadAsync
     public async Task when_load_async_is_called_multiple_times_then_current_reflects_latest_file_content()
     {
         var mockFileSystem = CreateMockFileSystemWithSettings(new AppSettings { Theme = AppTheme.Light });
-        var sut = new SettingsService(mockFileSystem, SettingsPath);
+        var sut = CreateService(mockFileSystem);
         await sut.LoadAsync();
         sut.Current.Theme.ShouldBe(AppTheme.Light);
 

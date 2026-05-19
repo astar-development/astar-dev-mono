@@ -1,11 +1,13 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <inheritdoc />
-public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService graphService) : IJobHandler
+public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService graphService, ILogger<DownloadJobHandler> logger) : IJobHandler
 {
     /// <inheritdoc />
     public bool CanHandle(SyncJob job) => job is DownloadSyncJob;
@@ -25,14 +27,14 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
                     _ => new Result<SyncJob, string>.Ok(downloadJob),
                     error =>
                     {
-                        Serilog.Log.Error("Download failed for {Path}: {Error}", downloadJob.Target.RelativePath, error);
+                        OneDriveSyncClientMessages.DownloadFailed(logger, downloadJob.Target.RelativePath, error);
 
                         return new Result<SyncJob, string>.Error(error);
                     });
             },
             urlError =>
             {
-                Serilog.Log.Error("Could not resolve download URL for {Path}: {Error}", downloadJob.Target.RelativePath, urlError);
+                OneDriveSyncClientMessages.DownloadUrlResolveFailed(logger, downloadJob.Target.RelativePath, urlError);
 
                 return new Result<SyncJob, string>.Error(urlError);
             }).ConfigureAwait(false);
@@ -40,10 +42,10 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
 
     private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
-        if(job.DownloadUrl is not null)
+        if (job.DownloadUrl is not null)
             return new Result<string, string>.Ok(job.DownloadUrl);
 
-        Serilog.Log.Debug("DownloadUrl absent for {Path} — fetching on-demand", job.Target.RelativePath);
+        OneDriveSyncClientMessages.DownloadUrlAbsent(logger, job.Target.RelativePath);
 
         return await graphService.GetDownloadUrlAsync(accountId, accessToken, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
     }

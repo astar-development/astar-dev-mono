@@ -3,7 +3,9 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
@@ -12,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// Default interval: 60 minutes. Configurable via Settings.
 /// Manual sync can be triggered immediately via <see cref="TriggerNowAsync"/>.
 /// </summary>
-public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository) : IAsyncDisposable, ISyncScheduler
+public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository, ILogger<SyncScheduler> logger) : IAsyncDisposable, ISyncScheduler
 {
     private Timer? _timer;
     private TimeSpan _interval = TimeSpan.FromMinutes(60);
@@ -38,9 +40,9 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         {
             _timer = new Timer(OnTimerTickAsync, state: null, dueTime: _interval, period: _interval);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[SyncScheduler.Start] FATAL ERROR creating Timer: {Error}", ex.Message);
+            OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.Message, ex);
             throw;
         }
     }
@@ -77,7 +79,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             },
             () =>
             {
-                Serilog.Log.Warning("[SyncScheduler] TriggerAccountAsync called for unknown account {AccountId}", accountId);
+                OneDriveSyncClientMessages.SyncSchedulerUnknownAccount(logger, accountId);
                 return Task.CompletedTask;
             });
     }
@@ -108,7 +110,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         catch (Exception ex)
         {
-            Serilog.Log.Error(ex, "[SyncScheduler] Unhandled exception in timer callback: {Error}", ex.Message);
+            OneDriveSyncClientMessages.SyncSchedulerTimerError(logger, ex.Message, ex);
         }
     }
 
@@ -116,24 +118,24 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {
-        Id                = entity.Id,
-        Profile           = entity.Profile,
-        AccentIndex       = entity.AccentIndex,
-        IsActive          = entity.IsActive,
-        LastSyncedAt      = entity.LastSyncedAt,
-        SyncConfig        = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
+        Id = entity.Id,
+        Profile = entity.Profile,
+        AccentIndex = entity.AccentIndex,
+        IsActive = entity.IsActive,
+        LastSyncedAt = entity.LastSyncedAt,
+        SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
         SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
     };
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        if(Interlocked.Exchange(ref _runningFlag, 1) == 1)
+        if (Interlocked.Exchange(ref _runningFlag, 1) == 1)
             return;
 
         try
         {
             var entities = await accountRepository.GetAllAsync(CancellationToken.None);
-            foreach(var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
+            foreach (var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
                 var account = MapEntityToAccount(entity, rules);
@@ -143,9 +145,9 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 {
                     await syncService.SyncAccountAsync(account, ct);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Serilog.Log.Error(ex, "[SyncScheduler] Scheduled sync failed for {Id}: {Error}", account.Id.Id, ex.Message);
+                    OneDriveSyncClientMessages.SyncSchedulerFailed(logger, account.Id.Id, ex.Message, ex);
                 }
                 finally
                 {
@@ -163,7 +165,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     {
         StopSync();
 
-        if(_timer is not null)
+        if (_timer is not null)
             await _timer.DisposeAsync();
     }
 }

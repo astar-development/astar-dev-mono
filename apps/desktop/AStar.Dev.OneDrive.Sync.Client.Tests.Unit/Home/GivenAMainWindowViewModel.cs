@@ -13,6 +13,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
@@ -38,8 +39,8 @@ public sealed class GivenAMainWindowViewModel
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator);
-    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>());
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, Substitute.For<ILogger<AccountsViewModel>>());
+    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator);
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
@@ -48,7 +49,7 @@ public sealed class GivenAMainWindowViewModel
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public sealed class GivenAMainWindowViewModel
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
         accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") });
-        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm));
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 

@@ -15,6 +15,7 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Shell;
@@ -63,17 +64,17 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
     private MainWindowViewModel CreateMainWindowViewModel()
     {
-        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), syncEventAggregator);
-        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>());
+        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), syncEventAggregator, Substitute.For<ILogger<AccountsViewModel>>());
+        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator);
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository);
         var statusBar = new StatusBarViewModel(accounts);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, statusBar);
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
-    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, syncScheduler, CreateMainWindowViewModel());
+    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
 
     [Fact]
     public async Task when_bootstrap_async_is_called_then_settings_load_async_is_called()

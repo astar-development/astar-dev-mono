@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Settings;
@@ -18,10 +19,13 @@ public sealed class GivenASettingsServiceWithDefaults
         return mockFileSystem;
     }
 
+    private static SettingsService CreateService()
+        => new(CreateMockFileSystem(), Substitute.For<ILogger<SettingsService>>(), SettingsPath);
+
     [Fact]
     public void when_constructed_then_settings_have_default_values()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         _ = service.Current.ShouldNotBeNull();
         service.Current.Theme.ShouldBe(AppTheme.System);
@@ -33,7 +37,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_current_is_read_then_it_is_app_settings()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         var settings = service.Current;
 
@@ -44,7 +48,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_theme_is_set_then_it_is_preserved()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.Theme = AppTheme.Dark;
 
@@ -54,7 +58,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_locale_is_set_then_it_is_preserved()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.Locale = "fr-FR";
 
@@ -64,7 +68,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_default_conflict_policy_is_set_then_it_is_preserved()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.DefaultConflictPolicy = ConflictPolicy.LastWriteWins;
 
@@ -74,7 +78,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_sync_interval_minutes_is_set_then_it_is_preserved()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.SyncIntervalMinutes = 30;
 
@@ -84,7 +88,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public async Task when_save_async_called_then_settingschanged_event_is_raised()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
         bool eventRaised = false;
         AppSettings? changedSettings = null;
         service.SettingsChanged += (s, settings) =>
@@ -104,7 +108,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public async Task when_save_async_called_then_settings_are_persisted()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
         service.Current.Locale = "de-DE";
         service.Current.SyncIntervalMinutes = 45;
 
@@ -117,7 +121,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public async Task when_load_async_called_then_no_exception_is_thrown()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         await Should.NotThrowAsync(() => service.LoadAsync());
     }
@@ -125,7 +129,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public async Task when_load_async_called_then_current_settings_is_not_null()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         await service.LoadAsync();
 
@@ -138,7 +142,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [InlineData(AppTheme.Dark)]
     public void when_any_theme_is_set_then_it_is_preserved(AppTheme theme)
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.Theme = theme;
 
@@ -152,7 +156,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [InlineData("es-ES")]
     public void when_any_locale_is_set_then_it_is_preserved(string locale)
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.Locale = locale;
 
@@ -166,7 +170,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [InlineData(ConflictPolicy.LocalWins)]
     public void when_any_conflict_policy_is_set_then_it_is_preserved(ConflictPolicy policy)
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.DefaultConflictPolicy = policy;
 
@@ -180,7 +184,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [InlineData(120)]
     public void when_any_sync_interval_is_set_then_it_is_preserved(int minutes)
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.SyncIntervalMinutes = minutes;
 
@@ -190,7 +194,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public void when_multiple_settings_are_changed_then_all_are_maintained()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
 
         service.Current.Theme = AppTheme.Dark;
         service.Current.Locale = "fr-FR";
@@ -206,7 +210,7 @@ public sealed class GivenASettingsServiceWithDefaults
     [Fact]
     public async Task when_save_async_called_after_multiple_changes_then_event_includes_all_changes()
     {
-        var service = new SettingsService(CreateMockFileSystem(), SettingsPath);
+        var service = CreateService();
         bool eventRaised = false;
         AppSettings? changedSettings = null;
         service.SettingsChanged += (s, settings) =>
