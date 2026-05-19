@@ -17,7 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(IDownloadWorkerFactory workerFactory, ISyncRepository syncRepository) : IParallelDownloadPipeline
+public sealed class ParallelDownloadPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository) : IParallelDownloadPipeline
 {
     private readonly Lock _lock = new();
 

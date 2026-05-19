@@ -14,7 +14,7 @@ public sealed class GivenAParallelDownloadPipeline
     private const string FolderIdValue  = "folder-1";
     private const string AccessToken = "test-token";
 
-    private readonly IDownloadWorkerFactory _workerFactory = Substitute.For<IDownloadWorkerFactory>();
+    private readonly ISyncWorkerFactory _workerFactory = Substitute.For<ISyncWorkerFactory>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
 
     public GivenAParallelDownloadPipeline()
@@ -200,7 +200,7 @@ public sealed class GivenAParallelDownloadPipeline
         _workerFactory.Received(3).Create(Arg.Any<int>());
     }
 
-    private sealed class SucceedingDownloadWorker : IDownloadWorker
+    private sealed class SucceedingDownloadWorker : ISyncWorker
     {
         public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
         {

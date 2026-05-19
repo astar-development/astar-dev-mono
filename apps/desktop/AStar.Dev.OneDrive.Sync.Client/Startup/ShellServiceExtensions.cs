@@ -48,7 +48,10 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISyncEventAggregator, SyncEventAggregator>();
         _ = services.AddSingleton<ISettingsService, SettingsService>();
         _ = services.AddSingleton<IThemeService, ThemeService>();
-        _ = services.AddSingleton<IDownloadWorkerFactory, DownloadWorkerFactory>();
+        _ = services.AddSingleton<IJobHandler, DownloadJobHandler>();
+        _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
+        _ = services.AddSingleton<IJobHandler, DeleteJobHandler>();
+        _ = services.AddSingleton<ISyncWorkerFactory, SyncWorkerFactory>();
         _ = services.AddSingleton<IParallelDownloadPipeline, ParallelDownloadPipeline>();
         _ = services.AddSingleton<IAppBootstrapper, AppBootstrapper>();
         _ = services.AddOneDriveClient();

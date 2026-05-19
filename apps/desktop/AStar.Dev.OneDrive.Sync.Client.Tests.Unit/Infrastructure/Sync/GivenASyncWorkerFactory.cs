@@ -1,18 +1,14 @@
-using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
-public sealed class GivenADownloadWorkerFactory
+public sealed class GivenASyncWorkerFactory
 {
-    private readonly IHttpDownloader _downloader = Substitute.For<IHttpDownloader>();
-    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
+    private readonly IJobHandler _handler = Substitute.For<IJobHandler>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
-    private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
 
-    private DownloadWorkerFactory CreateSut() => new(_downloader, _graphService, _syncRepository, _fileSystem);
+    private SyncWorkerFactory CreateSut() => new([_handler], _syncRepository);
 
     [Fact]
     public void when_create_is_called_then_returns_non_null_worker()
@@ -23,11 +19,11 @@ public sealed class GivenADownloadWorkerFactory
     }
 
     [Fact]
-    public void when_create_is_called_then_returns_download_worker_instance()
+    public void when_create_is_called_then_returns_sync_worker_instance()
     {
         var worker = CreateSut().Create(1);
 
-        worker.ShouldBeOfType<DownloadWorker>();
+        worker.ShouldBeOfType<SyncWorker>();
     }
 
     [Fact]
