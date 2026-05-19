@@ -1,11 +1,9 @@
-using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -15,13 +13,11 @@ public sealed class GivenASyncServiceSyncingAnAccount
 {
     private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
     private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
-    private readonly IHttpDownloader       _httpDownloader       = Substitute.For<IHttpDownloader>();
-    private readonly IGraphService         _graphService         = Substitute.For<IGraphService>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IFileSystem           _fileSystem           = Substitute.For<IFileSystem>();
+    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, _httpDownloader, _graphService, _syncPassOrchestrator, _fileSystem);
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier);
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {

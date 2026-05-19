@@ -1,17 +1,14 @@
-using System.IO.Abstractions;
-using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, IHttpDownloader httpDownloader, IGraphService graphService, ISyncPassOrchestrator syncPassOrchestrator, IFileSystem fileSystem) : ISyncService
+public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier) : ISyncService
 {
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
@@ -90,54 +87,16 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        var applied = await ApplyConflictOutcomeAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
+        var applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
 
         if(!applied)
+        {
+            RaiseProgress(conflict.Remote.AccountId.Id, 0, 0, "Conflict resolution failed", SyncState.Error);
+
             return;
+        }
 
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
-    }
-
-    private async Task<bool> ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
-    {
-        switch(outcome)
-        {
-            case ConflictOutcome.UseRemote:
-                var urlResult = await graphService.GetDownloadUrlAsync(accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
-
-                return await urlResult.MatchAsync<bool>(
-                    async url =>
-                    {
-                        var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
-
-                        return downloadResult.Match<bool>(
-                            _ => true,
-                            downloadError =>
-                            {
-                                Serilog.Log.Error("[SyncService] Download failed resolving conflict for {Path}: {Error}", conflict.Target.RelativePath, downloadError);
-                                RaiseProgress(accountId, 0, 0, downloadError, SyncState.Error);
-
-                                return false;
-                            });
-                    },
-                    error =>
-                    {
-                        Serilog.Log.Error("[SyncService] Could not resolve download URL for conflict item {Path}: {Error}", conflict.Target.RelativePath, error);
-                        RaiseProgress(accountId, 0, 0, error, SyncState.Error);
-
-                        return false;
-                    }).ConfigureAwait(false);
-
-            case ConflictOutcome.KeepBoth:
-                string keepBothName = ConflictResolver.MakeKeepBothName(conflict.Target.LocalPath, conflict.Snapshot.LocalModified, fileSystem);
-                if(fileSystem.File.Exists(conflict.Target.LocalPath))
-                    fileSystem.File.Move(conflict.Target.LocalPath, keepBothName);
-
-                return true;
-
-            default:
-                return true;
-        }
     }
 
     private void RaiseProgress(string accountId, int completed, int total, string currentFile, SyncState syncState)

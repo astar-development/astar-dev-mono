@@ -1,8 +1,7 @@
-using System.IO.Abstractions;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -15,9 +14,10 @@ public sealed class GivenASyncServiceResolvingConflicts
     private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
     private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
+    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, Substitute.For<IHttpDownloader>(), Substitute.For<IGraphService>(), _syncPassOrchestrator, Substitute.For<IFileSystem>());
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier);
 
     private static SyncConflict CreateConflict() => new()
     {
@@ -32,6 +32,8 @@ public sealed class GivenASyncServiceResolvingConflicts
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
         var sut = CreateSut();
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
@@ -61,5 +63,41 @@ public sealed class GivenASyncServiceResolvingConflicts
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
         await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+    }
+
+    [Fact]
+    public async Task when_conflict_applier_returns_false_then_sync_repository_resolve_is_not_called()
+    {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+        var sut = CreateSut();
+
+        await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
+
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+    }
+
+    [Fact]
+    public async Task when_conflict_applier_returns_false_then_error_progress_is_raised()
+    {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        SyncProgressEventArgs? captured = null;
+        var sut = CreateSut();
+        sut.SyncProgressChanged += (_, args) =>
+        {
+            if(args.SyncState == SyncState.Error)
+                captured = args;
+        };
+
+        await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
+
+        captured.ShouldNotBeNull();
+        captured.SyncState.ShouldBe(SyncState.Error);
     }
 }
