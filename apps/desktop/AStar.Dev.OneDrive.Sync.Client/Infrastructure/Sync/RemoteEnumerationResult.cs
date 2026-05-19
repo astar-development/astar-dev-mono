@@ -4,7 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
-/// Carries the output of a single remote-enumeration pass.
-/// Consumed by deletion detectors and the job executor.
+/// Carries the raw output of a single remote-enumeration pass.
+/// Downstream processors (<see cref="IDownloadJobBuilder"/>, deletion detectors) consume this result.
 /// </summary>
-public sealed record RemoteEnumerationResult(IReadOnlyList<SyncJob> DownloadJobs, IReadOnlySet<string> SeenRemoteIds, Dictionary<string, SyncedItemEntity> SyncedItems, IReadOnlyList<SyncRuleEntity> Rules, bool HadNoRules = false);
+public sealed record RemoteEnumerationResult(IReadOnlyList<DeltaItem> DeltaItems, IReadOnlySet<string> SeenRemoteIds, Dictionary<string, SyncedItemEntity> SyncedItems, IReadOnlyList<SyncRuleEntity> Rules, bool HadNoRules = false);

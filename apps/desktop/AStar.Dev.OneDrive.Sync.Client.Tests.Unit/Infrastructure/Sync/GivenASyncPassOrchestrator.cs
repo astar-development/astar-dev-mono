@@ -11,13 +11,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncPassOrchestrator
 {
-    private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
-    private readonly IDriveStateRepository _driveStateRepository = Substitute.For<IDriveStateRepository>();
+    private readonly IAccountRepository     _accountRepository     = Substitute.For<IAccountRepository>();
+    private readonly IDriveStateRepository  _driveStateRepository  = Substitute.For<IDriveStateRepository>();
     private readonly IRemoteFolderEnumerator _remoteFolderEnumerator = Substitute.For<IRemoteFolderEnumerator>();
     private readonly IRemoteDeletionDetector _remoteDeletionDetector = Substitute.For<IRemoteDeletionDetector>();
-    private readonly ILocalDeletionDetector _localDeletionDetector = Substitute.For<ILocalDeletionDetector>();
-    private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
-    private readonly ISyncJobExecutor _syncJobExecutor = Substitute.For<ISyncJobExecutor>();
+    private readonly ILocalDeletionDetector  _localDeletionDetector  = Substitute.For<ILocalDeletionDetector>();
+    private readonly ILocalChangeDetector    _localChangeDetector    = Substitute.For<ILocalChangeDetector>();
+    private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
+    private readonly IDownloadJobBuilder     _downloadJobBuilder     = Substitute.For<IDownloadJobBuilder>();
 
     private ISyncPassOrchestrator CreateSut()
     {
@@ -26,7 +27,8 @@ public sealed class GivenASyncPassOrchestrator
             _remoteDeletionDetector,
             _localDeletionDetector,
             _localChangeDetector,
-            _syncJobExecutor);
+            _syncJobExecutor,
+            _downloadJobBuilder);
 
         return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies);
     }
@@ -45,8 +47,10 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
+        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyList<SyncJob>)[]);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -58,16 +62,15 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
-        var token = "token";
+        var token   = "token";
 
         await sut.OrchestrateAsync(account, token, _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         await _remoteFolderEnumerator.Received(1).EnumerateAsync(
             Arg.Is(account),
             Arg.Is(token),
-            Arg.Any<Func<SyncConflict, Task>>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -76,10 +79,10 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true));
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         var result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -92,10 +95,10 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true));
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -113,7 +116,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         var result = await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -126,7 +129,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -144,7 +147,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -161,7 +164,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -182,8 +185,8 @@ public sealed class GivenASyncPassOrchestrator
         SetupDeepSyncPrerequisites();
 
         var progressMessages = new List<string>();
-        var sut = CreateSut();
-        var account = CreateAccount();
+        var sut              = CreateSut();
+        var account          = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
@@ -196,8 +199,8 @@ public sealed class GivenASyncPassOrchestrator
         SetupDeepSyncPrerequisites();
 
         var progressMessages = new List<string>();
-        var sut = CreateSut();
-        var account = CreateAccount();
+        var sut              = CreateSut();
+        var account          = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
@@ -213,7 +216,7 @@ public sealed class GivenASyncPassOrchestrator
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.Some(new AccountEntity { Id = new AccountId("user-1") }));
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -226,7 +229,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
@@ -237,27 +240,30 @@ public sealed class GivenASyncPassOrchestrator
     [Fact]
     public async Task when_conflict_is_detected_then_conflict_callback_is_invoked()
     {
-        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Option.None<DriveStateEntity>());
+        SetupDeepSyncPrerequisites();
 
-        var conflict = new SyncConflict { Id = Guid.NewGuid(), Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
+        var conflict = new SyncConflict
+        {
+            Id     = Guid.NewGuid(),
+            Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty))
+        };
         var callbackInvoked = false;
 
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns(async args =>
             {
-                var callback = args.ArgAt<Func<SyncConflict, Task>>(2);
+                var callback = args.ArgAt<Func<SyncConflict, Task>>(4);
                 await callback(conflict);
 
-                return new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true);
+                return (IReadOnlyList<SyncJob>)[];
             });
 
-        var sut = CreateSut();
+        var sut     = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, "token", async detectedConflict =>
         {
-            if (detectedConflict.Id == conflict.Id)
+            if(detectedConflict.Id == conflict.Id)
                 callbackInvoked = true;
             await Task.CompletedTask;
         }, ct: TestContext.Current.CancellationToken);

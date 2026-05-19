@@ -17,13 +17,9 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         driveState.DeltaLink = null;
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
-        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(
-            account,
-            token,
-            conflictCallback,
-            ct).ConfigureAwait(false);
+        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, token, ct).ConfigureAwait(false);
 
-        if (enumerationResult.HadNoRules)
+        if(enumerationResult.HadNoRules)
             return false;
 
         var syncedItemsDict = new Dictionary<string, SyncedItemEntity>(enumerationResult.SyncedItems);
@@ -34,24 +30,19 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", onProgress);
         await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, syncedItemsDict, ct).ConfigureAwait(false);
 
+        var downloadJobs = await dependencies.DownloadJobBuilder.BuildAsync(account, enumerationResult.DeltaItems, enumerationResult.Rules, syncedItemsDict, conflictCallback, ct).ConfigureAwait(false);
+
         var syncedItemsByLocalPath = syncedItemsDict.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
         var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.SyncConfig!.LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
 
-        var allJobs = new List<SyncJob>(enumerationResult.DownloadJobs.Count + uploadJobs.Count);
-        allJobs.AddRange(enumerationResult.DownloadJobs);
+        var allJobs = new List<SyncJob>(downloadJobs.Count + uploadJobs.Count);
+        allJobs.AddRange(downloadJobs);
         allJobs.AddRange(uploadJobs);
 
-        if (allJobs.Count > 0)
+        if(allJobs.Count > 0)
         {
             RaiseProgress(account.Id.Id, 0, allJobs.Count, $"Syncing {allJobs.Count} file(s)...", onProgress);
-            await dependencies.JobExecutor.ExecuteAsync(
-                account,
-                token,
-                allJobs,
-                syncedItemsDict,
-                onProgress ?? (_ => { }),
-                onJobCompleted ?? (_ => { }),
-                ct).ConfigureAwait(false);
+            await dependencies.JobExecutor.ExecuteAsync(account, token, allJobs, syncedItemsDict, onProgress ?? (_ => { }), onJobCompleted ?? (_ => { }), ct).ConfigureAwait(false);
         }
         else
         {
