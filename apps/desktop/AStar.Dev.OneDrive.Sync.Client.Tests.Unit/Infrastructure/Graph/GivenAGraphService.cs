@@ -319,6 +319,35 @@ public sealed class GivenAGraphService : IDisposable
         result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
     }
 
+    [Fact]
+    public async Task when_drive_context_is_resolved_with_same_account_id_but_different_tokens_then_me_drive_endpoint_is_called_only_once()
+    {
+        const string accountId = "account-001";
+        SetupDriveContext(AnyDriveId, "root-001");
+        var ct = TestContext.Current.CancellationToken;
+        var sut = CreateSut();
+
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(accountId, "refreshed-token", ct);
+
+        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_evict_cached_drive_context_is_called_then_subsequent_call_hits_me_drive_endpoint()
+    {
+        const string accountId = "account-001";
+        SetupDriveContext(AnyDriveId, "root-001");
+        var ct = TestContext.Current.CancellationToken;
+        var sut = CreateSut();
+
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        sut.EvictCachedDriveContext(accountId);
+        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+
+        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
+    }
+
     private void SetupDriveContext(string driveId, string rootId)
     {
         _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
