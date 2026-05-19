@@ -1,4 +1,3 @@
-using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -18,7 +17,7 @@ public sealed class GivenADownloadJobHandler
     public GivenADownloadJobHandler()
     {
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<Unit, string>.Ok(Unit.Default));
+            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
     }
 
     private DownloadJobHandler CreateSut() => new(_downloader, _graphService);
@@ -132,7 +131,7 @@ public sealed class GivenADownloadJobHandler
         var job = MakeDownloadJob();
 
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<Unit, string>.Error(downloadError));
+            .Returns(new Result<global::System.Reactive.Unit, string>.Error(downloadError));
 
         var result = await CreateSut().HandleAsync(job, AccessToken, TestContext.Current.CancellationToken);
 
