@@ -22,11 +22,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem) : IUploadService
 {
-    private const int ChunkSize10Mb = 10 * 1024 * 1024;
-
-    private const int    MaxRetries       = 5;
-    private const double BaseDelaySeconds = 2.0;
-    private const double MaxDelaySeconds  = 120.0;
+    private const int    ChunkSize10Mb                   = 10 * 1024 * 1024;
+    private const int    MaxRetries                      = 5;
+    private const double BaseDelaySeconds                = 2.0;
+    private const double MaxDelaySeconds                 = 120.0;
+    private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
 
     /// <summary>
     /// Uploads a local file to OneDrive using a resumable upload session.
@@ -44,14 +44,8 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         return await sessionResult.MatchAsync<Result<string, string>>(
             async sessionUrl =>
-            {
-                var uploadResult = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
-
-                if(uploadResult.Match(_ => true, _ => false))
-                    Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath);
-
-                return uploadResult;
-            },
+                await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct)
+                    .TapAsync(_ => Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath)),
             error => new Result<string, string>.Error(error));
     }
 
@@ -96,36 +90,35 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         using var http = httpClientFactory.CreateClient();
         await using var file = fileSystem.File.OpenRead(localPath);
         byte[] buffer = new byte[ChunkSize10Mb];
-        long uploaded = 0L;
 
-        while(uploaded < totalBytes)
+        return await UploadNextChunkAsync(0L);
+
+        async Task<Result<string, string>> UploadNextChunkAsync(long uploaded)
         {
+            if(uploaded >= totalBytes)
+                return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
+
             ct.ThrowIfCancellationRequested();
 
             int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct);
 
             if(bytesRead == 0)
-                break;
+                return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
 
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
-            var chunkResult = await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct);
 
-            bool chunkFailed = false;
-            var earlyReturn = chunkResult.Match<Result<string, string>?>(
-                itemId => itemId is not null ? new Result<string, string>.Ok(itemId) : null,
-                error => { chunkFailed = true; return new Result<string, string>.Error(error); });
+            return await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct)
+                .BindAsync<string?, string, string>(async itemId =>
+                {
+                    long newUploaded = uploaded + bytesRead;
+                    progress?.Report(newUploaded);
 
-            if(chunkFailed)
-                return earlyReturn!;
+                    if(itemId is not null)
+                        return new Result<string, string>.Ok(itemId);
 
-            uploaded += bytesRead;
-            progress?.Report(uploaded);
-
-            if(earlyReturn is not null)
-                return earlyReturn;
+                    return await UploadNextChunkAsync(newUploaded);
+                });
         }
-
-        return new Result<string, string>.Error("Upload completed without receiving item ID from Graph API.");
     }
 
     private static async Task<int> ReadChunkAsync(Stream file, byte[] buffer, long totalBytes, long uploaded, CancellationToken ct)
