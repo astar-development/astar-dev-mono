@@ -1,9 +1,7 @@
-using System.IO.Abstractions;
-using AStar.Dev.Functional.Extensions;
+using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -16,18 +14,15 @@ public sealed class GivenAParallelDownloadPipeline
     private const string FolderIdValue  = "folder-1";
     private const string AccessToken = "test-token";
 
-    private readonly IHttpDownloader  _downloader     = Substitute.For<IHttpDownloader>();
-    private readonly IGraphService    _graphService   = Substitute.For<IGraphService>();
-    private readonly ISyncRepository  _syncRepository = Substitute.For<ISyncRepository>();
-    private readonly IFileSystem      _fileSystem     = Substitute.For<IFileSystem>();
+    private readonly IDownloadWorkerFactory _workerFactory = Substitute.For<IDownloadWorkerFactory>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
 
     public GivenAParallelDownloadPipeline()
     {
-        _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+        _workerFactory.Create(Arg.Any<int>()).Returns(_ => new SucceedingDownloadWorker());
     }
 
-    private ParallelDownloadPipeline CreateSut() => new(_syncRepository, _graphService, _downloader, _fileSystem);
+    private ParallelDownloadPipeline CreateSut() => new(_workerFactory, _syncRepository);
 
     private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
     {
@@ -193,5 +188,24 @@ public sealed class GivenAParallelDownloadPipeline
         catch(OperationCanceledException) { }
 
         await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>());
+    }
+
+    [Fact]
+    public async Task when_worker_factory_is_called_then_one_worker_created_per_worker_count()
+    {
+        var sut = CreateSut();
+
+        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
+
+        _workerFactory.Received(3).Create(Arg.Any<int>());
+    }
+
+    private sealed class SucceedingDownloadWorker : IDownloadWorker
+    {
+        public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+        {
+            await foreach(var job in reader.ReadAllAsync(ct))
+                onJobComplete(job, true, null);
+        }
     }
 }
