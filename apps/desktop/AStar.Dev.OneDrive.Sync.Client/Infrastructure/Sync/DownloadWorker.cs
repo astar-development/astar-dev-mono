@@ -14,9 +14,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// <see cref="ChannelReader{T}"/> and executes them.
 /// Multiple workers run concurrently — one per degree of parallelism.
 /// </summary>
-public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository, IFileSystem fileSystem)
+public sealed class DownloadWorker(int workerId, IHttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository, IFileSystem fileSystem) : IDownloadWorker
 {
-    /// <summary>Runs the worker, draining all jobs from <paramref name="reader"/> until the channel is complete or <paramref name="ct"/> is cancelled.</summary>
+    /// <inheritdoc />
     public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
         await foreach(var job in reader.ReadAllAsync(ct))
