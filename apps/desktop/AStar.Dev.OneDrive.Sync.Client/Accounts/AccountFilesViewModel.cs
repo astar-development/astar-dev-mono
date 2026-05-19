@@ -135,6 +135,17 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         if(folders is null)
             return;
 
+        var driveId = _driveId.Match<DriveId?>(
+            id => id,
+            () =>
+            {
+                Serilog.Log.Warning("[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountId}", _account.Id.Id);
+                return null;
+            });
+
+        if(driveId is null)
+            return;
+
         foreach(var f in folders)
         {
             string remotePath = $"/{f.Name}";
@@ -143,15 +154,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 : FolderSyncState.Excluded;
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-
-            if(_driveId is not Option<DriveId>.Some driveIdSome)
-            {
-                Serilog.Log.Warning("[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountId}", _account.Id.Id);
-
-                return;
-            }
-
-            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveIdSome.Value);
+            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveId.Value);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;
