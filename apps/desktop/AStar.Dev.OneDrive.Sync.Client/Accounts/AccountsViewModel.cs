@@ -4,19 +4,17 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-
-using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, ISyncEventAggregator syncEventAggregator) : ObservableObject
 {
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
@@ -97,32 +95,18 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     CloseWizard();
 
                     account.AccentIndex = Accounts.Count % 6;
-                    account.IsActive = Accounts.Count == 0;
-                    if(account.SyncConfig is null)
-                    {
-                        var defaultPath = ApplicationMetadata.ApplicationNameLowered.UserDirectory().CombinePath(account.Profile.Email);
-                        var resolvedPath = LocalSyncPathFactory.Create(defaultPath).Match<LocalSyncPath?>(p => p, _ => null);
-                        if(resolvedPath is not null)
-                            account.SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, resolvedPath);
-                    }
+                    account.IsActive    = Accounts.Count == 0;
 
-                    var entity = ToEntity(account);
-                    await repository.UpsertAsync(entity, CancellationToken.None);
+                    var finalisedAccount = await accountOnboardingService.CompleteOnboardingAsync(account, CancellationToken.None);
 
-                    foreach(var (folderId, folderName) in account.FolderNames)
-                        await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, CancellationToken.None);
-
-                    if(account.IsActive)
-                        await repository.SetActiveAccountAsync(account.Id, CancellationToken.None);
-
-                    var card = BuildCard(account);
+                    var card = BuildCard(finalisedAccount);
                     Accounts.Add(card);
                     OnPropertyChanged(nameof(HasAccounts));
 
-                    if(account.IsActive)
+                    if(finalisedAccount.IsActive)
                         ActiveAccount = card;
 
-                    AccountAdded?.Invoke(this, account);
+                    AccountAdded?.Invoke(this, finalisedAccount);
 
                     return Unit.Default;
                 })
@@ -210,15 +194,4 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         return card;
     }
 
-    private static AccountEntity ToEntity(OneDriveAccount a)
-        => new()
-        {
-            Id           = a.Id,
-            Profile      = a.Profile,
-            AccentIndex  = a.AccentIndex,
-            IsActive     = a.IsActive,
-            LastSyncedAt = a.LastSyncedAt,
-            Quota        = a.Quota,
-            SyncConfig   = a.SyncConfig ?? AccountSyncConfigFactory.Default
-        };
 }

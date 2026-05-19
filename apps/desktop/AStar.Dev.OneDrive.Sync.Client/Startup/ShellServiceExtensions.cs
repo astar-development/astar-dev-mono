@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
@@ -26,6 +27,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, RealFileSystem>();
         _ = services.AddSingleton<ITokenCacheService, TokenCacheService>();
+        _ = services.AddSingleton<IAccountOnboardingService, AccountOnboardingService>();
         _ = services.AddSingleton<IAuthService, AuthService>();
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<IGraphService, GraphService>();

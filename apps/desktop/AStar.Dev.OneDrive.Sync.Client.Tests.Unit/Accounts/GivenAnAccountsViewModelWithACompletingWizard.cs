@@ -5,8 +5,8 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
@@ -22,51 +22,39 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     private const string FolderName2  = "Desktop";
 
     [Fact]
-    public async Task when_wizard_completes_with_selected_folders_then_sync_rules_are_written_to_sync_rule_repository()
+    public async Task when_wizard_completes_then_account_onboarding_service_is_called()
     {
-        var (authService, graphService, repository, syncRuleRepo) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, syncRuleRepo);
+        var (authService, graphService, repository, onboardingService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService);
 
-        await DriveWizardToCompletionAsync(sut, authService, graphService);
+        await DriveWizardToCompletionAsync(sut);
 
-        await syncRuleRepo.Received().UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName1}", RuleType.Include, FolderId1, Arg.Any<CancellationToken>());
-        await syncRuleRepo.Received().UpsertAsync(Arg.Any<AccountId>(), $"/{FolderName2}", RuleType.Include, FolderId2, Arg.Any<CancellationToken>());
+        await onboardingService.Received(1).CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task when_wizard_completes_with_two_selected_folders_then_two_sync_rules_are_written()
+    public async Task when_wizard_completes_then_account_is_added_to_accounts_collection()
     {
-        var (authService, graphService, repository, syncRuleRepo) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, syncRuleRepo);
+        var (authService, graphService, repository, onboardingService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService);
 
-        await DriveWizardToCompletionAsync(sut, authService, graphService);
+        await DriveWizardToCompletionAsync(sut);
 
-        await syncRuleRepo.Received(2).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        sut.Accounts.Count.ShouldBe(1);
     }
 
     [Fact]
-    public async Task when_wizard_completes_with_no_selected_folders_then_no_sync_rules_are_written()
+    public async Task when_wizard_is_cancelled_then_account_onboarding_service_is_not_called()
     {
-        var (authService, graphService, repository, syncRuleRepo) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, syncRuleRepo);
+        var (authService, graphService, repository, onboardingService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService);
 
-        await DriveWizardToCompletionWithNoFoldersAsync(sut, authService, graphService);
+        await DriveWizardToCancellationAsync(sut);
 
-        await syncRuleRepo.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await onboardingService.DidNotReceive().CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task when_wizard_completes_then_account_is_persisted_to_account_repository()
-    {
-        var (authService, graphService, repository, syncRuleRepo) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, syncRuleRepo);
-
-        await DriveWizardToCompletionAsync(sut, authService, graphService);
-
-        await repository.Received(1).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
-    }
-
-    private static async Task DriveWizardToCompletionAsync(AccountsViewModel sut, IAuthService authService, IGraphService graphService)
+    private static async Task DriveWizardToCompletionAsync(AccountsViewModel sut)
     {
         sut.AddAccount();
         var wizard = sut.Wizard!;
@@ -79,25 +67,23 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
         await Task.Delay(200);
     }
 
-    private static async Task DriveWizardToCompletionWithNoFoldersAsync(AccountsViewModel sut, IAuthService authService, IGraphService graphService)
+    private static async Task DriveWizardToCancellationAsync(AccountsViewModel sut)
     {
         sut.AddAccount();
         var wizard = sut.Wizard!;
 
         await wizard.OpenBrowserCommand.ExecuteAsync(null);
-        await wizard.NextCommand.ExecuteAsync(null);
-        wizard.SkipFoldersCommand.Execute(null);
-        await wizard.NextCommand.ExecuteAsync(null);
+        await wizard.CancelCommand.ExecuteAsync(null);
 
-        await Task.Delay(200);
+        await Task.Delay(50);
     }
 
-    private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, ISyncRuleRepository SyncRuleRepo) BuildMocks()
+    private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, IAccountOnboardingService OnboardingService) BuildMocks()
     {
-        var authService  = Substitute.For<IAuthService>();
-        var graphService = Substitute.For<IGraphService>();
-        var repository   = Substitute.For<IAccountRepository>();
-        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        var authService       = Substitute.For<IAuthService>();
+        var graphService      = Substitute.For<IGraphService>();
+        var repository        = Substitute.For<IAccountRepository>();
+        var onboardingService = Substitute.For<IAccountOnboardingService>();
 
         authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
@@ -105,9 +91,12 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
         graphService.GetRootFoldersAsync(AccessToken, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]));
 
-        return (authService, graphService, repository, syncRuleRepo);
+        onboardingService.CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<OneDriveAccount>());
+
+        return (authService, graphService, repository, onboardingService);
     }
 
-    private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepo)
-        => new(authService, graphService, repository, syncRuleRepo, Substitute.For<ISyncEventAggregator>());
+    private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService onboardingService)
+        => new(authService, graphService, repository, onboardingService, Substitute.For<ISyncEventAggregator>());
 }
