@@ -7,6 +7,8 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.Extensions.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
