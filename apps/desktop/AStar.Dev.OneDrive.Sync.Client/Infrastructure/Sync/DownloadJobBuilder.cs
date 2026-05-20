@@ -23,14 +23,17 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
             if (!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
                 continue;
 
-            if (item.IsFolder)
+            if (item is FolderDeltaItem folderItem)
             {
-                string folderLocalPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
-                await syncedItemRegistrar.RegisterFolderAsync(account.Id, item, item.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
+                string folderLocalPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
+                await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
 
-            var job = await ProcessFileItemAsync(account, item, syncedItems, onConflict, ct).ConfigureAwait(false);
+            if (item is not FileDeltaItem fileItem)
+                continue;
+
+            var job = await ProcessFileItemAsync(account, fileItem, syncedItems, onConflict, ct).ConfigureAwait(false);
             if (job is not null)
                 jobs.Add(job);
         }
@@ -38,7 +41,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return jobs;
     }
 
-    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, DeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
+    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
         string localPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
@@ -70,7 +73,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return BuildDownloadJob(account.Id, item, localPath);
     }
 
-    private async Task<SyncJob?> BuildConflictJobAsync(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified, Func<SyncConflict, Task> onConflict)
+    private async Task<SyncJob?> BuildConflictJobAsync(OneDriveAccount account, FileDeltaItem item, string localPath, DateTimeOffset localModified, Func<SyncConflict, Task> onConflict)
     {
         var conflict = BuildConflict(account, item, localPath, localModified);
         await onConflict(conflict).ConfigureAwait(false);
@@ -86,7 +89,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         };
     }
 
-    private static DownloadSyncJob BuildDownloadJob(AccountId accountId, DeltaItem item, string localPath)
+    private static DownloadSyncJob BuildDownloadJob(AccountId accountId, FileDeltaItem item, string localPath)
     {
         var remote = RemoteItemRefFactory.Create(accountId, new OneDriveFolderId(string.Empty), item.Id);
         var target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
@@ -95,7 +98,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return SyncJobFactory.CreateDownload(remote, target, metadata, item.DownloadUrl);
     }
 
-    private UploadSyncJob BuildUploadJob(AccountId accountId, DeltaItem item, string localPath, DateTimeOffset localModified)
+    private UploadSyncJob BuildUploadJob(AccountId accountId, FileDeltaItem item, string localPath, DateTimeOffset localModified)
     {
         var remote = RemoteItemRefFactory.Create(accountId, new OneDriveFolderId(string.Empty), item.Id);
         var target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
@@ -104,7 +107,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return SyncJobFactory.CreateUpload(remote, target, metadata);
     }
 
-    private DownloadSyncJob BuildKeepBothJob(AccountId accountId, DeltaItem item, string localPath, DateTimeOffset localModified)
+    private DownloadSyncJob BuildKeepBothJob(AccountId accountId, FileDeltaItem item, string localPath, DateTimeOffset localModified)
     {
         string newName = ConflictResolver.MakeKeepBothName(localPath, localModified, fileSystem);
         fileSystem.File.Move(localPath, newName);
@@ -112,7 +115,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return BuildDownloadJob(accountId, item, localPath);
     }
 
-    private SyncConflict BuildConflict(OneDriveAccount account, DeltaItem item, string localPath, DateTimeOffset localModified)
+    private SyncConflict BuildConflict(OneDriveAccount account, FileDeltaItem item, string localPath, DateTimeOffset localModified)
         => new()
         {
             Remote = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id),

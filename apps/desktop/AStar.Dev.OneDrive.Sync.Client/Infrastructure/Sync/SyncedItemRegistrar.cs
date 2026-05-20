@@ -12,7 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger) : ISyncedItemRegistrar
 {
     /// <inheritdoc />
-    public async Task RegisterFolderAsync(AccountId accountId, DeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    public async Task RegisterFolderAsync(AccountId accountId, FolderDeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
         _ = fileSystem.Directory.CreateDirectory(localPath);
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
@@ -21,7 +21,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
     }
 
     /// <inheritdoc />
-    public async Task RegisterPhantomAsync(AccountId accountId, DeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    public async Task RegisterPhantomAsync(AccountId accountId, FileDeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
         OneDriveSyncClientMessages.SyncedItemLocalExists(logger, localPath);
         var phantomItem = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);

@@ -231,17 +231,19 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                         ? item.Name ?? string.Empty
                         : $"{relativePath}/{item.Name}";
 
-    private static DeltaItem MapToDeltaItem(DriveItem item, string itemPath) => DeltaItemFactory.Create(
-        new OneDriveItemId(item.Id!),
-        new DriveId(item.ParentReference?.DriveId ?? string.Empty),
-        item.ParentReference?.Id is string pid ? new OneDriveFolderId(pid) : null,
-        ItemPathFactory.Create(item.Name ?? string.Empty, itemPath),
-        isFolder: item.Folder is not null,
-        isDeleted: false,
-        item.Size ?? 0L,
-        item.LastModifiedDateTime,
-        ExtractDownloadUrl(item),
-        VersionInfoFactory.Create(item.ETag, item.CTag));
+    private static DeltaItem MapToDeltaItem(DriveItem item, string itemPath)
+    {
+        var id = new OneDriveItemId(item.Id!);
+        var driveId = new DriveId(item.ParentReference?.DriveId ?? string.Empty);
+        OneDriveFolderId? parentId = item.ParentReference?.Id is string pid ? new OneDriveFolderId(pid) : null;
+        var path = ItemPathFactory.Create(item.Name ?? string.Empty, itemPath);
+        var versionInfo = VersionInfoFactory.Create(item.ETag, item.CTag);
+
+        if (item.Folder is not null)
+            return DeltaItemFactory.CreateFolder(id, driveId, parentId, path, versionInfo);
+
+        return DeltaItemFactory.CreateFile(id, driveId, parentId, path, item.Size ?? 0L, item.LastModifiedDateTime, ExtractDownloadUrl(item), versionInfo);
+    }
 
     private static string? ExtractDownloadUrl(DriveItem item)
         => item.AdditionalData?.TryGetValue(DownloadUrlKey, out object? url) is true
