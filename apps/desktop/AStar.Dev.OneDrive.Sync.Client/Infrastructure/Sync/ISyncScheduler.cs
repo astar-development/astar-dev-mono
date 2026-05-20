@@ -2,7 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public interface                                                                                                            ISyncScheduler
+public interface ISyncScheduler
 {
     /// <summary>
     /// Runs scheduled sync passes for all connected accounts.
@@ -45,6 +45,12 @@ public interface                                                                
     /// Triggers an immediate sync for a single account.
     /// </summary>
     Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default);
+
+    /// <summary>
+    /// Cancels any in-progress sync for the specified account. No-op if no sync is currently running for that account.
+    /// </summary>
+    /// <param name="accountId">The raw string account ID to cancel.</param>
+    Task CancelAccountSyncAsync(string accountId);
 
     /// <summary>
     /// Performs any necessary cleanup when the scheduler is no longer needed, such as disposing of timers or other resources. After disposal, the scheduler should not be used to trigger syncs or raise events.

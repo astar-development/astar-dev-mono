@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 public sealed partial class DashboardAccountViewModel : ObservableObject
 {
     private readonly OneDriveAccount _account;
-    private readonly ISyncScheduler   _scheduler;
+    private readonly ISyncScheduler _scheduler;
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string AccountId => _account.Id.Id;
@@ -85,6 +85,9 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private void ToggleExpand() => IsExpanded = !IsExpanded;
 
     [RelayCommand]
+    private Task CancelSyncAsync() => _scheduler.CancelAccountSyncAsync(_account.Id.Id);
+
+    [RelayCommand]
     private async Task SyncNowAsync()
     {
         AddRecentActivity(new ActivityItemViewModel { FileName = _localizationService.GetLocal("Sync.Starting") });
@@ -94,9 +97,9 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             {
                 var fullAccount = new OneDriveAccount
                 {
-                    Id           = entity.Id,
-                    Profile      = entity.Profile,
-                    SyncConfig   = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
+                    Id = entity.Id,
+                    Profile = entity.Profile,
+                    SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
                     LastSyncedAt = entity.LastSyncedAt
                 };
                 await _scheduler.TriggerAccountAsync(fullAccount);
@@ -109,7 +112,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         ConflictCount = conflicts;
         IsSyncing = state == SyncState.Syncing;
 
-        if(state is not (SyncState.Idle or SyncState.Completed)) return;
+        if (state is not (SyncState.Idle or SyncState.Completed)) return;
 
         _account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
         UpdateLastSyncText(state);
@@ -118,7 +121,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public void AddRecentActivity(ActivityItemViewModel item)
     {
         RecentActivity.Insert(0, item);
-        while(RecentActivity.Count > 3)
+        while (RecentActivity.Count > 3)
             RecentActivity.RemoveAt(RecentActivity.Count - 1);
     }
 

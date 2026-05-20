@@ -25,6 +25,6 @@ public sealed class GivenADashboardAccountViewModel
 
         await ((IAsyncRelayCommand)sut.CancelSyncCommand).ExecuteAsync(null);
 
-        await mockScheduler.Received(1).CancelAccountAsync("test-account");
+        await mockScheduler.Received(1).CancelAccountSyncAsync("test-account");
     }
 }

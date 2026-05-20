@@ -252,8 +252,8 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id         = new AccountId(accountIdStr),
-            Profile    = AccountProfileFactory.Create("Test User", "test@outlook.com"),
+            Id = new AccountId(accountIdStr),
+            Profile = AccountProfileFactory.Create("Test User", "test@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/some/path")),
         }));
         var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
@@ -320,12 +320,12 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id           = new AccountId(accountIdStr),
-            Profile      = AccountProfileFactory.Create("Map Test User", "maptest@outlook.com"),
-            AccentIndex  = 3,
-            IsActive     = true,
+            Id = new AccountId(accountIdStr),
+            Profile = AccountProfileFactory.Create("Map Test User", "maptest@outlook.com"),
+            AccentIndex = 3,
+            IsActive = true,
             LastSyncedAt = lastSyncedAt,
-            SyncConfig   = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/sync/path")),
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/sync/path")),
         }));
         var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
 
@@ -351,8 +351,8 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id         = new AccountId(accountIdStr),
-            Profile    = AccountProfileFactory.Create("No Path User", "nopath@outlook.com"),
+            Id = new AccountId(accountIdStr),
+            Profile = AccountProfileFactory.Create("No Path User", "nopath@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Default,
         }));
         var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
@@ -372,7 +372,7 @@ public sealed class GivenASyncScheduler
         var mockRepository = Substitute.For<IAccountRepository>();
         _ = mockRepository.GetByIdAsync(new AccountId(accountIdStr), Arg.Any<CancellationToken>()).Returns(Option.Some(new AccountEntity
         {
-            Id      = new AccountId(accountIdStr),
+            Id = new AccountId(accountIdStr),
             Profile = AccountProfileFactory.Create("Rules User", "rules@outlook.com"),
         }));
         var rulesRepo = Substitute.For<ISyncRuleRepository>();
@@ -420,7 +420,7 @@ public sealed class GivenASyncScheduler
     {
         var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
 
-        await Should.NotThrowAsync(() => scheduler.CancelAccountAsync("non-existent-account"));
+        await Should.NotThrowAsync(() => scheduler.CancelAccountSyncAsync("non-existent-account"));
     }
 
     [Fact]
@@ -442,7 +442,7 @@ public sealed class GivenASyncScheduler
 
         var triggerTask = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
         await syncStarted.Task;
-        await scheduler.CancelAccountAsync("cancel-test");
+        await scheduler.CancelAccountSyncAsync("cancel-test");
         await triggerTask;
 
         capturedToken.IsCancellationRequested.ShouldBeTrue();

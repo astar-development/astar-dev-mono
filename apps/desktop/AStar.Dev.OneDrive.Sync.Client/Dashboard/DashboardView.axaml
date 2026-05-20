@@ -180,7 +180,7 @@
                                             </TextBlock>
                                         </Border>
 
-                                        <!-- Sync now + expand -->
+                                        <!-- Sync now + cancel + expand -->
                                         <StackPanel Grid.Column="4"
                                                     Orientation="Horizontal"
                                                     Spacing="6">
@@ -193,6 +193,16 @@
                                                     FontSize="{StaticResource FontSizeXs}"
                                                     IsEnabled="{Binding !IsSyncing}"
                                                     Command="{Binding SyncNowCommand}"/>
+
+                                            <Button Content="Cancel"
+                                                    Padding="10,4"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    IsVisible="{Binding IsSyncing}"
+                                                    Command="{Binding CancelSyncCommand}"/>
 
                                             <Button Padding="6,4"
                                                     Background="Transparent"
