@@ -278,7 +278,7 @@
                                                Margin="16,0"/>
 
                                     <!-- Recent activity -->
-                                    <StackPanel Grid.Column="2" Spacing="6">
+                                    <StackPanel Grid.Column="2" Spacing="6" Margin="16,0,0,0">
 
                                         <TextBlock Text="Recent activity"
                                                    FontSize="{StaticResource FontSizeXs}"
