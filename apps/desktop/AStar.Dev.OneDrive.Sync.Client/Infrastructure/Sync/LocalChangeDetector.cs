@@ -61,7 +61,7 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
 
                 string relativePathForUpload = remotePath.TrimStart('/');
 
-                var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(string.Empty), known?.RemoteItemId ?? new OneDriveItemId(string.Empty));
+                var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId("root"), known?.RemoteItemId ?? new OneDriveItemId(string.Empty));
                 var target = SyncFileTargetFactory.Create(filePath, relativePathForUpload);
                 var metadata = SyncFileMetadataFactory.Create(info.Length, localModified);
 
