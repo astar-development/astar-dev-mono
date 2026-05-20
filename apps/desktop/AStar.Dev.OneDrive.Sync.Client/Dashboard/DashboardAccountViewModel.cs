@@ -96,7 +96,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
                 {
                     Id           = entity.Id,
                     Profile      = entity.Profile,
-                    SyncConfig   = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
+                    SyncConfig   = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
                     LastSyncedAt = entity.LastSyncedAt
                 };
                 await _scheduler.TriggerAccountAsync(fullAccount);
@@ -111,7 +111,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
         if(state is not (SyncState.Idle or SyncState.Completed)) return;
 
-        _account.LastSyncedAt = DateTimeOffset.UtcNow;
+        _account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
         UpdateLastSyncText(state);
     }
 
@@ -125,14 +125,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
         syncState == SyncState.NoSyncPathConfigured ? "No local sync path configured" :
-         _account.LastSyncedAt is null
-            ? "Never synced"
-            : (DateTimeOffset.UtcNow - _account.LastSyncedAt.Value) switch
+        _account.LastSyncedAt.Match(
+            lastSyncedAt => (DateTimeOffset.UtcNow - lastSyncedAt) switch
             {
                 { TotalSeconds: < 60 } => "Just now",
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
                 { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
                 { TotalDays: < 2 } => "Yesterday",
                 var td => $"{(int)td.TotalDays}d ago"
-            };
+            },
+            () => "Never synced");
 }

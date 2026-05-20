@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
@@ -50,7 +51,7 @@ public sealed class SyncedItemEntity
     /// <summary>
     /// The synchronization tags associated with the item, which are used to track the state of the item during synchronization operations. These tags can include information such as the version of the item, the last sync operation performed, and any conflicts that may have occurred. By storing synchronization tags, the sync client can manage the synchronization process more effectively, allowing for efficient conflict resolution and ensuring that changes are properly tracked and applied during sync operations. The Tags property can be updated after each synchronization operation to reflect the latest state of the item and to provide necessary information for future sync operations.
     /// </summary>
-    public VersionInfo Tags { get; set; } = new(null, null);
+    public VersionInfo Tags { get; set; } = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>());
 
     /// <summary>
     /// Navigation property to the associated AccountEntity, allowing for access to the account's profile information, sync configuration, and other related data. This relationship is established through the AccountId foreign key, enabling the sync client to easily retrieve and manage the synchronized item in the context of the corresponding account. The navigation property is marked as nullable to indicate that there may be cases where the account information is not available or has been deleted, allowing for graceful handling of such scenarios within the application.

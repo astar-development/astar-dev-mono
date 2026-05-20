@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
@@ -10,7 +11,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_file_created_then_it_is_FileDeltaItem()
     {
-        var item = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("file.txt"), 100L, DateTimeOffset.UtcNow, null, VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("file.txt"), 100L, DateTimeOffset.UtcNow, Option.None<string>(), VersionInfoFactory.Create(null, null));
 
         item.ShouldBeOfType<FileDeltaItem>();
     }
@@ -18,7 +19,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_folder_created_then_it_is_FolderDeltaItem()
     {
-        var item = DeltaItemFactory.CreateFolder(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("Documents"), VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.CreateFolder(new OneDriveItemId("id"), new DriveId("drive"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("Documents"), VersionInfoFactory.Create(null, null));
 
         item.ShouldBeOfType<FolderDeltaItem>();
     }
@@ -26,7 +27,7 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_deleted_created_then_it_is_DeletedDeltaItem()
     {
-        var item = DeltaItemFactory.CreateDeleted(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("gone.txt"));
+        var item = DeltaItemFactory.CreateDeleted(new OneDriveItemId("id"), new DriveId("drive"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("gone.txt"));
 
         item.ShouldBeOfType<DeletedDeltaItem>();
     }
@@ -53,14 +54,18 @@ public sealed class GivenADeltaItem
             downloadUrl,
             VersionInfoFactory.Create(null, null));
 
+        item.ParentId.TryGetValue(out var pid).ShouldBeTrue();
+        item.LastModified.TryGetValue(out var lm).ShouldBeTrue();
+        item.DownloadUrl.TryGetValue(out var dlUrl).ShouldBeTrue();
+        item.Path.RelativePath.TryGetValue(out var relPath).ShouldBeTrue();
         item.Id.Id.ShouldBe(id);
         item.DriveId.ShouldBe(driveId);
         item.Path.Name.ShouldBe(name);
-        item.ParentId?.Id.ShouldBe(parentId);
+        pid.Id.ShouldBe(parentId);
         item.Size.ShouldBe(size);
-        item.LastModified.ShouldBe(lastModified);
-        item.DownloadUrl.ShouldBe(downloadUrl);
-        item.Path.RelativePath.ShouldBe(relativePath);
+        lm.ShouldBe(lastModified);
+        dlUrl.ShouldBe(downloadUrl);
+        relPath.ShouldBe(relativePath);
     }
 
     [Fact]
@@ -78,19 +83,21 @@ public sealed class GivenADeltaItem
             ItemPathFactory.Create(name),
             VersionInfoFactory.Create("etag-1", null));
 
+        item.ParentId.TryGetValue(out var folderId).ShouldBeTrue();
+        item.VersionInfo.ETag.TryGetValue(out var etagVal).ShouldBeTrue();
         item.Id.Id.ShouldBe(id);
         item.DriveId.ShouldBe(driveId);
         item.Path.Name.ShouldBe(name);
-        item.ParentId?.Id.ShouldBe(parentId);
-        item.VersionInfo.ETag.ShouldBe("etag-1");
+        folderId.Id.ShouldBe(parentId);
+        etagVal.ShouldBe("etag-1");
     }
 
     [Fact]
-    public void when_file_created_without_relative_path_then_relative_path_is_null()
+    public void when_file_created_without_relative_path_then_relative_path_is_none()
     {
         var item = DeltaItemFactory.CreateFile(new OneDriveItemId("file-123"), new DriveId("drive-456"), new OneDriveFolderId("folder-789"), ItemPathFactory.Create("document.docx"), 2048, DateTimeOffset.UtcNow, "url", VersionInfoFactory.Create(null, null));
 
-        item.Path.RelativePath.ShouldBeNull();
+        (item.Path.RelativePath is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -112,11 +119,11 @@ public sealed class GivenADeltaItem
     }
 
     [Fact]
-    public void when_file_last_modified_is_null_then_it_is_null()
+    public void when_file_last_modified_is_none_then_it_is_none()
     {
-        var item = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), 0, null, "url", VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), new OneDriveFolderId("parent"), ItemPathFactory.Create("name"), 0, Option.None<DateTimeOffset>(), "url", VersionInfoFactory.Create(null, null));
 
-        item.LastModified.ShouldBeNull();
+        (item.LastModified is Option<DateTimeOffset>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -131,8 +138,8 @@ public sealed class GivenADeltaItem
     [Fact]
     public void when_file_and_folder_have_same_base_properties_then_they_are_not_equal()
     {
-        var fileItem = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("name"), 0, null, null, VersionInfoFactory.Create(null, null));
-        var folderItem = DeltaItemFactory.CreateFolder(new OneDriveItemId("id"), new DriveId("drive"), null, ItemPathFactory.Create("name"), VersionInfoFactory.Create(null, null));
+        var fileItem = DeltaItemFactory.CreateFile(new OneDriveItemId("id"), new DriveId("drive"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("name"), 0, Option.None<DateTimeOffset>(), Option.None<string>(), VersionInfoFactory.Create(null, null));
+        var folderItem = DeltaItemFactory.CreateFolder(new OneDriveItemId("id"), new DriveId("drive"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("name"), VersionInfoFactory.Create(null, null));
 
         ((DeltaItem)fileItem).ShouldNotBe((DeltaItem)folderItem);
     }
@@ -143,7 +150,7 @@ public sealed class GivenADeltaItem
         var id = new OneDriveItemId("deleted-1");
         var driveId = new DriveId("drive-1");
 
-        var item = DeltaItemFactory.CreateDeleted(id, driveId, null, ItemPathFactory.Create("gone.txt"));
+        var item = DeltaItemFactory.CreateDeleted(id, driveId, Option.None<OneDriveFolderId>(), ItemPathFactory.Create("gone.txt"));
 
         item.Id.ShouldBe(id);
         item.DriveId.ShouldBe(driveId);

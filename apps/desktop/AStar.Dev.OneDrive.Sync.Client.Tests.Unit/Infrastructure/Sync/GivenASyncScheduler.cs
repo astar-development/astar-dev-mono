@@ -338,9 +338,8 @@ public sealed class GivenASyncScheduler
                 a.Profile.Email == "maptest@outlook.com" &&
                 a.AccentIndex == 3 &&
                 a.IsActive == true &&
-                a.LastSyncedAt == lastSyncedAt &&
-                a.SyncConfig != null &&
-                a.SyncConfig!.ConflictPolicy == ConflictPolicy.Ignore),
+                a.LastSyncedAt == (Option<DateTimeOffset>)lastSyncedAt &&
+                a.SyncConfig.Match(c => c.ConflictPolicy == ConflictPolicy.Ignore, () => false)),
             Arg.Any<CancellationToken>());
     }
 

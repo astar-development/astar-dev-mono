@@ -24,13 +24,13 @@ public sealed class GivenADownloadJobHandler
 
     private DownloadJobHandler CreateSut() => new(_downloader, _graphService, Substitute.For<ILogger<DownloadJobHandler>>());
 
-    private static DownloadSyncJob MakeDownloadJob(string? downloadUrl = "https://example.com/file")
+    private static DownloadSyncJob MakeDownloadJob(Option<string> downloadUrl = default)
     {
         var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(ItemId));
         var target = SyncFileTargetFactory.Create("/tmp/file.txt", "Desktop/file.txt");
         var metadata = SyncFileMetadataFactory.Create(0L, DateTimeOffset.UtcNow);
 
-        return SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl);
+        return SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl ?? Option.Some("https://example.com/file"));
     }
 
     private static UploadSyncJob MakeUploadJob()
@@ -79,7 +79,7 @@ public sealed class GivenADownloadJobHandler
     public async Task when_job_has_url_then_downloader_called_with_that_url()
     {
         const string url = "https://example.com/direct";
-        var job = MakeDownloadJob(url);
+        var job = MakeDownloadJob(Option.Some(url));
 
         await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
 
@@ -90,7 +90,7 @@ public sealed class GivenADownloadJobHandler
     public async Task when_job_has_no_url_then_graph_service_called_to_resolve_it()
     {
         const string fetchedUrl = "https://example.com/fetched";
-        var job = MakeDownloadJob(downloadUrl: null);
+        var job = MakeDownloadJob(Option.None<string>());
 
         _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok(fetchedUrl));
@@ -105,7 +105,7 @@ public sealed class GivenADownloadJobHandler
     public async Task when_url_resolution_fails_then_result_is_error_with_message()
     {
         const string errorMessage = "No download URL available.";
-        var job = MakeDownloadJob(downloadUrl: null);
+        var job = MakeDownloadJob(Option.None<string>());
 
         _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error(errorMessage));

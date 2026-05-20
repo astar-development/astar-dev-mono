@@ -123,8 +123,8 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         AccentIndex = entity.AccentIndex,
         IsActive = entity.IsActive,
         LastSyncedAt = entity.LastSyncedAt,
-        SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? entity.SyncConfig : null,
-        SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include && r.RemoteItemId is not null).Select(r => new OneDriveFolderId(r.RemoteItemId!))]
+        SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
+        SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include).Choose(r => r.RemoteItemId).Select(id => new OneDriveFolderId(id))]
     };
 
     private async Task RunSyncPassAsync(CancellationToken ct)
@@ -161,6 +161,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
         StopSync();

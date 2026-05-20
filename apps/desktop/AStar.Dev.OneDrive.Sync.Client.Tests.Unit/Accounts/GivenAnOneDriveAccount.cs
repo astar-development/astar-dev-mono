@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -141,10 +142,10 @@ public sealed class GivenAnOneDriveAccount
         string rawPath = "/home/jason/OneDrive";
         var path = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
 
-        account.SyncConfig = path is null ? null : AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, path);
+        account.SyncConfig = path is null ? Option.None<AccountSyncConfig>() : Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, path));
 
-        account.SyncConfig.ShouldNotBeNull();
-        account.SyncConfig!.LocalSyncPath.Value.ShouldBe(rawPath);
+        account.SyncConfig.TryGetValue(out var syncConfig1).ShouldBeTrue();
+        syncConfig1.LocalSyncPath.Value.ShouldBe(rawPath);
     }
 
     [Fact]
@@ -156,7 +157,8 @@ public sealed class GivenAnOneDriveAccount
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, path)
         };
 
-        account.SyncConfig!.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
+        account.SyncConfig.TryGetValue(out var syncConfig2).ShouldBeTrue();
+        syncConfig2.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
     }
 
     [Theory]
@@ -172,7 +174,8 @@ public sealed class GivenAnOneDriveAccount
             SyncConfig = AccountSyncConfigFactory.Create(policy, path)
         };
 
-        account.SyncConfig!.ConflictPolicy.ShouldBe(policy);
+        account.SyncConfig.TryGetValue(out var syncConfig3).ShouldBeTrue();
+        syncConfig3.ConflictPolicy.ShouldBe(policy);
     }
 
     [Fact]

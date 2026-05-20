@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -9,7 +10,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 public static class SyncedItemEntityFactory
 {
     /// <summary>
-    /// Creates a new instance of <see cref="SyncedItemEntity"/> based on the provided account ID, delta item from the OneDrive API, and the corresponding remote and local paths. This method extracts relevant information from the delta item, such as the item ID, parent ID, modification timestamp, and version info, to populate the properties of the SyncedItemEntity. The resulting entity can then be used to track the synchronization state of the item within the sync client application, allowing for efficient updates and conflict resolution as needed.
+    /// Creates a new instance of <see cref="SyncedItemEntity"/> based on the provided account ID, delta item from the OneDrive API, and the corresponding remote and local paths.
     /// </summary>
     /// <param name="accountId">The ID of the account to which the item belongs.</param>
     /// <param name="item">The delta item from the OneDrive API.</param>
@@ -21,16 +22,16 @@ public static class SyncedItemEntityFactory
         {
             AccountId = accountId,
             RemoteItemId = item.Id,
-            RemoteParentId = item.ParentId?.Id ?? string.Empty,
+            RemoteParentId = item.ParentId.Match(id => id.Id, () => string.Empty),
             RemotePath = remotePath,
             LocalPath = localPath,
             IsFolder = false,
-            RemoteModifiedAt = item.LastModified ?? DateTimeOffset.MinValue,
+            RemoteModifiedAt = item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue),
             Tags = item.VersionInfo
         };
 
     /// <summary>
-    /// Creates a new instance of <see cref="SyncedItemEntity"/> based on the provided account ID, delta item representing a folder from the OneDrive API, and the corresponding remote and local paths. This method extracts relevant information from the folder delta item, such as the item ID, parent ID, and version info, to populate the properties of the SyncedItemEntity. The resulting entity can then be used to track the synchronization state of the folder within the sync client application, allowing for efficient updates and conflict resolution as needed. Note that since folders do not have a modification timestamp in the same way files do, the RemoteModifiedAt property is set to DateTimeOffset.MinValue for folder items.
+    /// Creates a new instance of <see cref="SyncedItemEntity"/> based on the provided account ID, delta item representing a folder from the OneDrive API, and the corresponding remote and local paths.
     /// </summary>
     /// <param name="accountId">The ID of the account to which the item belongs.</param>
     /// <param name="item">The delta item representing a folder from the OneDrive API.</param>
@@ -42,7 +43,7 @@ public static class SyncedItemEntityFactory
         {
             AccountId = accountId,
             RemoteItemId = item.Id,
-            RemoteParentId = item.ParentId?.Id ?? string.Empty,
+            RemoteParentId = item.ParentId.Match(id => id.Id, () => string.Empty),
             RemotePath = remotePath,
             LocalPath = localPath,
             IsFolder = true,
@@ -67,7 +68,7 @@ public static class SyncedItemEntityFactory
             LocalPath = job.Target.LocalPath,
             IsFolder = false,
             RemoteModifiedAt = job.Metadata.RemoteModified,
-            Tags = job.Metadata.VersionInfo ?? new VersionInfo(null, null)
+            Tags = job.Metadata.VersionInfo.Match(v => v, () => VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()))
         };
 
     /// <summary>
@@ -82,7 +83,7 @@ public static class SyncedItemEntityFactory
         => new()
         {
             AccountId = accountId,
-            RemoteItemId = new OneDriveItemId(job.UploadedRemoteItemId!),
+            RemoteItemId = new OneDriveItemId(job.UploadedRemoteItemId.Match(v => v, () => throw new InvalidOperationException("UploadedRemoteItemId is None"))),
             RemoteParentId = string.Empty,
             RemotePath = remotePath,
             LocalPath = job.Target.LocalPath,

@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -16,7 +17,7 @@ public sealed class SyncConflict
     public ConflictSnapshot Snapshot { get; init; } = ConflictSnapshotFactory.Create(DateTimeOffset.MinValue, 0L, DateTimeOffset.MinValue, 0L);
 
     public ConflictState State { get; set; } = ConflictState.Pending;
-    public ConflictPolicy? Resolution { get; set; }
+    public Option<ConflictPolicy> Resolution { get; set; } = Option.None<ConflictPolicy>();
     public DateTimeOffset DetectedAt { get; init; } = DateTimeOffset.UtcNow;
-    public DateTimeOffset? ResolvedAt { get; set; }
+    public Option<DateTimeOffset> ResolvedAt { get; set; } = Option.None<DateTimeOffset>();
 }

@@ -90,7 +90,7 @@ public sealed class GivenAnAccountRepository : IDisposable
 
         var result = await repository.GetByIdAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
-        result.IsSome().ShouldBeTrue();
+        (result is Option<AccountEntity>.Some).ShouldBeTrue();
         result.Match(entity => entity.Profile.Email, () => string.Empty).ShouldBe("user@outlook.com");
     }
 
@@ -101,7 +101,7 @@ public sealed class GivenAnAccountRepository : IDisposable
 
         var result = await repository.GetByIdAsync(new AccountId("non-existent"), TestContext.Current.CancellationToken);
 
-        result.IsNone().ShouldBeTrue();
+        (result is Option<AccountEntity>.None).ShouldBeTrue();
     }
 
     [Fact]

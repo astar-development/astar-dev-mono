@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
@@ -33,7 +34,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
                 _               => throw new System.Diagnostics.UnreachableException()
             },
             State          = j.Status.State,
-            DownloadUrl    = (j as DownloadSyncJob)?.DownloadUrl,
+            DownloadUrl    = (j as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
             FileSize       = j.Metadata.FileSize,
             RemoteModified = j.Metadata.RemoteModified,
             QueuedAt       = j.Status.QueuedAt
@@ -56,7 +57,7 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
     }
 
     /// <inheritdoc/>
-    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? stateError = null)
+    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, Option<string> stateError)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
 
@@ -67,8 +68,8 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
                 .SetProperty(j => j.ErrorMessage, stateError)
                 .SetProperty(j => j.CompletedAt,
                     state is SyncJobState.Completed or SyncJobState.Failed or SyncJobState.Skipped
-                        ? DateTimeOffset.UtcNow
-                        : null));
+                        ? Option.Some(DateTimeOffset.UtcNow)
+                        : Option.None<DateTimeOffset>()));
     }
 
     /// <inheritdoc/>
@@ -126,8 +127,8 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
             .Where(c => c.Id == conflictId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(c => c.State, ConflictState.Resolved)
-                .SetProperty(c => c.Resolution, resolution)
-                .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
+                .SetProperty(c => c.Resolution, Option.Some(resolution))
+                .SetProperty(c => c.ResolvedAt, Option.Some(DateTimeOffset.UtcNow)));
     }
 
     /// <inheritdoc/>

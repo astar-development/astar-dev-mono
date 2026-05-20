@@ -19,7 +19,7 @@ internal sealed class SyncProgressTracker(int total, string accountId, string fo
             completedSoFar = done;
         }
 
-        var completedJob = success ? job.Complete() : job.Fail(error);
+        var completedJob = success ? job.Complete() : job.Fail(error!);
         var syncState = completedSoFar == total ? SyncState.Idle : SyncState.Syncing;
 
         onProgress(new SyncProgressEventArgs(accountId, folderId, completedSoFar, total, job.Target.RelativePath, syncState));

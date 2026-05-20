@@ -201,8 +201,8 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        account.SyncConfig.ShouldNotBeNull();
-        account.SyncConfig!.LocalSyncPath.Value.ShouldBe(SyncPathValue);
+        account.SyncConfig.TryGetValue(out var savedConfig).ShouldBeTrue();
+        savedConfig.LocalSyncPath.Value.ShouldBe(SyncPathValue);
     }
 
     [Fact]

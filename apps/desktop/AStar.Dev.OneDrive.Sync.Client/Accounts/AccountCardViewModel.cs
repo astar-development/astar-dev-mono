@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -89,6 +90,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
         UpdateLastSyncText();
     }
 
+    /// <summary>Refreshes observable properties from the underlying model.</summary>
     public void RefreshFromModel()
     {
         IsActive = _model.IsActive;
@@ -100,13 +102,13 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     private void UpdateLastSyncText()
     {
-        if(_model.LastSyncedAt is null)
+        if(_model.LastSyncedAt is not Option<DateTimeOffset>.Some lastSyncedAt)
         {
             LastSyncText = "Never synced";
             return;
         }
 
-        var elapsed = DateTimeOffset.UtcNow - _model.LastSyncedAt.Value;
+        var elapsed = DateTimeOffset.UtcNow - lastSyncedAt.Value;
         LastSyncText = elapsed.TotalMinutes < 2 ? "Just now"
                      : elapsed.TotalHours < 1 ? $"{(int)elapsed.TotalMinutes}m ago"
                      : elapsed.TotalDays < 1 ? $"{(int)elapsed.TotalHours}h ago"
@@ -114,7 +116,9 @@ public sealed partial class AccountCardViewModel : ObservableObject
                      : $"{(int)elapsed.TotalDays}d ago";
     }
 
+    /// <summary>Returns the palette colour for the given index.</summary>
     public static Color PaletteColor(int index) => Color.Parse(_palette[index % _palette.Length]);
 
+    /// <summary>Returns the palette hex string for the given index.</summary>
     public static string PaletteHex(int index) => _palette[index % _palette.Length];
 }

@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -25,7 +26,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
 
             if (item is FolderDeltaItem folderItem)
             {
-                string folderLocalPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
+                string folderLocalPath = BuildLocalPath(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
                 await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
@@ -43,10 +44,10 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
 
     private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        string localPath = BuildLocalPath(account.SyncConfig!.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
+        string localPath = BuildLocalPath(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
 
-        if (knownItem?.Tags.ETag is not null && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
+        if (knownItem?.Tags.ETag is Option<string>.Some && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
         {
             OneDriveSyncClientMessages.DownloadETagMatch(logger, item.Path.EffectivePath);
             return null;
@@ -60,7 +61,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
             if (isConflict)
                 return await BuildConflictJobAsync(account, item, localPath, localModified, onConflict).ConfigureAwait(false);
 
-            bool remoteUnchanged = item.LastModified is null || item.LastModified <= knownItem.RemoteModifiedAt.AddSeconds(5);
+            bool remoteUnchanged = item.LastModified.Match(lm => lm <= knownItem.RemoteModifiedAt.AddSeconds(5), () => true);
             if (remoteUnchanged)
                 return null;
         }
@@ -78,7 +79,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         var conflict = BuildConflict(account, item, localPath, localModified);
         await onConflict(conflict).ConfigureAwait(false);
 
-        var outcome = ConflictResolver.Resolve(account.SyncConfig!.ConflictPolicy, localModified, item.LastModified ?? DateTimeOffset.MinValue);
+        var outcome = ConflictResolver.Resolve(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).ConflictPolicy, localModified, item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue));
 
         return outcome switch
         {
@@ -93,7 +94,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
     {
         var remote = RemoteItemRefFactory.Create(accountId, new OneDriveFolderId(string.Empty), item.Id);
         var target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
-        var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue, item.VersionInfo);
+        var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue), Option.Some(item.VersionInfo));
 
         return SyncJobFactory.CreateDownload(remote, target, metadata, item.DownloadUrl);
     }
@@ -120,7 +121,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         {
             Remote = RemoteItemRefFactory.Create(account.Id, new OneDriveFolderId(string.Empty), item.Id),
             Target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath),
-            Snapshot = ConflictSnapshotFactory.Create(localModified, fileSystem.FileInfo.New(localPath).Length, item.LastModified ?? DateTimeOffset.MinValue, item.Size)
+            Snapshot = ConflictSnapshotFactory.Create(localModified, fileSystem.FileInfo.New(localPath).Length, item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue), item.Size)
         };
 
     private static string BuildLocalPath(string localBasePath, string relativePath)

@@ -54,7 +54,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                     folders.AddRange(
                         page.Value
                             .Where(i => i.Folder is not null)
-                            .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: i.ParentReference?.Id)));
+                            .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
 
                     if(page.OdataNextLink is null)
                         break;
@@ -89,7 +89,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             folders.AddRange(
                 page.Value
                     .Where(i => i.Folder is not null)
-                    .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: i.ParentReference?.Id)));
+                    .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
 
             if(page.OdataNextLink is null)
                 break;
@@ -235,20 +235,25 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     {
         var id = new OneDriveItemId(item.Id!);
         var driveId = new DriveId(item.ParentReference?.DriveId ?? string.Empty);
-        OneDriveFolderId? parentId = item.ParentReference?.Id is string pid ? new OneDriveFolderId(pid) : null;
+        var parentId = item.ParentReference?.Id is string pid ? Option.Some(new OneDriveFolderId(pid)) : Option.None<OneDriveFolderId>();
         var path = ItemPathFactory.Create(item.Name ?? string.Empty, itemPath);
-        var versionInfo = VersionInfoFactory.Create(item.ETag, item.CTag);
+        var versionInfo = VersionInfoFactory.Create(ToOptionString(item.ETag), ToOptionString(item.CTag));
 
         if (item.Folder is not null)
             return DeltaItemFactory.CreateFolder(id, driveId, parentId, path, versionInfo);
 
-        return DeltaItemFactory.CreateFile(id, driveId, parentId, path, item.Size ?? 0L, item.LastModifiedDateTime, ExtractDownloadUrl(item), versionInfo);
+        return DeltaItemFactory.CreateFile(id, driveId, parentId, path, item.Size ?? 0L, item.LastModifiedDateTime.ToOption(), ExtractDownloadUrl(item), versionInfo);
     }
 
-    private static string? ExtractDownloadUrl(DriveItem item)
-        => item.AdditionalData?.TryGetValue(DownloadUrlKey, out object? url) is true
-            ? url?.ToString()
-            : null;
+    private static Option<string> ExtractDownloadUrl(DriveItem item)
+    {
+        if(item.AdditionalData?.TryGetValue(DownloadUrlKey, out object? url) is not true || url is null)
+            return Option.None<string>();
+
+        return Option.Some(url.ToString()!);
+    }
+
+    private static Option<string> ToOptionString(string? value) => value is not null ? Option.Some(value) : Option.None<string>();
 
     /// <inheritdoc />
     public void EvictCachedDriveContext(string accountId) => _cache.TryRemove(accountId, out _);

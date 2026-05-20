@@ -90,7 +90,7 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
 
         graphService.GetRootFoldersAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId1, FolderName1), new DriveFolder(FolderId2, FolderName2)]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId1, FolderName1, Option.None<string>()), new DriveFolder(FolderId2, FolderName2, Option.None<string>())]));
 
         onboardingService.CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => callInfo.Arg<OneDriveAccount>());
