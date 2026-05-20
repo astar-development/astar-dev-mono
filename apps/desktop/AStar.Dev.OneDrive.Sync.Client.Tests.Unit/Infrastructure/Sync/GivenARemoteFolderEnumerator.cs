@@ -39,8 +39,8 @@ public sealed class GivenARemoteFolderEnumerator
     private static SyncRuleEntity IncludeRule(string remotePath, string? remoteItemId = null)
         => new() { RemotePath = remotePath, RuleType = RuleType.Include, RemoteItemId = remoteItemId };
 
-    private static DeltaItem FileItem(string id, string name, string? relativePath = null)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(name, relativePath ?? name), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(null, null));
+    private static FileDeltaItem FileItem(string id, string name, string? relativePath = null)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(name, relativePath ?? name), 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(null, null));
 
     [Fact]
     public async Task when_no_rules_configured_then_result_has_no_rules_flag_set()
