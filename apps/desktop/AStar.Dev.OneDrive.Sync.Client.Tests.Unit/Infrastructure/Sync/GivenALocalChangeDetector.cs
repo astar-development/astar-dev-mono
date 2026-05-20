@@ -150,7 +150,7 @@ public sealed class GivenALocalChangeDetector
     }
 
     [Fact]
-    public void when_new_file_is_not_in_lookup_then_job_folder_id_is_empty()
+    public void when_new_file_is_not_in_lookup_then_job_folder_id_is_root()
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
@@ -159,7 +159,28 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Remote.FolderId.Id.ShouldBe(string.Empty);
+        jobs[0].Remote.FolderId.Id.ShouldBe("root");
+    }
+
+    [Fact]
+    public void when_known_file_is_modified_then_job_folder_id_is_root()
+    {
+        const string filePath = $"{BasePath}/Documents/modified.txt";
+        var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
+        var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
+        var lookup = new Dictionary<string, SyncedItemEntity>
+        {
+            [filePath] = new() { RemoteModifiedAt = staleRemoteModified, RemoteItemId = new OneDriveItemId("remote-id-folder-test") }
+        };
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Documents", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
+
+        jobs[0].Remote.FolderId.Id.ShouldBe("root");
     }
 
     [Fact]
