@@ -45,7 +45,8 @@ public static class SyncedItemEntityFactory
             RemotePath       = remotePath,
             LocalPath        = job.Target.LocalPath,
             IsFolder         = false,
-            RemoteModifiedAt = job.Metadata.RemoteModified
+            RemoteModifiedAt = job.Metadata.RemoteModified,
+            Tags             = job.Metadata.VersionInfo ?? new VersionInfo(null, null)
         };
 
     /// <summary>

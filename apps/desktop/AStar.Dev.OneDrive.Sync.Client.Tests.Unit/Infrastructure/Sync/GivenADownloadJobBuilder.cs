@@ -179,6 +179,66 @@ public sealed class GivenADownloadJobBuilder
     }
 
     [Fact]
+    public async Task when_known_item_exists_with_matching_remote_timestamp_and_null_etag_and_local_file_exists_then_no_job_is_created()
+    {
+        const string localFile = $"{BasePath}/Documents/a.txt";
+        var remoteModified = DateTimeOffset.UtcNow.AddDays(-1);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(localFile).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTimeUtc(localFile, remoteModified.UtcDateTime);
+
+        var knownItem = new SyncedItemEntity
+        {
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
+            RemoteModifiedAt = remoteModified,
+            Tags = VersionInfoFactory.Create(null, null)
+        };
+        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+
+        var sut = CreateSut(mockFileSystem);
+        var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
+        var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
+
+        var result = await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_known_item_exists_and_remote_is_newer_than_stored_modified_and_null_etag_then_download_job_is_created()
+    {
+        const string localFile = $"{BasePath}/Documents/a.txt";
+        var storedRemoteModified = DateTimeOffset.UtcNow.AddDays(-2);
+        var newRemoteModified = DateTimeOffset.UtcNow.AddDays(-1);
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(localFile).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTimeUtc(localFile, storedRemoteModified.UtcDateTime);
+
+        var knownItem = new SyncedItemEntity
+        {
+            AccountId = new AccountId("user-1"),
+            RemoteItemId = new OneDriveItemId("item-a"),
+            RemotePath = "/Documents/a.txt",
+            LocalPath = localFile,
+            RemoteModifiedAt = storedRemoteModified,
+            Tags = VersionInfoFactory.Create(null, null)
+        };
+        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+
+        var sut = CreateSut(mockFileSystem);
+        var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: newRemoteModified) };
+        var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
+
+        var result = await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBeOfType<DownloadSyncJob>();
+    }
+
+    [Fact]
     public async Task when_file_item_has_nested_path_then_download_job_local_path_starts_with_base_path()
     {
         var sut = CreateSut(new MockFileSystem());
@@ -288,5 +348,18 @@ public sealed class GivenADownloadJobBuilder
         var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.Ignore), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_download_job_is_created_then_metadata_version_info_is_populated_from_delta_item()
+    {
+        var sut = CreateSut(new MockFileSystem());
+        var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", etag: "etag-from-delta") };
+        var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
+
+        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.ShouldHaveSingleItem();
+        result[0].Metadata.VersionInfo!.ETag.ShouldBe("etag-from-delta");
     }
 }
