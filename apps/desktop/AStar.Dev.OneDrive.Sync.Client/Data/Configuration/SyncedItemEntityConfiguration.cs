@@ -19,8 +19,12 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
         _ = builder.HasIndex(e => new { e.AccountId, e.LocalPath });
         _ = builder.OwnsOne(e => e.Tags, b =>
         {
-            _ = b.Property(v => v.ETag).HasColumnName("ETag");
-            _ = b.Property(v => v.CTag).HasColumnName("CTag");
+            _ = b.Property(v => v.ETag).HasColumnName("ETag")
+                 .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                 .IsRequired(false);
+            _ = b.Property(v => v.CTag).HasColumnName("CTag")
+                 .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                 .IsRequired(false);
         });
         _ = builder.HasOne(e => e.Account)
                    .WithMany()

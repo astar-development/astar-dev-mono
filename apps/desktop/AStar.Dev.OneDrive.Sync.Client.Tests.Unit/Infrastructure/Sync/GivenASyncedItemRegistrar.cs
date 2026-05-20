@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -22,10 +23,10 @@ public sealed class GivenASyncedItemRegistrar
     private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
 
     private static FolderDeltaItem FolderItem(string id, string remotePath)
-        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), VersionInfoFactory.Create(null, null));
+        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, remotePath), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()));
 
     private static FileDeltaItem FileItem(string id, string remotePath)
-        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(null, null));
+        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, remotePath), 100L, DateTimeOffset.UtcNow.AddDays(-1), Option.None<string>(), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()));
 
     [Fact]
     public async Task when_register_folder_called_then_directory_is_created()

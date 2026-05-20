@@ -143,7 +143,7 @@ public sealed class GivenAFolderTreeNodeViewModel
         var node = new FolderTreeNode(
             Id:          RootFolderId,
             Name:        RootFolderName,
-            ParentId:    null,
+            ParentId:    Option.None<string>(),
             AccountId:   "account-1",
             RemotePath:  $"/{RootFolderName}",
             SyncState:   syncState,

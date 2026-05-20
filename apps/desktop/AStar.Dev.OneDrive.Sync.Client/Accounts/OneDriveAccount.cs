@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -25,7 +26,7 @@ public sealed class OneDriveAccount
     public List<OneDriveFolderId> SelectedFolderIds { get; set; } = [];
 
     /// <summary>UTC timestamp of the last successful delta sync.</summary>
-    public DateTimeOffset? LastSyncedAt { get; set; }
+    public Option<DateTimeOffset> LastSyncedAt { get; set; } = Option.None<DateTimeOffset>();
 
     /// <summary>OneDrive storage quota refreshed periodically from the Graph API.</summary>
     public StorageQuota Quota { get; set; } = StorageQuotaFactory.Unknown;
@@ -36,6 +37,6 @@ public sealed class OneDriveAccount
     /// <summary>Maps folder ID to display name — kept in sync with SelectedFolderIds.</summary>
     public Dictionary<OneDriveFolderId, string> FolderNames { get; set; } = [];
 
-    /// <summary>Sync behaviour configuration. Null means not yet configured.</summary>
-    public AccountSyncConfig? SyncConfig { get; set; }
+    /// <summary>Sync behaviour configuration. None means not yet configured.</summary>
+    public Option<AccountSyncConfig> SyncConfig { get; set; } = Option.None<AccountSyncConfig>();
 }

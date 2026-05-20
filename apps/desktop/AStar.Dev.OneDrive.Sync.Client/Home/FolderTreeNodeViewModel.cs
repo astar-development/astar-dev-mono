@@ -65,7 +65,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     {
         Id = node.Id;
         Name = node.Name;
-        ParentId = node.ParentId;
+        ParentId = node.ParentId.Match<string?>(id => id, () => null);
         RemotePath = node.RemotePath;
         Depth = depth;
         SyncState = node.SyncState;

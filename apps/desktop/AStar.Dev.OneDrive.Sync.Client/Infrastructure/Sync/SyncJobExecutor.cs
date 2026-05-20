@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -45,11 +46,11 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
                 await syncedItemRepository.UpsertAsync(entity, ct);
                 syncedItems[job.Remote.RemoteItemId.Id] = entity;
             }
-            else if(job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is not null)
+            else if(job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
             {
                 var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, remotePath, fileSystem);
                 await syncedItemRepository.UpsertAsync(entity, ct);
-                syncedItems[uploadJob.UploadedRemoteItemId] = entity;
+                syncedItems[uploadedId.Value] = entity;
             }
         }
     }

@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -72,8 +73,8 @@ public sealed partial class ActivityItemViewModel : ObservableObject
             _               => ActivityItemType.Info
         },
         FileSize = job.Metadata.FileSize,
-        OccurredAt = job.Status.CompletedAt ?? DateTimeOffset.UtcNow,
-        ErrorMessage = job.Status.ErrorMessage
+        OccurredAt = job.Status.CompletedAt.MapOrDefault(v => v, DateTimeOffset.UtcNow),
+        ErrorMessage = job.Status.ErrorMessage.Match<string?>(v => v, () => null)
     };
 
     public static ActivityItemViewModel FromConflict(SyncConflict conflict, string accountEmail, string folderName) => new()

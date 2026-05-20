@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -118,7 +119,7 @@ public sealed class GivenASyncRepository
 
         try
         {
-            await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress);
+            await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress, Option.None<string>());
         }
         catch(InvalidOperationException)
         {
@@ -137,7 +138,7 @@ public sealed class GivenASyncRepository
 
         try
         {
-            await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed);
+            await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed, Option.None<string>());
         }
         catch(InvalidOperationException)
         {

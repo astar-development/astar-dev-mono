@@ -41,6 +41,6 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
 
         _ = await db.DriveStates
             .Where(d => d.AccountId == accountId)
-            .ExecuteUpdateAsync(s => s.SetProperty(d => d.DeltaLink, (string?)null), cancellationToken);
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.DeltaLink, Option.None<string>()), cancellationToken);
     }
 }

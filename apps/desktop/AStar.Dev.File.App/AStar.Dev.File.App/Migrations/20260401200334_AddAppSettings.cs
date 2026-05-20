@@ -19,10 +19,7 @@ namespace AStar.Dev.File.App.Migrations
                     Key = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppSettings", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_AppSettings", x => x.Id));
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppSettings_Key",

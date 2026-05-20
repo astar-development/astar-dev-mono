@@ -338,9 +338,8 @@ public sealed class GivenASyncScheduler
                 a.Profile.Email == "maptest@outlook.com" &&
                 a.AccentIndex == 3 &&
                 a.IsActive == true &&
-                a.LastSyncedAt == lastSyncedAt &&
-                a.SyncConfig != null &&
-                a.SyncConfig!.ConflictPolicy == ConflictPolicy.Ignore),
+                a.LastSyncedAt == (Option<DateTimeOffset>)lastSyncedAt &&
+                a.SyncConfig.Match(c => c.ConflictPolicy == ConflictPolicy.Ignore, () => false)),
             Arg.Any<CancellationToken>());
     }
 
@@ -361,7 +360,7 @@ public sealed class GivenASyncScheduler
         await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
         await mockSyncService.Received(1).SyncAccountAsync(
-            Arg.Is<OneDriveAccount>(a => a.SyncConfig == null),
+            Arg.Is<OneDriveAccount>(a => a.SyncConfig.Match(c => false, () => true)),
             Arg.Any<CancellationToken>());
     }
 

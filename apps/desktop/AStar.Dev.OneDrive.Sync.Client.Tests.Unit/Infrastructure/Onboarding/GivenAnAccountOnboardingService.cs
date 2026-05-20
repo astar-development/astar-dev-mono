@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -119,11 +120,11 @@ public sealed class GivenAnAccountOnboardingService
     public async Task when_account_has_no_sync_config_then_sync_config_is_resolved_from_email()
     {
         var account = BuildAccountWithFolders();
-        account.SyncConfig = null;
+        account.SyncConfig = Option.None<AccountSyncConfig>();
 
         await BuildSut().CompleteOnboardingAsync(account, CancellationToken.None);
 
-        account.SyncConfig.ShouldNotBeNull();
+        (account.SyncConfig is Option<AccountSyncConfig>.Some).ShouldBeTrue();
     }
 
     [Fact]
@@ -136,7 +137,8 @@ public sealed class GivenAnAccountOnboardingService
 
         await BuildSut().CompleteOnboardingAsync(account, CancellationToken.None);
 
-        account.SyncConfig.ShouldBeSameAs(existingConfig);
+        account.SyncConfig.TryGetValue(out var cfg).ShouldBeTrue();
+        cfg.ShouldBeSameAs(existingConfig);
     }
 
     [Fact]

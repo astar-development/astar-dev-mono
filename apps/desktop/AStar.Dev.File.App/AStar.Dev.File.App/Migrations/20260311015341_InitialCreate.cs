@@ -27,10 +27,7 @@ namespace AStar.Dev.File.App.Migrations
                     PendingDelete = table.Column<bool>(type: "INTEGER", nullable: false),
                     LastScannedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ScannedFiles", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_ScannedFiles", x => x.Id));
 
             migrationBuilder.CreateIndex(
                 name: "IX_ScannedFiles_FullPath",

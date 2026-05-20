@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
@@ -9,47 +10,49 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Entities;
 
 public sealed class GivenASyncedItemEntityFactory
 {
-    private static FileDeltaItem CreateDeltaItem(string? etag, string? ctag)
-        => DeltaItemFactory.CreateFile(new OneDriveItemId("item-1"), new DriveId("drive-1"), null, ItemPathFactory.Create("file.txt", "/file.txt"), 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, ctag));
+    private static FileDeltaItem CreateDeltaItem(Option<string> etag, Option<string> ctag)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId("item-1"), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("file.txt", "/file.txt"), 100L, DateTimeOffset.UtcNow.AddDays(-1), Option.None<string>(), VersionInfoFactory.Create(etag, ctag));
 
     [Fact]
     public void when_creating_from_delta_item_then_tags_etag_is_populated()
     {
-        var item = CreateDeltaItem("etag-abc", null);
+        var item = CreateDeltaItem("etag-abc", Option.None<string>());
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.ETag.ShouldBe("etag-abc");
+        entity.Tags.ETag.TryGetValue(out var etag1).ShouldBeTrue();
+        etag1.ShouldBe("etag-abc");
     }
 
     [Fact]
     public void when_creating_from_delta_item_then_tags_ctag_is_populated()
     {
-        var item = CreateDeltaItem(null, "ctag-xyz");
+        var item = CreateDeltaItem(Option.None<string>(), "ctag-xyz");
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.CTag.ShouldBe("ctag-xyz");
+        entity.Tags.CTag.TryGetValue(out var ctag1).ShouldBeTrue();
+        ctag1.ShouldBe("ctag-xyz");
     }
 
     [Fact]
-    public void when_creating_from_delta_item_with_null_etag_then_tags_etag_is_null()
+    public void when_creating_from_delta_item_with_null_etag_then_tags_etag_is_none()
     {
-        var item = CreateDeltaItem(null, "ctag-xyz");
+        var item = CreateDeltaItem(Option.None<string>(), "ctag-xyz");
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.ETag.ShouldBeNull();
+        (entity.Tags.ETag is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_creating_from_delta_item_with_null_ctag_then_tags_ctag_is_null()
+    public void when_creating_from_delta_item_with_null_ctag_then_tags_ctag_is_none()
     {
-        var item = CreateDeltaItem("etag-abc", null);
+        var item = CreateDeltaItem("etag-abc", Option.None<string>());
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.CTag.ShouldBeNull();
+        (entity.Tags.CTag is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -57,17 +60,18 @@ public sealed class GivenASyncedItemEntityFactory
     {
         var remote = RemoteItemRefFactory.Create(new AccountId("acc-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1"));
         var target = SyncFileTargetFactory.Create("/local/file.txt", "/file.txt");
-        var versionInfo = VersionInfoFactory.Create("etag-abc", null);
-        var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1), versionInfo);
+        var versionInfo = VersionInfoFactory.Create("etag-abc", Option.None<string>());
+        var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1), Option.Some(versionInfo));
         var job = SyncJobFactory.CreateDownload(remote, target, metadata);
 
         var entity = SyncedItemEntityFactory.CreateFromDownloadJob(new AccountId("acc-1"), job, "/file.txt");
 
-        entity.Tags.ETag.ShouldBe("etag-abc");
+        entity.Tags.ETag.TryGetValue(out var etag2).ShouldBeTrue();
+        etag2.ShouldBe("etag-abc");
     }
 
     [Fact]
-    public void when_creating_from_download_job_with_null_version_info_then_tags_etag_is_null()
+    public void when_creating_from_download_job_with_null_version_info_then_tags_etag_is_none()
     {
         var remote = RemoteItemRefFactory.Create(new AccountId("acc-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1"));
         var target = SyncFileTargetFactory.Create("/local/file.txt", "/file.txt");
@@ -76,6 +80,6 @@ public sealed class GivenASyncedItemEntityFactory
 
         var entity = SyncedItemEntityFactory.CreateFromDownloadJob(new AccountId("acc-1"), job, "/file.txt");
 
-        entity.Tags.ETag.ShouldBeNull();
+        (entity.Tags.ETag is Option<string>.None).ShouldBeTrue();
     }
 }

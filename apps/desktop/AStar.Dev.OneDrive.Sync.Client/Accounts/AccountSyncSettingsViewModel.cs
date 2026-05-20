@@ -18,10 +18,10 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty]
-    public partial string LocalSyncPath { get; set; } = account.SyncConfig?.LocalSyncPath.Value ?? string.Empty;
+    public partial string LocalSyncPath { get; set; } = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
 
     [ObservableProperty]
-    public partial ConflictPolicy ConflictPolicy { get; set; } = account.SyncConfig?.ConflictPolicy ?? ConflictPolicy.Ignore;
+    public partial ConflictPolicy ConflictPolicy { get; set; } = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
 
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
     [
@@ -43,7 +43,9 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
     private async Task SaveAsync()
     {
         var resolvedPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<Domain.LocalSyncPath?>(p => p, _ => null);
-        account.SyncConfig = resolvedPath is null ? null : AccountSyncConfigFactory.Create(ConflictPolicy, resolvedPath);
+        account.SyncConfig = resolvedPath is null
+            ? Option.None<AccountSyncConfig>()
+            : Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy, resolvedPath));
 
         await repository.GetByIdAsync(account.Id, CancellationToken.None)
             .TapAsync(async entity =>

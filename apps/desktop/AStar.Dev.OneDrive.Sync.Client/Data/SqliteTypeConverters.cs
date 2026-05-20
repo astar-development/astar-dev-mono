@@ -1,3 +1,5 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data;
@@ -20,7 +22,6 @@ public static class SqliteTypeConverters
     public static ValueConverter<Guid, byte[]> GuidToBytes { get; } =
         new(g => g.ToByteArray(), b => new Guid(b));
 
-    // Allow nullable byte[] result type to avoid nullability warning
     public static ValueConverter<Guid?, byte[]?> NullableGuidToBytes { get; } =
         new(g => g.HasValue ? g.Value.ToByteArray() : null, b => b != null ? new Guid(b) : null);
 
@@ -29,4 +30,16 @@ public static class SqliteTypeConverters
 
     public static ValueConverter<decimal?, long?> NullableDecimalToCents { get; } =
         new(d => d.HasValue ? (long?)Math.Round(d.Value * 100m) : null, l => l.HasValue ? l.Value / 100m : null);
+
+    public static ValueConverter<Option<string>, string?> OptionStringToNullableString { get; } =
+        new(opt => opt.Match<string?>(v => v, () => null),
+            str => str != null ? Option.Some(str) : Option.None<string>());
+
+    public static ValueConverter<Option<DateTimeOffset>, long?> OptionDateTimeOffsetToNullableTicks { get; } =
+        new(opt => opt.Match<long?>(v => v.ToUniversalTime().UtcTicks, () => null),
+            ticks => ticks.HasValue ? Option.Some(new DateTimeOffset(ticks.Value, TimeSpan.Zero)) : Option.None<DateTimeOffset>());
+
+    public static ValueConverter<Option<ConflictPolicy>, int?> OptionConflictPolicyToNullableInt { get; } =
+        new(opt => opt.Match<int?>(v => (int)v, () => null),
+            value => value.HasValue ? Option.Some((ConflictPolicy)value.Value) : Option.None<ConflictPolicy>());
 }

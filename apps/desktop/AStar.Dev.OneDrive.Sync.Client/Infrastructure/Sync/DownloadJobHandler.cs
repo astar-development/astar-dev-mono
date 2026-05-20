@@ -42,8 +42,8 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
 
     private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, string accessToken, CancellationToken ct)
     {
-        if (job.DownloadUrl is not null)
-            return new Result<string, string>.Ok(job.DownloadUrl);
+        if (job.DownloadUrl is Option<string>.Some downloadUrl)
+            return new Result<string, string>.Ok(downloadUrl.Value);
 
         OneDriveSyncClientMessages.DownloadUrlAbsent(logger, job.Target.RelativePath);
 

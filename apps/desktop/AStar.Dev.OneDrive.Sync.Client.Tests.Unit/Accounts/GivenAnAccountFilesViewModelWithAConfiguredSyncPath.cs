@@ -200,7 +200,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
         graphService.GetRootFoldersAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName)]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
 
         return (authService, graphService, repository);
     }
@@ -221,8 +221,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             Id         = new AccountId(AccountIdString),
             Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = string.IsNullOrEmpty(localSyncPath)
-                ? null
-                : AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath))
+                ? Option.None<AccountSyncConfig>()
+                : Option.Some(AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath)))
         };
 
     private static AccountEntity BuildStoredEntity(string localSyncPath, ConflictPolicy conflictPolicy)

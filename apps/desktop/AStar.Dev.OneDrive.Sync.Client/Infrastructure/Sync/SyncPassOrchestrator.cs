@@ -10,11 +10,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
 {
     public async Task<bool> OrchestrateAsync(OneDriveAccount account, string token, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
     {
-        var driveState = await driveStateRepository.GetByAccountIdAsync(account.Id, ct)
-                             .OrElseAsync(new DriveStateEntity { AccountId = account.Id }).ConfigureAwait(false);
+        var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false))
+            .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
 
-        driveState.LastSyncStartedAt = DateTimeOffset.UtcNow;
-        driveState.DeltaLink = null;
+        driveState.LastSyncStartedAt = Option.Some(DateTimeOffset.UtcNow);
+        driveState.DeltaLink = Option.None<string>();
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
         var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, token, ct).ConfigureAwait(false);
@@ -33,7 +33,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         var downloadJobs = await dependencies.DownloadJobBuilder.BuildAsync(account, enumerationResult.DeltaItems, enumerationResult.Rules, syncedItemsDict, conflictCallback, ct).ConfigureAwait(false);
 
         var syncedItemsByLocalPath = syncedItemsDict.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
-        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.SyncConfig!.LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
+        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
 
         var allJobs = new List<SyncJob>(downloadJobs.Count + uploadJobs.Count);
         allJobs.AddRange(downloadJobs);
@@ -52,11 +52,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         await accountRepository.GetByIdAsync(account.Id, ct)
             .TapAsync(async entity =>
             {
-                entity.LastSyncedAt = DateTimeOffset.UtcNow;
+                entity.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
                 await accountRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
-        account.LastSyncedAt = DateTimeOffset.UtcNow;
+        account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
 
         return true;
     }

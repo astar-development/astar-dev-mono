@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -29,7 +30,7 @@ public sealed class GivenAnActivityItemViewModel
             _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
         };
 
-        var status = baseJob.Status with { CompletedAt = completedAt, ErrorMessage = errorMessage };
+        var status = baseJob.Status with { CompletedAt = completedAt.ToOption(), ErrorMessage = errorMessage is null ? Option.None<string>() : Option.Some(errorMessage) };
 
         return baseJob with { Status = status };
     }

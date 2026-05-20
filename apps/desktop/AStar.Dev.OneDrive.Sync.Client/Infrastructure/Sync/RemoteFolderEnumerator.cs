@@ -86,11 +86,12 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
     private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, string accessToken, DriveId driveId, CancellationToken ct)
     {
-        string? folderId = rule.RemoteItemId
-            ?? TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-            ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct).ConfigureAwait(false);
+        string? folderId = rule.RemoteItemId is Option<string>.Some existingId
+            ? existingId.Value
+            : TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
+                ?? await graphService.GetFolderIdByPathAsync(accessToken, driveId, rule.RemotePath, ct).ConfigureAwait(false);
 
-        if (folderId is not null && folderId != rule.RemoteItemId)
+        if (folderId is not null && rule.RemoteItemId.Match(id => id != folderId, () => true))
         {
             OneDriveSyncClientMessages.RemoteFolderEnumeratorBackfilling(logger, rule.RemotePath);
             await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, ct).ConfigureAwait(false);

@@ -135,7 +135,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents"), new DriveFolder("id-2", "Pictures")]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -148,7 +148,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents"), new DriveFolder("id-2", "Desktop"), new DriveFolder("id-3", "Pictures")]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Desktop", Option.None<string>()), new DriveFolder("id-3", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -190,7 +190,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents")]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
 
         sut.SkipFoldersCommand.Execute(null);
@@ -204,7 +204,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents"), new DriveFolder("id-2", "Pictures")]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
 
@@ -219,7 +219,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents"), new DriveFolder("id-2", "Pictures")]));
+            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
         await sut.NextCommand.ExecuteAsync(null);

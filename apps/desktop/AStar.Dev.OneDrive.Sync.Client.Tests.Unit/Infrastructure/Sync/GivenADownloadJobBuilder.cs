@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -22,18 +23,18 @@ public sealed class GivenADownloadJobBuilder
     {
         Id = new AccountId("user-1"),
         Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig = AccountSyncConfigFactory.Create(policy, LocalSyncPath.Restore(BasePath)),
+        SyncConfig = Option.Some(AccountSyncConfigFactory.Create(policy, LocalSyncPath.Restore(BasePath))),
         SelectedFolderIds = []
     };
 
     private static SyncRuleEntity IncludeRule(string remotePath)
         => new() { RemotePath = remotePath, RuleType = RuleType.Include };
 
-    private static FileDeltaItem FileItem(string id, string relativePath, string? etag = null, DateTimeOffset? lastModified = null)
-        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), 100L, lastModified ?? DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
+    private static FileDeltaItem FileItem(string id, string relativePath, Option<string> etag = default, Option<DateTimeOffset> lastModified = default)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, relativePath), 100L, lastModified ?? Option.None<DateTimeOffset>(), Option.None<string>(), VersionInfoFactory.Create(etag ?? Option.None<string>(), Option.None<string>()));
 
     private static FolderDeltaItem FolderItem(string id, string relativePath)
-        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), VersionInfoFactory.Create(null, null));
+        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, relativePath), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()));
 
     [Fact]
     public async Task when_item_path_is_not_included_by_rules_then_no_job_is_created()
@@ -98,7 +99,7 @@ public sealed class GivenADownloadJobBuilder
             RemoteItemId = new OneDriveItemId("item-a"),
             RemotePath = "/Documents/a.txt",
             LocalPath = localFile,
-            Tags = VersionInfoFactory.Create("etag-123", null),
+            Tags = VersionInfoFactory.Create("etag-123", Option.None<string>()),
             RemoteModifiedAt = DateTimeOffset.UtcNow.AddDays(-1)
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
@@ -194,7 +195,7 @@ public sealed class GivenADownloadJobBuilder
             RemotePath = "/Documents/a.txt",
             LocalPath = localFile,
             RemoteModifiedAt = remoteModified,
-            Tags = VersionInfoFactory.Create(null, null)
+            Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
@@ -224,7 +225,7 @@ public sealed class GivenADownloadJobBuilder
             RemotePath = "/Documents/a.txt",
             LocalPath = localFile,
             RemoteModifiedAt = storedRemoteModified,
-            Tags = VersionInfoFactory.Create(null, null)
+            Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         };
         var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
@@ -360,6 +361,8 @@ public sealed class GivenADownloadJobBuilder
         var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
-        result[0].Metadata.VersionInfo!.ETag.ShouldBe("etag-from-delta");
+        result[0].Metadata.VersionInfo.TryGetValue(out var vi).ShouldBeTrue();
+        vi.ETag.TryGetValue(out var etag).ShouldBeTrue();
+        etag.ShouldBe("etag-from-delta");
     }
 }

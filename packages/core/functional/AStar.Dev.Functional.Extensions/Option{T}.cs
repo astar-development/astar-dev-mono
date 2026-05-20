@@ -72,7 +72,8 @@ public abstract class Option<T>
     /// <returns>
     ///     True if the two <see cref="Option{T}" /> instances are considered equal; otherwise, false.
     /// </returns>
-    public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
+    public static bool operator ==(Option<T> left, Option<T> right) =>
+        left is null ? right is null : left.Equals(right);
 
     /// <summary>
     ///     Determines whether two <see cref="Option{T}" /> instances are not equal at a value level.
@@ -82,7 +83,7 @@ public abstract class Option<T>
     /// <returns>
     ///     <c>true</c> if the two instances are not equal; otherwise, <c>false</c>.
     /// </returns>
-    public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
+    public static bool operator !=(Option<T> left, Option<T> right) => !(left == right);
 
     /// <summary>
     ///     Represents the presence of a value.

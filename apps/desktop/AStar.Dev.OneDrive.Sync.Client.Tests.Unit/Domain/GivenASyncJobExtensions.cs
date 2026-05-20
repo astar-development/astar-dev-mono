@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -34,9 +35,9 @@ public sealed class GivenASyncJobExtensions
 
         var completed = job.Complete();
 
-        completed.Status.CompletedAt.ShouldNotBeNull();
-        completed.Status.CompletedAt.Value.ShouldBeGreaterThanOrEqualTo(before);
-        completed.Status.CompletedAt.Value.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
+        completed.Status.CompletedAt.TryGetValue(out var completedAt).ShouldBeTrue();
+        completedAt.ShouldBeGreaterThanOrEqualTo(before);
+        completedAt.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
     }
 
     [Fact]
@@ -56,36 +57,36 @@ public sealed class GivenASyncJobExtensions
     }
 
     [Fact]
-    public void when_fail_is_called_with_null_error_message_then_state_is_set_to_failed()
+    public void when_fail_is_called_with_no_error_message_then_state_is_set_to_failed()
     {
         var job = CreateMinimalJob();
 
-        var failed = job.Fail(null);
+        var failed = job.Fail();
 
         failed.Status.State.ShouldBe(SyncJobState.Failed);
     }
 
     [Fact]
-    public void when_fail_is_called_with_null_error_message_then_error_message_is_null()
+    public void when_fail_is_called_with_no_error_message_then_error_message_is_none()
     {
         var job = CreateMinimalJob();
 
-        var failed = job.Fail(null);
+        var failed = job.Fail();
 
-        failed.Status.ErrorMessage.ShouldBeNull();
+        (failed.Status.ErrorMessage is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_fail_is_called_with_null_error_message_then_completed_at_is_approximately_utc_now()
+    public void when_fail_is_called_with_no_error_message_then_completed_at_is_approximately_utc_now()
     {
         var job = CreateMinimalJob();
         var before = DateTimeOffset.UtcNow;
 
-        var failed = job.Fail(null);
+        var failed = job.Fail();
 
-        failed.Status.CompletedAt.ShouldNotBeNull();
-        failed.Status.CompletedAt.Value.ShouldBeGreaterThanOrEqualTo(before);
-        failed.Status.CompletedAt.Value.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
+        failed.Status.CompletedAt.TryGetValue(out var failedAt1).ShouldBeTrue();
+        failedAt1.ShouldBeGreaterThanOrEqualTo(before);
+        failedAt1.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
     }
 
     [Fact]
@@ -106,7 +107,8 @@ public sealed class GivenASyncJobExtensions
 
         var failed = job.Fail(errorMessage);
 
-        failed.Status.ErrorMessage.ShouldBe(errorMessage);
+        failed.Status.ErrorMessage.TryGetValue(out var errMsg).ShouldBeTrue();
+        errMsg.ShouldBe(errorMessage);
     }
 
     [Fact]
@@ -117,9 +119,9 @@ public sealed class GivenASyncJobExtensions
 
         var failed = job.Fail("Upload timed out");
 
-        failed.Status.CompletedAt.ShouldNotBeNull();
-        failed.Status.CompletedAt.Value.ShouldBeGreaterThanOrEqualTo(before);
-        failed.Status.CompletedAt.Value.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
+        failed.Status.CompletedAt.TryGetValue(out var failedAt2).ShouldBeTrue();
+        failedAt2.ShouldBeGreaterThanOrEqualTo(before);
+        failedAt2.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
     }
 
     [Fact]
@@ -130,7 +132,7 @@ public sealed class GivenASyncJobExtensions
         _ = job.Complete();
 
         job.Status.State.ShouldBe(SyncJobState.Queued);
-        job.Status.CompletedAt.ShouldBeNull();
+        (job.Status.CompletedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
     }
 
     [Fact]

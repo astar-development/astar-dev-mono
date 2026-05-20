@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
@@ -33,19 +34,19 @@ public sealed class GivenASyncJobStatus
     }
 
     [Fact]
-    public void when_created_then_error_message_is_null()
+    public void when_created_then_error_message_is_none()
     {
         var status = SyncJobStatusFactory.Create();
 
-        status.ErrorMessage.ShouldBeNull();
+        (status.ErrorMessage is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_created_then_completed_at_is_null()
+    public void when_created_then_completed_at_is_none()
     {
         var status = SyncJobStatusFactory.Create();
 
-        status.CompletedAt.ShouldBeNull();
+        (status.CompletedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
     }
 
     [Fact]

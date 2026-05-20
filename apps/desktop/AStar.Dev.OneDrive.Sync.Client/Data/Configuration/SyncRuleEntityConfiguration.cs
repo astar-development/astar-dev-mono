@@ -12,6 +12,9 @@ public class SyncRuleEntityConfiguration : IEntityTypeConfiguration<SyncRuleEnti
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.AccountId)
                    .HasConversion(id => id.Id, str => new AccountId(str));
+        _ = builder.Property(e => e.RemoteItemId)
+                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                   .IsRequired(false);
         _ = builder.HasIndex(e => new { e.AccountId, e.RemotePath }).IsUnique();
         _ = builder.HasOne(e => e.Account)
                    .WithMany()
