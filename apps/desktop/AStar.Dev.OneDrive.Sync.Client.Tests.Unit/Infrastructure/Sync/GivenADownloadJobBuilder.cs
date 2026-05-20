@@ -29,11 +29,11 @@ public sealed class GivenADownloadJobBuilder
     private static SyncRuleEntity IncludeRule(string remotePath)
         => new() { RemotePath = remotePath, RuleType = RuleType.Include };
 
-    private static DeltaItem FileItem(string id, string relativePath, string? etag = null, DateTimeOffset? lastModified = null)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), false, false, 100L, lastModified ?? DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
+    private static FileDeltaItem FileItem(string id, string relativePath, string? etag = null, DateTimeOffset? lastModified = null)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), 100L, lastModified ?? DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, null));
 
-    private static DeltaItem FolderItem(string id, string relativePath)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));
+    private static FolderDeltaItem FolderItem(string id, string relativePath)
+        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, relativePath), VersionInfoFactory.Create(null, null));
 
     [Fact]
     public async Task when_item_path_is_not_included_by_rules_then_no_job_is_created()
@@ -56,7 +56,7 @@ public sealed class GivenADownloadJobBuilder
 
         await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<DeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public sealed class GivenADownloadJobBuilder
 
         await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<DeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

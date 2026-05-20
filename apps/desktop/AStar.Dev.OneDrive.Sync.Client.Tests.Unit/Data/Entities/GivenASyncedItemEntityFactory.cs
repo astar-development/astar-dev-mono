@@ -9,8 +9,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Entities;
 
 public sealed class GivenASyncedItemEntityFactory
 {
-    private static DeltaItem CreateDeltaItem(string? etag, string? ctag)
-        => DeltaItemFactory.Create(new OneDriveItemId("item-1"), new DriveId("drive-1"), null, ItemPathFactory.Create("file.txt", "/file.txt"), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, ctag));
+    private static FileDeltaItem CreateDeltaItem(string? etag, string? ctag)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId("item-1"), new DriveId("drive-1"), null, ItemPathFactory.Create("file.txt", "/file.txt"), 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(etag, ctag));
 
     [Fact]
     public void when_creating_from_delta_item_then_tags_etag_is_populated()

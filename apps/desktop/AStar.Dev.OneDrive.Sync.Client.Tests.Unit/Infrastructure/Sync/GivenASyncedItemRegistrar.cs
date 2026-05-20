@@ -21,11 +21,11 @@ public sealed class GivenASyncedItemRegistrar
 
     private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
 
-    private static DeltaItem FolderItem(string id, string remotePath)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), true, false, 0L, null, null, VersionInfoFactory.Create(null, null));
+    private static FolderDeltaItem FolderItem(string id, string remotePath)
+        => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), VersionInfoFactory.Create(null, null));
 
-    private static DeltaItem FileItem(string id, string remotePath)
-        => DeltaItemFactory.Create(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), false, false, 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(null, null));
+    private static FileDeltaItem FileItem(string id, string remotePath)
+        => DeltaItemFactory.CreateFile(new OneDriveItemId(id), new DriveId("drive-1"), null, ItemPathFactory.Create(id, remotePath), 100L, DateTimeOffset.UtcNow.AddDays(-1), null, VersionInfoFactory.Create(null, null));
 
     [Fact]
     public async Task when_register_folder_called_then_directory_is_created()

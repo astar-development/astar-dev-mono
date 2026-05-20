@@ -236,7 +236,7 @@ public sealed class GivenAGraphService : IDisposable
         var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(3);
         items.ShouldContain(i => i.Id.Id == "file-root");
-        items.ShouldContain(i => i.Id.Id == "subfolder-001" && i.IsFolder);
+        items.ShouldContain(i => i.Id.Id == "subfolder-001" && i is FolderDeltaItem);
         items.ShouldContain(i => i.Id.Id == "file-sub");
     }
 
