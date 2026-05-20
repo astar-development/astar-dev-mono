@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -16,6 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository, ILogger<SyncScheduler> logger) : IAsyncDisposable, ISyncScheduler
 {
+    private readonly ConcurrentDictionary<string, CancellationTokenSource> _activeSyncs = new();
     private Timer? _timer;
     private TimeSpan _interval = TimeSpan.FromMinutes(60);
     private long _runningFlag;
@@ -87,15 +89,30 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        _activeSyncs.TryAdd(account.Id.Id, cts);
         SyncStarted?.Invoke(this, account.Id.Id);
         try
         {
-            await syncService.SyncAccountAsync(account, ct);
+            await syncService.SyncAccountAsync(account, cts.Token);
         }
         finally
         {
+            _activeSyncs.TryRemove(account.Id.Id, out _);
             SyncCompleted?.Invoke(this, account.Id.Id);
         }
+    }
+
+    /// <inheritdoc />
+    public Task CancelAccountSyncAsync(string accountId)
+    {
+        if (_activeSyncs.TryGetValue(accountId, out var cts))
+        {
+            OneDriveSyncClientMessages.SyncSchedulerCancelled(logger, accountId);
+            cts.Cancel();
+        }
+
+        return Task.CompletedTask;
     }
 
     // ReSharper disable once AsyncVoidMethod - Timer requires this signature
@@ -165,6 +182,11 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public async ValueTask DisposeAsync()
     {
         StopSync();
+
+        foreach (var cts in _activeSyncs.Values)
+            cts.Cancel();
+
+        _activeSyncs.Clear();
 
         if (_timer is not null)
             await _timer.DisposeAsync();

@@ -69,6 +69,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2203, Level = LogLevel.Warning, Message = "[SyncScheduler] TriggerAccountAsync called for unknown account {AccountId}")]
     public static partial void SyncSchedulerUnknownAccount(ILogger logger, string accountId);
 
+    /// <summary>Logs sync cancellation requested for an account.</summary>
+    [LoggerMessage(EventId = 2204, Level = LogLevel.Information, Message = "[SyncScheduler] Sync cancellation requested for {AccountId}")]
+    public static partial void SyncSchedulerCancelled(ILogger logger, string accountId);
+
     // Local Change Detection (2300-2399)
 
     /// <summary>Logs new/modified local files found.</summary>
