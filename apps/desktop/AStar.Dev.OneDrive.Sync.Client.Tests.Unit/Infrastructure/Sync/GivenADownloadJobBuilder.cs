@@ -349,4 +349,17 @@ public sealed class GivenADownloadJobBuilder
 
         result.ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task when_download_job_is_created_then_metadata_version_info_is_populated_from_delta_item()
+    {
+        var sut = CreateSut(new MockFileSystem());
+        var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", etag: "etag-from-delta") };
+        var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
+
+        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        result.ShouldHaveSingleItem();
+        result[0].Metadata.VersionInfo!.ETag.ShouldBe("etag-from-delta");
+    }
 }

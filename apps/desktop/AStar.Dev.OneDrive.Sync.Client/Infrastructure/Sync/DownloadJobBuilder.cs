@@ -56,6 +56,10 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
 
             if (isConflict)
                 return await BuildConflictJobAsync(account, item, localPath, localModified, onConflict).ConfigureAwait(false);
+
+            bool remoteUnchanged = item.LastModified is null || item.LastModified <= knownItem.RemoteModifiedAt.AddSeconds(5);
+            if (remoteUnchanged)
+                return null;
         }
         else if (knownItem is null && fileSystem.File.Exists(localPath))
         {
@@ -86,7 +90,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
     {
         var remote = RemoteItemRefFactory.Create(accountId, new OneDriveFolderId(string.Empty), item.Id);
         var target = SyncFileTargetFactory.Create(localPath, item.Path.EffectivePath);
-        var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
+        var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue, item.VersionInfo);
 
         return SyncJobFactory.CreateDownload(remote, target, metadata, item.DownloadUrl);
     }
