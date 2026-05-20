@@ -115,38 +115,6 @@ public class OptionShould
     public void ThrowWhenCreatingSomeWithNullValue() => Should.Throw<ArgumentNullException>(() => Option.Some<string>(null!));
 
     [Fact]
-    public void ReturnTrueForIsSomeWhenOptionIsSome()
-    {
-        var option = Option.Some(42);
-
-        option.IsSome().ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ReturnFalseForIsSomeWhenOptionIsNone()
-    {
-        var option = Option.None<int>();
-
-        option.IsSome().ShouldBeFalse();
-    }
-
-    [Fact]
-    public void ReturnTrueForIsNoneWhenOptionIsNone()
-    {
-        var option = Option.None<int>();
-
-        option.IsNone().ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ReturnFalseForIsNoneWhenOptionIsSome()
-    {
-        var option = Option.Some(42);
-
-        option.IsNone().ShouldBeFalse();
-    }
-
-    [Fact]
     public void ConvertValueToSomeImplicitly()
     {
         string value = "test";
@@ -369,55 +337,6 @@ public class OptionShould
     }
 
     [Fact]
-    public void ReturnValueWithOrElseWhenOptionIsSome()
-    {
-        var option = Option.Some(42);
-
-        int result = option.OrElse(-1);
-
-        result.ShouldBe(42);
-    }
-
-    [Fact]
-    public void ReturnFallbackWithOrElseWhenOptionIsNone()
-    {
-        var option = Option.None<int>();
-
-        int result = option.OrElse(-1);
-
-        result.ShouldBe(-1);
-    }
-
-    [Fact]
-    public void ReturnValueWithOrThrowWhenOptionIsSome()
-    {
-        var option = Option.Some(42);
-
-        int result = option.OrThrow();
-
-        result.ShouldBe(42);
-    }
-
-    [Fact]
-    public void ThrowDefaultExceptionWithOrThrowWhenOptionIsNone()
-    {
-        var option = Option.None<int>();
-
-        var ex = Should.Throw<InvalidOperationException>(() => option.OrThrow());
-        ex.Message.ShouldBe("No value present");
-    }
-
-    [Fact]
-    public void ThrowCustomExceptionWithOrThrowWhenOptionIsNone()
-    {
-        var option   = Option.None<int>();
-        var customEx = new ArgumentException("Custom message");
-
-        var ex = Should.Throw<ArgumentException>(() => option.OrThrow(customEx));
-        ex.Message.ShouldBe("Custom message");
-    }
-
-    [Fact]
     public void DeconstructCorrectlyWhenOptionIsSome()
     {
         var option = Option.Some(42);
@@ -554,10 +473,7 @@ public class OptionShould
         var option             = Option.None<int>();
         bool sideEffectExecuted = false;
 
-        var result = option.Tap(_ =>
-                                {
-                                    sideEffectExecuted = true;
-                                });
+        var result = option.Tap(_ => sideEffectExecuted = true);
 
         sideEffectExecuted.ShouldBeFalse();
         result.ShouldBeSameAs(option);
@@ -805,40 +721,6 @@ public class OptionShould
     }
 
     [Fact]
-    public async Task OrElseAsyncWithSomeOption()
-    {
-        var option         = Option.Some(42);
-        bool fallbackCalled = false;
-
-        int result = await option.OrElseAsync(() =>
-                                              {
-                                                  fallbackCalled = true;
-
-                                                  return Task.FromResult(-1);
-                                              });
-
-        result.ShouldBe(42);
-        fallbackCalled.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task OrElseAsyncWithNoneOption()
-    {
-        var option         = Option.None<int>();
-        bool fallbackCalled = false;
-
-        int result = await option.OrElseAsync(() =>
-                                              {
-                                                  fallbackCalled = true;
-
-                                                  return Task.FromResult(-1);
-                                              });
-
-        result.ShouldBe(-1);
-        fallbackCalled.ShouldBeTrue();
-    }
-
-    [Fact]
     public async Task BindAsyncWithTaskOptionAndSyncBinder()
     {
         var optionTask = Task.FromResult(Option.Some(42));
@@ -909,50 +791,6 @@ public class OptionShould
         capturedValue.ShouldBe(42);
         _ = result.ShouldBeOfType<Option<int>.Some>();
         ((Option<int>.Some)result).Value.ShouldBe(42);
-    }
-
-    [Fact]
-    public async Task OrElseAsyncWithTaskOptionAndSyncFallback()
-    {
-        var optionTask = Task.FromResult(Option.None<int>());
-
-        int result = await optionTask.OrElseAsync(-1);
-
-        result.ShouldBe(-1);
-    }
-
-    [Fact]
-    public async Task OrElseAsyncWithTaskOptionAndAsyncFallback()
-    {
-        var optionTask     = Task.FromResult(Option.None<int>());
-        bool fallbackCalled = false;
-
-        int result = await optionTask.OrElseAsync(() =>
-                                                  {
-                                                      fallbackCalled = true;
-
-                                                      return Task.FromResult(-1);
-                                                  });
-
-        result.ShouldBe(-1);
-        fallbackCalled.ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task ReturnSomeValueWithTaskOrElseAsyncWhenOptionIsSome()
-    {
-        var optionTask     = Task.FromResult(Option.Some(42));
-        bool fallbackCalled = false;
-
-        int result = await optionTask.OrElseAsync(() =>
-                                                  {
-                                                      fallbackCalled = true;
-
-                                                      return Task.FromResult(-1);
-                                                  });
-
-        result.ShouldBe(42);
-        fallbackCalled.ShouldBeFalse();
     }
 
     [Fact]

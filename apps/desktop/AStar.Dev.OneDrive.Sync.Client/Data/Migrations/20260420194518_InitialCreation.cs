@@ -26,10 +26,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     LocalSyncPath  = table.Column<string>(type: "TEXT", nullable: false),
                     ConflictPolicy = table.Column<int>(type: "INTEGER", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Accounts", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_Accounts", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "DriveStates",
