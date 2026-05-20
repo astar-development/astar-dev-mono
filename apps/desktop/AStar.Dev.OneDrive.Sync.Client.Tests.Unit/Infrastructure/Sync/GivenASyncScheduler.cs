@@ -415,6 +415,39 @@ public sealed class GivenASyncScheduler
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task when_cancel_account_called_for_unknown_account_then_no_exception_thrown()
+    {
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
+
+        await Should.NotThrowAsync(() => scheduler.CancelAccountAsync("non-existent-account"));
+    }
+
+    [Fact]
+    public async Task when_cancel_account_called_for_active_sync_then_token_passed_to_sync_service_is_cancelled()
+    {
+        CancellationToken capturedToken = default;
+        var syncStarted = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async callInfo =>
+            {
+                capturedToken = callInfo.ArgAt<CancellationToken>(1);
+                syncStarted.SetResult();
+                await Task.Delay(Timeout.Infinite, capturedToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            });
+
+        var scheduler = CreateScheduler(mockSyncService, Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
+        var account = new OneDriveAccount { Id = new AccountId("cancel-test") };
+
+        var triggerTask = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+        await syncStarted.Task;
+        await scheduler.CancelAccountAsync("cancel-test");
+        await triggerTask;
+
+        capturedToken.IsCancellationRequested.ShouldBeTrue();
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
