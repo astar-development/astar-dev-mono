@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -36,7 +37,7 @@ public sealed class GivenATypedSyncJob
     {
         var result = SyncJobFactory.CreateDownload(MakeRemote(), MakeTarget(), MakeMetadata());
 
-        result.DownloadUrl.ShouldBeNull();
+        (result.DownloadUrl is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -68,7 +69,7 @@ public sealed class GivenATypedSyncJob
     {
         var result = SyncJobFactory.CreateUpload(MakeRemote(), MakeTarget(), MakeMetadata());
 
-        result.UploadedRemoteItemId.ShouldBeNull();
+        (result.UploadedRemoteItemId is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -129,7 +130,7 @@ public sealed class GivenATypedSyncJob
         SyncJob job = SyncJobFactory.CreateUpload(MakeRemote(), MakeTarget(), MakeMetadata());
 
         if(job is UploadSyncJob uploadJob)
-            uploadJob.UploadedRemoteItemId.ShouldBeNull();
+            (uploadJob.UploadedRemoteItemId is Option<string>.None).ShouldBeTrue();
         else
             Assert.Fail("Expected UploadSyncJob");
     }

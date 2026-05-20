@@ -360,7 +360,7 @@ public sealed class GivenASyncScheduler
         await scheduler.TriggerAccountAsync(accountIdStr, TestContext.Current.CancellationToken);
 
         await mockSyncService.Received(1).SyncAccountAsync(
-            Arg.Is<OneDriveAccount>(a => a.SyncConfig == null),
+            Arg.Is<OneDriveAccount>(a => a.SyncConfig.Match(c => false, () => true)),
             Arg.Any<CancellationToken>());
     }
 

@@ -19,9 +19,11 @@ public class SyncConflictEntityConfiguration : IEntityTypeConfiguration<SyncConf
         _ = builder.Property(e => e.RemoteItemId)
                    .HasConversion(id => id.Id, str => new OneDriveItemId(str));
         _ = builder.Property(e => e.Resolution)
-                   .HasConversion(SqliteTypeConverters.OptionConflictPolicyToNullableInt);
+                   .HasConversion(SqliteTypeConverters.OptionConflictPolicyToNullableInt)
+                   .IsRequired(false);
         _ = builder.Property(e => e.ResolvedAt)
-                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks);
+                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
+                   .IsRequired(false);
         _ = builder.HasIndex(c => new { c.AccountId, c.State });
     }
 }

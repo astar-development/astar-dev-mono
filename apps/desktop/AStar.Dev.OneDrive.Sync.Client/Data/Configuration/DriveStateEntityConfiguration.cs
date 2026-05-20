@@ -13,9 +13,11 @@ public class DriveStateEntityConfiguration : IEntityTypeConfiguration<DriveState
         _ = builder.Property(e => e.AccountId)
                    .HasConversion(id => id.Id, str => new AccountId(str));
         _ = builder.Property(e => e.DeltaLink)
-                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString);
+                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                   .IsRequired(false);
         _ = builder.Property(e => e.LastSyncStartedAt)
-                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks);
+                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
+                   .IsRequired(false);
         _ = builder.HasIndex(e => e.AccountId).IsUnique();
         _ = builder.HasOne(e => e.Account)
                    .WithOne()

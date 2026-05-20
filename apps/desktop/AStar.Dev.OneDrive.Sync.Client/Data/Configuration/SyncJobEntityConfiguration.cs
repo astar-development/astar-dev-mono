@@ -19,11 +19,14 @@ public class SyncJobEntityConfiguration : IEntityTypeConfiguration<SyncJobEntity
         _ = builder.Property(e => e.RemoteItemId)
                    .HasConversion(id => id.Id, str => new OneDriveItemId(str));
         _ = builder.Property(e => e.ErrorMessage)
-                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString);
+                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                   .IsRequired(false);
         _ = builder.Property(e => e.DownloadUrl)
-                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString);
+                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                   .IsRequired(false);
         _ = builder.Property(e => e.CompletedAt)
-                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks);
+                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
+                   .IsRequired(false);
         _ = builder.HasIndex(j => new { j.AccountId, j.State });
     }
 }

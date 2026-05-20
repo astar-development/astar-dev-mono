@@ -261,6 +261,6 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        account.SyncConfig.ShouldBeNull();
+        (account.SyncConfig is Option<AccountSyncConfig>.None).ShouldBeTrue();
     }
 }

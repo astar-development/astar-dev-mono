@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -85,7 +86,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Status.ErrorMessage.ShouldBeNull();
+        (syncJob.Status.ErrorMessage is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -93,7 +94,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.DownloadUrl.ShouldBeNull();
+        (syncJob.DownloadUrl is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Status.CompletedAt.ShouldBeNull();
+        (syncJob.Status.CompletedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
     }
 
     [Fact]

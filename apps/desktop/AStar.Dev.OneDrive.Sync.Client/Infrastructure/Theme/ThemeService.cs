@@ -29,18 +29,23 @@ public sealed class ThemeService : IThemeService, IDisposable
     ///<inheritdoc />
     public void Apply(AppTheme theme)
     {
+        _systemWatcher?.Dispose();
+        _systemWatcher = null;
+        CurrentTheme = theme;
+        ThemeChanged?.Invoke(this, CurrentTheme);
+
         if (!Dispatcher.UIThread.CheckAccess())
         {
-            Dispatcher.UIThread.Post(() => Apply(theme));
+            Dispatcher.UIThread.Post(() => ApplyVariantsOnUiThread(theme));
 
             return;
         }
 
-        CurrentTheme = theme;
+        ApplyVariantsOnUiThread(theme);
+    }
 
-        _systemWatcher?.Dispose();
-        _systemWatcher = null;
-
+    private void ApplyVariantsOnUiThread(AppTheme theme)
+    {
         if (theme == AppTheme.System)
         {
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light);
@@ -50,8 +55,6 @@ public sealed class ThemeService : IThemeService, IDisposable
         {
             ApplyVariant(theme);
         }
-
-        ThemeChanged?.Invoke(this, CurrentTheme);
     }
 
     private static bool GetSystemIsDark()

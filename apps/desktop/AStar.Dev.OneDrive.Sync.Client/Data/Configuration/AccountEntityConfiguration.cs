@@ -14,7 +14,8 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
         _ = builder.Property(e => e.Id)
                    .HasConversion(id => id.Id, str => new AccountId(str));
         _ = builder.Property(e => e.LastSyncedAt)
-                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks);
+                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
+                   .IsRequired(false);
         _ = builder.ComplexProperty(e => e.Profile, p =>
         {
             _ = p.Property(prof => prof.DisplayName).HasColumnName("DisplayName");

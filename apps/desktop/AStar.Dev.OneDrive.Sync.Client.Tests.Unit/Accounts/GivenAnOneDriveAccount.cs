@@ -17,12 +17,12 @@ public sealed class GivenAnOneDriveAccount
         account.Profile.Email.ShouldBe(string.Empty);
         account.AccentIndex.ShouldBe(0);
         account.SelectedFolderIds.ShouldBeEmpty();
-        account.LastSyncedAt.ShouldBeNull();
+        (account.LastSyncedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
         account.Quota.TotalBytes.ShouldBe(0L);
         account.Quota.UsedBytes.ShouldBe(0L);
         account.IsActive.ShouldBeFalse();
         account.FolderNames.ShouldBeEmpty();
-        account.SyncConfig.ShouldBeNull();
+        (account.SyncConfig is Option<AccountSyncConfig>.None).ShouldBeTrue();
     }
 
     [Fact]

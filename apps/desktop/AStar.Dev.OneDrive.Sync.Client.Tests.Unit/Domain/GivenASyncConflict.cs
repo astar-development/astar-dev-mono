@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -29,7 +30,7 @@ public sealed class GivenASyncConflict
     {
         var conflict = new SyncConflict();
 
-        conflict.Resolution.ShouldBeNull();
+        (conflict.Resolution is Option<ConflictPolicy>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -48,7 +49,7 @@ public sealed class GivenASyncConflict
     {
         var conflict = new SyncConflict();
 
-        conflict.ResolvedAt.ShouldBeNull();
+        (conflict.ResolvedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
     }
 
     [Fact]
@@ -154,7 +155,7 @@ public sealed class GivenASyncConflict
     {
         var conflict = new SyncConflict { State = ConflictState.Pending };
 
-        conflict.Resolution.ShouldBeNull();
+        (conflict.Resolution is Option<ConflictPolicy>.None).ShouldBeTrue();
     }
 
     [Fact]
