@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;

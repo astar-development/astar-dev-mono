@@ -2,7 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;

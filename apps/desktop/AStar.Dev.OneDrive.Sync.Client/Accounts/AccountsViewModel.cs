@@ -9,6 +9,8 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;

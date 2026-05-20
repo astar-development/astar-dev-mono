@@ -1,3 +1,7 @@
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
 /// <summary>
