@@ -10,5 +10,21 @@ public static class FileClassifier
     /// Returns a single "Unclassified" sentinel when no rules match or the rule list is empty.
     /// </summary>
     public static IReadOnlyList<FileClassification> Classify(string remotePath, IReadOnlyList<FileClassificationRule> rules)
-        => throw new NotImplementedException();
+    {
+        var tokens = Tokenise(remotePath);
+        var matches = rules
+            .Where(rule => rule.Keywords.Any(kw => tokens.Contains(kw.ToLowerInvariant())))
+            .Select(rule => rule.Classification)
+            .ToList();
+
+        if(matches.Count == 0)
+            return [FileClassificationFactory.CreateUnclassified()];
+
+        return matches.AsReadOnly();
+    }
+
+    private static HashSet<string> Tokenise(string remotePath)
+        => remotePath.Split(Separators, StringSplitOptions.RemoveEmptyEntries)
+                     .Select(t => t.ToLowerInvariant())
+                     .ToHashSet();
 }

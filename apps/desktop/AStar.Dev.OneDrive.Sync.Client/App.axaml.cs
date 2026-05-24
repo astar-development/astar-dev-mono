@@ -15,6 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Testably.Abstractions;
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 
@@ -77,6 +79,23 @@ public class App : Application, IDisposable
                 .Bind(configuration.GetSection("EntraId"))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
+        var classificationRuleOptions = configuration
+            .GetSection("FileClassificationRules")
+            .Get<List<FileClassificationRuleOptions>>() ?? [];
+
+        var classificationRules = classificationRuleOptions
+            .Select(o => FileClassificationRuleFactory.Create(
+                o.Keywords,
+                FileClassificationFactory.Create(
+                    o.Level1,
+                    o.Level2 is not null ? Option.Some(o.Level2) : Option.None<string>(),
+                    o.Level3 is not null ? Option.Some(o.Level3) : Option.None<string>(),
+                    o.IsSpecial)))
+            .ToList()
+            .AsReadOnly();
+
+        _ = services.AddSingleton<IReadOnlyList<FileClassificationRule>>(classificationRules);
         _ = services.AddShell(inMemoryLogSink);
 
         return services.BuildServiceProvider();

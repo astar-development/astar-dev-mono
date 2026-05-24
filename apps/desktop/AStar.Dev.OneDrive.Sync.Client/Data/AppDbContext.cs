@@ -11,6 +11,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<DriveStateEntity> DriveStates => Set<DriveStateEntity>();
     public DbSet<SyncRuleEntity> SyncRules => Set<SyncRuleEntity>();
     public DbSet<SyncedItemEntity> SyncedItems => Set<SyncedItemEntity>();
+    public DbSet<SyncedItemClassificationEntity> SyncedItemClassifications => Set<SyncedItemClassificationEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
