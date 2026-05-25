@@ -1,6 +1,8 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -128,5 +130,40 @@ public sealed class GivenAFileClassificationRuleRepository : IDisposable
         var rules = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         rules.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_add_async_called_then_rule_is_persisted_and_id_returned()
+    {
+        var repository = new FileClassificationRuleRepository(_factory);
+        var rule = FileClassificationRuleFactory.Create(["photos", "photo"], FileClassificationFactory.Create("Media", Option.None<string>(), Option.None<string>(), false));
+
+        var id = await repository.AddAsync(rule, TestContext.Current.CancellationToken);
+
+        id.ShouldBeGreaterThan(0);
+        _seedingContext.FileClassificationRules.Count().ShouldBe(1);
+        _seedingContext.FileClassificationRules.First().Id.ShouldBe(id);
+    }
+
+    [Fact]
+    public async Task when_delete_async_called_with_existing_id_then_rule_is_removed()
+    {
+        _seedingContext.FileClassificationRules.Add(new FileClassificationRuleEntity { Keywords = "archive|zip", Level1 = "Archives" });
+        await _seedingContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+        int existingId = _seedingContext.FileClassificationRules.First().Id;
+        var repository = new FileClassificationRuleRepository(_factory);
+
+        await repository.DeleteAsync(existingId, TestContext.Current.CancellationToken);
+
+        _seedingContext.ChangeTracker.Clear();
+        _seedingContext.FileClassificationRules.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_delete_async_called_with_missing_id_then_no_exception()
+    {
+        var repository = new FileClassificationRuleRepository(_factory);
+
+        await Should.NotThrowAsync(() => repository.DeleteAsync(99999, TestContext.Current.CancellationToken));
     }
 }

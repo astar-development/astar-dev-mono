@@ -1,9 +1,11 @@
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -27,6 +29,15 @@ public sealed class GivenASettingsViewModel
         return service;
     }
 
+    private static FileClassificationRulesViewModel BuildClassificationRulesViewModel()
+    {
+        var repo = Substitute.For<IFileClassificationRuleRepository>();
+        repo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
+
+        return new FileClassificationRulesViewModel(repo);
+    }
+
     private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null)
     {
         settingsService ??= BuildSettingsService();
@@ -34,7 +45,7 @@ public sealed class GivenASettingsViewModel
         scheduler ??= Substitute.For<ISyncScheduler>();
         repository ??= Substitute.For<IAccountRepository>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, BuildClassificationRulesViewModel());
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()

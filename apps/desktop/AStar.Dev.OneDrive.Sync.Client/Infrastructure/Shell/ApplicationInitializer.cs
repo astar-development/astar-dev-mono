@@ -31,6 +31,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, Accou
             }
 
             settings.LoadAccounts(restored);
+            await settings.ClassificationRules.LoadAsync(ct).ConfigureAwait(false);
 
             var activeAccount = restored.FirstOrDefault(account => account.IsActive);
 
