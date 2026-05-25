@@ -128,6 +128,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
         syncState == SyncState.NoSyncPathConfigured ? "No local sync path configured" :
+        _account.LastSyncedAt is null ? "Never synced" :
         _account.LastSyncedAt.Match(
             lastSyncedAt => (DateTimeOffset.UtcNow - lastSyncedAt) switch
             {

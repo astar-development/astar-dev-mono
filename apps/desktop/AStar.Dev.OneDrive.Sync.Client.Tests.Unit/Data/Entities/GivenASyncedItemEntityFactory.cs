@@ -20,7 +20,7 @@ public sealed class GivenASyncedItemEntityFactory
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.ETag.TryGetValue(out var etag1).ShouldBeTrue();
+        entity.Tags.ETag.TryGetValue(out string? etag1).ShouldBeTrue();
         etag1.ShouldBe("etag-abc");
     }
 
@@ -31,7 +31,7 @@ public sealed class GivenASyncedItemEntityFactory
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/file.txt", "/local/file.txt");
 
-        entity.Tags.CTag.TryGetValue(out var ctag1).ShouldBeTrue();
+        entity.Tags.CTag.TryGetValue(out string? ctag1).ShouldBeTrue();
         ctag1.ShouldBe("ctag-xyz");
     }
 
@@ -66,7 +66,7 @@ public sealed class GivenASyncedItemEntityFactory
 
         var entity = SyncedItemEntityFactory.CreateFromDownloadJob(new AccountId("acc-1"), job, "/file.txt");
 
-        entity.Tags.ETag.TryGetValue(out var etag2).ShouldBeTrue();
+        entity.Tags.ETag.TryGetValue(out string? etag2).ShouldBeTrue();
         etag2.ShouldBe("etag-abc");
     }
 
