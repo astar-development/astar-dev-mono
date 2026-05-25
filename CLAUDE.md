@@ -106,6 +106,7 @@ ALL `bin/` and `obj/` redirect to `artifacts/` at repo root.
 ### Avalonia / Blazor / C# / .NET Patterns
 
 C#-specific patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions): see @.claude/rules/c-sharp-code-style.md.
+Avalonia AXAML layout patterns (scrollable viewports, bounded containers, UserControl roots): see @.claude/rules/avalonia-ui.md.
 
 ### C#/.NET Conventions
 
