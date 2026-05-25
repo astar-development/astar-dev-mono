@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<ActivityViewModel>();
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<FilesViewModel>();
+        _ = services.AddSingleton<FileClassificationRulesViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
         _ = services.AddSingleton<StatusBarViewModel>();
 

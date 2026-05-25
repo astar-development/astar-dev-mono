@@ -1,6 +1,7 @@
 using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -17,7 +18,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, StatusBarViewModel statusBar, ILogger<MainWindowViewModel> logger) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, StatusBarViewModel statusBar, ILogger<MainWindowViewModel> logger) : ObservableObject
 {
     private readonly ILogger<MainWindowViewModel> _logger = logger;
 
@@ -26,6 +27,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
     [NotifyPropertyChangedFor(nameof(IsActivityActive))]
     [NotifyPropertyChangedFor(nameof(IsAccountsActive))]
+    [NotifyPropertyChangedFor(nameof(IsClassificationsActive))]
     [NotifyPropertyChangedFor(nameof(IsSettingsActive))]
     [NotifyPropertyChangedFor(nameof(ActiveView))]
     public partial NavSection ActiveSection { get; set; } = NavSection.Dashboard;
@@ -34,6 +36,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     public bool IsFilesActive => ActiveSection == NavSection.Files;
     public bool IsActivityActive => ActiveSection == NavSection.Activity;
     public bool IsAccountsActive => ActiveSection == NavSection.Accounts;
+    public bool IsClassificationsActive => ActiveSection == NavSection.Classifications;
     public bool IsSettingsActive => ActiveSection == NavSection.Settings;
 
     [RelayCommand]
@@ -45,6 +48,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         NavSection.Files => FilesViewInstance,
         NavSection.Activity => ActivityViewInstance,
         NavSection.Accounts => AccountsViewInstance,
+        NavSection.Classifications => FileClassificationsViewInstance,
         NavSection.Settings => SettingsViewInstance,
         _ => null
     };
@@ -94,6 +98,16 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         get
         {
             field ??= new SettingsView { DataContext = settings };
+
+            return field;
+        }
+    }
+
+    private FileClassificationsView FileClassificationsViewInstance
+    {
+        get
+        {
+            field ??= new FileClassificationsView { DataContext = classificationRules };
 
             return field;
         }

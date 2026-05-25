@@ -13,6 +13,8 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -69,10 +71,13 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator);
+        var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();
+        classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
+                               .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository);
         var statusBar = new StatusBarViewModel(accounts);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());

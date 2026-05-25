@@ -73,6 +73,7 @@ internal static class ShellServiceExtensions
         registrar.Register(NavSection.Activity);
         registrar.Register(NavSection.Conflicts);
         registrar.Register(NavSection.LogViewer);
+        registrar.Register(NavSection.Classifications);
         registrar.Register(NavSection.Settings);
         registrar.Register(NavSection.Help);
     }

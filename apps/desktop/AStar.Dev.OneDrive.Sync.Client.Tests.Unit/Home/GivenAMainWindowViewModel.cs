@@ -13,6 +13,8 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -44,13 +46,22 @@ public sealed class GivenAMainWindowViewModel
     private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator);
+    private static FileClassificationRulesViewModel CreateClassificationRulesViewModel()
+    {
+        var repo = Substitute.For<IFileClassificationRuleRepository>();
+        repo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
+
+        return new FileClassificationRulesViewModel(repo);
+    }
+
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
 
     private MainWindowViewModel CreateSut()
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     [Fact]
@@ -93,6 +104,16 @@ public sealed class GivenAMainWindowViewModel
     }
 
     [Fact]
+    public void when_navigate_to_classifications_then_is_classifications_active_is_true()
+    {
+        var sut = CreateSut();
+
+        sut.NavigateCommand.Execute(NavSection.Classifications);
+
+        sut.IsClassificationsActive.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_sync_now_command_executed_with_no_active_account_then_scheduler_not_called()
     {
         var sut = CreateSut();
@@ -108,7 +129,7 @@ public sealed class GivenAMainWindowViewModel
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
         accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") });
-        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
