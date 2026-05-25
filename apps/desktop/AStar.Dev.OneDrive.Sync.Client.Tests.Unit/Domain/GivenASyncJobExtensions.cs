@@ -107,7 +107,7 @@ public sealed class GivenASyncJobExtensions
 
         var failed = job.Fail(errorMessage);
 
-        failed.Status.ErrorMessage.TryGetValue(out var errMsg).ShouldBeTrue();
+        failed.Status.ErrorMessage.TryGetValue(out string? errMsg).ShouldBeTrue();
         errMsg.ShouldBe(errorMessage);
     }
 

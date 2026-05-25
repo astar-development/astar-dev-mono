@@ -9,7 +9,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
 /// <inheritdoc />
-public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IReadOnlyList<FileClassificationRule> classificationRules, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger) : ISyncedItemRegistrar
+public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileClassificationRuleRepository classificationRuleRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger) : ISyncedItemRegistrar
 {
     /// <inheritdoc />
     public async Task RegisterFolderAsync(AccountId accountId, FolderDeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
@@ -25,7 +25,9 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
     {
         OneDriveSyncClientMessages.SyncedItemLocalExists(logger, localPath);
         var phantomItem = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
-        var syncedItemId = await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
+        int syncedItemId = await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
+
+        var classificationRules = await classificationRuleRepository.GetAllAsync(ct);
         var classifications = FileClassifier.Classify(remotePath, classificationRules);
         await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
         syncedItems[item.Id.Id] = phantomItem;
