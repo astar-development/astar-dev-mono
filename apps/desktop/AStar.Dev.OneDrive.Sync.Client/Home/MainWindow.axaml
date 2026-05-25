@@ -272,7 +272,9 @@
             <!-- Column 2 — Main content area -->
             <Grid Grid.Column="2"
                 Background="{DynamicResource BackgroundPrimaryBrush}">
-                <ContentControl Content="{Binding ActiveView}"/>
+                <ContentControl Content="{Binding ActiveView}"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"/>
             </Grid>
 
         </Grid>
