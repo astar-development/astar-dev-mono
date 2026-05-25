@@ -56,8 +56,8 @@ public sealed class GivenADeltaItem
 
         item.ParentId.TryGetValue(out var pid).ShouldBeTrue();
         item.LastModified.TryGetValue(out var lm).ShouldBeTrue();
-        item.DownloadUrl.TryGetValue(out var dlUrl).ShouldBeTrue();
-        item.Path.RelativePath.TryGetValue(out var relPath).ShouldBeTrue();
+        item.DownloadUrl.TryGetValue(out string? dlUrl).ShouldBeTrue();
+        item.Path.RelativePath.TryGetValue(out string? relPath).ShouldBeTrue();
         item.Id.Id.ShouldBe(id);
         item.DriveId.ShouldBe(driveId);
         item.Path.Name.ShouldBe(name);
@@ -84,7 +84,7 @@ public sealed class GivenADeltaItem
             VersionInfoFactory.Create("etag-1", null));
 
         item.ParentId.TryGetValue(out var folderId).ShouldBeTrue();
-        item.VersionInfo.ETag.TryGetValue(out var etagVal).ShouldBeTrue();
+        item.VersionInfo.ETag.TryGetValue(out string? etagVal).ShouldBeTrue();
         item.Id.Id.ShouldBe(id);
         item.DriveId.ShouldBe(driveId);
         item.Path.Name.ShouldBe(name);

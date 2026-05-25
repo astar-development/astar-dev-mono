@@ -362,7 +362,7 @@ public sealed class GivenADownloadJobBuilder
 
         result.ShouldHaveSingleItem();
         result[0].Metadata.VersionInfo.TryGetValue(out var vi).ShouldBeTrue();
-        vi.ETag.TryGetValue(out var etag).ShouldBeTrue();
+        vi.ETag.TryGetValue(out string? etag).ShouldBeTrue();
         etag.ShouldBe("etag-from-delta");
     }
 }
