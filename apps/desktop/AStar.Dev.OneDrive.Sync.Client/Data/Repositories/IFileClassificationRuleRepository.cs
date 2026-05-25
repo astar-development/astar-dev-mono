@@ -13,6 +13,9 @@ public interface IFileClassificationRuleRepository
     /// <summary>Persists a new rule and returns the assigned database Id.</summary>
     Task<int> AddAsync(FileClassificationRule rule, CancellationToken cancellationToken = default);
 
+    /// <summary>Updates the persisted rule with the specified Id.</summary>
+    Task UpdateAsync(int id, FileClassificationRule rule, CancellationToken cancellationToken = default);
+
     /// <summary>Removes the rule with the given Id. No-op if the Id does not exist.</summary>
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

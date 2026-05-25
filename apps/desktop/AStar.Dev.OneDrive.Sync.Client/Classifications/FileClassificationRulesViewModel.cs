@@ -43,8 +43,8 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     {
         var entries = await repository.GetAllWithIdsAsync(cancellationToken);
         Rules.Clear();
-        foreach(var entry in entries)
-            Rules.Add(new FileClassificationRuleRowViewModel(entry.Id, entry.Rule, DeleteRuleAsync));
+        foreach (var entry in entries)
+            Rules.Add(new FileClassificationRuleRowViewModel(entry.Id, entry.Rule, DeleteRuleAsync, UpdateRuleAsync));
     }
 
     private bool CanAdd => !string.IsNullOrWhiteSpace(NewKeywords) && !string.IsNullOrWhiteSpace(NewLevel1);
@@ -63,7 +63,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         var rule = FileClassificationRuleFactory.Create(keywords, classification);
 
         var id = await repository.AddAsync(rule);
-        Rules.Add(new FileClassificationRuleRowViewModel(id, rule, DeleteRuleAsync));
+        Rules.Add(new FileClassificationRuleRowViewModel(id, rule, DeleteRuleAsync, UpdateRuleAsync));
 
         NewKeywords = string.Empty;
         NewLevel1 = string.Empty;
@@ -72,11 +72,16 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         NewIsSpecial = false;
     }
 
+    private async Task UpdateRuleAsync(int id, FileClassificationRule rule)
+    {
+        await repository.UpdateAsync(id, rule, CancellationToken.None);
+    }
+
     private async Task DeleteRuleAsync(int id)
     {
         await repository.DeleteAsync(id);
         var row = Rules.FirstOrDefault(r => r.Id == id);
-        if(row is not null)
+        if (row is not null)
             Rules.Remove(row);
     }
 

@@ -35,9 +35,10 @@ public sealed class GivenAnIconRailButton
     [AvaloniaFact]
     public void when_is_active_set_to_true_then_active_bar_becomes_visible()
     {
-        var sut = new IconRailButton();
-
-        sut.IsActive = true;
+        var sut = new IconRailButton
+        {
+            IsActive = true
+        };
 
         sut.FindControl<Rectangle>("ActiveBar")!.IsVisible.ShouldBeTrue();
     }
@@ -45,9 +46,10 @@ public sealed class GivenAnIconRailButton
     [AvaloniaFact]
     public void when_is_active_set_to_true_then_rail_button_has_active_class()
     {
-        var sut = new IconRailButton();
-
-        sut.IsActive = true;
+        var sut = new IconRailButton
+        {
+            IsActive = true
+        };
 
         sut.FindControl<Button>("RailBtn")!.Classes.Contains(ActiveClassName).ShouldBeTrue();
     }
@@ -55,8 +57,10 @@ public sealed class GivenAnIconRailButton
     [AvaloniaFact]
     public void when_is_active_set_to_false_after_true_then_active_bar_becomes_hidden()
     {
-        var sut = new IconRailButton();
-        sut.IsActive = true;
+        var sut = new IconRailButton
+        {
+            IsActive = true
+        };
 
         sut.IsActive = false;
 
@@ -66,8 +70,10 @@ public sealed class GivenAnIconRailButton
     [AvaloniaFact]
     public void when_is_active_set_to_false_after_true_then_rail_button_loses_active_class()
     {
-        var sut = new IconRailButton();
-        sut.IsActive = true;
+        var sut = new IconRailButton
+        {
+            IsActive = true
+        };
 
         sut.IsActive = false;
 

@@ -234,16 +234,24 @@ public sealed class GivenAnUploadService
 
     private static ResponseMessage Created201Response()
     {
-        var msg = new ResponseMessage { StatusCode = 201, Headers = JsonContentTypeHeaders() };
-        msg.BodyData = new BodyData { DetectedBodyType = WireMockBodyType.String, BodyAsString = ItemIdJson() };
+        var msg = new ResponseMessage
+        {
+            StatusCode = 201,
+            Headers = JsonContentTypeHeaders(),
+            BodyData = new BodyData { DetectedBodyType = WireMockBodyType.String, BodyAsString = ItemIdJson() }
+        };
 
         return msg;
     }
 
     private static ResponseMessage Ok200Response()
     {
-        var msg = new ResponseMessage { StatusCode = 200, Headers = JsonContentTypeHeaders() };
-        msg.BodyData = new BodyData { DetectedBodyType = WireMockBodyType.String, BodyAsString = ItemIdJson() };
+        var msg = new ResponseMessage
+        {
+            StatusCode = 200,
+            Headers = JsonContentTypeHeaders(),
+            BodyData = new BodyData { DetectedBodyType = WireMockBodyType.String, BodyAsString = ItemIdJson() }
+        };
 
         return msg;
     }

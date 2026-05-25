@@ -62,12 +62,29 @@ public sealed class FileClassificationRuleRepository(IDbContextFactory<AppDbCont
         return entity.Id;
     }
 
+    public async Task UpdateAsync(int id, FileClassificationRule rule, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await db.FileClassificationRules.FindAsync([id], cancellationToken);
+        if (entity is null)
+            return;
+
+        entity.Keywords = string.Join('|', rule.Keywords);
+        entity.Level1 = rule.Classification.Level1;
+        entity.Level2 = rule.Classification.Level2.MapOrDefault(v => v, (string?)null);
+        entity.Level3 = rule.Classification.Level3.MapOrDefault(v => v, (string?)null);
+        entity.IsSpecial = rule.Classification.IsSpecial;
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var entity = await db.FileClassificationRules.FindAsync([id], cancellationToken);
-        if(entity is null)
+        if (entity is null)
             return;
 
         db.FileClassificationRules.Remove(entity);
