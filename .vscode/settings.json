@@ -129,6 +129,8 @@
   ],
   "chat.tools.terminal.autoApprove": {
     "dotnet build": true,
-    "dotnet test": true
+    "dotnet test": true,
+    "git -C /home/jbarden/repos/astar-dev-mono": true,
+    "gh": true
   }
 }

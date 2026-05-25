@@ -11,8 +11,10 @@ internal sealed class WireMockGraphClientFactory(WireMockServer server) : IGraph
     public GraphServiceClient CreateClient(string accessToken)
     {
         var authProvider = new BaseBearerTokenAuthenticationProvider(new TestTokenProvider(accessToken));
-        var adapter = new HttpClientRequestAdapter(authProvider);
-        adapter.BaseUrl = server.Url;
+        var adapter = new HttpClientRequestAdapter(authProvider)
+        {
+            BaseUrl = server.Url
+        };
 
         return new GraphServiceClient(adapter);
     }

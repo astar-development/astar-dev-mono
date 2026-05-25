@@ -29,9 +29,10 @@ public sealed class GivenASplashWindowViewModel
     [Fact]
     public void when_status_is_set_then_new_value_is_returned()
     {
-        var sut = new Client.Splash.SplashWindowViewModel();
-
-        sut.Status = "Configuring database…";
+        var sut = new Client.Splash.SplashWindowViewModel
+        {
+            Status = "Configuring database…"
+        };
 
         sut.Status.ShouldBe("Configuring database…");
     }

@@ -149,8 +149,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = SyncPathValue;
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = SyncPathValue
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -164,8 +166,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = SyncPathValue;
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = SyncPathValue
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -180,9 +184,11 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = SyncPathValue;
-        sut.ConflictPolicy = ConflictPolicy.RemoteWins;
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = SyncPathValue,
+            ConflictPolicy = ConflictPolicy.RemoteWins
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -196,8 +202,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
-        var sut = new AccountSyncSettingsViewModel(account, repository);
-        sut.LocalSyncPath = SyncPathValue;
+        var sut = new AccountSyncSettingsViewModel(account, repository)
+        {
+            LocalSyncPath = SyncPathValue
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -210,8 +218,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = string.Empty;
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = string.Empty
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -225,8 +235,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = string.Empty;
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = string.Empty
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -241,8 +253,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
-        sut.LocalSyncPath = "   ";
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        {
+            LocalSyncPath = "   "
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -256,8 +270,10 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
-        var sut = new AccountSyncSettingsViewModel(account, repository);
-        sut.LocalSyncPath = string.Empty;
+        var sut = new AccountSyncSettingsViewModel(account, repository)
+        {
+            LocalSyncPath = string.Empty
+        };
 
         await sut.SaveCommand.ExecuteAsync(null);
 
