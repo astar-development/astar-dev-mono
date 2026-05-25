@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -29,15 +28,6 @@ public sealed class GivenASettingsViewModel
         return service;
     }
 
-    private static FileClassificationRulesViewModel BuildClassificationRulesViewModel()
-    {
-        var repo = Substitute.For<IFileClassificationRuleRepository>();
-        repo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
-
-        return new FileClassificationRulesViewModel(repo);
-    }
-
     private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null)
     {
         settingsService ??= BuildSettingsService();
@@ -45,7 +35,7 @@ public sealed class GivenASettingsViewModel
         scheduler ??= Substitute.For<ISyncScheduler>();
         repository ??= Substitute.For<IAccountRepository>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, BuildClassificationRulesViewModel());
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository);
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()

@@ -7,11 +7,12 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 public enum NavSection
 {
     Dashboard = 0,
-    Files     = 1,
-    Activity  = 2,
+    Files = 1,
+    Activity = 2,
     Conflicts = 3,
     LogViewer = 4,
-    Accounts  = 5,
-    Settings  = 6,
-    Help      = 7
+    Accounts = 5,
+    Classifications = 6,
+    Settings = 7,
+    Help = 8
 }

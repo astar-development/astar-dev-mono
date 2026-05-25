@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -11,7 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
-public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, FileClassificationRulesViewModel classificationRules) : ObservableObject
+public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository) : ObservableObject
 {
     [ObservableProperty]
     public partial AppTheme Theme { get; set; } = settingsService.Current.Theme;
@@ -69,15 +68,12 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
         new(ConflictPolicy.RemoteWins,    "Remote wins",     "Remote always overwrites local"),
     ];
 
-    /// <summary>View model for managing file classification rules.</summary>
-    public FileClassificationRulesViewModel ClassificationRules => classificationRules;
-
     public ObservableCollection<Accounts.AccountSyncSettingsViewModel> AccountSettings { get; } = [];
 
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         AccountSettings.Clear();
-        foreach(var a in accounts)
+        foreach (var a in accounts)
             AccountSettings.Add(new Accounts.AccountSyncSettingsViewModel(a, repository));
     }
 
@@ -87,7 +83,7 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
     public void RemoveAccount(string accountId)
     {
         var vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
-        if(vm is not null)
+        if (vm is not null)
             _ = AccountSettings.Remove(vm);
     }
 }

@@ -105,8 +105,7 @@ ALL `bin/` and `obj/` redirect to `artifacts/` at repo root.
 
 ### Avalonia / Blazor / C# / .NET Patterns
 
-C#-specific patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions): see @.claude/agents/c-sharp-senior-developer.md and @.claude/rules/c-sharp-code-style.md.
-C# updates: use @.claude/agentsc-sharp-senior-developer.md subagent.
+C#-specific patterns (DI, EF Core, Mediator/MediatR, Avalonia, Refit/Polly, Serilog, FluentValidation, functional extensions): see @.claude/rules/c-sharp-code-style.md.
 
 ### C#/.NET Conventions
 
@@ -127,7 +126,7 @@ C# updates: use @.claude/agentsc-sharp-senior-developer.md subagent.
 
 ## Before Starting ANY Task
 
-Two steps **MANDATORY** before single line of code. No exceptions, including spikes.
+Three steps **MANDATORY** before single line of code. No exceptions, including spikes.
 
 1. **Branch first** — run `git branch`, confirm not on `main`. If on main, create branch:
 
@@ -139,9 +138,17 @@ Two steps **MANDATORY** before single line of code. No exceptions, including spi
 
 2. **Tests MANDATORY** — EVERY coding task MUST follow TDD. COMMIT FAILING TEST BEFORE writing production code.
 
+3. **Scope** — implement ONLY what was asked. Stop and wait for review before touching any other phase or area. Honor all explicit style requirements (primary constructors, idiomatic `Match`/`MatchAsync`, no tuple-intermediate patterns).
+
 ## Branching & Commits
 
 ALL development work MUST follow the GIT rules in: @docs/git-instructions.md
+
+## Code Exploration
+
+- Call Serena `initial_instructions` BEFORE exploring the codebase — no exceptions.
+- Use `mcp__serena__find_symbol` and `mcp__serena__find_referencing_symbols` for symbol lookups — do NOT read whole files for exploration.
+- Find ALL call sites and test files before touching production code.
 
 ## Definition of Done
 
@@ -158,8 +165,9 @@ Before any coding task complete — commits and PRs included:
 
 NEVER say "fixed", "done", or "complete" without explicit evidence:
 
-- Run `dotnet build` — zero errors required.
-- Run `dotnet test` — zero failures (excluding committed RED tests).
+- Run `dotnet build` — zero errors required. Paste exact output.
+- Run `dotnet test` — paste the EXACT pass/fail count from raw terminal output. Do NOT summarise or self-report. New failures must be zero; pre-existing failures must be identified.
+- Confirm ALL call sites and test files were found and updated before reporting completion.
 - Trace the original bug/requirement through the code path and state in plain text WHY the change addresses it at the root cause.
 - For sync/download bugs specifically: confirm the full flow (Graph API → persistence → sync logic) before touching any code. Write a failing reproducing test first; declare done only when it turns green.
 

@@ -1,14 +1,17 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
-             xmlns:classifications="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Classifications"
              xmlns:settings="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Settings"
              xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Settings.SettingsView"
-             x:DataType="settings:SettingsViewModel">
+             x:DataType="settings:SettingsViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  Padding="24,20">
+    <Grid RowDefinitions="*">
+        <ScrollViewer Grid.Row="0"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="24,20">
         <StackPanel Spacing="24" MaxWidth="640">
 
             <!-- ── Appearance ── -->
@@ -226,27 +229,8 @@
                 </ItemsControl>
             </StackPanel>
 
-            <!-- ── File classifications ── -->
-            <StackPanel Spacing="12">
-                <TextBlock Text="File classifications"
-                           FontSize="{StaticResource FontSizeXl}"
-                           FontWeight="Medium"
-                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-
-                <TextBlock Text="Rules map path keywords to classification tags used during sync."
-                           FontSize="{StaticResource FontSizeSm}"
-                           Foreground="{DynamicResource TextTertiaryBrush}"/>
-
-                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
-                        BorderBrush="{DynamicResource BorderSubtleBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource RadiusLg}"
-                        Padding="16">
-                    <classifications:FileClassificationsView DataContext="{Binding ClassificationRules}"/>
-                </Border>
-            </StackPanel>
-
         </StackPanel>
     </ScrollViewer>
+    </Grid>
 
 </UserControl>

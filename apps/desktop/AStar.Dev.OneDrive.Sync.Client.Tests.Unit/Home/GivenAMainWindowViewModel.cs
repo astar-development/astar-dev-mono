@@ -55,13 +55,13 @@ public sealed class GivenAMainWindowViewModel
         return new FileClassificationRulesViewModel(repo);
     }
 
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, CreateClassificationRulesViewModel());
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
 
     private MainWindowViewModel CreateSut()
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     [Fact]
@@ -104,6 +104,16 @@ public sealed class GivenAMainWindowViewModel
     }
 
     [Fact]
+    public void when_navigate_to_classifications_then_is_classifications_active_is_true()
+    {
+        var sut = CreateSut();
+
+        sut.NavigateCommand.Execute(NavSection.Classifications);
+
+        sut.IsClassificationsActive.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_sync_now_command_executed_with_no_active_account_then_scheduler_not_called()
     {
         var sut = CreateSut();
@@ -119,7 +129,7 @@ public sealed class GivenAMainWindowViewModel
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
         accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") });
-        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm), Substitute.For<ILogger<MainWindowViewModel>>());
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 

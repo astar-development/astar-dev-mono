@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class ApplicationInitializer(IStartupService startupService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
+public sealed class ApplicationInitializer(IStartupService startupService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
 {
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken ct = default)
@@ -31,7 +32,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, Accou
             }
 
             settings.LoadAccounts(restored);
-            await settings.ClassificationRules.LoadAsync(ct).ConfigureAwait(false);
+            await classificationRules.LoadAsync(ct).ConfigureAwait(false);
 
             var activeAccount = restored.FirstOrDefault(account => account.IsActive);
 

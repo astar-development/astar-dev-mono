@@ -2,122 +2,146 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:classifications="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Classifications"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Classifications.FileClassificationsView"
-             x:DataType="classifications:FileClassificationRulesViewModel">
+             x:DataType="classifications:FileClassificationRulesViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch">
 
-    <StackPanel Spacing="12">
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0"
+                    Spacing="4"
+                    Margin="24,20,24,12">
+            <TextBlock Text="File classifications"
+                       FontSize="{StaticResource FontSizeXl}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="Rules map path keywords to classification tags used during sync."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
 
-        <!-- Empty state -->
-        <TextBlock Text="No classification rules defined."
-                   FontSize="{StaticResource FontSizeSm}"
-                   Foreground="{DynamicResource TextTertiaryBrush}"
-                   IsVisible="{Binding HasNoRules}"/>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0"
+                      Padding="24,0,34,20">
+            <StackPanel Spacing="12" MaxWidth="640">
 
-        <!-- Rule list -->
-        <ItemsControl ItemsSource="{Binding Rules}"
-                      IsVisible="{Binding !HasNoRules}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="classifications:FileClassificationRuleRowViewModel">
-                    <Border Background="{DynamicResource BackgroundTertiaryBrush}"
-                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource RadiusMd}"
-                            Padding="12,8"
-                            Margin="0,0,0,6">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <TextBlock FontSize="{StaticResource FontSizeSm}"
-                                           Foreground="{DynamicResource TextPrimaryBrush}">
-                                    <Run FontWeight="Medium" Text="{Binding Keywords}"/>
-                                    <Run Text=" → "/>
-                                    <Run Text="{Binding Level1}"/>
-                                </TextBlock>
-                                <StackPanel Orientation="Horizontal" Spacing="6"
-                                            IsVisible="{Binding Level2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                    <TextBlock Text="{Binding Level2}"
-                                               FontSize="{StaticResource FontSizeXs}"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding Level3}"
-                                               FontSize="{StaticResource FontSizeXs}"
-                                               Foreground="{DynamicResource TextTertiaryBrush}"
-                                               IsVisible="{Binding Level3, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-                                </StackPanel>
-                                <TextBlock Text="Special"
-                                           FontSize="{StaticResource FontSizeXs}"
-                                           Foreground="{DynamicResource TextAccentBrush}"
-                                           IsVisible="{Binding IsSpecial}"/>
-                            </StackPanel>
+                <!-- Empty state -->
+                <TextBlock Text="No classification rules defined."
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           IsVisible="{Binding HasNoRules}"/>
 
-                            <Button Grid.Column="1"
-                                    Content="Delete"
-                                    Padding="8,4"
-                                    CornerRadius="{StaticResource RadiusMd}"
-                                    Background="Transparent"
-                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                <!-- Rule list -->
+                <ItemsControl ItemsSource="{Binding Rules}"
+                              IsVisible="{Binding !HasNoRules}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="classifications:FileClassificationRuleRowViewModel">
+                            <Border Background="{DynamicResource BackgroundTertiaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
                                     BorderThickness="1"
-                                    FontSize="{StaticResource FontSizeXs}"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding DeleteCommand}"/>
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    Padding="12,8"
+                                    Margin="0,0,0,6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock FontSize="{StaticResource FontSizeSm}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}">
+                                            <Run FontWeight="Medium" Text="{Binding Keywords}"/>
+                                            <Run Text=" → "/>
+                                            <Run Text="{Binding Level1}"/>
+                                        </TextBlock>
+                                        <StackPanel Orientation="Horizontal" Spacing="6"
+                                                    IsVisible="{Binding Level2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <TextBlock Text="{Binding Level2}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding Level3}"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                                       IsVisible="{Binding Level3, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Special"
+                                                   FontSize="{StaticResource FontSizeXs}"
+                                                   Foreground="{DynamicResource TextAccentBrush}"
+                                                   IsVisible="{Binding IsSpecial}"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Content="Delete"
+                                            Padding="8,4"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            Background="Transparent"
+                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeXs}"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DeleteCommand}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Add form -->
+                <Border Background="{DynamicResource BackgroundTertiaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Padding="12"
+                        Margin="0,0,0,28">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Add rule"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+
+                        <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,8,Auto,8,Auto">
+                            <TextBox Grid.Row="0" Grid.Column="0"
+                                     Text="{Binding NewKeywords}"
+                                     PlaceholderText="Keywords (comma-separated)"
+                                     FontSize="{StaticResource FontSizeSm}"
+                                     CornerRadius="{StaticResource RadiusMd}"/>
+                            <TextBox Grid.Row="0" Grid.Column="2"
+                                     Text="{Binding NewLevel1}"
+                                     PlaceholderText="Level 1 (required)"
+                                     FontSize="{StaticResource FontSizeSm}"
+                                     CornerRadius="{StaticResource RadiusMd}"/>
+
+                            <TextBox Grid.Row="2" Grid.Column="0"
+                                     Text="{Binding NewLevel2}"
+                                     PlaceholderText="Level 2 (optional)"
+                                     FontSize="{StaticResource FontSizeSm}"
+                                     CornerRadius="{StaticResource RadiusMd}"/>
+                            <TextBox Grid.Row="2" Grid.Column="2"
+                                     Text="{Binding NewLevel3}"
+                                     PlaceholderText="Level 3 (optional)"
+                                     FontSize="{StaticResource FontSizeSm}"
+                                     CornerRadius="{StaticResource RadiusMd}"/>
+
+                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Spacing="12">
+                                <CheckBox Content="Special"
+                                          IsChecked="{Binding NewIsSpecial}"
+                                          FontSize="{StaticResource FontSizeSm}"
+                                          VerticalAlignment="Center"/>
+                                <Button Content="Add"
+                                        Padding="14,6"
+                                        CornerRadius="{StaticResource RadiusMd}"
+                                        Background="{DynamicResource TextAccentBrush}"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="{StaticResource FontSizeSm}"
+                                        Command="{Binding AddCommand}"/>
+                            </StackPanel>
                         </Grid>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <!-- Add form -->
-        <Border Background="{DynamicResource BackgroundTertiaryBrush}"
-                BorderBrush="{DynamicResource BorderSubtleBrush}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource RadiusMd}"
-                Padding="12">
-            <StackPanel Spacing="8">
-                <TextBlock Text="Add rule"
-                           FontSize="{StaticResource FontSizeXs}"
-                           Foreground="{DynamicResource TextTertiaryBrush}"/>
-
-                <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,8,Auto,8,Auto">
-                    <TextBox Grid.Row="0" Grid.Column="0"
-                             Text="{Binding NewKeywords}"
-                             PlaceholderText="Keywords (comma-separated)"
-                             FontSize="{StaticResource FontSizeSm}"
-                             CornerRadius="{StaticResource RadiusMd}"/>
-                    <TextBox Grid.Row="0" Grid.Column="2"
-                             Text="{Binding NewLevel1}"
-                             PlaceholderText="Level 1 (required)"
-                             FontSize="{StaticResource FontSizeSm}"
-                             CornerRadius="{StaticResource RadiusMd}"/>
-
-                    <TextBox Grid.Row="2" Grid.Column="0"
-                             Text="{Binding NewLevel2}"
-                             PlaceholderText="Level 2 (optional)"
-                             FontSize="{StaticResource FontSizeSm}"
-                             CornerRadius="{StaticResource RadiusMd}"/>
-                    <TextBox Grid.Row="2" Grid.Column="2"
-                             Text="{Binding NewLevel3}"
-                             PlaceholderText="Level 3 (optional)"
-                             FontSize="{StaticResource FontSizeSm}"
-                             CornerRadius="{StaticResource RadiusMd}"/>
-
-                    <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Spacing="12">
-                        <CheckBox Content="Special"
-                                  IsChecked="{Binding NewIsSpecial}"
-                                  FontSize="{StaticResource FontSizeSm}"
-                                  VerticalAlignment="Center"/>
-                        <Button Content="Add"
-                                Padding="14,6"
-                                CornerRadius="{StaticResource RadiusMd}"
-                                Background="{DynamicResource TextAccentBrush}"
-                                Foreground="White"
-                                BorderThickness="0"
-                                FontSize="{StaticResource FontSizeSm}"
-                                Command="{Binding AddCommand}"/>
                     </StackPanel>
-                </Grid>
-            </StackPanel>
-        </Border>
+                </Border>
 
-    </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 
 </UserControl>

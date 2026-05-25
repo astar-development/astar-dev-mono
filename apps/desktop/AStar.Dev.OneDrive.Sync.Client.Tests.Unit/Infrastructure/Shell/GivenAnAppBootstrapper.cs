@@ -74,10 +74,10 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();
         classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
                                .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
-        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, new FileClassificationRulesViewModel(classificationRulesRepo));
+        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository);
         var statusBar = new StatusBarViewModel(accounts);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());

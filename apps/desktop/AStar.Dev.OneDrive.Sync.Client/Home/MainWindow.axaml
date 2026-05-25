@@ -65,6 +65,11 @@
             C8.4,10.02 10.02,8.4 12,8.4 C13.98,8.4 15.6,10.02 15.6,12
             C15.6,13.98 13.98,15.6 12,15.6 Z
         </Geometry>
+        <Geometry x:Key="IconClassifications">
+            M7,5 L10,8 L19,8 L19,10 L10,10 L7,13 Z
+            M7,11 L10,14 L19,14 L19,16 L10,16 L7,19 Z
+            M5,5 H6.5 V19 H5 Z
+        </Geometry>
     </Window.Resources>
 
     <!-- Root: Row 0 = working area, Row 1 = status bar -->
@@ -72,6 +77,7 @@
 
         <!-- ── Row 0 — three-column working area ── -->
         <Grid Grid.Row="0"
+              RowDefinitions="*"
               ColumnDefinitions="Auto,Auto,*">
 
             <!-- Column 0 — Icon rail -->
@@ -131,6 +137,12 @@
                     <StackPanel DockPanel.Dock="Bottom"
                                 Spacing="2"
                                 Margin="0,0,0,8">
+                        <controls:IconRailButton
+                            IconData="{StaticResource IconClassifications}"
+                            TooltipLabel="Classifications — manage keyword rules"
+                            IsActive="{Binding IsClassificationsActive}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="{x:Static local:NavSection.Classifications}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconSettings}"
                             TooltipLabel="Settings — theme, language and sync policy"
@@ -270,12 +282,14 @@
             </Border>
 
             <!-- Column 2 — Main content area -->
-            <Grid Grid.Column="2"
-                Background="{DynamicResource BackgroundPrimaryBrush}">
-                <ContentControl Content="{Binding ActiveView}"
-                                HorizontalContentAlignment="Stretch"
-                                VerticalContentAlignment="Stretch"/>
-            </Grid>
+            <ContentControl Grid.Column="2"
+                            Content="{Binding ActiveView}"
+                            Background="{DynamicResource BackgroundPrimaryBrush}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
+                            ClipToBounds="True"/>
 
         </Grid>
         <!-- ── end Row 0 three-column grid ── -->

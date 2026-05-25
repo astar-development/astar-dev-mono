@@ -55,10 +55,10 @@ public sealed class GivenAnApplicationInitializer
         return new FileClassificationRulesViewModel(repo);
     }
 
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, CreateClassificationRulesViewModel());
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository);
 
-    private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings)
-        => new(_startupService, accounts, files, dashboard, activity, settings, Substitute.For<ILogger<ApplicationInitializer>>());
+    private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules)
+        => new(_startupService, accounts, files, dashboard, activity, settings, classificationRules, Substitute.For<ILogger<ApplicationInitializer>>());
 
     private static OneDriveAccount BuildAccount(string id = "acc-1", string email = "user@test.com", bool isActive = false)
         => new() { Id = new AccountId(id), Profile = AccountProfileFactory.Create("Test User", email), IsActive = isActive, SelectedFolderIds = [] };
@@ -69,7 +69,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
 
         var accounts = CreateAccountsViewModel();
-        var sut = CreateSut(accounts, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(accounts, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -82,7 +83,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
 
         var files = CreateFilesViewModel();
-        var sut = CreateSut(CreateAccountsViewModel(), files, CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), files, CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -95,7 +97,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
 
         var dashboard = CreateDashboardViewModel();
-        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), dashboard, CreateActivityViewModel(), CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), dashboard, CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -108,7 +111,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1")]);
 
         var settings = CreateSettingsViewModel();
-        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), settings);
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), settings, classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -122,7 +126,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([active, BuildAccount("acc-2")]);
 
         var files = CreateFilesViewModel();
-        var sut = CreateSut(CreateAccountsViewModel(), files, CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), files, CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -137,7 +142,8 @@ public sealed class GivenAnApplicationInitializer
         _startupService.RestoreAccountsAsync().Returns([active]);
 
         var activity = CreateActivityViewModel();
-        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), activity, CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), activity, CreateSettingsViewModel(), classificationRules);
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
@@ -149,7 +155,8 @@ public sealed class GivenAnApplicationInitializer
     {
         _startupService.RestoreAccountsAsync().Returns(Task.FromException<List<OneDriveAccount>>(new InvalidOperationException("DB failure")));
 
-        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel());
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
 
         var exception = await Record.ExceptionAsync(() => sut.InitializeAsync(TestContext.Current.CancellationToken));
 
