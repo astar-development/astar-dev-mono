@@ -14,15 +14,26 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 public sealed class GivenASyncedItemRegistrar
 {
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
+    private readonly IFileClassificationRuleRepository _fileClassificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
     private readonly IDirectory _mockDirectory = Substitute.For<IDirectory>();
     private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
 
     public GivenASyncedItemRegistrar()
-        => _fileSystem.Directory.Returns(_mockDirectory);
+    {
+        IReadOnlyList<string> keywords = ["photos", "Media"];
+        IReadOnlyList<string> keywords1 = ["photos"];
+        _fileSystem.Directory.Returns(_mockDirectory);
+        _ = _fileClassificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationRule>>(
+            new List<FileClassificationRule>
+            {
+                FileClassificationRuleFactory.Create(keywords, FileClassificationFactory.Create("Media", Option.None<string>(), Option.None<string>(), false)),
+                FileClassificationRuleFactory.Create(keywords1, FileClassificationFactory.Create("Work", Option.None<string>(), Option.None<string>(), false))
+            }.AsReadOnly()));
+    }
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, [], _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
 
-    private SyncedItemRegistrar CreateSutWithRules(IReadOnlyList<FileClassificationRule> rules) => new(_syncedItemRepository, rules, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
+    private SyncedItemRegistrar CreateSutWithRules(IReadOnlyList<FileClassificationRule> rules) => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
 
     private static FileClassificationRule ClassificationRule(string keyword, string level1)
         => FileClassificationRuleFactory.Create([keyword], FileClassificationFactory.Create(level1, Option.None<string>(), Option.None<string>(), false));
