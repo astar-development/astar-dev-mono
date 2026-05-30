@@ -113,7 +113,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         section.UpdateSyncState(args.SyncState, section.ConflictCount);
 
         if(args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
-            AddActivityItem(new ActivityItemViewModel { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info });
+            AddActivityItem(new ActivityItemViewModel(localizationService) { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info });
 
         RecalculateGlobals();
     }
@@ -122,7 +122,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.Remote.AccountId.Id);
         string accountEmail = section?.Email ?? args.Job.Remote.AccountId.Id;
-        var item = ActivityItemViewModel.FromJob(args.Job, accountEmail);
+        var item = ActivityItemViewModel.FromJob(args.Job, localizationService, accountEmail);
         AddActivityItem(item);
     }
 

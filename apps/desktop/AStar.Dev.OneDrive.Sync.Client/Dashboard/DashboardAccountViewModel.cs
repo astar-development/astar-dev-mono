@@ -90,7 +90,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        AddRecentActivity(new ActivityItemViewModel { FileName = _localizationService.GetLocal("Sync.Starting") });
+        AddRecentActivity(new ActivityItemViewModel(_localizationService) { FileName = _localizationService.GetLocal("Sync.Starting") });
 
         await _repository.GetByIdAsync(_account.Id, CancellationToken.None)
             .TapAsync(async entity =>

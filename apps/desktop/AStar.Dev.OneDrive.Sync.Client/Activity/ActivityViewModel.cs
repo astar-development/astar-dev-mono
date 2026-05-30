@@ -139,7 +139,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var item = ActivityItemViewModel.FromJob(args.Job, _activeAccountEmail);
+        var item = ActivityItemViewModel.FromJob(args.Job, loc, _activeAccountEmail);
         AddActivityItem(item);
     }
 

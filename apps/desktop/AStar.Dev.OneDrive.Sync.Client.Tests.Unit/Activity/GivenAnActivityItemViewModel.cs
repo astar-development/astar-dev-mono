@@ -1,6 +1,7 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -15,6 +16,14 @@ public sealed class GivenAnActivityItemViewModel
     private const string FileNameValue = "report.pdf";
     private const string ErrorMessageValue = "Network timeout";
     private const long FileSizeValue = 2048L;
+
+    private static ILocalizationService BuildLocalizationService()
+    {
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal(Arg.Any<string>()).Returns(callInfo => (string)callInfo[0]);
+
+        return loc;
+    }
 
     private static SyncJob BuildSyncJob(SyncDirection direction = SyncDirection.Download, string relativePath = RelativePathValue, DateTimeOffset? completedAt = null, string? errorMessage = null)
     {
@@ -43,65 +52,142 @@ public sealed class GivenAnActivityItemViewModel
     };
 
     [Fact]
-    public void when_type_is_downloaded_then_type_label_returns_downloaded() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Downloaded }.TypeLabel.ShouldBe("downloaded");
+    public void when_type_is_downloaded_then_type_label_returns_activity_downloaded_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Downloaded }.TypeLabel.ShouldBe("Activity.Downloaded");
 
     [Fact]
-    public void when_type_is_uploaded_then_type_label_returns_uploaded() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Uploaded }.TypeLabel.ShouldBe("uploaded");
+    public void when_type_is_uploaded_then_type_label_returns_activity_uploaded_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Uploaded }.TypeLabel.ShouldBe("Activity.Uploaded");
 
     [Fact]
-    public void when_type_is_deleted_then_type_label_returns_deleted() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Deleted }.TypeLabel.ShouldBe("deleted");
+    public void when_type_is_deleted_then_type_label_returns_activity_deleted_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Deleted }.TypeLabel.ShouldBe("Activity.Deleted");
 
     [Fact]
-    public void when_type_is_conflict_then_type_label_returns_conflict() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Conflict }.TypeLabel.ShouldBe("conflict");
+    public void when_type_is_conflict_then_type_label_returns_activity_conflict_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Conflict }.TypeLabel.ShouldBe("Activity.Conflict");
 
     [Fact]
-    public void when_type_is_error_then_type_label_returns_error() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Error }.TypeLabel.ShouldBe("error");
+    public void when_type_is_error_then_type_label_returns_activity_error_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Error }.TypeLabel.ShouldBe("Activity.Error");
 
     [Fact]
-    public void when_type_is_info_then_type_label_returns_info() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Info }.TypeLabel.ShouldBe("info");
+    public void when_type_is_info_then_type_label_returns_activity_info_key() =>
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Info }.TypeLabel.ShouldBe("Activity.Info");
+
+    [Fact]
+    public void when_type_is_downloaded_then_type_label_calls_get_local_with_activity_downloaded_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Downloaded };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Downloaded");
+    }
+
+    [Fact]
+    public void when_type_is_uploaded_then_type_label_calls_get_local_with_activity_uploaded_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Uploaded };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Uploaded");
+    }
+
+    [Fact]
+    public void when_type_is_deleted_then_type_label_calls_get_local_with_activity_deleted_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Deleted };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Deleted");
+    }
+
+    [Fact]
+    public void when_type_is_conflict_then_type_label_calls_get_local_with_activity_conflict_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Conflict };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Conflict");
+    }
+
+    [Fact]
+    public void when_type_is_error_then_type_label_calls_get_local_with_activity_error_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Error };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Error");
+    }
+
+    [Fact]
+    public void when_type_is_info_then_type_label_calls_get_local_with_activity_info_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { Type = ActivityItemType.Info };
+
+        _ = sut.TypeLabel;
+
+        loc.Received(1).GetLocal("Activity.Info");
+    }
 
     [Fact]
     public void when_type_is_downloaded_then_type_icon_returns_down_arrow() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Downloaded }.TypeIcon.ShouldBe("↓");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Downloaded }.TypeIcon.ShouldBe("↓");
 
     [Fact]
     public void when_type_is_uploaded_then_type_icon_returns_up_arrow() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Uploaded }.TypeIcon.ShouldBe("↑");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Uploaded }.TypeIcon.ShouldBe("↑");
 
     [Fact]
     public void when_type_is_deleted_then_type_icon_returns_multiplication_sign() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Deleted }.TypeIcon.ShouldBe("×");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Deleted }.TypeIcon.ShouldBe("×");
 
     [Fact]
     public void when_type_is_conflict_then_type_icon_returns_warning_sign() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Conflict }.TypeIcon.ShouldBe("⚠");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Conflict }.TypeIcon.ShouldBe("⚠");
 
     [Fact]
     public void when_type_is_error_then_type_icon_returns_warning_sign() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Error }.TypeIcon.ShouldBe("⚠");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Error }.TypeIcon.ShouldBe("⚠");
 
     [Fact]
     public void when_type_is_info_then_type_icon_returns_bullet() =>
-        new ActivityItemViewModel { Type = ActivityItemType.Info }.TypeIcon.ShouldBe("•");
+        new ActivityItemViewModel(BuildLocalizationService()) { Type = ActivityItemType.Info }.TypeIcon.ShouldBe("•");
 
     [Fact]
-    public void when_occurred_at_is_30_seconds_ago_then_time_ago_text_returns_just_now()
+    public void when_occurred_at_is_30_seconds_ago_then_time_ago_text_returns_common_just_now_key()
     {
-        var sut = new ActivityItemViewModel { OccurredAt = DateTimeOffset.UtcNow.AddSeconds(-30) };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddSeconds(-30) };
 
-        sut.TimeAgoText.ShouldBe("just now");
+        sut.TimeAgoText.ShouldBe("Common.JustNow");
+    }
+
+    [Fact]
+    public void when_occurred_at_is_under_60s_then_time_ago_text_calls_get_local_with_common_just_now_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddSeconds(-30) };
+
+        _ = sut.TimeAgoText;
+
+        loc.Received(1).GetLocal("Common.JustNow");
     }
 
     [Fact]
     public void when_occurred_at_is_5_minutes_ago_then_time_ago_text_returns_minutes_ago()
     {
-        var sut = new ActivityItemViewModel { OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-5) };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-5) };
 
         sut.TimeAgoText.ShouldBe("5m ago");
     }
@@ -109,23 +195,34 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_occurred_at_is_3_hours_ago_then_time_ago_text_returns_hours_ago()
     {
-        var sut = new ActivityItemViewModel { OccurredAt = DateTimeOffset.UtcNow.AddHours(-3) };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-3) };
 
         sut.TimeAgoText.ShouldBe("3h ago");
     }
 
     [Fact]
-    public void when_occurred_at_is_25_hours_ago_then_time_ago_text_returns_yesterday()
+    public void when_occurred_at_is_25_hours_ago_then_time_ago_text_returns_common_yesterday_key()
     {
-        var sut = new ActivityItemViewModel { OccurredAt = DateTimeOffset.UtcNow.AddHours(-25) };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-25) };
 
-        sut.TimeAgoText.ShouldBe("yesterday");
+        sut.TimeAgoText.ShouldBe("Common.Yesterday");
+    }
+
+    [Fact]
+    public void when_occurred_at_is_between_1_and_2_days_then_time_ago_text_calls_get_local_with_common_yesterday_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-25) };
+
+        _ = sut.TimeAgoText;
+
+        loc.Received(1).GetLocal("Common.Yesterday");
     }
 
     [Fact]
     public void when_occurred_at_is_5_days_ago_then_time_ago_text_returns_days_ago()
     {
-        var sut = new ActivityItemViewModel { OccurredAt = DateTimeOffset.UtcNow.AddDays(-5) };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddDays(-5) };
 
         sut.TimeAgoText.ShouldBe("5d ago");
     }
@@ -133,7 +230,7 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_file_size_is_non_zero_then_file_size_text_returns_non_empty_string()
     {
-        var sut = new ActivityItemViewModel { FileSize = FileSizeValue };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { FileSize = FileSizeValue };
 
         sut.FileSizeText.ShouldNotBeNullOrEmpty();
     }
@@ -141,7 +238,7 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_file_size_is_zero_then_file_size_text_returns_non_null_string()
     {
-        var sut = new ActivityItemViewModel { FileSize = 0L };
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { FileSize = 0L };
 
         sut.FileSizeText.ShouldNotBeNull();
     }
@@ -151,7 +248,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(direction: SyncDirection.Download);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.Type.ShouldBe(ActivityItemType.Downloaded);
     }
@@ -161,7 +258,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(direction: SyncDirection.Upload);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.Type.ShouldBe(ActivityItemType.Uploaded);
     }
@@ -171,7 +268,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(direction: SyncDirection.Delete);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.Type.ShouldBe(ActivityItemType.Deleted);
     }
@@ -181,7 +278,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob();
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.AccountId.ShouldBe(AccountIdValue);
     }
@@ -191,7 +288,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob();
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.AccountEmail.ShouldBe(AccountEmailValue);
     }
@@ -201,7 +298,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob();
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.FolderName.ShouldBe(FolderNameValue);
     }
@@ -211,7 +308,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(relativePath: RelativePathValue);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.FileName.ShouldBe(FileNameValue);
     }
@@ -221,7 +318,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(relativePath: RelativePathValue);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.RelativePath.ShouldBe(RelativePathValue);
     }
@@ -231,7 +328,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob();
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.FileSize.ShouldBe(FileSizeValue);
     }
@@ -241,7 +338,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob(errorMessage: ErrorMessageValue);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.ErrorMessage.ShouldBe(ErrorMessageValue);
     }
@@ -252,7 +349,7 @@ public sealed class GivenAnActivityItemViewModel
         var completedAt = new DateTimeOffset(2026, 1, 15, 10, 30, 0, TimeSpan.Zero);
         var job = BuildSyncJob(completedAt: completedAt);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.OccurredAt.ShouldBe(completedAt);
     }
@@ -263,7 +360,7 @@ public sealed class GivenAnActivityItemViewModel
         var before = DateTimeOffset.UtcNow;
         var job = BuildSyncJob(completedAt: null);
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         var after = DateTimeOffset.UtcNow;
         result.OccurredAt.ShouldBeInRange(before, after);
@@ -274,7 +371,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var job = BuildSyncJob();
 
-        var result = ActivityItemViewModel.FromJob(job, AccountEmailValue);
+        var result = ActivityItemViewModel.FromJob(job, BuildLocalizationService(), AccountEmailValue);
 
         result.FolderName.ShouldBe(string.Empty);
     }
@@ -284,7 +381,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict();
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.Type.ShouldBe(ActivityItemType.Conflict);
     }
@@ -294,7 +391,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict();
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.AccountId.ShouldBe(AccountIdValue);
     }
@@ -304,7 +401,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict();
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.AccountEmail.ShouldBe(AccountEmailValue);
     }
@@ -314,7 +411,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict();
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.FolderName.ShouldBe(FolderNameValue);
     }
@@ -324,7 +421,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict(relativePath: RelativePathValue);
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.FileName.ShouldBe(FileNameValue);
     }
@@ -334,7 +431,7 @@ public sealed class GivenAnActivityItemViewModel
     {
         var conflict = BuildSyncConflict(relativePath: RelativePathValue);
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.RelativePath.ShouldBe(RelativePathValue);
     }
@@ -345,7 +442,7 @@ public sealed class GivenAnActivityItemViewModel
         var detectedAt = new DateTimeOffset(2026, 3, 10, 8, 0, 0, TimeSpan.Zero);
         var conflict = BuildSyncConflict(detectedAt: detectedAt);
 
-        var result = ActivityItemViewModel.FromConflict(conflict, AccountEmailValue, FolderNameValue);
+        var result = ActivityItemViewModel.FromConflict(conflict, BuildLocalizationService(), AccountEmailValue, FolderNameValue);
 
         result.OccurredAt.ShouldBe(detectedAt);
     }
@@ -353,7 +450,7 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_error_factory_is_called_then_type_is_error()
     {
-        var result = ActivityItemViewModel.Error(AccountIdValue, AccountEmailValue, ErrorMessageValue);
+        var result = ActivityItemViewModel.Error(AccountIdValue, BuildLocalizationService(), AccountEmailValue, ErrorMessageValue);
 
         result.Type.ShouldBe(ActivityItemType.Error);
     }
@@ -361,7 +458,7 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_error_factory_is_called_then_account_id_is_set_correctly()
     {
-        var result = ActivityItemViewModel.Error(AccountIdValue, AccountEmailValue, ErrorMessageValue);
+        var result = ActivityItemViewModel.Error(AccountIdValue, BuildLocalizationService(), AccountEmailValue, ErrorMessageValue);
 
         result.AccountId.ShouldBe(AccountIdValue);
     }
@@ -369,7 +466,7 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_error_factory_is_called_then_account_email_is_set_correctly()
     {
-        var result = ActivityItemViewModel.Error(AccountIdValue, AccountEmailValue, ErrorMessageValue);
+        var result = ActivityItemViewModel.Error(AccountIdValue, BuildLocalizationService(), AccountEmailValue, ErrorMessageValue);
 
         result.AccountEmail.ShouldBe(AccountEmailValue);
     }
@@ -377,16 +474,26 @@ public sealed class GivenAnActivityItemViewModel
     [Fact]
     public void when_error_factory_is_called_then_error_message_is_set_correctly()
     {
-        var result = ActivityItemViewModel.Error(AccountIdValue, AccountEmailValue, ErrorMessageValue);
+        var result = ActivityItemViewModel.Error(AccountIdValue, BuildLocalizationService(), AccountEmailValue, ErrorMessageValue);
 
         result.ErrorMessage.ShouldBe(ErrorMessageValue);
     }
 
     [Fact]
-    public void when_error_factory_is_called_then_file_name_is_sync_error()
+    public void when_error_factory_is_called_then_file_name_is_activity_sync_error_key()
     {
-        var result = ActivityItemViewModel.Error(AccountIdValue, AccountEmailValue, ErrorMessageValue);
+        var result = ActivityItemViewModel.Error(AccountIdValue, BuildLocalizationService(), AccountEmailValue, ErrorMessageValue);
 
-        result.FileName.ShouldBe("Sync error");
+        result.FileName.ShouldBe("Activity.SyncError");
+    }
+
+    [Fact]
+    public void when_error_factory_is_called_then_file_name_calls_get_local_with_activity_sync_error_key()
+    {
+        var loc = BuildLocalizationService();
+
+        var result = ActivityItemViewModel.Error(AccountIdValue, loc, AccountEmailValue, ErrorMessageValue);
+
+        loc.Received(1).GetLocal("Activity.SyncError");
     }
 }
