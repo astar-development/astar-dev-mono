@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
@@ -100,5 +101,5 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     }
 
     private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService onboardingService)
-        => new(authService, graphService, repository, onboardingService, Substitute.For<ISyncEventAggregator>(), Substitute.For<ILogger<AccountsViewModel>>());
+        => new(authService, graphService, repository, onboardingService, Substitute.For<ISyncEventAggregator>(), Substitute.For<ILocalizationService>(), Substitute.For<ILogger<AccountsViewModel>>());
 }

@@ -1,5 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 public sealed partial class AccountCardViewModel : ObservableObject
 {
     private readonly OneDriveAccount _model;
+    private readonly ILocalizationService _localizationService;
 
     private static readonly string[] _palette =
     [
@@ -83,9 +85,10 @@ public sealed partial class AccountCardViewModel : ObservableObject
     [RelayCommand]
     private void Remove() => RemoveRequested?.Invoke(this, this);
 
-    public AccountCardViewModel(OneDriveAccount model)
+    public AccountCardViewModel(OneDriveAccount model, ILocalizationService localizationService)
     {
         _model = model;
+        _localizationService = localizationService;
         IsActive = model.IsActive;
         UpdateLastSyncText();
     }
@@ -102,18 +105,18 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     private void UpdateLastSyncText()
     {
-        if(_model.LastSyncedAt is not Option<DateTimeOffset>.Some lastSyncedAt)
+        if (_model.LastSyncedAt is not Option<DateTimeOffset>.Some lastSyncedAt)
         {
-            LastSyncText = "Never synced";
+            LastSyncText = _localizationService.GetLocal("Common.NeverSynced");
             return;
         }
 
         var elapsed = DateTimeOffset.UtcNow - lastSyncedAt.Value;
-        LastSyncText = elapsed.TotalMinutes < 2 ? "Just now"
-                     : elapsed.TotalHours < 1 ? $"{(int)elapsed.TotalMinutes}m ago"
-                     : elapsed.TotalDays < 1 ? $"{(int)elapsed.TotalHours}h ago"
-                     : elapsed.TotalDays < 2 ? "Yesterday"
-                     : $"{(int)elapsed.TotalDays}d ago";
+        LastSyncText = elapsed.TotalMinutes < 2 ? _localizationService.GetLocal("Common.JustNow")
+                     : elapsed.TotalHours < 1 ? _localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes)
+                     : elapsed.TotalDays < 1 ? _localizationService.GetLocal("Common.HoursAgo", (int)elapsed.TotalHours)
+                     : elapsed.TotalDays < 2 ? _localizationService.GetLocal("Common.Yesterday")
+                     : _localizationService.GetLocal("Common.DaysAgo", (int)elapsed.TotalDays);
     }
 
     /// <summary>Returns the palette colour for the given index.</summary>

@@ -113,6 +113,7 @@
   "Common.No": "No",
   "Common.Unknown": "Unknown",
   "Common.Never": "Never",
+  "Common.NeverSynced": "Never synced",
   "Common.JustNow": "Just now",
   "Common.MinutesAgo": "{0} minutes ago",
   "Common.HoursAgo": "{0} hours ago",

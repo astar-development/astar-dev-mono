@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
@@ -17,10 +18,11 @@ public sealed class GivenAStatusBarViewModel
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncEventAggregator _syncEventAggregator = Substitute.For<ISyncEventAggregator>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, Substitute.For<ILogger<AccountsViewModel>>());
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
 
-    private static AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Profile = AccountProfileFactory.Create(displayName, email) });
+    private AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Profile = AccountProfileFactory.Create(displayName, email) }, _localizationService);
 
     [Fact]
     public void when_active_account_is_null_then_has_account_is_false()
