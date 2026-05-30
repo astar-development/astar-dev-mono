@@ -20,6 +20,9 @@ public interface ISyncEventAggregator
     /// <summary>Raised when a new conflict is detected and queued.</summary>
     event EventHandler<SyncConflict> ConflictDetected;
 
+    /// <summary>Raised when a pending conflict has been successfully resolved and persisted.</summary>
+    event EventHandler<SyncConflict> ConflictResolved;
+
     /// <summary>Raised when a full sync pass for an account has completed.</summary>
     event EventHandler<string> SyncCompleted;
 }

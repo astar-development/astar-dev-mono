@@ -23,6 +23,9 @@ public sealed class SyncEventAggregator : ISyncEventAggregator
     public event EventHandler<SyncConflict>? ConflictDetected;
 
     /// <inheritdoc />
+    public event EventHandler<SyncConflict>? ConflictResolved;
+
+    /// <inheritdoc />
     public event EventHandler<string>? SyncCompleted;
 
     public SyncEventAggregator(ISyncService syncService, ISyncScheduler scheduler, IUiDispatcher dispatcher)
@@ -32,6 +35,7 @@ public sealed class SyncEventAggregator : ISyncEventAggregator
         syncService.SyncProgressChanged += OnSyncProgressChanged;
         syncService.JobCompleted += OnJobCompleted;
         syncService.ConflictDetected += OnConflictDetected;
+        syncService.ConflictResolved += OnConflictResolved;
         scheduler.SyncCompleted += OnSyncCompleted;
     }
 
@@ -40,6 +44,8 @@ public sealed class SyncEventAggregator : ISyncEventAggregator
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args) => _dispatcher.Post(() => JobCompleted?.Invoke(this, args));
 
     private void OnConflictDetected(object? sender, SyncConflict conflict) => _dispatcher.Post(() => ConflictDetected?.Invoke(this, conflict));
+
+    private void OnConflictResolved(object? sender, SyncConflict conflict) => _dispatcher.Post(() => ConflictResolved?.Invoke(this, conflict));
 
     private void OnSyncCompleted(object? sender, string accountId) => _dispatcher.Post(() => SyncCompleted?.Invoke(this, accountId));
 }

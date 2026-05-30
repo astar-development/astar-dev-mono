@@ -50,6 +50,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         syncEventAggregator.JobCompleted += OnJobCompleted;
         syncEventAggregator.SyncCompleted += OnSyncCompleted;
         syncEventAggregator.ConflictDetected += OnConflictDetected;
+        syncEventAggregator.ConflictResolved += OnConflictResolved;
     }
 
     public void AddAccount(OneDriveAccount account)
@@ -134,6 +135,17 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
             return;
 
         section.UpdateSyncState(section.SyncState, section.ConflictCount + 1);
+
+        RecalculateGlobals();
+    }
+
+    private void OnConflictResolved(object? sender, SyncConflict conflict)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
+        if(section is null)
+            return;
+
+        section.UpdateSyncState(section.SyncState, Math.Max(0, section.ConflictCount - 1));
 
         RecalculateGlobals();
     }
