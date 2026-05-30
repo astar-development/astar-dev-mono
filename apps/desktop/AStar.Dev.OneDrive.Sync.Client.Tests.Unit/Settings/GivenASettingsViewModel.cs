@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -5,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -28,14 +30,23 @@ public sealed class GivenASettingsViewModel
         return service;
     }
 
-    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null)
+    private static ILocalizationService BuildLocalizationService()
+    {
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+
+        return loc;
+    }
+
+    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null, ILocalizationService? localizationService = null)
     {
         settingsService ??= BuildSettingsService();
         themeService ??= Substitute.For<IThemeService>();
         scheduler ??= Substitute.For<ISyncScheduler>();
         repository ??= Substitute.For<IAccountRepository>();
+        localizationService ??= BuildLocalizationService();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService);
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()
@@ -130,6 +141,48 @@ public sealed class GivenASettingsViewModel
         policies.ShouldContain(ConflictPolicy.LastWriteWins);
         policies.ShouldContain(ConflictPolicy.LocalWins);
         policies.ShouldContain(ConflictPolicy.RemoteWins);
+    }
+
+    [Fact]
+    public void when_constructed_then_policy_options_labels_are_retrieved_via_localisation_service()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins");
+    }
+
+    [Fact]
+    public void when_constructed_then_policy_options_descriptions_are_retrieved_via_localisation_service()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins.Description");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_policy_options_is_rebuilt()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins");
     }
 
     [Fact]

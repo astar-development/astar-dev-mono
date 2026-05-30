@@ -1,8 +1,10 @@
+using System.Globalization;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
@@ -28,11 +30,19 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         Profile = AccountProfileFactory.Create(DisplayNameValue, EmailValue)
     };
 
+    private static ILocalizationService BuildLocalizationService()
+    {
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+
+        return loc;
+    }
+
     [Fact]
     public void when_constructed_then_account_id_returns_inner_string_value()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         sut.AccountId.ShouldBe(AccountIdValue);
     }
@@ -41,7 +51,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_constructed_then_email_reflects_account_email()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         sut.Email.ShouldBe(EmailValue);
     }
@@ -50,7 +60,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_constructed_then_display_name_reflects_account_display_name()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         sut.DisplayName.ShouldBe(DisplayNameValue);
     }
@@ -59,7 +69,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_accent_index_is_zero_then_accent_hex_returns_first_palette_colour()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(accentIndex: 0), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(accentIndex: 0), repository, BuildLocalizationService());
 
         sut.AccentHex.ShouldBe("#185FA5");
     }
@@ -68,7 +78,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_accent_index_wraps_past_palette_length_then_accent_hex_returns_first_palette_colour()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(accentIndex: 6), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(accentIndex: 6), repository, BuildLocalizationService());
 
         sut.AccentHex.ShouldBe("#185FA5");
     }
@@ -77,7 +87,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_account_has_a_local_sync_path_then_local_sync_path_property_is_initialised_from_it()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: SyncPathValue), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: SyncPathValue), repository, BuildLocalizationService());
 
         sut.LocalSyncPath.ShouldBe(SyncPathValue);
     }
@@ -86,7 +96,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_account_has_no_local_sync_path_then_local_sync_path_property_is_empty_string()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: null), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: null), repository, BuildLocalizationService());
 
         sut.LocalSyncPath.ShouldBe(string.Empty);
     }
@@ -95,7 +105,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_constructed_then_conflict_policy_is_initialised_from_account()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(conflictPolicy: ConflictPolicy.LastWriteWins), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(conflictPolicy: ConflictPolicy.LastWriteWins), repository, BuildLocalizationService());
 
         sut.ConflictPolicy.ShouldBe(ConflictPolicy.LastWriteWins);
     }
@@ -104,7 +114,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_constructed_then_policy_options_contains_exactly_five_entries()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         sut.PolicyOptions.Count.ShouldBe(5);
     }
@@ -113,7 +123,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     public void when_constructed_then_policy_options_covers_all_conflict_policy_values()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         var policies = sut.PolicyOptions.Select(option => option.Policy).ToList();
         policies.ShouldContain(ConflictPolicy.Ignore);
@@ -124,10 +134,52 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     }
 
     [Fact]
+    public void when_constructed_then_policy_options_labels_are_retrieved_via_localisation_service()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins");
+    }
+
+    [Fact]
+    public void when_constructed_then_policy_options_descriptions_are_retrieved_via_localisation_service()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins.Description");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins.Description");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_policy_options_is_rebuilt()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("ConflictPolicy.Ignore");
+        loc.Received(1).GetLocal("ConflictPolicy.KeepBoth");
+        loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins");
+        loc.Received(1).GetLocal("ConflictPolicy.LocalWins");
+        loc.Received(1).GetLocal("ConflictPolicy.RemoteWins");
+    }
+
+    [Fact]
     public async Task when_browse_command_is_executed_then_no_exception_is_thrown()
     {
         var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
         await sut.BrowseCommand.ExecuteAsync(null);
     }
@@ -137,7 +189,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.None<AccountEntity>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: SyncPathValue), repository);
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(localSyncPath: SyncPathValue), repository, BuildLocalizationService());
 
         await sut.SaveCommand.ExecuteAsync(null);
 
@@ -149,7 +201,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = SyncPathValue
         };
@@ -166,7 +218,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = SyncPathValue
         };
@@ -184,7 +236,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = SyncPathValue,
             ConflictPolicy = ConflictPolicy.RemoteWins
@@ -202,7 +254,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
-        var sut = new AccountSyncSettingsViewModel(account, repository)
+        var sut = new AccountSyncSettingsViewModel(account, repository, BuildLocalizationService())
         {
             LocalSyncPath = SyncPathValue
         };
@@ -218,7 +270,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     {
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = string.Empty
         };
@@ -235,7 +287,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = string.Empty
         };
@@ -253,7 +305,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         AccountEntity? captured = null;
         await repository.UpsertAsync(Arg.Do<AccountEntity>(entity => captured = entity), Arg.Any<CancellationToken>());
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository)
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService())
         {
             LocalSyncPath = "   "
         };
@@ -270,7 +322,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var repository = Substitute.For<IAccountRepository>();
         repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Option.Some(BuildEntity()));
         var account = BuildAccount();
-        var sut = new AccountSyncSettingsViewModel(account, repository)
+        var sut = new AccountSyncSettingsViewModel(account, repository, BuildLocalizationService())
         {
             LocalSyncPath = string.Empty
         };
