@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,7 +16,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
-public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, ILocalizationService loc) : ObservableObject
 {
     private const int MaxLogSize = 10_000;
     private string? _activeAccountId;
@@ -146,7 +147,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     private void AddConflict(SyncConflict conflict)
     {
-        var vm = new ConflictItemViewModel(conflict, syncService);
+        var vm = new ConflictItemViewModel(conflict, syncService, loc);
         vm.Resolved += (_, conflictItem) =>
         {
             _ = Conflicts.Remove(conflictItem);

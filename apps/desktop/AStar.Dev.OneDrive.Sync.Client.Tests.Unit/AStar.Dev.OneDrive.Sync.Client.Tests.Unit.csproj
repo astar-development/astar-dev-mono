@@ -15,6 +15,7 @@
     <Using Include="NSubstitute" />
     <Using Include="Testably.Abstractions.Testing" />
     <Using Include="Testably.Abstractions.Testing.Initializer" />
+    <Using Include="AStar.Dev.OneDrive.Sync.Client.Data.Entities" />
   </ItemGroup>
 
   <ItemGroup>
