@@ -1,5 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -9,6 +10,10 @@ public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, I
 
 public sealed partial class ActivityItemViewModel : ObservableObject
 {
+    private readonly ILocalizationService _loc;
+
+    public ActivityItemViewModel(ILocalizationService loc) => _loc = loc;
+
     public Guid Id { get; init; } = Guid.NewGuid();
     public string AccountId { get; init; } = string.Empty;
     public string AccountEmail { get; init; } = string.Empty;
@@ -22,22 +27,22 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public string TypeLabel => Type switch
     {
-        ActivityItemType.Downloaded => "downloaded",
-        ActivityItemType.Uploaded => "uploaded",
-        ActivityItemType.Deleted => "deleted",
-        ActivityItemType.Conflict => "conflict",
-        ActivityItemType.Error => "error",
-        _ => "info"
+        ActivityItemType.Downloaded => _loc.GetLocal("Activity.Downloaded"),
+        ActivityItemType.Uploaded   => _loc.GetLocal("Activity.Uploaded"),
+        ActivityItemType.Deleted    => _loc.GetLocal("Activity.Deleted"),
+        ActivityItemType.Conflict   => _loc.GetLocal("Activity.Conflict"),
+        ActivityItemType.Error      => _loc.GetLocal("Activity.Error"),
+        _                           => _loc.GetLocal("Activity.Info")
     };
 
     public string TypeIcon => Type switch
     {
         ActivityItemType.Downloaded => "↓",
-        ActivityItemType.Uploaded => "↑",
-        ActivityItemType.Deleted => "×",
-        ActivityItemType.Conflict => "⚠",
-        ActivityItemType.Error => "⚠",
-        _ => "•"
+        ActivityItemType.Uploaded   => "↑",
+        ActivityItemType.Deleted    => "×",
+        ActivityItemType.Conflict   => "⚠",
+        ActivityItemType.Error      => "⚠",
+        _                           => "•"
     };
 
     public string TimeAgoText
@@ -45,20 +50,21 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         get
         {
             var elapsed = DateTimeOffset.UtcNow - OccurredAt;
+
             return elapsed switch
             {
-                { TotalSeconds: < 60 } => "just now",
+                { TotalSeconds: < 60 }  => _loc.GetLocal("Common.JustNow"),
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
-                { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
-                { TotalDays: < 2 } => "yesterday",
-                var td => $"{(int)td.TotalDays}d ago"
+                { TotalHours: < 24 } td  => $"{(int)td.TotalHours}h ago",
+                { TotalDays: < 2 }       => _loc.GetLocal("Common.Yesterday"),
+                var td                   => $"{(int)td.TotalDays}d ago"
             };
         }
     }
 
     public string FileSizeText => FileSize.FileSizeToText();
 
-    public static ActivityItemViewModel FromJob(SyncJob job, string accountEmail, string folderName = "") => new()
+    public static ActivityItemViewModel FromJob(SyncJob job, ILocalizationService loc, string accountEmail, string folderName = "") => new(loc)
     {
         AccountId = job.Remote.AccountId.Id,
         AccountEmail = accountEmail,
@@ -77,7 +83,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         ErrorMessage = job.Status.ErrorMessage.Match<string?>(v => v, () => null)
     };
 
-    public static ActivityItemViewModel FromConflict(SyncConflict conflict, string accountEmail, string folderName) => new()
+    public static ActivityItemViewModel FromConflict(SyncConflict conflict, ILocalizationService loc, string accountEmail, string folderName) => new(loc)
     {
         AccountId = conflict.Remote.AccountId.Id,
         AccountEmail = accountEmail,
@@ -88,12 +94,12 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         OccurredAt = conflict.DetectedAt
     };
 
-    public static ActivityItemViewModel Error(string accountId, string accountEmail, string message) => new()
+    public static ActivityItemViewModel Error(string accountId, ILocalizationService loc, string accountEmail, string message) => new(loc)
     {
         AccountId = accountId,
         AccountEmail = accountEmail,
         Type = ActivityItemType.Error,
-        FileName = "Sync error",
+        FileName = loc.GetLocal("Activity.SyncError"),
         ErrorMessage = message
     };
 }

@@ -68,6 +68,8 @@
   "Activity.Conflict": "Conflict",
   "Activity.Error": "Error",
   "Activity.Deleted": "Deleted",
+  "Activity.Info": "Info",
+  "Activity.SyncError": "Sync error",
   "Conflict.Title": "Resolve conflict",
   "Conflict.LocalFile": "Local file",
   "Conflict.RemoteFile": "Remote file",
