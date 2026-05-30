@@ -24,6 +24,9 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     public event EventHandler<SyncConflict>? ConflictDetected;
 
     /// <inheritdoc />
+    public event EventHandler<SyncConflict>? ConflictResolved;
+
+    /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Profile.Email);
@@ -101,6 +104,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         }
 
         await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
+        ConflictResolved?.Invoke(this, conflict);
     }
 
     private void RaiseProgress(string accountId, int completed, int total, string currentFile, SyncState syncState)
