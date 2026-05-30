@@ -103,4 +103,22 @@ public sealed class GivenASyncServiceResolvingConflicts
         captured.ShouldNotBeNull();
         captured.SyncState.ShouldBe(SyncState.Error);
     }
+
+    [Fact]
+    public async Task when_auth_succeeds_and_applier_succeeds_then_conflict_resolved_event_is_raised()
+    {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        var conflict = CreateConflict();
+        SyncConflict? resolved = null;
+        var sut = CreateSut();
+        sut.ConflictResolved += (_, c) => resolved = c;
+
+        await sut.ResolveConflictAsync(conflict, ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
+
+        resolved.ShouldNotBeNull();
+        resolved.Id.ShouldBe(conflict.Id);
+    }
 }

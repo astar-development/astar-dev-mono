@@ -74,4 +74,18 @@ public sealed class GivenASyncEventAggregator
         captured.ShouldNotBeNull();
         captured.ShouldBe("acc-4");
     }
+
+    [Fact]
+    public void when_sync_service_raises_conflict_resolved_then_aggregator_raises_conflict_resolved()
+    {
+        var sut = CreateSut();
+        SyncConflict? captured = null;
+        sut.ConflictResolved += (_, conflict) => captured = conflict;
+        var conflict = new SyncConflict { Remote = RemoteItemRefFactory.Create(new AccountId("acc-5"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)) };
+
+        _syncService.ConflictResolved += Raise.Event<EventHandler<SyncConflict>>(this, conflict);
+
+        captured.ShouldNotBeNull();
+        captured.Remote.AccountId.Id.ShouldBe("acc-5");
+    }
 }
