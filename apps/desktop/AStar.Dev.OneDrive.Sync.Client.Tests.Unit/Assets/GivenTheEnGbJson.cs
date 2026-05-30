@@ -35,4 +35,12 @@ public sealed class GivenTheEnGbJson
     [Fact]
     public void when_read_then_remote_wins_description_key_exists() =>
         RootElement().TryGetProperty("ConflictPolicy.RemoteWins.Description", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_files_exclude_tooltip_key_exists() =>
+        RootElement().TryGetProperty("Files.Exclude.Tooltip", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_files_include_tooltip_key_exists() =>
+        RootElement().TryGetProperty("Files.Include.Tooltip", out _).ShouldBeTrue();
 }
