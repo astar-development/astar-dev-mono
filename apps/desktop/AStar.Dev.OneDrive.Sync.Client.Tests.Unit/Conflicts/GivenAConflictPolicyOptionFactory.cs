@@ -76,7 +76,6 @@ public sealed class GivenAConflictPolicyOptionFactory
         loc.GetLocal("ConflictPolicy.LastWriteWins").Returns("Dernière écriture gagne");
         loc.GetLocal("ConflictPolicy.LocalWins").Returns("Local gagne");
         loc.GetLocal("ConflictPolicy.RemoteWins").Returns("Distant gagne");
-        loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
 
         var options = ConflictPolicyOptionFactory.Create(loc);
 
@@ -96,7 +95,6 @@ public sealed class GivenAConflictPolicyOptionFactory
         loc.GetLocal("ConflictPolicy.LastWriteWins.Description").Returns("Dernière écriture description");
         loc.GetLocal("ConflictPolicy.LocalWins.Description").Returns("Local description");
         loc.GetLocal("ConflictPolicy.RemoteWins.Description").Returns("Distant description");
-        loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
 
         var options = ConflictPolicyOptionFactory.Create(loc);
 

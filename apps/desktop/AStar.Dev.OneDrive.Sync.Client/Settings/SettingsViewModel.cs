@@ -6,14 +6,35 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
-public sealed partial class SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository) : ObservableObject
+public sealed partial class SettingsViewModel : ObservableObject
 {
+    private readonly ISettingsService settingsService;
+    private readonly IThemeService themeService;
+    private readonly ISyncScheduler scheduler;
+    private readonly IAccountRepository repository;
+    private readonly ILocalizationService loc;
+
+    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc)
+    {
+        this.settingsService = settingsService;
+        this.themeService = themeService;
+        this.scheduler = scheduler;
+        this.repository = repository;
+        this.loc = loc;
+        Theme = settingsService.Current.Theme;
+        DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
+        SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(this.loc); OnPropertyChanged(nameof(PolicyOptions)); };
+    }
+
     [ObservableProperty]
-    public partial AppTheme Theme { get; set; } = settingsService.Current.Theme;
+    public partial AppTheme Theme { get; set; }
 
     partial void OnThemeChanged(AppTheme value)
     {
@@ -30,8 +51,7 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
     ];
 
     [ObservableProperty]
-    public partial ConflictPolicy DefaultConflictPolicy { get; set; } =
-        settingsService.Current.DefaultConflictPolicy;
+    public partial ConflictPolicy DefaultConflictPolicy { get; set; }
 
     partial void OnDefaultConflictPolicyChanged(ConflictPolicy value)
     {
@@ -40,8 +60,7 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
     }
 
     [ObservableProperty]
-    public partial int SyncIntervalMinutes { get; set; } =
-        settingsService.Current.SyncIntervalMinutes;
+    public partial int SyncIntervalMinutes { get; set; }
 
     partial void OnSyncIntervalMinutesChanged(int value)
     {
@@ -59,26 +78,19 @@ public sealed partial class SettingsViewModel(ISettingsService settingsService, 
         new(120, "2 hours"),
     ];
 
-    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
-    [
-        new(ConflictPolicy.Ignore,        "Ignore",          "Skip — leave both unchanged"),
-        new(ConflictPolicy.KeepBoth,      "Keep both",       "Rename local, keep remote"),
-        new(ConflictPolicy.LastWriteWins, "Last write wins", "Most recently modified wins"),
-        new(ConflictPolicy.LocalWins,     "Local wins",      "Local always overwrites remote"),
-        new(ConflictPolicy.RemoteWins,    "Remote wins",     "Remote always overwrites local"),
-    ];
+    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
-    public ObservableCollection<Accounts.AccountSyncSettingsViewModel> AccountSettings { get; } = [];
+    public ObservableCollection<AccountSyncSettingsViewModel> AccountSettings { get; } = [];
 
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         AccountSettings.Clear();
         foreach (var a in accounts)
-            AccountSettings.Add(new Accounts.AccountSyncSettingsViewModel(a, repository));
+            AccountSettings.Add(new AccountSyncSettingsViewModel(a, repository, loc));
     }
 
     public void AddAccount(OneDriveAccount account)
-        => AccountSettings.Add(new Accounts.AccountSyncSettingsViewModel(account, repository));
+        => AccountSettings.Add(new AccountSyncSettingsViewModel(account, repository, loc));
 
     public void RemoveAccount(string accountId)
     {

@@ -3,14 +3,28 @@ using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository) : ObservableObject
+public sealed partial class AccountSyncSettingsViewModel : ObservableObject
 {
+    private readonly OneDriveAccount account;
+    private readonly IAccountRepository repository;
+
+    public AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository, ILocalizationService loc)
+    {
+        this.account = account;
+        this.repository = repository;
+        LocalSyncPath = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
+        ConflictPolicy = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc); OnPropertyChanged(nameof(PolicyOptions)); };
+    }
+
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string AccountId => account.Id.Id;
     public string Email => account.Profile.Email;
@@ -18,25 +32,16 @@ public sealed partial class AccountSyncSettingsViewModel(OneDriveAccount account
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty]
-    public partial string LocalSyncPath { get; set; } = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
+    public partial string LocalSyncPath { get; set; }
 
     [ObservableProperty]
-    public partial ConflictPolicy ConflictPolicy { get; set; } = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
+    public partial ConflictPolicy ConflictPolicy { get; set; }
 
-    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
-    [
-        new(ConflictPolicy.Ignore,        "Ignore",          "Skip conflicts — leave both unchanged"),
-        new(ConflictPolicy.KeepBoth,      "Keep both",       "Rename local, keep remote"),
-        new(ConflictPolicy.LastWriteWins, "Last write wins", "Most recently modified wins"),
-        new(ConflictPolicy.LocalWins,     "Local wins",      "Local always overwrites remote"),
-        new(ConflictPolicy.RemoteWins,    "Remote wins",     "Remote always overwrites local"),
-    ];
+    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
     [RelayCommand]
     private static async Task BrowseAsync()
     {
-        // Folder picker — wired via code-behind in SettingsView
-        // to avoid taking a platform dependency in the ViewModel
     }
 
     [RelayCommand]

@@ -1,17 +1,27 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
-public sealed partial class ConflictItemViewModel(
-    SyncConflict conflict,
-    ISyncService syncService) : ObservableObject
+public sealed partial class ConflictItemViewModel : ObservableObject
 {
+    private readonly SyncConflict conflict;
+    private readonly ISyncService syncService;
+
+    public ConflictItemViewModel(SyncConflict conflict, ISyncService syncService, ILocalizationService loc)
+    {
+        this.conflict = conflict;
+        this.syncService = syncService;
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc); OnPropertyChanged(nameof(PolicyOptions)); };
+    }
+
     public Guid Id => conflict.Id;
     public string AccountId => conflict.Remote.AccountId.Id;
     public string FileName => Path.GetFileName(conflict.Target.RelativePath);
@@ -41,14 +51,8 @@ public sealed partial class ConflictItemViewModel(
 
     [ObservableProperty]
     public partial ConflictPolicy SelectedPolicy { get; set; } = ConflictPolicy.Ignore;
-    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; } =
-    [
-        new(ConflictPolicy.Ignore,        "Ignore",          "Skip — leave both versions unchanged"),
-        new(ConflictPolicy.KeepBoth,      "Keep both",       "Rename local copy, keep remote"),
-        new(ConflictPolicy.LastWriteWins, "Last write wins", "Most recently modified version wins"),
-        new(ConflictPolicy.LocalWins,     "Local wins",      "Overwrite remote with local version"),
-        new(ConflictPolicy.RemoteWins,    "Remote wins",     "Overwrite local with remote version"),
-    ];
+
+    public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
     public event EventHandler<ConflictItemViewModel>? Resolved;
 
@@ -86,8 +90,3 @@ public sealed partial class ConflictItemViewModel(
     private static string FormatDateTime(DateTimeOffset dt)
         => dt.LocalDateTime.ToString("dd MMM yyyy HH:mm", CultureInfo.CurrentCulture);
 }
-
-public sealed record ConflictPolicyOption(
-    ConflictPolicy Policy,
-    string Label,
-    string Description);

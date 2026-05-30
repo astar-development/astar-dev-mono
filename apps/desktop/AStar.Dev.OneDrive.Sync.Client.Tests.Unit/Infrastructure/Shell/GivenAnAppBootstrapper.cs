@@ -70,11 +70,11 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), syncEventAggregator, localizationService, Substitute.For<ILogger<AccountsViewModel>>());
         var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
-        var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator);
+        var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService);
         var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();
         classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
                                .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
-        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository);
+        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService);
         var statusBar = new StatusBarViewModel(accounts);
 
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());

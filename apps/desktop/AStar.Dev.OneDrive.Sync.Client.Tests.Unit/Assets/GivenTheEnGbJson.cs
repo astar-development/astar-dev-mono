@@ -7,7 +7,7 @@ public sealed class GivenTheEnGbJson
     private static readonly string JsonPath = Path.GetFullPath(
         Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", "..", "..", "AStar.Dev.OneDrive.Sync.Client", "Assets", "Localization", "en-GB.json"));
+            "..", "..", "..", "..", "..", "apps", "desktop", "AStar.Dev.OneDrive.Sync.Client", "Assets", "Localization", "en-GB.json"));
 
     private static JsonElement RootElement()
     {
