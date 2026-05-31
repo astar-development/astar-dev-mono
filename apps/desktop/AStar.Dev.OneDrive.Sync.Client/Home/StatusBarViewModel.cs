@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
@@ -12,14 +13,17 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 public sealed partial class StatusBarViewModel : ObservableObject
 {
     private readonly AccountsViewModel _accounts;
+    private readonly ILocalizationService loc;
     private AccountCardViewModel? _trackedCard;
 
-    public StatusBarViewModel(AccountsViewModel accounts)
+    public StatusBarViewModel(AccountsViewModel accounts, ILocalizationService localizationService)
     {
         _accounts = accounts;
         _accounts.PropertyChanged += OnAccountsPropertyChanged;
         _accounts.ActiveAccountStateChanged += OnActiveAccountStateChanged;
         ApplyActiveAccount(_accounts.ActiveAccount);
+        loc = localizationService;
+        loc.CultureChanged += OnCultureChanged;
     }
 
     [ObservableProperty]
@@ -58,16 +62,18 @@ public sealed partial class StatusBarViewModel : ObservableObject
     /// <summary>Human-readable label for the current sync state.</summary>
     public string StatusLabel => SyncState switch
     {
-        SyncState.Syncing  => "Syncing ...",
-        SyncState.Pending  => $"{PendingCount} pending",
-        SyncState.Conflict => ConflictCount == 1 ? "1 conflict" : $"{ConflictCount} conflicts",
-        SyncState.Error    => "Error",
-        _                  => "Synced"
+        SyncState.Syncing  => loc.GetLocal("StatusBar.Syncing"),
+        SyncState.Pending  => loc.GetLocal("StatusBar.Pending", PendingCount),
+        SyncState.Conflict => ConflictCount == 1 ? loc.GetLocal("StatusBar.Conflict", ConflictCount) : loc.GetLocal("StatusBar.Conflicts", ConflictCount),
+        SyncState.Error    => loc.GetLocal("StatusBar.Error"),
+        _                  => loc.GetLocal("StatusBar.Synced")
     };
 
     partial void OnSyncStateChanged(SyncState value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnPendingCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnConflictCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
+
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture) => OnPropertyChanged(nameof(StatusLabel));
 
     private void OnAccountsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
