@@ -29,7 +29,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public double StorageFraction => _account.Quota.Fraction();
     public string StorageText => _account.Quota.TotalBytes > 0
         ? $"{_account.Quota.UsedBytes.FileSizeToText()} / {_account.Quota.TotalBytes.FileSizeToText()}"
-        : "Unknown";
+        : _localizationService.GetLocal("Common.Unknown");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel))]
@@ -42,7 +42,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public partial int ConflictCount { get; set; }
 
     [ObservableProperty]
-    public partial string LastSyncText { get; set; } = "Never synced";
+    public partial string LastSyncText { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial int FolderCount { get; set; }
@@ -56,11 +56,13 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
     public string StatusLabel => (SyncState, ConflictCount) switch
     {
-        (SyncState.Syncing, _) => "Syncing ...",
-        (SyncState.Error, _) => "Error",
-        (_, > 0) => $"{ConflictCount} conflict{(ConflictCount == 1 ? "" : "s")}",
-        (SyncState.Pending, _) => "Pending",
-        _ => "Synced"
+        (SyncState.Syncing, _) => _localizationService.GetLocal("StatusBar.Syncing"),
+        (SyncState.Error, _) => _localizationService.GetLocal("StatusBar.Error"),
+        (_, > 0) => ConflictCount == 1
+            ? _localizationService.GetLocal("StatusBar.Conflict", ConflictCount)
+            : _localizationService.GetLocal("StatusBar.Conflicts", ConflictCount),
+        (SyncState.Pending, _) => _localizationService.GetLocal("Dashboard.Pending"),
+        _ => _localizationService.GetLocal("StatusBar.Synced")
     };
 
     [ObservableProperty]
@@ -112,9 +114,11 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         ConflictCount = conflicts;
         IsSyncing = state == SyncState.Syncing;
 
-        if (state is not (SyncState.Idle or SyncState.Completed)) return;
+        if (state is not (SyncState.Idle or SyncState.Completed or SyncState.NoSyncPathConfigured)) return;
 
-        _account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
+        if (state is not SyncState.NoSyncPathConfigured)
+            _account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
+
         UpdateLastSyncText(state);
     }
 
@@ -127,16 +131,16 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
-        syncState == SyncState.NoSyncPathConfigured ? "No local sync path configured" :
-        _account.LastSyncedAt is null ? "Never synced" :
+        syncState == SyncState.NoSyncPathConfigured ? _localizationService.GetLocal("Dashboard.NoSyncPath") :
+        _account.LastSyncedAt is null ? _localizationService.GetLocal("Common.NeverSynced") :
         _account.LastSyncedAt.Match(
             lastSyncedAt => (DateTimeOffset.UtcNow - lastSyncedAt) switch
             {
-                { TotalSeconds: < 60 } => "Just now",
-                { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
-                { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
-                { TotalDays: < 2 } => "Yesterday",
-                var td => $"{(int)td.TotalDays}d ago"
+                { TotalSeconds: < 60 } => _localizationService.GetLocal("Common.JustNow"),
+                { TotalMinutes: < 60 } td => _localizationService.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
+                { TotalHours: < 24 } td => _localizationService.GetLocal("Common.HoursAgo", (int)td.TotalHours),
+                { TotalDays: < 2 } => _localizationService.GetLocal("Common.Yesterday"),
+                var td => _localizationService.GetLocal("Common.DaysAgo", (int)td.TotalDays)
             },
-            () => "Never synced");
+            () => _localizationService.GetLocal("Common.NeverSynced"));
 }
