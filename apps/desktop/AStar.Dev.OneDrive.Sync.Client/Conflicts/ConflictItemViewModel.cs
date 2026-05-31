@@ -13,13 +13,15 @@ public sealed partial class ConflictItemViewModel : ObservableObject
 {
     private readonly SyncConflict conflict;
     private readonly ISyncService syncService;
+    private readonly ILocalizationService loc;
 
     public ConflictItemViewModel(SyncConflict conflict, ISyncService syncService, ILocalizationService loc)
     {
         this.conflict = conflict;
         this.syncService = syncService;
+        this.loc = loc;
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
-        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc); OnPropertyChanged(nameof(PolicyOptions)); };
+        loc.CultureChanged += OnCultureChanged;
     }
 
     public Guid Id => conflict.Id;
@@ -39,9 +41,13 @@ public sealed partial class ConflictItemViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPanelOpen))]
+    [NotifyPropertyChangedFor(nameof(CollapseExpandLabel))]
     public partial bool IsExpanded { get; set; }
 
     public bool IsPanelOpen => IsExpanded;
+
+    /// <summary>Label for the expand/collapse toggle button, localised for the current culture.</summary>
+    public string CollapseExpandLabel => loc.GetLocal(IsExpanded ? "Conflict.Collapse" : "Conflict.Resolve");
 
     [ObservableProperty]
     public partial bool IsResolving { get; set; }
@@ -85,6 +91,13 @@ public sealed partial class ConflictItemViewModel : ObservableObject
         IsExpanded = false;
         IsResolved = true;
         Resolved?.Invoke(this, this);
+    }
+
+    private void OnCultureChanged(object? sender, CultureInfo culture)
+    {
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        OnPropertyChanged(nameof(PolicyOptions));
+        OnPropertyChanged(nameof(CollapseExpandLabel));
     }
 
     private static string FormatDateTime(DateTimeOffset dt)

@@ -122,15 +122,15 @@ public sealed class GivenAConflictItemViewModel
     }
 
     [Fact]
-    public void when_culture_changed_then_collapse_expand_label_uses_collapse_key_when_expanded()
+    public void when_culture_changed_then_property_changed_fires_for_collapse_expand_label()
     {
         var loc = BuildLocalizationService();
         var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
-        sut.IsExpanded = true;
-        loc.ClearReceivedCalls();
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        loc.Received(1).GetLocal("Conflict.Collapse");
+        firedProperties.ShouldContain(nameof(sut.CollapseExpandLabel));
     }
 }

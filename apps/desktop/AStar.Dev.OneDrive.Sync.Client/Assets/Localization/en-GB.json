@@ -81,6 +81,7 @@
   "Conflict.Modified": "Modified {0}",
   "Conflict.Size": "{0}",
   "Conflict.Resolve": "Resolve",
+  "Conflict.Collapse": "Collapse",
   "Conflict.ResolveAll": "Resolve all",
   "Conflict.Skip": "Skip",
   "Conflict.ChooseResolution": "Choose resolution",
