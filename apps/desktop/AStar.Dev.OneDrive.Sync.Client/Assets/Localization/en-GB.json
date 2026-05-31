@@ -98,6 +98,7 @@
   "Settings.DefaultConflictPolicy": "Default conflict resolution",
   "Settings.DeltaSyncInterval": "Delta sync interval",
   "Settings.DeltaSyncInterval.Minutes": "{0} minutes",
+  "Settings.Interval.Hours": "{0} hours",
   "Settings.TokenCachePath": "Token cache path",
   "Wizard.AddAccount.Title": "Add OneDrive account",
   "Wizard.AddAccount.Step1": "Sign in",
