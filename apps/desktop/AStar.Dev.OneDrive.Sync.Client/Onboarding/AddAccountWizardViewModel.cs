@@ -1,19 +1,32 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
-public sealed partial class AddAccountWizardViewModel(IAuthService authService, IGraphService graphService) : ObservableObject, IDisposable
+public sealed partial class AddAccountWizardViewModel : ObservableObject, IDisposable
 {
+    private readonly IAuthService authService;
+    private readonly IGraphService graphService;
+    private readonly ILocalizationService loc;
     private string _accountId = string.Empty;
     private string? _accessToken;
     private CancellationTokenSource? _authCts;
+
+    public AddAccountWizardViewModel(IAuthService authService, IGraphService graphService, ILocalizationService localizationService)
+    {
+        this.authService = authService;
+        this.graphService = graphService;
+        loc = localizationService;
+        loc.CultureChanged += OnCultureChanged;
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSignInStep))]
@@ -66,7 +79,8 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         _ => false
     };
 
-    public string NextLabel => CurrentStep == WizardStep.Confirm ? "Finish" : "Next";
+    /// <summary>The label for the primary action button, localised for the current culture.</summary>
+    public string NextLabel => CurrentStep == WizardStep.Confirm ? loc.GetLocal("Wizard.AddAccount.Finish") : loc.GetLocal("Wizard.AddAccount.Next");
 
     [RelayCommand]
     private void Back()
@@ -242,5 +256,11 @@ public sealed partial class AddAccountWizardViewModel(IAuthService authService, 
         Completed?.Invoke(this, account);
     }
 
-    public void Dispose() => _authCts?.Dispose();
+    private void OnCultureChanged(object? sender, CultureInfo culture) => OnPropertyChanged(nameof(NextLabel));
+
+    public void Dispose()
+    {
+        loc.CultureChanged -= OnCultureChanged;
+        _authCts?.Dispose();
+    }
 }

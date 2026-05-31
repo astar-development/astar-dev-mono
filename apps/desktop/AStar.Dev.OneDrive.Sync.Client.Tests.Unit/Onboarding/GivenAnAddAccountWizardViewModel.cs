@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Onboarding;
@@ -12,10 +13,11 @@ public sealed class GivenAnAddAccountWizardViewModel
 {
     private sealed record UnknownAuthError : AuthError;
 
-    private readonly IAuthService  _authService  = Substitute.For<IAuthService>();
-    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
+    private readonly IAuthService         _authService         = Substitute.For<IAuthService>();
+    private readonly IGraphService        _graphService        = Substitute.For<IGraphService>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private AddAccountWizardViewModel CreateSut() => new(_authService, _graphService);
+    private AddAccountWizardViewModel CreateSut() => new(_authService, _graphService, _localizationService);
 
     private async Task SignInAsync(AddAccountWizardViewModel sut)
     {
@@ -255,20 +257,22 @@ public sealed class GivenAnAddAccountWizardViewModel
     }
 
     [Fact]
-    public void when_on_confirm_step_then_next_label_is_finish()
+    public void when_current_step_is_confirm_then_next_label_returns_finish_key_value()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.Finish").Returns("test-finish");
         var sut = CreateSut();
         sut.CurrentStep = WizardStep.Confirm;
 
-        sut.NextLabel.ShouldBe("Finish");
+        sut.NextLabel.ShouldBe("test-finish");
     }
 
     [Fact]
-    public void when_not_on_confirm_step_then_next_label_is_next()
+    public void when_current_step_is_not_confirm_then_next_label_returns_next_key_value()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.Next").Returns("test-next");
         var sut = CreateSut();
 
-        sut.NextLabel.ShouldBe("Next");
+        sut.NextLabel.ShouldBe("test-next");
     }
 
     [Fact]
