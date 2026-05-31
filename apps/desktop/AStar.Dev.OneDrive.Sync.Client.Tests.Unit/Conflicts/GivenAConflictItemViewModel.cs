@@ -96,4 +96,41 @@ public sealed class GivenAConflictItemViewModel
 
         firedProperties.ShouldContain(nameof(sut.PolicyOptions));
     }
+
+    [Fact]
+    public void when_is_expanded_is_true_then_collapse_expand_label_uses_collapse_key()
+    {
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Conflict.Collapse").Returns("test-collapse");
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
+
+        sut.IsExpanded = true;
+
+        sut.CollapseExpandLabel.ShouldBe("test-collapse");
+    }
+
+    [Fact]
+    public void when_is_expanded_is_false_then_collapse_expand_label_uses_resolve_key()
+    {
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Conflict.Resolve").Returns("test-resolve");
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
+
+        sut.IsExpanded = false;
+
+        sut.CollapseExpandLabel.ShouldBe("test-resolve");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_collapse_expand_label_uses_collapse_key_when_expanded()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
+        sut.IsExpanded = true;
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("Conflict.Collapse");
+    }
 }
