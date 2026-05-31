@@ -68,7 +68,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private MainWindowViewModel CreateMainWindowViewModel()
     {
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), syncEventAggregator, localizationService, Substitute.For<ILogger<AccountsViewModel>>());
-        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
+        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService);
         var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();

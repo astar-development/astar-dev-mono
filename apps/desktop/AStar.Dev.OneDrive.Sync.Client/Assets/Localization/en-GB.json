@@ -50,6 +50,8 @@
   "Files.NoFolders": "No folders selected",
   "Files.Include": "Include",
   "Files.Exclude": "Exclude",
+  "Files.Exclude.Tooltip": "Exclude this folder from sync",
+  "Files.Include.Tooltip": "Include this folder in sync",
   "Files.SyncNow": "Sync now",
   "Files.FolderStatus.Synced": "Synced",
   "Files.FolderStatus.Pending": "Pending",

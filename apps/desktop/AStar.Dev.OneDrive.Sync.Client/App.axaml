@@ -21,8 +21,6 @@
             <home:DepthToIndentConverter                        x:Key="DepthToIndentConverter"/>
             <converters:SyncStateToBadgeBackgroundConverter     x:Key="SyncStateToBadgeBackgroundConverter"/>
             <converters:SyncStateToBadgeForegroundConverter     x:Key="SyncStateToBadgeForegroundConverter"/>
-            <converters:BoolToExcludeIncludeLabelConverter      x:Key="BoolToExcludeIncludeLabelConverter"/>
-            <converters:BoolToExcludeIncludeTooltipConverter    x:Key="BoolToExcludeIncludeTooltipConverter"/>
             <onboarding:BoolToCollapseExpandConverter           x:Key="BoolToCollapseExpandConverter"/>
             <dashboard:ConflictCountToColorConverter            x:Key="ConflictCountToColorConverter"/>
             <converters:IntZeroToBoolConverter                  x:Key="IntZeroToBoolConverter"/>

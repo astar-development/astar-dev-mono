@@ -5,13 +5,14 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> accountFilesLogger, ILogger<FolderTreeNodeViewModel> folderTreeLogger) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> accountFilesLogger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
 {
     public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
 
@@ -35,7 +36,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
             return;
 
         var tab = new AccountFilesViewModel(
-            account, authService, graphService, repository, syncRuleRepository, fileSystem, fileManagerService, accountFilesLogger, folderTreeLogger);
+            account, authService, graphService, repository, syncRuleRepository, fileSystem, fileManagerService, accountFilesLogger, folderTreeLogger, localizationService);
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,

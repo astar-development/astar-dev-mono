@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     private readonly string _accessToken;
     private readonly DriveId _driveId;
     private readonly ILogger<FolderTreeNodeViewModel> _logger;
+    private readonly ILocalizationService loc;
     private bool _childrenLoaded;
 
     public string Id { get; }
@@ -27,6 +29,8 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsIncluded))]
     [NotifyPropertyChangedFor(nameof(IsExcluded))]
     [NotifyPropertyChangedFor(nameof(StatusBadgeText))]
+    [NotifyPropertyChangedFor(nameof(ToggleLabel))]
+    [NotifyPropertyChangedFor(nameof(ToggleTooltip))]
     public partial FolderSyncState SyncState { get; set; }
 
     public bool IsIncluded => SyncState is not FolderSyncState.Excluded;
@@ -42,6 +46,9 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         FolderSyncState.Error => "error",
         _ => "excluded"
     };
+
+    public string ToggleLabel => loc.GetLocal(IsIncluded ? "Files.Exclude" : "Files.Include");
+    public string ToggleTooltip => loc.GetLocal(IsIncluded ? "Files.Exclude.Tooltip" : "Files.Include.Tooltip");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
@@ -61,7 +68,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
@@ -74,6 +81,16 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _accessToken = accessToken;
         _driveId = driveId;
         _logger = logger;
+        loc = localizationService;
+        loc.CultureChanged += OnCultureChanged;
+    }
+
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
+    {
+        _ = ToggleLabel;
+        _ = ToggleTooltip;
+        OnPropertyChanged(nameof(ToggleLabel));
+        OnPropertyChanged(nameof(ToggleTooltip));
     }
 
     [RelayCommand]
@@ -168,7 +185,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, _logger, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, _logger, loc, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);

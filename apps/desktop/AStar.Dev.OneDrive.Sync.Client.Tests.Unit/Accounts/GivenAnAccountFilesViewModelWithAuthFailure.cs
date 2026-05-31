@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -27,7 +28,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     {
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
 
-        return new AccountFilesViewModel(BuildAccount(), authService, Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
+        return new AccountFilesViewModel(BuildAccount(), authService, Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>());
     }
 
     [Fact]
@@ -120,7 +121,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 
-        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
+        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, Substitute.For<IAccountRepository>(), syncRuleRepo, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>());
 
         await sut.LoadCommand.ExecuteAsync(null);
 

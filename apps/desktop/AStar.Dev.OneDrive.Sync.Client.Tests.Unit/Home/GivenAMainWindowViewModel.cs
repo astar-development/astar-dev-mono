@@ -43,7 +43,7 @@ public sealed class GivenAMainWindowViewModel
     }
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
-    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
+    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator, _localizationService);
     private static FileClassificationRulesViewModel CreateClassificationRulesViewModel()

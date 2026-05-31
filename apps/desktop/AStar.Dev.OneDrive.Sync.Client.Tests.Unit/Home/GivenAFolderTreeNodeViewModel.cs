@@ -1,7 +1,9 @@
+using System.Globalization;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
@@ -109,6 +111,136 @@ public sealed class GivenAFolderTreeNodeViewModel
         eventCount.ShouldBe(1);
     }
 
+    [Fact]
+    public void when_is_included_then_toggle_label_returns_files_exclude_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
+
+        sut.ToggleLabel.ShouldBe("Files.Exclude");
+    }
+
+    [Fact]
+    public void when_is_excluded_then_toggle_label_returns_files_include_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
+
+        sut.ToggleLabel.ShouldBe("Files.Include");
+    }
+
+    [Fact]
+    public void when_sync_state_changes_to_excluded_then_property_changed_fires_for_toggle_label()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        sut.SyncState = FolderSyncState.Excluded;
+
+        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+    }
+
+    [Fact]
+    public void when_sync_state_changes_to_included_then_property_changed_fires_for_toggle_label()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        sut.SyncState = FolderSyncState.Included;
+
+        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+    }
+
+    [Fact]
+    public void when_culture_changed_then_toggle_label_is_refreshed()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("Files.Exclude");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_property_changed_fires_for_toggle_label()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+    }
+
+    [Fact]
+    public void when_is_included_then_toggle_tooltip_returns_files_exclude_tooltip_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
+
+        sut.ToggleTooltip.ShouldBe("Files.Exclude.Tooltip");
+    }
+
+    [Fact]
+    public void when_is_excluded_then_toggle_tooltip_returns_files_include_tooltip_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
+
+        sut.ToggleTooltip.ShouldBe("Files.Include.Tooltip");
+    }
+
+    [Fact]
+    public void when_sync_state_changes_to_excluded_then_property_changed_fires_for_toggle_tooltip()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        sut.SyncState = FolderSyncState.Excluded;
+
+        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+    }
+
+    [Fact]
+    public void when_sync_state_changes_to_included_then_property_changed_fires_for_toggle_tooltip()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        sut.SyncState = FolderSyncState.Included;
+
+        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+    }
+
+    [Fact]
+    public void when_culture_changed_then_toggle_tooltip_is_refreshed()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("Files.Exclude.Tooltip");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_property_changed_fires_for_toggle_tooltip()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        var firedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => firedProperties.Add(args.PropertyName);
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+    }
+
     private static IGraphService BuildGraphServiceWithChild()
     {
         var graphService = Substitute.For<IGraphService>();
@@ -132,6 +264,14 @@ public sealed class GivenAFolderTreeNodeViewModel
         return graphService;
     }
 
+    private static ILocalizationService BuildLocalizationService()
+    {
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+
+        return loc;
+    }
+
     private static FolderTreeNodeViewModel BuildIncludedRootVm(IGraphService graphService)
         => BuildRootVm(graphService, FolderSyncState.Included);
 
@@ -139,6 +279,9 @@ public sealed class GivenAFolderTreeNodeViewModel
         => BuildRootVm(graphService, FolderSyncState.Excluded);
 
     private static FolderTreeNodeViewModel BuildRootVm(IGraphService graphService, FolderSyncState syncState)
+        => BuildRootVm(graphService, syncState, BuildLocalizationService());
+
+    private static FolderTreeNodeViewModel BuildRootVm(IGraphService graphService, FolderSyncState syncState, ILocalizationService loc)
     {
         var node = new FolderTreeNode(
             Id:          RootFolderId,
@@ -149,6 +292,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState:   syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>());
+        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
     }
 }
