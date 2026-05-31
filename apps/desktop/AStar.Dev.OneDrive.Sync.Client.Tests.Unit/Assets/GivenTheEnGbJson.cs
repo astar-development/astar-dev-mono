@@ -43,4 +43,12 @@ public sealed class GivenTheEnGbJson
     [Fact]
     public void when_read_then_files_include_tooltip_key_exists() =>
         RootElement().TryGetProperty("Files.Include.Tooltip", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_dashboard_no_sync_path_key_exists() =>
+        RootElement().TryGetProperty("Dashboard.NoSyncPath", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_dashboard_pending_key_exists() =>
+        RootElement().TryGetProperty("Dashboard.Pending", out _).ShouldBeTrue();
 }
