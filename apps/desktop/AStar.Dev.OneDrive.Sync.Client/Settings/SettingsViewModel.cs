@@ -18,6 +18,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly ISyncScheduler scheduler;
     private readonly IAccountRepository repository;
     private readonly ILocalizationService loc;
+    private bool isLoaded;
 
     public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc)
     {
@@ -33,6 +34,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
         loc.CultureChanged += OnCultureChanged;
+        isLoaded = true;
     }
 
     [ObservableProperty]
@@ -40,6 +42,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnThemeChanged(AppTheme value)
     {
+        if (!isLoaded)
+            return;
+
         themeService.Apply(value);
         settingsService.Current.Theme = value;
         _ = settingsService.SaveAsync();
@@ -53,6 +58,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnDefaultConflictPolicyChanged(ConflictPolicy value)
     {
+        if (!isLoaded)
+            return;
+
         settingsService.Current.DefaultConflictPolicy = value;
         _ = settingsService.SaveAsync();
     }
@@ -62,6 +70,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnSyncIntervalMinutesChanged(int value)
     {
+        if (!isLoaded)
+            return;
+
         settingsService.Current.SyncIntervalMinutes = value;
         scheduler.SetInterval(TimeSpan.FromMinutes(value));
         _ = settingsService.SaveAsync();
