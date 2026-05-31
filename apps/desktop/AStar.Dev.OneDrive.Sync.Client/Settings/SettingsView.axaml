@@ -31,34 +31,32 @@
                             <TextBlock Text="Theme"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Choose light, dark or follow the system setting."
+                            <TextBlock Text="Choose a colour theme for the application."
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1"
-                                    Orientation="Horizontal"
-                                    Spacing="6"
-                                    VerticalAlignment="Center">
-                            <Button Content="Light"
-                                    Padding="12,6"
-                                    CornerRadius="{StaticResource RadiusMd}"
-                                    BorderThickness="1"
-                                    FontSize="{StaticResource FontSizeSm}"
-                                    Click="OnThemeLightClick"/>
-                            <Button Content="Dark"
-                                    Padding="12,6"
-                                    CornerRadius="{StaticResource RadiusMd}"
-                                    BorderThickness="1"
-                                    FontSize="{StaticResource FontSizeSm}"
-                                    Click="OnThemeDarkClick"/>
-                            <Button Content="System"
-                                    Padding="12,6"
-                                    CornerRadius="{StaticResource RadiusMd}"
-                                    BorderThickness="1"
-                                    FontSize="{StaticResource FontSizeSm}"
-                                    Click="OnThemeSystemClick"/>
-                        </StackPanel>
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding ThemeOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="settings:ThemeOption">
+                                    <Button Padding="12,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Click="OnThemeClick"
+                                            Tag="{Binding Theme}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </Border>
             </StackPanel>

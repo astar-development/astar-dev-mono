@@ -29,7 +29,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         Theme = settingsService.Current.Theme;
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
-        ThemeOptions = BuildThemeOptions();
+        ThemeOptions = ThemeOptionFactory.Create(loc);
         IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
         loc.CultureChanged += OnCultureChanged;
@@ -96,13 +96,6 @@ public sealed partial class SettingsViewModel : ObservableObject
             _ = AccountSettings.Remove(vm);
     }
 
-    private IReadOnlyList<ThemeOption> BuildThemeOptions() =>
-    [
-        new(AppTheme.Light,  loc.GetLocal("Settings.Theme.Light")),
-        new(AppTheme.Dark,   loc.GetLocal("Settings.Theme.Dark")),
-        new(AppTheme.System, loc.GetLocal("Settings.Theme.System")),
-    ];
-
     private IReadOnlyList<SyncIntervalOption> BuildIntervalOptions() =>
     [
         new(5,   loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 5)),
@@ -114,7 +107,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
     {
-        ThemeOptions = BuildThemeOptions();
+        ThemeOptions = ThemeOptionFactory.Create(loc);
         OnPropertyChanged(nameof(ThemeOptions));
         IntervalOptions = BuildIntervalOptions();
         OnPropertyChanged(nameof(IntervalOptions));

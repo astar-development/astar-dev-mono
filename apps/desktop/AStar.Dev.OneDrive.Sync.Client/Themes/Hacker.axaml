@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="BackgroundPrimary">#0A0A0A</Color>
+    <Color x:Key="BackgroundSecondary">#0F140F</Color>
+    <Color x:Key="BackgroundTertiary">#141A14</Color>
+    <Color x:Key="BackgroundRail">#080A08</Color>
+    <Color x:Key="BackgroundAccountPanel">#0D120D</Color>
+    <Color x:Key="BackgroundStatusBar">#060806</Color>
+    <Color x:Key="BackgroundHover">#1A221A</Color>
+    <Color x:Key="BackgroundActive">#1E281E</Color>
+    <Color x:Key="BackgroundSelected">#0A200A</Color>
+
+    <Color x:Key="TextPrimary">#00FF41</Color>
+    <Color x:Key="TextSecondary">#00C832</Color>
+    <Color x:Key="TextTertiary">#008F11</Color>
+    <Color x:Key="TextDisabled">#004A00</Color>
+    <Color x:Key="TextAccent">#39FF14</Color>
+
+    <Color x:Key="BorderSubtle">#0F1F0F</Color>
+    <Color x:Key="BorderDefault">#1A301A</Color>
+    <Color x:Key="BorderStrong">#2A4A2A</Color>
+    <Color x:Key="BorderAccent">#00FF41</Color>
+
+    <SolidColorBrush x:Key="BackgroundPrimaryBrush"      Color="{StaticResource BackgroundPrimary}"/>
+    <SolidColorBrush x:Key="BackgroundSecondaryBrush"    Color="{StaticResource BackgroundSecondary}"/>
+    <SolidColorBrush x:Key="BackgroundTertiaryBrush"     Color="{StaticResource BackgroundTertiary}"/>
+    <SolidColorBrush x:Key="BackgroundRailBrush"         Color="{StaticResource BackgroundRail}"/>
+    <SolidColorBrush x:Key="BackgroundAccountPanelBrush" Color="{StaticResource BackgroundAccountPanel}"/>
+    <SolidColorBrush x:Key="BackgroundStatusBarBrush"    Color="{StaticResource BackgroundStatusBar}"/>
+    <SolidColorBrush x:Key="BackgroundHoverBrush"        Color="{StaticResource BackgroundHover}"/>
+    <SolidColorBrush x:Key="BackgroundActiveBrush"       Color="{StaticResource BackgroundActive}"/>
+    <SolidColorBrush x:Key="BackgroundSelectedBrush"     Color="{StaticResource BackgroundSelected}"/>
+
+    <SolidColorBrush x:Key="TextPrimaryBrush"    Color="{StaticResource TextPrimary}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush"  Color="{StaticResource TextSecondary}"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush"   Color="{StaticResource TextTertiary}"/>
+    <SolidColorBrush x:Key="TextDisabledBrush"   Color="{StaticResource TextDisabled}"/>
+    <SolidColorBrush x:Key="TextAccentBrush"     Color="{StaticResource TextAccent}"/>
+
+    <SolidColorBrush x:Key="BorderSubtleBrush"   Color="{StaticResource BorderSubtle}"/>
+    <SolidColorBrush x:Key="BorderDefaultBrush"  Color="{StaticResource BorderDefault}"/>
+    <SolidColorBrush x:Key="BorderStrongBrush"   Color="{StaticResource BorderStrong}"/>
+    <SolidColorBrush x:Key="BorderAccentBrush"   Color="{StaticResource BorderAccent}"/>
+
+    <SolidColorBrush x:Key="BackgroundWarningBrush" Color="#1A1500"/>
+    <SolidColorBrush x:Key="TextWarningBrush"       Color="#FFFF00"/>
+    <SolidColorBrush x:Key="BackgroundSuccessBrush" Color="#001A00"/>
+    <SolidColorBrush x:Key="TextSuccessBrush"       Color="#00FF41"/>
+    <SolidColorBrush x:Key="StatusSyncedBrush"      Color="#00FF41"/>
+    <SolidColorBrush x:Key="StatusPendingBrush"     Color="#FFFF00"/>
+    <SolidColorBrush x:Key="StatusConflictBrush"    Color="#FF4400"/>
+    <SolidColorBrush x:Key="StatusExcludedBrush"    Color="#3A6A3A"/>
+    <SolidColorBrush x:Key="StatusErrorBrush"       Color="#FF0040"/>
+
+    <SolidColorBrush x:Key="RailActiveIndicatorBrush" Color="{StaticResource BorderAccent}"/>
+
+</ResourceDictionary>

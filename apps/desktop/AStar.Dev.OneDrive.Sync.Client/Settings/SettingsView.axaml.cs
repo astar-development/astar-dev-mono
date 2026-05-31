@@ -10,22 +10,10 @@ public partial class SettingsView : UserControl
 {
     public SettingsView() => InitializeComponent();
 
-    private void OnThemeLightClick(object? sender, RoutedEventArgs e)
+    private void OnThemeClick(object? sender, RoutedEventArgs e)
     {
-        if(DataContext is SettingsViewModel vm)
-            vm.Theme = AppTheme.Light;
-    }
-
-    private void OnThemeDarkClick(object? sender, RoutedEventArgs e)
-    {
-        if(DataContext is SettingsViewModel vm)
-            vm.Theme = AppTheme.Dark;
-    }
-
-    private void OnThemeSystemClick(object? sender, RoutedEventArgs e)
-    {
-        if(DataContext is SettingsViewModel vm)
-            vm.Theme = AppTheme.System;
+        if(sender is Button { Tag: AppTheme theme } && DataContext is SettingsViewModel vm)
+            vm.Theme = theme;
     }
 
     private void OnPolicyClick(object? sender, RoutedEventArgs e)
