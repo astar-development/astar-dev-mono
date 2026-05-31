@@ -61,10 +61,21 @@ public sealed class GivenAThemeService
         raisedTheme.ShouldBe(AppTheme.Dark);
     }
 
+    [Fact]
+    public void when_apply_called_with_hacker_theme_then_current_theme_is_hacker()
+    {
+        var service = new ThemeService();
+
+        service.Apply(AppTheme.Hacker);
+
+        service.CurrentTheme.ShouldBe(AppTheme.Hacker);
+    }
+
     [Theory]
     [InlineData(AppTheme.Light)]
     [InlineData(AppTheme.Dark)]
     [InlineData(AppTheme.System)]
+    [InlineData(AppTheme.Hacker)]
     public void when_apply_called_with_any_theme_then_event_is_raised(AppTheme theme)
     {
         var service = new ThemeService();

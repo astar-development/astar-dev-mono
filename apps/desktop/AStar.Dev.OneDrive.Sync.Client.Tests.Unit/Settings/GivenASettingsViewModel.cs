@@ -57,6 +57,16 @@ public sealed class GivenASettingsViewModel
     };
 
     [Fact]
+    public void when_constructed_then_settings_are_not_saved()
+    {
+        var settingsService = BuildSettingsService();
+
+        _ = BuildSut(settingsService: settingsService);
+
+        settingsService.DidNotReceive().SaveAsync();
+    }
+
+    [Fact]
     public void when_constructed_then_theme_is_read_from_settings_service_current()
     {
         var settings = new AppSettings { Theme = AppTheme.Dark };
@@ -84,15 +94,15 @@ public sealed class GivenASettingsViewModel
     }
 
     [Fact]
-    public void when_constructed_then_theme_options_contains_exactly_three_entries()
+    public void when_constructed_then_theme_options_contains_exactly_four_entries()
     {
         var sut = BuildSut();
 
-        sut.ThemeOptions.Count.ShouldBe(3);
+        sut.ThemeOptions.Count.ShouldBe(4);
     }
 
     [Fact]
-    public void when_constructed_then_theme_options_covers_light_dark_and_system()
+    public void when_constructed_then_theme_options_covers_light_dark_system_and_hacker()
     {
         var sut = BuildSut();
 
@@ -100,6 +110,7 @@ public sealed class GivenASettingsViewModel
         themes.ShouldContain(AppTheme.Light);
         themes.ShouldContain(AppTheme.Dark);
         themes.ShouldContain(AppTheme.System);
+        themes.ShouldContain(AppTheme.Hacker);
     }
 
     [Fact]
@@ -147,6 +158,30 @@ public sealed class GivenASettingsViewModel
         loc.Received(1).GetLocal("Settings.Theme.Light");
         loc.Received(1).GetLocal("Settings.Theme.Dark");
         loc.Received(1).GetLocal("Settings.Theme.System");
+        loc.Received(1).GetLocal("Settings.Theme.Hacker");
+    }
+
+    [Fact]
+    public void when_building_theme_options_then_hacker_uses_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        var hackerOption = sut.ThemeOptions.Single(option => option.Theme == AppTheme.Hacker);
+
+        hackerOption.Label.ShouldBe("Settings.Theme.Hacker");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_theme_options_rebuild_includes_hacker_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("Settings.Theme.Hacker");
     }
 
     [Fact]

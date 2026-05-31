@@ -6,18 +6,14 @@ using Avalonia.Threading;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
 /// <summary>
-/// Switches between Light, Dark and System themes at runtime by replacing
+/// Switches between Light, Dark, System and Hacker themes at runtime by replacing
 /// the theme resource dictionary in Application.Current.Resources.
-///
-/// Expects two ResourceInclude entries already present in App.axaml under
-/// the keys "LightThemeInclude" and "DarkThemeInclude" — only one is active
-/// at a time.  On System mode it watches
-/// <see cref="Application.ActualThemeVariant"/> for OS-level changes.
 /// </summary>
 public sealed class ThemeService : IThemeService, IDisposable
 {
-    private static readonly Uri _lightUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
-    private static readonly Uri _darkUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
+    private static readonly Uri _lightUri  = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
+    private static readonly Uri _darkUri   = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
+    private static readonly Uri _hackerUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Hacker.axaml");
     private Disposable? _systemWatcher;
 
     ///<inheritdoc />
@@ -60,6 +56,7 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static bool GetSystemIsDark()
     {
         var app = Application.Current;
+
         return app is not null && app.ActualThemeVariant == ThemeVariant.Dark;
     }
 
@@ -88,18 +85,24 @@ public sealed class ThemeService : IThemeService, IDisposable
         if (app is null)
             return;
 
-        var targetUri = resolved == AppTheme.Dark ? _darkUri : _lightUri;
+        var targetUri = ResolveUri(resolved);
         var merged = app.Resources.MergedDictionaries;
-
         var existing = merged
             .OfType<ResourceInclude>()
-            .FirstOrDefault(r => r.Source == _lightUri || r.Source == _darkUri);
+            .FirstOrDefault(r => r.Source == _lightUri || r.Source == _darkUri || r.Source == _hackerUri);
 
         if (existing is not null)
             _ = merged.Remove(existing);
 
         merged.Add(new ResourceInclude(targetUri) { Source = targetUri });
     }
+
+    private static Uri ResolveUri(AppTheme resolved) => resolved switch
+    {
+        AppTheme.Dark   => _darkUri,
+        AppTheme.Hacker => _hackerUri,
+        _               => _lightUri,
+    };
 
     public void Dispose() => _systemWatcher?.Dispose();
 

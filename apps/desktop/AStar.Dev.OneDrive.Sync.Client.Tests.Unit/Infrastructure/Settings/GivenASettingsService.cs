@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 
@@ -65,5 +66,20 @@ public sealed class GivenASettingsService
         await service.SaveAsync();
 
         capturedSender.ShouldBeSameAs(service);
+    }
+
+    [Fact]
+    public async Task when_hacker_serialized_then_round_trips_correctly()
+    {
+        var fileSystem = CreateMockFileSystem();
+        var writeService = new SettingsService(fileSystem, Substitute.For<ILogger<SettingsService>>(), SettingsPath);
+        writeService.Current.Theme = AppTheme.Hacker;
+
+        await writeService.SaveAsync();
+
+        var readService = new SettingsService(fileSystem, Substitute.For<ILogger<SettingsService>>(), SettingsPath);
+        await readService.LoadAsync();
+
+        readService.Current.Theme.ShouldBe(AppTheme.Hacker);
     }
 }
