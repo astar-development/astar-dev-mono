@@ -57,6 +57,16 @@ public sealed class GivenASettingsViewModel
     };
 
     [Fact]
+    public void when_constructed_then_settings_are_not_saved()
+    {
+        var settingsService = BuildSettingsService();
+
+        _ = BuildSut(settingsService: settingsService);
+
+        settingsService.DidNotReceive().SaveAsync();
+    }
+
+    [Fact]
     public void when_constructed_then_theme_is_read_from_settings_service_current()
     {
         var settings = new AppSettings { Theme = AppTheme.Dark };
