@@ -38,13 +38,13 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     public string StatusBadgeText => SyncState switch
     {
-        FolderSyncState.Included => "included",
-        FolderSyncState.Synced => "synced",
-        FolderSyncState.Syncing => "syncing ...",
-        FolderSyncState.Partial => "partial",
-        FolderSyncState.Conflict => "conflict",
-        FolderSyncState.Error => "error",
-        _ => "excluded"
+        FolderSyncState.Included => loc.GetLocal("Files.FolderStatus.Included"),
+        FolderSyncState.Synced   => loc.GetLocal("Files.FolderStatus.Synced"),
+        FolderSyncState.Syncing  => loc.GetLocal("Files.FolderStatus.Syncing"),
+        FolderSyncState.Partial  => loc.GetLocal("Files.FolderStatus.Partial"),
+        FolderSyncState.Conflict => loc.GetLocal("Files.FolderStatus.Conflict"),
+        FolderSyncState.Error    => loc.GetLocal("Files.FolderStatus.Error"),
+        _                        => loc.GetLocal("Files.FolderStatus.Excluded")
     };
 
     public string ToggleLabel => loc.GetLocal(IsIncluded ? "Files.Exclude" : "Files.Include");

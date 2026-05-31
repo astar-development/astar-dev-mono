@@ -241,6 +241,62 @@ public sealed class GivenAFolderTreeNodeViewModel
         firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
     }
 
+    [Fact]
+    public void when_sync_state_is_included_then_status_badge_text_resolves_included_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Included");
+    }
+
+    [Fact]
+    public void when_sync_state_is_synced_then_status_badge_text_resolves_synced_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Synced);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Synced");
+    }
+
+    [Fact]
+    public void when_sync_state_is_syncing_then_status_badge_text_resolves_syncing_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Syncing);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Syncing");
+    }
+
+    [Fact]
+    public void when_sync_state_is_partial_then_status_badge_text_resolves_partial_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Partial);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Partial");
+    }
+
+    [Fact]
+    public void when_sync_state_is_conflict_then_status_badge_text_resolves_conflict_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Conflict);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Conflict");
+    }
+
+    [Fact]
+    public void when_sync_state_is_error_then_status_badge_text_resolves_error_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Error);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Error");
+    }
+
+    [Fact]
+    public void when_sync_state_is_excluded_then_status_badge_text_resolves_excluded_key()
+    {
+        var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
+
+        sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Excluded");
+    }
+
     private static IGraphService BuildGraphServiceWithChild()
     {
         var graphService = Substitute.For<IGraphService>();
