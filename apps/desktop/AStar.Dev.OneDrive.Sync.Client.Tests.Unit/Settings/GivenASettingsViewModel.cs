@@ -34,6 +34,7 @@ public sealed class GivenASettingsViewModel
     {
         var loc = Substitute.For<ILocalizationService>();
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
 
         return loc;
     }
@@ -102,6 +103,53 @@ public sealed class GivenASettingsViewModel
     }
 
     [Fact]
+    public void when_building_theme_options_then_light_uses_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        var lightOption = sut.ThemeOptions.Single(option => option.Theme == AppTheme.Light);
+
+        lightOption.Label.ShouldBe("Settings.Theme.Light");
+    }
+
+    [Fact]
+    public void when_building_theme_options_then_dark_uses_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        var darkOption = sut.ThemeOptions.Single(option => option.Theme == AppTheme.Dark);
+
+        darkOption.Label.ShouldBe("Settings.Theme.Dark");
+    }
+
+    [Fact]
+    public void when_building_theme_options_then_system_uses_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        var systemOption = sut.ThemeOptions.Single(option => option.Theme == AppTheme.System);
+
+        systemOption.Label.ShouldBe("Settings.Theme.System");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_theme_options_is_rebuilt()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received(1).GetLocal("Settings.Theme.Light");
+        loc.Received(1).GetLocal("Settings.Theme.Dark");
+        loc.Received(1).GetLocal("Settings.Theme.System");
+    }
+
+    [Fact]
     public void when_constructed_then_interval_options_contains_exactly_five_entries()
     {
         var sut = BuildSut();
@@ -120,6 +168,37 @@ public sealed class GivenASettingsViewModel
         minutes.ShouldContain(30);
         minutes.ShouldContain(60);
         minutes.ShouldContain(120);
+    }
+
+    [Fact]
+    public void when_building_interval_options_then_minute_entries_use_minutes_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        loc.Received().GetLocal("Settings.DeltaSyncInterval.Minutes", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_building_interval_options_then_2_hour_entry_uses_hours_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        loc.Received(1).GetLocal("Settings.Interval.Hours", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_culture_changed_then_interval_options_is_rebuilt()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        loc.ClearReceivedCalls();
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        loc.Received().GetLocal("Settings.DeltaSyncInterval.Minutes", Arg.Any<object[]>());
+        loc.Received(1).GetLocal("Settings.Interval.Hours", Arg.Any<object[]>());
     }
 
     [Fact]
