@@ -85,10 +85,8 @@
                         BorderBrush="{DynamicResource BorderDefaultBrush}"
                         BorderThickness="1"
                         Command="{Binding ToggleIncludeCommand}"
-                        ToolTip.Tip="{Binding IsIncluded,
-                            Converter={StaticResource BoolToExcludeIncludeTooltipConverter}}">
-                    <TextBlock Text="{Binding IsIncluded,
-                                   Converter={StaticResource BoolToExcludeIncludeLabelConverter}}"
+                        ToolTip.Tip="{Binding ToggleTooltip}">
+                    <TextBlock Text="{Binding ToggleLabel}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </Button>
