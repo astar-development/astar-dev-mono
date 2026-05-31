@@ -287,8 +287,7 @@
                                                     BorderThickness="1"
                                                     IsVisible="{Binding !IsResolved}"
                                                     Command="{Binding TogglePanelCommand}">
-                                                <TextBlock Text="{Binding IsExpanded,
-                                                               Converter={StaticResource BoolToCollapseExpandConverter}}"
+                                                <TextBlock Text="{Binding CollapseExpandLabel}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"/>
                                             </Button>
