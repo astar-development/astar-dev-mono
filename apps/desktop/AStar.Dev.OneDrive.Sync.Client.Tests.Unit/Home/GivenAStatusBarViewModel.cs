@@ -28,7 +28,7 @@ public sealed class GivenAStatusBarViewModel
     public void when_active_account_is_null_then_has_account_is_false()
     {
         var accounts = CreateAccountsViewModel();
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
 
         sut.HasAccount.ShouldBeFalse();
     }
@@ -37,7 +37,7 @@ public sealed class GivenAStatusBarViewModel
     public void when_active_account_is_set_then_email_matches_account_email()
     {
         var accounts = CreateAccountsViewModel();
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
         var card = CreateCard(email: "jane@example.com");
 
         accounts.ActiveAccount = card;
@@ -49,7 +49,7 @@ public sealed class GivenAStatusBarViewModel
     public void when_active_account_is_set_then_has_account_is_true()
     {
         var accounts = CreateAccountsViewModel();
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
         var card = CreateCard();
 
         accounts.ActiveAccount = card;
@@ -61,7 +61,7 @@ public sealed class GivenAStatusBarViewModel
     public void when_active_account_sync_state_changes_then_status_bar_reflects_change()
     {
         var accounts = CreateAccountsViewModel();
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
         var card = CreateCard();
         accounts.ActiveAccount = card;
 
@@ -74,7 +74,7 @@ public sealed class GivenAStatusBarViewModel
     public void when_active_account_conflict_count_changes_then_status_bar_reflects_change()
     {
         var accounts = CreateAccountsViewModel();
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
         var card = CreateCard();
         accounts.ActiveAccount = card;
 
@@ -89,7 +89,7 @@ public sealed class GivenAStatusBarViewModel
         var accounts = CreateAccountsViewModel();
         var card = CreateCard();
         accounts.ActiveAccount = card;
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
 
         accounts.ActiveAccount = null;
 
@@ -103,10 +103,91 @@ public sealed class GivenAStatusBarViewModel
         var firstCard = CreateCard(displayName: "Alice");
         var secondCard = CreateCard(displayName: "Bob", email: "bob@example.com");
         accounts.ActiveAccount = firstCard;
-        var sut = new StatusBarViewModel(accounts);
+        var sut = new StatusBarViewModel(accounts, _localizationService);
 
         accounts.ActiveAccount = secondCard;
 
         sut.AccountDisplayName.ShouldBe("Bob");
+    }
+
+    [Fact]
+    public void when_sync_state_is_syncing_then_status_label_uses_syncing_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Syncing;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Syncing");
+    }
+
+    [Fact]
+    public void when_sync_state_is_pending_then_status_label_uses_pending_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Pending;
+        sut.PendingCount = 4;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Pending", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_sync_state_is_conflict_with_one_conflict_then_status_label_uses_singular_conflict_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Conflict;
+        sut.ConflictCount = 1;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Conflict", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_sync_state_is_conflict_with_multiple_conflicts_then_status_label_uses_plural_conflicts_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Conflict;
+        sut.ConflictCount = 3;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Conflicts", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_sync_state_is_error_then_status_label_uses_error_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Error;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Error");
+    }
+
+    [Fact]
+    public void when_sync_state_is_idle_then_status_label_uses_synced_key()
+    {
+        var accounts = CreateAccountsViewModel();
+        var sut = new StatusBarViewModel(accounts, _localizationService);
+        _localizationService.GetLocal(Arg.Any<string>()).Returns(key => key.ArgAt<string>(0));
+
+        sut.SyncState = SyncState.Idle;
+        _ = sut.StatusLabel;
+
+        _localizationService.Received(1).GetLocal("StatusBar.Synced");
     }
 }
