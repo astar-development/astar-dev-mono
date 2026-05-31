@@ -132,6 +132,12 @@
   "Common.Yesterday": "Yesterday",
   "Common.DaysAgo": "{0} days ago",
   "Sync.Starting": "Starting sync... this could take some time...",
+  "Sync.AuthFailed":               "Authentication failed",
+  "Sync.NoSyncPath":               "No local sync path configured",
+  "Sync.NoFoldersSelected":        "No folders selected",
+  "Sync.Complete":                 "Sync complete",
+  "Sync.Cancelled":                "Sync cancelled",
+  "Sync.ConflictResolutionFailed": "Conflict resolution failed",
   "Dashboard.NoSyncPath": "No local sync path configured",
   "Dashboard.Pending": "Pending",
   "Dashboard.AllSynced": "All synced"

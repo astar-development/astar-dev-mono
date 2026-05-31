@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -12,7 +13,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier, ILogger<SyncService> logger) : ISyncService
+public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier, ILogger<SyncService> logger, ILocalizationService localizationService) : ISyncService
 {
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
@@ -35,18 +36,18 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         string? accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
             .MatchAsync<AuthResult, AuthError, string?>(
                 ok => ok.AccessToken,
-                error =>
+                _ =>
                 {
-                    RaiseProgress(account.Id.Id, 0, 0, error is AuthFailedError failed ? failed.Message : "Auth failed", SyncState.Error);
+                    RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.AuthFailed"), SyncState.Error);
                     return null;
                 }).ConfigureAwait(false);
 
         if (accessToken is null)
             return;
 
-        if (account.SyncConfig is null)
+        if (account.SyncConfig is Option<AccountSyncConfig>.None)
         {
-            RaiseProgress(account.Id.Id, 0, 0, "No local sync path configured", SyncState.Error);
+            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoSyncPath"), SyncState.Error);
 
             return;
         }
@@ -66,16 +67,16 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 ct).ConfigureAwait(false);
 
             if (!didRun)
-                RaiseProgress(account.Id.Id, 0, 0, "No folders selected", SyncState.Idle);
+                RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoFoldersSelected"), SyncState.Idle);
             else
             {
                 OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Profile.Email);
-                RaiseProgress(account.Id.Id, 0, 0, "Sync complete", SyncState.Idle);
+                RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Complete"), SyncState.Idle);
             }
         }
         catch (OperationCanceledException)
         {
-            RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
+            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Cancelled"), SyncState.Idle);
         }
         catch (Exception ex)
         {
@@ -98,7 +99,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
         if (!applied)
         {
-            RaiseProgress(conflict.Remote.AccountId.Id, 0, 0, "Conflict resolution failed", SyncState.Error);
+            RaiseProgress(conflict.Remote.AccountId.Id, 0, 0, localizationService.GetLocal("Sync.ConflictResolutionFailed"), SyncState.Error);
 
             return;
         }
