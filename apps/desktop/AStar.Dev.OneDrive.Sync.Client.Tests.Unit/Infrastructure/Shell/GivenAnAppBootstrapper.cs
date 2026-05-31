@@ -75,7 +75,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
                                .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService);
-        var statusBar = new StatusBarViewModel(accounts);
+        var statusBar = new StatusBarViewModel(accounts, localizationService);
 
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
