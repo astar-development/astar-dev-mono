@@ -130,5 +130,6 @@
   "Common.DaysAgo": "{0} days ago",
   "Sync.Starting": "Starting sync... this could take some time...",
   "Dashboard.NoSyncPath": "No local sync path configured",
-  "Dashboard.Pending": "Pending"
+  "Dashboard.Pending": "Pending",
+  "Dashboard.AllSynced": "All synced"
 }

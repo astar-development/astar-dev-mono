@@ -26,7 +26,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
     public partial int TotalConflicts { get; set; }
 
     [ObservableProperty]
-    public partial string LastSyncText { get; set; } = "Never";
+    public partial string LastSyncText { get; set; } = localizationService.GetLocal("Common.Never");
 
     [ObservableProperty]
     public partial bool AnyErrors { get; set; }
@@ -38,10 +38,12 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
 
     public string OverallStatusText => (AnySyncing, AnyErrors, TotalConflicts) switch
     {
-        (true, _, _) => "Syncing ...",
-        (_, true, _) => "Error",
-        (_, _, > 0) => $"{TotalConflicts} conflict{(TotalConflicts == 1 ? "" : "s")}",
-        _ => "All synced"
+        (true, _, _) => localizationService.GetLocal("StatusBar.Syncing"),
+        (_, true, _) => localizationService.GetLocal("StatusBar.Error"),
+        (_, _, > 0) => TotalConflicts == 1
+            ? localizationService.GetLocal("StatusBar.Conflict", TotalConflicts)
+            : localizationService.GetLocal("StatusBar.Conflicts", TotalConflicts),
+        _ => localizationService.GetLocal("Dashboard.AllSynced")
     };
 
     public void SubscribeToSyncEvents()
@@ -158,9 +160,9 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         AnyErrors = AccountSections.Any(s => s.SyncState == SyncState.Error);
         AnySyncing = AccountSections.Any(s => s.SyncState == SyncState.Syncing);
 
-        var mostRecent = AccountSections.FirstOrDefault(s => s.LastSyncText != "Never synced");
+        var mostRecent = AccountSections.FirstOrDefault(s => s.HasEverSynced);
 
-        LastSyncText = mostRecent?.LastSyncText ?? "Never";
+        LastSyncText = mostRecent?.LastSyncText ?? localizationService.GetLocal("Common.Never");
         OnPropertyChanged(nameof(OverallStatusText));
     }
 }

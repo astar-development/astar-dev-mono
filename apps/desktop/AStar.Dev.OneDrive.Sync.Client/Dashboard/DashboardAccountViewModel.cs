@@ -54,6 +54,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public partial bool IsSyncing { get; set; }
 
     public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
+    public bool HasEverSynced => _account.LastSyncedAt?.Match(_ => true, () => false) ?? false;
     public string StatusLabel => (SyncState, ConflictCount) switch
     {
         (SyncState.Syncing, _) => _localizationService.GetLocal("StatusBar.Syncing"),
