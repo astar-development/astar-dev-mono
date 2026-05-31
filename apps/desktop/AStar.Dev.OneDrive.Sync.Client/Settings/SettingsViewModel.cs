@@ -29,8 +29,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         Theme = settingsService.Current.Theme;
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
+        ThemeOptions = BuildThemeOptions();
+        IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
-        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(this.loc); OnPropertyChanged(nameof(PolicyOptions)); };
+        loc.CultureChanged += OnCultureChanged;
     }
 
     [ObservableProperty]
@@ -43,12 +45,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _ = settingsService.SaveAsync();
     }
 
-    public IReadOnlyList<ThemeOption> ThemeOptions { get; } =
-    [
-        new(AppTheme.Light,  "Light"),
-        new(AppTheme.Dark,   "Dark"),
-        new(AppTheme.System, "System"),
-    ];
+    /// <summary>The available theme options, localised for the current culture.</summary>
+    public IReadOnlyList<ThemeOption> ThemeOptions { get; private set; }
 
     [ObservableProperty]
     public partial ConflictPolicy DefaultConflictPolicy { get; set; }
@@ -69,33 +67,58 @@ public sealed partial class SettingsViewModel : ObservableObject
         _ = settingsService.SaveAsync();
     }
 
-    public IReadOnlyList<SyncIntervalOption> IntervalOptions { get; } =
-    [
-        new(5,   "5 minutes"),
-        new(15,  "15 minutes"),
-        new(30,  "30 minutes"),
-        new(60,  "60 minutes"),
-        new(120, "2 hours"),
-    ];
+    /// <summary>The available sync interval options, localised for the current culture.</summary>
+    public IReadOnlyList<SyncIntervalOption> IntervalOptions { get; private set; }
 
+    /// <summary>The available conflict policy options, localised for the current culture.</summary>
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
+    /// <summary>The per-account sync settings view models.</summary>
     public ObservableCollection<AccountSyncSettingsViewModel> AccountSettings { get; } = [];
 
+    /// <summary>Loads the account settings view models from the given accounts, replacing any existing entries.</summary>
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         AccountSettings.Clear();
-        foreach (var a in accounts)
-            AccountSettings.Add(new AccountSyncSettingsViewModel(a, repository, loc));
+        foreach (var account in accounts)
+            AccountSettings.Add(new AccountSyncSettingsViewModel(account, repository, loc));
     }
 
+    /// <summary>Adds a new account settings view model for the given account.</summary>
     public void AddAccount(OneDriveAccount account)
         => AccountSettings.Add(new AccountSyncSettingsViewModel(account, repository, loc));
 
+    /// <summary>Removes the account settings view model for the given account ID.</summary>
     public void RemoveAccount(string accountId)
     {
         var vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
         if (vm is not null)
             _ = AccountSettings.Remove(vm);
+    }
+
+    private IReadOnlyList<ThemeOption> BuildThemeOptions() =>
+    [
+        new(AppTheme.Light,  loc.GetLocal("Settings.Theme.Light")),
+        new(AppTheme.Dark,   loc.GetLocal("Settings.Theme.Dark")),
+        new(AppTheme.System, loc.GetLocal("Settings.Theme.System")),
+    ];
+
+    private IReadOnlyList<SyncIntervalOption> BuildIntervalOptions() =>
+    [
+        new(5,   loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 5)),
+        new(15,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 15)),
+        new(30,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 30)),
+        new(60,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 60)),
+        new(120, loc.GetLocal("Settings.Interval.Hours", 2)),
+    ];
+
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
+    {
+        ThemeOptions = BuildThemeOptions();
+        OnPropertyChanged(nameof(ThemeOptions));
+        IntervalOptions = BuildIntervalOptions();
+        OnPropertyChanged(nameof(IntervalOptions));
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        OnPropertyChanged(nameof(PolicyOptions));
     }
 }
