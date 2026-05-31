@@ -59,7 +59,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     public void AddAccount()
     {
-        var wizard = new Onboarding.AddAccountWizardViewModel(authService, graphService);
+        var wizard = new Onboarding.AddAccountWizardViewModel(authService, graphService, _localizationService);
         wizard.Completed += OnWizardCompletedAsync;
         wizard.Cancelled += OnWizardCancelled;
         Wizard = wizard;
