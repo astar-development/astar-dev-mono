@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -18,9 +19,13 @@ public sealed class GivenASyncServiceSyncingAnAccount
     private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
     private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
+    private readonly ILocalizationService  _localizationService  = Substitute.For<ILocalizationService>();
+
+    public GivenASyncServiceSyncingAnAccount()
+        => _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>());
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService);
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
@@ -83,7 +88,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     [Fact]
-    public async Task when_auth_returns_cancelled_result_then_progress_message_is_auth_failed()
+    public async Task when_auth_returns_cancelled_result_then_progress_message_is_auth_failed_localisation_key()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Cancelled());
@@ -98,11 +103,11 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        capturedMessage.ShouldBe("Auth failed");
+        capturedMessage.ShouldBe("Sync.AuthFailed");
     }
 
     [Fact]
-    public async Task when_auth_fails_with_error_message_then_that_message_appears_in_progress_with_error_state()
+    public async Task when_auth_fails_then_progress_message_is_auth_failed_localisation_key_with_error_state()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Failure("Custom error message"));
@@ -121,12 +126,12 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        capturedMessage.ShouldBe("Custom error message");
+        capturedMessage.ShouldBe("Sync.AuthFailed");
         capturedState.ShouldBe(SyncState.Error);
     }
 
     [Fact]
-    public async Task when_orchestrator_throws_operation_cancelled_then_progress_is_sync_cancelled_with_idle_state()
+    public async Task when_orchestrator_throws_operation_cancelled_then_progress_is_sync_cancelled_localisation_key_with_idle_state()
     {
         SetupAuthSuccess();
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<CancellationToken>())
@@ -137,7 +142,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync cancelled")
+            if(args.CurrentFile == "Sync.Cancelled")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -146,7 +151,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        capturedMessage.ShouldBe("Sync cancelled");
+        capturedMessage.ShouldBe("Sync.Cancelled");
         capturedState.ShouldBe(SyncState.Idle);
     }
 
@@ -176,7 +181,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     [Fact]
-    public async Task when_orchestrator_returns_false_then_no_folders_selected_progress_is_raised_with_idle_state()
+    public async Task when_orchestrator_returns_false_then_no_folders_selected_localisation_key_is_raised_with_idle_state()
     {
         SetupAuthSuccess();
         SetupOrchestratorReturns(false);
@@ -186,7 +191,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "No folders selected")
+            if(args.CurrentFile == "Sync.NoFoldersSelected")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -195,12 +200,12 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        capturedMessage.ShouldBe("No folders selected");
+        capturedMessage.ShouldBe("Sync.NoFoldersSelected");
         capturedState.ShouldBe(SyncState.Idle);
     }
 
     [Fact]
-    public async Task when_orchestrator_returns_true_then_sync_complete_progress_is_raised_with_idle_state()
+    public async Task when_orchestrator_returns_true_then_sync_complete_localisation_key_is_raised_with_idle_state()
     {
         SetupAuthSuccess();
         SetupOrchestratorReturns(true);
@@ -210,7 +215,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync complete")
+            if(args.CurrentFile == "Sync.Complete")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -219,7 +224,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        capturedMessage.ShouldBe("Sync complete");
+        capturedMessage.ShouldBe("Sync.Complete");
         capturedState.ShouldBe(SyncState.Idle);
     }
 }

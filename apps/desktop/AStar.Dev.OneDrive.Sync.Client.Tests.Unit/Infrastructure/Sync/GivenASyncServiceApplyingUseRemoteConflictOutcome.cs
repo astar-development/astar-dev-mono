@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -23,7 +24,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, Substitute.For<ISyncPassOrchestrator>(), _conflictApplier, Substitute.For<ILogger<SyncService>>());
+        => new(_authService, _syncRepository, Substitute.For<ISyncPassOrchestrator>(), _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
 
     private static SyncConflict CreateConflict() => new()
     {

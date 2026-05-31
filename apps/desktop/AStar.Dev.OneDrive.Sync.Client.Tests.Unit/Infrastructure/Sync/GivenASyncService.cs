@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -22,7 +23,7 @@ public sealed class GivenASyncService
     private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
 
     private SyncService BuildSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>());
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
 
     [Fact]
     public void when_constructed_then_instance_is_not_null()
@@ -101,17 +102,17 @@ public sealed class GivenASyncService
     }
 
     [Fact]
-    public async Task when_sync_config_is_null_then_no_local_sync_path_progress_is_raised()
+    public async Task when_sync_config_is_none_then_error_progress_is_raised()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
         var service = BuildSut();
-        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), SyncConfig = null };
+        var account = new OneDriveAccount { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"), SyncConfig = Option.None<AccountSyncConfig>() };
         bool noSyncPathRaised = false;
         service.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "No local sync path configured")
+            if(args.SyncState == SyncState.Error)
                 noSyncPathRaised = true;
         };
 
