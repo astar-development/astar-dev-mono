@@ -53,7 +53,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             await authService.AcquireTokenSilentAsync(account.Id.Id, innerCt)
                 .MatchAsync<AuthResult, AuthError, string>(
                     ok => ok.AccessToken,
-                    _ => string.Empty).ConfigureAwait(false);
+                    _ => throw new InvalidOperationException("Token acquisition failed.")).ConfigureAwait(false);
 
         try
         {
@@ -101,7 +101,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, innerCt)
                 .MatchAsync<AuthResult, AuthError, string>(
                     ok => ok.AccessToken,
-                    _ => string.Empty).ConfigureAwait(false);
+                    _ => throw new InvalidOperationException("Token acquisition failed.")).ConfigureAwait(false);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
         bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory, ct).ConfigureAwait(false);
