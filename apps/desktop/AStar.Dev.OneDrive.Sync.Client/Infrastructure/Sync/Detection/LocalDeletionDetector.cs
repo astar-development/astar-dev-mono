@@ -14,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<LocalDeletionDetector> logger) : ILocalDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, string accessToken, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
         foreach (var (remoteId, knownItem) in syncedItems)
         {
@@ -26,7 +26,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
 
             try
             {
-                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, accessToken, remoteId, ct);
+                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct);
 
                 await deleteResult.MatchAsync<Unit>(
                     async _ =>

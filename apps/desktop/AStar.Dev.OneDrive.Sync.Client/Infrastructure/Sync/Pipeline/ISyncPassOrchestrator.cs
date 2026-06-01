@@ -10,8 +10,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public interface ISyncPassOrchestrator
 {
     /// <summary>
-    /// Runs the full sync pass pipeline for <paramref name="account"/> using <paramref name="token"/> for Graph API calls.
+    /// Runs the full sync pass pipeline for <paramref name="account"/> using <paramref name="tokenFactory"/> for Graph API calls.
     /// Returns <see langword="true"/> when at least one sync rule was active; <see langword="false"/> when no folders were selected.
     /// </summary>
-    Task<bool> OrchestrateAsync(OneDriveAccount account, string token, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default);
+    Task<bool> OrchestrateAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default);
 }

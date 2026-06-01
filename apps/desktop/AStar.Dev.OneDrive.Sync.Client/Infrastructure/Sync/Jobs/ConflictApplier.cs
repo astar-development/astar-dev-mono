@@ -11,12 +11,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphService graphService, IFileSystem fileSystem, ILogger<ConflictApplier> logger) : IConflictApplier
 {
     /// <inheritdoc />
-    public async Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct)
+    public async Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
     {
         switch (outcome)
         {
             case ConflictOutcome.UseRemote:
-                return await ApplyUseRemoteAsync(conflict, accountId, accessToken, ct).ConfigureAwait(false);
+                return await ApplyUseRemoteAsync(conflict, accountId, tokenFactory, ct).ConfigureAwait(false);
 
             case ConflictOutcome.KeepBoth:
                 ApplyKeepBoth(conflict);
@@ -27,9 +27,9 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
         }
     }
 
-    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, string accessToken, CancellationToken ct)
+    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
     {
-        var urlResult = await graphService.GetDownloadUrlAsync(accountId, accessToken, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
         return await urlResult.MatchAsync<bool>(
             async url =>

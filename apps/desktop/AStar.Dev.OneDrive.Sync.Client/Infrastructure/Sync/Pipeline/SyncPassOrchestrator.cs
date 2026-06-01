@@ -10,7 +10,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies) : ISyncPassOrchestrator
 {
-    public async Task<bool> OrchestrateAsync(OneDriveAccount account, string token, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
+    public async Task<bool> OrchestrateAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
     {
         var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
@@ -20,7 +20,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
         Action<int>? enumerationProgress = onProgress is null ? null : count => RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count} item(s) found", onProgress);
-        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, token, enumerationProgress, ct).ConfigureAwait(false);
+        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, tokenFactory, enumerationProgress, ct).ConfigureAwait(false);
 
         if(enumerationResult.HadNoRules)
             return false;
@@ -31,7 +31,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, syncedItemsDict, enumerationResult.SeenRemoteIds, enumerationResult.Rules, ct).ConfigureAwait(false);
 
         RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", onProgress);
-        await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, token, syncedItemsDict, ct).ConfigureAwait(false);
+        await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, syncedItemsDict, ct).ConfigureAwait(false);
 
         var downloadJobs = await dependencies.DownloadJobBuilder.BuildAsync(account, enumerationResult.DeltaItems, enumerationResult.Rules, syncedItemsDict, conflictCallback, ct).ConfigureAwait(false);
 
@@ -45,7 +45,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         if(allJobs.Count > 0)
         {
             RaiseProgress(account.Id.Id, 0, allJobs.Count, $"Syncing {allJobs.Count} file(s)...", onProgress);
-            await dependencies.JobExecutor.ExecuteAsync(account, token, allJobs, syncedItemsDict, onProgress ?? (_ => { }), onJobCompleted ?? (_ => { }), ct).ConfigureAwait(false);
+            await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, allJobs, syncedItemsDict, onProgress ?? (_ => { }), onJobCompleted ?? (_ => { }), ct).ConfigureAwait(false);
         }
         else
         {

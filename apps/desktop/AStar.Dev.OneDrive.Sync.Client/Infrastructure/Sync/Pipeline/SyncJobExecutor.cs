@@ -13,7 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem) : ISyncJobExecutor
 {
     /// <inheritdoc />
-    public async Task ExecuteAsync(OneDriveAccount account, string accessToken, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
+    public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
     {
         if(jobs.Count == 0)
             return;
@@ -24,7 +24,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
         await syncPipeline.RunAsync(
             jobs,
-            accessToken,
+            tokenFactory,
             onProgress,
             args =>
             {

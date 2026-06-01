@@ -12,5 +12,5 @@ public interface ILocalDeletionDetector
     /// Walks <paramref name="syncedItems"/> and, for each file no longer present on disk,
     /// deletes the corresponding remote item via Graph and removes the local tracking record.
     /// </summary>
-    Task DetectAndApplyAsync(AccountId accountId, string accessToken, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct);
+    Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct);
 }

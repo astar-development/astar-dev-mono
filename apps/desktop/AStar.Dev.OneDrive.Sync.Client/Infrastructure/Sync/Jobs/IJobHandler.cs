@@ -10,5 +10,5 @@ public interface IJobHandler
     bool CanHandle(SyncJob job);
 
     /// <summary>Executes <paramref name="job"/> and returns the completed job or an error message.</summary>
-    Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, string accessToken, CancellationToken ct);
+    Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct);
 }

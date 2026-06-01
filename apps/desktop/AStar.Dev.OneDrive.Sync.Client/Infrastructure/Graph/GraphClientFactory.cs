@@ -6,13 +6,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public sealed class GraphClientFactory : IGraphClientFactory
 {
     /// <inheritdoc />
-    public GraphServiceClient CreateClient(string accessToken)
-        => new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
+    public GraphServiceClient CreateClient(Func<CancellationToken, Task<string>> tokenFactory)
+        => new(new BaseBearerTokenAuthenticationProvider(new DelegatingAccessTokenProvider(tokenFactory)));
 
-    private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
+    private sealed class DelegatingAccessTokenProvider(Func<CancellationToken, Task<string>> tokenFactory) : IAccessTokenProvider
     {
         public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default)
-            => Task.FromResult(token);
+            => tokenFactory(ct);
 
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }
