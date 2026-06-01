@@ -2,10 +2,12 @@ using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -21,12 +23,15 @@ public sealed class GivenAParallelSyncPipeline
 
     private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("test-token");
 
+    private static IOptions<SyncSettings> SyncSettingsOptions
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
+
     public GivenAParallelSyncPipeline()
     {
         _workerFactory.Create(Arg.Any<int>()).Returns(_ => new SucceedingDownloadWorker());
     }
 
-    private ParallelSyncPipeline CreateSut() => new(_workerFactory, _syncRepository, Substitute.For<ILogger<ParallelSyncPipeline>>());
+    private ParallelSyncPipeline CreateSut() => new(_workerFactory, _syncRepository, Substitute.For<ILogger<ParallelSyncPipeline>>(), SyncSettingsOptions);
 
     private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
     {
@@ -162,7 +167,7 @@ public sealed class GivenAParallelSyncPipeline
     }
 
     [Fact]
-    public async Task when_two_jobs_run_then_first_per_job_progress_event_has_sync_state_syncing()
+    public async Task when_two_jobs_run_below_throttle_threshold_then_only_final_per_job_progress_event_fires_as_idle()
     {
         var perJobProgressEvents = new List<SyncProgressEventArgs>();
         var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt") };
@@ -174,8 +179,8 @@ public sealed class GivenAParallelSyncPipeline
                 perJobProgressEvents.Add(args);
         }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 1, ct: TestContext.Current.CancellationToken);
 
-        perJobProgressEvents.Count.ShouldBe(2);
-        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
+        perJobProgressEvents.Count.ShouldBe(1);
+        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Idle);
     }
 
     [Fact]

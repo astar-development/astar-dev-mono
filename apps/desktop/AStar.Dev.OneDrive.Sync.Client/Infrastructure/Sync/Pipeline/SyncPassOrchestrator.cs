@@ -3,12 +3,14 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
-internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies) : ISyncPassOrchestrator
+internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings) : ISyncPassOrchestrator
 {
     public async Task<bool> OrchestrateAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
     {
@@ -19,7 +21,13 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         driveState.DeltaLink = Option.None<string>();
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
-        Action<int>? enumerationProgress = onProgress is null ? null : count => RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count} item(s) found", onProgress);
+        int progressReportInterval = syncSettings.Value.ProgressReportInterval;
+        Action<int>? enumerationProgress = onProgress is null ? null : count =>
+        {
+            if (count % progressReportInterval == 0)
+                RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count} item(s) found", onProgress);
+        };
+
         var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, tokenFactory, enumerationProgress, ct).ConfigureAwait(false);
 
         if(enumerationResult.HadNoRules)

@@ -2,11 +2,13 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using Microsoft.Extensions.Options;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -23,6 +25,9 @@ public sealed class GivenASyncPassOrchestrator
     private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
     private readonly IDownloadJobBuilder     _downloadJobBuilder     = Substitute.For<IDownloadJobBuilder>();
 
+    private static IOptions<SyncSettings> SyncSettingsOptions
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
+
     private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(
@@ -33,7 +38,7 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
@@ -46,12 +51,35 @@ public sealed class GivenASyncPassOrchestrator
 
     private static RemoteEnumerationResult EmptyEnumerationResult() => new([], new HashSet<string>(), [], []);
 
+    private static bool IsEnumerationProgressEvent(SyncProgressEventArgs args)
+        => args.CurrentFile.StartsWith("Enumerating:", StringComparison.Ordinal);
+
     private void SetupDeepSyncPrerequisites()
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
+        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyList<SyncJob>)[]);
+        _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
+            .Returns([]);
+        _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<AccountEntity>());
+    }
+
+    private void SetupEnumeratorWithCallbacks(int callbackCount)
+    {
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var onItemDiscovered = callInfo.ArgAt<Action<int>?>(2);
+                for (var i = 1; i <= callbackCount; i++)
+                    onItemDiscovered?.Invoke(i);
+                return Task.FromResult(EmptyEnumerationResult());
+            });
         _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns((IReadOnlyList<SyncJob>)[]);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
@@ -273,5 +301,67 @@ public sealed class GivenASyncPassOrchestrator
         }, ct: TestContext.Current.CancellationToken);
 
         callbackInvoked.ShouldBeTrue();
+    }
+
+    // --- enumeration progress throttle ---
+
+    [Fact]
+    public async Task when_enumeration_fires_99_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
+    {
+        SetupEnumeratorWithCallbacks(99);
+
+        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args =>
+            {
+                if (IsEnumerationProgressEvent(args))
+                    enumerationProgressEvents.Add(args);
+            },
+            ct: TestContext.Current.CancellationToken);
+
+        enumerationProgressEvents.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_enumeration_fires_100_item_discovered_callbacks_then_one_enumeration_progress_event_is_raised()
+    {
+        SetupEnumeratorWithCallbacks(100);
+
+        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args =>
+            {
+                if (IsEnumerationProgressEvent(args))
+                    enumerationProgressEvents.Add(args);
+            },
+            ct: TestContext.Current.CancellationToken);
+
+        enumerationProgressEvents.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_enumeration_fires_200_item_discovered_callbacks_then_two_enumeration_progress_events_are_raised()
+    {
+        SetupEnumeratorWithCallbacks(200);
+
+        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args =>
+            {
+                if (IsEnumerationProgressEvent(args))
+                    enumerationProgressEvents.Add(args);
+            },
+            ct: TestContext.Current.CancellationToken);
+
+        enumerationProgressEvents.Count.ShouldBe(2);
     }
 }

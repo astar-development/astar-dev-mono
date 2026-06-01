@@ -79,6 +79,10 @@ public class App : Application, IDisposable
                 .Bind(configuration.GetSection("EntraId"))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+        _ = services.AddOptions<SyncSettings>()
+                .Bind(configuration.GetSection("Sync"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
         _ = services.AddSingleton<IFileClassificationRuleRepository, FileClassificationRuleRepository>();
         _ = services.AddShell(inMemoryLogSink);
