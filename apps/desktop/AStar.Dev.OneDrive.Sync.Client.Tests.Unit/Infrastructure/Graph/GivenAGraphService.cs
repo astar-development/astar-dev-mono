@@ -380,6 +380,100 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
+    public async Task when_get_drive_id_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_root_folders_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_quota_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_folder_id_by_path_returns_server_error_then_null_is_returned()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        string? result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_get_download_url_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_upload_file_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().UploadFileAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyLocalPath, AnyRemotePath, AnyFolderId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_token_factory_throws_then_GetDownloadUrlAsync_returns_error()
+    {
+        Func<CancellationToken, Task<string>> failingFactory = _ => Task.FromException<string>(new InvalidOperationException("Token acquisition failed."));
+
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, failingFactory, AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
     public async Task when_get_child_folders_returns_server_error_then_result_is_error()
     {
         _server.Given(Request.Create().UsingAnyMethod())
