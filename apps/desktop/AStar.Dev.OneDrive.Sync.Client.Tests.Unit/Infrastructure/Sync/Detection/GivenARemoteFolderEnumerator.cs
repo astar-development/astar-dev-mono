@@ -22,7 +22,7 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
-        _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
     }
 
@@ -47,8 +47,9 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        var result = await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         result.HadNoRules.ShouldBeTrue();
     }
@@ -58,10 +59,11 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().GetDriveIdAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -69,8 +71,9 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        var result = await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         result.DeltaItems.ShouldBeEmpty();
     }
@@ -80,12 +83,13 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents")]);
-        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((string?)null);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
+        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -93,12 +97,13 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: null)]);
-        _graphService.GetFolderIdByPathAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("folder-resolved");
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         await _syncRuleRepository.Received(1).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Is(RuleType.Include), Arg.Is("folder-resolved"), Arg.Any<CancellationToken>());
     }
@@ -108,10 +113,11 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         await _syncRuleRepository.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
@@ -121,10 +127,11 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")]));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        var result = await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         result.SeenRemoteIds.ShouldContain("item-a");
         result.SeenRemoteIds.ShouldContain("item-b");
@@ -135,10 +142,11 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")]));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        var result = await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         result.DeltaItems.Count.ShouldBe(2);
         result.DeltaItems.ShouldContain(i => i.Id.Id == "item-a");
@@ -150,10 +158,11 @@ public sealed class GivenARemoteFolderEnumerator
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
-        _graphService.EnumerateFolderAsync(Arg.Any<string>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        var result = await CreateSut().EnumerateAsync(CreateAccount(), "token", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
 
         result.Rules.ShouldHaveSingleItem();
         result.Rules[0].RemotePath.ShouldBe("/Documents");
