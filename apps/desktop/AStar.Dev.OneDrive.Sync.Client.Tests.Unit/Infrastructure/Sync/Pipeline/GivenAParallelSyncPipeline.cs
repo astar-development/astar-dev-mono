@@ -15,10 +15,11 @@ public sealed class GivenAParallelSyncPipeline
 {
     private const string AccountIdValue = "account-1";
     private const string FolderIdValue  = "folder-1";
-    private const string AccessToken = "test-token";
 
     private readonly ISyncWorkerFactory _workerFactory = Substitute.For<ISyncWorkerFactory>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+
+    private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("test-token");
 
     public GivenAParallelSyncPipeline()
     {
@@ -42,7 +43,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([], AccessToken, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents.ShouldBeEmpty();
     }
@@ -53,7 +54,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([], AccessToken, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.ShouldBeEmpty();
     }
@@ -63,7 +64,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>());
     }
@@ -74,7 +75,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(1);
     }
@@ -86,7 +87,7 @@ public sealed class GivenAParallelSyncPipeline
         var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt") };
         var sut = CreateSut();
 
-        await sut.RunAsync(jobs, AccessToken, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(jobs, TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(3);
     }
@@ -96,7 +97,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(Arg.Any<AccountId>());
     }
@@ -106,7 +107,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(new AccountId(AccountIdValue));
     }
@@ -117,7 +118,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents[^1].SyncState.ShouldBe(SyncState.Idle);
     }
@@ -128,7 +129,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents[^1].CurrentFile.ShouldBe(string.Empty);
     }
@@ -139,7 +140,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Completed);
     }
@@ -150,7 +151,7 @@ public sealed class GivenAParallelSyncPipeline
         var perJobProgressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, args =>
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, args =>
         {
             if(args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
@@ -167,7 +168,7 @@ public sealed class GivenAParallelSyncPipeline
         var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt") };
         var sut = CreateSut();
 
-        await sut.RunAsync(jobs, AccessToken, args =>
+        await sut.RunAsync(jobs, TokenFactory, args =>
         {
             if(args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
@@ -186,7 +187,7 @@ public sealed class GivenAParallelSyncPipeline
 
         try
         {
-            await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: cts.Token);
+            await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: cts.Token);
         }
         catch(OperationCanceledException) { }
 
@@ -198,14 +199,14 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], AccessToken, _ => { }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
 
         _workerFactory.Received(3).Create(Arg.Any<int>());
     }
 
     private sealed class SucceedingDownloadWorker : ISyncWorker
     {
-        public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+        public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
         {
             await foreach(var job in reader.ReadAllAsync(ct))
                 onJobComplete(job, true, null);

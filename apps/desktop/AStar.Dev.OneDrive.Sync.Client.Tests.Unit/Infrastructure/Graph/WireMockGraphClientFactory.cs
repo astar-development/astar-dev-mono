@@ -8,9 +8,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
 
 internal sealed class WireMockGraphClientFactory(WireMockServer server) : IGraphClientFactory
 {
-    public GraphServiceClient CreateClient(string accessToken)
+    public GraphServiceClient CreateClient(Func<CancellationToken, Task<string>> tokenFactory)
     {
-        var authProvider = new BaseBearerTokenAuthenticationProvider(new TestTokenProvider(accessToken));
+        var authProvider = new BaseBearerTokenAuthenticationProvider(new DelegatingTokenProvider(tokenFactory));
         var adapter = new HttpClientRequestAdapter(authProvider)
         {
             BaseUrl = server.Url
@@ -19,10 +19,10 @@ internal sealed class WireMockGraphClientFactory(WireMockServer server) : IGraph
         return new GraphServiceClient(adapter);
     }
 
-    private sealed class TestTokenProvider(string token) : IAccessTokenProvider
+    private sealed class DelegatingTokenProvider(Func<CancellationToken, Task<string>> tokenFactory) : IAccessTokenProvider
     {
         public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default)
-            => Task.FromResult(token);
+            => tokenFactory(ct);
 
         public AllowedHostsValidator AllowedHostsValidator { get; } = new();
     }

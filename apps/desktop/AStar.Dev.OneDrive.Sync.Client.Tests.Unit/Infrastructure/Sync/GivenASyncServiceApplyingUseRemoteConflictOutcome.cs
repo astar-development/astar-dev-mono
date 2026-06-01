@@ -36,7 +36,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
     [Fact]
     public async Task when_applier_returns_false_then_error_progress_is_raised()
     {
-        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
         SyncProgressEventArgs? captured = null;
@@ -56,7 +56,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
     [Fact]
     public async Task when_applier_returns_false_then_sync_repository_resolve_is_not_called()
     {
-        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
         await CreateSut().ResolveConflictAsync(CreateConflict(), ConflictPolicy.RemoteWins, TestContext.Current.CancellationToken);
@@ -67,7 +67,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
     [Fact]
     public async Task when_applier_returns_true_then_sync_repository_resolve_is_called()
     {
-        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _conflictApplier.ApplyAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictOutcome>(), Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(true);
 
         await CreateSut().ResolveConflictAsync(CreateConflict(), ConflictPolicy.RemoteWins, TestContext.Current.CancellationToken);

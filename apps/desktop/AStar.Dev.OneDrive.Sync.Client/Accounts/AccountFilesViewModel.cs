@@ -88,7 +88,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if (_accessToken is null)
                 return;
 
-            var driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _accessToken)
+            var driveId = await _graphService.GetDriveIdAsync(_account.Id.Id, _ => Task.FromResult(_accessToken ?? string.Empty))
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -129,7 +129,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
     {
-        var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _accessToken!)
+        var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _ => Task.FromResult(_accessToken ?? string.Empty))
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                 f => f,
                 error =>
@@ -154,6 +154,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         if (driveId is null)
             return;
 
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(_accessToken ?? string.Empty);
+
         foreach (var f in folders)
         {
             string remotePath = $"/{f.Name}";
@@ -162,7 +164,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 : FolderSyncState.Excluded;
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveId.Value, _folderTreeLogger, _localizationService);
+            var vm = new FolderTreeNodeViewModel(node, _graphService, tokenFactory, driveId.Value, _folderTreeLogger, _localizationService);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;

@@ -13,7 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {
     private readonly IGraphService _graphService;
-    private readonly string _accessToken;
+    private readonly Func<CancellationToken, Task<string>> _tokenFactory;
     private readonly DriveId _driveId;
     private readonly ILogger<FolderTreeNodeViewModel> _logger;
     private readonly ILocalizationService loc;
@@ -68,7 +68,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, string accessToken, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
@@ -78,7 +78,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
         _graphService = graphService;
-        _accessToken = accessToken;
+        _tokenFactory = tokenFactory;
         _driveId = driveId;
         _logger = logger;
         loc = localizationService;
@@ -144,7 +144,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         IsLoadingChildren = true;
         try
         {
-            var folders = await _graphService.GetChildFoldersAsync(_accessToken, _driveId, Id)
+            var folders = await _graphService.GetChildFoldersAsync(_tokenFactory, _driveId, Id)
                 .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                     f => f,
                     error =>
@@ -185,7 +185,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _accessToken, _driveId, _logger, loc, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _tokenFactory, _driveId, _logger, loc, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);

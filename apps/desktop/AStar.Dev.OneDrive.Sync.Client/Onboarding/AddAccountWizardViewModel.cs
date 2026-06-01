@@ -215,7 +215,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
         try
         {
-            var folders = await graphService.GetRootFoldersAsync(_accountId, _accessToken)
+            var folders = await graphService.GetRootFoldersAsync(_accountId, _ => Task.FromResult(_accessToken ?? string.Empty))
                 .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                     f => f,
                     error =>

@@ -69,10 +69,11 @@ public sealed class GivenADeleteJobHandler
     {
         const string localPath = "/tmp/existing-file.txt";
         var job = MakeDeleteJob(localPath);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("any-token");
 
         _fileSystem.File.Exists(localPath).Returns(true);
 
-        await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, string.Empty, tokenFactory, TestContext.Current.CancellationToken);
 
         _fileSystem.File.Received(1).Delete(localPath);
     }
@@ -82,10 +83,11 @@ public sealed class GivenADeleteJobHandler
     {
         const string localPath = "/tmp/nonexistent-file.txt";
         var job = MakeDeleteJob(localPath);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("any-token");
 
         _fileSystem.File.Exists(localPath).Returns(false);
 
-        await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, string.Empty, tokenFactory, TestContext.Current.CancellationToken);
 
         _fileSystem.File.DidNotReceive().Delete(Arg.Any<string>());
     }
@@ -94,8 +96,9 @@ public sealed class GivenADeleteJobHandler
     public async Task when_delete_job_is_processed_then_result_is_ok()
     {
         var job = MakeDeleteJob();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("any-token");
 
-        var result = await CreateSut().HandleAsync(job, string.Empty, "any-token", TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, string.Empty, tokenFactory, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
     }

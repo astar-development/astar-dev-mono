@@ -68,7 +68,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
         await sut.NextCommand.ExecuteAsync(null);
         EventArgs? firedArgs = null;
         sut.Cancelled += (_, args) => firedArgs = args;
@@ -83,7 +83,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
         await sut.NextCommand.ExecuteAsync(null);
         await sut.NextCommand.ExecuteAsync(null);
         EventArgs? firedArgs = null;
@@ -100,7 +100,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         var stepAtFolderLoad = WizardStep.SignIn;
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 stepAtFolderLoad = sut.CurrentStep;
@@ -118,7 +118,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         bool wasLoadingDuringFetch = false;
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 wasLoadingDuringFetch = sut.IsLoadingFolders;
@@ -136,7 +136,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
@@ -149,7 +149,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Desktop", Option.None<string>()), new DriveFolder("id-3", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
@@ -164,7 +164,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Error("network error"));
 
         await sut.NextCommand.ExecuteAsync(null);
@@ -178,7 +178,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
         await sut.NextCommand.ExecuteAsync(null);
 
         sut.SkipFoldersCommand.Execute(null);
@@ -191,7 +191,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -205,7 +205,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
@@ -220,7 +220,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
