@@ -131,6 +131,8 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 accounts.AccountSelected += OnAccountSelectedAsync;
                 accounts.AccountAdded += OnAccountAddedAsync;
                 accounts.AccountRemoved += OnAccountRemoved;
+
+                files.FolderCountChanged += OnFolderCountChanged;
                 await initializer.InitializeAsync();
                 return Unit.Default;
             })
@@ -200,4 +202,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         dashboard.RemoveAccount(accountId);
         settings.RemoveAccount(accountId);
     }
+
+    private void OnFolderCountChanged(object? sender, (string AccountId, int FolderCount) args)
+        => dashboard.UpdateFolderCount(args.AccountId, args.FolderCount);
 }

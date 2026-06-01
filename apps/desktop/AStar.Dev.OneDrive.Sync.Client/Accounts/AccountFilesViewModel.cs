@@ -60,6 +60,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [ObservableProperty]
     public partial bool IsActiveTab { get; set; }
 
+    /// <summary>Raised after a folder is included or excluded; the argument is the new count of included rules for this account.</summary>
+    public event EventHandler<int>? FolderCountChanged;
+
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
     [RelayCommand]
@@ -191,6 +194,11 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             foreach (var item in affected)
                 await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
+
+            var updatedRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
+            int includedCount = updatedRules.Count(r => r.RuleType == RuleType.Include);
+
+            FolderCountChanged?.Invoke(this, includedCount);
         }
         catch (Exception ex)
         {
