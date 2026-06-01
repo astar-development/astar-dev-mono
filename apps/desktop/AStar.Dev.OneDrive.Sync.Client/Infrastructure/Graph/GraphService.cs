@@ -213,6 +213,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 string itemPath = BuildRelativePath(relativePath, item);
 
                 items.Add(MapToDeltaItem(item, itemPath));
+                onItemDiscovered?.Invoke(items.Count);
 
                 if(item.Folder is not null && item.Id is not null)
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, onItemDiscovered, ct);
