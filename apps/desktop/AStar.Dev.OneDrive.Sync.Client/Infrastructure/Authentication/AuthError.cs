@@ -8,3 +8,6 @@ public sealed record AuthCancelledError : AuthError;
 
 /// <summary>Authentication failed with a descriptive message.</summary>
 public sealed record AuthFailedError(string Message) : AuthError;
+
+/// <summary>MSAL requires interactive re-authentication; silent token acquisition is not possible.</summary>
+public sealed record AuthReAuthRequiredError(string ErrorCode, string Classification) : AuthError;

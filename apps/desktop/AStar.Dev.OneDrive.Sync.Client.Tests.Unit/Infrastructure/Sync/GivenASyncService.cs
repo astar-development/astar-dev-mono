@@ -138,6 +138,58 @@ public sealed class GivenASyncService
     }
 
     [Fact]
+    public async Task when_token_factory_requires_reauth_then_reauth_state_is_raised()
+    {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
+        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<bool>(new SyncReAuthRequiredException()));
+
+        var service = BuildSut();
+        var account = new OneDriveAccount
+        {
+            Id         = new AccountId("user-1"),
+            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
+        };
+        SyncState? raisedState = null;
+        service.SyncProgressChanged += (_, args) =>
+        {
+            if (args.SyncState == SyncState.ReAuthRequired)
+                raisedState = args.SyncState;
+        };
+
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
+
+        raisedState.ShouldBe(SyncState.ReAuthRequired);
+    }
+
+    [Fact]
+    public async Task when_initial_auth_returns_reauth_required_then_reauth_state_is_raised()
+    {
+        _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(AuthResultFactory.ReAuthRequired("interaction_required", "none"));
+
+        var service = BuildSut();
+        var account = new OneDriveAccount
+        {
+            Id         = new AccountId("user-1"),
+            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
+        };
+        SyncState? raisedState = null;
+        service.SyncProgressChanged += (_, args) =>
+        {
+            if (args.SyncState == SyncState.ReAuthRequired)
+                raisedState = args.SyncState;
+        };
+
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
+
+        raisedState.ShouldBe(SyncState.ReAuthRequired);
+    }
+
+    [Fact]
     public async Task when_resolve_conflict_called_with_valid_policy_then_sync_repository_resolve_is_called()
     {
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())

@@ -47,6 +47,11 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
                 await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>()).ConfigureAwait(false);
                 throw;
             }
+            catch (SyncReAuthRequiredException)
+            {
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>()).ConfigureAwait(false);
+                throw;
+            }
             catch (Exception ex)
             {
                 error = ex.Message;

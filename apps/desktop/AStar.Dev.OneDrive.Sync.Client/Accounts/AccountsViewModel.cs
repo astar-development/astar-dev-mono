@@ -194,11 +194,20 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private async void OnReAuthenticateRequestedAsync(object? sender, AccountCardViewModel card)
+    {
+        await authService.SignInInteractiveAsync(CancellationToken.None)
+            .MatchAsync<AuthResult, AuthError, bool>(
+                _ => { card.SyncState = SyncState.Idle; return true; },
+                _ => false);
+    }
+
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {
         var card = new AccountCardViewModel(account, _localizationService);
         card.Selected += OnCardSelected;
         card.RemoveRequested += (_, accountCard) => RemoveAccountCommand.Execute(accountCard);
+        card.ReAuthenticateRequested += OnReAuthenticateRequestedAsync;
 
         return card;
     }

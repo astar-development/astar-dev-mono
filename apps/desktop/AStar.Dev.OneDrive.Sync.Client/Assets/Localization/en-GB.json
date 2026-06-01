@@ -141,6 +141,7 @@
   "Sync.Complete":                 "Sync complete",
   "Sync.Cancelled":                "Sync cancelled",
   "Sync.ConflictResolutionFailed": "Conflict resolution failed",
+  "Sync.ReAuthRequired":           "Re-authentication required — please sign in again",
   "Dashboard.NoSyncPath": "No local sync path configured",
   "Dashboard.Pending": "Pending",
   "Dashboard.AllSynced": "All synced"

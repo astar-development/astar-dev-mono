@@ -38,7 +38,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
         if (!authOk)
         {
-            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.AuthFailed"), SyncState.Error);
+            bool reAuthRequired = initialAuth.Match<bool>(_ => false, err => err is AuthReAuthRequiredError);
+            RaiseProgress(account.Id.Id, 0, 0,
+                localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed"),
+                reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error);
+
             return;
         }
 
@@ -53,7 +57,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             await authService.AcquireTokenSilentAsync(account.Id.Id, innerCt)
                 .MatchAsync<AuthResult, AuthError, string>(
                     ok => ok.AccessToken,
-                    _ => throw new InvalidOperationException("Token acquisition failed.")).ConfigureAwait(false);
+                    err => err is AuthCancelledError
+                        ? throw new OperationCanceledException(innerCt)
+                        : err is AuthReAuthRequiredError
+                            ? throw new SyncReAuthRequiredException()
+                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
 
         try
         {
@@ -81,6 +89,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         {
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Cancelled"), SyncState.Idle);
         }
+        catch (SyncReAuthRequiredException)
+        {
+            OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, account.Profile.Email);
+            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.ReAuthRequired"), SyncState.ReAuthRequired);
+        }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncServiceError(logger, account.Profile.Email, ex.Message, ex);
@@ -101,7 +114,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, innerCt)
                 .MatchAsync<AuthResult, AuthError, string>(
                     ok => ok.AccessToken,
-                    _ => throw new InvalidOperationException("Token acquisition failed.")).ConfigureAwait(false);
+                    err => err is AuthCancelledError
+                        ? throw new OperationCanceledException(innerCt)
+                        : err is AuthReAuthRequiredError
+                            ? throw new SyncReAuthRequiredException()
+                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
         bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory, ct).ConfigureAwait(false);

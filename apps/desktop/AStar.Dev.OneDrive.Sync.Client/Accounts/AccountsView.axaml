@@ -113,18 +113,30 @@
                                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                                     </StackPanel>
 
-                                    <Button Grid.Column="2"
-                                            VerticalAlignment="Center"
-                                            Padding="8,4"
-                                            CornerRadius="{StaticResource RadiusSm}"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Command="{Binding RemoveCommand}"
-                                            ToolTip.Tip="Remove account">
-                                        <TextBlock Text="✕"
-                                                   FontSize="{StaticResource FontSizeSm}"
-                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
-                                    </Button>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="4">
+                                        <Button IsVisible="{Binding IsReAuthRequired}"
+                                                Padding="8,4"
+                                                CornerRadius="{StaticResource RadiusSm}"
+                                                Background="{DynamicResource TextAccentBrush}"
+                                                BorderThickness="0"
+                                                Command="{Binding ReAuthenticateCommand}"
+                                                ToolTip.Tip="Sign in again">
+                                            <TextBlock Text="Sign in again"
+                                                       FontSize="{StaticResource FontSizeXs}"
+                                                       Foreground="White"/>
+                                        </Button>
+                                        <Button VerticalAlignment="Center"
+                                                Padding="8,4"
+                                                CornerRadius="{StaticResource RadiusSm}"
+                                                Background="Transparent"
+                                                BorderThickness="0"
+                                                Command="{Binding RemoveCommand}"
+                                                ToolTip.Tip="Remove account">
+                                            <TextBlock Text="✕"
+                                                       FontSize="{StaticResource FontSizeSm}"
+                                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                        </Button>
+                                    </StackPanel>
 
                                 </Grid>
                             </Border>

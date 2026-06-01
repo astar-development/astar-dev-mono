@@ -3,6 +3,7 @@ using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.Graph;
@@ -36,7 +37,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 ctx => new Result<DriveId, string>.Ok(ctx.Ctx.DriveId),
                 error => new Result<DriveId, string>.Error(error));
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<DriveId, string>.Error(ex.Message);
         }
@@ -77,7 +78,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 },
                 error => new Result<List<DriveFolder>, string>.Error(error));
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<List<DriveFolder>, string>.Error(ex.Message);
         }
@@ -117,7 +118,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
             return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<List<DriveFolder>, string>.Error(ex.Message);
         }
@@ -144,7 +145,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 },
                 error => new Result<(long Total, long Used), string>.Error(error));
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<(long Total, long Used), string>.Error(ex.Message);
         }
@@ -162,7 +163,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
             return new Result<List<DeltaItem>, string>.Ok(items);
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<List<DeltaItem>, string>.Error(ex.Message);
         }
@@ -184,7 +185,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         {
             return null;
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return null;
         }
@@ -214,7 +215,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 },
                 error => new Result<string, string>.Error(error));
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<string, string>.Error(ex.Message);
         }
@@ -231,7 +232,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct).ConfigureAwait(false),
                 error => new Result<string, string>.Error(error));
         }
-        catch(Exception ex) when(ex is not OperationCanceledException)
+        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
             return new Result<string, string>.Error(ex.Message);
         }
@@ -251,7 +252,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
 
                     return new Result<Unit, string>.Ok(Unit.Default);
                 }
-                catch(Exception ex) when(ex is not OperationCanceledException)
+                catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
                 {
                     return new Result<Unit, string>.Error(ex.Message);
                 }
