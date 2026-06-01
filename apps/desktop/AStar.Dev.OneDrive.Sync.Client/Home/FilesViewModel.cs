@@ -26,6 +26,9 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
 
     public event EventHandler<(string AccountId, string FolderId)>? ViewActivityRequested;
 
+    /// <summary>Raised when the included folder count changes for any account; carries the account ID and new count.</summary>
+    public event EventHandler<(string AccountId, int FolderCount)>? FolderCountChanged;
+
     [RelayCommand]
     private async Task ActivateTabAsync(string accountId)
         => await ActivateAccountAsync(accountId);
@@ -41,6 +44,9 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,
                 (tab.AccountId, FolderId: node.Id));
+
+        tab.FolderCountChanged += (_, count) =>
+            FolderCountChanged?.Invoke(this, (tab.AccountId, count));
 
         Tabs.Add(tab);
         OnPropertyChanged(nameof(HasTabs));

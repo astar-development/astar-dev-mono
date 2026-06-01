@@ -89,6 +89,17 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         RecalculateGlobals();
     }
 
+    public void UpdateFolderCount(string accountId, int folderCount)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        if(section is null)
+            return;
+
+        section.FolderCount = folderCount;
+
+        RecalculateGlobals();
+    }
+
     public void MarkSyncCompleted(string accountId)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
