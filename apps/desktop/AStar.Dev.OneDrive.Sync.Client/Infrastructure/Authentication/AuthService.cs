@@ -1,4 +1,3 @@
-using System.Reflection;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
@@ -20,17 +19,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 ///   offline_access      — get refresh tokens so the app works without re-auth
 ///   User.Read           — get display name and email from the profile
 /// </summary>
-public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions, ILogger<AuthService> logger) : IAuthService
+public sealed class AuthService(IPublicClientApplication app, ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions, ILogger<AuthService> logger) : IAuthService
 {
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly IPublicClientApplication _app = PublicClientApplicationBuilder
-            .Create(entraIdOptions.Value.ClientId)
-            .WithAuthority(entraIdOptions.Value.AuthorityForMicrosoftAccountsOnly)
-            .WithRedirectUri(entraIdOptions.Value.RedirectUri)
-            .WithClientName(ApplicationMetadata.ApplicationName)
-            .WithClientVersion(Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0")
-            .Build();
-
     private readonly ITokenCacheService _cacheService = cacheService;
     private bool _cacheRegistered;
 
@@ -41,7 +32,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
         try
         {
-            var result = await _app
+            var result = await app
                     .AcquireTokenInteractive(entraIdOptions.Value.Scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .WithUseEmbeddedWebView(false)
@@ -74,13 +65,15 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
         try
         {
-            var accounts = await _app.GetAccountsAsync();
-            var account = accounts.FirstOrDefault(a => a.HomeAccountId?.Identifier == accountId);
+            var accounts = await app.GetAccountsAsync();
+            var account = accounts.FirstOrDefault(a =>
+                string.Equals(a.HomeAccountId?.Identifier, accountId, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(a.Username, accountId, StringComparison.OrdinalIgnoreCase));
 
             if (account is null)
-                return AuthResultFactory.Failure("Account not found in token cache.");
+                return AuthResultFactory.ReAuthRequired("no_account", "None");
 
-            var result = await _app
+            var result = await app
                 .AcquireTokenSilent(entraIdOptions.Value.Scopes, account)
                 .ExecuteAsync(ct);
 
@@ -107,11 +100,11 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     {
         await EnsureCacheRegisteredAsync();
 
-        var accounts = await _app.GetAccountsAsync();
+        var accounts = await app.GetAccountsAsync();
         var account = accounts.FirstOrDefault(a => a.HomeAccountId?.Identifier == accountId);
 
         if (account is not null)
-            await _app.RemoveAsync(account);
+            await app.RemoveAsync(account);
     }
 
     /// <inheritdoc />
@@ -119,7 +112,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
     {
         await EnsureCacheRegisteredAsync();
 
-        var accounts = await _app.GetAccountsAsync();
+        var accounts = await app.GetAccountsAsync();
 
         return accounts
             .Select(account => account.HomeAccountId.Identifier)
@@ -131,7 +124,7 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
         if (_cacheRegistered)
             return;
 
-        await _cacheService.RegisterAsync(_app);
+        await _cacheService.RegisterAsync(app);
         _cacheRegistered = true;
     }
 

@@ -1,4 +1,6 @@
+using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -22,8 +24,10 @@ public static class OneDriveClientServiceExtensions
 
             return PublicClientApplicationBuilder
                 .Create(options.ClientId)
-                .WithAuthority(AzureCloudInstance.AzurePublic, "consumers")
+                .WithAuthority(options.AuthorityForMicrosoftAccountsOnly)
                 .WithRedirectUri(options.RedirectUri)
+                .WithClientName(ApplicationMetadata.ApplicationName)
+                .WithClientVersion(Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0")
                 .Build();
         });
 
