@@ -19,7 +19,8 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         driveState.DeltaLink = Option.None<string>();
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
-        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, token, ct).ConfigureAwait(false);
+        Action<int>? enumerationProgress = onProgress is null ? null : count => RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count} item(s) found", onProgress);
+        var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, token, enumerationProgress, ct).ConfigureAwait(false);
 
         if(enumerationResult.HadNoRules)
             return false;

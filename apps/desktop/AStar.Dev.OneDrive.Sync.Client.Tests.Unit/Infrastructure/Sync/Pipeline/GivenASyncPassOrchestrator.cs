@@ -50,7 +50,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
         _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns((IReadOnlyList<SyncJob>)[]);
@@ -74,6 +74,7 @@ public sealed class GivenASyncPassOrchestrator
         await _remoteFolderEnumerator.Received(1).EnumerateAsync(
             Arg.Is(account),
             Arg.Is(token),
+            Arg.Any<Action<int>?>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -82,7 +83,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true));
 
         var sut     = CreateSut();
@@ -98,7 +99,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new RemoteEnumerationResult([], new HashSet<string>(), [], [], HadNoRules: true));
 
         var sut     = CreateSut();

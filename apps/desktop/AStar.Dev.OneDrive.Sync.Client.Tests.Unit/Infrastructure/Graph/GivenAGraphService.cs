@@ -89,7 +89,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token));
     }
 
     [Fact]
@@ -231,7 +231,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
 
         var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(3);
@@ -266,7 +266,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
 
         var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(2);
@@ -347,6 +347,36 @@ public sealed class GivenAGraphService : IDisposable
         _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_enumerate_folder_has_multiple_pages_then_progress_callback_is_invoked_per_item()
+    {
+        var nextLinkUrl = $"{_server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
+
+        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new Dictionary<string, object>
+                {
+                    ["value"] = new object[] { new { id = "file-page1", name = "file1.txt", file = new { }, size = 100L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } },
+                    ["@odata.nextLink"] = nextLinkUrl
+                }));
+
+        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").WithParam("$skiptoken", "page2").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { value = new object[] { new { id = "file-page2", name = "file2.txt", file = new { }, size = 200L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } } }));
+
+        var reportedCounts = new List<int>();
+
+        await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
+
+        reportedCounts.ShouldNotBeEmpty();
+        reportedCounts.ShouldContain(1);
+        reportedCounts.ShouldContain(2);
     }
 
     private void SetupDriveContext(string driveId, string rootId)
