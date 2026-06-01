@@ -12,5 +12,5 @@ public interface IRemoteFolderEnumerator
     /// Performs a full remote enumeration pass for <paramref name="account"/>,
     /// returning the raw delta-item list alongside seen IDs and rules.
     /// </summary>
-    Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, CancellationToken ct);
+    Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
 }

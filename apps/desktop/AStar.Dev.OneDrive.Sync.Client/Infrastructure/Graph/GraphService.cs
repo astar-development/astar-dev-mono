@@ -123,12 +123,12 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     }
 
     /// <inheritdoc />
-    public async Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, CancellationToken ct = default)
+    public async Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default)
     {
         var client = graphClientFactory.CreateClient(accessToken);
         List<DeltaItem> items = [];
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        await EnumerateSubFolderAsync(client, driveId, folderId, remotePath, items, visited, ct);
+        await EnumerateSubFolderAsync(client, driveId, folderId, remotePath, items, visited, onItemDiscovered, ct);
 
         return new Result<List<DeltaItem>, string>.Ok(items);
     }
@@ -198,7 +198,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             error => new Result<Unit, string>.Error(error));
     }
 
-    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, CancellationToken ct)
+    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, Action<int>? onItemDiscovered, CancellationToken ct)
     {
         if(!visited.Add(parentId))
             return;
@@ -215,7 +215,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 items.Add(MapToDeltaItem(item, itemPath));
 
                 if(item.Folder is not null && item.Id is not null)
-                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, ct);
+                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, onItemDiscovered, ct);
             }
 
             if(page.OdataNextLink is null)

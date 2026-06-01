@@ -20,7 +20,7 @@ public interface IGraphService
     Task<Result<(long Total, long Used), string>> GetQuotaAsync(string accountId, string accessToken, CancellationToken ct = default);
 
     /// <summary>Enumerates all descendants (files and folders) of the given folder. ETag and CTag are populated on each returned DeltaItem.</summary>
-    Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, CancellationToken ct = default);
+    Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(string accessToken, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
 
     /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns null if the path does not exist.</summary>
     Task<string?> GetFolderIdByPathAsync(string accessToken, DriveId driveId, string remotePath, CancellationToken ct = default);

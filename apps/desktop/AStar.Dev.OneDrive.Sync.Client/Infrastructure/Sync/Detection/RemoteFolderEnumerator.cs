@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
-    public async Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, CancellationToken ct)
+    public async Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, string accessToken, Action<int>? onItemDiscovered = null, CancellationToken ct = default)
     {
         var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false);
 
@@ -61,7 +61,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Profile.Email);
-            var items = await graphService.EnumerateFolderAsync(accessToken, driveId.Value, folderId, rule.RemotePath, ct)
+            var items = await graphService.EnumerateFolderAsync(accessToken, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, ct)
                 .MatchAsync<List<DeltaItem>, string, List<DeltaItem>?>(
                     deltaItems => deltaItems,
                     error =>
