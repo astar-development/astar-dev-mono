@@ -2,10 +2,12 @@ using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
 
@@ -21,12 +23,15 @@ public sealed class GivenAParallelSyncPipeline
 
     private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("test-token");
 
+    private static IOptions<SyncSettings> SyncSettingsOptions
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
+
     public GivenAParallelSyncPipeline()
     {
         _workerFactory.Create(Arg.Any<int>()).Returns(_ => new SucceedingDownloadWorker());
     }
 
-    private ParallelSyncPipeline CreateSut() => new(_workerFactory, _syncRepository, Substitute.For<ILogger<ParallelSyncPipeline>>());
+    private ParallelSyncPipeline CreateSut() => new(_workerFactory, _syncRepository, Substitute.For<ILogger<ParallelSyncPipeline>>(), SyncSettingsOptions);
 
     private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")
     {
