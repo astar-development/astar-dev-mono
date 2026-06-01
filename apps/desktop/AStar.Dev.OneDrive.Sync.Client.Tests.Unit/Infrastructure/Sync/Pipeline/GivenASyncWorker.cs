@@ -34,13 +34,14 @@ public sealed class GivenASyncWorker
         var channel = Channel.CreateUnbounded<SyncJob>();
         var completed = new List<SyncJob>();
         var errors = new List<string?>();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         foreach(var job in jobs)
             channel.Writer.TryWrite(job);
 
         channel.Writer.Complete();
 
-        await worker.RunAsync(channel.Reader, AccountId, AccessToken, (job, _, error) =>
+        await worker.RunAsync(channel.Reader, AccountId, tokenFactory, (job, _, error) =>
         {
             completed.Add(job);
             errors.Add(error);
@@ -54,12 +55,12 @@ public sealed class GivenASyncWorker
     {
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
-        _handler.HandleAsync(job, AccountId, AccessToken, Arg.Any<CancellationToken>())
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<SyncJob, string>.Ok(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _handler.Received(1).HandleAsync(job, AccountId, AccessToken, Arg.Any<CancellationToken>());
+        await _handler.Received(1).HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public sealed class GivenASyncWorker
     {
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
-        _handler.HandleAsync(job, AccountId, AccessToken, Arg.Any<CancellationToken>())
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<SyncJob, string>.Ok(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
@@ -92,7 +93,7 @@ public sealed class GivenASyncWorker
     {
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
-        _handler.HandleAsync(job, AccountId, AccessToken, Arg.Any<CancellationToken>())
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<SyncJob, string>.Error("handler error"));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
@@ -107,7 +108,7 @@ public sealed class GivenASyncWorker
         using var cts = new CancellationTokenSource();
 
         _handler.CanHandle(job).Returns(true);
-        _handler.HandleAsync(job, AccountId, AccessToken, Arg.Any<CancellationToken>())
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns<Task<Result<SyncJob, string>>>(async _ =>
             {
                 await cts.CancelAsync();
@@ -121,5 +122,23 @@ public sealed class GivenASyncWorker
         catch(OperationCanceledException) { }
 
         await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>());
+    }
+
+    [Fact]
+    public async Task when_worker_runs_job_then_token_factory_is_passed_to_handler()
+    {
+        var job = MakeDownloadJob();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("fresh-token");
+        _handler.CanHandle(job).Returns(true);
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncJob, string>.Ok(job));
+
+        var channel = Channel.CreateUnbounded<SyncJob>();
+        channel.Writer.TryWrite(job);
+        channel.Writer.Complete();
+
+        await CreateSut().RunAsync(channel.Reader, AccountId, tokenFactory, (_, _, _) => { }, TestContext.Current.CancellationToken);
+
+        await _handler.Received(1).HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
     }
 }

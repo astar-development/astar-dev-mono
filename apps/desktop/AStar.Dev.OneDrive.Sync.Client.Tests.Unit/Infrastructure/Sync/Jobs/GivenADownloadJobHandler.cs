@@ -80,8 +80,9 @@ public sealed class GivenADownloadJobHandler
     {
         const string url = "https://example.com/direct";
         var job = MakeDownloadJob(Option.Some(url));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         await _downloader.Received(1).DownloadAsync(url, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
@@ -91,13 +92,14 @@ public sealed class GivenADownloadJobHandler
     {
         const string fetchedUrl = "https://example.com/fetched";
         var job = MakeDownloadJob(Option.None<string>());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok(fetchedUrl));
 
-        await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
+        await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>());
+        await _graphService.Received(1).GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>());
         await _downloader.Received(1).DownloadAsync(fetchedUrl, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
     }
 
@@ -106,11 +108,12 @@ public sealed class GivenADownloadJobHandler
     {
         const string errorMessage = "No download URL available.";
         var job = MakeDownloadJob(Option.None<string>());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        _graphService.GetDownloadUrlAsync(AccountId, AccessToken, ItemId, Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error(errorMessage));
 
-        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeFalse();
         result.Match<string?>(_ => null, error => error).ShouldBe(errorMessage);
@@ -120,8 +123,9 @@ public sealed class GivenADownloadJobHandler
     public async Task when_download_succeeds_then_result_is_ok_with_job()
     {
         var job = MakeDownloadJob();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
     }
@@ -131,11 +135,12 @@ public sealed class GivenADownloadJobHandler
     {
         const string downloadError = "Network timeout";
         var job = MakeDownloadJob();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<global::System.Reactive.Unit, string>.Error(downloadError));
 
-        var result = await CreateSut().HandleAsync(job, AccountId, AccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         result.Match<string?>(_ => null, error => error).ShouldBe(downloadError);
     }
