@@ -301,9 +301,9 @@ public sealed class GivenASyncPassOrchestrator
     // --- enumeration progress throttle ---
 
     [Fact]
-    public async Task when_enumeration_fires_499_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
+    public async Task when_enumeration_fires_99_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
     {
-        SetupEnumeratorWithCallbacks(499);
+        SetupEnumeratorWithCallbacks(99);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
         var sut     = CreateSut();
@@ -321,9 +321,9 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_fires_500_item_discovered_callbacks_then_one_enumeration_progress_event_is_raised()
+    public async Task when_enumeration_fires_100_item_discovered_callbacks_then_one_enumeration_progress_event_is_raised()
     {
-        SetupEnumeratorWithCallbacks(500);
+        SetupEnumeratorWithCallbacks(100);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
         var sut     = CreateSut();
@@ -341,9 +341,9 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_fires_1000_item_discovered_callbacks_then_two_enumeration_progress_events_are_raised()
+    public async Task when_enumeration_fires_200_item_discovered_callbacks_then_two_enumeration_progress_events_are_raised()
     {
-        SetupEnumeratorWithCallbacks(1000);
+        SetupEnumeratorWithCallbacks(200);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
         var sut     = CreateSut();

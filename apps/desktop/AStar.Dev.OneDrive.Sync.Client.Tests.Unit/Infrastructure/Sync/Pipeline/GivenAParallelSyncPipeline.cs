@@ -162,7 +162,7 @@ public sealed class GivenAParallelSyncPipeline
     }
 
     [Fact]
-    public async Task when_two_jobs_run_then_first_per_job_progress_event_has_sync_state_syncing()
+    public async Task when_two_jobs_run_below_throttle_threshold_then_only_final_per_job_progress_event_fires_as_idle()
     {
         var perJobProgressEvents = new List<SyncProgressEventArgs>();
         var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt") };
@@ -174,8 +174,8 @@ public sealed class GivenAParallelSyncPipeline
                 perJobProgressEvents.Add(args);
         }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 1, ct: TestContext.Current.CancellationToken);
 
-        perJobProgressEvents.Count.ShouldBe(2);
-        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
+        perJobProgressEvents.Count.ShouldBe(1);
+        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Idle);
     }
 
     [Fact]

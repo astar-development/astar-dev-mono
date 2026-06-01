@@ -98,51 +98,51 @@ public sealed class GivenASyncProgressTracker
     // --- throttle behaviour ---
 
     [Fact]
-    public void when_499_of_1000_jobs_complete_then_no_progress_event_fires()
+    public void when_99_of_1000_jobs_complete_then_no_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 499, progressEvents.Add);
+        CompleteJobs(sut, 99, progressEvents.Add);
 
         progressEvents.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_500th_of_1000_jobs_completes_then_exactly_one_progress_event_fires()
+    public void when_100th_of_1000_jobs_completes_then_exactly_one_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 500, progressEvents.Add);
+        CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void when_500th_of_1000_jobs_completes_then_sync_state_is_syncing()
+    public void when_100th_of_1000_jobs_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 500, progressEvents.Add);
+        CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public void when_1001_jobs_complete_then_progress_fires_at_500_1000_and_final()
+    public void when_201_jobs_complete_then_progress_fires_at_100_200_and_final()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
-        var sut = new SyncProgressTracker(1001, AccountIdValue, FolderIdValue);
+        var sut = new SyncProgressTracker(201, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 1001, progressEvents.Add);
+        CompleteJobs(sut, 201, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(3);
     }
 
     [Fact]
-    public void when_final_job_completes_at_non_500_boundary_then_progress_still_fires()
+    public void when_final_job_completes_at_non_100_boundary_then_progress_still_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = new SyncProgressTracker(999, AccountIdValue, FolderIdValue);
@@ -153,12 +153,12 @@ public sealed class GivenASyncProgressTracker
     }
 
     [Fact]
-    public void when_total_is_exactly_500_then_only_one_progress_event_fires()
+    public void when_total_is_exactly_100_then_only_one_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
-        var sut = new SyncProgressTracker(500, AccountIdValue, FolderIdValue);
+        var sut = new SyncProgressTracker(100, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 500, progressEvents.Add);
+        CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(1);
     }
@@ -169,8 +169,8 @@ public sealed class GivenASyncProgressTracker
         var jobCompletedCount = 0;
         var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
 
-        CompleteJobs(sut, 499, _ => { }, _ => jobCompletedCount++);
+        CompleteJobs(sut, 99, _ => { }, _ => jobCompletedCount++);
 
-        jobCompletedCount.ShouldBe(499);
+        jobCompletedCount.ShouldBe(99);
     }
 }
