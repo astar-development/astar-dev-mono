@@ -227,4 +227,65 @@ public sealed class GivenASyncServiceSyncingAnAccount
         capturedMessage.ShouldBe("Sync.Complete");
         capturedState.ShouldBe(SyncState.Idle);
     }
+
+    [Fact]
+    public async Task when_sync_completes_then_acquire_token_silent_is_called_exactly_once()
+    {
+        SetupAuthSuccess();
+        SetupOrchestratorReturns(true);
+
+        var sut = CreateSut();
+
+        await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
+
+        await _authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_sync_starts_then_token_factory_returns_the_initial_access_token()
+    {
+        SetupAuthSuccess();
+
+        Func<CancellationToken, Task<string>>? capturedFactory = null;
+        _syncPassOrchestrator.OrchestrateAsync(
+            Arg.Any<OneDriveAccount>(),
+            Arg.Do<Func<CancellationToken, Task<string>>>(f => capturedFactory = f),
+            Arg.Any<Func<SyncConflict, Task>>(),
+            Arg.Any<Action<SyncProgressEventArgs>>(),
+            Arg.Any<Action<JobCompletedEventArgs>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var sut = CreateSut();
+
+        await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
+
+        var token = await capturedFactory!(TestContext.Current.CancellationToken);
+
+        token.ShouldBe("token");
+    }
+
+    [Fact]
+    public async Task when_token_factory_is_invoked_multiple_times_then_acquire_token_silent_is_not_called_again()
+    {
+        SetupAuthSuccess();
+
+        Func<CancellationToken, Task<string>>? capturedFactory = null;
+        _syncPassOrchestrator.OrchestrateAsync(
+            Arg.Any<OneDriveAccount>(),
+            Arg.Do<Func<CancellationToken, Task<string>>>(f => capturedFactory = f),
+            Arg.Any<Func<SyncConflict, Task>>(),
+            Arg.Any<Action<SyncProgressEventArgs>>(),
+            Arg.Any<Action<JobCompletedEventArgs>>(),
+            Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        var sut = CreateSut();
+
+        await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
+        await capturedFactory!(TestContext.Current.CancellationToken);
+        await capturedFactory!(TestContext.Current.CancellationToken);
+
+        await _authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 }

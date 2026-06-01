@@ -53,15 +53,8 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
-        Func<CancellationToken, Task<string>> tokenFactory = async innerCt =>
-            await authService.AcquireTokenSilentAsync(account.Id.Id, innerCt)
-                .MatchAsync<AuthResult, AuthError, string>(
-                    ok => ok.AccessToken,
-                    err => err is AuthCancelledError
-                        ? throw new OperationCanceledException(innerCt)
-                        : err is AuthReAuthRequiredError
-                            ? throw new SyncReAuthRequiredException()
-                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
+        string syncSessionToken = initialAuth.Match<string>(ok => ok.AccessToken, _ => string.Empty);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(syncSessionToken);
 
         try
         {
@@ -110,15 +103,8 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         if (!authOk)
             return;
 
-        Func<CancellationToken, Task<string>> tokenFactory = async innerCt =>
-            await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, innerCt)
-                .MatchAsync<AuthResult, AuthError, string>(
-                    ok => ok.AccessToken,
-                    err => err is AuthCancelledError
-                        ? throw new OperationCanceledException(innerCt)
-                        : err is AuthReAuthRequiredError
-                            ? throw new SyncReAuthRequiredException()
-                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
+        string conflictSessionToken = initialAuth.Match<string>(ok => ok.AccessToken, _ => string.Empty);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(conflictSessionToken);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
         bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory, ct).ConfigureAwait(false);
