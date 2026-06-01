@@ -24,7 +24,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository, ILogger<ParallelSyncPipeline> logger) : ISyncPipeline
 {
     /// <inheritdoc />
-    public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
+    public async Task RunAsync(IEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default)
     {
         var jobList = jobs.ToList();
         if (jobList.Count == 0)
@@ -41,7 +41,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
             });
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accountId, accessToken, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
+            .Select(id => workerFactory.Create(id).RunAsync(channel.Reader, accountId, tokenFactory, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
             .ToList();
 
         try

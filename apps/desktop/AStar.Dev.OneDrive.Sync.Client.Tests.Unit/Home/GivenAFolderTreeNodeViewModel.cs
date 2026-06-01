@@ -10,7 +10,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public sealed class GivenAFolderTreeNodeViewModel
 {
-    private const string AccessToken    = "token-abc";
     private const string DriveIdString   = "drive-1";
     private const string RootFolderId   = "folder-root";
     private const string RootFolderName = "Documents";
@@ -18,6 +17,8 @@ public sealed class GivenAFolderTreeNodeViewModel
     private const string ChildName      = "Work";
     private const string GrandChildId   = "folder-grandchild";
     private const string GrandChildName = "Projects";
+
+    private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("token-abc");
 
     [Fact]
     public async Task when_included_parent_is_toggled_excluded_then_loaded_children_are_also_excluded()
@@ -301,7 +302,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var graphService = Substitute.For<IGraphService>();
 
-        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
 
         return graphService;
@@ -311,10 +312,10 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var graphService = Substitute.For<IGraphService>();
 
-        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
 
-        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdString), ChildFolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), ChildFolderId, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(GrandChildId, GrandChildName, ChildFolderId)]));
 
         return graphService;
@@ -348,6 +349,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState:   syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, AccessToken, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
+        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
     }
 }

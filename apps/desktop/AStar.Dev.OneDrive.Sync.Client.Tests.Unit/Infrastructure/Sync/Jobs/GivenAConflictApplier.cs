@@ -38,12 +38,13 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_succeeds_and_download_succeeds_then_returns_true()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
         _httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<ReactiveUnit, string>.Ok(ReactiveUnit.Default));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", "token", TestContext.Current.CancellationToken);
+        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
     }
@@ -51,10 +52,11 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_returns_false()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error("url-resolution-failed"));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", "token", TestContext.Current.CancellationToken);
+        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeFalse();
     }
@@ -62,12 +64,13 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_download_fails_then_returns_false()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
         _httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<ReactiveUnit, string>.Error("download-failed"));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", "token", TestContext.Current.CancellationToken);
+        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeFalse();
     }
@@ -75,10 +78,11 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_downloader_is_not_called()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error("url-resolution-failed"));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", "token", TestContext.Current.CancellationToken);
+        await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         await _httpDownloader.DidNotReceive().DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
     }
@@ -103,8 +107,9 @@ public sealed class GivenAConflictApplier
             Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
         };
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        bool result = await CreateSut().ApplyAsync(conflict, ConflictOutcome.KeepBoth, "user-1", "token", TestContext.Current.CancellationToken);
+        bool result = await CreateSut().ApplyAsync(conflict, ConflictOutcome.KeepBoth, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
         mockFile.Received(1).Move(Arg.Any<string>(), Arg.Any<string>());
@@ -130,8 +135,9 @@ public sealed class GivenAConflictApplier
             Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
         };
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        bool result = await CreateSut().ApplyAsync(conflict, ConflictOutcome.KeepBoth, "user-1", "token", TestContext.Current.CancellationToken);
+        bool result = await CreateSut().ApplyAsync(conflict, ConflictOutcome.KeepBoth, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
         mockFile.DidNotReceive().Move(Arg.Any<string>(), Arg.Any<string>());
@@ -142,7 +148,9 @@ public sealed class GivenAConflictApplier
     [InlineData(ConflictOutcome.Skip)]
     public async Task when_outcome_is_not_requiring_action_then_returns_true(ConflictOutcome outcome)
     {
-        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), outcome, "user-1", "token", TestContext.Current.CancellationToken);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), outcome, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
     }

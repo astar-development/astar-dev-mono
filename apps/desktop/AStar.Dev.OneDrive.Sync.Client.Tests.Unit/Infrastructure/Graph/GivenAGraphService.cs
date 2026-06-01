@@ -49,7 +49,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), cts.Token));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetRootFoldersAsync(AnyAccountId, AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), cts.Token));
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetChildFoldersAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, cts.Token));
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetQuotaAsync(AnyAccountId, AnyAccessToken, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), cts.Token));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token));
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, cts.Token));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDownloadUrlAsync(AnyAccountId, AnyAccessToken, AnyItemId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, cts.Token));
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.UploadFileAsync(AnyAccountId, AnyAccessToken, AnyLocalPath, AnyRemotePath, AnyFolderId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.UploadFileAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyLocalPath, AnyRemotePath, AnyFolderId, cts.Token));
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.DeleteItemAsync(AnyAccountId, AnyAccessToken, AnyItemId, cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, cts.Token));
     }
 
     [Fact]
@@ -150,7 +150,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
         var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
         folders.Count.ShouldBe(2);
@@ -167,7 +167,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "itemNotFound", message = "The resource could not be found." } }));
 
-        string? result = await CreateSut().GetFolderIdByPathAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+        string? result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -182,7 +182,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = AnyDriveId }));
 
-        var quotaResult = await CreateSut().GetQuotaAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
+        var quotaResult = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
         var (total, used) = quotaResult.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Ok>()!.Value;
         total.ShouldBe(0L);
@@ -199,7 +199,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = AnyItemId }));
 
-        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, AnyAccessToken, AnyItemId, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<string, string>.Error>();
     }
@@ -231,7 +231,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
 
         var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(3);
@@ -266,7 +266,7 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
 
         var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(2);
@@ -281,8 +281,8 @@ public sealed class GivenAGraphService : IDisposable
         var ct = TestContext.Current.CancellationToken;
 
         var sut = CreateSut();
-        _ = await sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, ct);
-        _ = await sut.GetDriveIdAsync(AnyAccountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), ct);
+        _ = await sut.GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
     }
@@ -296,7 +296,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = (string?)null }));
 
-        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
     }
@@ -315,7 +315,7 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = (string?)null }));
 
-        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, AnyAccessToken, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
     }
@@ -328,8 +328,8 @@ public sealed class GivenAGraphService : IDisposable
         var ct = TestContext.Current.CancellationToken;
         var sut = CreateSut();
 
-        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
-        _ = await sut.GetDriveIdAsync(accountId, "refreshed-token", ct);
+        _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult(AnyAccessToken), ct);
+        _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult("refreshed-token"), ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
     }
@@ -342,9 +342,9 @@ public sealed class GivenAGraphService : IDisposable
         var ct = TestContext.Current.CancellationToken;
         var sut = CreateSut();
 
-        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult(AnyAccessToken), ct);
         sut.EvictCachedDriveContext(accountId);
-        _ = await sut.GetDriveIdAsync(accountId, AnyAccessToken, ct);
+        _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult(AnyAccessToken), ct);
 
         (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
     }
@@ -372,11 +372,148 @@ public sealed class GivenAGraphService : IDisposable
 
         var reportedCounts = new List<int>();
 
-        await CreateSut().EnumerateFolderAsync(AnyAccessToken, new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
+        await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
 
         reportedCounts.ShouldNotBeEmpty();
         reportedCounts.ShouldContain(1);
         reportedCounts.ShouldContain(2);
+    }
+
+    [Fact]
+    public async Task when_get_drive_id_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_root_folders_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_quota_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_folder_id_by_path_returns_server_error_then_null_is_returned()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        string? result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+
+        result.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_get_download_url_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_upload_file_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().UploadFileAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyLocalPath, AnyRemotePath, AnyFolderId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_token_factory_throws_then_GetDownloadUrlAsync_returns_error()
+    {
+        Func<CancellationToken, Task<string>> failingFactory = _ => Task.FromException<string>(new InvalidOperationException("Token acquisition failed."));
+
+        var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, failingFactory, AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_get_child_folders_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_enumerate_folder_returns_server_error_then_result_is_error()
+    {
+        _server.Given(Request.Create().UsingAnyMethod())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Error>();
+    }
+
+    [Fact]
+    public async Task when_delete_item_returns_server_error_then_result_is_error()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingDelete())
+            .RespondWith(Response.Create()
+                .WithStatusCode(500)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
+
+        var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Result<global::System.Reactive.Unit, string>.Error>();
     }
 
     private void SetupDriveContext(string driveId, string rootId)

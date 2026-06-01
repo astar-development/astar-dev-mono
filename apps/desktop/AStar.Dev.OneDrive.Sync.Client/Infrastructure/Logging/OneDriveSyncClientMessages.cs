@@ -51,6 +51,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {Email}: {Error}")]
     public static partial void SyncServiceError(ILogger logger, string email, string error, Exception ex);
 
+    /// <summary>Logs when re-authentication is required during sync.</summary>
+    [LoggerMessage(EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {Email}")]
+    public static partial void SyncServiceReAuthRequired(ILogger logger, string email);
+
     // Sync Scheduler (2200-2299)
 
     /// <summary>Logs scheduled sync failure.</summary>
@@ -288,6 +292,10 @@ public static partial class OneDriveSyncClientMessages
     /// <summary>Logs token cache failure.</summary>
     [LoggerMessage(EventId = 3103, Level = LogLevel.Warning, Message = "Token cache operation failed")]
     public static partial void TokenCacheFailed(ILogger logger, Exception ex);
+
+    /// <summary>Logs when MSAL silent token acquisition requires UI interaction, capturing the MSAL error code and classification for diagnosis.</summary>
+    [LoggerMessage(EventId = 3104, Level = LogLevel.Warning, Message = "[AuthService] Silent token requires UI interaction: ErrorCode={ErrorCode} Classification={Classification}")]
+    public static partial void AuthSilentTokenUiRequired(ILogger logger, string errorCode, string classification);
 
     // Application Lifecycle (use ApplicationMessages for these)
     // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping

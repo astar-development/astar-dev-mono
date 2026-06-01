@@ -2,6 +2,8 @@ using System.Reflection;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
@@ -18,8 +20,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 ///   offline_access      — get refresh tokens so the app works without re-auth
 ///   User.Read           — get display name and email from the profile
 /// </summary>
-public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions) : IAuthService
+public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions, ILogger<AuthService> logger) : IAuthService
 {
+    private readonly ILogger<AuthService> _logger = logger;
     private readonly IPublicClientApplication _app = PublicClientApplicationBuilder
             .Create(entraIdOptions.Value.ClientId)
             .WithAuthority(entraIdOptions.Value.AuthorityForMicrosoftAccountsOnly)
@@ -83,9 +86,11 @@ public sealed class AuthService(ITokenCacheService cacheService, IOptions<EntraI
 
             return BuildSuccess(result);
         }
-        catch (MsalUiRequiredException)
+        catch (MsalUiRequiredException ex)
         {
-            return AuthResultFactory.Failure("Re-authentication required.");
+            OneDriveSyncClientMessages.AuthSilentTokenUiRequired(_logger, ex.ErrorCode, ex.Classification.ToString());
+
+            return AuthResultFactory.ReAuthRequired(ex.ErrorCode, ex.Classification.ToString());
         }
         catch (OperationCanceledException)
         {

@@ -12,5 +12,5 @@ public interface IConflictApplier
     /// Applies <paramref name="outcome"/> for <paramref name="conflict"/>.
     /// Returns <see langword="true"/> on success; <see langword="false"/> when the operation could not be completed.
     /// </summary>
-    Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, string accessToken, CancellationToken ct);
+    Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct);
 }

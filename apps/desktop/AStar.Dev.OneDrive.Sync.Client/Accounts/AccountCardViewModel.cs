@@ -65,7 +65,10 @@ public sealed partial class AccountCardViewModel : ObservableObject
     public partial bool IsActive { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsReAuthRequired))]
     public partial SyncState SyncState { get; set; } = SyncState.Idle;
+
+    public bool IsReAuthRequired => SyncState == SyncState.ReAuthRequired;
 
     [ObservableProperty]
     public partial int ConflictCount { get; set; }
@@ -79,11 +82,17 @@ public sealed partial class AccountCardViewModel : ObservableObject
     /// <summary>Raised when the user requests account removal.</summary>
     public event EventHandler<AccountCardViewModel>? RemoveRequested;
 
+    /// <summary>Raised when the user requests re-authentication after a token failure.</summary>
+    public event EventHandler<AccountCardViewModel>? ReAuthenticateRequested;
+
     [RelayCommand]
     private void Select() => Selected?.Invoke(this, this);
 
     [RelayCommand]
     private void Remove() => RemoveRequested?.Invoke(this, this);
+
+    [RelayCommand]
+    private void ReAuthenticate() => ReAuthenticateRequested?.Invoke(this, this);
 
     public AccountCardViewModel(OneDriveAccount model, ILocalizationService localizationService)
     {

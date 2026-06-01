@@ -33,17 +33,18 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Profile.Email);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
-        string? accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
-            .MatchAsync<AuthResult, AuthError, string?>(
-                ok => ok.AccessToken,
-                _ =>
-                {
-                    RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.AuthFailed"), SyncState.Error);
-                    return null;
-                }).ConfigureAwait(false);
+        var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
+        bool authOk = initialAuth.Match<bool>(_ => true, _ => false);
 
-        if (accessToken is null)
+        if (!authOk)
+        {
+            bool reAuthRequired = initialAuth.Match<bool>(_ => false, err => err is AuthReAuthRequiredError);
+            RaiseProgress(account.Id.Id, 0, 0,
+                localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed"),
+                reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error);
+
             return;
+        }
 
         if (account.SyncConfig is Option<AccountSyncConfig>.None)
         {
@@ -52,11 +53,21 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
+        Func<CancellationToken, Task<string>> tokenFactory = async innerCt =>
+            await authService.AcquireTokenSilentAsync(account.Id.Id, innerCt)
+                .MatchAsync<AuthResult, AuthError, string>(
+                    ok => ok.AccessToken,
+                    err => err is AuthCancelledError
+                        ? throw new OperationCanceledException(innerCt)
+                        : err is AuthReAuthRequiredError
+                            ? throw new SyncReAuthRequiredException()
+                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
+
         try
         {
             bool didRun = await syncPassOrchestrator.OrchestrateAsync(
                 account,
-                accessToken,
+                tokenFactory,
                 async conflict =>
                 {
                     await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
@@ -78,6 +89,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         {
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Cancelled"), SyncState.Idle);
         }
+        catch (SyncReAuthRequiredException)
+        {
+            OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, account.Profile.Email);
+            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.ReAuthRequired"), SyncState.ReAuthRequired);
+        }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncServiceError(logger, account.Profile.Email, ex.Message, ex);
@@ -88,14 +104,24 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        string? accessToken = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct)
-            .MatchAsync<AuthResult, AuthError, string?>(ok => ok.AccessToken, _ => null).ConfigureAwait(false);
+        var initialAuth = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
+        bool authOk = initialAuth.Match<bool>(_ => true, _ => false);
 
-        if (accessToken is null)
+        if (!authOk)
             return;
 
+        Func<CancellationToken, Task<string>> tokenFactory = async innerCt =>
+            await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, innerCt)
+                .MatchAsync<AuthResult, AuthError, string>(
+                    ok => ok.AccessToken,
+                    err => err is AuthCancelledError
+                        ? throw new OperationCanceledException(innerCt)
+                        : err is AuthReAuthRequiredError
+                            ? throw new SyncReAuthRequiredException()
+                            : throw new InvalidOperationException($"Token acquisition failed: {((AuthFailedError)err).Message}")).ConfigureAwait(false);
+
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, accessToken, ct).ConfigureAwait(false);
+        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory, ct).ConfigureAwait(false);
 
         if (!applied)
         {

@@ -197,10 +197,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
-        graphService.GetDriveIdAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
 
-        graphService.GetRootFoldersAsync(Arg.Any<string>(), AccessToken, Arg.Any<CancellationToken>())
+        graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
 
         return (authService, graphService, repository);
@@ -210,7 +210,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     {
         var (authService, graphService, repository) = BuildMocks();
 
-        graphService.GetChildFoldersAsync(AccessToken, new DriveId(DriveIdValue), FolderId, Arg.Any<CancellationToken>())
+        graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdValue), FolderId, Arg.Any<CancellationToken>())
             .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]));
 
         return (authService, graphService, repository);

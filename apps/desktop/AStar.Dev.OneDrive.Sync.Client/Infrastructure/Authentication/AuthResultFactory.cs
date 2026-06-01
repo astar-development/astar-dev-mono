@@ -12,6 +12,9 @@ public static class AuthResultFactory
     /// <summary>Returns a failed authentication result with the given <paramref name="message"/>.</summary>
     public static Result<AuthResult, AuthError> Failure(string message) => new Result<AuthResult, AuthError>.Error(new AuthFailedError(message));
 
+    /// <summary>Returns a re-authentication-required result with the MSAL <paramref name="errorCode"/> and <paramref name="classification"/>.</summary>
+    public static Result<AuthResult, AuthError> ReAuthRequired(string errorCode, string classification) => new Result<AuthResult, AuthError>.Error(new AuthReAuthRequiredError(errorCode, classification));
+
     /// <summary>Returns a successful authentication result containing the token and account details.</summary>
     public static Result<AuthResult, AuthError> Success(string accessToken, string accountId, AccountProfile profile)
          => new Result<AuthResult, AuthError>.Ok(new AuthResult(accessToken, accountId, profile));
