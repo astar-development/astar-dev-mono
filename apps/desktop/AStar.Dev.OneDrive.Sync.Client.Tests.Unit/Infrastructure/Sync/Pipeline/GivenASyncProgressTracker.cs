@@ -22,27 +22,10 @@ public sealed class GivenASyncProgressTracker
         return SyncJobFactory.CreateDownload(remote, target, metadata, "https://example.com/file");
     }
 
-    [Fact]
-    public void when_first_of_two_jobs_completes_then_sync_state_is_syncing()
+    private static void CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs>? onJobCompleted = null)
     {
-        var progressEvents = new List<SyncProgressEventArgs>();
-        var sut = new SyncProgressTracker(2, AccountIdValue, FolderIdValue);
-
-        sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => { });
-
-        progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
-    }
-
-    [Fact]
-    public void when_last_of_two_jobs_completes_then_sync_state_is_idle()
-    {
-        var progressEvents = new List<SyncProgressEventArgs>();
-        var sut = new SyncProgressTracker(2, AccountIdValue, FolderIdValue);
-
-        sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => { });
-        sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => { });
-
-        progressEvents[1].SyncState.ShouldBe(SyncState.Idle);
+        for (var i = 0; i < count; i++)
+            sut.RecordCompletion(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => { }));
     }
 
     [Fact]
@@ -79,7 +62,7 @@ public sealed class GivenASyncProgressTracker
     }
 
     [Fact]
-    public void when_job_completes_then_on_progress_is_called_once()
+    public void when_single_job_completes_then_on_progress_is_called_once()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = new SyncProgressTracker(1, AccountIdValue, FolderIdValue);
@@ -98,5 +81,96 @@ public sealed class GivenASyncProgressTracker
         sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, completedEvents.Add);
 
         completedEvents.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_last_of_two_jobs_completes_then_sync_state_is_idle()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(2, AccountIdValue, FolderIdValue);
+
+        sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => { });
+        sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => { });
+
+        progressEvents.Last().SyncState.ShouldBe(SyncState.Idle);
+    }
+
+    // --- throttle behaviour ---
+
+    [Fact]
+    public void when_499_of_1000_jobs_complete_then_no_progress_event_fires()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 499, progressEvents.Add);
+
+        progressEvents.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_500th_of_1000_jobs_completes_then_exactly_one_progress_event_fires()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 500, progressEvents.Add);
+
+        progressEvents.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_500th_of_1000_jobs_completes_then_sync_state_is_syncing()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 500, progressEvents.Add);
+
+        progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
+    }
+
+    [Fact]
+    public void when_1001_jobs_complete_then_progress_fires_at_500_1000_and_final()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(1001, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 1001, progressEvents.Add);
+
+        progressEvents.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_final_job_completes_at_non_500_boundary_then_progress_still_fires()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(999, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 999, progressEvents.Add);
+
+        progressEvents.Last().SyncState.ShouldBe(SyncState.Idle);
+    }
+
+    [Fact]
+    public void when_total_is_exactly_500_then_only_one_progress_event_fires()
+    {
+        var progressEvents = new List<SyncProgressEventArgs>();
+        var sut = new SyncProgressTracker(500, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 500, progressEvents.Add);
+
+        progressEvents.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_on_job_completed_fires_for_every_job_regardless_of_throttle()
+    {
+        var jobCompletedCount = 0;
+        var sut = new SyncProgressTracker(1000, AccountIdValue, FolderIdValue);
+
+        CompleteJobs(sut, 499, _ => { }, _ => jobCompletedCount++);
+
+        jobCompletedCount.ShouldBe(499);
     }
 }
