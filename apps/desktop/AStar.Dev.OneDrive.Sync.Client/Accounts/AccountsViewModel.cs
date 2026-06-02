@@ -19,7 +19,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, ISyncEventAggregator syncEventAggregator, ILocalizationService localizationService, ILogger<AccountsViewModel> logger) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, ILocalizationService localizationService, ILogger<AccountsViewModel> logger) : ObservableObject
 {
     private readonly ILogger<AccountsViewModel> _logger = logger;
     private readonly ILocalizationService _localizationService = localizationService;
@@ -107,6 +107,8 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
                     account.IsActive = Accounts.Count == 0;
 
                     var finalisedAccount = await accountOnboardingService.CompleteOnboardingAsync(account, CancellationToken.None);
+
+                    await quotaRefreshService.TryRefreshAsync(finalisedAccount, CancellationToken.None).ConfigureAwait(false);
 
                     var card = BuildCard(finalisedAccount);
                     Accounts.Add(card);

@@ -297,6 +297,16 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3104, Level = LogLevel.Warning, Message = "[AuthService] Silent token requires UI interaction: ErrorCode={ErrorCode} Classification={Classification}")]
     public static partial void AuthSilentTokenUiRequired(ILogger logger, string errorCode, string classification);
 
+    // Quota Refresh (3200-3299)
+
+    /// <summary>Logs failure to acquire a silent token during quota refresh.</summary>
+    [LoggerMessage(EventId = 3200, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Silent token failed for account {AccountId} — quota not refreshed")]
+    public static partial void QuotaRefreshTokenFailed(ILogger logger, string accountId);
+
+    /// <summary>Logs failure to fetch quota from the Graph API.</summary>
+    [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Graph quota fetch failed for account {AccountId}: {Error}")]
+    public static partial void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error);
+
     // Application Lifecycle (use ApplicationMessages for these)
     // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping
     // - Unhandled exception handled by MainWindowInitializeFatal, BootstrapFatal, etc.

@@ -123,6 +123,16 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         UpdateLastSyncText(state);
     }
 
+    /// <summary>Updates the displayed storage quota. Call after a successful quota refresh from the Graph API.</summary>
+    public void UpdateQuota(StorageQuota quota)
+    {
+        _account.Quota = quota;
+        OnPropertyChanged(nameof(QuotaTotal));
+        OnPropertyChanged(nameof(QuotaUsed));
+        OnPropertyChanged(nameof(StorageFraction));
+        OnPropertyChanged(nameof(StorageText));
+    }
+
     public void AddRecentActivity(ActivityItemViewModel item)
     {
         RecentActivity.Insert(0, item);

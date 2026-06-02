@@ -29,6 +29,14 @@ public interface IAccountRepository
     Task UpsertAsync(AccountEntity account, CancellationToken cancellationToken);
 
     /// <summary>
+    /// Updates the storage quota for the account with the specified ID.
+    /// </summary>
+    /// <param name="id">The account ID.</param>
+    /// <param name="quota">The new storage quota values.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task UpdateQuotaAsync(AccountId id, StorageQuota quota, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Deletes the account with the specified ID. If no such account exists, does nothing.
     /// </summary>
     /// <param name="id">The ID of the account to delete.</param>

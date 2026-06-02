@@ -26,6 +26,7 @@ public sealed class GivenAnApplicationInitializer
     private readonly IStartupService _startupService = Substitute.For<IStartupService>();
     private readonly IAuthService _authService = Substitute.For<IAuthService>();
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
+    private readonly IQuotaRefreshService _quotaRefreshService = Substitute.For<IQuotaRefreshService>();
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncService _syncService = Substitute.For<ISyncService>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
@@ -42,7 +43,7 @@ public sealed class GivenAnApplicationInitializer
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _quotaRefreshService, _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
     private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator, _localizationService);
@@ -58,7 +59,7 @@ public sealed class GivenAnApplicationInitializer
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService);
 
     private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules)
-        => new(_startupService, accounts, files, dashboard, activity, settings, classificationRules, Substitute.For<ILogger<ApplicationInitializer>>());
+        => new(_startupService, _quotaRefreshService, accounts, files, dashboard, activity, settings, classificationRules, Substitute.For<ILogger<ApplicationInitializer>>());
 
     private static OneDriveAccount BuildAccount(string id = "acc-1", string email = "user@test.com", bool isActive = false)
         => new() { Id = new AccountId(id), Profile = AccountProfileFactory.Create("Test User", email), IsActive = isActive, SelectedFolderIds = [] };
@@ -117,6 +118,22 @@ public sealed class GivenAnApplicationInitializer
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
         settings.AccountSettings.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_initialized_then_quota_refresh_is_called_for_each_restored_account()
+    {
+        var acc1 = BuildAccount("acc-1");
+        var acc2 = BuildAccount("acc-2");
+        _startupService.RestoreAccountsAsync().Returns([acc1, acc2]);
+
+        var classificationRules = CreateClassificationRulesViewModel();
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
+
+        await sut.InitializeAsync(TestContext.Current.CancellationToken);
+
+        await _quotaRefreshService.Received(1).TryRefreshAsync(acc1, Arg.Any<CancellationToken>());
+        await _quotaRefreshService.Received(1).TryRefreshAsync(acc2, Arg.Any<CancellationToken>());
     }
 
     [Fact]

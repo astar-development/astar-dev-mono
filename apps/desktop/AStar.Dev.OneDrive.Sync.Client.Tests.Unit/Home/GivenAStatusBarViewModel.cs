@@ -20,7 +20,7 @@ public sealed class GivenAStatusBarViewModel
     private readonly ISyncEventAggregator _syncEventAggregator = Substitute.For<ISyncEventAggregator>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
 
     private AccountCardViewModel CreateCard(string email = "test@example.com", string displayName = "Test User") => new(new OneDriveAccount { Profile = AccountProfileFactory.Create(displayName, email) }, _localizationService);
 

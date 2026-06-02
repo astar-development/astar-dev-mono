@@ -52,6 +52,19 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
     }
 
     /// <inheritdoc/>
+    public async Task UpdateQuotaAsync(AccountId id, StorageQuota quota, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        if(entity is null)
+            return;
+
+        entity.Quota = quota;
+        _ = await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task DeleteAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

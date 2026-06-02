@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -98,6 +99,13 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         section.FolderCount = folderCount;
 
         RecalculateGlobals();
+    }
+
+    /// <summary>Updates the storage quota for the named account section. No-op if the account is not present.</summary>
+    public void UpdateQuota(string accountId, StorageQuota quota)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        section?.UpdateQuota(quota);
     }
 
     public void MarkSyncCompleted(string accountId)

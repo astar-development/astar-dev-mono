@@ -34,6 +34,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAuthService, AuthService>();
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<IGraphService, GraphService>();
+        _ = services.AddSingleton<IQuotaRefreshService, QuotaRefreshService>();
         _ = services.AddSingleton<IStartupService, StartupService>();
         _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
         _ = services.AddSingleton<IUploadService, UploadService>();
