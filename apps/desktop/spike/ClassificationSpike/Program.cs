@@ -1,33 +1,29 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
-using AStar.Dev.Utilities;
-using Microsoft.EntityFrameworkCore;
+using ClassificationSpike;
 using Microsoft.Extensions.DependencyInjection;
 
-var serviceProvider = BuildServiceProvider();
+var serviceProvider = Spike.BuildServiceProvider();
 using var dbContext = serviceProvider.GetRequiredService<AppDbContext>();
 
-dbContext.SyncedItems.Where(x => !x.IsFolder).Take(10).ToList()
-    .ForEach(item => Console.WriteLine($"Synced Item: {item.Id}, {item.RemotePath}"));
+var items = dbContext.SyncedItems.Where(x => !x.IsFolder).Take(10).ToList();
 
-DisplayFileCount(dbContext);
+items.ForEach((item) => Console.WriteLine($"Synced Item {items.IndexOf(item)}: {item.Id}, {item.RemotePath}"));
 
-static void ConfigureDbContext(DbContextOptionsBuilder builder)
+items.ForEach(item =>
 {
-    string dbPath = ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameHyphenated}.db");
-    _ = builder.UseSqlite($"Data Source={dbPath}");
-}
+    string[] pathSegments = [.. item.RemotePath.Split(['/', ' '], StringSplitOptions.RemoveEmptyEntries).ToList().Distinct()];
+    for (int i = 0; i < pathSegments.Length; i++)
+    {
+        Console.WriteLine($"Segment {i}: {pathSegments[i]}");
+    }
+});
 
-static ServiceProvider BuildServiceProvider()
-{
-    var serviceCollection = new ServiceCollection();
-    serviceCollection.AddDbContext<AppDbContext>(options => ConfigureDbContext(options));
-    var serviceProvider = serviceCollection.BuildServiceProvider();
-    return serviceProvider;
-}
+Console.WriteLine(new string('-', 50));
 
-static void DisplayFileCount(AppDbContext dbContext)
-{
-    int count = dbContext.SyncedItems.Count(x => !x.IsFolder);
-    Console.WriteLine($"Count of non-folder synced items: {count}");
-}
+Spike.DisplayFileCount(dbContext);
+Console.WriteLine(new string('-', 50));
+
+Spike.ReadAndDisplayMappings();
+Console.WriteLine(new string('-', 50));
+
+Spike.DisplayFileClassificationRules(dbContext);
