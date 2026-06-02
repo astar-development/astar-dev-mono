@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -18,6 +19,7 @@ public sealed class GivenASyncJobExecutor
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
     private readonly ISyncPipeline _pipeline = Substitute.For<ISyncPipeline>();
+    private readonly IFileClassificationRuleRepository _classificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
 
     private readonly OneDriveAccount _account = new()
     {
@@ -25,7 +27,13 @@ public sealed class GivenASyncJobExecutor
         Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com")
     };
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFileSystem);
+    public GivenASyncJobExecutor()
+    {
+        _classificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationRule>>([]));
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
+    }
+
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
     {
@@ -36,11 +44,15 @@ public sealed class GivenASyncJobExecutor
         return direction switch
         {
             SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
-            SyncDirection.Upload => SyncJobFactory.CreateUpload(remote, target, metadata),
-            SyncDirection.Delete => SyncJobFactory.CreateDelete(remote, target, metadata),
-            _ => SyncJobFactory.CreateDownload(remote, target, metadata)
+            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
         };
     }
+
+    private void SimulateJobCompleted(SyncJob completedJob)
+        => _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
+                    .Do(call => call.Arg<Action<JobCompletedEventArgs>>()(new JobCompletedEventArgs(completedJob)));
 
     [Fact]
     public async Task when_jobs_list_is_empty_then_pipeline_is_not_called()
@@ -69,21 +81,45 @@ public sealed class GivenASyncJobExecutor
     public async Task when_pipeline_completes_download_job_successfully_then_synced_item_is_upserted()
     {
         var job = MakeJob("item-1", SyncDirection.Download);
-        var jobs = new List<SyncJob> { job };
-
-        _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
-            .Do(call =>
-            {
-                var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job.Complete()));
-            });
-
+        SimulateJobCompleted(job.Complete());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, jobs, [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-1"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_pipeline_completes_download_job_successfully_then_classifications_are_upserted()
+    {
+        const int syncedItemId = 99;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
+        var job = MakeJob("item-1", SyncDirection.Download);
+        SimulateJobCompleted(job.Complete());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_pipeline_completes_download_job_with_matching_rule_then_matched_classification_is_persisted()
+    {
+        const int syncedItemId = 55;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
+        IReadOnlyList<FileClassificationRule> rules = [FileClassificationRuleFactory.Create(["documents"], FileClassificationFactory.Create("Documents", Option.None<string>(), Option.None<string>(), false))];
+        _classificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(rules));
+        var job = MakeJob("item-1", SyncDirection.Download);
+        SimulateJobCompleted(job.Complete());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Documents")), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -91,64 +127,91 @@ public sealed class GivenASyncJobExecutor
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(UploadFilePath).Which(m => m.HasStringContent("data"));
-
         var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
-        var jobs = new List<SyncJob> { job };
+        SimulateJobCompleted(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" });
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(mockFileSystem);
 
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_pipeline_completes_upload_job_successfully_then_classifications_are_upserted()
+    {
+        const int syncedItemId = 77;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(UploadFilePath).Which(m => m.HasStringContent("data"));
+        var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
+        SimulateJobCompleted(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" });
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(mockFileSystem);
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_multiple_jobs_succeed_then_classification_rules_are_fetched_only_once()
+    {
+        var job1 = MakeJob("item-1", SyncDirection.Download);
+        var job2 = MakeJob("item-2", SyncDirection.Download);
         _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
             .Do(call =>
             {
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" }));
+                onJobCompleted(new JobCompletedEventArgs(job1.Complete()));
+                onJobCompleted(new JobCompletedEventArgs(job2.Complete()));
             });
-
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
-        var sut = CreateSut(mockFileSystem);
+        var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, jobs, [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, [job1, job2], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"), Arg.Any<CancellationToken>());
+        await _classificationRuleRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_job_fails_then_synced_item_is_not_upserted()
     {
         var job = MakeJob("item-1", SyncDirection.Download);
-        var jobs = new List<SyncJob> { job };
-
-        _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
-            .Do(call =>
-            {
-                var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
-                onJobCompleted(new JobCompletedEventArgs(job.Fail("disk full")));
-            });
-
+        SimulateJobCompleted(job.Fail("disk full"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, jobs, [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.DidNotReceive().UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_download_job_fails_then_classifications_are_not_upserted()
+    {
+        var job = MakeJob("item-1", SyncDirection.Download);
+        SimulateJobCompleted(job.Fail("disk full"));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.DidNotReceive().UpsertClassificationsAsync(Arg.Any<int>(), Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_jobs_execute_then_on_progress_callback_is_forwarded_from_pipeline()
     {
         var job = MakeJob("item-1", SyncDirection.Download);
-        var jobs = new List<SyncJob> { job };
-
         _pipeline.When(p => p.RunAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
-            .Do(call =>
-            {
-                var onProgress = call.Arg<Action<SyncProgressEventArgs>>();
-                onProgress(new SyncProgressEventArgs("user-1", string.Empty, 1, 1, "file.txt", SyncState.Syncing));
-            });
+            .Do(call => call.Arg<Action<SyncProgressEventArgs>>()(new SyncProgressEventArgs("user-1", string.Empty, 1, 1, "file.txt", SyncState.Syncing)));
 
         var progressReceived = new List<SyncProgressEventArgs>();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, jobs, [], args => progressReceived.Add(args), _ => { }, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], args => progressReceived.Add(args), _ => { }, TestContext.Current.CancellationToken);
 
         progressReceived.ShouldHaveSingleItem();
         progressReceived[0].CurrentFile.ShouldBe("file.txt");
