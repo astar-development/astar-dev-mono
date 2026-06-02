@@ -48,7 +48,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     };
 
     public string ToggleLabel => loc.GetLocal(IsIncluded ? "Files.Exclude" : "Files.Include");
-    public string ToggleTooltip => loc.GetLocal(IsIncluded ? "Files.Exclude.Tooltip" : "Files.Include.Tooltip");
+    public string ToggleTooltip => loc.GetLocal(IsIncluded ? "Files.Exclude.Tooltip" : "Files.Include.Tooltip", Name);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
