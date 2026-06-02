@@ -307,6 +307,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Graph quota fetch failed for account {AccountId}: {Error}")]
     public static partial void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error);
 
+    /// <summary>Logs unexpected exception during the startup quota refresh pass — startup continues normally.</summary>
+    [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "[ApplicationInitializer] Startup quota refresh failed: {Error}")]
+    public static partial void QuotaRefreshStartupFailed(ILogger logger, string error, Exception ex);
+
     // Application Lifecycle (use ApplicationMessages for these)
     // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping
     // - Unhandled exception handled by MainWindowInitializeFatal, BootstrapFatal, etc.

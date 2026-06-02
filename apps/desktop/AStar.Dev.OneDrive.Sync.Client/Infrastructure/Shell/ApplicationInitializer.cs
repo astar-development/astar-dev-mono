@@ -43,7 +43,14 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
                 await activity.SetActiveAccountAsync(activeAccount.Id.Id, activeAccount.Profile.Email).ConfigureAwait(false);
             }
 
-            await RefreshQuotasAsync(restored, ct).ConfigureAwait(false);
+            try
+            {
+                await RefreshQuotasAsync(restored, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                OneDriveSyncClientMessages.QuotaRefreshStartupFailed(logger, ex.Message, ex);
+            }
         }
         catch (Exception ex)
         {

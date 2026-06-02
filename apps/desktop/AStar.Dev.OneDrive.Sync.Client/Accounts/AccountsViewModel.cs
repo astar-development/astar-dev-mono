@@ -108,7 +108,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
                     var finalisedAccount = await accountOnboardingService.CompleteOnboardingAsync(account, CancellationToken.None);
 
-                    await quotaRefreshService.TryRefreshAsync(finalisedAccount, CancellationToken.None).ConfigureAwait(false);
+                    await quotaRefreshService.TryRefreshAsync(finalisedAccount, CancellationToken.None);
 
                     var card = BuildCard(finalisedAccount);
                     Accounts.Add(card);
