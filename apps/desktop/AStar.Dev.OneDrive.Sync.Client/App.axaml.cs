@@ -62,7 +62,6 @@ public class App : Application, IDisposable
     {
         var inMemoryLogSink = new InMemoryLogSink();
         var fileSystem = new RealFileSystem();
-        ConfigureSerilog(inMemoryLogSink, fileSystem);
 
         var services = new ServiceCollection();
 
@@ -72,6 +71,17 @@ public class App : Application, IDisposable
         _ = services.AddStartupTasks();
         _ = services.AddViews();
         _ = services.AddViewModels();
+        var configuration = RegisterOptions(services);
+        ConfigureSerilog(inMemoryLogSink, fileSystem, configuration);
+
+        _ = services.AddSingleton<IFileClassificationRuleRepository, FileClassificationRuleRepository>();
+        _ = services.AddShell(inMemoryLogSink);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static IConfigurationRoot RegisterOptions(ServiceCollection services)
+    {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
@@ -84,19 +94,17 @@ public class App : Application, IDisposable
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-        _ = services.AddSingleton<IFileClassificationRuleRepository, FileClassificationRuleRepository>();
-        _ = services.AddShell(inMemoryLogSink);
-
-        return services.BuildServiceProvider();
+        return configuration;
     }
 
-    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink, RealFileSystem fileSystem)
+    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink, RealFileSystem fileSystem, IConfigurationRoot configuration)
     {
         _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
 
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
+            .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .ReadFrom.Configuration(configuration)
             .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .WriteTo.File(
                 formatter: new Serilog.Formatting.Json.JsonFormatter(),
