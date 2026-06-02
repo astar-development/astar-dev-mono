@@ -145,6 +145,6 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
                 email = emailClaim;
         }
 
-        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, profile: AccountProfileFactory.Create(displayName ?? result.Account.Username, email ?? result.Account.Username));
+        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, profile: AccountProfileFactory.Create(displayName ?? result.Account.Username, email ?? result.Account.Username), expiresOn: result.ExpiresOn);
     }
 }

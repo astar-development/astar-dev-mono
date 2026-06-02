@@ -53,14 +53,14 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
-        string syncSessionToken = initialAuth.Match<string>(ok => ok.AccessToken, _ => string.Empty);
-        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(syncSessionToken);
+        var (initialToken, initialExpiry) = initialAuth.Match<(string, DateTimeOffset)>(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
+        using var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialToken, initialExpiry);
 
         try
         {
             bool didRun = await syncPassOrchestrator.OrchestrateAsync(
                 account,
-                tokenFactory,
+                tokenFactory.GetTokenAsync,
                 async conflict =>
                 {
                     await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
@@ -103,11 +103,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         if (!authOk)
             return;
 
-        string conflictSessionToken = initialAuth.Match<string>(ok => ok.AccessToken, _ => string.Empty);
-        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(conflictSessionToken);
+        var (initialToken, initialExpiry) = initialAuth.Match<(string, DateTimeOffset)>(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
+        using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, initialToken, initialExpiry);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory, ct).ConfigureAwait(false);
+        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, ct).ConfigureAwait(false);
 
         if (!applied)
         {
