@@ -25,12 +25,12 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         Action<int>? enumerationProgress = onProgress is null ? null : count =>
         {
             if (count % progressReportInterval == 0)
-                RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count} item(s) found", onProgress);
+                RaiseProgress(account.Id.Id, count, 0, $"Enumerating: {count:N0} item(s) found", onProgress);
         };
 
         var enumerationResult = await dependencies.RemoteFolderEnumerator.EnumerateAsync(account, tokenFactory, enumerationProgress, ct).ConfigureAwait(false);
 
-        if(enumerationResult.HadNoRules)
+        if (enumerationResult.HadNoRules)
             return false;
 
         var syncedItemsDict = new Dictionary<string, SyncedItemEntity>(enumerationResult.SyncedItems);
@@ -50,7 +50,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         allJobs.AddRange(downloadJobs);
         allJobs.AddRange(uploadJobs);
 
-        if(allJobs.Count > 0)
+        if (allJobs.Count > 0)
         {
             RaiseProgress(account.Id.Id, 0, allJobs.Count, $"Syncing {allJobs.Count} file(s)...", onProgress);
             await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, allJobs, syncedItemsDict, onProgress ?? (_ => { }), onJobCompleted ?? (_ => { }), ct).ConfigureAwait(false);

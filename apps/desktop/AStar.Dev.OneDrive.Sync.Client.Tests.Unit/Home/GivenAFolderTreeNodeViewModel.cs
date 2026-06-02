@@ -178,19 +178,19 @@ public sealed class GivenAFolderTreeNodeViewModel
     }
 
     [Fact]
-    public void when_is_included_then_toggle_tooltip_returns_files_exclude_tooltip_key()
+    public void when_is_included_then_toggle_tooltip_includes_folder_name()
     {
         var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included);
 
-        sut.ToggleTooltip.ShouldBe("Files.Exclude.Tooltip");
+        sut.ToggleTooltip.ShouldBe($"Files.Exclude.Tooltip:{RootFolderName}");
     }
 
     [Fact]
-    public void when_is_excluded_then_toggle_tooltip_returns_files_include_tooltip_key()
+    public void when_is_excluded_then_toggle_tooltip_includes_folder_name()
     {
         var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Excluded);
 
-        sut.ToggleTooltip.ShouldBe("Files.Include.Tooltip");
+        sut.ToggleTooltip.ShouldBe($"Files.Include.Tooltip:{RootFolderName}");
     }
 
     [Fact]
@@ -218,7 +218,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     }
 
     [Fact]
-    public void when_culture_changed_then_toggle_tooltip_is_refreshed()
+    public void when_culture_changed_then_toggle_tooltip_is_refreshed_with_folder_name()
     {
         var loc = BuildLocalizationService();
         var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
@@ -226,7 +226,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        loc.Received(1).GetLocal("Files.Exclude.Tooltip");
+        loc.Received(1).GetLocal("Files.Exclude.Tooltip", Arg.Any<object[]>());
     }
 
     [Fact]
@@ -325,6 +325,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var loc = Substitute.For<ILocalizationService>();
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => $"{x.ArgAt<string>(0)}:{x.ArgAt<object[]>(1)[0]}");
 
         return loc;
     }
