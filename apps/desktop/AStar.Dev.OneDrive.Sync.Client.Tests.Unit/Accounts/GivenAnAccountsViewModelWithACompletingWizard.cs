@@ -27,8 +27,8 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     [Fact]
     public async Task when_wizard_completes_then_account_onboarding_service_is_called()
     {
-        var (authService, graphService, repository, onboardingService) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, onboardingService);
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
 
         await DriveWizardToCompletionAsync(sut);
 
@@ -38,8 +38,8 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     [Fact]
     public async Task when_wizard_completes_then_account_is_added_to_accounts_collection()
     {
-        var (authService, graphService, repository, onboardingService) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, onboardingService);
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
 
         await DriveWizardToCompletionAsync(sut);
 
@@ -47,14 +47,36 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     }
 
     [Fact]
+    public async Task when_wizard_completes_then_quota_refresh_service_is_called_for_new_account()
+    {
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
+
+        await DriveWizardToCompletionAsync(sut);
+
+        await quotaRefreshService.Received(1).TryRefreshAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task when_wizard_is_cancelled_then_account_onboarding_service_is_not_called()
     {
-        var (authService, graphService, repository, onboardingService) = BuildMocks();
-        var sut = BuildSut(authService, graphService, repository, onboardingService);
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
 
         await DriveWizardToCancellationAsync(sut);
 
         await onboardingService.DidNotReceive().CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_wizard_is_cancelled_then_quota_refresh_service_is_not_called()
+    {
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
+
+        await DriveWizardToCancellationAsync(sut);
+
+        await quotaRefreshService.DidNotReceive().TryRefreshAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
     }
 
     private static async Task DriveWizardToCompletionAsync(AccountsViewModel sut)
@@ -81,12 +103,13 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
         await Task.Delay(50);
     }
 
-    private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, IAccountOnboardingService OnboardingService) BuildMocks()
+    private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, IAccountOnboardingService OnboardingService, IQuotaRefreshService QuotaRefreshService) BuildMocks()
     {
-        var authService       = Substitute.For<IAuthService>();
-        var graphService      = Substitute.For<IGraphService>();
-        var repository        = Substitute.For<IAccountRepository>();
-        var onboardingService = Substitute.For<IAccountOnboardingService>();
+        var authService          = Substitute.For<IAuthService>();
+        var graphService         = Substitute.For<IGraphService>();
+        var repository           = Substitute.For<IAccountRepository>();
+        var onboardingService    = Substitute.For<IAccountOnboardingService>();
+        var quotaRefreshService  = Substitute.For<IQuotaRefreshService>();
 
         authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
@@ -97,9 +120,9 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
         onboardingService.CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => callInfo.Arg<OneDriveAccount>());
 
-        return (authService, graphService, repository, onboardingService);
+        return (authService, graphService, repository, onboardingService, quotaRefreshService);
     }
 
-    private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService onboardingService)
-        => new(authService, graphService, repository, onboardingService, Substitute.For<ISyncEventAggregator>(), Substitute.For<ILocalizationService>(), Substitute.For<ILogger<AccountsViewModel>>());
+    private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService onboardingService, IQuotaRefreshService quotaRefreshService)
+        => new(authService, graphService, repository, onboardingService, quotaRefreshService, Substitute.For<ISyncEventAggregator>(), Substitute.For<ILocalizationService>(), Substitute.For<ILogger<AccountsViewModel>>());
 }

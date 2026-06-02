@@ -133,6 +133,33 @@ public sealed class GivenAnAccountRepository : IDisposable
     }
 
     [Fact]
+    public async Task when_updating_quota_for_existing_account_then_quota_is_persisted()
+    {
+        var repository = new AccountRepository(_factory);
+        var account = new AccountEntity { Id = new AccountId("user-1"), Profile = AccountProfileFactory.Create("User", "user@outlook.com"), Quota = StorageQuotaFactory.Unknown };
+        _ = _seedingContext.Accounts.Add(account);
+        _ = await _seedingContext.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.UpdateQuotaAsync(new AccountId("user-1"), StorageQuotaFactory.Create(1_073_741_824L, 536_870_912L), TestContext.Current.CancellationToken);
+
+        _seedingContext.ChangeTracker.Clear();
+        var retrieved = await _seedingContext.Accounts.FindAsync([new AccountId("user-1")], cancellationToken: TestContext.Current.CancellationToken);
+        _ = retrieved.ShouldNotBeNull();
+        retrieved.Quota.TotalBytes.ShouldBe(1_073_741_824L);
+        retrieved.Quota.UsedBytes.ShouldBe(536_870_912L);
+    }
+
+    [Fact]
+    public async Task when_updating_quota_for_non_existing_account_then_no_exception_is_thrown()
+    {
+        var repository = new AccountRepository(_factory);
+
+        var exception = await Record.ExceptionAsync(() => repository.UpdateQuotaAsync(new AccountId("does-not-exist"), StorageQuotaFactory.Create(100L, 50L), TestContext.Current.CancellationToken));
+
+        exception.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task when_deleting_account_then_account_is_removed()
     {
         var repository = new AccountRepository(_factory);
