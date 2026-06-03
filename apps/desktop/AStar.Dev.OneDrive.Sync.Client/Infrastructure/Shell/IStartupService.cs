@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -9,6 +10,5 @@ public interface IStartupService
     /// Returns them in display order with the previously-active account flagged.
     /// Does NOT attempt any network calls.
     /// </summary>
-    Task<List<OneDriveAccount>> RestoreAccountsAsync();
+    Task<Result<List<OneDriveAccount>, string>> RestoreAccountsAsync();
 }
-

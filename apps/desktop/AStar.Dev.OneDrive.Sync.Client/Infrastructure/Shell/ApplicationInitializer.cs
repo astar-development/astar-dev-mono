@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
@@ -22,7 +23,11 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             activity.SubscribeToSyncEvents();
             dashboard.SubscribeToSyncEvents();
 
-            var restored = await startupService.RestoreAccountsAsync().ConfigureAwait(false);
+            var restored = await startupService.RestoreAccountsAsync()
+                .MatchAsync<List<OneDriveAccount>, string, List<OneDriveAccount>>(
+                    ok => ok,
+                    error => throw new InvalidOperationException(error))
+                .ConfigureAwait(false);
 
             accounts.RestoreAccounts(restored);
 

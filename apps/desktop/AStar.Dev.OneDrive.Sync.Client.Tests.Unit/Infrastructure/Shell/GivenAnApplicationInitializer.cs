@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -44,6 +45,12 @@ public sealed class GivenAnApplicationInitializer
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
+    private static Task<Result<List<OneDriveAccount>, string>> OkResult(List<OneDriveAccount> accounts)
+        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Ok(accounts));
+
+    private static Task<Result<List<OneDriveAccount>, string>> ErrorResult(string message)
+        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Error(message));
+
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _quotaRefreshService, _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
     private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
@@ -68,7 +75,7 @@ public sealed class GivenAnApplicationInitializer
     [Fact]
     public async Task when_initialized_then_accounts_are_restored_from_startup_service()
     {
-        _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([BuildAccount("acc-1"), BuildAccount("acc-2")]));
 
         var accounts = CreateAccountsViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -82,7 +89,7 @@ public sealed class GivenAnApplicationInitializer
     [Fact]
     public async Task when_initialized_then_files_receives_all_restored_accounts()
     {
-        _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([BuildAccount("acc-1"), BuildAccount("acc-2")]));
 
         var files = CreateFilesViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -96,7 +103,7 @@ public sealed class GivenAnApplicationInitializer
     [Fact]
     public async Task when_initialized_then_dashboard_receives_all_restored_accounts()
     {
-        _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1"), BuildAccount("acc-2")]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([BuildAccount("acc-1"), BuildAccount("acc-2")]));
 
         var dashboard = CreateDashboardViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -110,7 +117,7 @@ public sealed class GivenAnApplicationInitializer
     [Fact]
     public async Task when_initialized_then_settings_loads_restored_accounts()
     {
-        _startupService.RestoreAccountsAsync().Returns([BuildAccount("acc-1")]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([BuildAccount("acc-1")]));
 
         var settings = CreateSettingsViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -126,7 +133,7 @@ public sealed class GivenAnApplicationInitializer
     {
         var acc1 = BuildAccount("acc-1");
         var acc2 = BuildAccount("acc-2");
-        _startupService.RestoreAccountsAsync().Returns([acc1, acc2]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([acc1, acc2]));
 
         var classificationRules = CreateClassificationRulesViewModel();
         var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
@@ -141,7 +148,7 @@ public sealed class GivenAnApplicationInitializer
     public async Task when_active_account_exists_then_files_activates_that_account()
     {
         var active = BuildAccount("acc-active", isActive: true);
-        _startupService.RestoreAccountsAsync().Returns([active, BuildAccount("acc-2")]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([active, BuildAccount("acc-2")]));
 
         var files = CreateFilesViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -157,7 +164,7 @@ public sealed class GivenAnApplicationInitializer
     public async Task when_active_account_exists_then_activity_sets_active_account()
     {
         var active = BuildAccount("acc-active", email: "active@test.com", isActive: true);
-        _startupService.RestoreAccountsAsync().Returns([active]);
+        _startupService.RestoreAccountsAsync().Returns(OkResult([active]));
 
         var activity = CreateActivityViewModel();
         var classificationRules = CreateClassificationRulesViewModel();
@@ -169,9 +176,9 @@ public sealed class GivenAnApplicationInitializer
     }
 
     [Fact]
-    public async Task when_startup_service_throws_then_error_is_logged_and_rethrown()
+    public async Task when_startup_service_returns_error_then_exception_is_thrown_and_rethrown()
     {
-        _startupService.RestoreAccountsAsync().Returns(Task.FromException<List<OneDriveAccount>>(new InvalidOperationException("DB failure")));
+        _startupService.RestoreAccountsAsync().Returns(ErrorResult("DB failure"));
 
         var classificationRules = CreateClassificationRulesViewModel();
         var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), classificationRules);
