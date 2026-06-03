@@ -14,6 +14,7 @@ dotnet clean && rm -rf artifacts/ && dotnet build
 ## Mandatory NuGet Packages
 
 Check before writing new code — use when practicable:
+
 - `AStar.Dev.Functional.Extensions` — `Result<T>`, `Option<T>`, `Map`/`Bind`/`MatchAsync`
 - `AStar.Dev.Logging.Extensions` — compile-time `LogMessage` templates; avoid `logger.Log...`
 - `AStar.Dev.Utilities` — string extensions, nullability, `CombinePaths` etc.
@@ -71,6 +72,10 @@ Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-u
 
 Never say "fixed"/"done" without evidence. Say "I believe this is fixed because…"
 For sync/download bugs: confirm full flow (Graph API → persistence → sync logic) first.
+
+## GitHub
+
+Always use `gh` CLI for all GitHub operations. Never use MCP GitHub - not configured.
 
 ## Subagents
 

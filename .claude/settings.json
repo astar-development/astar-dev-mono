@@ -52,5 +52,8 @@
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 2
+  },
+  "enabledPlugins": {
+    "csharp-lsp@claude-plugins-official": true
   }
 }
