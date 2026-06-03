@@ -14,41 +14,50 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
         var entities = await repository.GetAllAsync(CancellationToken.None);
-
         var cachedIds = (await authService.GetCachedAccountIdsAsync()).ToHashSet();
+        var accounts = await BuildAccountsAsync(FilterToCachedEntities(entities, cachedIds));
 
-        List<OneDriveAccount> accounts = [];
-
-        foreach(var entity in entities)
-        {
-            if(!cachedIds.Contains(entity.Id.Id))
-                continue;
-
-            var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, CancellationToken.None);
-
-            accounts.Add(new OneDriveAccount
-            {
-                Id                = entity.Id,
-                Profile           = entity.Profile,
-                AccentIndex       = entity.AccentIndex,
-                IsActive          = entity.IsActive,
-                LastSyncedAt      = entity.LastSyncedAt,
-                Quota             = entity.Quota,
-                SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include).Choose(r => r.RemoteItemId).Select(id => new OneDriveFolderId(id))],
-                SyncConfig        = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>()
-            });
-        }
-
-        int activeCount = accounts.Count(a => a.IsActive);
-        if(activeCount > 1)
-        {
-            foreach(var account in accounts.Where(a => a.IsActive).Skip(1))
-                account.IsActive = false;
-        }
-
-        if(accounts.Count > 0 && !accounts.Any(a => a.IsActive))
-            accounts[0].IsActive = true;
+        EnsureSingleActiveAccount(accounts);
 
         return accounts;
     }
+
+    private static IEnumerable<AccountEntity> FilterToCachedEntities(IEnumerable<AccountEntity> entities, HashSet<string> cachedIds)
+        => entities.Where(entity => cachedIds.Contains(entity.Id.Id));
+
+    private async Task<List<OneDriveAccount>> BuildAccountsAsync(IEnumerable<AccountEntity> entities)
+    {
+        List<OneDriveAccount> accounts = [];
+
+        foreach (var entity in entities)
+        {
+            var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, CancellationToken.None);
+            accounts.Add(BuildOneDriveAccount(entity, rules));
+        }
+
+        return accounts;
+    }
+
+    private static void EnsureSingleActiveAccount(List<OneDriveAccount> accounts)
+    {
+        var activeAccounts = accounts.Where(a => a.IsActive).ToList();
+
+        foreach (var extra in activeAccounts.Skip(1))
+            extra.IsActive = false;
+
+        if (accounts.Count > 0 && !accounts.Any(a => a.IsActive))
+            accounts[0].IsActive = true;
+    }
+
+    private static OneDriveAccount BuildOneDriveAccount(AccountEntity entity, List<SyncRuleEntity> rules) => new OneDriveAccount
+    {
+        Id = entity.Id,
+        Profile = entity.Profile,
+        AccentIndex = entity.AccentIndex,
+        IsActive = entity.IsActive,
+        LastSyncedAt = entity.LastSyncedAt,
+        Quota = entity.Quota,
+        SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include).Choose(r => r.RemoteItemId).Select(id => new OneDriveFolderId(id))],
+        SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>()
+    };
 }
