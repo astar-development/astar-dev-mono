@@ -1,8 +1,6 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
@@ -93,6 +91,15 @@ public sealed class GivenASettingsViewModel
         var sut = BuildSut(settingsService: BuildSettingsService(settings));
 
         sut.SyncIntervalMinutes.ShouldBe(DefaultSyncIntervalMinutes);
+    }
+
+    [Fact]
+    public void when_constructed_then_concurrent_worker_count_is_read_from_settings_service_current()
+    {
+        var settings = new AppSettings { ConcurrentWorkerCount = 8 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.ConcurrentWorkerCount.ShouldBe(8);
     }
 
     [Fact]
@@ -464,6 +471,29 @@ public sealed class GivenASettingsViewModel
         var sut = BuildSut(settingsService: settingsService);
 
         sut.SyncIntervalMinutes = NewSyncIntervalMinutes;
+
+        settingsService.Received().SaveAsync();
+    }
+
+    [Fact]
+    public void when_concurrent_worker_count_is_set_then_settings_service_current_concurrent_worker_count_is_updated()
+    {
+        var settings = new AppSettings { ConcurrentWorkerCount = 4 };
+        var settingsService = BuildSettingsService(settings);
+        var sut = BuildSut(settingsService: settingsService);
+
+        sut.ConcurrentWorkerCount = 6;
+
+        settingsService.Current.ConcurrentWorkerCount.ShouldBe(6);
+    }
+
+    [Fact]
+    public void when_concurrent_worker_count_is_set_then_settings_service_save_async_is_called()
+    {
+        var settingsService = BuildSettingsService();
+        var sut = BuildSut(settingsService: settingsService);
+
+        sut.ConcurrentWorkerCount = 6;
 
         settingsService.Received().SaveAsync();
     }

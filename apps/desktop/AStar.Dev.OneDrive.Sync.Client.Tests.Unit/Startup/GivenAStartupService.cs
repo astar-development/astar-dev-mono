@@ -1,8 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Startup;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
@@ -168,7 +166,7 @@ public sealed class GivenAStartupService
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromException<List<AccountEntity>>(new InvalidOperationException("DB unavailable")));
 
-        
+
         var errorMessage = (await CreateSut().RestoreAccountsAsync()).Match(_ => string.Empty, error => error);
 
         errorMessage.ShouldBe("DB unavailable");

@@ -1,5 +1,3 @@
-using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;

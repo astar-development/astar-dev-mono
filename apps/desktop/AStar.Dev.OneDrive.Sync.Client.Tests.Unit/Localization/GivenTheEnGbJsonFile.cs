@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 

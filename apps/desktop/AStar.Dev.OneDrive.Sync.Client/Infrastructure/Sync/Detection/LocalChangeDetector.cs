@@ -3,7 +3,6 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.Utilities;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;

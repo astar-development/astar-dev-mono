@@ -34,6 +34,12 @@ public partial class SettingsView : UserControl
             vm.SyncIntervalMinutes = minutes;
     }
 
+    private void OnWorkerCountClick(object? sender, RoutedEventArgs e)
+    {
+        if(sender is Button { Tag: int count } && DataContext is SettingsViewModel vm)
+            vm.ConcurrentWorkerCount = count;
+    }
+
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
     {
         if(sender is not Button { Tag: string accountId }) return;

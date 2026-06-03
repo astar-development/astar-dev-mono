@@ -1,14 +1,13 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
-using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 
@@ -20,6 +19,7 @@ public sealed class GivenASyncJobExecutor
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
     private readonly ISyncPipeline _pipeline = Substitute.For<ISyncPipeline>();
     private readonly IFileClassificationRuleRepository _classificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
+    private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
 
     private readonly OneDriveAccount _account = new()
     {
@@ -31,9 +31,10 @@ public sealed class GivenASyncJobExecutor
     {
         _classificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationRule>>([]));
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
+        _settingsService.Current.Returns(new AppSettings());
     }
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem);
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem, _settingsService);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
     {

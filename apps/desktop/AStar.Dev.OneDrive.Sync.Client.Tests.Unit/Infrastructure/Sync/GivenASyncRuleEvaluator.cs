@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 

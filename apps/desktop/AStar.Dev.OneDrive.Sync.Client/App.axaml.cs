@@ -1,12 +1,10 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Home;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Splash;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using AStar.Dev.OneDrive.Sync.Client.Startup;
-using AStar.Dev.Utilities;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -16,7 +14,6 @@ using Serilog;
 using Serilog.Events;
 using Testably.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 

@@ -12,7 +12,6 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.Functional.Extensions;
 using Microsoft.Extensions.Logging;
-using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 
