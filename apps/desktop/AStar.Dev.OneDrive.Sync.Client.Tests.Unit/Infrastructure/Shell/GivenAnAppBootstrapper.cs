@@ -16,6 +16,7 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -70,7 +71,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, localizationService, Substitute.For<ILogger<AccountsViewModel>>());
         var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
-        var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService);
+        var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService, new InlineUiDispatcher());
         var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();
         classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
                                .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
