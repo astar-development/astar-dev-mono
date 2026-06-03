@@ -24,6 +24,7 @@ New reusable code → add to relevant package + raise GitHub issue.
 ## Logging
 
 ALL logging → Azure Application Insights. No suitable `LogMessage` template? ADD IT.
+Reuse existing `LogMessage` templates — do NOT create new ones unless no suitable template exists.
 
 ## DI
 
@@ -51,21 +52,23 @@ Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-u
 
 ## Before Starting ANY Task (mandatory, no exceptions)
 
-1. **Branch** — confirm not on `main`. Create branch first.
-2. **TDD** — commit failing test BEFORE writing production code.
-3. **Scope** — implement only what was asked. Stop for review before touching other areas.
+1. **Repo + folder** — run `gh repo view --json nameWithOwner -q '.nameWithOwner'` and confirm the correct `src/` folder for the issue scope.
+2. **Branch** — confirm not on `main`. Create branch first.
+3. **TDD** — commit failing test BEFORE writing production code.
+4. **Scope** — implement only what was asked. Stop for review before touching other areas.
 
 ## Code Exploration
 
 - Call Serena `initial_instructions` BEFORE exploring — no exceptions.
 - Use `mcp__serena__find_symbol` / `mcp__serena__find_referencing_symbols` — do NOT read whole files.
+- Cap at 5 file reads before stating a plan. Do not keep reading without producing a fix.
 - Find ALL call sites and test files before touching production code.
 - Read a file before editing it. Grep all callers before modifying a function.
 
 ## Definition of Done
 
 1. `dotnet build` — zero errors, zero warnings. Paste exact output.
-2. `dotnet test` — paste EXACT pass/fail count. New failures = zero.
+2. `dotnet test` — paste EXACT pass/fail count. New failures = zero. If this change broke tests, diagnose and fix them — never dismiss as pre-existing.
 3. Confirm all call sites and test files found and updated.
 4. Human review BEFORE committing.
 5. Approved → commit to branch, raise GitHub PR.
@@ -76,6 +79,7 @@ For sync/download bugs: confirm full flow (Graph API → persistence → sync lo
 ## GitHub
 
 Always use `gh` CLI for all GitHub operations. Never use MCP GitHub - not configured.
+When raising a PR, use `.github/PULL_REQUEST_TEMPLATE.md` as the body structure — fill in each section; do not omit or rewrite the template.
 
 ## Subagents
 

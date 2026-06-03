@@ -15,5 +15,5 @@ public interface ISyncPipeline
     /// <param name="folderId">The folder identifier used in progress events.</param>
     /// <param name="workerCount">Maximum number of concurrent workers. Defaults to 8.</param>
     /// <param name="ct">Token used to cancel the pipeline.</param>
-    Task RunAsync(IEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 8, CancellationToken ct = default);
+    Task RunAsync(IEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 4, CancellationToken ct = default);
 }
