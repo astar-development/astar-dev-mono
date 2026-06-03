@@ -35,6 +35,7 @@ public sealed class GivenASettingsViewModel
         var loc = Substitute.For<ILocalizationService>();
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
         loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
+        loc.AvailableCultures.Returns([CultureInfo.GetCultureInfo("en-GB"), CultureInfo.GetCultureInfo("en-US")]);
 
         return loc;
     }
@@ -297,6 +298,74 @@ public sealed class GivenASettingsViewModel
         loc.Received(1).GetLocal("ConflictPolicy.LastWriteWins");
         loc.Received(1).GetLocal("ConflictPolicy.LocalWins");
         loc.Received(1).GetLocal("ConflictPolicy.RemoteWins");
+    }
+
+    [Fact]
+    public void when_constructed_then_language_options_count_matches_available_cultures()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        sut.LanguageOptions.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_constructed_then_language_options_cultures_match_available_cultures()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+
+        var names = sut.LanguageOptions.Select(option => option.Culture.Name).ToList();
+        names.ShouldContain("en-GB");
+        names.ShouldContain("en-US");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_language_options_is_rebuilt()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        var initialOptions = sut.LanguageOptions;
+        loc.AvailableCultures.Returns([CultureInfo.GetCultureInfo("en-GB")]);
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("en-GB"));
+
+        sut.LanguageOptions.ShouldNotBeSameAs(initialOptions);
+    }
+
+    [Fact]
+    public async Task when_select_culture_async_called_then_localization_service_set_culture_async_is_called()
+    {
+        var loc = BuildLocalizationService();
+        var sut = BuildSut(localizationService: loc);
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        await sut.SelectCultureAsync(culture);
+
+        await loc.Received(1).SetCultureAsync(culture);
+    }
+
+    [Fact]
+    public async Task when_select_culture_async_called_then_settings_locale_is_updated()
+    {
+        var settings = new AppSettings { Locale = "en-GB" };
+        var settingsService = BuildSettingsService(settings);
+        var sut = BuildSut(settingsService: settingsService);
+
+        await sut.SelectCultureAsync(CultureInfo.GetCultureInfo("en-US"));
+
+        settingsService.Current.Locale.ShouldBe("en-US");
+    }
+
+    [Fact]
+    public async Task when_select_culture_async_called_then_settings_service_save_async_is_called()
+    {
+        var settingsService = BuildSettingsService();
+        var sut = BuildSut(settingsService: settingsService);
+
+        await sut.SelectCultureAsync(CultureInfo.GetCultureInfo("en-US"));
+
+        await settingsService.Received().SaveAsync();
     }
 
     [Fact]

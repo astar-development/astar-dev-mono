@@ -61,6 +61,53 @@
                 </Border>
             </StackPanel>
 
+            <!-- ── Language ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Language"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Display language"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Choose the language used throughout the application."
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding LanguageOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="settings:LanguageOption">
+                                    <Button Padding="12,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Click="OnLanguageClick"
+                                            Tag="{Binding Culture}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
             <!-- ── Sync policy ── -->
             <StackPanel Spacing="12">
                 <TextBlock Text="Sync policy"

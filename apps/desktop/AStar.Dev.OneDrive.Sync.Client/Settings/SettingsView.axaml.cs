@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using Avalonia.Controls;
@@ -14,6 +15,12 @@ public partial class SettingsView : UserControl
     {
         if(sender is Button { Tag: AppTheme theme } && DataContext is SettingsViewModel vm)
             vm.Theme = theme;
+    }
+
+    private void OnLanguageClick(object? sender, RoutedEventArgs e)
+    {
+        if(sender is Button { Tag: CultureInfo culture } && DataContext is SettingsViewModel vm)
+            _ = vm.SelectCultureAsync(culture);
     }
 
     private void OnPolicyClick(object? sender, RoutedEventArgs e)
