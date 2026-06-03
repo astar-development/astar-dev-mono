@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Conflicts;
 

@@ -1,5 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 public sealed class SyncProgressEventArgs(string accountId, string folderId, int completed, int total, string currentFile, SyncState syncState) : EventArgs

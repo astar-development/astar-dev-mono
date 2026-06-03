@@ -1,8 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
-using NSubstitute;
-using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
 
