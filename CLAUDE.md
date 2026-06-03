@@ -79,6 +79,7 @@ For sync/download bugs: confirm full flow (Graph API → persistence → sync lo
 ## GitHub
 
 Always use `gh` CLI for all GitHub operations. Never use MCP GitHub - not configured.
+When raising a PR, use `.github/PULL_REQUEST_TEMPLATE.md` as the body structure — fill in each section; do not omit or rewrite the template.
 
 ## Subagents
 
