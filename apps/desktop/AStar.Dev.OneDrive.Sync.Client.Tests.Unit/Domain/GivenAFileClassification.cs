@@ -37,4 +37,31 @@ public sealed class GivenAFileClassification
         classification.TagName.ShouldBe("Unclassified");
         classification.IsSpecial.ShouldBeFalse();
     }
+
+    [Fact]
+    public void when_level1_is_empty_string_then_defaults_to_unclassified()
+    {
+        var classification = FileClassificationFactory.Create("", Option.None<string>(), Option.None<string>(), false);
+
+        classification.Level1.ShouldBe("Unclassified");
+        classification.TagName.ShouldBe("Unclassified");
+    }
+
+    [Fact]
+    public void when_level1_is_whitespace_then_defaults_to_unclassified()
+    {
+        var classification = FileClassificationFactory.Create("   ", Option.None<string>(), Option.None<string>(), false);
+
+        classification.Level1.ShouldBe("Unclassified");
+        classification.TagName.ShouldBe("Unclassified");
+    }
+
+    [Fact]
+    public void when_level1_is_null_then_defaults_to_unclassified()
+    {
+        var classification = FileClassificationFactory.Create(null!, Option.None<string>(), Option.None<string>(), false);
+
+        classification.Level1.ShouldBe("Unclassified");
+        classification.TagName.ShouldBe("Unclassified");
+    }
 }
