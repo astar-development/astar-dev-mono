@@ -5,12 +5,13 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRuleRepository classificationRuleRepository, IFileSystem fileSystem) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRuleRepository classificationRuleRepository, IFileSystem fileSystem, ISettingsService settingsService) : ISyncJobExecutor
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
@@ -35,7 +36,8 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             },
             account.Id.Id,
             string.Empty,
-            ct: ct).ConfigureAwait(false);
+            settingsService.Current.ConcurrentWorkerCount,
+            ct).ConfigureAwait(false);
 
         if(successfulJobs.IsEmpty)
             return;

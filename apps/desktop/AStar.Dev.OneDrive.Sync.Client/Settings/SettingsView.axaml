@@ -195,6 +195,46 @@
                         </ItemsControl>
                     </Grid>
                 </Border>
+
+                <!-- Concurrent worker count -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="Concurrent downloads/uploads"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Number of files to sync simultaneously."
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding WorkerCountOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="settings:WorkerCountOption">
+                                    <Button Padding="10,5"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Click="OnWorkerCountClick"
+                                            Tag="{Binding Count}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <!-- ── Per-account settings ── -->

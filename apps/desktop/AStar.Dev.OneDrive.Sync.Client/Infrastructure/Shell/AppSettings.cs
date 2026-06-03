@@ -13,4 +13,5 @@ public sealed class AppSettings
     public string Locale { get; set; } = "en-GB";
     public ConflictPolicy DefaultConflictPolicy { get; set; } = ConflictPolicy.Ignore;
     public int SyncIntervalMinutes { get; set; } = 60;
+    public int ConcurrentWorkerCount { get; set; } = 4;
 }
