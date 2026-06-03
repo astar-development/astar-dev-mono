@@ -49,6 +49,13 @@ paths:
 - Shouldly assertions. NSubstitute mocks (prefer real instances).
 - No XML docs or comments on test classes/methods.
 
+## Error Handling
+
+- **Public APIs and factories**: Never throw exceptions for invalid input. Use `Result<T>` from `AStar.Dev.Functional.Extensions` to represent success/failure.
+- **Internal operations**: Exceptions are OK for truly exceptional conditions (e.g., null reference after null-check failed = bug in code).
+- **Factory methods**: Normalize invalid input gracefully instead of throwing. Example: `FileClassificationFactory.Create("")` normalizes empty string to a sensible default rather than throwing.
+- **Return types**: `Result<TSuccess, TError>` or `Option<T>` communicate intent; callers can't accidentally ignore errors.
+
 ## Functional Extensions
 
 Never await `Task<Result<T,E>>` into a variable then call `.Match()` — chain `.MatchAsync()` directly:
