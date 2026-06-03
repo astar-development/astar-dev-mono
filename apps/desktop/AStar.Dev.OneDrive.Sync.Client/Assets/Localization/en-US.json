@@ -100,6 +100,7 @@
   "Settings.DeltaSyncInterval": "US-Delta sync interval",
   "Settings.DeltaSyncInterval.Minutes": "US-{0} minutes",
   "Settings.Interval.Hours": "US-{0} hours",
+  "Settings.ConcurrentWorkers.Count": "US-{0} workers",
   "Settings.TokenCachePath": "US-Token cache path",
   "Wizard.AddAccount.Title": "US-Add OneDrive account",
   "Wizard.AddAccount.Step1": "US-Sign in",
