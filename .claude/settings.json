@@ -3,6 +3,7 @@
     "allow": [
       "Bash(gh issue:*)",
       "Bash(gh pr:*)",
+      "Bash(gh commit:*)",
       "Bash(git push:*)",
       "Bash(git -C /home/jbarden/repos/astar-dev-mono push -u origin feature/s003-review-fixes)",
       "Bash(git -C /home/jbarden/repos/astar-dev-mono branch --list)",
@@ -52,5 +53,8 @@
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 2
+  },
+  "enabledPlugins": {
+    "csharp-lsp@claude-plugins-official": true
   }
 }

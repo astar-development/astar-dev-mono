@@ -1,0 +1,6 @@
+-- database: ../../../../../.config/astar-dev-onedrive-sync/astar-dev-onedrive-sync.db
+DELETE FROM SyncedItems;
+
+DELETE FROM SyncedItemClassifications;
+
+DELETE FROM SyncJobs;
