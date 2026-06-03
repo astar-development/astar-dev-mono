@@ -37,6 +37,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2006, Level = LogLevel.Warning, Message = "[Worker {Id}] No handler registered for job type {JobType}")]
     public static partial void SyncWorkerNoHandler(ILogger logger, int id, string jobType);
 
+    /// <summary>Logs when a sync worker job is cancelled and re-queued.</summary>
+    [LoggerMessage(EventId = 2007, Level = LogLevel.Warning, Message = "[Worker {Id}] Job cancelled — re-queued: {Path}")]
+    public static partial void SyncWorkerJobCancelledRequeued(ILogger logger, int id, string path);
+
     // Sync Service (2100-2199)
 
     /// <summary>Logs start of account sync.</summary>
@@ -178,6 +182,10 @@ public static partial class OneDriveSyncClientMessages
     /// <summary>Logs network error during download with retry details.</summary>
     [LoggerMessage(EventId = 2705, Level = LogLevel.Warning, Message = "[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})")]
     public static partial void DownloadNetworkError(ILogger logger, double delay, int attempt, int max);
+
+    /// <summary>Logs download cancelled during 429 backoff wait.</summary>
+    [LoggerMessage(EventId = 2706, Level = LogLevel.Warning, Message = "[HttpDownloader] Download cancelled during 429 backoff — {Url} attempt {Attempt}/{Max}")]
+    public static partial void DownloadCancelledDuringBackoff(ILogger logger, string url, int attempt, int max);
 
     // Upload Operations (2800-2899)
 

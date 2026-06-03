@@ -68,6 +68,11 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, MaxRetries);
                 await Task.Delay(delay, ct);
             }
+            catch (OperationCanceledException)
+            {
+                OneDriveSyncClientMessages.DownloadCancelledDuringBackoff(logger, url, attempt, MaxRetries);
+                throw;
+            }
             finally
             {
                 response?.Dispose();
