@@ -50,6 +50,7 @@ launchSettings.json
 # dotnet test results
 TestResults/
 coverage/
+CoverageReport/
 *.coverage
 *.coveragexml
 *.cobertura.xml
