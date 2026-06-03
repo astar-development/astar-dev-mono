@@ -150,6 +150,7 @@ ALL development work MUST follow the GIT rules in: @docs/git-instructions.md
 - Call Serena `initial_instructions` BEFORE exploring the codebase — no exceptions.
 - Use `mcp__serena__find_symbol` and `mcp__serena__find_referencing_symbols` for symbol lookups — do NOT read whole files for exploration.
 - Find ALL call sites and test files before touching production code.
+- Before editing any file, read it first. Before modifying a function, grep for all callers. Research before you edit.
 
 ## Definition of Done
 
