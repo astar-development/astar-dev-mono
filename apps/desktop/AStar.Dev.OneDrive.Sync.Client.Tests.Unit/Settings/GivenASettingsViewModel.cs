@@ -40,15 +40,16 @@ public sealed class GivenASettingsViewModel
         return loc;
     }
 
-    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null, ILocalizationService? localizationService = null)
+    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null, ILocalizationService? localizationService = null, IFolderPickerService? folderPickerService = null)
     {
         settingsService ??= BuildSettingsService();
         themeService ??= Substitute.For<IThemeService>();
         scheduler ??= Substitute.For<ISyncScheduler>();
         repository ??= Substitute.For<IAccountRepository>();
         localizationService ??= BuildLocalizationService();
+        folderPickerService ??= Substitute.For<IFolderPickerService>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService, folderPickerService);
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()

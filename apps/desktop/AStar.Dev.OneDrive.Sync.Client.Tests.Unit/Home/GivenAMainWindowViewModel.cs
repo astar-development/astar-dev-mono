@@ -56,7 +56,7 @@ public sealed class GivenAMainWindowViewModel
         return new FileClassificationRulesViewModel(repo);
     }
 
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService);
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
 
     private MainWindowViewModel CreateSut()
     {

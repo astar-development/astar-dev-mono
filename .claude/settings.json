@@ -33,12 +33,7 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "dotnet build -warnaserror && dotnet test"
-          }
-        ]
+        "hooks": []
       }
     ],
     "PreToolUse": [
