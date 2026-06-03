@@ -57,7 +57,7 @@ public sealed class GivenAnApplicationInitializer
         return new FileClassificationRulesViewModel(repo);
     }
 
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService);
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
 
     private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules)
         => new(_startupService, _quotaRefreshService, accounts, files, dashboard, activity, settings, classificationRules, Substitute.For<ILogger<ApplicationInitializer>>());

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Avalonia.Platform.Storage;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -19,15 +20,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly ISyncScheduler scheduler;
     private readonly IAccountRepository repository;
     private readonly ILocalizationService loc;
+    private readonly IFolderPickerService folderPickerService;
     private bool isLoaded;
 
-    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc)
+    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService)
     {
         this.settingsService = settingsService;
         this.themeService = themeService;
         this.scheduler = scheduler;
         this.repository = repository;
         this.loc = loc;
+        this.folderPickerService = folderPickerService;
         Theme = settingsService.Current.Theme;
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
@@ -118,6 +121,30 @@ public sealed partial class SettingsViewModel : ObservableObject
         var vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
         if (vm is not null)
             _ = AccountSettings.Remove(vm);
+    }
+
+    /// <summary>Opens a folder picker for the given account and updates <see cref="AccountSyncSettingsViewModel.LocalSyncPath"/> if the user selects a folder.</summary>
+    public async Task BrowseForAccountFolderAsync(string accountId, IStorageProvider storageProvider, CancellationToken ct = default)
+    {
+        var account = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
+        if (account is null)
+            return;
+
+        var path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", ct).ConfigureAwait(false);
+        if (path is not null)
+            account.LocalSyncPath = path;
+    }
+
+    /// <summary>Sets <see cref="AccountSyncSettingsViewModel.LocalSyncPath"/> for the given account ID. Returns <c>false</c> if the account is not found.</summary>
+    public bool TryApplyLocalSyncPath(string accountId, string path)
+    {
+        var account = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
+        if (account is null)
+            return false;
+
+        account.LocalSyncPath = path;
+
+        return true;
     }
 
     private IReadOnlyList<SyncIntervalOption> BuildIntervalOptions() =>

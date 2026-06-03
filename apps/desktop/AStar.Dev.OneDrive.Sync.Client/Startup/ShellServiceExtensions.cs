@@ -53,6 +53,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         _ = services.AddSingleton<ISyncEventAggregator, SyncEventAggregator>();
         _ = services.AddSingleton<ISettingsService, SettingsService>();
+        _ = services.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
         _ = services.AddSingleton<IThemeService, ThemeService>();
         _ = services.AddSingleton<IJobHandler, DownloadJobHandler>();
         _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
