@@ -1,15 +1,17 @@
+using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Home;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
+public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
 {
     /// <inheritdoc />
     public async Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default)
@@ -22,6 +24,9 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
 
             progress.Report("Loading settings…");
             await settingsService.LoadAsync().ConfigureAwait(false);
+
+            progress.Report("Applying locale…");
+            await loc.SetCultureAsync(new CultureInfo(settingsService.Current.Locale)).ConfigureAwait(false);
 
             progress.Report("Applying theme…");
             themeService.Apply(settingsService.Current.Theme);

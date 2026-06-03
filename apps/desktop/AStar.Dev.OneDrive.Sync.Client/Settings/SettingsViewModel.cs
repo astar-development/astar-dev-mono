@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -33,6 +34,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ThemeOptions = ThemeOptionFactory.Create(loc);
         IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        LanguageOptions = LanguageOptionFactory.Create(loc);
         loc.CultureChanged += OnCultureChanged;
         isLoaded = true;
     }
@@ -84,8 +86,19 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>The available conflict policy options, localised for the current culture.</summary>
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
+    /// <summary>The available language options derived from the embedded localisation files.</summary>
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; private set; }
+
     /// <summary>The per-account sync settings view models.</summary>
     public ObservableCollection<AccountSyncSettingsViewModel> AccountSettings { get; } = [];
+
+    /// <summary>Switches the active locale, persists the choice, and raises <see cref="ILocalizationService.CultureChanged"/>.</summary>
+    public async Task SelectCultureAsync(CultureInfo culture)
+    {
+        await loc.SetCultureAsync(culture).ConfigureAwait(false);
+        settingsService.Current.Locale = culture.Name;
+        await settingsService.SaveAsync().ConfigureAwait(false);
+    }
 
     /// <summary>Loads the account settings view models from the given accounts, replacing any existing entries.</summary>
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
@@ -116,7 +129,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         new(120, loc.GetLocal("Settings.Interval.Hours", 2)),
     ];
 
-    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
+    private void OnCultureChanged(object? sender, CultureInfo culture)
     {
         ThemeOptions = ThemeOptionFactory.Create(loc);
         OnPropertyChanged(nameof(ThemeOptions));
@@ -124,5 +137,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(IntervalOptions));
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
         OnPropertyChanged(nameof(PolicyOptions));
+        LanguageOptions = LanguageOptionFactory.Create(loc);
+        OnPropertyChanged(nameof(LanguageOptions));
     }
 }

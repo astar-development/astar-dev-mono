@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
@@ -50,6 +51,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     {
         settingsService.Current.Returns(new AppSettings { SyncIntervalMinutes = 30, Theme = AppTheme.System });
         settingsServiceForViewModel.Current.Returns(new AppSettings());
+        localizationService.AvailableCultures.Returns([]);
         startupService.RestoreAccountsAsync().Returns([]);
         syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
 
@@ -81,7 +83,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
-    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
+    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
 
     [Fact]
     public async Task when_bootstrap_async_is_called_then_settings_load_async_is_called()
@@ -91,6 +93,17 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
 
         await settingsService.Received(1).LoadAsync();
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_locale_is_applied_from_settings()
+    {
+        settingsService.Current.Returns(new AppSettings { Locale = "en-US", SyncIntervalMinutes = 30, Theme = AppTheme.System });
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        await localizationService.Received(1).SetCultureAsync(Arg.Is<CultureInfo>(c => c.Name == "en-US"));
     }
 
     [Fact]
@@ -122,6 +135,11 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
             callOrder.Add("LoadAsync");
             return Task.CompletedTask;
         });
+        localizationService.SetCultureAsync(Arg.Any<CultureInfo>()).Returns(_ =>
+        {
+            callOrder.Add("SetCultureAsync");
+            return Task.CompletedTask;
+        });
         themeService.When(service => service.Apply(Arg.Any<AppTheme>())).Do(_ => callOrder.Add("Apply"));
         syncScheduler.When(scheduler => scheduler.StartSync(Arg.Any<TimeSpan?>())).Do(_ => callOrder.Add("StartSync"));
 
@@ -129,7 +147,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
         await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
 
-        callOrder.ShouldBe(["LoadAsync", "Apply", "StartSync"]);
+        callOrder.ShouldBe(["LoadAsync", "SetCultureAsync", "Apply", "StartSync"]);
     }
 
     [Fact]
