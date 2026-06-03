@@ -72,7 +72,8 @@ Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-u
 2. `dotnet test` — paste EXACT pass/fail count. New failures = zero. If this change broke tests, diagnose and fix them — never dismiss as pre-existing.
 3. Confirm all call sites and test files found and updated.
 4. Human review BEFORE committing.
-5. Approved → commit to branch, raise GitHub PR.
+5. Commit to branch (not main).
+6. **Raise PR using `.github/PULL_REQUEST_TEMPLATE.md`** — fill all sections, do not omit or rewrite.
 
 Never say "fixed"/"done" without evidence. Say "I believe this is fixed because…"
 For sync/download bugs: confirm full flow (Graph API → persistence → sync logic) first.
@@ -80,7 +81,6 @@ For sync/download bugs: confirm full flow (Graph API → persistence → sync lo
 ## GitHub
 
 Always use `gh` CLI for all GitHub operations. Never use MCP GitHub - not configured.
-When raising a PR, use `.github/PULL_REQUEST_TEMPLATE.md` as the body structure — fill in each section; do not omit or rewrite the template.
 
 ## Subagents
 
