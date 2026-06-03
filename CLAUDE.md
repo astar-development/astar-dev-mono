@@ -47,6 +47,7 @@ DI from the start. Never `new` a service inside a class.
 - **XML comments**: all public members. Implementing interface → `<inheritdoc />` only.
 - **Test projects**: `*.Tests.Unit` / `*.Tests.Integration`
 - **Blank line before `return`** after a code block. NOT after `if`/`else`.
+- **Error handling**: Public APIs never throw for invalid input — use `Result<T>` or normalize gracefully. See @.claude/rules/c-sharp-code-style.md § Error Handling.
 
 Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-ui.md.
 
