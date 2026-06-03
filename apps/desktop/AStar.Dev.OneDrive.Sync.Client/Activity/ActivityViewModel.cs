@@ -9,14 +9,13 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
-public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, ILocalizationService loc) : ObservableObject
+public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, ILocalizationService loc, IUiDispatcher dispatcher) : ObservableObject
 {
     private const int MaxLogSize = 10_000;
     private string? _activeAccountId;
@@ -56,6 +55,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     public void SubscribeToSyncEvents()
     {
+        syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;
         syncEventAggregator.JobCompleted += OnJobCompleted;
         syncEventAggregator.ConflictDetected += OnConflictDetected;
     }
@@ -100,7 +100,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         };
 
     /// <summary>Called when a sync job completes.</summary>
-    public void AddActivityItem(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
+    public void AddActivityItem(ActivityItemViewModel item) => dispatcher.Post(() =>
                                                                     {
                                                                         LogItems.Insert(0, item);
 
@@ -112,7 +112,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
                                                                     });
 
     /// <summary>Called when a new conflict is detected.</summary>
-    public void AddConflictItem(SyncConflict conflict) => Dispatcher.UIThread.Post(() =>
+    public void AddConflictItem(SyncConflict conflict) => dispatcher.Post(() =>
                                                                {
                                                                    if(Conflicts.Any(c => c.Id == conflict.Id))
                                                                        return;
@@ -135,6 +135,15 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         LogItems.Clear();
         FilteredLog.Clear();
         LogItemCount = 0;
+    }
+
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
+    {
+        if(args.Total != 0 || string.IsNullOrEmpty(args.CurrentFile))
+            return;
+
+        var item = new ActivityItemViewModel(loc) { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info };
+        AddActivityItem(item);
     }
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
