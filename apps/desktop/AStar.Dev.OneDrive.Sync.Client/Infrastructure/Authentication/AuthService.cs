@@ -130,21 +130,9 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
 
     private static Result<AuthResult, AuthError> BuildSuccess(AuthenticationResult result)
     {
-        string? displayName = result.Account.Username;
-        string? email = result.Account.Username;
+        var displayName = ClaimsProfileResolver.ResolveDisplayName(result.ClaimsPrincipal, result.Account.Username);
+        var email = ClaimsProfileResolver.ResolveEmail(result.ClaimsPrincipal, result.Account.Username);
 
-        if (result.ClaimsPrincipal is not null)
-        {
-            string? nameClaim = result.ClaimsPrincipal.FindFirst("name")?.Value;
-            string? emailClaim = result.ClaimsPrincipal.FindFirst("preferred_username")?.Value
-                                 ?? result.ClaimsPrincipal.FindFirst("email")?.Value;
-
-            if (!string.IsNullOrEmpty(nameClaim))
-                displayName = nameClaim;
-            if (!string.IsNullOrEmpty(emailClaim))
-                email = emailClaim;
-        }
-
-        return AuthResultFactory.Success(accessToken: result.AccessToken, accountId: result.Account.HomeAccountId.Identifier, profile: AccountProfileFactory.Create(displayName ?? result.Account.Username, email ?? result.Account.Username), expiresOn: result.ExpiresOn);
+        return AuthResultFactory.Success(result.AccessToken, result.Account.HomeAccountId.Identifier, AccountProfileFactory.Create(displayName, email), result.ExpiresOn);
     }
 }
