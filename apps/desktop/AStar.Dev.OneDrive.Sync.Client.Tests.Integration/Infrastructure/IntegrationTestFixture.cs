@@ -90,8 +90,10 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         {
             var httpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
             var authProvider = new BaseBearerTokenAuthenticationProvider(new TokenFactoryProvider(tokenFactory));
-            var adapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient);
-            adapter.BaseUrl = baseUrl;
+            var adapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
+            {
+                BaseUrl = baseUrl
+            };
 
             return new GraphServiceClient(adapter);
         }

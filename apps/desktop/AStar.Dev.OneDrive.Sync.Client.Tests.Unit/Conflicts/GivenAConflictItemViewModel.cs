@@ -101,9 +101,10 @@ public sealed class GivenAConflictItemViewModel
     {
         var loc = BuildLocalizationService();
         loc.GetLocal("Conflict.Collapse").Returns("test-collapse");
-        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
-
-        sut.IsExpanded = true;
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc)
+        {
+            IsExpanded = true
+        };
 
         sut.CollapseExpandLabel.ShouldBe("test-collapse");
     }
@@ -113,9 +114,10 @@ public sealed class GivenAConflictItemViewModel
     {
         var loc = BuildLocalizationService();
         loc.GetLocal("Conflict.Resolve").Returns("test-resolve");
-        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
-
-        sut.IsExpanded = false;
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc)
+        {
+            IsExpanded = false
+        };
 
         sut.CollapseExpandLabel.ShouldBe("test-resolve");
     }
