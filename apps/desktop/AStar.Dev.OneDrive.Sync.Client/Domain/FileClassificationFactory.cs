@@ -8,7 +8,7 @@ public static class FileClassificationFactory
     /// <summary>Creates a <see cref="FileClassification"/> with the specified levels. If level1 is null or empty/whitespace, defaults to "Unclassified".</summary>
     public static FileClassification Create(string level1, Option<string> level2, Option<string> level3, bool isSpecial)
     {
-        var normalizedLevel1 = string.IsNullOrWhiteSpace(level1) ? "Unclassified" : level1;
+        string normalizedLevel1 = string.IsNullOrWhiteSpace(level1) ? "Unclassified" : level1;
 
         return new(normalizedLevel1, level2, level3, isSpecial);
     }

@@ -12,7 +12,7 @@ internal static class ClaimsProfileResolver
     /// <summary>Returns <c>preferred_username</c> if present and non-empty, then <c>email</c> if present and non-empty, otherwise <paramref name="fallback"/>.</summary>
     internal static string ResolveEmail(ClaimsPrincipal? claims, string fallback)
     {
-        var candidate = claims?.FindFirst("preferred_username")?.Value
+        string? candidate = claims?.FindFirst("preferred_username")?.Value
                         ?? claims?.FindFirst("email")?.Value;
 
         return string.IsNullOrEmpty(candidate) ? fallback : candidate;
