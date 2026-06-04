@@ -3,6 +3,7 @@
     <Folder Name="/apps/desktop/">
         <Project Path="apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj" />
         <Project Path="apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj" />
+        <Project Path="apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Integration/AStar.Dev.OneDrive.Sync.Client.Tests.Integration.csproj" />
         <Project Path="apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/AStar.Dev.File.App/">

@@ -28,7 +28,7 @@ Reuse existing `LogMessage` templates — do NOT create new ones unless no suita
 
 ## DI
 
-DI from the start. Never `new` a service inside a class.
+DI from the start. Never `new` a service inside a class. Never modify production code solely to support testing — implement interfaces in the test project instead.
 
 ## Architecture
 
@@ -50,6 +50,10 @@ DI from the start. Never `new` a service inside a class.
 - **Error handling**: Public APIs never throw for invalid input — use `Result<T>` or normalize gracefully. See @.claude/rules/c-sharp-code-style.md § Error Handling.
 
 Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-ui.md.
+
+## Plans
+
+When a plan is approved, raise one GitHub issue per phase before writing any code.
 
 ## Before Starting ANY Task (mandatory, no exceptions)
 
