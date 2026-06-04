@@ -179,4 +179,26 @@ public sealed class GivenALevel1Deriver
 
         _ = map.ShouldBeAssignableTo<IReadOnlyDictionary<string, string>>();
     }
+
+    [Fact]
+    public void when_derive_called_with_both_collections_empty_then_object_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = [];
+        IReadOnlyList<string> filenameTokens = [];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Object");
+    }
+
+    [Fact]
+    public void when_derive_called_with_no_folder_match_and_person_name_and_colour_in_tokens_then_person_takes_priority()
+    {
+        IReadOnlyList<string> folderSegments = ["Archive"];
+        IReadOnlyList<string> filenameTokens = ["john", "smith", "red"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Person");
+    }
 }

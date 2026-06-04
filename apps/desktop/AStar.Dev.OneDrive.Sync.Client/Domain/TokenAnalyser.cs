@@ -50,7 +50,8 @@ public static partial class TokenAnalyser
     {
         "file", "name", "persons", "person", "photo", "picture", "image", "thing",
         "part", "view", "day", "time", "way", "year", "place", "world", "life",
-        "hand", "room", "birthday", "party", "wedding", "event", "album"
+        "hand", "room", "birthday", "party", "wedding", "event", "album",
+        "misc", "shot", "img", "archive", "scan", "copy", "temp", "draft"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
     [GeneratedRegex(@"[^a-zA-Z]+")]
@@ -64,12 +65,12 @@ public static partial class TokenAnalyser
     /// <param name="text">The raw file name (may include extension and path separators).</param>
     public static Option<string> ExtractPersonName(string text)
     {
-        if(string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(text))
             return Option.None<string>();
 
         string stem = Path.GetFileNameWithoutExtension(text);
 
-        if(stem.Contains(':'))
+        if (stem.Contains(':'))
         {
             string afterColon = stem[(stem.IndexOf(':') + 1)..];
 
@@ -88,26 +89,26 @@ public static partial class TokenAnalyser
     /// <param name="tokens">Lower-case, stop-word-filtered tokens derived from a file-name stem.</param>
     public static Option<string> ExtractColourPhrase(IReadOnlyList<string> tokens)
     {
-        if(tokens.Count == 0)
+        if (tokens.Count == 0)
             return Option.None<string>();
 
         var colourIndex = -1;
-        for(var index = 0; index < tokens.Count; index++)
+        for (var index = 0; index < tokens.Count; index++)
         {
-            if(!ColourWords.Contains(tokens[index]))
+            if (!ColourWords.Contains(tokens[index]))
                 continue;
 
             colourIndex = index;
             break;
         }
 
-        if(colourIndex < 0)
+        if (colourIndex < 0)
             return Option.None<string>();
 
         string colourToken = tokens[colourIndex];
         var nextIndex = colourIndex + 1;
 
-        if(nextIndex < tokens.Count && ConcretePairableNouns.Contains(tokens[nextIndex]))
+        if (nextIndex < tokens.Count && ConcretePairableNouns.Contains(tokens[nextIndex]))
             return Option.Some(colourToken + " " + tokens[nextIndex]);
 
         return Option.Some(colourToken);
@@ -124,7 +125,7 @@ public static partial class TokenAnalyser
                            && !AbstractNouns.Contains(word))
             .ToList();
 
-        if(words.Count < 2)
+        if (words.Count < 2)
             return Option.None<string>();
 
         return Option.Some(Capitalise(words[0]) + " " + Capitalise(words[1]));
