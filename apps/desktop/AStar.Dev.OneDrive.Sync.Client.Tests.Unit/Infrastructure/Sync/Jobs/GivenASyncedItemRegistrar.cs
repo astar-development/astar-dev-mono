@@ -16,6 +16,7 @@ public sealed class GivenASyncedItemRegistrar
     private readonly IFileClassificationRuleRepository _fileClassificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
     private readonly IDirectory _mockDirectory = Substitute.For<IDirectory>();
     private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
+    private readonly IFileAutoCategorisor _fileAutoCategorisor = Substitute.For<IFileAutoCategorisor>();
 
     public GivenASyncedItemRegistrar()
     {
@@ -28,11 +29,12 @@ public sealed class GivenASyncedItemRegistrar
                 FileClassificationRuleFactory.Create(keywords, FileClassificationFactory.Create("Media", Option.None<string>(), Option.None<string>(), false)),
                 FileClassificationRuleFactory.Create(keywords1, FileClassificationFactory.Create("Work", Option.None<string>(), Option.None<string>(), false))
             }.AsReadOnly()));
+        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false));
     }
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
 
-    private SyncedItemRegistrar CreateSutWithRules(IReadOnlyList<FileClassificationRule> rules) => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>());
+    private SyncedItemRegistrar CreateSutWithRules(IReadOnlyList<FileClassificationRule> rules) => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
 
     private static FileClassificationRule ClassificationRule(string keyword, string level1)
         => FileClassificationRuleFactory.Create([keyword], FileClassificationFactory.Create(level1, Option.None<string>(), Option.None<string>(), false));
@@ -134,7 +136,7 @@ public sealed class GivenASyncedItemRegistrar
 
         await _syncedItemRepository.Received(1).UpsertClassificationsAsync(
             entityId,
-            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Count == 1 && list[0].TagName == "Unclassified"),
+            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.TagName == "Unclassified")),
             Arg.Any<CancellationToken>());
     }
 
@@ -162,5 +164,47 @@ public sealed class GivenASyncedItemRegistrar
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/photos", "/sync/photos", syncedItems, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.DidNotReceive().UpsertClassificationsAsync(Arg.Any<int>(), Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_phantom_called_then_auto_categorisor_categorise_is_called()
+    {
+        var sut = CreateSut();
+        var item = FileItem("file-auto-1", "/Photos/a red car on the road.jpg");
+        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, TestContext.Current.CancellationToken);
+
+        _fileAutoCategorisor.Received(1).Categorise("/Photos/a red car on the road.jpg");
+    }
+
+    [Fact]
+    public async Task when_register_phantom_called_then_upsert_classifications_includes_auto_derived_classification()
+    {
+        const int entityId = 99;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
+        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Color", Option.Some("Red"), Option.None<string>(), false));
+        var sut = CreateSut();
+        var item = FileItem("file-auto-2", "/Photos/a red car on the road.jpg");
+        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(
+            entityId,
+            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Color")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_then_auto_categorisor_is_not_called()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("folder-auto-1", "/Photos");
+        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Photos", "/sync/Photos", syncedItems, TestContext.Current.CancellationToken);
+
+        _fileAutoCategorisor.DidNotReceive().Categorise(Arg.Any<string>());
     }
 }
