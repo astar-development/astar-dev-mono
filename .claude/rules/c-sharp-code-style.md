@@ -18,6 +18,7 @@ paths:
 - No regions, no `#pragma` to hide code.
 - Early returns / guard clauses over deep nesting.
 - No newing up services; use DI.
+- Explicit types when non-obvious; `var` only when the type is clear from the right-hand side.
 
 ## Primitive Obsession
 

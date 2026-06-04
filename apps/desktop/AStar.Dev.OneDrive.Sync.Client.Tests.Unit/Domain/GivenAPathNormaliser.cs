@@ -5,8 +5,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 public sealed class GivenAPathNormaliser
 {
     private const string RootedEightSegmentPath = "/a/b/c/d/e/f/g/meaningful/further/file.jpg";
-    private const string RootedSevenSegmentPath = "/a/b/c/d/e/f/g/file.jpg";
     private const string RootedExactlySevenSegments = "/a/b/c/d/e/f/g";
+
+    private static readonly string[] MeaningfulAndFurther = ["meaningful", "further"];
 
     [Fact]
     public void when_strip_root_path_called_with_eight_segment_rooted_path_then_meaningful_suffix_is_returned() =>
@@ -41,7 +42,7 @@ public sealed class GivenAPathNormaliser
     {
         var segments = PathNormaliser.GetFolderSegments("meaningful/further/file.jpg");
 
-        segments.ShouldBe(new[] { "meaningful", "further" });
+        segments.ShouldBe(MeaningfulAndFurther);
     }
 
     [Fact]
@@ -65,7 +66,7 @@ public sealed class GivenAPathNormaliser
     {
         var segments = PathNormaliser.GetFolderSegments("/meaningful/further/file.jpg");
 
-        segments.ShouldBe(new[] { "meaningful", "further" });
+        segments.ShouldBe(MeaningfulAndFurther);
     }
 
     [Fact]
