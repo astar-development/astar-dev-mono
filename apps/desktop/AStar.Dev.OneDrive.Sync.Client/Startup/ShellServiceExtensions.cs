@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
@@ -61,6 +62,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISyncWorkerFactory, SyncWorkerFactory>();
         _ = services.AddSingleton<ISyncPipeline, ParallelSyncPipeline>();
         _ = services.AddSingleton<IAppBootstrapper, AppBootstrapper>();
+        _ = services.AddSingleton<IFileAutoCategorisor, RuleBasedFileAutoCategorisor>();
         _ = services.AddOneDriveClient();
 
         return services;
