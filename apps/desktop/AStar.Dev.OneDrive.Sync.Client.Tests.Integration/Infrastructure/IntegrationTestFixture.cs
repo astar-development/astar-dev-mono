@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using AStar.Dev.OneDrive.Sync.Client.Startup;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +54,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         ReplaceWithStub<IAuthService>(services);
         ReplaceWithStub<IFolderPickerService>(services);
         ReplaceWithStub<IFileManagerService>(services);
+        services.AddSingleton(Substitute.For<ILocalizationService>());
 
         var fileSystemDescriptor = services.Single(d => d.ServiceType == typeof(IFileSystem));
         services.Remove(fileSystemDescriptor);
@@ -88,8 +90,10 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         {
             var httpClient = new HttpClient { BaseAddress = new Uri(baseUrl) };
             var authProvider = new BaseBearerTokenAuthenticationProvider(new TokenFactoryProvider(tokenFactory));
-            var adapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient);
-            adapter.BaseUrl = baseUrl;
+            var adapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
+            {
+                BaseUrl = baseUrl
+            };
 
             return new GraphServiceClient(adapter);
         }
