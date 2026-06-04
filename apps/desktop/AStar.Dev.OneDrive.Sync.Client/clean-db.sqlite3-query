@@ -3,4 +3,23 @@ DELETE FROM SyncedItems;
 
 DELETE FROM SyncedItemClassifications;
 
+SELECT
+    *
+FROM
+    SyncedItemClassifications
+WHERE
+    Level1 != 'Unclassified';
+
 DELETE FROM SyncJobs;
+
+-- Update the FileClassificationRules table to set Level1 to the Keywords where it is currently empty
+UPDATE FileClassificationRules
+SET
+    Level1 = Keywords
+WHERE
+    Level1 = '';
+
+SELECT
+    *
+FROM
+    FileClassificationRules;
