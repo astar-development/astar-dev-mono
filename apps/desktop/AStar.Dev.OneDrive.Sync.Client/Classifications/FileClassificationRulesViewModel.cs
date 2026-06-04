@@ -62,7 +62,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         var classification = FileClassificationFactory.Create(NewLevel1.Trim(), level2, level3, NewIsSpecial);
         var rule = FileClassificationRuleFactory.Create(keywords, classification);
 
-        var id = await repository.AddAsync(rule);
+        int id = await repository.AddAsync(rule);
         Rules.Add(new FileClassificationRuleRowViewModel(id, rule, DeleteRuleAsync, UpdateRuleAsync));
 
         NewKeywords = string.Empty;

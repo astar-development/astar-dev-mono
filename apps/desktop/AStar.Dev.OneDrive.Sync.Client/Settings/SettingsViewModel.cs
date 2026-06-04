@@ -147,7 +147,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (account is null)
             return;
 
-        var path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", ct).ConfigureAwait(false);
+        string? path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", ct).ConfigureAwait(false);
         if (path is not null)
             account.LocalSyncPath = path;
     }

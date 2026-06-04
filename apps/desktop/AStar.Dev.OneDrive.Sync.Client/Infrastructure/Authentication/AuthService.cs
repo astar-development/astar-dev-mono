@@ -130,8 +130,8 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
 
     private static Result<AuthResult, AuthError> BuildSuccess(AuthenticationResult result)
     {
-        var displayName = ClaimsProfileResolver.ResolveDisplayName(result.ClaimsPrincipal, result.Account.Username);
-        var email = ClaimsProfileResolver.ResolveEmail(result.ClaimsPrincipal, result.Account.Username);
+        string displayName = ClaimsProfileResolver.ResolveDisplayName(result.ClaimsPrincipal, result.Account.Username);
+        string email = ClaimsProfileResolver.ResolveEmail(result.ClaimsPrincipal, result.Account.Username);
 
         return AuthResultFactory.Success(result.AccessToken, result.Account.HomeAccountId.Identifier, AccountProfileFactory.Create(displayName, email), result.ExpiresOn);
     }
