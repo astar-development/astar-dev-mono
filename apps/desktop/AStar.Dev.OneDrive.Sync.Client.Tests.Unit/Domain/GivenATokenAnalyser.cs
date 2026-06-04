@@ -46,94 +46,88 @@ public sealed class GivenATokenAnalyser
     [Fact]
     public void when_extract_person_name_called_with_john_smith_text_then_name_is_returned()
     {
-        var result = TokenAnalyser.ExtractPersonName("a file with a persons name: john smith - in it.jpg");
+        Option<string> result = TokenAnalyser.ExtractPersonName("a file with a persons name: john smith - in it.jpg");
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("John Smith");
     }
 
     [Fact]
     public void when_extract_person_name_called_with_jane_doe_text_then_name_is_returned()
     {
-        var result = TokenAnalyser.ExtractPersonName("jane doe birthday party.jpg");
+        Option<string> result = TokenAnalyser.ExtractPersonName("jane doe birthday party.jpg");
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("Jane Doe");
     }
 
     [Fact]
     public void when_extract_person_name_called_with_no_person_name_then_none_is_returned()
     {
-        var result = TokenAnalyser.ExtractPersonName("a red car on the road.jpg");
+        Option<string> result = TokenAnalyser.ExtractPersonName("a red car on the road.jpg");
 
-        result.IsSome.ShouldBeFalse();
+        result.MapOrDefault(v => false, true).ShouldBeTrue();
     }
 
     [Fact]
     public void when_extract_person_name_called_with_single_word_then_none_is_returned()
     {
-        var result = TokenAnalyser.ExtractPersonName("red.jpg");
+        Option<string> result = TokenAnalyser.ExtractPersonName("red.jpg");
 
-        result.IsSome.ShouldBeFalse();
+        result.MapOrDefault(v => false, true).ShouldBeTrue();
     }
 
     [Fact]
     public void when_extract_person_name_called_with_empty_string_then_none_is_returned()
     {
-        var result = TokenAnalyser.ExtractPersonName(string.Empty);
+        Option<string> result = TokenAnalyser.ExtractPersonName(string.Empty);
 
-        result.IsSome.ShouldBeFalse();
+        result.MapOrDefault(v => false, true).ShouldBeTrue();
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_red_car_tokens_then_compound_phrase_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase(["red", "car", "road"]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase(["red", "car", "road"]);
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("red car");
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_red_dress_tokens_then_compound_phrase_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase(["red", "dress", "floor"]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase(["red", "dress", "floor"]);
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("red dress");
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_colour_followed_by_non_noun_then_colour_only_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase(["file", "red", "name"]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase(["file", "red", "name"]);
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("red");
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_no_colour_tokens_then_none_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase(["file", "something", "else"]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase(["file", "something", "else"]);
 
-        result.IsSome.ShouldBeFalse();
+        result.MapOrDefault(v => false, true).ShouldBeTrue();
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_empty_list_then_none_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase([]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase([]);
 
-        result.IsSome.ShouldBeFalse();
+        result.MapOrDefault(v => false, true).ShouldBeTrue();
     }
 
     [Fact]
     public void when_extract_colour_phrase_called_with_colour_only_token_then_colour_is_returned()
     {
-        var result = TokenAnalyser.ExtractColourPhrase(["red"]);
+        Option<string> result = TokenAnalyser.ExtractColourPhrase(["red"]);
 
-        result.IsSome.ShouldBeTrue();
         result.MapOrDefault(v => v, string.Empty).ShouldBe("red");
     }
 
