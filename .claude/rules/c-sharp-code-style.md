@@ -48,7 +48,7 @@ paths:
 - Method naming: `when_[action]_then_[outcome]` snake_case
 - AAA pattern, blank lines between sections, no section comments.
 - Shouldly assertions. NSubstitute mocks (prefer real instances).
-- No XML docs or comments on test classes/methods.
+- No comments anywhere in test files — no XML docs, no inline comments, no block comments. Name the test and the variables clearly enough that no comment is needed.
 
 ## Error Handling
 
