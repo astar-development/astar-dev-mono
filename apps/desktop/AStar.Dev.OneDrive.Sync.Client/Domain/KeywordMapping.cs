@@ -1,0 +1,6 @@
+using AStar.Dev.Functional.Extensions;
+
+namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+
+/// <summary>Represents a keyword-to-classification mapping used to classify files by matching keywords in their paths.</summary>
+public sealed record KeywordMapping(string Keyword, string Level1, Option<string> Level2, Option<string> Level3, bool IsSpecial);
