@@ -67,4 +67,20 @@ public sealed class GivenAKeywordMappingFactory
 
         result.Match(m => m.Keyword, _ => string.Empty).ShouldBe("holiday");
     }
+
+    [Fact]
+    public void when_keyword_is_null_then_result_is_error()
+    {
+        var result = KeywordMappingFactory.Create(null!, AnyLevel1, Option.None<string>(), Option.None<string>(), false);
+
+        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+    }
+
+    [Fact]
+    public void when_level1_is_null_then_result_is_error()
+    {
+        var result = KeywordMappingFactory.Create(AnyKeyword, null!, Option.None<string>(), Option.None<string>(), false);
+
+        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+    }
 }

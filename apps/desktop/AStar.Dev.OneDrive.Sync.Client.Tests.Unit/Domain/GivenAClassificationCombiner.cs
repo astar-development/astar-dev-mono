@@ -73,4 +73,31 @@ public sealed class GivenAClassificationCombiner
         result.ShouldHaveSingleItem();
         result[0].Level1.ShouldBe("Unclassified");
     }
+
+    [Fact]
+    public void when_rule_results_contains_duplicate_L1_L2_L3_then_only_first_is_kept()
+    {
+        var first = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
+        var second = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true);
+        IReadOnlyList<FileClassification> ruleResults = [first, second];
+
+        var result = ClassificationCombiner.Combine(ruleResults, []);
+
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBe(first);
+    }
+
+    [Fact]
+    public void when_same_L1_L2_L3_different_IsSpecial_then_deduped_to_rule_result()
+    {
+        var ruleVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
+        var analyserVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true);
+        IReadOnlyList<FileClassification> ruleResults = [ruleVersion];
+        IReadOnlyList<FileClassification> analyserResults = [analyserVersion];
+
+        var result = ClassificationCombiner.Combine(ruleResults, analyserResults);
+
+        result.ShouldHaveSingleItem();
+        result[0].ShouldBe(ruleVersion);
+    }
 }
