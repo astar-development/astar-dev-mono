@@ -11,7 +11,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRuleRepository classificationRuleRepository, IFileSystem fileSystem, ISettingsService settingsService) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRuleRepository classificationRuleRepository, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor) : ISyncJobExecutor
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
@@ -67,7 +67,10 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
     private async Task ClassifyAsync(int syncedItemId, string remotePath, IReadOnlyList<FileClassificationRule> classificationRules, CancellationToken ct)
     {
-        var classifications = FileClassifier.Classify(remotePath, classificationRules);
+        var classifications = FileClassifier.Classify(remotePath, classificationRules)
+            .Append(fileAutoCategorisor.Categorise(remotePath))
+            .ToList()
+            .AsReadOnly();
         await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
     }
 

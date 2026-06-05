@@ -14,12 +14,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline
 public sealed class GivenASyncJobExecutor
 {
     private const string UploadFilePath = "/sync-root/Documents/file.txt";
+    private const string ColourDownloadRelativePath = "a/b/c/d/e/f/g/Photos/red-car.jpg";
+    private const string ColourUploadLocalPath = "/sync-root/a/b/c/d/e/f/g/Photos/black-dress.jpg";
+    private const string ColourUploadRelativePath = "a/b/c/d/e/f/g/Photos/black-dress.jpg";
 
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
     private readonly ISyncPipeline _pipeline = Substitute.For<ISyncPipeline>();
     private readonly IFileClassificationRuleRepository _classificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
     private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
+    private readonly IFileAutoCategorisor _fileAutoCategorisor = new RuleBasedFileAutoCategorisor();
 
     private readonly OneDriveAccount _account = new()
     {
@@ -34,12 +38,12 @@ public sealed class GivenASyncJobExecutor
         _settingsService.Current.Returns(new AppSettings());
     }
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem, _settingsService);
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem, _settingsService, _fileAutoCategorisor);
 
-    private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt")
+    private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt", string relativePath = "Documents/file.txt")
     {
         var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(""), new OneDriveItemId(remoteId));
-        var target = SyncFileTargetFactory.Create(localPath, "Documents/file.txt");
+        var target = SyncFileTargetFactory.Create(localPath, relativePath);
         var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1));
 
         return direction switch
@@ -121,6 +125,38 @@ public sealed class GivenASyncJobExecutor
         await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Documents")), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_pipeline_completes_download_job_with_colour_in_path_then_auto_categoriser_classification_is_persisted()
+    {
+        const int syncedItemId = 42;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
+        var job = MakeJob("item-1", SyncDirection.Download, relativePath: ColourDownloadRelativePath);
+        SimulateJobCompleted(job.Complete());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Color")), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_pipeline_completes_upload_job_with_colour_in_path_then_auto_categoriser_classification_is_persisted()
+    {
+        const int syncedItemId = 43;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(ColourUploadLocalPath).Which(m => m.HasStringContent("data"));
+        var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, localPath: ColourUploadLocalPath, relativePath: ColourUploadRelativePath);
+        SimulateJobCompleted(((UploadSyncJob)job.Complete()) with { UploadedRemoteItemId = "uploaded-remote-id" });
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(mockFileSystem);
+
+        await sut.ExecuteAsync(_account, tokenFactory, [job], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertClassificationsAsync(syncedItemId, Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Color")), Arg.Any<CancellationToken>());
     }
 
     [Fact]
