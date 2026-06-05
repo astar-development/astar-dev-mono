@@ -44,7 +44,9 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         var entries = await repository.GetAllWithIdsAsync(cancellationToken);
         Rules.Clear();
         foreach (var entry in entries)
+        {
             Rules.Add(new FileClassificationRuleRowViewModel(entry.Id, entry.Rule, DeleteRuleAsync, UpdateRuleAsync));
+        }
     }
 
     private bool CanAdd => !string.IsNullOrWhiteSpace(NewKeywords) && !string.IsNullOrWhiteSpace(NewLevel1);

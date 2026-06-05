@@ -21,6 +21,8 @@ public sealed class FileClassificationRuleRepository(IDbContextFactory<AppDbCont
                     e.Level2 is not null ? Option.Some(e.Level2) : Option.None<string>(),
                     e.Level3 is not null ? Option.Some(e.Level3) : Option.None<string>(),
                     e.IsSpecial)))
+                    .OrderBy(r => r.Classification.IsSpecial)
+                    .ThenBy(r => r.Classification.Level1)
             .ToList()
             .AsReadOnly();
     }
@@ -39,6 +41,8 @@ public sealed class FileClassificationRuleRepository(IDbContextFactory<AppDbCont
                     e.Level2 is not null ? Option.Some(e.Level2) : Option.None<string>(),
                     e.Level3 is not null ? Option.Some(e.Level3) : Option.None<string>(),
                     e.IsSpecial))))
+            .OrderBy(r => r.Rule.Classification.IsSpecial)
+            .ThenBy(r => r.Rule.Classification.Level1)
             .ToList()
             .AsReadOnly();
     }

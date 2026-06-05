@@ -16,7 +16,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
     {
-        if(jobs.Count == 0)
+        if (jobs.Count == 0)
             return;
 
         await syncRepository.EnqueueJobsAsync(jobs).ConfigureAwait(false);
@@ -29,7 +29,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             onProgress,
             args =>
             {
-                if(args.Job.Status.State == SyncJobState.Completed)
+                if (args.Job.Status.State == SyncJobState.Completed)
                     successfulJobs.Add(args.Job);
 
                 onJobCompleted(args);
@@ -39,23 +39,28 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             settingsService.Current.ConcurrentWorkerCount,
             ct).ConfigureAwait(false);
 
-        if(successfulJobs.IsEmpty)
+        if (successfulJobs.IsEmpty)
             return;
 
+        await CategoriseFilesAsync(account, syncedItems, successfulJobs, ct).ConfigureAwait(false);
+    }
+
+    private async Task CategoriseFilesAsync(OneDriveAccount account, Dictionary<string, SyncedItemEntity> syncedItems, ConcurrentBag<SyncJob> successfulJobs, CancellationToken ct)
+    {
         var classificationRules = await classificationRuleRepository.GetAllAsync(ct).ConfigureAwait(false);
 
-        foreach(var job in successfulJobs)
+        foreach (var job in successfulJobs)
         {
             string remotePath = NormaliseRemotePath(job.Target.RelativePath);
 
-            if(job is DownloadSyncJob)
+            if (job is DownloadSyncJob)
             {
                 var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, job, remotePath);
                 int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
                 syncedItems[job.Remote.RemoteItemId.Id] = entity;
                 await ClassifyAsync(syncedItemId, remotePath, classificationRules, ct).ConfigureAwait(false);
             }
-            else if(job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
+            else if (job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
             {
                 var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, remotePath, fileSystem);
                 int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
@@ -71,6 +76,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             .Append(fileAutoCategorisor.Categorise(remotePath))
             .ToList()
             .AsReadOnly();
+            
         await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
     }
 

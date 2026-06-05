@@ -10,18 +10,27 @@ SELECT
 FROM
     SyncedItemClassifications
 WHERE
-    Level1 != 'Unclassified';
+    Level1 = 'Unclassified';
 
 DELETE FROM SyncJobs;
 
--- Update the FileClassificationRules table to set Level1 to the Keywords where it is currently empty
 UPDATE FileClassificationRules
 SET
-    Level1 = Keywords
+    Level2 = null
 WHERE
-    Level1 = '';
+    Level2 = '';
 
-SELECT
-    *
+SELECT DISTINCT
+    Level1
+FROM
+    SyncedItemClassifications;
+
+SELECT DISTINCT
+    Level1, Level2, Level3
+FROM
+    SyncedItemClassifications;
+
+
+SELECT *
 FROM
     FileClassificationRules;

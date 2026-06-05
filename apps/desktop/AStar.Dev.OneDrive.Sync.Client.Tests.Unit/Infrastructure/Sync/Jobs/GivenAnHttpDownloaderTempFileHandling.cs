@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
@@ -36,6 +37,19 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         fakeFs.Path.Returns(mockFs.Path);
         fakeFs.File.When(f => f.Move(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>()))
             .Do(_ => throw new IOException("The process cannot access the file because it is being used by another process."));
+
+        return fakeFs;
+    }
+
+    private static IFileSystem CreateCapturingFileSystem(string[] capturedTempPath)
+    {
+        var mockFs = new MockFileSystem();
+        var fakeFs = Substitute.For<IFileSystem>();
+        fakeFs.FileStream.Returns(mockFs.FileStream);
+        fakeFs.Directory.Returns(mockFs.Directory);
+        fakeFs.Path.Returns(mockFs.Path);
+        fakeFs.File.When(f => f.Move(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>()))
+            .Do(callInfo => capturedTempPath[0] = callInfo.ArgAt<string>(0));
 
         return fakeFs;
     }
@@ -82,7 +96,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
-        fakeFs.File.Received(1).Delete(TempPath);
+        fakeFs.File.Received(1).Delete(Arg.Is<string>(p => p.EndsWith(".download")));
     }
 
     [Fact]
@@ -105,6 +119,31 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
         logger.Entries.ShouldContain(e => e.Level == LogLevel.Error && e.EventId.Id == 2708);
+    }
+
+    [Fact]
+    public async Task when_download_succeeds_then_temp_path_is_not_plain_dot_download_suffix()
+    {
+        string[] capturedTempPath = [string.Empty];
+        var sut = new HttpDownloader(CreateOkFactory(), CreateCapturingFileSystem(capturedTempPath), Substitute.For<ILogger<HttpDownloader>>());
+
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        capturedTempPath[0].ShouldNotBe(LocalPath + ".download");
+    }
+
+    [Fact]
+    public async Task when_download_succeeds_then_temp_path_contains_guid_segment_before_download_extension()
+    {
+        string[] capturedTempPath = [string.Empty];
+        var sut = new HttpDownloader(CreateOkFactory(), CreateCapturingFileSystem(capturedTempPath), Substitute.For<ILogger<HttpDownloader>>());
+
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        capturedTempPath[0].ShouldEndWith(".download");
+        string[] segments = capturedTempPath[0].Split('.');
+        string guidSegment = segments[^2];
+        Regex.IsMatch(guidSegment, "^[0-9a-f]{32}$").ShouldBeTrue();
     }
 
     private sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

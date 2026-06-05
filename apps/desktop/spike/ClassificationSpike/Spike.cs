@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -37,10 +38,10 @@ public static class Spike
         }
     }
 
-    internal static void ReadAndDisplayMappings()
+    internal static void ReadAndDisplayMappings(AppDbContext dbContext)
     {
         string[] fileData = File.ReadAllLines("/home/jbarden/Documents/Mappings.csv");
-        foreach (string line in fileData)
+        foreach (string line in fileData.Skip(1))
         {
             string[] parts = line.Split(',');
             if (parts.Length > 0)
@@ -53,7 +54,15 @@ public static class Spike
                 string level2 = parts[5].Trim();
                 string level3 = parts[6].Trim();
                 Console.WriteLine($"File Name Contains: {fileNameContains}, Database Mapping: {databaseMapping}, Celebrity: {celebrity}, Searchable: {searchable}, Level 1: {level1}, Level 2: {level2}, Level 3: {level3}");
+                dbContext.FileClassificationRules.Add(new FileClassificationRuleEntity
+                {
+                    Keywords = fileNameContains,
+                    Level1 = databaseMapping,
+                    IsSpecial = bool.Parse(searchable),
+                    Level2 = level1
+                });
             }
         }
+        dbContext.SaveChanges();
     }
 }

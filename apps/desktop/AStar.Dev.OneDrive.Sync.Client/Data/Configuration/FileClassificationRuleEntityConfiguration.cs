@@ -13,5 +13,8 @@ public sealed class FileClassificationRuleEntityConfiguration : IEntityTypeConfi
         _ = builder.Property(e => e.Level1).IsRequired();
         _ = builder.Property(e => e.Level2).IsRequired(false);
         _ = builder.Property(e => e.Level3).IsRequired(false);
+
+        builder.HasIndex(e => new { e.Level1, e.Level2, e.Level3 });
+        builder.HasIndex(e => e.IsSpecial);
     }
 }

@@ -23,7 +23,7 @@ Console.WriteLine(new string('-', 50));
 Spike.DisplayFileCount(dbContext);
 Console.WriteLine(new string('-', 50));
 
-Spike.ReadAndDisplayMappings();
+Spike.ReadAndDisplayMappings(dbContext);
 Console.WriteLine(new string('-', 50));
 
 Spike.DisplayFileClassificationRules(dbContext);
