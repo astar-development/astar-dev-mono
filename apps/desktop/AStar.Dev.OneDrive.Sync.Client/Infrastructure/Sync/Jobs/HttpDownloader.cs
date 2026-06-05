@@ -9,6 +9,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 /// <summary>
 /// Handles file downloads with automatic retry on 429 Too Many Requests.
 /// Uses exponential backoff respecting the Retry-After header when present.
+/// Downloads are written to a temporary path (<c>.download</c> suffix) and moved
+/// atomically to the final path on completion, preventing conflicts with file-system
+/// indexers or antivirus scanners that may open the destination file during a long sync.
 /// A new HttpClient is obtained from IHttpClientFactory per download call so the
 /// factory can rotate and dispose handlers freely without this class holding stale references.
 /// </summary>
@@ -16,8 +19,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 {
     private const string UserAgent = "AStar.Dev.OneDrive.Sync/1.0";
     private const int MaxRetries = 5;
+    private const int MaxMoveRetries = 3;
     private const double BaseDelaySeconds = 2.0;
     private const double MaxDelaySeconds = 120.0;
+    private static readonly TimeSpan MoveRetryDelay = TimeSpan.FromSeconds(1);
 
     /// <inheritdoc />
     public async Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
@@ -25,6 +30,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         using var http = httpClientFactory.CreateClient();
         http.DefaultRequestHeaders.Add("User-Agent", UserAgent);
 
+        string tempPath = localPath + ".download";
         int attempt = 0;
 
         while (true)
@@ -56,11 +62,23 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 EnsureDirectoryExists(localPath);
 
                 await using var stream = await response.Content.ReadAsStreamAsync(ct);
-                await WriteToFileAsync(stream, localPath, progress, ct);
+                await WriteToFileAsync(stream, tempPath, progress, ct);
+
+                var moveResult = await MoveWithRetryAsync(tempPath, localPath, ct);
+                if (moveResult is Result<Unit, string>.Error)
+                {
+                    TryDeleteTemp(tempPath);
+                    return moveResult;
+                }
 
                 PreserveRemoteTimestamp(localPath, remoteModified);
 
                 return new Result<Unit, string>.Ok(Unit.Default);
+            }
+            catch (IOException ex)
+            {
+                TryDeleteTemp(tempPath);
+                return new Result<Unit, string>.Error($"File write failed for '{localPath}': {ex.Message}");
             }
             catch (HttpRequestException) when (attempt <= MaxRetries)
             {
@@ -77,6 +95,47 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             {
                 response?.Dispose();
             }
+        }
+    }
+
+    private async Task<Result<Unit, string>> MoveWithRetryAsync(string tempPath, string localPath, CancellationToken ct)
+    {
+        IOException? lastError = null;
+
+        for (int attempt = 1; attempt <= MaxMoveRetries; attempt++)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            try
+            {
+                fileSystem.File.Move(tempPath, localPath, overwrite: true);
+                return new Result<Unit, string>.Ok(Unit.Default);
+            }
+            catch (IOException ex)
+            {
+                lastError = ex;
+
+                if (attempt < MaxMoveRetries)
+                {
+                    OneDriveSyncClientMessages.DownloadMoveRetrying(logger, localPath, attempt, MaxMoveRetries);
+                    await Task.Delay(MoveRetryDelay, ct);
+                }
+            }
+        }
+
+        OneDriveSyncClientMessages.DownloadMoveExhausted(logger, localPath, MaxMoveRetries, lastError?.Message ?? string.Empty);
+        return new Result<Unit, string>.Error($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message}");
+    }
+
+    private void TryDeleteTemp(string tempPath)
+    {
+        try
+        {
+            fileSystem.File.Delete(tempPath);
+        }
+        catch (Exception)
+        {
+            // Best-effort cleanup — do not mask the original error.
         }
     }
 
