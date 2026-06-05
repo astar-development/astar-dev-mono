@@ -38,6 +38,10 @@ DI from the start. Never `new` a service inside a class. Never modify production
 - Local dev: `<ProjectReference>` not `<PackageReference>` (avoids publish cycles).
 - CI version: `-p:Version=$(GitTag)`; local fallback `0.1.0`. Tag format: `v1.2.3`.
 
+## Parallel Change
+
+All features MUST use parallel-change pattern: old code → new code (coexist) → cutover → cleanup. Each step remains deployable. No breaking changes mid-PR.
+
 ## Conventions
 
 - **Commits**: Conventional Commits — `feat(scope): ...`, `fix(scope): ...`

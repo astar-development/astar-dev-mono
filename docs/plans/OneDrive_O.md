@@ -13,6 +13,20 @@ Problems:
 
 This plan replaces the flat table with a **proper 3-level category hierarchy** plus a separate keyword table.
 
+### Two classifiers run today
+
+The sync pipeline already combines **two** sources, appending both into `SyncedItemClassifications`:
+
+1. **`FileClassifier.Classify(path, dbRules)`** — matches the (flat) DB rule table; emits an `[Unclassified]`
+   sentinel when nothing matches. This is the table being made hierarchical.
+2. **`RuleBasedFileAutoCategorisor.Categorise(path)`** (`IFileAutoCategorisor`) — heuristic engine built on
+   `TokenAnalyser` (person-name + colour-phrase extraction) and `Level1Deriver.FolderTypeMap`. Derives
+   `Person` / `Color` / `Place` / `Event` / `Object` Level1 plus Level2/3, always returns one result.
+
+Call sites: [`SyncedItemRegistrar`](../../apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/Jobs/SyncedItemRegistrar.cs)
+and [`SyncJobExecutor`](../../apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Sync/Pipeline/SyncJobExecutor.cs).
+This plan **keeps** the analyser and combines the two cleanly (see *Classification Pipeline & Combination*).
+
 ### Decisions agreed in planning
 
 | Question | Decision |
@@ -21,6 +35,9 @@ This plan replaces the flat table with a **proper 3-level category hierarchy** p
 | Keyword placement | **Leaf node only** — a keyword attaches to the deepest assigned node of its branch (a node with no children) |
 | IsSpecial | **Category node + keyword override** — flag on category node; keyword override `None` = inherit, `Some(bool)` = override |
 | Migration | **Transform existing data** — EF Core migration rebuilds the tree from existing rows; no drop-and-reseed, no data loss |
+| TokenAnalyser combine | **Union, drop sentinel** — DB-rule matches and the `TokenAnalyser` heuristic both contribute; `FileClassifier` stops emitting the `Unclassified` sentinel, the combiner owns the fallback |
+| Analyser vocab | **Keep hardcoded** — `StopWords`/`ColourWords`/`ConcretePairableNouns`/`AbstractNouns`/`FolderTypeMap` stay as `FrozenSet`s in code |
+| Analyser categories | **Map to hierarchy L1** — `Person`, `Color`, `Place`, `Event`, `Object` are seeded as Level 1 category nodes so both sources share one vocabulary |
 
 ---
 
@@ -251,7 +268,46 @@ public static IReadOnlyList<FileClassification> Classify(
 where `KeywordMapping` carries the keyword plus its resolved Level1/Level2/Level3 names and effective
 `IsSpecial`. Matching logic (tokenise path, match keyword against tokens) is unchanged; only the rule shape and
 the `FileClassification` construction change. Effective `IsSpecial` = `keyword.ResolveIsSpecial(leafCategory.IsSpecial)`.
-Unchanged behaviour: returns a single `Unclassified` sentinel when nothing matches.
+
+**Behaviour change — drop the sentinel.** `Classify` now returns an **empty list** when no mapping matches. The
+`Unclassified` fallback moves to the combiner (below) so it can see whether the analyser also produced nothing.
+
+---
+
+## Classification Pipeline & Combination
+
+`TokenAnalyser` and `RuleBasedFileAutoCategorisor` are **kept unchanged** — their vocab stays as hardcoded
+`FrozenSet`s. A new combiner unions the two sources with the **Union, drop sentinel** policy.
+
+```csharp
+// Domain/ClassificationCombiner.cs
+public static class ClassificationCombiner
+{
+    public static IReadOnlyList<FileClassification> Combine(
+        IReadOnlyList<FileClassification> ruleMatches,   // FileClassifier output (may be empty)
+        FileClassification analyserResult)               // RuleBasedFileAutoCategorisor output (always present)
+    {
+        var combined = ruleMatches
+            .Append(analyserResult)
+            .DistinctBy(classification => (classification.Level1, classification.Level2, classification.Level3))
+            .ToList();
+
+        return combined.Count == 0
+            ? [FileClassificationFactory.CreateUnclassified()]
+            : combined.AsReadOnly();
+    }
+}
+```
+
+- The `Unclassified` sentinel now fires **only** if both sources are empty (in practice the analyser always
+  yields at least `Object`, so it is a true safety net).
+- De-dupe on the `(Level1, Level2, Level3)` triple so a rule match and an identical analyser result collapse.
+- Because the analyser's Level1 values (`Person`/`Color`/`Place`/`Event`/`Object`) are **seeded as Level 1
+  category nodes** by the migration, both sources speak the same Level1 vocabulary and de-dupe correctly.
+
+Call sites `SyncedItemRegistrar` and `SyncJobExecutor` change from
+`FileClassifier.Classify(...).Append(autoCategorisor.Categorise(...))` to
+`ClassificationCombiner.Combine(FileClassifier.Classify(path, mappings), autoCategorisor.Categorise(path))`.
 
 ---
 
@@ -347,7 +403,25 @@ foreach (var oldRule in QueryOldRules(connection))
 
 The leaf rule holds automatically: keywords only ever attach to the deepest assigned node of a branch.
 
-**6. Drop old table**: `DROP TABLE FileClassificationRules;`
+**6. Seed analyser Level 1 nodes** — idempotently add the categoriser's derived Level1 values so both sources
+share one tree. Insert only names not already present at Level 1 (from step 2):
+
+```sql
+INSERT INTO FileClassificationCategories (Name, Level, ParentId, IsSpecial)
+SELECT seed.Name, 1, NULL, 0
+FROM (SELECT 'Person' AS Name UNION SELECT 'Color' UNION SELECT 'Place'
+      UNION SELECT 'Event' UNION SELECT 'Object') seed
+WHERE NOT EXISTS (
+    SELECT 1 FROM FileClassificationCategories existing
+    WHERE existing.Level = 1 AND existing.ParentId IS NULL AND existing.Name = seed.Name);
+```
+
+These names mirror `Level1Deriver.FolderTypeMap` + the colour/person/object fallbacks in
+`RuleBasedFileAutoCategorisor`. The analyser still derives them in code; seeding only guarantees a matching
+editable node exists so de-dupe in the combiner aligns. (`SyncedItemClassifications` rows remain string-only;
+no FK back to the tree — see *Out of Scope*.)
+
+**7. Drop old table**: `DROP TABLE FileClassificationRules;`
 
 ### Down (rollback)
 
@@ -387,14 +461,19 @@ rule in `.claude/rules/avalonia-ui.md`.
 - `Domain/FileClassificationKeywordFactory.cs`
 - `Domain/FileClassificationKeywordExtensions.cs`
 - `Domain/KeywordMapping.cs` (+ `KeywordMappingFactory.cs`)
+- `Domain/ClassificationCombiner.cs`
 - `Data/Migrations/<timestamp>_HierarchicalFileClassificationRules.cs`
 
 ### Modify
 - `Data/AppDbContext.cs` — swap DbSets
-- `Domain/FileClassifier.cs` — new signature / mapping input
+- `Domain/FileClassifier.cs` — new signature / mapping input; **drop the `Unclassified` sentinel** (return empty)
+- `Infrastructure/Sync/Jobs/SyncedItemRegistrar.cs` — use `ClassificationCombiner.Combine(...)`
+- `Infrastructure/Sync/Pipeline/SyncJobExecutor.cs` — use `ClassificationCombiner.Combine(...)`
 - `Data/PersistenceServiceExtensions.cs` — DI swap
 - `Classifications/FileClassificationRulesViewModel.cs` + `FileClassificationRuleRowViewModel.cs` — tree binding
 - Any other call site of `IFileClassificationRuleRepository` (services, tests)
+
+`TokenAnalyser`, `RuleBasedFileAutoCategorisor`, `Level1Deriver` — **unchanged**.
 
 ### Delete (after migration applied + call sites updated)
 - `Data/Entities/FileClassificationRuleEntity.cs`
@@ -409,8 +488,12 @@ rule in `.claude/rules/avalonia-ui.md`.
 
 ## Out of Scope
 
-`SyncedItemClassifications` stores the *result* of classifying a file (denormalised Level1/2/3 strings). Those
-are historical records; this plan does not touch them. Raise a separate issue if FK integrity is wanted there.
+`SyncedItemClassifications` stores the *result* of classifying a file (denormalised Level1/2/3 strings) from
+**both** sources (DB rules + analyser). It stays **string-only** — no FK to `FileClassificationCategories`.
+Adding referential integrity there (and back-linking historical rows to tree nodes) is a separate issue.
+
+`TokenAnalyser` and `RuleBasedFileAutoCategorisor` internals — kept **as-is**, vocab stays hardcoded. This plan
+only changes how their output is *combined* with DB-rule output (the combiner) and seeds matching Level1 nodes.
 
 Full tree-edit UX (drag/move nodes, rich keyword editor) — follow-up issue.
 
@@ -423,18 +506,59 @@ Full tree-edit UX (drag/move nodes, rich keyword editor) — follow-up issue.
 | `GivenFileClassificationCategoryFactory` | Level 1–3 validation, L1 forbids ParentId, L>1 requires ParentId, name trim/empty reject |
 | `GivenFileClassificationKeywordFactory` | empty/whitespace keyword rejected; valid keyword trimmed + lowercased |
 | `GivenFileClassificationKeywordExtensions` | `ResolveIsSpecial` — 4 combos (category ±, override None/Some) |
-| `GivenAFileClassifier` | path tokenised, keyword match builds correct Level1/2/3 path + effective IsSpecial; unclassified sentinel |
+| `GivenAFileClassifier` | path tokenised, keyword match builds correct Level1/2/3 path + effective IsSpecial; **returns empty (no sentinel) on no match** |
+| `GivenAClassificationCombiner` | union of rule + analyser results; de-dupe on (L1,L2,L3) triple; `Unclassified` only when both empty; analyser result always retained |
 | `GivenFileClassificationRepository` | CRUD both tables; **leaf enforcement** (reject keyword on non-leaf, reject child under keyword-owning node); `GetAllKeywordMappingsAsync` projection; cascade delete |
-| `GivenHierarchicalMigration` (integration) | old flat rules round-trip into tree; keyword count = token count; keywords land on leaf; effective IsSpecial preserved |
+| `GivenHierarchicalMigration` (integration) | old flat rules round-trip into tree; keyword count = token count; keywords land on leaf; effective IsSpecial preserved; **analyser L1 nodes (Person/Color/Place/Event/Object) seeded once, no duplicates** |
+
+---
+
+## Phased Delivery
+
+**Invariant: `main` is buildable, test-green and deployable after _every_ phase.** Pattern is
+expand → migrate → contract (parallel-change): new structures land additively and unused first, the pipeline
+cuts over atomically, then the old structures are removed. Each phase changes/creates **≤ 6 files (tests
+included)** and ships as one PR. One GitHub issue per phase (raised on approval, per repo convention).
+
+Old and new code coexist from Phase 4 until Phase 9 — that overlap is what keeps `main` deployable.
+
+| # | Goal | Files (count) | Why `main` stays deployable |
+|---|---|---|---|
+| **1** | Category domain | `Domain/FileClassificationCategory.cs`, `…CategoryFactory.cs`, `Tests/…/GivenAFileClassificationCategoryFactory.cs` **(3)** | Pure additive; nothing references it yet |
+| **2** | Keyword domain | `Domain/FileClassificationKeyword.cs`, `…KeywordFactory.cs`, `…KeywordExtensions.cs`, `Tests/…/GivenAFileClassificationKeywordFactory.cs`, `…/GivenFileClassificationKeywordExtensions.cs` **(5)** | Additive; unused |
+| **3** | Mapping + combiner | `Domain/KeywordMapping.cs`, `…KeywordMappingFactory.cs`, `Domain/ClassificationCombiner.cs`, `Tests/…/GivenAClassificationCombiner.cs` **(4)** | Combiner compiled but not wired into pipeline |
+| **4** | EF entities + configs | 2 entities + 2 configs **(4)** | Not yet mapped in `AppDbContext` → no migration drift; compiles |
+| **5** | DbSets + create/seed/backfill migration | `Data/AppDbContext.cs` (+2 DbSets), migration `.cs` + `.Designer.cs`, `AppDbContextModelSnapshot.cs` **(4)** | New tables created **alongside** the old; seeds L1/2/3 + keywords + analyser L1 nodes. **No drop.** Old table + flow untouched |
+| **6** | New repository (registered alongside old) | `Data/Repositories/IFileClassificationRepository.cs`, `FileClassificationRepository.cs`, `Data/PersistenceServiceExtensions.cs` (add reg, keep old), `Tests/…/GivenAFileClassificationRepository.cs` **(4)** | Both repos registered; nothing consumes the new one yet |
+| **7** | Classifier overload + **pipeline cutover** | `Domain/FileClassifier.cs` (add `Classify(path, mappings)`, keep old overload), `Infrastructure/Sync/Jobs/SyncedItemRegistrar.cs`, `Infrastructure/Sync/Pipeline/SyncJobExecutor.cs`, `Tests/…/GivenAFileClassifier.cs`, `…/GivenASyncedItemRegistrar.cs`, `…/GivenASyncJobExecutor.cs` **(6)** | Atomic: pipeline switches to new repo + `ClassificationCombiner`. New repo (Ph6) resolves the new ctor deps. Old repo now only used by the VM |
+| **8** | VM cutover to the tree | `Classifications/FileClassificationRulesViewModel.cs`, `FileClassificationRuleRowViewModel.cs`, `FileClassificationsView.axaml` (+`.axaml.cs`), `App.axaml.cs` (design-time DI), `Tests/…/GivenAFileClassificationRulesViewModel.cs` **(≤6)** | After this **nothing** references `IFileClassificationRuleRepository` but its own interface/impl. If a `CategoryNodeViewModel` is needed, split into 8a/8b to stay ≤6 |
+| **9** | Remove old repository + old classifier overload | `Data/PersistenceServiceExtensions.cs` (drop old reg), **delete** `IFileClassificationRuleRepository.cs`, `FileClassificationRuleRepository.cs`, `Tests/…/GivenAFileClassificationRuleRepository.cs`, `Domain/FileClassifier.cs` (remove old overload) **(5)** | Old repo unreferenced since Ph8; safe to delete. `FileClassificationRule`/`Entry`/`Factory` now unused |
+| **10** | Remove old rule domain | **delete** `Domain/FileClassificationRule.cs`, `FileClassificationRuleEntry.cs`, `FileClassificationRuleFactory.cs` **(3)** | Unreferenced after Ph9 |
+| **11** | Drop old table + entity | `Data/AppDbContext.cs` (remove old DbSet), **delete** `FileClassificationRuleEntity.cs` + `FileClassificationRuleEntityConfiguration.cs`, drop-table migration `.cs` + `.Designer.cs`, `AppDbContextModelSnapshot.cs` **(6)** | Data copied in Ph5; no code reads the old table since Ph7/8. Drop migration **re-runs the idempotent backfill first** to capture any rows the old UI wrote between Ph5 and Ph8, then drops. Model clean |
+
+### Sequencing guarantees
+
+- **Migrations are additive until Phase 11.** Ph5 only creates/seeds; the destructive `DROP TABLE` is last, after
+  every reader is gone.
+- **Late-write safety.** Old UI can still write the old table between Ph5 and Ph8. The backfill is **idempotent**
+  (`WHERE NOT EXISTS` / keyword de-dupe) and is **re-executed inside the Ph11 drop migration** so no rule is lost.
+- **Per-phase gate (Definition of Done below) runs every phase** — a phase merges only on zero-warning build +
+  zero new test failures, keeping `main` deployable.
 
 ---
 
 ## Definition of Done
 
+### Per phase (every PR)
+
 - [ ] `dotnet build` — zero errors, zero warnings (paste exact output)
 - [ ] `dotnet test` — zero new failures (paste exact pass/fail count)
-- [ ] All `IFileClassificationRuleRepository` call sites found + updated
-- [ ] Migration runs cleanly on a DB with existing `FileClassificationRules` rows
-- [ ] Old entity / config / repository / domain files deleted
-- [ ] Human review before commit
-- [ ] PR raised using `.github/PULL_REQUEST_TEMPLATE.md`
+- [ ] `main` deployable: app starts, DI resolves, any new migration applies cleanly on a DB with existing rows
+- [ ] ≤ 6 files changed/created (tests included)
+- [ ] Human review before commit; PR raised using `.github/PULL_REQUEST_TEMPLATE.md`
+
+### Whole change (after Phase 11)
+
+- [ ] All `IFileClassificationRuleRepository` call sites removed
+- [ ] Old entity / config / repository / domain files deleted; old table dropped
+- [ ] Backfill verified: keyword count = token count; analyser L1 nodes seeded once; effective IsSpecial preserved
