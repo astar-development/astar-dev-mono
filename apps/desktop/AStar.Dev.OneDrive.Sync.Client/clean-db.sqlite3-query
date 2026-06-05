@@ -3,6 +3,8 @@ DELETE FROM SyncedItems;
 
 DELETE FROM SyncedItemClassifications;
 
+DELETE FROM SyncJobs;
+
 SELECT
     *
 FROM
