@@ -70,4 +70,20 @@ public sealed class GivenAFileClassificationKeywordFactory
 
         result.Match(k => k.IsSpecialOverride, _ => Option.Some(true)).ShouldBe(Option.None<bool>());
     }
+
+    [Fact]
+    public void when_value_is_null_then_result_is_failure()
+    {
+        var result = FileClassificationKeywordFactory.Create(null!, Option.None<bool>());
+
+        _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
+    }
+
+    [Fact]
+    public void when_value_has_mixed_case_and_surrounding_spaces_then_value_is_trimmed_and_lowercased()
+    {
+        var result = FileClassificationKeywordFactory.Create("  CaTs  ", Option.None<bool>());
+
+        result.Match(k => k.Value, _ => string.Empty).ShouldBe(AnyValidValue);
+    }
 }
