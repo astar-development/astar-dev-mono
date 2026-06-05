@@ -1,0 +1,58 @@
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Entities;
+
+public sealed class GivenAFileClassificationCategoryEntity
+{
+    [Fact]
+    public void when_instantiated_then_name_defaults_to_empty_string() =>
+        new FileClassificationCategoryEntity().Name.ShouldBe(string.Empty);
+
+    [Fact]
+    public void when_instantiated_then_level_defaults_to_zero() =>
+        new FileClassificationCategoryEntity().Level.ShouldBe(0);
+
+    [Fact]
+    public void when_instantiated_then_parent_id_is_null() =>
+        new FileClassificationCategoryEntity().ParentId.ShouldBeNull();
+
+    [Fact]
+    public void when_instantiated_then_parent_navigation_is_null() =>
+        new FileClassificationCategoryEntity().Parent.ShouldBeNull();
+
+    [Fact]
+    public void when_instantiated_then_children_collection_is_not_null() =>
+        new FileClassificationCategoryEntity().Children.ShouldNotBeNull();
+
+    [Fact]
+    public void when_instantiated_then_keywords_collection_is_not_null() =>
+        new FileClassificationCategoryEntity().Keywords.ShouldNotBeNull();
+
+    [Fact]
+    public void when_parent_id_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity();
+
+        entity.ParentId = 42;
+
+        entity.ParentId.ShouldBe(42);
+    }
+
+    [Fact]
+    public void when_name_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity();
+
+        entity.Name = "Photos";
+
+        entity.Name.ShouldBe("Photos");
+    }
+
+    [Fact]
+    public void when_level_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity();
+
+        entity.Level = 2;
+
+        entity.Level.ShouldBe(2);
+    }
+}
