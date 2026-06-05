@@ -187,6 +187,14 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2706, Level = LogLevel.Warning, Message = "[HttpDownloader] Download cancelled during 429 backoff — {Url} attempt {Attempt}/{Max}")]
     public static partial void DownloadCancelledDuringBackoff(ILogger logger, string url, int attempt, int max);
 
+    /// <summary>Logs a failed file move attempt with retry details.</summary>
+    [LoggerMessage(EventId = 2707, Level = LogLevel.Warning, Message = "[HttpDownloader] Move to '{Path}' failed — retrying (attempt {Attempt}/{Max})")]
+    public static partial void DownloadMoveRetrying(ILogger logger, string path, int attempt, int max);
+
+    /// <summary>Logs file move exhausted all retries.</summary>
+    [LoggerMessage(EventId = 2708, Level = LogLevel.Error, Message = "[HttpDownloader] Move to '{Path}' failed after {Max} attempts — {Error}")]
+    public static partial void DownloadMoveExhausted(ILogger logger, string path, int max, string error);
+
     // Upload Operations (2800-2899)
 
     /// <summary>Logs file upload completion.</summary>
