@@ -1,0 +1,26 @@
+namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+
+/// <summary>Persisted category node in the file classification hierarchy.</summary>
+public sealed class FileClassificationCategoryEntity
+{
+    /// <summary>Primary key.</summary>
+    public int Id { get; set; }
+
+    /// <summary>Category name (e.g. "Photos", "Documents").</summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Hierarchy level: 1 = top, 2 = sub, 3 = leaf.</summary>
+    public int Level { get; set; }
+
+    /// <summary>FK to parent category; null for root nodes.</summary>
+    public int? ParentId { get; set; }
+
+    /// <summary>Navigation to parent category.</summary>
+    public FileClassificationCategoryEntity? Parent { get; set; }
+
+    /// <summary>Navigation to child categories.</summary>
+    public ICollection<FileClassificationCategoryEntity> Children { get; set; } = [];
+
+    /// <summary>Navigation to keywords associated with this category.</summary>
+    public ICollection<FileClassificationKeywordEntity> Keywords { get; set; } = [];
+}
