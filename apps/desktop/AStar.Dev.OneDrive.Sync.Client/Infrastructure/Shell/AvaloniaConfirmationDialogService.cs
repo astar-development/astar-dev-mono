@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
@@ -11,6 +12,9 @@ public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogServi
 {
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(string title, string message, CancellationToken ct = default)
+        => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(title, message, ct));
+
+    private static async Task<bool> ShowDialogAsync(string title, string message, CancellationToken ct)
     {
         var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow is null)
@@ -54,6 +58,8 @@ public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogServi
         cancelButton.Click += (_, _) => { tcs.SetResult(false); dialog.Close(); };
         yesButton.Click += (_, _) => { tcs.SetResult(true); dialog.Close(); };
         dialog.Closed += (_, _) => tcs.TrySetResult(false);
+
+        ct.Register(() => { tcs.TrySetResult(false); dialog.Close(); });
 
         await dialog.ShowDialog(mainWindow).ConfigureAwait(false);
 
