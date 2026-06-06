@@ -88,6 +88,10 @@ public class App : Application, IDisposable
                 .Bind(configuration.GetSection("Sync"))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+        _ = services.AddOptions<ClientConfiguration>()
+                .Bind(configuration.GetSection("AStarDevOneDriveClient"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
         return configuration;
     }
