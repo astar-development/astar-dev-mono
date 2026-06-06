@@ -1,13 +1,18 @@
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Avalonia.Controls;
+using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Splash;
 
 public partial class SplashWindow : Window
 {
-    private readonly SplashWindowViewModel _viewModel = new();
+    private readonly SplashWindowViewModel _viewModel;
 
-    public SplashWindow()
+    public SplashWindow() : this(Microsoft.Extensions.Options.Options.Create(new ClientConfiguration { ApplicationName = string.Empty, ApplicationVersion = string.Empty })) { }
+
+    public SplashWindow(IOptions<ClientConfiguration> config)
     {
+        _viewModel = new SplashWindowViewModel { AppName = config.Value.ApplicationName };
         InitializeComponent();
         DataContext = _viewModel;
     }

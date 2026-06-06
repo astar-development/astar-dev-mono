@@ -32,7 +32,7 @@
             </Viewbox>
 
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-                <TextBlock Text="OneDrive Sync"
+                <TextBlock Text="{Binding AppName}"
                            FontSize="20"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextPrimaryBrush}"
