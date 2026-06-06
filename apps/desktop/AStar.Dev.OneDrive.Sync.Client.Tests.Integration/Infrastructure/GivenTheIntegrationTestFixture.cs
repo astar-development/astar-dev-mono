@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -19,8 +18,4 @@ public sealed class GivenTheIntegrationTestFixture(IntegrationTestFixture fixtur
     [Fact]
     public void when_resolving_services_then_file_auto_categorisor_is_not_null()
         => fixture.Services.GetRequiredService<IFileAutoCategorisor>().ShouldNotBeNull();
-
-    [Fact]
-    public void when_resolving_services_then_file_classification_rule_repository_is_not_null()
-        => fixture.Services.GetRequiredService<IFileClassificationRuleRepository>().ShouldNotBeNull();
 }
