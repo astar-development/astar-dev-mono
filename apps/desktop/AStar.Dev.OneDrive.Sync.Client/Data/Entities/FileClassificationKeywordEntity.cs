@@ -12,6 +12,9 @@ public sealed class FileClassificationKeywordEntity
     /// <summary>FK to the owning category.</summary>
     public int CategoryId { get; set; }
 
+    /// <summary>Whether this keyword overrides the special classification flag.</summary>
+    public bool IsSpecial { get; set; }
+
     /// <summary>Navigation to the owning category.</summary>
     public FileClassificationCategoryEntity? Category { get; set; }
 }

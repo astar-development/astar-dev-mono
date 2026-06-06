@@ -39,7 +39,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             .ConfigureAwait(false);
 
         return entities
-            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.None<bool>())))
+            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.Some(e.IsSpecial))))
             .ToList()
             .AsReadOnly();
     }
@@ -134,7 +134,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         var entity = new FileClassificationKeywordEntity
         {
             Keyword = keyword.Value,
-            CategoryId = rawCategoryId
+            CategoryId = rawCategoryId,
+            IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false)
         };
 
         db.FileClassificationKeywords.Add(entity);
@@ -160,6 +161,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             return new Result<int, string>.Error("Cannot update keyword on a non-leaf category.");
 
         entity.Keyword = keyword.Value;
+        entity.IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new Result<int, string>.Ok(entity.Id);
