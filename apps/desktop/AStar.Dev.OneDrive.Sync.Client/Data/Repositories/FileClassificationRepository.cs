@@ -178,6 +178,15 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        db.FileClassificationKeywords.RemoveRange(db.FileClassificationKeywords);
+        db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private static KeywordMapping BuildKeywordMapping(FileClassificationKeywordEntity keyword, Dictionary<int, FileClassificationCategoryEntity> categoryById)
     {
         var ancestorNames = new Dictionary<int, string>();

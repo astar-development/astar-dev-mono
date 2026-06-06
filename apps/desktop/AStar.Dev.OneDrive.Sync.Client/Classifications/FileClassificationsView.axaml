@@ -7,18 +7,39 @@
              HorizontalContentAlignment="Stretch">
 
     <Grid RowDefinitions="Auto,*">
-        <StackPanel Grid.Row="0"
-                    Spacing="4"
-                    Margin="24,20,24,12">
-            <TextBlock Text="File classifications"
-                       FontSize="{StaticResource FontSizeXl}"
-                       FontWeight="Medium"
-                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <TextBlock Text="Manage the category hierarchy and keywords used to classify files during sync."
-                       FontSize="{StaticResource FontSizeSm}"
-                       Foreground="{DynamicResource TextTertiaryBrush}"
-                       TextWrapping="Wrap"/>
-        </StackPanel>
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              Margin="24,20,24,12">
+            <StackPanel Grid.Column="0"
+                        Spacing="4">
+                <TextBlock Text="File classifications"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="Manage the category hierarchy and keywords used to classify files during sync."
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="Export"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        FontSize="{StaticResource FontSizeSm}"
+                        Click="OnExportClick"/>
+                <Button Content="Import"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="{StaticResource FontSizeSm}"
+                        Click="OnImportClick"/>
+            </StackPanel>
+        </Grid>
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"

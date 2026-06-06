@@ -62,7 +62,7 @@ public sealed class GivenAnApplicationInitializer
         repo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
 
-        return new FileClassificationRulesViewModel(repo);
+        return new FileClassificationRulesViewModel(repo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>());
     }
 
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
