@@ -14,6 +14,14 @@ public sealed class GivenAFileClassifier
                 level3 is not null ? Option.Some(level3) : Option.None<string>(),
                 isSpecial));
 
+    private static KeywordMapping Mapping(string keyword, string level1, string? level2 = null, string? level3 = null, bool isSpecial = false)
+        => ((Result<KeywordMapping, string>.Ok)KeywordMappingFactory.Create(
+            keyword,
+            level1,
+            level2 is not null ? Option.Some(level2) : Option.None<string>(),
+            level3 is not null ? Option.Some(level3) : Option.None<string>(),
+            isSpecial)).Value;
+
     [Fact]
     public void when_classifying_segment_based_path_then_path_segments_produce_tokens()
     {
@@ -131,5 +139,48 @@ public sealed class GivenAFileClassifier
 
         result.ShouldHaveSingleItem();
         result[0].Level1.ShouldBe("Category");
+    }
+
+    [Fact]
+    public void when_classifying_with_keyword_mapping_and_keyword_matches_then_classification_is_returned()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("photos", "Media")];
+
+        var result = FileClassifier.Classify("/photos/beach.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Media");
+    }
+
+    [Fact]
+    public void when_classifying_with_keyword_mapping_and_no_match_then_empty_list_is_returned()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("spacecraft", "Science")];
+
+        var result = FileClassifier.Classify("/docs/report.pdf", mappings);
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_classifying_with_keyword_mapping_and_empty_mappings_then_empty_list_is_returned()
+    {
+        var result = FileClassifier.Classify("/photos/beach.jpg", (IReadOnlyList<KeywordMapping>)[]);
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_classifying_with_multiple_keyword_mappings_and_both_match_then_both_classifications_are_returned()
+    {
+        IReadOnlyList<KeywordMapping> mappings =
+        [
+            Mapping("red", "Colour", "Red"),
+            Mapping("car", "Subject", "Vehicle")
+        ];
+
+        var result = FileClassifier.Classify("/photos/red-car.jpg", mappings);
+
+        result.Count.ShouldBe(2);
     }
 }

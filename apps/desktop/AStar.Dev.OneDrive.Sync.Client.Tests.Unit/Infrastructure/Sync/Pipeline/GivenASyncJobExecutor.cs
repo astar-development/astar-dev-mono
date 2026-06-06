@@ -21,7 +21,7 @@ public sealed class GivenASyncJobExecutor
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
     private readonly ISyncPipeline _pipeline = Substitute.For<ISyncPipeline>();
-    private readonly IFileClassificationRuleRepository _classificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
+    private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
     private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
     private readonly IFileAutoCategorisor _fileAutoCategorisor = new RuleBasedFileAutoCategorisor();
 
@@ -33,12 +33,12 @@ public sealed class GivenASyncJobExecutor
 
     public GivenASyncJobExecutor()
     {
-        _classificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationRule>>([]));
+        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<KeywordMapping>>([]));
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
         _settingsService.Current.Returns(new AppSettings());
     }
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRuleRepository, mockFileSystem, _settingsService, _fileAutoCategorisor);
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRepository, mockFileSystem, _settingsService, _fileAutoCategorisor);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt", string relativePath = "Documents/file.txt")
     {
@@ -115,8 +115,8 @@ public sealed class GivenASyncJobExecutor
     {
         const int syncedItemId = 55;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
-        IReadOnlyList<FileClassificationRule> rules = [FileClassificationRuleFactory.Create(["documents"], FileClassificationFactory.Create("Documents", Option.None<string>(), Option.None<string>(), false))];
-        _classificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(rules));
+        IReadOnlyList<KeywordMapping> mappings = [((Result<KeywordMapping, string>.Ok)KeywordMappingFactory.Create("documents", "Documents", Option.None<string>(), Option.None<string>(), false)).Value];
+        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
         var job = MakeJob("item-1", SyncDirection.Download);
         SimulateJobCompleted(job.Complete());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -208,7 +208,7 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, [job1, job2], [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
-        await _classificationRuleRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
+        await _classificationRepository.Received(1).GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
