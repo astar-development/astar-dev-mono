@@ -36,4 +36,16 @@ public sealed class GivenASplashWindowViewModel
 
         sut.Status.ShouldBe("Configuring database…");
     }
+
+    [Fact]
+    public void when_created_then_app_name_is_empty() =>
+        new Client.Splash.SplashWindowViewModel().AppName.ShouldBeEmpty();
+
+    [Fact]
+    public void when_app_name_is_initialised_with_a_value_then_app_name_matches()
+    {
+        var sut = new Client.Splash.SplashWindowViewModel { AppName = "My App" };
+
+        sut.AppName.ShouldBe("My App");
+    }
 }
