@@ -191,4 +191,51 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         keywords.ShouldNotContain(k => k.Keyword.Value == "invoice");
         keywords.ShouldContain(k => k.Keyword.Value == "receipt");
     }
+
+    [Fact]
+    public async Task when_delete_all_called_with_data_then_all_categories_removed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        await repository.AddCategoryAsync(category, ct);
+
+        await repository.DeleteAllAsync(ct);
+
+        var categories = await repository.GetAllCategoriesAsync(ct);
+        categories.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_delete_all_called_with_data_then_all_keywords_removed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        await repository.AddKeywordAsync(categoryId, keyword, ct);
+
+        await repository.DeleteAllAsync(ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_delete_all_called_with_empty_db_then_no_error_thrown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+
+        var exception = await Record.ExceptionAsync(() => repository.DeleteAllAsync(ct));
+
+        exception.ShouldBeNull();
+    }
 }
