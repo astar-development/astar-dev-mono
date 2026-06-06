@@ -54,7 +54,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
         keywords.ShouldNotBeEmpty();
-        keywords.ShouldContain(k => k.Value == "invoice");
+        keywords.ShouldContain(k => k.Keyword.Value == "invoice");
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         await repository.DeleteKeywordAsync(keywordIdA, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldNotContain(k => k.Value == "invoice");
-        keywords.ShouldContain(k => k.Value == "receipt");
+        keywords.ShouldNotContain(k => k.Keyword.Value == "invoice");
+        keywords.ShouldContain(k => k.Keyword.Value == "receipt");
     }
 }

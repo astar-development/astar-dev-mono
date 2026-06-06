@@ -75,13 +75,15 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService, new InlineUiDispatcher());
-        var classificationRulesRepo = Substitute.For<IFileClassificationRuleRepository>();
-        classificationRulesRepo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-                               .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
+        var classificationRepo = Substitute.For<IFileClassificationRepository>();
+        classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                          .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
+        classificationRepo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                          .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRulesRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo), statusBar, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());

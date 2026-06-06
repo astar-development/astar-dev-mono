@@ -14,7 +14,7 @@
                        FontSize="{StaticResource FontSizeXl}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <TextBlock Text="Rules map path keywords to classification tags used during sync."
+            <TextBlock Text="Manage the category hierarchy and keywords used to classify files during sync."
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
@@ -28,131 +28,534 @@
             <StackPanel Spacing="12" MaxWidth="640">
 
                 <!-- Empty state -->
-                <TextBlock Text="No classification rules defined."
+                <TextBlock Text="No classification categories defined."
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
-                           IsVisible="{Binding HasNoRules}"/>
+                           IsVisible="{Binding HasNoCategories}"/>
 
-                <!-- Rule list -->
-                <ItemsControl ItemsSource="{Binding Rules}"
-                              IsVisible="{Binding !HasNoRules}">
+                <!-- Category tree -->
+                <ItemsControl ItemsSource="{Binding Categories}"
+                              IsVisible="{Binding !HasNoCategories}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="classifications:FileClassificationRuleRowViewModel">
+                        <DataTemplate DataType="classifications:CategoryNodeViewModel">
                             <Border Background="{DynamicResource BackgroundTertiaryBrush}"
                                     BorderBrush="{DynamicResource BorderSubtleBrush}"
                                     BorderThickness="1"
                                     CornerRadius="{StaticResource RadiusMd}"
-                                    Padding="12,8"
+                                    Padding="12,10"
                                     Margin="0,0,0,6">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Grid.Column="0"
-                                                Spacing="2"
-                                                IsVisible="{Binding !IsEditing}">
-                                        <TextBlock FontSize="{StaticResource FontSizeSm}"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}">
-                                            <Run FontWeight="Medium" Text="{Binding Keywords}"/>
-                                            <Run Text=" → "/>
-                                            <Run Text="{Binding Level1}"/>
-                                        </TextBlock>
-                                        <StackPanel Orientation="Horizontal" Spacing="6"
-                                                    IsVisible="{Binding Level2, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                            <TextBlock Text="{Binding Level2}"
-                                                       FontSize="{StaticResource FontSizeXs}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                            <TextBlock Text="{Binding Level3}"
-                                                       FontSize="{StaticResource FontSizeXs}"
-                                                       Foreground="{DynamicResource TextTertiaryBrush}"
-                                                       IsVisible="{Binding Level3, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                                <StackPanel Spacing="8">
+
+                                    <!-- Category header row -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="4,1">
+                                                <TextBlock Text="{Binding Level, StringFormat='L{0}'}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </Border>
                                         </StackPanel>
-                                        <TextBlock Text="Special"
-                                                   FontSize="{StaticResource FontSizeXs}"
-                                                   Foreground="{DynamicResource TextAccentBrush}"
-                                                   IsVisible="{Binding IsSpecial}"/>
+                                        <Button Grid.Column="1"
+                                                Content="Delete"
+                                                Padding="8,4"
+                                                CornerRadius="{StaticResource RadiusMd}"
+                                                Background="Transparent"
+                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                BorderThickness="1"
+                                                FontSize="{StaticResource FontSizeXs}"
+                                                Command="{Binding DeleteSelfCommand}"/>
+                                    </Grid>
+
+                                    <!-- Keywords list -->
+                                    <ItemsControl ItemsSource="{Binding Keywords}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="classifications:KeywordRowViewModel">
+                                                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                        Padding="8,6"
+                                                        Margin="0,0,0,4">
+                                                    <Grid ColumnDefinitions="*,Auto">
+
+                                                        <!-- View mode -->
+                                                        <StackPanel Grid.Column="0"
+                                                                    Orientation="Horizontal"
+                                                                    Spacing="6"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding !IsEditing}">
+                                                            <TextBlock Text="{Binding Value}"
+                                                                       FontSize="{StaticResource FontSizeSm}"
+                                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Border Background="{DynamicResource TextAccentBrush}"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Padding="4,1"
+                                                                    IsVisible="{Binding IsSpecialOverride}">
+                                                                <TextBlock Text="Special"
+                                                                           FontSize="{StaticResource FontSizeXs}"
+                                                                           Foreground="White"/>
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <!-- Edit mode -->
+                                                        <StackPanel Grid.Column="0"
+                                                                    Orientation="Horizontal"
+                                                                    Spacing="6"
+                                                                    VerticalAlignment="Center"
+                                                                    IsVisible="{Binding IsEditing}">
+                                                            <TextBox Text="{Binding Value}"
+                                                                     FontSize="{StaticResource FontSizeSm}"
+                                                                     CornerRadius="{StaticResource RadiusSm}"
+                                                                     MinWidth="160"/>
+                                                            <CheckBox Content="Special"
+                                                                      IsChecked="{Binding IsSpecialOverride}"
+                                                                      FontSize="{StaticResource FontSizeSm}"
+                                                                      VerticalAlignment="Center"/>
+                                                        </StackPanel>
+
+                                                        <!-- Action buttons -->
+                                                        <StackPanel Grid.Column="1"
+                                                                    Orientation="Horizontal"
+                                                                    Spacing="6"
+                                                                    VerticalAlignment="Center">
+                                                            <Button Content="Edit"
+                                                                    Padding="6,3"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                    BorderThickness="1"
+                                                                    FontSize="{StaticResource FontSizeXs}"
+                                                                    Command="{Binding EditCommand}"
+                                                                    IsVisible="{Binding !IsEditing}"/>
+                                                            <Button Content="Save"
+                                                                    Padding="6,3"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Background="{DynamicResource TextAccentBrush}"
+                                                                    Foreground="White"
+                                                                    BorderThickness="0"
+                                                                    FontSize="{StaticResource FontSizeXs}"
+                                                                    Command="{Binding SaveCommand}"
+                                                                    IsVisible="{Binding IsEditing}"/>
+                                                            <Button Content="Cancel"
+                                                                    Padding="6,3"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                    BorderThickness="1"
+                                                                    FontSize="{StaticResource FontSizeXs}"
+                                                                    Command="{Binding CancelCommand}"
+                                                                    IsVisible="{Binding IsEditing}"/>
+                                                            <Button Content="Delete"
+                                                                    Padding="6,3"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                    BorderThickness="1"
+                                                                    FontSize="{StaticResource FontSizeXs}"
+                                                                    Command="{Binding DeleteCommand}"
+                                                                    IsVisible="{Binding !IsEditing}"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Add keyword form (leaf nodes only) -->
+                                    <StackPanel Spacing="6"
+                                                IsVisible="{Binding Keywords.Count, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="6"
+                                                    IsVisible="{Binding Children.Count, Converter={x:Static ObjectConverters.IsNull}}">
+                                            <TextBox Text="{Binding NewKeyword}"
+                                                     PlaceholderText="New keyword"
+                                                     FontSize="{StaticResource FontSizeSm}"
+                                                     CornerRadius="{StaticResource RadiusSm}"
+                                                     MinWidth="180"/>
+                                            <CheckBox Content="Special"
+                                                      IsChecked="{Binding NewKeywordIsSpecial}"
+                                                      FontSize="{StaticResource FontSizeSm}"
+                                                      VerticalAlignment="Center"/>
+                                            <Button Content="Add keyword"
+                                                    Padding="8,4"
+                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                    Background="{DynamicResource TextAccentBrush}"
+                                                    Foreground="White"
+                                                    BorderThickness="0"
+                                                    FontSize="{StaticResource FontSizeSm}"
+                                                    Command="{Binding AddKeywordCommand}"/>
+                                        </StackPanel>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="0"
-                                                Spacing="8"
-                                                IsVisible="{Binding IsEditing}">
-                                        <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,8,Auto,8,Auto">
-                                            <TextBox Grid.Row="0" Grid.Column="0"
-                                                     Text="{Binding Keywords}"
-                                                     PlaceholderText="Keywords (comma-separated)"
-                                                     FontSize="{StaticResource FontSizeSm}"
-                                                     CornerRadius="{StaticResource RadiusMd}"/>
-                                            <TextBox Grid.Row="0" Grid.Column="2"
-                                                     Text="{Binding Level1}"
-                                                     PlaceholderText="Level 1"
-                                                     FontSize="{StaticResource FontSizeSm}"
-                                                     CornerRadius="{StaticResource RadiusMd}"/>
+                                    <!-- Add sub-category form (max level 3) -->
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="6"
+                                                IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <TextBox Text="{Binding NewChildCategoryName}"
+                                                 PlaceholderText="New sub-category"
+                                                 FontSize="{StaticResource FontSizeSm}"
+                                                 CornerRadius="{StaticResource RadiusSm}"
+                                                 MinWidth="180"
+                                                 IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                        <Button Content="Add sub-category"
+                                                Padding="8,4"
+                                                CornerRadius="{StaticResource RadiusMd}"
+                                                Background="Transparent"
+                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                BorderThickness="1"
+                                                FontSize="{StaticResource FontSizeSm}"
+                                                Command="{Binding AddChildCategoryCommand}"
+                                                IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                    </StackPanel>
 
-                                            <TextBox Grid.Row="2" Grid.Column="0"
-                                                     Text="{Binding Level2}"
-                                                     PlaceholderText="Level 2 (optional)"
-                                                     FontSize="{StaticResource FontSizeSm}"
-                                                     CornerRadius="{StaticResource RadiusMd}"/>
-                                            <TextBox Grid.Row="2" Grid.Column="2"
-                                                     Text="{Binding Level3}"
-                                                     PlaceholderText="Level 3 (optional)"
-                                                     FontSize="{StaticResource FontSizeSm}"
-                                                     CornerRadius="{StaticResource RadiusMd}"/>
-
-                                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
-                                                        Orientation="Horizontal"
-                                                        HorizontalAlignment="Right"
-                                                        Spacing="12">
-                                                <CheckBox Content="Special"
-                                                          IsChecked="{Binding IsSpecial}"
-                                                          FontSize="{StaticResource FontSizeSm}"
-                                                          VerticalAlignment="Center"/>
-                                                <Button Content="Cancel"
-                                                        Padding="12,6"
-                                                        CornerRadius="{StaticResource RadiusMd}"
-                                                        Background="Transparent"
-                                                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                    <!-- Children (nested with left indent) -->
+                                    <ItemsControl ItemsSource="{Binding Children}"
+                                                  Margin="16,0,0,0"
+                                                  IsVisible="{Binding Children.Count, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="classifications:CategoryNodeViewModel">
+                                                <Border Background="{DynamicResource BackgroundTertiaryBrush}"
+                                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                                                         BorderThickness="1"
-                                                        FontSize="{StaticResource FontSizeSm}"
-                                                        Command="{Binding CancelCommand}"/>
-                                                <Button Content="Save"
-                                                        Padding="12,6"
                                                         CornerRadius="{StaticResource RadiusMd}"
-                                                        Background="{DynamicResource TextAccentBrush}"
-                                                        Foreground="White"
-                                                        BorderThickness="0"
-                                                        FontSize="{StaticResource FontSizeSm}"
-                                                        Command="{Binding SaveCommand}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </StackPanel>
+                                                        Padding="10,8"
+                                                        Margin="0,0,0,4">
+                                                    <StackPanel Spacing="6">
 
-                                    <StackPanel Grid.Column="1"
-                                                Orientation="Horizontal"
-                                                Spacing="8"
-                                                VerticalAlignment="Center"
-                                                IsVisible="{Binding !IsEditing}">
-                                        <Button Content="Edit"
-                                                Padding="8,4"
-                                                CornerRadius="{StaticResource RadiusMd}"
-                                                Background="Transparent"
-                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
-                                                BorderThickness="1"
-                                                FontSize="{StaticResource FontSizeXs}"
-                                                Command="{Binding EditCommand}"/>
-                                        <Button Content="Delete"
-                                                Padding="8,4"
-                                                CornerRadius="{StaticResource RadiusMd}"
-                                                Background="Transparent"
-                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
-                                                BorderThickness="1"
-                                                FontSize="{StaticResource FontSizeXs}"
-                                                Command="{Binding DeleteCommand}"/>
-                                    </StackPanel>
-                                </Grid>
+                                                        <!-- Child category header -->
+                                                        <Grid ColumnDefinitions="*,Auto">
+                                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           FontSize="{StaticResource FontSizeSm}"
+                                                                           FontWeight="Medium"
+                                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                           VerticalAlignment="Center"/>
+                                                                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                        Padding="4,1">
+                                                                    <TextBlock Text="{Binding Level, StringFormat='L{0}'}"
+                                                                               FontSize="{StaticResource FontSizeXs}"
+                                                                               Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                                                </Border>
+                                                            </StackPanel>
+                                                            <Button Grid.Column="1"
+                                                                    Content="Delete"
+                                                                    Padding="6,3"
+                                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                    BorderThickness="1"
+                                                                    FontSize="{StaticResource FontSizeXs}"
+                                                                    Command="{Binding DeleteSelfCommand}"/>
+                                                        </Grid>
+
+                                                        <!-- Child keywords list -->
+                                                        <ItemsControl ItemsSource="{Binding Keywords}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="classifications:KeywordRowViewModel">
+                                                                    <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                            Padding="8,6"
+                                                                            Margin="0,0,0,4">
+                                                                        <Grid ColumnDefinitions="*,Auto">
+                                                                            <StackPanel Grid.Column="0"
+                                                                                        Orientation="Horizontal"
+                                                                                        Spacing="6"
+                                                                                        VerticalAlignment="Center"
+                                                                                        IsVisible="{Binding !IsEditing}">
+                                                                                <TextBlock Text="{Binding Value}"
+                                                                                           FontSize="{StaticResource FontSizeSm}"
+                                                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                                           VerticalAlignment="Center"/>
+                                                                                <Border Background="{DynamicResource TextAccentBrush}"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Padding="4,1"
+                                                                                        IsVisible="{Binding IsSpecialOverride}">
+                                                                                    <TextBlock Text="Special"
+                                                                                               FontSize="{StaticResource FontSizeXs}"
+                                                                                               Foreground="White"/>
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                            <StackPanel Grid.Column="0"
+                                                                                        Orientation="Horizontal"
+                                                                                        Spacing="6"
+                                                                                        VerticalAlignment="Center"
+                                                                                        IsVisible="{Binding IsEditing}">
+                                                                                <TextBox Text="{Binding Value}"
+                                                                                         FontSize="{StaticResource FontSizeSm}"
+                                                                                         CornerRadius="{StaticResource RadiusSm}"
+                                                                                         MinWidth="140"/>
+                                                                                <CheckBox Content="Special"
+                                                                                          IsChecked="{Binding IsSpecialOverride}"
+                                                                                          FontSize="{StaticResource FontSizeSm}"
+                                                                                          VerticalAlignment="Center"/>
+                                                                            </StackPanel>
+                                                                            <StackPanel Grid.Column="1"
+                                                                                        Orientation="Horizontal"
+                                                                                        Spacing="6"
+                                                                                        VerticalAlignment="Center">
+                                                                                <Button Content="Edit"
+                                                                                        Padding="6,3"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Background="Transparent"
+                                                                                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        FontSize="{StaticResource FontSizeXs}"
+                                                                                        Command="{Binding EditCommand}"
+                                                                                        IsVisible="{Binding !IsEditing}"/>
+                                                                                <Button Content="Save"
+                                                                                        Padding="6,3"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Background="{DynamicResource TextAccentBrush}"
+                                                                                        Foreground="White"
+                                                                                        BorderThickness="0"
+                                                                                        FontSize="{StaticResource FontSizeXs}"
+                                                                                        Command="{Binding SaveCommand}"
+                                                                                        IsVisible="{Binding IsEditing}"/>
+                                                                                <Button Content="Cancel"
+                                                                                        Padding="6,3"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Background="Transparent"
+                                                                                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        FontSize="{StaticResource FontSizeXs}"
+                                                                                        Command="{Binding CancelCommand}"
+                                                                                        IsVisible="{Binding IsEditing}"/>
+                                                                                <Button Content="Delete"
+                                                                                        Padding="6,3"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Background="Transparent"
+                                                                                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        FontSize="{StaticResource FontSizeXs}"
+                                                                                        Command="{Binding DeleteCommand}"
+                                                                                        IsVisible="{Binding !IsEditing}"/>
+                                                                            </StackPanel>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Add keyword form for child (leaf only) -->
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Spacing="6"
+                                                                    IsVisible="{Binding Children.Count, Converter={x:Static ObjectConverters.IsNull}}">
+                                                            <TextBox Text="{Binding NewKeyword}"
+                                                                     PlaceholderText="New keyword"
+                                                                     FontSize="{StaticResource FontSizeSm}"
+                                                                     CornerRadius="{StaticResource RadiusSm}"
+                                                                     MinWidth="160"/>
+                                                            <CheckBox Content="Special"
+                                                                      IsChecked="{Binding NewKeywordIsSpecial}"
+                                                                      FontSize="{StaticResource FontSizeSm}"
+                                                                      VerticalAlignment="Center"/>
+                                                            <Button Content="Add keyword"
+                                                                    Padding="8,4"
+                                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                                    Background="{DynamicResource TextAccentBrush}"
+                                                                    Foreground="White"
+                                                                    BorderThickness="0"
+                                                                    FontSize="{StaticResource FontSizeSm}"
+                                                                    Command="{Binding AddKeywordCommand}"/>
+                                                        </StackPanel>
+
+                                                        <!-- Add grandchild category form (level 2 only, max level 3) -->
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Spacing="6"
+                                                                    IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                            <TextBox Text="{Binding NewChildCategoryName}"
+                                                                     PlaceholderText="New sub-category"
+                                                                     FontSize="{StaticResource FontSizeSm}"
+                                                                     CornerRadius="{StaticResource RadiusSm}"
+                                                                     MinWidth="160"
+                                                                     IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                            <Button Content="Add sub-category"
+                                                                    Padding="8,4"
+                                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                    BorderThickness="1"
+                                                                    FontSize="{StaticResource FontSizeSm}"
+                                                                    Command="{Binding AddChildCategoryCommand}"
+                                                                    IsVisible="{Binding Level, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                                                        </StackPanel>
+
+                                                        <!-- Grandchildren (level 3, no further nesting) -->
+                                                        <ItemsControl ItemsSource="{Binding Children}"
+                                                                      Margin="12,0,0,0"
+                                                                      IsVisible="{Binding Children.Count, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="classifications:CategoryNodeViewModel">
+                                                                    <Border Background="{DynamicResource BackgroundTertiaryBrush}"
+                                                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                            Padding="8,6"
+                                                                            Margin="0,0,0,4">
+                                                                        <StackPanel Spacing="6">
+                                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                                                    <TextBlock Text="{Binding Name}"
+                                                                                               FontSize="{StaticResource FontSizeSm}"
+                                                                                               FontWeight="Medium"
+                                                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                                               VerticalAlignment="Center"/>
+                                                                                    <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                                                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                                                            BorderThickness="1"
+                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                            Padding="4,1">
+                                                                                        <TextBlock Text="{Binding Level, StringFormat='L{0}'}"
+                                                                                                   FontSize="{StaticResource FontSizeXs}"
+                                                                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                                                                    </Border>
+                                                                                </StackPanel>
+                                                                                <Button Grid.Column="1"
+                                                                                        Content="Delete"
+                                                                                        Padding="6,3"
+                                                                                        CornerRadius="{StaticResource RadiusSm}"
+                                                                                        Background="Transparent"
+                                                                                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        FontSize="{StaticResource FontSizeXs}"
+                                                                                        Command="{Binding DeleteSelfCommand}"/>
+                                                                            </Grid>
+                                                                            <ItemsControl ItemsSource="{Binding Keywords}">
+                                                                                <ItemsControl.ItemTemplate>
+                                                                                    <DataTemplate DataType="classifications:KeywordRowViewModel">
+                                                                                        <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                                                                CornerRadius="{StaticResource RadiusSm}"
+                                                                                                Padding="6,4"
+                                                                                                Margin="0,0,0,2">
+                                                                                            <Grid ColumnDefinitions="*,Auto">
+                                                                                                <StackPanel Grid.Column="0"
+                                                                                                            Orientation="Horizontal"
+                                                                                                            Spacing="6"
+                                                                                                            VerticalAlignment="Center"
+                                                                                                            IsVisible="{Binding !IsEditing}">
+                                                                                                    <TextBlock Text="{Binding Value}"
+                                                                                                               FontSize="{StaticResource FontSizeSm}"
+                                                                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                                                               VerticalAlignment="Center"/>
+                                                                                                    <Border Background="{DynamicResource TextAccentBrush}"
+                                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                                            Padding="4,1"
+                                                                                                            IsVisible="{Binding IsSpecialOverride}">
+                                                                                                        <TextBlock Text="Special"
+                                                                                                                   FontSize="{StaticResource FontSizeXs}"
+                                                                                                                   Foreground="White"/>
+                                                                                                    </Border>
+                                                                                                </StackPanel>
+                                                                                                <StackPanel Grid.Column="0"
+                                                                                                            Orientation="Horizontal"
+                                                                                                            Spacing="6"
+                                                                                                            VerticalAlignment="Center"
+                                                                                                            IsVisible="{Binding IsEditing}">
+                                                                                                    <TextBox Text="{Binding Value}"
+                                                                                                             FontSize="{StaticResource FontSizeSm}"
+                                                                                                             CornerRadius="{StaticResource RadiusSm}"
+                                                                                                             MinWidth="120"/>
+                                                                                                    <CheckBox Content="Special"
+                                                                                                              IsChecked="{Binding IsSpecialOverride}"
+                                                                                                              FontSize="{StaticResource FontSizeSm}"
+                                                                                                              VerticalAlignment="Center"/>
+                                                                                                </StackPanel>
+                                                                                                <StackPanel Grid.Column="1"
+                                                                                                            Orientation="Horizontal"
+                                                                                                            Spacing="6"
+                                                                                                            VerticalAlignment="Center">
+                                                                                                    <Button Content="Edit"
+                                                                                                            Padding="6,3"
+                                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                                            Background="Transparent"
+                                                                                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                                            BorderThickness="1"
+                                                                                                            FontSize="{StaticResource FontSizeXs}"
+                                                                                                            Command="{Binding EditCommand}"
+                                                                                                            IsVisible="{Binding !IsEditing}"/>
+                                                                                                    <Button Content="Save"
+                                                                                                            Padding="6,3"
+                                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                                            Background="{DynamicResource TextAccentBrush}"
+                                                                                                            Foreground="White"
+                                                                                                            BorderThickness="0"
+                                                                                                            FontSize="{StaticResource FontSizeXs}"
+                                                                                                            Command="{Binding SaveCommand}"
+                                                                                                            IsVisible="{Binding IsEditing}"/>
+                                                                                                    <Button Content="Cancel"
+                                                                                                            Padding="6,3"
+                                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                                            Background="Transparent"
+                                                                                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                                            BorderThickness="1"
+                                                                                                            FontSize="{StaticResource FontSizeXs}"
+                                                                                                            Command="{Binding CancelCommand}"
+                                                                                                            IsVisible="{Binding IsEditing}"/>
+                                                                                                    <Button Content="Delete"
+                                                                                                            Padding="6,3"
+                                                                                                            CornerRadius="{StaticResource RadiusSm}"
+                                                                                                            Background="Transparent"
+                                                                                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                                                                            BorderThickness="1"
+                                                                                                            FontSize="{StaticResource FontSizeXs}"
+                                                                                                            Command="{Binding DeleteCommand}"
+                                                                                                            IsVisible="{Binding !IsEditing}"/>
+                                                                                                </StackPanel>
+                                                                                            </Grid>
+                                                                                        </Border>
+                                                                                    </DataTemplate>
+                                                                                </ItemsControl.ItemTemplate>
+                                                                            </ItemsControl>
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        Spacing="6">
+                                                                                <TextBox Text="{Binding NewKeyword}"
+                                                                                         PlaceholderText="New keyword"
+                                                                                         FontSize="{StaticResource FontSizeSm}"
+                                                                                         CornerRadius="{StaticResource RadiusSm}"
+                                                                                         MinWidth="140"/>
+                                                                                <CheckBox Content="Special"
+                                                                                          IsChecked="{Binding NewKeywordIsSpecial}"
+                                                                                          FontSize="{StaticResource FontSizeSm}"
+                                                                                          VerticalAlignment="Center"/>
+                                                                                <Button Content="Add keyword"
+                                                                                        Padding="8,4"
+                                                                                        CornerRadius="{StaticResource RadiusMd}"
+                                                                                        Background="{DynamicResource TextAccentBrush}"
+                                                                                        Foreground="White"
+                                                                                        BorderThickness="0"
+                                                                                        FontSize="{StaticResource FontSizeSm}"
+                                                                                        Command="{Binding AddKeywordCommand}"/>
+                                                                            </StackPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- Add form -->
+                <!-- Add root category form -->
                 <Border Background="{DynamicResource BackgroundTertiaryBrush}"
                         BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
@@ -160,51 +563,24 @@
                         Padding="12"
                         Margin="0,0,0,28">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Add rule"
+                        <TextBlock Text="Add category"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
-
-                        <Grid ColumnDefinitions="*,8,*" RowDefinitions="Auto,8,Auto,8,Auto">
-                            <TextBox Grid.Row="0" Grid.Column="0"
-                                     Text="{Binding NewKeywords}"
-                                     PlaceholderText="Keywords (comma-separated)"
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox Text="{Binding NewCategoryName}"
+                                     PlaceholderText="Category name"
                                      FontSize="{StaticResource FontSizeSm}"
-                                     CornerRadius="{StaticResource RadiusMd}"/>
-                            <TextBox Grid.Row="0" Grid.Column="2"
-                                     Text="{Binding NewLevel1}"
-                                     PlaceholderText="Level 1 (required)"
-                                     FontSize="{StaticResource FontSizeSm}"
-                                     CornerRadius="{StaticResource RadiusMd}"/>
-
-                            <TextBox Grid.Row="2" Grid.Column="0"
-                                     Text="{Binding NewLevel2}"
-                                     PlaceholderText="Level 2 (optional)"
-                                     FontSize="{StaticResource FontSizeSm}"
-                                     CornerRadius="{StaticResource RadiusMd}"/>
-                            <TextBox Grid.Row="2" Grid.Column="2"
-                                     Text="{Binding NewLevel3}"
-                                     PlaceholderText="Level 3 (optional)"
-                                     FontSize="{StaticResource FontSizeSm}"
-                                     CornerRadius="{StaticResource RadiusMd}"/>
-
-                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
-                                        Orientation="Horizontal"
-                                        HorizontalAlignment="Right"
-                                        Spacing="12">
-                                <CheckBox Content="Special"
-                                          IsChecked="{Binding NewIsSpecial}"
-                                          FontSize="{StaticResource FontSizeSm}"
-                                          VerticalAlignment="Center"/>
-                                <Button Content="Add"
-                                        Padding="14,6"
-                                        CornerRadius="{StaticResource RadiusMd}"
-                                        Background="{DynamicResource TextAccentBrush}"
-                                        Foreground="White"
-                                        BorderThickness="0"
-                                        FontSize="{StaticResource FontSizeSm}"
-                                        Command="{Binding AddCommand}"/>
-                            </StackPanel>
-                        </Grid>
+                                     CornerRadius="{StaticResource RadiusMd}"
+                                     MinWidth="220"/>
+                            <Button Content="Add"
+                                    Padding="14,6"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    Background="{DynamicResource TextAccentBrush}"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    Command="{Binding AddCategoryCommand}"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

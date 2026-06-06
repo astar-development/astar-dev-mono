@@ -7,151 +7,135 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Classifications;
 
 public sealed class GivenAFileClassificationRulesViewModel
 {
-    private readonly IFileClassificationRuleRepository _repository;
+    private readonly IFileClassificationRepository repository;
 
     public GivenAFileClassificationRulesViewModel()
     {
-        _repository = Substitute.For<IFileClassificationRuleRepository>();
-        _repository.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
-        _repository.AddAsync(Arg.Any<FileClassificationRule>(), Arg.Any<CancellationToken>())
-                   .Returns(Task.FromResult(1));
-        _repository.UpdateAsync(Arg.Any<int>(), Arg.Any<FileClassificationRule>(), Arg.Any<CancellationToken>())
-                   .Returns(Task.CompletedTask);
+        repository = Substitute.For<IFileClassificationRepository>();
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
+        repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
+        repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
     }
 
     [Fact]
-    public async Task when_load_async_called_then_rules_collection_populated()
+    public async Task when_load_async_called_then_level1_categories_populated()
     {
-        IReadOnlyList<FileClassificationRuleEntry> entries =
+        IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(1, FileClassificationRuleFactory.Create(["photos"], FileClassificationFactory.Create("Media", Option.None<string>(), Option.None<string>(), false))),
-            new(2, FileClassificationRuleFactory.Create(["docs"], FileClassificationFactory.Create("Documents", Option.None<string>(), Option.None<string>(), false)))
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>()),
+            new(new FileClassificationCategoryId(2), "Documents", 1, Option.None<FileClassificationCategoryId>())
         ];
-        _repository.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-                   .Returns(Task.FromResult(entries));
-        FileClassificationRulesViewModel sut = new(_repository);
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository);
 
         await sut.LoadAsync(CancellationToken.None);
 
-        sut.Rules.Count.ShouldBe(2);
+        sut.Categories.Count.ShouldBe(2);
     }
 
     [Fact]
-    public async Task when_add_command_executed_then_rule_persisted_and_added_to_collection()
+    public async Task when_load_async_called_then_child_categories_nested_under_parent()
     {
-        FileClassificationRulesViewModel sut = new(_repository)
-        {
-            NewKeywords = "photos, photo",
-            NewLevel1 = "Media"
-        };
-
-        await sut.AddCommand.ExecuteAsync(null);
-
-        await _repository.Received(1).AddAsync(Arg.Any<FileClassificationRule>(), Arg.Any<CancellationToken>());
-        sut.Rules.Count.ShouldBe(1);
-    }
-
-    [Fact]
-    public void when_keywords_empty_then_add_command_disabled()
-    {
-        FileClassificationRulesViewModel sut = new(_repository)
-        {
-            NewKeywords = string.Empty,
-            NewLevel1 = "Media"
-        };
-
-        sut.AddCommand.CanExecute(null).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void when_level1_empty_then_add_command_disabled()
-    {
-        FileClassificationRulesViewModel sut = new(_repository)
-        {
-            NewKeywords = "photos",
-            NewLevel1 = string.Empty
-        };
-
-        sut.AddCommand.CanExecute(null).ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task when_add_succeeds_then_form_inputs_cleared()
-    {
-        FileClassificationRulesViewModel sut = new(_repository)
-        {
-            NewKeywords = "photos, photo",
-            NewLevel1 = "Media",
-            NewLevel2 = "Photos",
-            NewLevel3 = "Personal",
-            NewIsSpecial = true
-        };
-
-        await sut.AddCommand.ExecuteAsync(null);
-
-        sut.NewKeywords.ShouldBeEmpty();
-        sut.NewLevel1.ShouldBeEmpty();
-        sut.NewLevel2.ShouldBeEmpty();
-        sut.NewLevel3.ShouldBeEmpty();
-        sut.NewIsSpecial.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task when_delete_command_executed_then_rule_deleted_and_removed_from_collection()
-    {
-        IReadOnlyList<FileClassificationRuleEntry> entries =
+        IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(42, FileClassificationRuleFactory.Create(["archive"], FileClassificationFactory.Create("Archives", Option.None<string>(), Option.None<string>(), false)))
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>()),
+            new(new FileClassificationCategoryId(2), "Photos", 2, Option.Some(new FileClassificationCategoryId(1)))
         ];
-        _repository.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-                   .Returns(Task.FromResult(entries));
-        FileClassificationRulesViewModel sut = new(_repository);
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository);
+
         await sut.LoadAsync(CancellationToken.None);
 
-        await sut.Rules[0].DeleteCommand.ExecuteAsync(null);
-
-        await _repository.Received(1).DeleteAsync(42, Arg.Any<CancellationToken>());
-        sut.Rules.ShouldBeEmpty();
+        sut.Categories.Count.ShouldBe(1);
+        sut.Categories[0].Children.Count.ShouldBe(1);
     }
 
     [Fact]
-    public async Task when_rule_updated_then_repository_is_called_and_row_values_refresh()
+    public async Task when_load_async_called_then_keywords_loaded_for_leaf_categories()
     {
-        IReadOnlyList<FileClassificationRuleEntry> entries =
+        IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(7, FileClassificationRuleFactory.Create(["budget"], FileClassificationFactory.Create("Finance", Option.None<string>(), Option.None<string>(), false)))
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>())
         ];
-        _repository.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-                   .Returns(Task.FromResult(entries));
-        FileClassificationRulesViewModel sut = new(_repository);
+        IReadOnlyList<FileClassificationKeywordEntry> keywords =
+        [
+            new FileClassificationKeywordEntry(1, new FileClassificationKeyword("cats", Option.None<bool>()))
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(keywords));
+        FileClassificationRulesViewModel sut = new(repository);
+
         await sut.LoadAsync(CancellationToken.None);
 
-        await sut.Rules[0].EditCommand.ExecuteAsync(null);
-        sut.Rules[0].Keywords = "budget, finance";
-        sut.Rules[0].Level1 = "Finances";
-        sut.Rules[0].Level2 = "Budget";
-        sut.Rules[0].Level3 = "Quarterly";
-        sut.Rules[0].IsSpecial = true;
+        sut.Categories[0].Keywords.Count.ShouldBe(1);
+    }
 
-        await sut.Rules[0].SaveCommand.ExecuteAsync(null);
+    [Fact]
+    public async Task when_add_category_command_executed_then_category_persisted_and_added()
+    {
+        FileClassificationRulesViewModel sut = new(repository)
+        {
+            NewCategoryName = "Media"
+        };
 
-        await _repository.Received(1).UpdateAsync(
-            7,
-            Arg.Is<FileClassificationRule>(rule =>
-                rule.Keywords.Count == 2 &&
-                rule.Keywords[0] == "budget" &&
-                rule.Keywords[1] == "finance" &&
-                rule.Classification.Level1 == "Finances" &&
-                rule.Classification.Level2 == Option.Some("Budget") &&
-                rule.Classification.Level3 == Option.Some("Quarterly") &&
-                rule.Classification.IsSpecial),
-            Arg.Any<CancellationToken>());
-        sut.Rules[0].Keywords.ShouldBe("budget, finance");
-        sut.Rules[0].Level1.ShouldBe("Finances");
-        sut.Rules[0].Level2.ShouldBe("Budget");
-        sut.Rules[0].Level3.ShouldBe("Quarterly");
-        sut.Rules[0].IsSpecial.ShouldBeTrue();
-        sut.Rules[0].IsEditing.ShouldBeFalse();
+        await sut.AddCategoryCommand.ExecuteAsync(null);
+
+        await repository.Received(1).AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>());
+        sut.Categories.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_add_category_command_executed_then_new_category_name_cleared()
+    {
+        FileClassificationRulesViewModel sut = new(repository)
+        {
+            NewCategoryName = "Media"
+        };
+
+        await sut.AddCategoryCommand.ExecuteAsync(null);
+
+        sut.NewCategoryName.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_new_category_name_empty_then_add_category_command_disabled()
+    {
+        FileClassificationRulesViewModel sut = new(repository)
+        {
+            NewCategoryName = string.Empty
+        };
+
+        sut.AddCategoryCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_no_categories_then_has_no_categories_is_true()
+    {
+        FileClassificationRulesViewModel sut = new(repository);
+
+        sut.HasNoCategories.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_categories_present_then_has_no_categories_is_false()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>())
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.HasNoCategories.ShouldBeFalse();
     }
 }
