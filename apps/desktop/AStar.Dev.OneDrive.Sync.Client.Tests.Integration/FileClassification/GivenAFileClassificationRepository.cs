@@ -94,7 +94,9 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(parentId, keyword, ct)
-            .MatchAsync(_ => throw new InvalidOperationException("Expected error but got success."), err => err.ShouldNotBeNullOrWhiteSpace());
+            .MatchAsync(
+                _ => throw new InvalidOperationException("Expected error but got success."),
+                err => { err.ShouldNotBeNullOrWhiteSpace(); return err; });
     }
 
     [Fact]
@@ -118,7 +120,9 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct)
-            .MatchAsync(_ => throw new InvalidOperationException("Expected error but got success."), err => err.ShouldNotBeNullOrWhiteSpace());
+            .MatchAsync(
+                _ => throw new InvalidOperationException("Expected error but got success."),
+                err => { err.ShouldNotBeNullOrWhiteSpace(); return err; });
     }
 
     [Fact]
