@@ -12,6 +12,7 @@ public sealed class FileClassificationKeywordEntityConfiguration : IEntityTypeCo
     {
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.Keyword).IsRequired();
+        _ = builder.Property(e => e.IsSpecial).IsRequired();
         _ = builder.HasOne(e => e.Category).WithMany(e => e.Keywords).HasForeignKey(e => e.CategoryId).OnDelete(DeleteBehavior.Cascade);
     }
 }
