@@ -238,4 +238,108 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
 
         exception.ShouldBeNull();
     }
+
+    [Fact]
+    public async Task when_adding_a_keyword_with_is_special_override_true_then_retrieved_keyword_has_is_special_override_some_true()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+
+        await repository.AddKeywordAsync(categoryId, keyword, ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(true));
+    }
+
+    [Fact]
+    public async Task when_adding_a_keyword_with_is_special_override_false_then_retrieved_keyword_has_is_special_override_some_false()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("receipt", Option.Some(false))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+
+        await repository.AddKeywordAsync(categoryId, keyword, ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+    }
+
+    [Fact]
+    public async Task when_adding_a_keyword_with_is_special_override_none_then_retrieved_keyword_has_is_special_override_some_false()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("statement", Option.None<bool>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+
+        await repository.AddKeywordAsync(categoryId, keyword, ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+    }
+
+    [Fact]
+    public async Task when_updating_a_keyword_to_is_special_override_true_then_retrieved_keyword_has_is_special_override_some_true()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+
+        await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(true));
+    }
+
+    [Fact]
+    public async Task when_updating_a_keyword_to_is_special_override_false_then_retrieved_keyword_has_is_special_override_some_false()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await repository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false))
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+
+        await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct);
+
+        var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
+        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+    }
 }
+
