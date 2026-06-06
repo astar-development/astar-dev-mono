@@ -13,31 +13,29 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 public sealed class GivenASyncedItemRegistrar
 {
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
-    private readonly IFileClassificationRuleRepository _fileClassificationRuleRepository = Substitute.For<IFileClassificationRuleRepository>();
+    private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
     private readonly IDirectory _mockDirectory = Substitute.For<IDirectory>();
     private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
     private readonly IFileAutoCategorisor _fileAutoCategorisor = Substitute.For<IFileAutoCategorisor>();
 
     public GivenASyncedItemRegistrar()
     {
-        IReadOnlyList<string> keywords = ["photos", "Media"];
-        IReadOnlyList<string> keywords1 = ["photos"];
         _fileSystem.Directory.Returns(_mockDirectory);
-        _ = _fileClassificationRuleRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationRule>>(
-            new List<FileClassificationRule>
-            {
-                FileClassificationRuleFactory.Create(keywords, FileClassificationFactory.Create("Media", Option.None<string>(), Option.None<string>(), false)),
-                FileClassificationRuleFactory.Create(keywords1, FileClassificationFactory.Create("Work", Option.None<string>(), Option.None<string>(), false))
-            }.AsReadOnly()));
+        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<KeywordMapping>>([]));
         _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false));
     }
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
 
-    private SyncedItemRegistrar CreateSutWithRules(IReadOnlyList<FileClassificationRule> rules) => new(_syncedItemRepository, _fileClassificationRuleRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
+    private SyncedItemRegistrar CreateSutWithMappings(IReadOnlyList<KeywordMapping> mappings)
+    {
+        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
 
-    private static FileClassificationRule ClassificationRule(string keyword, string level1)
-        => FileClassificationRuleFactory.Create([keyword], FileClassificationFactory.Create(level1, Option.None<string>(), Option.None<string>(), false));
+        return new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor);
+    }
+
+    private static KeywordMapping KeywordMap(string keyword, string level1)
+        => ((Result<KeywordMapping, string>.Ok)KeywordMappingFactory.Create(keyword, level1, Option.None<string>(), Option.None<string>(), false)).Value;
 
     private static FolderDeltaItem FolderItem(string id, string remotePath)
         => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, remotePath), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()));
@@ -107,11 +105,11 @@ public sealed class GivenASyncedItemRegistrar
     }
 
     [Fact]
-    public async Task when_register_phantom_called_with_matching_rules_then_upsert_classifications_is_called_with_matched_tags()
+    public async Task when_register_phantom_called_with_matching_mappings_then_upsert_classifications_is_called_with_matched_tags()
     {
         const int entityId = 42;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithRules([ClassificationRule("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
         var item = FileItem("file-1", "/photos/beach.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -128,7 +126,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         const int entityId = 7;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithRules([ClassificationRule("spacecraft", "Science")]);
+        var sut = CreateSutWithMappings([KeywordMap("spacecraft", "Science")]);
         var item = FileItem("file-2", "/docs/report.pdf");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -144,7 +142,7 @@ public sealed class GivenASyncedItemRegistrar
     public async Task when_register_phantom_called_twice_then_upsert_classifications_is_called_each_time()
     {
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
-        var sut = CreateSutWithRules([ClassificationRule("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
         var item = FileItem("file-3", "/photos/sunset.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -157,7 +155,7 @@ public sealed class GivenASyncedItemRegistrar
     [Fact]
     public async Task when_register_folder_called_then_upsert_classifications_is_not_called()
     {
-        var sut = CreateSutWithRules([ClassificationRule("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
         var item = FolderItem("folder-2", "/photos");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
