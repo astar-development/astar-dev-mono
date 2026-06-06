@@ -9,8 +9,8 @@ public interface IFileClassificationRepository
     /// <summary>Returns all category nodes in the hierarchy.</summary>
     Task<IReadOnlyList<FileClassificationCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Returns all keywords belonging to the specified category.</summary>
-    Task<IReadOnlyList<FileClassificationKeyword>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default);
+    /// <summary>Returns all keywords belonging to the specified category, including their database identifiers.</summary>
+    Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default);
 
     /// <summary>Returns all keywords projected as flat <see cref="KeywordMapping"/> records for use in classification pipelines.</summary>
     Task<IReadOnlyList<KeywordMapping>> GetAllKeywordMappingsAsync(CancellationToken cancellationToken = default);

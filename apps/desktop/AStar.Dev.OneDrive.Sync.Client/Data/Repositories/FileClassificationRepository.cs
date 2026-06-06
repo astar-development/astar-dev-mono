@@ -27,7 +27,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileClassificationKeyword>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default)
     {
         int rawId = categoryId.Id;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -39,7 +39,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             .ConfigureAwait(false);
 
         return entities
-            .Select(e => new FileClassificationKeyword(e.Keyword, Option.None<bool>()))
+            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.None<bool>())))
             .ToList()
             .AsReadOnly();
     }

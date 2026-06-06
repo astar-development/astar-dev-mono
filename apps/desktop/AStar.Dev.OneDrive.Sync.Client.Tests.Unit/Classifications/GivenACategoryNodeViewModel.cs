@@ -13,9 +13,9 @@ public sealed class GivenACategoryNodeViewModel
     {
         repository = Substitute.For<IFileClassificationRepository>();
         repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(new Result<int, string>.Ok(1)));
+                  .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(42))));
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(42))));
     }
 
     private CategoryNodeViewModel CreateSut(int level = 1) =>

@@ -15,9 +15,9 @@ public sealed class GivenAFileClassificationRulesViewModel
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
         repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeyword>>([]));
+                  .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
     }
 
     [Fact]
@@ -62,9 +62,9 @@ public sealed class GivenAFileClassificationRulesViewModel
         [
             new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>())
         ];
-        IReadOnlyList<FileClassificationKeyword> keywords =
+        IReadOnlyList<FileClassificationKeywordEntry> keywords =
         [
-            new FileClassificationKeyword("cats", Option.None<bool>())
+            new FileClassificationKeywordEntry(1, new FileClassificationKeyword("cats", Option.None<bool>()))
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));

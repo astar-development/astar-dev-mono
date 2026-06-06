@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -48,9 +49,11 @@ public sealed class GivenAMainWindowViewModel
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator, _localizationService, new InlineUiDispatcher());
     private static FileClassificationRulesViewModel CreateClassificationRulesViewModel()
     {
-        var repo = Substitute.For<IFileClassificationRuleRepository>();
-        repo.GetAllWithIdsAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<FileClassificationRuleEntry>>([]));
+        var repo = Substitute.For<IFileClassificationRepository>();
+        repo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
+        repo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
 
         return new FileClassificationRulesViewModel(repo);
     }

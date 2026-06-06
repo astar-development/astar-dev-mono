@@ -13,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Testably.Abstractions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 
@@ -71,7 +70,6 @@ public class App : Application, IDisposable
         var configuration = RegisterOptions(services);
         ConfigureSerilog(inMemoryLogSink, fileSystem, configuration);
 
-        _ = services.AddSingleton<IFileClassificationRuleRepository, FileClassificationRuleRepository>();
         _ = services.AddShell(inMemoryLogSink);
 
         return services.BuildServiceProvider();

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -8,82 +7,91 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 
+/// <summary>View model for the file classification rules tree view.</summary>
 public sealed partial class FileClassificationRulesViewModel : ObservableObject
 {
-    private readonly IFileClassificationRuleRepository repository;
+    private readonly IFileClassificationRepository repository;
 
-    public FileClassificationRulesViewModel(IFileClassificationRuleRepository repository)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository)
     {
         this.repository = repository;
-        Rules.CollectionChanged += OnRulesChanged;
+        Categories.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoCategories));
     }
 
-    public ObservableCollection<FileClassificationRuleRowViewModel> Rules { get; } = [];
+    /// <summary>Root-level category nodes.</summary>
+    public ObservableCollection<CategoryNodeViewModel> Categories { get; } = [];
 
-    public bool HasNoRules => Rules.Count == 0;
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
-    public partial string NewKeywords { get; set; } = string.Empty;
+    /// <summary>True when no categories have been loaded.</summary>
+    public bool HasNoCategories => Categories.Count == 0;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
-    public partial string NewLevel1 { get; set; } = string.Empty;
+    [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
+    public partial string NewCategoryName { get; set; } = string.Empty;
 
-    [ObservableProperty]
-    public partial string NewLevel2 { get; set; } = string.Empty;
-
-    [ObservableProperty]
-    public partial string NewLevel3 { get; set; } = string.Empty;
-
-    [ObservableProperty]
-    public partial bool NewIsSpecial { get; set; }
-
+    /// <summary>Loads all categories from the repository and builds the tree, then populates keywords for each leaf node.</summary>
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        var entries = await repository.GetAllWithIdsAsync(cancellationToken);
-        Rules.Clear();
-        foreach (var entry in entries)
-            Rules.Add(new FileClassificationRuleRowViewModel(entry.Id, entry.Rule, DeleteRuleAsync, UpdateRuleAsync));
+        var all = await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
+
+        var nodeDict = new Dictionary<FileClassificationCategoryId, CategoryNodeViewModel>();
+
+        foreach (var category in all.OrderBy(c => c.Level))
+        {
+            var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, repository, self => RemoveFromParent(self, nodeDict));
+            nodeDict[category.Id] = node;
+        }
+
+        Categories.Clear();
+
+        foreach (var category in all.OrderBy(c => c.Level))
+        {
+            var node = nodeDict[category.Id];
+
+            if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode))
+                parentNode.Children.Add(node);
+            else
+                Categories.Add(node);
+        }
+
+        var leafNodes = nodeDict.Values.Where(node => node.Children.Count == 0).ToList();
+
+        foreach (var leafNode in leafNodes)
+        {
+            var keywords = await repository.GetKeywordsForCategoryAsync(leafNode.CategoryId, cancellationToken).ConfigureAwait(false);
+
+            foreach (var entry in keywords)
+                leafNode.Keywords.Add(new KeywordRowViewModel(entry.Id, entry.Keyword, repository, self => leafNode.Keywords.Remove(self)));
+        }
     }
 
-    private bool CanAdd => !string.IsNullOrWhiteSpace(NewKeywords) && !string.IsNullOrWhiteSpace(NewLevel1);
+    private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewCategoryName);
 
-    [RelayCommand(CanExecute = nameof(CanAdd))]
-    private async Task AddAsync()
+    [RelayCommand(CanExecute = nameof(CanAddCategory))]
+    private async Task AddCategoryAsync()
     {
-        var keywords = NewKeywords
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Distinct()
-            .ToList()
-            .AsReadOnly();
-        var level2 = string.IsNullOrWhiteSpace(NewLevel2) ? Option.None<string>() : Option.Some(NewLevel2.Trim());
-        var level3 = string.IsNullOrWhiteSpace(NewLevel3) ? Option.None<string>() : Option.Some(NewLevel3.Trim());
-        var classification = FileClassificationFactory.Create(NewLevel1.Trim(), level2, level3, NewIsSpecial);
-        var rule = FileClassificationRuleFactory.Create(keywords, classification);
+        var placeholder = new FileClassificationCategoryId(0);
+        string trimmedName = NewCategoryName.Trim();
+        var categoryResult = FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, Option.None<FileClassificationCategoryId>());
 
-        int id = await repository.AddAsync(rule);
-        Rules.Add(new FileClassificationRuleRowViewModel(id, rule, DeleteRuleAsync, UpdateRuleAsync));
+        if (categoryResult is not Result<FileClassificationCategory, string>.Ok okCategory)
+            return;
 
-        NewKeywords = string.Empty;
-        NewLevel1 = string.Empty;
-        NewLevel2 = string.Empty;
-        NewLevel3 = string.Empty;
-        NewIsSpecial = false;
+        await repository.AddCategoryAsync(okCategory.Value, CancellationToken.None)
+            .TapAsync(newId => Categories.Add(new CategoryNodeViewModel(newId, trimmedName, 1, repository, self => Categories.Remove(self))))
+            .ConfigureAwait(false);
+
+        NewCategoryName = string.Empty;
     }
 
-    private async Task UpdateRuleAsync(int id, FileClassificationRule rule)
+    private void RemoveFromParent(CategoryNodeViewModel node, Dictionary<FileClassificationCategoryId, CategoryNodeViewModel> nodeDict)
     {
-        await repository.UpdateAsync(id, rule, CancellationToken.None);
-    }
+        if (node.Level == 1)
+        {
+            Categories.Remove(node);
+            return;
+        }
 
-    private async Task DeleteRuleAsync(int id)
-    {
-        await repository.DeleteAsync(id);
-        var row = Rules.FirstOrDefault(r => r.Id == id);
-        if (row is not null)
-            Rules.Remove(row);
+        foreach (var potentialParent in nodeDict.Values)
+            potentialParent.Children.Remove(node);
     }
-
-    private void OnRulesChanged(object? sender, NotifyCollectionChangedEventArgs e) => OnPropertyChanged(nameof(HasNoRules));
 }
