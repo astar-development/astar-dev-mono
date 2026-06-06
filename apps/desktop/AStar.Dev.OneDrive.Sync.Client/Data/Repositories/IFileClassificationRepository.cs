@@ -32,4 +32,7 @@ public interface IFileClassificationRepository
 
     /// <summary>Deletes a keyword. No-op if the keyword does not exist.</summary>
     Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default);
+
+    /// <summary>Deletes all keywords and all categories. Used before importing a new taxonomy.</summary>
+    Task DeleteAllAsync(CancellationToken cancellationToken = default);
 }
