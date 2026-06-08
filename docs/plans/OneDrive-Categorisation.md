@@ -10,17 +10,17 @@ The derived categories feed the planned UI: filter files by Level1 alone, Level2
 
 ## Problem
 
-Current auto-classification in `AStar.Dev.OneDrive.Client.Sync` requires manually authored keyword rules.  
+Current auto-classification in `AStar.Dev.OneDrive.Client.Sync` requires manually authored keyword rules.
 We want to extract meaningful Level1/Level2/Level3 values from **full file paths** (folder hierarchy + filename combined) without manual rules.
 
 ### Examples
 
-| Full path / filename | Level1 | Level2 | Level3 |
-|---|---|---|---|
-| `Photos/a red car on the road.jpg` | `Color` | `Red` | `Red Car` |
-| `Photos/a red dress on the floor.jpg` | `Color` | `Red` | `Red Dress` |
-| `Misc/a file with red in it's name.jpg` | `Color` | `Red` | _(none)_ |
-| `People/a file with a persons name: john smith - in it.jpg` | `Person` | `John Smith` | _(none)_ |
+| Full path / filename                                        | Level1   | Level2       | Level3      |
+| ----------------------------------------------------------- | -------- | ------------ | ----------- |
+| `Photos/a red car on the road.jpg`                          | `Color`  | `Red`        | `Red Car`   |
+| `Photos/a red dress on the floor.jpg`                       | `Color`  | `Red`        | `Red Dress` |
+| `Misc/a file with red in it's name.jpg`                     | `Color`  | `Red`        | _(none)_    |
+| `People/a file with a persons name: john smith - in it.jpg` | `Person` | `John Smith` | _(none)_    |
 
 `TagName` (existing property) returns most-specific level — so a UI search on Level1="Color" matches all colour files; Level3="Red Car" narrows to compound matches.
 
@@ -39,19 +39,19 @@ We want to extract meaningful Level1/Level2/Level3 values from **full file paths
 ### Walkthrough on examples
 
 ```
-"a red car on the road.jpg"  
-  tokens after stop-words: [red, car, road]  
+"a red car on the road.jpg"
+  tokens after stop-words: [red, car, road]
   adj+noun match: "red car" ✓
 
-"a red dress on the floor.jpg"  
-  tokens after stop-words: [red, dress, floor]  
+"a red dress on the floor.jpg"
+  tokens after stop-words: [red, dress, floor]
   adj+noun match: "red dress" ✓
 
-"a file with red in it's name.jpg"  
-  tokens after stop-words: [file, red, name]  
+"a file with red in it's name.jpg"
+  tokens after stop-words: [file, red, name]
   no adj+noun pair → first meaningful token: "red" ✓
 
-"a file with a persons name: john smith - in it.jpg"  
+"a file with a persons name: john smith - in it.jpg"
   Title Case regex: "John Smith" → emit immediately ✓
 ```
 
@@ -109,12 +109,12 @@ Folder context participates in token stream, e.g. `Wedding Photos/2023/Paris/bri
 
 ### Estimated cost at scale (300k–500k files)
 
-| Files | Cost (Haiku) | Batches (10/batch) | Wall-clock (100 ms/batch, parallelised ×10) |
-|---|---|---|---|
-| 300,000 | ~$33 | 30,000 | ~5 min |
-| 500,000 | ~$55 | 50,000 | ~8 min |
+| Files   | Cost (Haiku) | Batches (10/batch) | Wall-clock (100 ms/batch, parallelised ×10) |
+| ------- | ------------ | ------------------ | ------------------------------------------- |
+| 300,000 | ~$33         | 30,000             | ~5 min                                      |
+| 500,000 | ~$55         | 50,000             | ~8 min                                      |
 
-Cost applies **per full run**. Re-categorisation (e.g. after a model upgrade or rule change) doubles/triples total spend.  
+Cost applies **per full run**. Re-categorisation (e.g. after a model upgrade or rule change) doubles/triples total spend.
 Requires network + API key; not offline.
 
 ### Pros
@@ -136,31 +136,31 @@ Requires network + API key; not offline.
 
 ## Comparison Summary
 
-| | A: Rule-Based | B: OpenNLP.NET | C: Claude Haiku |
-|---|---|---|---|
-| Accuracy | 85–90% | 90–92% | 97–99% |
-| Setup effort | Low (~150 LoC) | Medium (model DL, lifecycle) | Medium (SDK + service) |
-| Dependencies | None | OpenNLP.NET + models | Anthropic SDK + API key |
-| Offline | Yes | Yes (after download) | No |
-| Latency per file | <1 ms | ~5 ms (warm) | ~10 ms (batched) |
-| Cost (500k files) | Free | Free | ~$55/run |
-| Deterministic | Yes | Yes | No |
-| Re-run cost | Free | Free | $55 each time |
+|                   | A: Rule-Based  | B: OpenNLP.NET               | C: Claude Haiku         |
+| ----------------- | -------------- | ---------------------------- | ----------------------- |
+| Accuracy          | 85–90%         | 90–92%                       | 97–99%                  |
+| Setup effort      | Low (~150 LoC) | Medium (model DL, lifecycle) | Medium (SDK + service)  |
+| Dependencies      | None           | OpenNLP.NET + models         | Anthropic SDK + API key |
+| Offline           | Yes            | Yes (after download)         | No                      |
+| Latency per file  | <1 ms          | ~5 ms (warm)                 | ~10 ms (batched)        |
+| Cost (500k files) | Free           | Free                         | ~$55/run                |
+| Deterministic     | Yes            | Yes                          | No                      |
+| Re-run cost       | Free           | Free                         | $55 each time           |
 
 ---
 
 ## Answered Questions
 
-**Q1 — Scale:** 300k–500k files.  
+**Q1 — Scale:** 300k–500k files.
 Impact: Approach C costs $33–55 **per run**. Re-categorisation (model upgrade, rule change, bug fix) multiplies that. At this scale, free + offline wins unless accuracy becomes a hard requirement.
 
-**Q2 — Category usage:** No current UI; intent is a search/filter UI by Level1, Level2, or Level3.  
+**Q2 — Category usage:** No current UI; intent is a search/filter UI by Level1, Level2, or Level3.
 Impact: Categories are stored once and queried repeatedly. Stability matters more than perfection — a misfiled "red" vs "red car" is annoying in UI search but not catastrophic. 85–90% accuracy is acceptable for v1.
 
-**Q3 — Determinism ("eventual consistency"):**  
+**Q3 — Determinism ("eventual consistency"):**
 Poor phrasing on my part — retracted. The real question was: _if you re-run categorisation, will the same file always get the same category?_
 
-- Approaches A and B: yes, always identical (deterministic). No concern.  
+- Approaches A and B: yes, always identical (deterministic). No concern.
 - Approach C (LLM): rarely but possibly different across runs (model temperature, API version drift). If a user searches for "Red Car" and half the matching files were later re-categorised as "Car", search results would be silently incomplete.
 
 At 300k–500k files, re-running Approach C is expensive anyway, so in practice categories would be written once and never re-derived. The non-determinism risk is therefore low — but it's a gotcha to be aware of before committing to C.
@@ -181,31 +181,32 @@ At 300k–500k files, re-running Approach C is expensive anyway, so in practice 
 
 ### Implementation phases
 
-Constraints: ≤6 files per phase (including test files). App stays operational throughout — new files are unwired until Phase 5.  
+Constraints: ≤6 files per phase (including test files). App stays operational throughout — new files are unwired until Phase 5.
 Auto-categorisation runs for **all** files. Results persist to the existing `SyncedItemClassificationEntity` (same as keyword-rule classifications).
 
 ---
 
 #### Phase 1 — Path normalisation (2 files)
 
-| File | Status |
-|---|---|
-| `Domain/PathNormaliser.cs` | New |
-| `Domain.Tests/GivenAPathNormaliser.cs` | New |
+| File                                   | Status |
+| -------------------------------------- | ------ |
+| `Domain/PathNormaliser.cs`             | New    |
+| `Domain.Tests/GivenAPathNormaliser.cs` | New    |
 
-Responsibility: strip the 7 root segments (`RootSegmentsToSkip = 7`), then split remaining path into folder segments and filename stem.  
+Responsibility: strip the 7 root segments (`RootSegmentsToSkip = 7`), then split remaining path into folder segments and filename stem.
 Not wired to anything. App unaffected.
 
 ---
 
 #### Phase 2 — Token analysis (2 files)
 
-| File | Status |
-|---|---|
-| `Domain/TokenAnalyser.cs` | New |
-| `Domain.Tests/GivenATokenAnalyser.cs` | New |
+| File                                  | Status |
+| ------------------------------------- | ------ |
+| `Domain/TokenAnalyser.cs`             | New    |
+| `Domain.Tests/GivenATokenAnalyser.cs` | New    |
 
 Responsibility:
+
 - `static readonly HashSet<string> StopWords` (~150 English stop words)
 - `static readonly HashSet<string> ColourWords` (red, blue, green, black, white, …)
 - `ExtractPersonName(string text)` — Title Case regex → `Option<string>`
@@ -217,15 +218,16 @@ Not wired. App unaffected.
 
 #### Phase 3 — Level1 derivation (2 files)
 
-| File | Status |
-|---|---|
-| `Domain/Level1Deriver.cs` | New |
-| `Domain.Tests/GivenALevel1Deriver.cs` | New |
+| File                                  | Status |
+| ------------------------------------- | ------ |
+| `Domain/Level1Deriver.cs`             | New    |
+| `Domain.Tests/GivenALevel1Deriver.cs` | New    |
 
 Responsibility:
-- `static readonly Dictionary<string, string> FolderTypeMap` (`"people" → "Person"`, `"places" → "Place"`, `"events" → "Event"`, `"photos" → "Object"`, …)
+
+- `static readonly Dictionary<string, string> FolderTypeMap` (`"people" → "Person"`, `"places" → "Place"`, `"events" → "Event"`, `"photos" → "Unclassified"`, …)
 - `Derive(IReadOnlyList<string> folderSegments, IReadOnlyList<string> filenameTokens)` → `string` (Level1 value)
-- Priority: folder match first; inferred fallback (person name detected → `"Person"`, colour detected → `"Color"`, else → `"Object"`)
+- Priority: folder match first; inferred fallback (person name detected → `"Person"`, colour detected → `"Color"`, else → `"Unclassified"`)
 
 Not wired. App unaffected.
 
@@ -233,13 +235,14 @@ Not wired. App unaffected.
 
 #### Phase 4 — Auto-categorisor assembly (3 files)
 
-| File | Status |
-|---|---|
-| `Domain/IFileAutoCategorisor.cs` | New |
-| `Domain/RuleBasedFileAutoCategorisor.cs` | New |
-| `Domain.Tests/GivenARuleBasedFileAutoCategorisor.cs` | New |
+| File                                                 | Status |
+| ---------------------------------------------------- | ------ |
+| `Domain/IFileAutoCategorisor.cs`                     | New    |
+| `Domain/RuleBasedFileAutoCategorisor.cs`             | New    |
+| `Domain.Tests/GivenARuleBasedFileAutoCategorisor.cs` | New    |
 
 `IFileAutoCategorisor`:
+
 ```csharp
 public interface IFileAutoCategorisor
 {
@@ -248,23 +251,24 @@ public interface IFileAutoCategorisor
 ```
 
 `RuleBasedFileAutoCategorisor` assembles Phases 1–3 into a `FileClassification(Level1, Level2, Level3, isSpecial: false)`:
+
 - Level1 — from `Level1Deriver`
 - Level2 — specific value (person name or colour word)
 - Level3 — compound phrase (adj+noun) if different from Level2, else `Option.None`
 
-End-to-end tests covering all four example filenames plus edge cases (empty path, only root segments, no meaningful tokens).  
+End-to-end tests covering all four example filenames plus edge cases (empty path, only root segments, no meaningful tokens).
 Registered in DI but **not injected anywhere yet**. App unaffected.
 
 ---
 
 #### Phase 5 — Wire up (2 files)
 
-| File | Status |
-|---|---|
+| File                                              | Status   |
+| ------------------------------------------------- | -------- |
 | `Infrastructure/Sync/Jobs/SyncedItemRegistrar.cs` | Modified |
-| _(service registration file)_ | Modified |
+| _(service registration file)_                     | Modified |
 
-`SyncedItemRegistrar` already persists keyword-rule `FileClassification` results. Inject `IFileAutoCategorisor`, call `Categorise(remotePath)`, and append the result to the same `SyncedItemClassificationEntity` collection.  
+`SyncedItemRegistrar` already persists keyword-rule `FileClassification` results. Inject `IFileAutoCategorisor`, call `Categorise(remotePath)`, and append the result to the same `SyncedItemClassificationEntity` collection.
 No DB migration required — existing table accepts additional rows per file.
 
 **Future:** add `ClaudeHaikuFileAutoCategorisor` (Approach C) as an alternate `IFileAutoCategorisor` behind a user-facing "smart re-analyse selected folder" command.
@@ -273,8 +277,8 @@ No DB migration required — existing table accepts additional rows per file.
 
 Priority chain (~20 extra lines on top of Approach A):
 
-1. **Derived:** map the nearest meaningful folder name against a small dictionary (`"People" → "Person"`, `"Places" → "Place"`, `"Events" → "Event"`, `"Photos" → "Object"`, …). If match found → Level1 = mapped value.
-2. **Inferred fallback:** if no folder match, inspect filename tokens — Title Case sequence detected → `"Person"`; colour word detected → `"Color"`; else → `"Object"`.
+1. **Derived:** map the nearest meaningful folder name against a small dictionary (`"People" → "Person"`, `"Places" → "Place"`, `"Events" → "Event"`, `"Photos" → "Unclassified"`, …). If match found → Level1 = mapped value.
+2. **Inferred fallback:** if no folder match, inspect filename tokens — Title Case sequence detected → `"Person"`; colour word detected → `"Color"`; else → `"Unclassified"`.
 
 **Conflict rule:** folder wins for Level1 (represents deliberate user organisation). Level2/Level3 always come from filename content regardless.
 

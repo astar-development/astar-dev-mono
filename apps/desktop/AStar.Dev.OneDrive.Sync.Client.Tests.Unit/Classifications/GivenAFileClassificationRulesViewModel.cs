@@ -30,6 +30,8 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
+        repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
     }
 
     [Fact]
@@ -357,5 +359,31 @@ public sealed class GivenAFileClassificationRulesViewModel
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
 
         sut.LoadingText.ShouldBe(expectedText);
+    }
+
+    [Fact]
+    public async Task when_add_category_command_executed_then_keyword_also_persisted()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService)
+        {
+            NewCategoryName = "Media"
+        };
+
+        await sut.AddCategoryCommand.ExecuteAsync(null);
+
+        await repository.Received(1).AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_add_category_command_executed_then_new_category_has_one_keyword()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService)
+        {
+            NewCategoryName = "Media"
+        };
+
+        await sut.AddCategoryCommand.ExecuteAsync(null);
+
+        sut.Categories[0].Keywords.Count.ShouldBe(1);
     }
 }

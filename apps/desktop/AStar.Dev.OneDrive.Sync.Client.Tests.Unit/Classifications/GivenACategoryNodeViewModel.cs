@@ -107,4 +107,26 @@ public sealed class GivenACategoryNodeViewModel
 
         callbackInvoked.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task when_add_child_category_command_executed_then_keyword_also_persisted()
+    {
+        CategoryNodeViewModel sut = CreateSut();
+        sut.NewChildCategoryName = "Photos";
+
+        await sut.AddChildCategoryCommand.ExecuteAsync(null);
+
+        await repository.Received(1).AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_add_child_category_command_executed_then_new_child_category_has_one_keyword()
+    {
+        CategoryNodeViewModel sut = CreateSut();
+        sut.NewChildCategoryName = "Photos";
+
+        await sut.AddChildCategoryCommand.ExecuteAsync(null);
+
+        sut.Children[0].Keywords.Count.ShouldBe(1);
+    }
 }

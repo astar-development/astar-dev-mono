@@ -19,7 +19,7 @@ public sealed class GivenALevel1Deriver
 
     [Fact]
     public void when_folder_type_map_accessed_then_photos_maps_to_object() =>
-        Level1Deriver.FolderTypeMap["photos"].ShouldBe("Object");
+        Level1Deriver.FolderTypeMap["photos"].ShouldBe("Unclassified");
 
     [Fact]
     public void when_folder_type_map_accessed_then_portraits_maps_to_person() =>
@@ -70,7 +70,7 @@ public sealed class GivenALevel1Deriver
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
-        result.ShouldBe("Object");
+        result.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class GivenALevel1Deriver
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
-        result.ShouldBe("Object");
+        result.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -125,7 +125,7 @@ public sealed class GivenALevel1Deriver
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
-        result.ShouldBe("Object");
+        result.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public sealed class GivenALevel1Deriver
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
-        result.ShouldBe("Object");
+        result.ShouldBe("Unclassified");
     }
 
     [Fact]
