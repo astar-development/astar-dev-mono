@@ -17,7 +17,7 @@ public sealed class GivenARemoteDeletionDetector
     private RemoteDeletionDetector CreateSut(MockFileSystem mockFileSystem) => new(_syncedItemRepository, mockFileSystem, Substitute.For<ILogger<RemoteDeletionDetector>>());
 
     private static List<SyncRuleEntity> IncludeRules(params string[] paths)
-        => paths.Select(p => new SyncRuleEntity { RemotePath = p, RuleType = RuleType.Include }).ToList();
+        => [.. paths.Select(p => new SyncRuleEntity { RemotePath = p, RuleType = RuleType.Include })];
 
     [Fact]
     public async Task when_remote_id_is_in_seen_set_then_local_file_is_not_deleted()

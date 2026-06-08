@@ -63,10 +63,9 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
     }
 
     private static List<string> Tokenise(string filenameStem) =>
-        NonAlphaPattern()
+        [.. NonAlphaPattern()
             .Split(filenameStem.ToLowerInvariant())
-            .Where(t => t.Length > 0 && !TokenAnalyser.StopWords.Contains(t))
-            .ToList();
+            .Where(t => t.Length > 0 && !TokenAnalyser.StopWords.Contains(t))];
 
     private static string TitleCase(string phrase) =>
         string.Join(' ', phrase.Split(' ')

@@ -54,7 +54,7 @@ public class FileDeleteService : IFileDeleteService
 
     private static void MoveFilesToTrashLinux(IEnumerable<string> filePaths)
     {
-        string[] paths = filePaths as string[] ?? filePaths.ToArray();
+        string[] paths = filePaths as string[] ?? [.. filePaths];
         try
         {
             string args = string.Join(" ", paths.Select(f => $"\"{f}\""));
@@ -88,7 +88,7 @@ public class FileDeleteService : IFileDeleteService
 
     private static void MoveFilesToTrashMacOs(IEnumerable<string> filePaths)
     {
-        string[] paths = filePaths as string[] ?? filePaths.ToArray();
+        string[] paths = filePaths as string[] ?? [.. filePaths];
         try
         {
             string args = string.Join(" ", paths.Select(f => $"\"{f}\""));
@@ -117,7 +117,7 @@ public class FileDeleteService : IFileDeleteService
 
     private static void MoveFilesToRecycleBinWindows(IEnumerable<string> filePaths)
     {
-        IEnumerable<string> pathsAsArray = filePaths as string[] ?? filePaths.ToArray();
+        IEnumerable<string> pathsAsArray = filePaths as string[] ?? [.. filePaths];
         string paths = string.Join("\0", pathsAsArray) + "\0\0";
         var fileOp = new Shfileopstruct
         {
