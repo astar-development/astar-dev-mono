@@ -330,4 +330,20 @@ public sealed class GivenARuleBasedFileAutoCategorisor
 
         result.TagName.ShouldBe(result.Level1);
     }
+
+    [Fact]
+    public void when_categorise_called_with_no_meaningful_tokens_then_returns_none()
+    {
+        Option<FileClassification> result = sut.Categorise("a/b/c/d/e/f/g/a/the.jpg");
+
+        result.Match(_ => false, () => true).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_categorise_called_with_generic_path_and_no_keyword_match_then_returns_none()
+    {
+        Option<FileClassification> result = sut.Categorise("path/to/generic/file.jpg");
+
+        result.Match(_ => false, () => true).ShouldBeTrue();
+    }
 }

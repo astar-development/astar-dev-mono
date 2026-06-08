@@ -100,4 +100,14 @@ public sealed class GivenAClassificationCombiner
         result.ShouldHaveSingleItem();
         result[0].ShouldBe(ruleVersion);
     }
+
+    [Fact]
+    public void when_rule_results_have_match_and_analyser_result_is_empty_then_no_unclassified_entry_in_result()
+    {
+        IReadOnlyList<FileClassification> ruleResults = [AnyRuleClassification];
+
+        var result = ClassificationCombiner.Combine(ruleResults, []);
+
+        result.ShouldNotContain(c => c.Level1 == "Unclassified");
+    }
 }
