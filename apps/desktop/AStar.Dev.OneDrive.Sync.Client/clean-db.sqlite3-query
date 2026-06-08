@@ -34,3 +34,9 @@ SELECT
     COUNT(*)
 FROM
     SyncedItems;
+
+
+SELECT
+    COUNT(*)
+FROM
+    FileClassificationCategories;

@@ -78,7 +78,7 @@
                             <TextBlock Text="Display language"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Choose the language used throughout the application."
+                            <TextBlock Text="{Binding LanguageDescriptionText}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>

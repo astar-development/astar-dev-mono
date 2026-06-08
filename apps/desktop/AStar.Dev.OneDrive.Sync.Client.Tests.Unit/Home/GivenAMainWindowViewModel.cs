@@ -47,7 +47,7 @@ public sealed class GivenAMainWindowViewModel
     private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleRepository>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
     private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator, _localizationService, new InlineUiDispatcher());
-    private static FileClassificationRulesViewModel CreateClassificationRulesViewModel()
+    private FileClassificationRulesViewModel CreateClassificationRulesViewModel()
     {
         var repo = Substitute.For<IFileClassificationRepository>();
         repo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
@@ -55,7 +55,7 @@ public sealed class GivenAMainWindowViewModel
         repo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
 
-        return new FileClassificationRulesViewModel(repo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>());
+        return new FileClassificationRulesViewModel(repo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), _localizationService);
     }
 
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());

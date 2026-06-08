@@ -3,6 +3,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,59 +17,92 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     private readonly IFileClassificationExportImportService exportImportService;
     private readonly IFilePickerService filePickerService;
     private readonly IConfirmationDialogService confirmationDialogService;
+    private readonly ILocalizationService localizationService;
 
-    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ILocalizationService localizationService)
     {
         this.repository = repository;
         this.exportImportService = exportImportService;
         this.filePickerService = filePickerService;
         this.confirmationDialogService = confirmationDialogService;
+        this.localizationService = localizationService;
         Categories.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoCategories));
     }
 
     /// <summary>Root-level category nodes.</summary>
     public ObservableCollection<CategoryNodeViewModel> Categories { get; } = [];
 
-    /// <summary>True when no categories have been loaded.</summary>
-    public bool HasNoCategories => Categories.Count == 0;
+    /// <summary>True when the view model is loading data from the repository.</summary>
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; } = true;
+
+    /// <summary>True when loading is complete and no categories have been loaded.</summary>
+    public bool HasNoCategories => !IsLoading && Categories.Count == 0;
+
+    /// <summary>True after the most recent successful <see cref="LoadAsync"/> completes.</summary>
+    public bool IsLoaded { get; private set; }
+
+    /// <summary>Resets loading state synchronously so the view renders the loading indicator before the background load begins.</summary>
+    public void PrepareForLoad()
+    {
+        IsLoaded = false;
+        Categories.Clear();
+        IsLoading = true;
+    }
+
+    /// <summary>Localised text to display while loading.</summary>
+    public string LoadingText => localizationService.GetLocal("Common.Loading");
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
     public partial string NewCategoryName { get; set; } = string.Empty;
 
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(HasNoCategories));
+
     /// <summary>Loads all categories from the repository and builds the tree, then populates keywords for each leaf node.</summary>
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
-        var all = await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
+        IsLoading = true;
 
-        var nodeDict = new Dictionary<FileClassificationCategoryId, CategoryNodeViewModel>();
-
-        foreach (var category in all.OrderBy(c => c.Level))
+        try
         {
-            var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, repository, self => RemoveFromParent(self, nodeDict));
-            nodeDict[category.Id] = node;
+            var all = await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
+
+            var nodeDict = new Dictionary<FileClassificationCategoryId, CategoryNodeViewModel>();
+
+            foreach (var category in all.OrderBy(c => c.Level))
+            {
+                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, repository, self => RemoveFromParent(self, nodeDict));
+                nodeDict[category.Id] = node;
+            }
+
+            Categories.Clear();
+
+            foreach (var category in all.OrderBy(c => c.Level))
+            {
+                var node = nodeDict[category.Id];
+
+                if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode))
+                    parentNode.Children.Add(node);
+                else
+                    Categories.Add(node);
+            }
+
+            var leafNodes = nodeDict.Values.Where(node => node.Children.Count == 0).ToList();
+
+            foreach (var leafNode in leafNodes)
+            {
+                var keywords = await repository.GetKeywordsForCategoryAsync(leafNode.CategoryId, cancellationToken).ConfigureAwait(false);
+
+                foreach (var entry in keywords)
+                    leafNode.Keywords.Add(new KeywordRowViewModel(entry.Id, entry.Keyword, repository, self => leafNode.Keywords.Remove(self)));
+            }
+
+            IsLoaded = true;
         }
-
-        Categories.Clear();
-
-        foreach (var category in all.OrderBy(c => c.Level))
+        finally
         {
-            var node = nodeDict[category.Id];
-
-            if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode))
-                parentNode.Children.Add(node);
-            else
-                Categories.Add(node);
-        }
-
-        var leafNodes = nodeDict.Values.Where(node => node.Children.Count == 0).ToList();
-
-        foreach (var leafNode in leafNodes)
-        {
-            var keywords = await repository.GetKeywordsForCategoryAsync(leafNode.CategoryId, cancellationToken).ConfigureAwait(false);
-
-            foreach (var entry in keywords)
-                leafNode.Keywords.Add(new KeywordRowViewModel(entry.Id, entry.Keyword, repository, self => leafNode.Keywords.Remove(self)));
+            IsLoading = false;
         }
     }
 
