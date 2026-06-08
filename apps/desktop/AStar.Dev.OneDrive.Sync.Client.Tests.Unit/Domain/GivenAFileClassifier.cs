@@ -137,4 +137,48 @@ public sealed class GivenAFileClassifier
 
         result.Count.ShouldBe(2);
     }
+
+    [Fact]
+    public void when_keyword_has_spaces_and_path_contains_spaceless_compound_then_mapping_fires()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("red car", "Colour")];
+
+        var result = FileClassifier.Classify("/photos/redcar.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Colour");
+    }
+
+    [Fact]
+    public void when_keyword_has_spaces_and_path_contains_spaceless_compound_in_directory_then_mapping_fires()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("red car", "Colour")];
+
+        var result = FileClassifier.Classify("/photos/redcar/IMG001.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Colour");
+    }
+
+    [Fact]
+    public void when_keyword_has_multiple_spaces_and_path_contains_fully_compounded_form_then_mapping_fires()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("big red car", "Colour")];
+
+        var result = FileClassifier.Classify("/photos/bigredcar.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Colour");
+    }
+
+    [Fact]
+    public void when_keyword_has_spaces_and_path_contains_spaced_form_then_existing_match_still_fires()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("red car", "Colour")];
+
+        var result = FileClassifier.Classify("/photos/red car/IMG001.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Colour");
+    }
 }
