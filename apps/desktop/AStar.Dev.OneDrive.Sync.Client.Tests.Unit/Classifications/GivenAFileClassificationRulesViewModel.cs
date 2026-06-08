@@ -313,6 +313,43 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public void when_prepare_for_load_called_then_is_loading_is_true()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        sut.PrepareForLoad();
+
+        sut.IsLoading.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_prepare_for_load_called_then_is_loaded_is_false()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        sut.PrepareForLoad();
+
+        sut.IsLoaded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_prepare_for_load_called_after_load_then_categories_are_cleared()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>())
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.PrepareForLoad();
+
+        sut.Categories.Count.ShouldBe(0);
+    }
+
+    [Fact]
     public void when_loading_text_requested_then_returns_value_from_localization_service()
     {
         const string expectedText = "Loading...";

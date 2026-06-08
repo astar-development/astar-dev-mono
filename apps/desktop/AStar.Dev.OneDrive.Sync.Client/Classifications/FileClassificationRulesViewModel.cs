@@ -39,8 +39,16 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>True when loading is complete and no categories have been loaded.</summary>
     public bool HasNoCategories => !IsLoading && Categories.Count == 0;
 
-    /// <summary>True after the first successful <see cref="LoadAsync"/> completes.</summary>
+    /// <summary>True after the most recent successful <see cref="LoadAsync"/> completes.</summary>
     public bool IsLoaded { get; private set; }
+
+    /// <summary>Resets loading state synchronously so the view renders the loading indicator before the background load begins.</summary>
+    public void PrepareForLoad()
+    {
+        IsLoaded = false;
+        Categories.Clear();
+        IsLoading = true;
+    }
 
     /// <summary>Localised text to display while loading.</summary>
     public string LoadingText => localizationService.GetLocal("Common.Loading");

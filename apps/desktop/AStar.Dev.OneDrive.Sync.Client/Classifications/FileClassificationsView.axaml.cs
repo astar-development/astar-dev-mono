@@ -21,8 +21,9 @@ public partial class FileClassificationsView : UserControl, IDisposable
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        if (DataContext is not FileClassificationRulesViewModel vm || vm.IsLoaded)
+        if (DataContext is not FileClassificationRulesViewModel vm)
             return;
+        vm.PrepareForLoad();
         cts = new CancellationTokenSource();
         Dispatcher.UIThread.InvokeAsync(() => vm.LoadAsync(cts.Token), DispatcherPriority.Background);
     }
