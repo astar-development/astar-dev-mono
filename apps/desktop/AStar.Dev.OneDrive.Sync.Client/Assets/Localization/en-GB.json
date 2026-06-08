@@ -96,6 +96,7 @@
   "Settings.Theme.System": "System",
   "Settings.Theme.Hacker": "Hacker",
   "Settings.Language": "Language",
+  "Settings.Language.Description": "Choose the language used by the application.",
   "Settings.DefaultConflictPolicy": "Default conflict resolution",
   "Settings.DeltaSyncInterval": "Delta sync interval",
   "Settings.DeltaSyncInterval.Minutes": "{0} minutes",

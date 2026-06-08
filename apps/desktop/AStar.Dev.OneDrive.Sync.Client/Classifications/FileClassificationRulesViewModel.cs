@@ -39,6 +39,9 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>True when loading is complete and no categories have been loaded.</summary>
     public bool HasNoCategories => !IsLoading && Categories.Count == 0;
 
+    /// <summary>True after the first successful <see cref="LoadAsync"/> completes.</summary>
+    public bool IsLoaded { get; private set; }
+
     /// <summary>Localised text to display while loading.</summary>
     public string LoadingText => localizationService.GetLocal("Common.Loading");
 
@@ -86,6 +89,8 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 foreach (var entry in keywords)
                     leafNode.Keywords.Add(new KeywordRowViewModel(entry.Id, entry.Keyword, repository, self => leafNode.Keywords.Remove(self)));
             }
+
+            IsLoaded = true;
         }
         finally
         {

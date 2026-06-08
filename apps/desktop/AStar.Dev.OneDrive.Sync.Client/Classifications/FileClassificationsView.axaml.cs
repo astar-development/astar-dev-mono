@@ -5,15 +5,34 @@ using Avalonia.Threading;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 
-public partial class FileClassificationsView : UserControl
+public partial class FileClassificationsView : UserControl, IDisposable
 {
+    private CancellationTokenSource? cts;
+
     public FileClassificationsView() => InitializeComponent();
+
+    public void Dispose()
+    {
+        cts?.Dispose();
+        cts = null;
+        GC.SuppressFinalize(this);
+    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        if (DataContext is FileClassificationRulesViewModel vm)
-            Dispatcher.UIThread.InvokeAsync(() => vm.LoadAsync(), DispatcherPriority.Background);
+        if (DataContext is not FileClassificationRulesViewModel vm || vm.IsLoading || vm.IsLoaded)
+            return;
+        cts = new CancellationTokenSource();
+        Dispatcher.UIThread.InvokeAsync(() => vm.LoadAsync(cts.Token), DispatcherPriority.Background);
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = null;
     }
 
     private async void OnExportClick(object? sender, RoutedEventArgs e)

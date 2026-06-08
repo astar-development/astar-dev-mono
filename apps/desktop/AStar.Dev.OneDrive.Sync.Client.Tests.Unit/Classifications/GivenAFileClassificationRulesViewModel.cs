@@ -236,6 +236,38 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public void when_view_model_constructed_then_is_loaded_is_false()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        sut.IsLoaded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_load_async_completes_then_is_loaded_is_true()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.IsLoaded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_load_async_cancelled_then_is_loaded_is_false()
+    {
+        using var cts = new CancellationTokenSource();
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(callInfo => Task.FromCanceled<IReadOnlyList<FileClassificationCategory>>(callInfo.Arg<CancellationToken>()));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+        cts.Cancel();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.LoadAsync(cts.Token));
+
+        sut.IsLoaded.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_load_async_completes_then_is_loading_is_false()
     {
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);

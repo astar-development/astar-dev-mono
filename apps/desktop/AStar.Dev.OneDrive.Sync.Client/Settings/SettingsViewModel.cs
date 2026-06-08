@@ -109,6 +109,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>The available language options derived from the embedded localisation files.</summary>
     public IReadOnlyList<LanguageOption> LanguageOptions { get; private set; }
 
+    /// <summary>Localised description for the language selection row.</summary>
+    public string LanguageDescriptionText => loc.GetLocal("Settings.Language.Description");
+
     /// <summary>The per-account sync settings view models.</summary>
     public ObservableCollection<AccountSyncSettingsViewModel> AccountSettings { get; } = [];
 
@@ -185,5 +188,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(WorkerCountOptions));
         LanguageOptions = LanguageOptionFactory.Create(loc);
         OnPropertyChanged(nameof(LanguageOptions));
+        OnPropertyChanged(nameof(LanguageDescriptionText));
     }
 }
