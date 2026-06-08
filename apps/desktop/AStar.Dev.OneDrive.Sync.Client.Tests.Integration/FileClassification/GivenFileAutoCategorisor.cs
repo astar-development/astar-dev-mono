@@ -17,7 +17,7 @@ public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture) : I
 
         var classification = categorisor.Categorise($"{RootPrefix}/Documents/report.pdf");
 
-        classification.Level1.ShouldBe("Object");
+        classification.Level1.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture) : I
 
         var classification = categorisor.Categorise($"{RootPrefix}/Photos/holiday.jpg");
 
-        classification.Level1.ShouldBe("Object");
+        classification.Level1.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -47,6 +47,6 @@ public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture) : I
 
         var classification = categorisor.Categorise($"{RootPrefix}/Unknown/xyz123.txt");
 
-        classification.Level1.ShouldBe("Object");
+        classification.Level1.ShouldBe("Unclassified");
     }
 }

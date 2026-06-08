@@ -27,14 +27,14 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
     {
         foreach (string segment in folderSegments)
         {
-            if (Level1Deriver.FolderTypeMap.TryGetValue(segment, out string? mapped) && mapped != "Object")
+            if (Level1Deriver.FolderTypeMap.TryGetValue(segment, out string? mapped) && mapped != "Unclassified")
                 return mapped;
         }
 
         return TokenAnalyser.ExtractPersonName(filenameStem)
             .Match<string>(
                 _ => "Person",
-                () => tokens.Any(t => TokenAnalyser.ColourWords.Contains(t)) ? "Color" : "Object"
+                () => tokens.Any(t => TokenAnalyser.ColourWords.Contains(t)) ? "Color" : "Unclassified"
             );
     }
 

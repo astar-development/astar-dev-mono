@@ -35,8 +35,16 @@ SELECT
 FROM
     SyncedItems;
 
+SELECT * FROM FileClassificationKeywords;
+
+SELECT * FROM FileClassificationKeywords WHERE IsSpecial = 1;
+SELECT * FROM FileClassificationKeywords WHERE Keyword = 'TESTCATEGORY';
 
 SELECT
     COUNT(*)
 FROM
     FileClassificationCategories;
+SELECT
+    COUNT(*)
+FROM
+    FileClassificationKeywords Where IsSpecial = 1;
