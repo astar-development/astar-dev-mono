@@ -172,7 +172,7 @@ public sealed class GivenAFileClassifier
     }
 
     [Fact]
-    public void when_keyword_has_spaces_and_path_contains_spaced_form_then_existing_match_still_fires()
+    public void when_keyword_has_spaces_and_all_words_appear_as_tokens_then_mapping_fires()
     {
         IReadOnlyList<KeywordMapping> mappings = [Mapping("red car", "Colour")];
 
