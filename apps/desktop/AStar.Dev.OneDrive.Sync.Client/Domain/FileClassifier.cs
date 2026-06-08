@@ -15,7 +15,17 @@ public static class FileClassifier
     {
         var tokens = Tokenise(remotePath);
         var matches = mappings
-            .Where(mapping => tokens.Contains(mapping.Keyword.ToLowerInvariant()))
+            .Where(mapping =>
+            {
+                string kw = mapping.Keyword.ToLowerInvariant();
+                if (!kw.Contains(' '))
+                    return tokens.Contains(kw);
+                string[] words = kw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                return tokens.Contains(kw) ||
+                       tokens.Contains(kw.Replace(" ", string.Empty)) ||
+                       words.All(tokens.Contains);
+            })
             .Select(mapping => FileClassificationFactory.Create(mapping.Level1, mapping.Level2, mapping.Level3, mapping.IsSpecial))
             .ToList();
 
@@ -23,7 +33,5 @@ public static class FileClassifier
     }
 
     private static HashSet<string> Tokenise(string remotePath)
-        => remotePath.Split(Separators, StringSplitOptions.RemoveEmptyEntries)
-                     .Select(t => t.ToLowerInvariant())
-                     .ToHashSet();
+        => [.. remotePath.Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.ToLowerInvariant())];
 }
