@@ -15,3 +15,4 @@ public sealed class AppSettings
     public int SyncIntervalMinutes { get; set; } = 60;
     public int ConcurrentWorkerCount { get; set; } = 4;
 }
+   
