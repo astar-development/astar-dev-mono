@@ -128,9 +128,11 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
-    public void when_no_categories_then_has_no_categories_is_true()
+    public async Task when_no_categories_loaded_then_has_no_categories_is_true()
     {
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        await sut.LoadAsync(CancellationToken.None);
 
         sut.HasNoCategories.ShouldBeTrue();
     }

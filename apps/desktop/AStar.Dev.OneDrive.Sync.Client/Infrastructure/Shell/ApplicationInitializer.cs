@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
+public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
 {
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken ct = default)
@@ -38,7 +38,6 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             }
 
             settings.LoadAccounts(restored);
-            await classificationRules.LoadAsync(ct).ConfigureAwait(false);
 
             var activeAccount = restored.FirstOrDefault(account => account.IsActive);
 

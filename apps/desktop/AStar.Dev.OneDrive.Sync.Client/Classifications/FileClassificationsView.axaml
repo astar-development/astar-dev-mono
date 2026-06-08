@@ -48,6 +48,12 @@
                       Padding="24,0,34,20">
             <StackPanel Spacing="12" MaxWidth="640">
 
+                <!-- Loading state -->
+                <TextBlock Text="{Binding LoadingText}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           IsVisible="{Binding IsLoading}"/>
+
                 <!-- Empty state -->
                 <TextBlock Text="No classification categories defined."
                            FontSize="{StaticResource FontSizeSm}"
