@@ -140,16 +140,6 @@ SELECT DISTINCT
     ) AS CategoryId
 FROM split s
 WHERE trim(s.kw) IS NOT NULL AND trim(s.kw) != '';");
-
-            // Step 7 — Seed analyser L1 nodes (used by auto-categoriser; skip if already present from rule data)
-            migrationBuilder.Sql(@"
-INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
-VALUES
-    ('Person', 1, NULL),
-    ('Color',  1, NULL),
-    ('Object', 1, NULL),
-    ('Place',  1, NULL),
-    ('Event',  1, NULL);");
         }
 
         /// <inheritdoc />

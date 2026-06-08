@@ -1,7 +1,9 @@
 -- database: ../../../../../.config/astar-dev-onedrive-sync/astar-dev-onedrive-sync.db
 DELETE FROM SyncedItems;
 
-DELETE FROM SyncedItemClassifications;
+DELETE FROM FileClassificationCategories
+WHERE
+    Id = -1;
 
 DELETE FROM SyncJobs;
 
@@ -24,4 +26,11 @@ WHERE
 SELECT
     *
 FROM
-    FileClassificationRules;
+    FileClassificationCategories
+ORDER BY
+    Id;
+
+SELECT
+    COUNT(*)
+FROM
+    SyncedItems;
