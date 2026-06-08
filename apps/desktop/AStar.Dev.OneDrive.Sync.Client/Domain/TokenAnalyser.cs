@@ -116,14 +116,13 @@ public static partial class TokenAnalyser
 
     private static Option<string> ExtractNamePairFromText(string text)
     {
-        List<string> words = NonAlphaPattern()
+        List<string> words = [.. NonAlphaPattern()
             .Split(text)
             .Where(word => word.Length >= 2
                            && !StopWords.Contains(word)
                            && !ColourWords.Contains(word)
                            && !ConcretePairableNouns.Contains(word)
-                           && !AbstractNouns.Contains(word))
-            .ToList();
+                           && !AbstractNouns.Contains(word))];
 
         if (words.Count < 2)
             return Option.None<string>();
