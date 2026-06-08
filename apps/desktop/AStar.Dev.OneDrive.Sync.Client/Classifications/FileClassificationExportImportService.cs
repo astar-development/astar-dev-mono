@@ -32,7 +32,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
                 continue;
 
             var keywords = await repository.GetKeywordsForCategoryAsync(category.Id, cancellationToken).ConfigureAwait(false);
-            nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => k.Keyword.Value));
+            nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsSpecialOverride is Option<bool>.Some s ? s.Value : null)));
         }
 
         var rootNodes = new List<ClassificationCategoryNode>();
@@ -80,8 +80,8 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         foreach (var child in node.Children)
             await InsertNodeAsync(child, level + 1, Option.Some(newId), cancellationToken).ConfigureAwait(false);
 
-        foreach (string keyword in node.Keywords)
-            await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword, Option.None<bool>()), cancellationToken).ConfigureAwait(false);
+        foreach (var keyword in node.Keywords)
+            await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsSpecialOverride.HasValue ? Option.Some(keyword.IsSpecialOverride.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -95,5 +95,7 @@ internal sealed record ClassificationCategoryNode
 {
     public string Name { get; init; } = string.Empty;
     public List<ClassificationCategoryNode> Children { get; set; } = [];
-    public List<string> Keywords { get; set; } = [];
+    public List<ClassificationKeywordNode> Keywords { get; set; } = [];
 }
+
+internal sealed record ClassificationKeywordNode(string Value, bool? IsSpecialOverride);
