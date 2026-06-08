@@ -143,8 +143,27 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         if (categoryResult is not Result<FileClassificationCategory, string>.Ok okCategory)
             return;
 
+        CategoryNodeViewModel? newNode = null;
+
         await repository.AddCategoryAsync(okCategory.Value, CancellationToken.None)
-            .TapAsync(newId => Categories.Add(new CategoryNodeViewModel(newId, trimmedName, 1, repository, self => Categories.Remove(self))))
+            .TapAsync(newId =>
+            {
+                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, repository, self => Categories.Remove(self));
+                Categories.Add(newNode);
+            })
+            .TapAsync(async _ =>
+            {
+                if (newNode is null)
+                    return;
+
+                var keywordResult = FileClassificationKeywordFactory.Create(trimmedName, Option.None<bool>());
+                if (keywordResult is not Result<FileClassificationKeyword, string>.Ok okKeyword)
+                    return;
+
+                await repository.AddKeywordAsync(newNode.CategoryId, okKeyword.Value, CancellationToken.None)
+                    .TapAsync(keywordId => newNode.Keywords.Add(new KeywordRowViewModel(keywordId, okKeyword.Value, repository, self => newNode.Keywords.Remove(self))))
+                    .ConfigureAwait(false);
+            })
             .ConfigureAwait(false);
 
         NewCategoryName = string.Empty;
