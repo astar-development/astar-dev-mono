@@ -37,6 +37,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public void StartSync(TimeSpan? interval = null)
     {
         _interval = interval ?? DefaultInterval;
+        _timer?.Dispose();
 
         try
         {
@@ -90,7 +91,12 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        _activeSyncs.TryAdd(account.Id.Id, cts);
+        if (!_activeSyncs.TryAdd(account.Id.Id, cts))
+        {
+            OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
+            return;
+        }
+
         SyncStarted?.Invoke(this, account.Id.Id);
         try
         {
@@ -157,10 +163,17 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
                 var account = MapEntityToAccount(entity, rules);
 
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                if (!_activeSyncs.TryAdd(account.Id.Id, cts))
+                {
+                    OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
+                    continue;
+                }
+
                 SyncStarted?.Invoke(this, account.Id.Id);
                 try
                 {
-                    await syncService.SyncAccountAsync(account, ct);
+                    await syncService.SyncAccountAsync(account, cts.Token);
                 }
                 catch (Exception ex)
                 {
@@ -168,6 +181,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 }
                 finally
                 {
+                    _activeSyncs.TryRemove(account.Id.Id, out _);
                     SyncCompleted?.Invoke(this, account.Id.Id);
                 }
             }
