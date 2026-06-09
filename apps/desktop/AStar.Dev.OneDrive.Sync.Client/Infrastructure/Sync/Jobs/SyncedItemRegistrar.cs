@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -28,7 +29,8 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         int syncedItemId = await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
 
         var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct);
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), [fileAutoCategorisor.Categorise(remotePath)]);
+        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
+        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
         await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
         syncedItems[item.Id.Id] = phantomItem;
     }

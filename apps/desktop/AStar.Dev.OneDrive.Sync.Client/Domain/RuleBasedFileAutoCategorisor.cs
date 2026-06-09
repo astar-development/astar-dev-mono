@@ -10,7 +10,7 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
     private static partial Regex NonAlphaPattern();
 
     /// <inheritdoc />
-    public FileClassification Categorise(string remotePath)
+    public Option<FileClassification> Categorise(string remotePath)
     {
         string strippedPath = PathNormaliser.StripRootPath(remotePath);
         IReadOnlyList<string> folderSegments = PathNormaliser.GetFolderSegments(strippedPath);
@@ -18,9 +18,13 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
         List<string> tokens = Tokenise(filenameStem);
 
         string level1 = DeriveLevel1(folderSegments, filenameStem, tokens);
+
+        if (level1 == "Unclassified")
+            return Option.None<FileClassification>();
+
         (Option<string> level2, Option<string> level3) = DeriveLevel2AndLevel3(filenameStem, tokens);
 
-        return FileClassificationFactory.Create(level1, level2, level3, isSpecial: false);
+        return Option.Some(FileClassificationFactory.Create(level1, level2, level3, isSpecial: false));
     }
 
     private static string DeriveLevel1(IReadOnlyList<string> folderSegments, string filenameStem, IReadOnlyList<string> tokens)
