@@ -67,7 +67,8 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
     private async Task ClassifyAsync(int syncedItemId, string remotePath, IReadOnlyList<KeywordMapping> mappings, CancellationToken ct)
     {
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), [fileAutoCategorisor.Categorise(remotePath)]);
+        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
+        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
         await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
     }
 
