@@ -30,7 +30,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         using var http = httpClientFactory.CreateClient();
         http.DefaultRequestHeaders.Add("User-Agent", UserAgent);
 
-        string tempPath = localPath + ".download";
+        string tempPath = localPath + "." + Guid.NewGuid().ToString("N") + ".download";
         int attempt = 0;
 
         while (true)

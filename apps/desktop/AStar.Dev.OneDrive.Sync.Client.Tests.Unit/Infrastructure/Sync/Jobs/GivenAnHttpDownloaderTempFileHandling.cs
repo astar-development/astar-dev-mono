@@ -48,7 +48,8 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
-        mockFileSystem.File.Exists(TempPath).ShouldBeFalse();
+        mockFileSystem.Directory.GetFiles(mockFileSystem.Path.GetDirectoryName(LocalPath)!)
+            .ShouldNotContain(f => f.EndsWith(".download"));
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
-        fakeFs.File.Received(1).Delete(TempPath);
+        fakeFs.File.Received(1).Delete(Arg.Is<string>(p => p.StartsWith(LocalPath + ".") && p.EndsWith(".download")));
     }
 
     [Fact]
