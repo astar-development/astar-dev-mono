@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,42 +12,42 @@ public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture) : I
     private const string RootPrefix = "a/b/c/d/e/f/g";
 
     [Fact]
-    public void when_path_contains_documents_token_then_level1_is_documents()
+    public void when_path_contains_documents_token_then_result_is_none()
     {
         var categorisor = fixture.Services.GetRequiredService<IFileAutoCategorisor>();
 
-        var classification = categorisor.Categorise($"{RootPrefix}/Documents/report.pdf");
+        var result = categorisor.Categorise($"{RootPrefix}/Documents/report.pdf");
 
-        classification.Level1.ShouldBe("Unclassified");
+        result.Match(_ => false, () => true).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_path_contains_photos_token_then_level1_is_photos()
+    public void when_path_contains_photos_token_with_no_colour_or_person_then_result_is_none()
     {
         var categorisor = fixture.Services.GetRequiredService<IFileAutoCategorisor>();
 
-        var classification = categorisor.Categorise($"{RootPrefix}/Photos/holiday.jpg");
+        var result = categorisor.Categorise($"{RootPrefix}/Photos/holiday.jpg");
 
-        classification.Level1.ShouldBe("Unclassified");
+        result.Match(_ => false, () => true).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_path_is_empty_then_level1_is_uncategorised()
+    public void when_path_is_empty_then_result_is_none()
     {
         var categorisor = fixture.Services.GetRequiredService<IFileAutoCategorisor>();
 
-        var classification = categorisor.Categorise(string.Empty);
+        var result = categorisor.Categorise(string.Empty);
 
-        classification.Level1.ShouldNotBeNullOrWhiteSpace();
+        result.Match(_ => false, () => true).ShouldBeTrue();
     }
 
     [Fact]
-    public void when_path_contains_no_known_tokens_then_level1_is_uncategorised()
+    public void when_path_contains_no_known_tokens_then_result_is_none()
     {
         var categorisor = fixture.Services.GetRequiredService<IFileAutoCategorisor>();
 
-        var classification = categorisor.Categorise($"{RootPrefix}/Unknown/xyz123.txt");
+        var result = categorisor.Categorise($"{RootPrefix}/Unknown/xyz123.txt");
 
-        classification.Level1.ShouldBe("Unclassified");
+        result.Match(_ => false, () => true).ShouldBeTrue();
     }
 }

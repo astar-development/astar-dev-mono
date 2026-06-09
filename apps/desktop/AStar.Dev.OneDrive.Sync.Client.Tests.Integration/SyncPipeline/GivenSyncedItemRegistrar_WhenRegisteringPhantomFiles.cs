@@ -53,7 +53,7 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
 
         await registrar.RegisterPhantomAsync(accountId, BuildFileItem("phantom-id-autocategorise"), remotePath, "/local/phantom-autocat/test.txt", [], CancellationToken.None);
 
-        var expectedLevel1 = categorisor.Categorise(remotePath).Level1;
+        var expectedLevel1 = categorisor.Categorise(remotePath).Match(c => c.Level1, () => "Unclassified");
         var items = await repository.GetAllByAccountAsync(accountId, CancellationToken.None);
         var classifications = await GetClassificationsAsync(items["phantom-id-autocategorise"].Id);
         classifications.ShouldContain(c => c.Level1 == expectedLevel1);
