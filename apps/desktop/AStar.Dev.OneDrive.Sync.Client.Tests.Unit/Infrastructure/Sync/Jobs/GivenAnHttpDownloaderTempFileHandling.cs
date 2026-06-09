@@ -65,6 +65,42 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     }
 
     [Fact]
+    public async Task when_two_concurrent_downloads_of_same_file_then_distinct_temp_paths_are_used()
+    {
+        var writtenPaths = new System.Collections.Concurrent.ConcurrentBag<string>();
+        var mockFs = new MockFileSystem();
+
+        var spyFileStreamFactory = Substitute.For<IFileStreamFactory>();
+        spyFileStreamFactory
+            .New(Arg.Any<string>(), Arg.Any<FileMode>(), Arg.Any<FileAccess>(), Arg.Any<FileShare>(), Arg.Any<int>(), Arg.Any<bool>())
+            .Returns(callInfo =>
+            {
+                var path = callInfo.ArgAt<string>(0);
+                writtenPaths.Add(path);
+                return mockFs.FileStream.New(path, callInfo.ArgAt<FileMode>(1), callInfo.ArgAt<FileAccess>(2), callInfo.ArgAt<FileShare>(3), callInfo.ArgAt<int>(4), callInfo.ArgAt<bool>(5));
+            });
+
+        var spyFs = Substitute.For<IFileSystem>();
+        spyFs.FileStream.Returns(spyFileStreamFactory);
+        spyFs.File.Returns(mockFs.File);
+        spyFs.Directory.Returns(mockFs.Directory);
+        spyFs.Path.Returns(mockFs.Path);
+
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ =>
+            new HttpClient(new FakeHttpMessageHandler(_ =>
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("content", Encoding.UTF8) })));
+
+        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>());
+
+        await Task.WhenAll(
+            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken),
+            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken));
+
+        writtenPaths.Distinct().Count().ShouldBe(2);
+    }
+
+    [Fact]
     public async Task when_file_move_fails_all_retries_then_result_is_error()
     {
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
