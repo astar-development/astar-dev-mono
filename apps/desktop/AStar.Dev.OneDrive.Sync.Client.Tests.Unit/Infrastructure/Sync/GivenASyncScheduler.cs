@@ -447,6 +447,69 @@ public sealed class GivenASyncScheduler
         capturedToken.IsCancellationRequested.ShouldBeTrue();
     }
 
+    [Fact]
+    public async Task when_trigger_account_called_while_same_account_already_syncing_then_sync_service_not_called_again()
+    {
+        var syncStarted = new TaskCompletionSource();
+        var syncRelease = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                syncStarted.TrySetResult();
+                await syncRelease.Task;
+            });
+
+        var scheduler = CreateScheduler(mockSyncService, Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
+        var account = new OneDriveAccount { Id = new AccountId("dup-account") };
+
+        var firstSync = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+        await syncStarted.Task;
+
+        var secondSync = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+
+        syncRelease.SetResult();
+        await firstSync;
+        await secondSync;
+
+        await mockSyncService.Received(1).SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_scheduled_sync_runs_while_account_already_syncing_manually_then_account_is_skipped()
+    {
+        const string accountId = "shared-account";
+        var syncStarted = new TaskCompletionSource();
+        var syncRelease = new TaskCompletionSource();
+        var callCount = 0;
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                Interlocked.Increment(ref callCount);
+                syncStarted.TrySetResult();
+                await syncRelease.Task;
+            });
+
+        var mockRepository = Substitute.For<IAccountRepository>();
+        mockRepository.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new AccountEntity { Id = new AccountId(accountId), Profile = AccountProfileFactory.Create("Test", "test@test.com") }]);
+
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+        var account = new OneDriveAccount { Id = new AccountId(accountId) };
+
+        var manualSync = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+        await syncStarted.Task;
+
+        var scheduledPass = scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        syncRelease.SetResult();
+        await manualSync;
+        await scheduledPass;
+
+        callCount.ShouldBe(1);
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
