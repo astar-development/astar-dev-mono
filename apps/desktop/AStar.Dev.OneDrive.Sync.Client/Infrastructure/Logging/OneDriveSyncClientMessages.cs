@@ -81,6 +81,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2204, Level = LogLevel.Information, Message = "[SyncScheduler] Sync cancellation requested for {AccountId}")]
     public static partial void SyncSchedulerCancelled(ILogger logger, string accountId);
 
+    /// <summary>Logs that a sync was skipped because a sync for the same account is already in progress.</summary>
+    [LoggerMessage(EventId = 2205, Level = LogLevel.Warning, Message = "[SyncScheduler] Skipping sync for {AccountId} — already in progress")]
+    public static partial void SyncSchedulerSkippedAlreadyRunning(ILogger logger, string accountId);
+
     // Local Change Detection (2300-2399)
 
     /// <summary>Logs new/modified local files found.</summary>
