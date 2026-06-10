@@ -138,14 +138,17 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     {
         var placeholder = new FileClassificationCategoryId(0);
         string trimmedName = NewCategoryName.Trim();
-        var categoryResult = FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, Option.None<FileClassificationCategoryId>());
 
-        if (categoryResult is not Result<FileClassificationCategory, string>.Ok okCategory)
-            return;
+        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, Option.None<FileClassificationCategoryId>())
+            .Match(category => AddValidatedCategoryAsync(category, trimmedName), _ => Task.CompletedTask)
+            .ConfigureAwait(false);
+    }
 
+    private async Task AddValidatedCategoryAsync(FileClassificationCategory category, string trimmedName)
+    {
         CategoryNodeViewModel? newNode = null;
 
-        await repository.AddCategoryAsync(okCategory.Value, CancellationToken.None)
+        await repository.AddCategoryAsync(category, CancellationToken.None)
             .TapAsync(newId =>
             {
                 newNode = new CategoryNodeViewModel(newId, trimmedName, 1, repository, self => Categories.Remove(self));
@@ -156,17 +159,20 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 if (newNode is null)
                     return;
 
-                var keywordResult = FileClassificationKeywordFactory.Create(trimmedName, Option.None<bool>());
-                if (keywordResult is not Result<FileClassificationKeyword, string>.Ok okKeyword)
-                    return;
-
-                await repository.AddKeywordAsync(newNode.CategoryId, okKeyword.Value, CancellationToken.None)
-                    .TapAsync(keywordId => newNode.Keywords.Add(new KeywordRowViewModel(keywordId, okKeyword.Value, repository, self => newNode.Keywords.Remove(self))))
+                await FileClassificationKeywordFactory.Create(trimmedName, Option.None<bool>())
+                    .Match(keyword => AddKeywordToNewNodeAsync(newNode, keyword), _ => Task.CompletedTask)
                     .ConfigureAwait(false);
             })
             .ConfigureAwait(false);
 
         NewCategoryName = string.Empty;
+    }
+
+    private async Task AddKeywordToNewNodeAsync(CategoryNodeViewModel node, FileClassificationKeyword keyword)
+    {
+        await repository.AddKeywordAsync(node.CategoryId, keyword, CancellationToken.None)
+            .TapAsync(keywordId => node.Keywords.Add(new KeywordRowViewModel(keywordId, keyword, repository, self => node.Keywords.Remove(self))))
+            .ConfigureAwait(false);
     }
 
     private void RemoveFromParent(CategoryNodeViewModel node, Dictionary<FileClassificationCategoryId, CategoryNodeViewModel> nodeDict)

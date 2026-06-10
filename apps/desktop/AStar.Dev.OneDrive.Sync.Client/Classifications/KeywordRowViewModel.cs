@@ -46,12 +46,14 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveAsync()
     {
-        var keywordResult = FileClassificationKeywordFactory.Create(Value, IsSpecialOverride ? Option.Some(true) : Option.None<bool>());
-        if (keywordResult is not Result<FileClassificationKeyword, string>.Ok okResult)
-            return;
+        await FileClassificationKeywordFactory.Create(Value, IsSpecialOverride ? Option.Some(true) : Option.None<bool>())
+            .Match(PersistKeywordAsync, _ => Task.CompletedTask)
+            .ConfigureAwait(false);
+    }
 
-        await repository.UpdateKeywordAsync(KeywordId, okResult.Value, CancellationToken.None).ConfigureAwait(false);
-
+    private async Task PersistKeywordAsync(FileClassificationKeyword keyword)
+    {
+        await repository.UpdateKeywordAsync(KeywordId, keyword, CancellationToken.None).ConfigureAwait(false);
         originalValue = Value;
         originalIsSpecialOverride = IsSpecialOverride;
         IsEditing = false;

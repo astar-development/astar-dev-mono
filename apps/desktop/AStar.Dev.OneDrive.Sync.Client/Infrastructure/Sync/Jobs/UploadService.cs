@@ -48,10 +48,8 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             async sessionUrl =>
             {
                 var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
-                if (result is Result<string, string>.Ok)
-                    OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath);
 
-                return result;
+                return result.Tap(_ => OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath));
             },
             error => new Result<string, string>.Error(error));
     }

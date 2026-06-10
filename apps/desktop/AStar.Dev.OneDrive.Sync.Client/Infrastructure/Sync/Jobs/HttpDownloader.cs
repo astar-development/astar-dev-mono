@@ -64,16 +64,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 await using var stream = await response.Content.ReadAsStreamAsync(ct);
                 await WriteToFileAsync(stream, tempPath, progress, ct);
 
-                var moveResult = await MoveWithRetryAsync(tempPath, localPath, ct);
-                if (moveResult is Result<Unit, string>.Error)
-                {
-                    TryDeleteTemp(tempPath);
-                    return moveResult;
-                }
-
-                PreserveRemoteTimestamp(localPath, remoteModified);
-
-                return new Result<Unit, string>.Ok(Unit.Default);
+                return await MoveWithRetryAsync(tempPath, localPath, ct)
+                    .MatchAsync<Unit, string, Result<Unit, string>>(
+                        _ => { PreserveRemoteTimestamp(localPath, remoteModified); return new Result<Unit, string>.Ok(Unit.Default); },
+                        error => { TryDeleteTemp(tempPath); return new Result<Unit, string>.Error(error); });
             }
             catch (IOException) when (attempt <= MaxRetries)
             {
