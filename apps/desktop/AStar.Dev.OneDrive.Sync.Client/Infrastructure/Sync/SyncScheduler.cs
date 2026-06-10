@@ -137,7 +137,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
-    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1;
+    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1 || !_activeSyncs.IsEmpty;
 
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {

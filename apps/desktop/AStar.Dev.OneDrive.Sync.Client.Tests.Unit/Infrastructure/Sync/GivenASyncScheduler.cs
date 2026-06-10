@@ -510,6 +510,34 @@ public sealed class GivenASyncScheduler
         callCount.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task when_trigger_now_called_while_manual_sync_is_running_then_scheduled_pass_does_not_start()
+    {
+        var syncStarted = new TaskCompletionSource();
+        var syncRelease = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                syncStarted.TrySetResult();
+                await syncRelease.Task;
+            });
+
+        var mockRepository = Substitute.For<IAccountRepository>();
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var account = new OneDriveAccount { Id = new AccountId("manual-running") };
+
+        var manualSync = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+        await syncStarted.Task;
+
+        await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        await mockRepository.DidNotReceive().GetAllAsync(Arg.Any<CancellationToken>());
+
+        syncRelease.SetResult();
+        await manualSync;
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
