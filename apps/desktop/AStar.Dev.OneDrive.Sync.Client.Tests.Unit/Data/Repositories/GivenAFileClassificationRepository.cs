@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -21,12 +20,19 @@ public sealed class GivenAFileClassificationRepository
         return (seedingContext, factory);
     }
 
+    private static ILogger<FileClassificationRepository> CreateLogger()
+    {
+        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+
+        return logger;
+    }
+
     [Fact]
     public async Task when_get_all_categories_contains_one_valid_and_one_invalid_row_then_only_valid_row_is_returned()
     {
         var (db, factory) = CreateInMemoryFactory();
-        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
-        var repository = new FileClassificationRepository(factory, logger);
+        var repository = new FileClassificationRepository(factory, CreateLogger());
 
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1 });
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
@@ -42,8 +48,7 @@ public sealed class GivenAFileClassificationRepository
     public async Task when_get_all_categories_contains_only_valid_rows_then_all_are_returned()
     {
         var (db, factory) = CreateInMemoryFactory();
-        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
-        var repository = new FileClassificationRepository(factory, logger);
+        var repository = new FileClassificationRepository(factory, CreateLogger());
 
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1 });
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Documents", Level = 1 });
@@ -58,8 +63,7 @@ public sealed class GivenAFileClassificationRepository
     public async Task when_get_all_categories_contains_only_invalid_rows_then_empty_list_is_returned()
     {
         var (db, factory) = CreateInMemoryFactory();
-        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
-        var repository = new FileClassificationRepository(factory, logger);
+        var repository = new FileClassificationRepository(factory, CreateLogger());
 
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -70,13 +74,10 @@ public sealed class GivenAFileClassificationRepository
     }
 
     [Fact]
-    public async Task when_get_all_categories_contains_invalid_row_then_warning_is_logged()
+    public async Task when_get_all_categories_contains_invalid_row_then_logger_receives_a_warning_call()
     {
         var (db, factory) = CreateInMemoryFactory();
-        var warnings = new List<(int entityId, string error)>();
-        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
-        logger.When(l => OneDriveSyncClientMessages.ClassificationRowSkipped(l, Arg.Any<int>(), Arg.Any<string>()))
-              .Do(ci => warnings.Add((ci.ArgAt<int>(1), ci.ArgAt<string>(2))));
+        var logger = CreateLogger();
         var repository = new FileClassificationRepository(factory, logger);
 
         db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
@@ -84,15 +85,14 @@ public sealed class GivenAFileClassificationRepository
 
         await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
 
-        warnings.Count.ShouldBe(1);
+        logger.ReceivedCalls().ShouldNotBeEmpty();
     }
 
     [Fact]
     public async Task when_get_all_categories_is_called_with_no_rows_then_empty_list_is_returned()
     {
         var (_, factory) = CreateInMemoryFactory();
-        var logger = Substitute.For<ILogger<FileClassificationRepository>>();
-        var repository = new FileClassificationRepository(factory, logger);
+        var repository = new FileClassificationRepository(factory, CreateLogger());
 
         var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
 

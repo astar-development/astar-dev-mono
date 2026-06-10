@@ -331,6 +331,12 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "[ApplicationInitializer] Startup quota refresh failed: {Error}")]
     public static partial void QuotaRefreshStartupFailed(ILogger logger, string error, Exception ex);
 
+    // Classification Repository (3300-3399)
+
+    /// <summary>Logs that a persisted classification category row failed validation and was skipped during load.</summary>
+    [LoggerMessage(EventId = 3300, Level = LogLevel.Warning, Message = "[FileClassificationRepository] Skipping persisted category {EntityId} — validation failed: {Error}")]
+    public static partial void ClassificationRowSkipped(ILogger logger, int entityId, string error);
+
     // Application Lifecycle (use ApplicationMessages for these)
     // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping
     // - Unhandled exception handled by MainWindowInitializeFatal, BootstrapFatal, etc.
