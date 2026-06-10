@@ -75,10 +75,17 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
                 return new Result<Unit, string>.Ok(Unit.Default);
             }
+            catch (IOException) when (attempt <= MaxRetries)
+            {
+                TryDeleteTemp(tempPath);
+                var delay = GetBackoffDelay(attempt);
+                OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, MaxRetries);
+                await Task.Delay(delay, ct);
+            }
             catch (IOException ex)
             {
                 TryDeleteTemp(tempPath);
-                return new Result<Unit, string>.Error($"File write failed for '{localPath}': {ex.Message}");
+                return new Result<Unit, string>.Error($"IO error downloading '{localPath}': {ex.Message}");
             }
             catch (HttpRequestException) when (attempt <= MaxRetries)
             {
