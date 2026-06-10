@@ -70,7 +70,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
             var nodeDict = new Dictionary<FileClassificationCategoryId, CategoryNodeViewModel>();
 
-            foreach (var category in all.OrderBy(c => c.Level))
+            foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
                 var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, repository, self => RemoveFromParent(self, nodeDict));
                 nodeDict[category.Id] = node;
@@ -78,7 +78,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
             Categories.Clear();
 
-            foreach (var category in all.OrderBy(c => c.Level))
+            foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
                 var node = nodeDict[category.Id];
 
