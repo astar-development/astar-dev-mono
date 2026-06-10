@@ -67,21 +67,20 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
     private async Task InsertNodeAsync(ClassificationCategoryNode node, int level, Option<FileClassificationCategoryId> parentId, CancellationToken cancellationToken)
     {
         var placeholder = new FileClassificationCategoryId(0);
-        var categoryResult = FileClassificationCategoryFactory.Create(placeholder, node.Name, level, parentId);
-        if (categoryResult is not Result<FileClassificationCategory, string>.Ok okCategory)
-            return;
 
-        var addResult = await repository.AddCategoryAsync(okCategory.Value, cancellationToken).ConfigureAwait(false);
-        if (addResult is not Result<FileClassificationCategoryId, string>.Ok okId)
-            return;
+        await FileClassificationCategoryFactory.Create(placeholder, node.Name, level, parentId)
+            .BindAsync(category => repository.AddCategoryAsync(category, cancellationToken))
+            .MatchAsync(
+                async newId =>
+                {
+                    foreach (var child in node.Children)
+                        await InsertNodeAsync(child, level + 1, Option.Some(newId), cancellationToken).ConfigureAwait(false);
 
-        FileClassificationCategoryId newId = okId.Value;
-
-        foreach (var child in node.Children)
-            await InsertNodeAsync(child, level + 1, Option.Some(newId), cancellationToken).ConfigureAwait(false);
-
-        foreach (var keyword in node.Keywords)
-            await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsSpecialOverride.HasValue ? Option.Some(keyword.IsSpecialOverride.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
+                    foreach (var keyword in node.Keywords)
+                        await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsSpecialOverride.HasValue ? Option.Some(keyword.IsSpecialOverride.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
+                },
+                _ => Task.CompletedTask)
+            .ConfigureAwait(false);
     }
 }
 
