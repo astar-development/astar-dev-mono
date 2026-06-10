@@ -386,4 +386,45 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         sut.Categories[0].Keywords.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task when_load_async_called_with_categories_at_same_level_then_categories_ordered_alphabetically_by_name()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Zebra", 1, Option.None<FileClassificationCategoryId>()),
+            new(new FileClassificationCategoryId(2), "Alpha", 1, Option.None<FileClassificationCategoryId>()),
+            new(new FileClassificationCategoryId(3), "Media", 1, Option.None<FileClassificationCategoryId>())
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].Name.ShouldBe("Alpha");
+        sut.Categories[1].Name.ShouldBe("Media");
+        sut.Categories[2].Name.ShouldBe("Zebra");
+    }
+
+    [Fact]
+    public async Task when_load_async_called_with_children_at_same_level_then_children_ordered_alphabetically_by_name()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, Option.None<FileClassificationCategoryId>()),
+            new(new FileClassificationCategoryId(2), "Videos", 2, Option.Some(new FileClassificationCategoryId(1))),
+            new(new FileClassificationCategoryId(3), "Audio", 2, Option.Some(new FileClassificationCategoryId(1))),
+            new(new FileClassificationCategoryId(4), "Photos", 2, Option.Some(new FileClassificationCategoryId(1)))
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].Children[0].Name.ShouldBe("Audio");
+        sut.Categories[0].Children[1].Name.ShouldBe("Photos");
+        sut.Categories[0].Children[2].Name.ShouldBe("Videos");
+    }
 }

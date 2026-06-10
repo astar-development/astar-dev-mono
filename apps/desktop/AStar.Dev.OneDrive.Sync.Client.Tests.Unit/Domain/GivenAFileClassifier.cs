@@ -181,4 +181,37 @@ public sealed class GivenAFileClassifier
         result.ShouldHaveSingleItem();
         result[0].Level1.ShouldBe("Colour");
     }
+
+    [Fact]
+    public void when_classifying_path_with_plus_separator_then_plus_delimited_parts_produce_tokens()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("tuscany", "Travel")];
+
+        var result = FileClassifier.Classify("/photos/italy+tuscany+2024.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Travel");
+    }
+
+    [Fact]
+    public void when_keyword_matches_token_from_plus_separated_filename_then_mapping_fires()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("beach", "Scenery")];
+
+        var result = FileClassifier.Classify("/photos/summer+beach+sunset.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Scenery");
+    }
+
+    [Fact]
+    public void when_path_has_no_plus_then_behaviour_unchanged_after_separator_addition()
+    {
+        IReadOnlyList<KeywordMapping> mappings = [Mapping("car", "Vehicle")];
+
+        var result = FileClassifier.Classify("/docs/red-car-landscape.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Vehicle");
+    }
 }
