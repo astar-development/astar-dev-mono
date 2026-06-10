@@ -1,12 +1,14 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 /// <inheritdoc />
-public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext> dbFactory) : IFileClassificationRepository
+public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext> dbFactory, ILogger<FileClassificationRepository> logger) : IFileClassificationRepository
 {
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileClassificationCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default)
@@ -15,15 +17,21 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         var entities = await db.FileClassificationCategories.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return entities
-            .Select(e => FileClassificationCategoryFactory.Create(
+        var categories = new List<FileClassificationCategory>(entities.Count);
+        foreach (var e in entities)
+        {
+            var result = FileClassificationCategoryFactory.Create(
                 new FileClassificationCategoryId(e.Id),
                 e.Name,
                 e.Level,
-                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>())
-                .Match(ok => ok, err => throw new InvalidOperationException($"Persisted category {e.Id} failed validation: {err}")))
-            .ToList()
-            .AsReadOnly();
+                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>());
+
+            _ = result.Match<object?>(
+                ok => { categories.Add(ok); return null; },
+                err => { OneDriveSyncClientMessages.ClassificationRowSkipped(logger, e.Id, err); return null; });
+        }
+
+        return categories.AsReadOnly();
     }
 
     /// <inheritdoc />
