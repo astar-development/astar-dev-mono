@@ -317,6 +317,18 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3104, Level = LogLevel.Warning, Message = "[AuthService] Silent token requires UI interaction: ErrorCode={ErrorCode} Classification={Classification}")]
     public static partial void AuthSilentTokenUiRequired(ILogger logger, string errorCode, string classification);
 
+    /// <summary>Logs a MSAL exception during interactive sign-in; the full exception detail is kept out of the UI-facing error message.</summary>
+    [LoggerMessage(EventId = 3105, Level = LogLevel.Warning, Message = "[AuthService] MSAL exception during interactive sign-in: ErrorCode={ErrorCode}")]
+    public static partial void AuthInteractiveMsalException(ILogger logger, string errorCode, Exception ex);
+
+    /// <summary>Logs an unexpected exception during interactive sign-in; the full exception detail is kept out of the UI-facing error message.</summary>
+    [LoggerMessage(EventId = 3106, Level = LogLevel.Warning, Message = "[AuthService] Unexpected exception during interactive sign-in")]
+    public static partial void AuthInteractiveUnexpectedException(ILogger logger, Exception ex);
+
+    /// <summary>Logs a MSAL exception during silent token refresh; the full exception detail is kept out of the UI-facing error message.</summary>
+    [LoggerMessage(EventId = 3107, Level = LogLevel.Warning, Message = "[AuthService] MSAL exception during silent token refresh: ErrorCode={ErrorCode}")]
+    public static partial void AuthSilentMsalException(ILogger logger, string errorCode, Exception ex);
+
     // Quota Refresh (3200-3299)
 
     /// <summary>Logs failure to acquire a silent token during quota refresh.</summary>

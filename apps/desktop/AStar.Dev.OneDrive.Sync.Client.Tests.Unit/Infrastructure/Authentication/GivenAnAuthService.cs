@@ -185,4 +185,51 @@ public sealed class GivenAnAuthService
 
         result.Reason.ShouldBeOfType<AuthCancelledError>();
     }
+
+    [Fact]
+    public async Task when_msal_throws_msal_exception_during_silent_token_then_result_is_error()
+    {
+        var mockApp = Substitute.For<IPublicClientApplication>();
+        var mockAccount = BuildMockAccount(HomeAccountIdentifier, Username);
+        mockApp.GetAccountsAsync().Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        mockApp.When(app => app.AcquireTokenSilent(Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>()))
+            .Throw(new MsalServiceException("service_error", "MSAL internals: authority=https://login.microsoftonline.com/tenant correlation_id=abc123"));
+        var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
+
+        var result = await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+    }
+
+    [Fact]
+    public async Task when_msal_throws_msal_exception_during_silent_token_then_error_reason_is_auth_failed_error()
+    {
+        var mockApp = Substitute.For<IPublicClientApplication>();
+        var mockAccount = BuildMockAccount(HomeAccountIdentifier, Username);
+        mockApp.GetAccountsAsync().Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        mockApp.When(app => app.AcquireTokenSilent(Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>()))
+            .Throw(new MsalServiceException("service_error", "MSAL internals: authority=https://login.microsoftonline.com/tenant correlation_id=abc123"));
+        var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
+
+        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+
+        result.Reason.ShouldBeOfType<AuthFailedError>();
+    }
+
+    [Fact]
+    public async Task when_msal_throws_msal_exception_during_silent_token_then_failure_message_does_not_contain_msal_internals()
+    {
+        const string msalInternalDetail = "authority=https://login.microsoftonline.com/tenant correlation_id=abc123";
+        var mockApp = Substitute.For<IPublicClientApplication>();
+        var mockAccount = BuildMockAccount(HomeAccountIdentifier, Username);
+        mockApp.GetAccountsAsync().Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        mockApp.When(app => app.AcquireTokenSilent(Arg.Any<IEnumerable<string>>(), Arg.Any<IAccount>()))
+            .Throw(new MsalServiceException("service_error", msalInternalDetail));
+        var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
+
+        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var authFailed = (AuthFailedError)result.Reason;
+
+        authFailed.Message.ShouldNotContain(msalInternalDetail);
+    }
 }

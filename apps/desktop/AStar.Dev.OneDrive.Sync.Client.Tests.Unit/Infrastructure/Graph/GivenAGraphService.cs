@@ -350,9 +350,9 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
-    public async Task when_enumerate_folder_has_multiple_pages_then_progress_callback_is_invoked_per_item()
+    public async Task when_enumerate_folder_next_link_does_not_pass_guard_then_only_the_first_page_is_returned()
     {
-        var nextLinkUrl = $"{_server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
+        var nonGraphNextLinkUrl = $"{_server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
 
         _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
             .RespondWith(Response.Create()
@@ -361,22 +361,17 @@ public sealed class GivenAGraphService : IDisposable
                 .WithBodyAsJson(new Dictionary<string, object>
                 {
                     ["value"] = new object[] { new { id = "file-page1", name = "file1.txt", file = new { }, size = 100L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } },
-                    ["@odata.nextLink"] = nextLinkUrl
+                    ["@odata.nextLink"] = nonGraphNextLinkUrl
                 }));
-
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").WithParam("$skiptoken", "page2").UsingGet())
-            .RespondWith(Response.Create()
-                .WithStatusCode(200)
-                .WithHeader("Content-Type", "application/json")
-                .WithBodyAsJson(new { value = new object[] { new { id = "file-page2", name = "file2.txt", file = new { }, size = 200L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } } }));
 
         var reportedCounts = new List<int>();
 
-        await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
+        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
 
-        reportedCounts.ShouldNotBeEmpty();
+        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
+        items.Count.ShouldBe(1);
         reportedCounts.ShouldContain(1);
-        reportedCounts.ShouldContain(2);
+        reportedCounts.ShouldNotContain(2);
     }
 
     [Fact]
