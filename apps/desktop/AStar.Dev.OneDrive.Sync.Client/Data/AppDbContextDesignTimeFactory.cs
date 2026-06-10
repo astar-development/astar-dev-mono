@@ -11,8 +11,9 @@ public sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactory<
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var dbPath = Path.Combine(Path.GetTempPath(), "design_time_temp.db");
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite("Data Source=design_time_temp.db")
+            .UseSqlite($"Data Source={dbPath}")
             .Options;
 
         return new AppDbContext(options);

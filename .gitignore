@@ -47,6 +47,9 @@ launchSettings.json
 *.Designer.cs.bak
 *design_time_temp.db
 
+# Developer scratch SQL files — may contain destructive statements or local paths
+*.sqlite3-query
+
 # dotnet test results
 TestResults/
 coverage/
