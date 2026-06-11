@@ -1,19 +1,17 @@
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using Microsoft.Extensions.DependencyInjection;
-using AccountCardViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountCardViewModel;
-using AccountFilesViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountFilesViewModel;
 using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewModel;
 using AccountSyncSettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountSyncSettingsViewModel;
 using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
-using AddAccountWizardViewModel = AStar.Dev.OneDrive.Sync.Client.Onboarding.AddAccountWizardViewModel;
-using ConflictItemViewModel = AStar.Dev.OneDrive.Sync.Client.Conflicts.ConflictItemViewModel;
-using DashboardAccountViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardAccountViewModel;
 using DashboardViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardViewModel;
 using FilesViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FilesViewModel;
-using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNodeViewModel;
 using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewModel;
 using StatusBarViewModel = AStar.Dev.OneDrive.Sync.Client.Home.StatusBarViewModel;
 
@@ -34,15 +32,15 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<SettingsViewModel>();
         _ = services.AddSingleton<StatusBarViewModel>();
 
-        _ = services.AddTransient<AccountCardViewModel>();
-        _ = services.AddTransient<AccountFilesViewModel>();
         _ = services.AddTransient<AccountSyncSettingsViewModel>();
-        _ = services.AddTransient<ActivityItemViewModel>();
-        _ = services.AddTransient<AddAccountWizardViewModel>();
-        _ = services.AddTransient<Func<AddAccountWizardViewModel>>(provider => provider.GetRequiredService<AddAccountWizardViewModel>);
-        _ = services.AddTransient<ConflictItemViewModel>();
-        _ = services.AddTransient<DashboardAccountViewModel>();
-        _ = services.AddTransient<FolderTreeNodeViewModel>();
+
+        _ = services.AddSingleton<IAccountCardViewModelFactory, AccountCardViewModelFactory>();
+        _ = services.AddSingleton<IAccountFilesViewModelFactory, AccountFilesViewModelFactory>();
+        _ = services.AddSingleton<IActivityItemViewModelFactory, ActivityItemViewModelFactory>();
+        _ = services.AddSingleton<IAddAccountWizardViewModelFactory, AddAccountWizardViewModelFactory>();
+        _ = services.AddSingleton<IConflictItemViewModelFactory, ConflictItemViewModelFactory>();
+        _ = services.AddSingleton<IDashboardAccountViewModelFactory, DashboardAccountViewModelFactory>();
+        _ = services.AddSingleton<IFolderTreeNodeViewModelFactory, FolderTreeNodeViewModelFactory>();
 
         return services;
     }

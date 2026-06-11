@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -21,7 +22,7 @@ public sealed class GivenAnActivityViewModel
     public GivenAnActivityViewModel() =>
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
 
-    private ActivityViewModel CreateSut() => new(_syncService, _syncRepository, _syncEventAggregator, _loc, _dispatcher);
+    private ActivityViewModel CreateSut() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _loc), new ActivityItemViewModelFactory(_loc), _dispatcher, _loc);
 
     [Fact]
     public void when_sync_progress_fires_with_total_zero_and_current_file_then_info_item_added_to_log()

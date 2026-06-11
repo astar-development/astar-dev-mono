@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -44,10 +46,10 @@ public sealed class GivenAMainWindowViewModel
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
-    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), _syncEventAggregator, _localizationService, Substitute.For<ILogger<AccountsViewModel>>());
-    private FilesViewModel CreateFilesViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleService>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService);
-    private DashboardViewModel CreateDashboardViewModel() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
-    private ActivityViewModel CreateActivityViewModel() => new(_syncService, _syncRepository, _syncEventAggregator, _localizationService, new InlineUiDispatcher());
+    private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), _syncEventAggregator, new AddAccountWizardViewModelFactory(_authService, _graphService, _localizationService), new AccountCardViewModelFactory(_localizationService), Substitute.For<ILogger<AccountsViewModel>>());
+    private FilesViewModel CreateFilesViewModel() => new(new AccountFilesViewModelFactory(_authService, _graphService, _accountRepository, Substitute.For<ISyncRuleService>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(_graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService), _localizationService), _localizationService);
+    private DashboardViewModel CreateDashboardViewModel() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService)), new ActivityItemViewModelFactory(_localizationService));
+    private ActivityViewModel CreateActivityViewModel() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _localizationService), new ActivityItemViewModelFactory(_localizationService), new InlineUiDispatcher(), _localizationService);
     private FileClassificationRulesViewModel CreateClassificationRulesViewModel()
     {
         var repo = Substitute.For<IFileClassificationRepository>();

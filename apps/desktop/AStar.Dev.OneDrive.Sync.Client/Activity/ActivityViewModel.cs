@@ -15,7 +15,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
-public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, ILocalizationService loc, IUiDispatcher dispatcher) : ObservableObject
+public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
     private const int MaxLogSize = 10_000;
     private string? _activeAccountId;
@@ -178,13 +178,13 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         if(args.Total != 0 || string.IsNullOrEmpty(args.CurrentFile))
             return;
 
-        var item = new ActivityItemViewModel(loc) { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info };
+        var item = activityItemViewModelFactory.CreateInfo(args.AccountId, args.CurrentFile);
         AddActivityItem(item);
     }
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var item = ActivityItemViewModel.FromJob(args.Job, loc, _activeAccountEmail);
+        var item = activityItemViewModelFactory.CreateFromJob(args.Job, _activeAccountEmail);
         AddActivityItem(item);
     }
 
@@ -192,7 +192,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     private void AddConflict(SyncConflict conflict)
     {
-        var vm = new ConflictItemViewModel(conflict, syncService, loc);
+        var vm = conflictItemViewModelFactory.Create(conflict);
         vm.Resolved += (_, conflictItem) =>
         {
             _ = Conflicts.Remove(conflictItem);

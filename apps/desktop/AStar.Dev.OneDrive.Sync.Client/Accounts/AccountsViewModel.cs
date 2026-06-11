@@ -9,7 +9,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
-using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -17,10 +16,9 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, ILocalizationService localizationService, ILogger<AccountsViewModel> logger) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, Onboarding.IAddAccountWizardViewModelFactory addAccountWizardViewModelFactory, IAccountCardViewModelFactory accountCardViewModelFactory, ILogger<AccountsViewModel> logger) : ObservableObject
 {
     private readonly ILogger<AccountsViewModel> _logger = logger;
-    private readonly ILocalizationService _localizationService = localizationService;
 
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
@@ -57,7 +55,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     public void AddAccount()
     {
-        var wizard = new Onboarding.AddAccountWizardViewModel(authService, graphService, _localizationService);
+        var wizard = addAccountWizardViewModelFactory.Create();
         wizard.Completed += OnWizardCompletedAsync;
         wizard.Cancelled += OnWizardCancelled;
         Wizard = wizard;
@@ -204,7 +202,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {
-        var card = new AccountCardViewModel(account, _localizationService);
+        var card = accountCardViewModelFactory.Create(account);
         card.Selected += OnCardSelected;
         card.RemoveRequested += (_, accountCard) => RemoveAccountCommand.Execute(accountCard);
         card.ReAuthenticateRequested += OnReAuthenticateRequestedAsync;

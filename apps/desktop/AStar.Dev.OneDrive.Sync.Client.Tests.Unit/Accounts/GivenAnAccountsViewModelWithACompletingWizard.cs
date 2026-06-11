@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -122,5 +123,5 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     }
 
     private static AccountsViewModel BuildSut(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService onboardingService, IQuotaRefreshService quotaRefreshService)
-        => new(authService, graphService, repository, onboardingService, quotaRefreshService, Substitute.For<ISyncEventAggregator>(), Substitute.For<ILocalizationService>(), Substitute.For<ILogger<AccountsViewModel>>());
+        => new(authService, graphService, repository, onboardingService, quotaRefreshService, Substitute.For<ISyncEventAggregator>(), new AddAccountWizardViewModelFactory(authService, graphService, Substitute.For<ILocalizationService>()), new AccountCardViewModelFactory(Substitute.For<ILocalizationService>()), Substitute.For<ILogger<AccountsViewModel>>());
 }

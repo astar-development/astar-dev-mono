@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using System.Globalization;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
@@ -72,10 +74,10 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
     private MainWindowViewModel CreateMainWindowViewModel()
     {
-        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, localizationService, Substitute.For<ILogger<AccountsViewModel>>());
-        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleService, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
-        var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
-        var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService, new InlineUiDispatcher());
+        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, new AddAccountWizardViewModelFactory(authService, graphService, localizationService), new AccountCardViewModelFactory(localizationService), Substitute.For<ILogger<AccountsViewModel>>());
+        var files = new FilesViewModel(new AccountFilesViewModelFactory(authService, graphService, accountRepository, syncRuleService, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService), localizationService), localizationService);
+        var dashboard = new DashboardViewModel(localizationService, syncEventAggregator, new DashboardAccountViewModelFactory(schedulerForViewModel, accountRepository, localizationService, new ActivityItemViewModelFactory(localizationService)), new ActivityItemViewModelFactory(localizationService));
+        var activity = new ActivityViewModel(syncRepository, syncEventAggregator, new ConflictItemViewModelFactory(syncService, localizationService), new ActivityItemViewModelFactory(localizationService), new InlineUiDispatcher(), localizationService);
         var classificationRepo = Substitute.For<IFileClassificationRepository>();
         classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                           .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));

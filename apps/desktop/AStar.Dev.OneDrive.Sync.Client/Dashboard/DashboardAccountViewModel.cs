@@ -49,6 +49,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     private readonly IAccountRepository _repository;
     private readonly ILocalizationService _localizationService;
+    private readonly IActivityItemViewModelFactory _activityItemViewModelFactory;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -98,13 +99,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     /// <summary>Localised "Cancel" button label.</summary>
     public string CancelButtonText => _localizationService.GetLocal("Common.Cancel");
 
-    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService)
+    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory)
     {
         _account = account;
         _scheduler = scheduler;
         FolderCount = account.SelectedFolderIds.Count;
         _repository = repository;
         _localizationService = localizationService;
+        _activityItemViewModelFactory = activityItemViewModelFactory;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -117,7 +119,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        AddRecentActivity(new ActivityItemViewModel(_localizationService) { FileName = _localizationService.GetLocal("Sync.Starting") });
+        AddRecentActivity(_activityItemViewModelFactory.Create(_localizationService.GetLocal("Sync.Starting")));
 
         await _repository.GetByIdAsync(_account.Id, CancellationToken.None)
             .TapAsync(async entity =>

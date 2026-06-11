@@ -20,7 +20,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
@@ -29,7 +29,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private readonly ISyncRuleService _syncRuleService = syncRuleService;
     private readonly IFileManagerService _fileManagerService = fileManagerService;
     private readonly ILogger<AccountFilesViewModel> _logger = logger;
-    private readonly ILogger<FolderTreeNodeViewModel> _folderTreeLogger = folderTreeLogger;
+    private readonly IFolderTreeNodeViewModelFactory _folderTreeNodeViewModelFactory = folderTreeNodeViewModelFactory;
     private readonly ILocalizationService _localizationService = localizationService;
     private string? _accessToken;
     private Option<DriveId> _driveId = DriveIdFactory.Empty;
@@ -164,7 +164,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 : FolderSyncState.Excluded;
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = new FolderTreeNodeViewModel(node, _graphService, tokenFactory, driveId.Value, _folderTreeLogger, _localizationService);
+            var vm = _folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;
