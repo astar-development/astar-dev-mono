@@ -18,7 +18,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, Onboarding.IAddAccountWizardViewModelFactory addAccountWizardViewModelFactory, IAccountCardViewModelFactory accountCardViewModelFactory, ILogger<AccountsViewModel> logger) : ObservableObject
 {
-    private readonly ILogger<AccountsViewModel> logger = logger;
+    private readonly ILogger<AccountsViewModel> _logger = logger;
 
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 

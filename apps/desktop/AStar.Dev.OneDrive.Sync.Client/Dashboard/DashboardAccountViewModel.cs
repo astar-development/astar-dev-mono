@@ -47,9 +47,9 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [ObservableProperty]
     public partial int FolderCount { get; set; }
 
-    private readonly IAccountRepository repository;
-    private readonly ILocalizationService localizationService;
-    private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
+    private readonly IAccountRepository _repository;
+    private readonly ILocalizationService _localizationService;
+    private readonly IActivityItemViewModelFactory _activityItemViewModelFactory;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -104,9 +104,9 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         this.account = account;
         this.scheduler = scheduler;
         FolderCount = account.SelectedFolderIds.Count;
-        this.repository = repository;
-        this.localizationService = localizationService;
-        this.activityItemViewModelFactory = activityItemViewModelFactory;
+        _repository = repository;
+        _localizationService = localizationService;
+        _activityItemViewModelFactory = activityItemViewModelFactory;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -119,7 +119,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        AddRecentActivity(activityItemViewModelFactory.Create(localizationService.GetLocal("Sync.Starting")));
+        AddRecentActivity(_activityItemViewModelFactory.Create(_localizationService.GetLocal("Sync.Starting")));
 
         await repository.GetByIdAsync(account.Id, CancellationToken.None)
             .TapAsync(async entity =>
