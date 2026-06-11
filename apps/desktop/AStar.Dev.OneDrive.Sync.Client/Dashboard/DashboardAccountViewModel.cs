@@ -14,22 +14,22 @@ namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
 public sealed partial class DashboardAccountViewModel : ObservableObject
 {
-    private readonly OneDriveAccount _account;
-    private readonly ISyncScheduler _scheduler;
+    private readonly OneDriveAccount account;
+    private readonly ISyncScheduler scheduler;
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
-    public string AccountId => _account.Id.Id;
-    public string DisplayName => _account.Profile.DisplayName;
-    public string Email => _account.Profile.Email;
-    public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(_account.AccentIndex);
+    public string AccountId => account.Id.Id;
+    public string DisplayName => account.Profile.DisplayName;
+    public string Email => account.Profile.Email;
+    public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(account.AccentIndex);
     public Avalonia.Media.Color AccentColor => Avalonia.Media.Color.Parse(AccentHex);
 
-    public long QuotaTotal => _account.Quota.TotalBytes;
-    public long QuotaUsed => _account.Quota.UsedBytes;
-    public double StorageFraction => _account.Quota.Fraction();
-    public string StorageText => _account.Quota.TotalBytes > 0
-        ? $"{_account.Quota.UsedBytes.FileSizeToText()} / {_account.Quota.TotalBytes.FileSizeToText()}"
-        : _localizationService.GetLocal("Common.Unknown");
+    public long QuotaTotal => account.Quota.TotalBytes;
+    public long QuotaUsed => account.Quota.UsedBytes;
+    public double StorageFraction => account.Quota.Fraction();
+    public string StorageText => account.Quota.TotalBytes > 0
+        ? $"{account.Quota.UsedBytes.FileSizeToText()} / {account.Quota.TotalBytes.FileSizeToText()}"
+        : localizationService.GetLocal("Common.Unknown");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel))]
@@ -47,24 +47,24 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [ObservableProperty]
     public partial int FolderCount { get; set; }
 
-    private readonly IAccountRepository _repository;
-    private readonly ILocalizationService _localizationService;
-    private readonly IActivityItemViewModelFactory _activityItemViewModelFactory;
+    private readonly IAccountRepository repository;
+    private readonly ILocalizationService localizationService;
+    private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
 
     public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
-    public bool HasEverSynced => _account.LastSyncedAt?.Match(_ => true, () => false) ?? false;
+    public bool HasEverSynced => account.LastSyncedAt?.Match(_ => true, () => false) ?? false;
     public string StatusLabel => (SyncState, ConflictCount) switch
     {
-        (SyncState.Syncing, _) => _localizationService.GetLocal("StatusBar.Syncing"),
-        (SyncState.Error, _) => _localizationService.GetLocal("StatusBar.Error"),
+        (SyncState.Syncing, _) => localizationService.GetLocal("StatusBar.Syncing"),
+        (SyncState.Error, _) => localizationService.GetLocal("StatusBar.Error"),
         (_, > 0) => ConflictCount == 1
-            ? _localizationService.GetLocal("StatusBar.Conflict", ConflictCount)
-            : _localizationService.GetLocal("StatusBar.Conflicts", ConflictCount),
-        (SyncState.Pending, _) => _localizationService.GetLocal("Dashboard.Pending"),
-        _ => _localizationService.GetLocal("StatusBar.Synced")
+            ? localizationService.GetLocal("StatusBar.Conflict", ConflictCount)
+            : localizationService.GetLocal("StatusBar.Conflicts", ConflictCount),
+        (SyncState.Pending, _) => localizationService.GetLocal("Dashboard.Pending"),
+        _ => localizationService.GetLocal("StatusBar.Synced")
     };
 
     [ObservableProperty]
@@ -76,37 +76,37 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
     /// <summary>Localised "Storage" section heading.</summary>
-    public string StorageHeadingText => _localizationService.GetLocal("Dashboard.Storage");
+    public string StorageHeadingText => localizationService.GetLocal("Dashboard.Storage");
 
     /// <summary>Localised "folders" stat label.</summary>
-    public string FoldersLabelText => _localizationService.GetLocal("Dashboard.Folders");
+    public string FoldersLabelText => localizationService.GetLocal("Dashboard.Folders");
 
     /// <summary>Localised "conflicts" stat label.</summary>
-    public string ConflictsLabelText => _localizationService.GetLocal("Dashboard.Conflicts");
+    public string ConflictsLabelText => localizationService.GetLocal("Dashboard.Conflicts");
 
     /// <summary>Localised "last sync" stat label.</summary>
-    public string LastSyncLabelText => _localizationService.GetLocal("Dashboard.LastSync");
+    public string LastSyncLabelText => localizationService.GetLocal("Dashboard.LastSync");
 
     /// <summary>Localised "Recent activity" section heading.</summary>
-    public string RecentActivityText => _localizationService.GetLocal("Dashboard.RecentActivity");
+    public string RecentActivityText => localizationService.GetLocal("Dashboard.RecentActivity");
 
     /// <summary>Localised "No recent activity" empty state.</summary>
-    public string NoRecentActivityText => _localizationService.GetLocal("Dashboard.NoRecentActivity");
+    public string NoRecentActivityText => localizationService.GetLocal("Dashboard.NoRecentActivity");
 
     /// <summary>Localised "Sync now" button label.</summary>
-    public string SyncNowButtonText => _localizationService.GetLocal("Dashboard.SyncNow");
+    public string SyncNowButtonText => localizationService.GetLocal("Dashboard.SyncNow");
 
     /// <summary>Localised "Cancel" button label.</summary>
-    public string CancelButtonText => _localizationService.GetLocal("Common.Cancel");
+    public string CancelButtonText => localizationService.GetLocal("Common.Cancel");
 
     public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory)
     {
-        _account = account;
-        _scheduler = scheduler;
+        this.account = account;
+        this.scheduler = scheduler;
         FolderCount = account.SelectedFolderIds.Count;
-        _repository = repository;
-        _localizationService = localizationService;
-        _activityItemViewModelFactory = activityItemViewModelFactory;
+        this.repository = repository;
+        this.localizationService = localizationService;
+        this.activityItemViewModelFactory = activityItemViewModelFactory;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -114,14 +114,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private void ToggleExpand() => IsExpanded = !IsExpanded;
 
     [RelayCommand]
-    private Task CancelSyncAsync() => _scheduler.CancelAccountSyncAsync(_account.Id.Id);
+    private Task CancelSyncAsync() => scheduler.CancelAccountSyncAsync(account.Id.Id);
 
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        AddRecentActivity(_activityItemViewModelFactory.Create(_localizationService.GetLocal("Sync.Starting")));
+        AddRecentActivity(activityItemViewModelFactory.Create(localizationService.GetLocal("Sync.Starting")));
 
-        await _repository.GetByIdAsync(_account.Id, CancellationToken.None)
+        await repository.GetByIdAsync(account.Id, CancellationToken.None)
             .TapAsync(async entity =>
             {
                 var fullAccount = new OneDriveAccount
@@ -131,7 +131,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
                     SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
                     LastSyncedAt = entity.LastSyncedAt
                 };
-                await _scheduler.TriggerAccountAsync(fullAccount);
+                await scheduler.TriggerAccountAsync(fullAccount);
             });
     }
 
@@ -144,7 +144,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         if (state is not (SyncState.Idle or SyncState.Completed or SyncState.NoSyncPathConfigured)) return;
 
         if (state is not SyncState.NoSyncPathConfigured)
-            _account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
+            account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
 
         UpdateLastSyncText(state);
     }
@@ -152,7 +152,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     /// <summary>Updates the displayed storage quota. Call after a successful quota refresh from the Graph API.</summary>
     public void UpdateQuota(StorageQuota quota)
     {
-        _account.Quota = quota;
+        account.Quota = quota;
         OnPropertyChanged(nameof(QuotaTotal));
         OnPropertyChanged(nameof(QuotaUsed));
         OnPropertyChanged(nameof(StorageFraction));
@@ -168,16 +168,16 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
-        syncState == SyncState.NoSyncPathConfigured ? _localizationService.GetLocal("Dashboard.NoSyncPath") :
-        _account.LastSyncedAt is null ? _localizationService.GetLocal("Common.NeverSynced") :
-        _account.LastSyncedAt.Match(
+        syncState == SyncState.NoSyncPathConfigured ? localizationService.GetLocal("Dashboard.NoSyncPath") :
+        account.LastSyncedAt is null ? localizationService.GetLocal("Common.NeverSynced") :
+        account.LastSyncedAt.Match(
             lastSyncedAt => (DateTimeOffset.UtcNow - lastSyncedAt) switch
             {
-                { TotalSeconds: < 60 } => _localizationService.GetLocal("Common.JustNow"),
-                { TotalMinutes: < 60 } td => _localizationService.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
-                { TotalHours: < 24 } td => _localizationService.GetLocal("Common.HoursAgo", (int)td.TotalHours),
-                { TotalDays: < 2 } => _localizationService.GetLocal("Common.Yesterday"),
-                var td => _localizationService.GetLocal("Common.DaysAgo", (int)td.TotalDays)
+                { TotalSeconds: < 60 } => localizationService.GetLocal("Common.JustNow"),
+                { TotalMinutes: < 60 } td => localizationService.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
+                { TotalHours: < 24 } td => localizationService.GetLocal("Common.HoursAgo", (int)td.TotalHours),
+                { TotalDays: < 2 } => localizationService.GetLocal("Common.Yesterday"),
+                var td => localizationService.GetLocal("Common.DaysAgo", (int)td.TotalDays)
             },
-            () => _localizationService.GetLocal("Common.NeverSynced"));
+            () => localizationService.GetLocal("Common.NeverSynced"));
 }

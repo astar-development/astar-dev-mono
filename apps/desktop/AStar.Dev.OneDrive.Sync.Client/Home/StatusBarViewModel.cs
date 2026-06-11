@@ -12,16 +12,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 /// </summary>
 public sealed partial class StatusBarViewModel : ObservableObject
 {
-    private readonly AccountsViewModel _accounts;
+    private readonly AccountsViewModel accounts;
     private readonly ILocalizationService loc;
-    private AccountCardViewModel? _trackedCard;
+    private AccountCardViewModel? trackedCard;
 
     public StatusBarViewModel(AccountsViewModel accounts, ILocalizationService localizationService)
     {
-        _accounts = accounts;
-        _accounts.PropertyChanged += OnAccountsPropertyChanged;
-        _accounts.ActiveAccountStateChanged += OnActiveAccountStateChanged;
-        ApplyActiveAccount(_accounts.ActiveAccount);
+        this.accounts = accounts;
+        accounts.PropertyChanged += OnAccountsPropertyChanged;
+        accounts.ActiveAccountStateChanged += OnActiveAccountStateChanged;
+        ApplyActiveAccount(accounts.ActiveAccount);
         loc = localizationService;
         loc.CultureChanged += OnCultureChanged;
     }
@@ -85,27 +85,27 @@ public sealed partial class StatusBarViewModel : ObservableObject
     private void OnAccountsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
-            ApplyActiveAccount(_accounts.ActiveAccount);
+            ApplyActiveAccount(accounts.ActiveAccount);
     }
 
-    private void OnActiveAccountStateChanged(object? sender, EventArgs e) => ApplyActiveAccount(_accounts.ActiveAccount);
+    private void OnActiveAccountStateChanged(object? sender, EventArgs e) => ApplyActiveAccount(accounts.ActiveAccount);
 
     private void OnTrackedCardPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if(_trackedCard is null)
+        if(trackedCard is null)
             return;
 
         switch(e.PropertyName)
         {
             case nameof(AccountCardViewModel.SyncState):
-                SyncState = _trackedCard.SyncState;
-                IsSyncing = _trackedCard.SyncState == SyncState.Syncing;
+                SyncState = trackedCard.SyncState;
+                IsSyncing = trackedCard.SyncState == SyncState.Syncing;
                 break;
             case nameof(AccountCardViewModel.ConflictCount):
-                ConflictCount = _trackedCard.ConflictCount;
+                ConflictCount = trackedCard.ConflictCount;
                 break;
             case nameof(AccountCardViewModel.LastSyncText):
-                LastSyncText = _trackedCard.LastSyncText;
+                LastSyncText = trackedCard.LastSyncText;
                 break;
         }
     }
@@ -136,16 +136,16 @@ public sealed partial class StatusBarViewModel : ObservableObject
 
     private void TrackCard(AccountCardViewModel card)
     {
-        _trackedCard = card;
-        _trackedCard.PropertyChanged += OnTrackedCardPropertyChanged;
+        trackedCard = card;
+        trackedCard.PropertyChanged += OnTrackedCardPropertyChanged;
     }
 
     private void UntrackCurrentCard()
     {
-        if(_trackedCard is null)
+        if(trackedCard is null)
             return;
 
-        _trackedCard.PropertyChanged -= OnTrackedCardPropertyChanged;
-        _trackedCard = null;
+        trackedCard.PropertyChanged -= OnTrackedCardPropertyChanged;
+        trackedCard = null;
     }
 }

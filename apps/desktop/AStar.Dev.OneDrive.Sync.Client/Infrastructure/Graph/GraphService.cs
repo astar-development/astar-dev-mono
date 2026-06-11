@@ -18,13 +18,13 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private const string RootPathMarker = "root:";
     private const string DownloadUrlKey = "@microsoft.graph.downloadUrl";
 
-    private static readonly string[] _childrenSelect =
+    private static readonly string[] childrenSelect =
     [
         "id", "name", "folder", "file", "size", "lastModifiedDateTime", "parentReference",
         "eTag", "cTag", DownloadUrlKey
     ];
 
-    private readonly ConcurrentDictionary<string, DriveContext> _cache = [];
+    private readonly ConcurrentDictionary<string, DriveContext> cache = [];
 
     /// <inheritdoc />
     public async Task<Result<DriveId, string>> GetDriveIdAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct = default)
@@ -54,7 +54,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                 async ctx =>
                 {
                     var response = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
-                        .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
+                        .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct);
 
                     List<DriveFolder> folders = [];
 
@@ -266,7 +266,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             return;
 
         var page = await client.Drives[driveId.Value].Items[parentId].Children
-            .GetAsync(req => req.QueryParameters.Select = _childrenSelect, ct);
+            .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct);
 
         while(page?.Value is not null)
         {
@@ -319,13 +319,13 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
     private static Option<string> ToOptionString(string? value) => value is not null ? Option.Some(value) : Option.None<string>();
 
     /// <inheritdoc />
-    public void EvictCachedDriveContext(string accountId) => _cache.TryRemove(accountId, out _);
+    public void EvictCachedDriveContext(string accountId) => cache.TryRemove(accountId, out _);
 
     private async Task<Result<(GraphServiceClient Client, DriveContext Ctx), string>> ResolveClientWithDriveContextAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
     {
         var client = graphClientFactory.CreateClient(tokenFactory);
 
-        if(_cache.TryGetValue(accountId, out var cached))
+        if(cache.TryGetValue(accountId, out var cached))
             return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, cached));
 
         var drive = await client.Me.Drive.GetAsync(cancellationToken: ct);
@@ -340,7 +340,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
             return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve root item ID.");
 
         var driveContext = new DriveContext(driveId, root.Id);
-        _cache[accountId] = driveContext;
+        cache[accountId] = driveContext;
 
         return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, driveContext));
     }

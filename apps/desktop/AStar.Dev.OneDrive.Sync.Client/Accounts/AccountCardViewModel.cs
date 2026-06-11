@@ -12,10 +12,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 /// </summary>
 public sealed partial class AccountCardViewModel : ObservableObject
 {
-    private readonly OneDriveAccount _model;
-    private readonly ILocalizationService _localizationService;
+    private readonly OneDriveAccount model;
+    private readonly ILocalizationService localizationService;
 
-    private static readonly string[] _palette =
+    private static readonly string[] palette =
     [
         "#185FA5",
         "#0F6E56",
@@ -26,10 +26,10 @@ public sealed partial class AccountCardViewModel : ObservableObject
     ];
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
-    public string Id => _model.Id.Id;
-    public string DisplayName => _model.Profile.DisplayName;
-    public string Email => _model.Profile.Email;
-    public Color AccentColor => Color.Parse(PaletteHex(_model.AccentIndex));
+    public string Id => model.Id.Id;
+    public string DisplayName => model.Profile.DisplayName;
+    public string Email => model.Profile.Email;
+    public Color AccentColor => Color.Parse(PaletteHex(model.AccentIndex));
 
     /// <summary>
     /// Two-letter initials derived from DisplayName (e.g. "JS" for "Jason Smith").
@@ -39,15 +39,15 @@ public sealed partial class AccountCardViewModel : ObservableObject
     {
         get
         {
-            string[] parts = _model.Profile.DisplayName
+            string[] parts = model.Profile.DisplayName
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             return parts.Length >= 2
                 ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
-                : _model.Profile.DisplayName.Length > 0
-                    ? _model.Profile.DisplayName[0].ToString().ToUpperInvariant()
-                    : _model.Profile.Email.Length > 0
-                        ? _model.Profile.Email[0].ToString().ToUpperInvariant()
+                : model.Profile.DisplayName.Length > 0
+                    ? model.Profile.DisplayName[0].ToString().ToUpperInvariant()
+                    : model.Profile.Email.Length > 0
+                        ? model.Profile.Email[0].ToString().ToUpperInvariant()
                         : "?";
         }
     }
@@ -56,10 +56,10 @@ public sealed partial class AccountCardViewModel : ObservableObject
     /// Accent colour index (0–5) used to pick the avatar background colour.
     /// Resolves to one of the AccountAccent0–5 resources defined in Base.axaml.
     /// </summary>
-    public int AccentIndex => _model.AccentIndex;
+    public int AccentIndex => model.AccentIndex;
 
     /// <summary>Hex string for the accent colour, looked up from the fixed palette.</summary>
-    public string AccentHex => _palette[_model.AccentIndex % _palette.Length];
+    public string AccentHex => palette[model.AccentIndex % palette.Length];
 
     [ObservableProperty]
     public partial bool IsActive { get; set; }
@@ -96,8 +96,8 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     public AccountCardViewModel(OneDriveAccount model, ILocalizationService localizationService)
     {
-        _model = model;
-        _localizationService = localizationService;
+        this.model = model;
+        this.localizationService = localizationService;
         IsActive = model.IsActive;
         UpdateLastSyncText();
     }
@@ -105,7 +105,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
     /// <summary>Refreshes observable properties from the underlying model.</summary>
     public void RefreshFromModel()
     {
-        IsActive = _model.IsActive;
+        IsActive = model.IsActive;
         UpdateLastSyncText();
         OnPropertyChanged(nameof(DisplayName));
         OnPropertyChanged(nameof(Email));
@@ -114,23 +114,23 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     private void UpdateLastSyncText()
     {
-        if (_model.LastSyncedAt is not Option<DateTimeOffset>.Some lastSyncedAt)
+        if (model.LastSyncedAt is not Option<DateTimeOffset>.Some lastSyncedAt)
         {
-            LastSyncText = _localizationService.GetLocal("Common.NeverSynced");
+            LastSyncText = localizationService.GetLocal("Common.NeverSynced");
             return;
         }
 
         var elapsed = DateTimeOffset.UtcNow - lastSyncedAt.Value;
-        LastSyncText = elapsed.TotalMinutes < 2 ? _localizationService.GetLocal("Common.JustNow")
-                     : elapsed.TotalHours < 1 ? _localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes)
-                     : elapsed.TotalDays < 1 ? _localizationService.GetLocal("Common.HoursAgo", (int)elapsed.TotalHours)
-                     : elapsed.TotalDays < 2 ? _localizationService.GetLocal("Common.Yesterday")
-                     : _localizationService.GetLocal("Common.DaysAgo", (int)elapsed.TotalDays);
+        LastSyncText = elapsed.TotalMinutes < 2 ? localizationService.GetLocal("Common.JustNow")
+                     : elapsed.TotalHours < 1 ? localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes)
+                     : elapsed.TotalDays < 1 ? localizationService.GetLocal("Common.HoursAgo", (int)elapsed.TotalHours)
+                     : elapsed.TotalDays < 2 ? localizationService.GetLocal("Common.Yesterday")
+                     : localizationService.GetLocal("Common.DaysAgo", (int)elapsed.TotalDays);
     }
 
     /// <summary>Returns the palette colour for the given index.</summary>
-    public static Color PaletteColor(int index) => Color.Parse(_palette[index % _palette.Length]);
+    public static Color PaletteColor(int index) => Color.Parse(palette[index % palette.Length]);
 
     /// <summary>Returns the palette hex string for the given index.</summary>
-    public static string PaletteHex(int index) => _palette[index % _palette.Length];
+    public static string PaletteHex(int index) => palette[index % palette.Length];
 }

@@ -21,9 +21,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 /// </summary>
 public sealed class AuthService(IPublicClientApplication app, ITokenCacheService cacheService, IOptions<EntraIdConfiguration> entraIdOptions, ILogger<AuthService> logger) : IAuthService
 {
-    private readonly ILogger<AuthService> _logger = logger;
-    private readonly ITokenCacheService _cacheService = cacheService;
-    private bool _cacheRegistered;
+    private readonly ILogger<AuthService> logger = logger;
+    private readonly ITokenCacheService cacheService = cacheService;
+    private bool cacheRegistered;
 
     /// <inheritdoc />
     public async Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken ct = default)
@@ -50,13 +50,13 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         }
         catch (MsalException ex)
         {
-            OneDriveSyncClientMessages.AuthInteractiveMsalException(_logger, ex.ErrorCode, ex);
+            OneDriveSyncClientMessages.AuthInteractiveMsalException(logger, ex.ErrorCode, ex);
 
             return AuthResultFactory.Failure("Authentication failed.");
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(_logger, ex);
+            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(logger, ex);
 
             return AuthResultFactory.Failure("Authentication failed.");
         }
@@ -85,7 +85,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         }
         catch (MsalUiRequiredException ex)
         {
-            OneDriveSyncClientMessages.AuthSilentTokenUiRequired(_logger, ex.ErrorCode, ex.Classification.ToString());
+            OneDriveSyncClientMessages.AuthSilentTokenUiRequired(logger, ex.ErrorCode, ex.Classification.ToString());
 
             return AuthResultFactory.ReAuthRequired(ex.ErrorCode, ex.Classification.ToString());
         }
@@ -95,7 +95,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         }
         catch (MsalException ex)
         {
-            OneDriveSyncClientMessages.AuthSilentMsalException(_logger, ex.ErrorCode, ex);
+            OneDriveSyncClientMessages.AuthSilentMsalException(logger, ex.ErrorCode, ex);
 
             return AuthResultFactory.Failure("Token refresh failed.");
         }
@@ -127,11 +127,11 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
 
     private async Task EnsureCacheRegisteredAsync()
     {
-        if (_cacheRegistered)
+        if (cacheRegistered)
             return;
 
-        await _cacheService.RegisterAsync(app);
-        _cacheRegistered = true;
+        await cacheService.RegisterAsync(app);
+        cacheRegistered = true;
     }
 
     private static Result<AuthResult, AuthError> BuildSuccess(AuthenticationResult result)

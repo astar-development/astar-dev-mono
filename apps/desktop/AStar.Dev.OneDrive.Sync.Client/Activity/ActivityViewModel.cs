@@ -18,8 +18,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
     private const int MaxLogSize = 10_000;
-    private string? _activeAccountId;
-    private string _activeAccountEmail = string.Empty;
+    private string? activeAccountId;
+    private string activeAccountEmail = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLogTabActive))]
@@ -102,8 +102,8 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     /// </summary>
     public async Task SetActiveAccountAsync(string accountId, string accountEmail)
     {
-        _activeAccountId = accountId;
-        _activeAccountEmail = accountEmail;
+        activeAccountId = accountId;
+        activeAccountEmail = accountEmail;
 
         Conflicts.Clear();
         FilteredLog.Clear();
@@ -184,7 +184,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var item = activityItemViewModelFactory.CreateFromJob(args.Job, _activeAccountEmail);
+        var item = activityItemViewModelFactory.CreateFromJob(args.Job, activeAccountEmail);
         AddActivityItem(item);
     }
 
@@ -206,7 +206,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
         FilteredLog.Clear();
 
         var query = LogItems
-            .Where(i => _activeAccountId is null || i.AccountId == _activeAccountId);
+            .Where(i => activeAccountId is null || i.AccountId == activeAccountId);
 
         if(ActiveFilter.HasValue)
             query = query.Where(i => i.Type == ActiveFilter.Value);

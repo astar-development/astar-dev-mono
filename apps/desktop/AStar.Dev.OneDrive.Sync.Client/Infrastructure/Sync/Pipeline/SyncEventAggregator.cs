@@ -10,7 +10,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 /// </summary>
 public sealed class SyncEventAggregator : ISyncEventAggregator
 {
-    private readonly IUiDispatcher _dispatcher;
+    private readonly IUiDispatcher dispatcher;
 
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
@@ -29,7 +29,7 @@ public sealed class SyncEventAggregator : ISyncEventAggregator
 
     public SyncEventAggregator(ISyncService syncService, ISyncScheduler scheduler, IUiDispatcher dispatcher)
     {
-        _dispatcher = dispatcher;
+        this.dispatcher = dispatcher;
 
         syncService.SyncProgressChanged += OnSyncProgressChanged;
         syncService.JobCompleted += OnJobCompleted;
@@ -38,13 +38,13 @@ public sealed class SyncEventAggregator : ISyncEventAggregator
         scheduler.SyncCompleted += OnSyncCompleted;
     }
 
-    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args) => _dispatcher.Post(() => SyncProgressChanged?.Invoke(this, args));
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args) => dispatcher.Post(() => SyncProgressChanged?.Invoke(this, args));
 
-    private void OnJobCompleted(object? sender, JobCompletedEventArgs args) => _dispatcher.Post(() => JobCompleted?.Invoke(this, args));
+    private void OnJobCompleted(object? sender, JobCompletedEventArgs args) => dispatcher.Post(() => JobCompleted?.Invoke(this, args));
 
-    private void OnConflictDetected(object? sender, SyncConflict conflict) => _dispatcher.Post(() => ConflictDetected?.Invoke(this, conflict));
+    private void OnConflictDetected(object? sender, SyncConflict conflict) => dispatcher.Post(() => ConflictDetected?.Invoke(this, conflict));
 
-    private void OnConflictResolved(object? sender, SyncConflict conflict) => _dispatcher.Post(() => ConflictResolved?.Invoke(this, conflict));
+    private void OnConflictResolved(object? sender, SyncConflict conflict) => dispatcher.Post(() => ConflictResolved?.Invoke(this, conflict));
 
-    private void OnSyncCompleted(object? sender, string accountId) => _dispatcher.Post(() => SyncCompleted?.Invoke(this, accountId));
+    private void OnSyncCompleted(object? sender, string accountId) => dispatcher.Post(() => SyncCompleted?.Invoke(this, accountId));
 }

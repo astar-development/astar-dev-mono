@@ -18,7 +18,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, Onboarding.IAddAccountWizardViewModelFactory addAccountWizardViewModelFactory, IAccountCardViewModelFactory accountCardViewModelFactory, ILogger<AccountsViewModel> logger) : ObservableObject
 {
-    private readonly ILogger<AccountsViewModel> _logger = logger;
+    private readonly ILogger<AccountsViewModel> logger = logger;
 
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
@@ -117,11 +117,11 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
                     return Unit.Default;
                 })
-                .TapErrorAsync(error => OneDriveSyncClientMessages.AccountOnboardingWizardError(_logger, error));
+                .TapErrorAsync(error => OneDriveSyncClientMessages.AccountOnboardingWizardError(logger, error));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountsViewModelWizardError(_logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountsViewModelWizardError(logger, ex.Message, ex);
         }
     }
 
@@ -152,7 +152,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountSetActiveFailed(_logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountSetActiveFailed(logger, ex.Message, ex);
         }
     }
 

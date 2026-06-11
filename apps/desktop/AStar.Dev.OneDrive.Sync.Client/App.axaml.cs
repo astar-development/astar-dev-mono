@@ -20,9 +20,9 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 
 public class App : Application, IDisposable
 {
-    private readonly ServiceProvider _services = BuildServiceProvider();
-    private readonly CancellationTokenSource _appLifetimeCts = new();
-    private bool _disposed;
+    private readonly ServiceProvider services = BuildServiceProvider();
+    private readonly CancellationTokenSource appLifetimeCts = new();
+    private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -33,15 +33,15 @@ public class App : Application, IDisposable
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
 
-        var splashWindow = _services.GetRequiredService<SplashWindow>();
+        var splashWindow = services.GetRequiredService<SplashWindow>();
         desktop.MainWindow = splashWindow;
 
         splashWindow.Opened += async (_, _) =>
         {
             var progress = new Progress<string>(splashWindow.SetStatus);
-            var bootstrapper = _services.GetRequiredService<IAppBootstrapper>();
+            var bootstrapper = services.GetRequiredService<IAppBootstrapper>();
             await bootstrapper.BootstrapAsync(progress);
-            var mainWindow = _services.GetRequiredService<MainWindow>();
+            var mainWindow = services.GetRequiredService<MainWindow>();
             desktop.MainWindow = mainWindow;
             mainWindow.Show();
             splashWindow.Close();
@@ -118,12 +118,12 @@ public class App : Application, IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
+        if (disposed)
             return;
 
-        _disposed = true;
-        _appLifetimeCts.Dispose();
-        _services.Dispose();
+        disposed = true;
+        appLifetimeCts.Dispose();
+        services.Dispose();
 
         GC.SuppressFinalize(this);
     }
