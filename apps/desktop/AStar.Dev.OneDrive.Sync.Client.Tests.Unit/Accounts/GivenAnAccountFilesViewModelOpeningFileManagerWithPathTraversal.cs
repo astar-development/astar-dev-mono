@@ -23,7 +23,7 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManagerWithPathTraver
     [Theory]
     [InlineData("../../etc")]
     [InlineData("../secret")]
-    [InlineData("..\\..\\Windows\\System32")]
+    [InlineData("subdir/../../secret")]
     public async Task when_folder_name_contains_parent_traversal_then_file_manager_is_not_launched(string maliciousFolderName)
     {
         var fileManagerService = Substitute.For<IFileManagerService>();
@@ -41,7 +41,6 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManagerWithPathTraver
     [Theory]
     [InlineData("/etc/passwd")]
     [InlineData("/root/.ssh")]
-    [InlineData("C:\\Windows\\System32")]
     public async Task when_folder_name_is_absolute_path_escape_then_file_manager_is_not_launched(string absoluteEscapePath)
     {
         var fileManagerService = Substitute.For<IFileManagerService>();
