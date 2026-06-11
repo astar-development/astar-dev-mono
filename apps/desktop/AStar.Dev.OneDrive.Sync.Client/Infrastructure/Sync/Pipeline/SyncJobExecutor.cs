@@ -57,7 +57,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             }
             else if(job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
             {
-                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, remotePath, fileSystem);
+                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, uploadedId.Value, remotePath, fileSystem);
                 int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
                 syncedItems[uploadedId.Value] = entity;
                 await ClassifyAsync(syncedItemId, remotePath, mappings, ct).ConfigureAwait(false);

@@ -25,6 +25,9 @@ public sealed class GivenADownloadJobBuilder
         SelectedFolderIds = []
     };
 
+    private static AccountSyncConfig CreateSyncConfig(ConflictPolicy policy = ConflictPolicy.Ignore)
+        => AccountSyncConfigFactory.Create(policy, LocalSyncPath.Restore(BasePath));
+
     private static SyncRuleEntity IncludeRule(string remotePath)
         => new() { RemotePath = remotePath, RuleType = RuleType.Include };
 
@@ -41,7 +44,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Other/a.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -53,7 +56,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FolderItem("subfolder-1", "/Documents/Sub") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
@@ -65,7 +68,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FolderItem("subfolder-1", "/Documents/Sub") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -77,7 +80,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].ShouldBeOfType<DownloadSyncJob>();
@@ -106,7 +109,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", etag: "etag-123") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -135,7 +138,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, conflict =>
+        await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, syncedItems, conflict =>
         {
             conflictsDetected.Add(conflict);
             return Task.CompletedTask;
@@ -156,7 +159,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-phantom", "/Documents/phantom.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
@@ -172,7 +175,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-phantom", "/Documents/phantom.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -201,7 +204,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -231,7 +234,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: newRemoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].ShouldBeOfType<DownloadSyncJob>();
@@ -244,7 +247,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/2024/report.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].Target.LocalPath.ShouldStartWith(BasePath);
@@ -257,7 +260,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/2024/report.txt") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].Target.LocalPath.ShouldNotBe(BasePath);
@@ -286,7 +289,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.RemoteWins), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.RemoteWins), CreateSyncConfig(ConflictPolicy.RemoteWins), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].ShouldBeOfType<DownloadSyncJob>();
@@ -315,7 +318,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.LocalWins), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.LocalWins), CreateSyncConfig(ConflictPolicy.LocalWins), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].ShouldBeOfType<UploadSyncJob>();
@@ -344,7 +347,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified) };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.Ignore), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(ConflictPolicy.Ignore), CreateSyncConfig(ConflictPolicy.Ignore), items, rules, syncedItems, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -356,7 +359,7 @@ public sealed class GivenADownloadJobBuilder
         var items = new List<DeltaItem> { FileItem("item-a", "/Documents/a.txt", etag: "etag-from-delta") };
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildAsync(CreateAccount(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var result = await sut.BuildAsync(CreateAccount(), CreateSyncConfig(), items, rules, [], _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         result.ShouldHaveSingleItem();
         result[0].Metadata.VersionInfo.TryGetValue(out var vi).ShouldBeTrue();

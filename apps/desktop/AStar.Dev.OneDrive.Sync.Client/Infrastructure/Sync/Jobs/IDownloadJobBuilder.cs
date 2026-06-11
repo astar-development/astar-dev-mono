@@ -14,5 +14,5 @@ public interface IDownloadJobBuilder
     /// Processes <paramref name="items"/>, applies sync rule filtering, registers folders and phantom
     /// files via <see cref="ISyncedItemRegistrar"/>, detects conflicts, and returns the resulting jobs.
     /// </summary>
-    Task<IReadOnlyList<SyncJob>> BuildAsync(OneDriveAccount account, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct);
+    Task<IReadOnlyList<SyncJob>> BuildAsync(OneDriveAccount account, AccountSyncConfig syncConfig, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct);
 }

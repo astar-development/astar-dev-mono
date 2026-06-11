@@ -46,13 +46,14 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
-        if (account.SyncConfig is Option<AccountSyncConfig>.None)
+        if (account.SyncConfig is not Option<AccountSyncConfig>.Some syncConfigSome)
         {
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoSyncPath"), SyncState.Error);
 
             return;
         }
 
+        var syncConfig = syncConfigSome.Value;
         var (initialToken, initialExpiry) = initialAuth.Match<(string, DateTimeOffset)>(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
         using var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialToken, initialExpiry);
 
@@ -60,6 +61,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         {
             bool didRun = await syncPassOrchestrator.OrchestrateAsync(
                 account,
+                syncConfig,
                 tokenFactory.GetTokenAsync,
                 async conflict =>
                 {

@@ -81,4 +81,36 @@ public sealed class GivenASyncedItemEntityFactory
 
         (entity.Tags.ETag is Option<string>.None).ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_creating_from_upload_job_with_uploaded_id_then_remote_item_id_matches()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile("/local/file.txt").Which(m => m.HasStringContent("content"));
+
+        var remote = RemoteItemRefFactory.Create(new AccountId("acc-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("original-id"));
+        var target = SyncFileTargetFactory.Create("/local/file.txt", "file.txt");
+        var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1));
+        var job = SyncJobFactory.CreateUpload(remote, target, metadata);
+
+        var entity = SyncedItemEntityFactory.CreateFromUploadJob(new AccountId("acc-1"), job, "uploaded-remote-id", "/file.txt", mockFileSystem);
+
+        entity.RemoteItemId.Id.ShouldBe("uploaded-remote-id");
+    }
+
+    [Fact]
+    public void when_creating_from_upload_job_then_local_path_matches_job_target()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile("/local/file.txt").Which(m => m.HasStringContent("content"));
+
+        var remote = RemoteItemRefFactory.Create(new AccountId("acc-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("original-id"));
+        var target = SyncFileTargetFactory.Create("/local/file.txt", "file.txt");
+        var metadata = SyncFileMetadataFactory.Create(100L, DateTimeOffset.UtcNow.AddDays(-1));
+        var job = SyncJobFactory.CreateUpload(remote, target, metadata);
+
+        var entity = SyncedItemEntityFactory.CreateFromUploadJob(new AccountId("acc-1"), job, "uploaded-remote-id", "/file.txt", mockFileSystem);
+
+        entity.LocalPath.ShouldBe("/local/file.txt");
+    }
 }
