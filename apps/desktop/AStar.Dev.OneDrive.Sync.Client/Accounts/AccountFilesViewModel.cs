@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
@@ -19,13 +20,13 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
 {
     private readonly OneDriveAccount _account = account;
     private readonly IAuthService _authService = authService;
     private readonly IGraphService _graphService = graphService;
     private readonly IAccountRepository _repository = repository;
-    private readonly ISyncRuleRepository _syncRuleRepository = syncRuleRepository;
+    private readonly ISyncRuleService _syncRuleService = syncRuleService;
     private readonly IFileManagerService _fileManagerService = fileManagerService;
     private readonly ILogger<AccountFilesViewModel> _logger = logger;
     private readonly ILogger<FolderTreeNodeViewModel> _folderTreeLogger = folderTreeLogger;
@@ -106,7 +107,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             _driveId = new Option<DriveId>.Some(driveId.Value);
 
-            var includedPaths = await LoadRulesAsync();
+            var includedPaths = await _syncRuleService.GetIncludedPathsAsync(_account.Id, CancellationToken.None);
             await BuildRootFoldersAsync(includedPaths);
         }
         catch (Exception ex)
@@ -120,17 +121,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    private async Task<HashSet<string>> LoadRulesAsync()
-    {
-        var existingRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
-
-        return existingRules
-            .Where(r => r.RuleType == RuleType.Include)
-            .Select(r => r.RemotePath)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-    }
-
-    private async Task BuildRootFoldersAsync(HashSet<string> includedPaths)
+    private async Task BuildRootFoldersAsync(IReadOnlySet<string> includedPaths)
     {
         var folders = await _graphService.GetRootFoldersAsync(_account.Id.Id, _ => Task.FromResult(_accessToken ?? string.Empty))
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
@@ -182,21 +173,13 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         try
         {
             var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
-            string ruleTypeName = ruleType.ToString();
-
-            OneDriveSyncClientMessages.RulePersisting(_logger, ruleTypeName, node.RemotePath, _account.Id.Id);
-
-            await _syncRuleRepository.DeleteChildRulesAsync(_account.Id, node.RemotePath, CancellationToken.None);
 
             var affected = ruleType == RuleType.Include
                 ? CollectAllVisible([node])
                 : [node];
 
-            foreach (var item in affected)
-                await _syncRuleRepository.UpsertAsync(_account.Id, item.RemotePath, ruleType, item.Id, CancellationToken.None);
-
-            var updatedRules = await _syncRuleRepository.GetByAccountIdAsync(_account.Id, CancellationToken.None);
-            int includedCount = updatedRules.Count(r => r.RuleType == RuleType.Include);
+            var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
+            int includedCount = await _syncRuleService.ApplyRuleAsync(_account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
 
             FolderCountChanged?.Invoke(this, includedCount);
         }
