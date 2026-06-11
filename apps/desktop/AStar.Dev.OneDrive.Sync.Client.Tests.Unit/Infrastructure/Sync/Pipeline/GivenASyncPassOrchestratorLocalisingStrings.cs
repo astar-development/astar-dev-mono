@@ -126,7 +126,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: _ => { }, ct: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.NoChanges");
     }
