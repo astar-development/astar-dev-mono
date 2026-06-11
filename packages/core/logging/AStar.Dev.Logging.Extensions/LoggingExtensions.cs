@@ -15,7 +15,7 @@ namespace AStar.Dev.Logging.Extensions;
 public static class LoggingExtensions
 {
     /// <summary>
-    ///     The <see cref="AddSerilogLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,string)" /> method will add Serilog to the logging providers.
+    ///     The <see cref="AddSerilogLogging(WebApplicationBuilder,string)" /> method will add Serilog to the logging providers.
     /// </summary>
     /// <param name="builder">
     /// </param>
@@ -46,7 +46,7 @@ public static class LoggingExtensions
     }
 
     /// <summary>
-    ///     The <see cref="AddSerilogLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,string)" /> method will add Serilog to the logging providers.
+    ///     The <see cref="AddSerilogLogging(HostApplicationBuilder,string)" /> method will add Serilog to the logging providers.
     /// </summary>
     /// <param name="builder">
     /// </param>

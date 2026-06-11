@@ -18,7 +18,7 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
         var downloadJob = (DownloadSyncJob)job;
         var urlResult = await ResolveDownloadUrlAsync(downloadJob, accountId, tokenFactory, ct).ConfigureAwait(false);
 
-        return await urlResult.MatchAsync<Result<SyncJob, string>>(
+        return await urlResult.MatchAsync(
             async url =>
             {
                 var downloadResult = await downloader.DownloadAsync(url, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);

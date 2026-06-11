@@ -411,7 +411,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_sign_in_is_in_progress_and_open_browser_is_called_again_then_second_call_is_ignored()
     {
-        var tcs = new TaskCompletionSource<AStar.Dev.Functional.Extensions.Result<AuthResult, AuthError>>();
+        var tcs = new TaskCompletionSource<Result<AuthResult, AuthError>>();
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(_ => tcs.Task);
         var sut = CreateSut();

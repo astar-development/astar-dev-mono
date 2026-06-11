@@ -33,7 +33,7 @@ public static class Level1Deriver
         string joinedTokens = string.Join(" ", filenameTokens);
 
         return TokenAnalyser.ExtractPersonName(joinedTokens)
-            .Match<string>(
+            .Match(
                 _ => "Person",
                 () => HasColourToken(filenameTokens) ? "Color" : "Unclassified");
     }

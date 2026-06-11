@@ -100,7 +100,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
         RecalculateGlobals();
     }
 
-    public void UpdateAccountSyncState(string accountId, Accounts.AccountCardViewModel card)
+    public void UpdateAccountSyncState(string accountId, AccountCardViewModel card)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
         if(section is null)

@@ -228,7 +228,7 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
         {
             var contextResult = await ResolveClientWithDriveContextAsync(accountId, tokenFactory, ct).ConfigureAwait(false);
 
-            return await contextResult.MatchAsync<Result<string, string>>(
+            return await contextResult.MatchAsync(
                 async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct).ConfigureAwait(false),
                 error => new Result<string, string>.Error(error));
         }

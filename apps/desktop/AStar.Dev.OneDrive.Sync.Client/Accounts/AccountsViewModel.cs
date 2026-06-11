@@ -18,8 +18,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, IAccountOnboardingService accountOnboardingService, IQuotaRefreshService quotaRefreshService, ISyncEventAggregator syncEventAggregator, Onboarding.IAddAccountWizardViewModelFactory addAccountWizardViewModelFactory, IAccountCardViewModelFactory accountCardViewModelFactory, ILogger<AccountsViewModel> logger) : ObservableObject
 {
-    private readonly ILogger<AccountsViewModel> _logger = logger;
-
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
     [ObservableProperty]
@@ -192,13 +190,10 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             ActiveAccountStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private async void OnReAuthenticateRequestedAsync(object? sender, AccountCardViewModel card)
-    {
-        await authService.SignInInteractiveAsync(CancellationToken.None)
-            .MatchAsync<AuthResult, AuthError, bool>(
+    private async void OnReAuthenticateRequestedAsync(object? sender, AccountCardViewModel card) => await authService.SignInInteractiveAsync(CancellationToken.None)
+            .MatchAsync(
                 _ => { card.SyncState = SyncState.Idle; return true; },
                 _ => false);
-    }
 
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {

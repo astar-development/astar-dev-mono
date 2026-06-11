@@ -21,7 +21,7 @@ public sealed class GivenASettingsViewModelBrowseForAccountFolder
     {
         var service = Substitute.For<IFolderPickerService>();
         service.PickFolderAsync(Arg.Any<IStorageProvider>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-               .Returns(Task.FromResult<string?>(pathToReturn));
+               .Returns(Task.FromResult(pathToReturn));
 
         return service;
     }

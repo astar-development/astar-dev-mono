@@ -184,7 +184,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var item = activityItemViewModelFactory.CreateFromJob(args.Job, _activeAccountEmail);
+        var item = activityItemViewModelFactory.CreateFromJob(args.Job, activeAccountEmail);
         AddActivityItem(item);
     }
 

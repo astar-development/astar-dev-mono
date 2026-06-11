@@ -208,7 +208,7 @@ public static class ResultExtensions
     ///     A task representing the result of the binding function if the original was successful; otherwise, the original error.
     /// </returns>
     public static async Task<Result<TNew, TError>> BindAsync<TSuccess, TError, TNew>(this Result<TSuccess, TError> result, Func<TSuccess, Task<Result<TNew, TError>>> bindAsync)
-        => await result.MatchAsync<Result<TNew, TError>>(bindAsync, err => new Result<TNew, TError>.Error(err));
+        => await result.MatchAsync(bindAsync, err => new Result<TNew, TError>.Error(err));
 
     /// <summary>
     ///     Asynchronously chains the current result to another <see cref="Result{TNew, TError}" />-producing function,

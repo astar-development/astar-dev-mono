@@ -20,19 +20,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
 {
-    private readonly OneDriveAccount _account = account;
-    private readonly IAuthService _authService = authService;
-    private readonly IGraphService _graphService = graphService;
-    private readonly IAccountRepository _repository = repository;
-    private readonly ISyncRuleService _syncRuleService = syncRuleService;
-    private readonly IFileManagerService _fileManagerService = fileManagerService;
-    private readonly ILogger<AccountFilesViewModel> _logger = logger;
-    private readonly IFolderTreeNodeViewModelFactory _folderTreeNodeViewModelFactory = folderTreeNodeViewModelFactory;
-    private readonly ILocalizationService _localizationService = localizationService;
-    private string? _accessToken;
-    private Option<DriveId> _driveId = DriveIdFactory.Empty;
+    private string? accessToken;
+    private Option<DriveId> driveIdOption = DriveIdFactory.Empty;
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => account.Id.Id;
@@ -163,8 +154,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 ? FolderSyncState.Included
                 : FolderSyncState.Excluded;
 
-            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: _account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = _folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value);
+            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
+            var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;

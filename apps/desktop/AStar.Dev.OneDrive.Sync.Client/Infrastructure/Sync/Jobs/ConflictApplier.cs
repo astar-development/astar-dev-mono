@@ -31,12 +31,12 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
     {
         var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
 
-        return await urlResult.MatchAsync<bool>(
+        return await urlResult.MatchAsync(
             async url =>
             {
                 var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
 
-                return downloadResult.Match<bool>(
+                return downloadResult.Match(
                     _ => true,
                     downloadError =>
                     {

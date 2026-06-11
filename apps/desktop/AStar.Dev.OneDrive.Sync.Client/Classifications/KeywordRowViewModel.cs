@@ -44,12 +44,9 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     private void Edit() => IsEditing = true;
 
     [RelayCommand]
-    private async Task SaveAsync()
-    {
-        await FileClassificationKeywordFactory.Create(Value, IsSpecialOverride ? Option.Some(true) : Option.None<bool>())
+    private async Task SaveAsync() => await FileClassificationKeywordFactory.Create(Value, IsSpecialOverride ? Option.Some(true) : Option.None<bool>())
             .Match(PersistKeywordAsync, _ => Task.CompletedTask)
             .ConfigureAwait(false);
-    }
 
     private async Task PersistKeywordAsync(FileClassificationKeyword keyword)
     {

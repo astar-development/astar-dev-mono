@@ -34,11 +34,11 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
         var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
-        bool authOk = initialAuth.Match<bool>(_ => true, _ => false);
+        bool authOk = initialAuth.Match(_ => true, _ => false);
 
         if (!authOk)
         {
-            bool reAuthRequired = initialAuth.Match<bool>(_ => false, err => err is AuthReAuthRequiredError);
+            bool reAuthRequired = initialAuth.Match(_ => false, err => err is AuthReAuthRequiredError);
             RaiseProgress(account.Id.Id, 0, 0,
                 localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed"),
                 reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error);
@@ -54,7 +54,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         }
 
         var syncConfig = syncConfigSome.Value;
-        var (initialToken, initialExpiry) = initialAuth.Match<(string, DateTimeOffset)>(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
+        var (initialToken, initialExpiry) = initialAuth.Match(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
         using var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialToken, initialExpiry);
 
         try
@@ -100,12 +100,12 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
         var initialAuth = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
-        bool authOk = initialAuth.Match<bool>(_ => true, _ => false);
+        bool authOk = initialAuth.Match(_ => true, _ => false);
 
         if (!authOk)
             return;
 
-        var (initialToken, initialExpiry) = initialAuth.Match<(string, DateTimeOffset)>(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
+        var (initialToken, initialExpiry) = initialAuth.Match(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
         using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, initialToken, initialExpiry);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);

@@ -16,6 +16,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 {
     private readonly OneDriveAccount account;
     private readonly ISyncScheduler scheduler;
+    private readonly IAccountRepository repository;
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
     public string AccountId => account.Id.Id;
@@ -47,9 +48,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [ObservableProperty]
     public partial int FolderCount { get; set; }
 
-    private readonly IAccountRepository _repository;
-    private readonly ILocalizationService _localizationService;
-    private readonly IActivityItemViewModelFactory _activityItemViewModelFactory;
+    private readonly ILocalizationService localizationService;
+    private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -104,9 +104,9 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         this.account = account;
         this.scheduler = scheduler;
         FolderCount = account.SelectedFolderIds.Count;
-        _repository = repository;
-        _localizationService = localizationService;
-        _activityItemViewModelFactory = activityItemViewModelFactory;
+        this.localizationService = localizationService;
+        this.activityItemViewModelFactory = activityItemViewModelFactory;
+        this.repository = repository;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -119,7 +119,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        AddRecentActivity(_activityItemViewModelFactory.Create(_localizationService.GetLocal("Sync.Starting")));
+        AddRecentActivity(activityItemViewModelFactory.Create(localizationService.GetLocal("Sync.Starting")));
 
         await repository.GetByIdAsync(account.Id, CancellationToken.None)
             .TapAsync(async entity =>

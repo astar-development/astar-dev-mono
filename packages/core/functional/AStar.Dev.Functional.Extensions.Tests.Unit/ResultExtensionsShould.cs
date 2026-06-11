@@ -306,7 +306,7 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Ok(42);
 
-        var bound = result.Bind<int, string, string>(value => new Result<string, string>.Error("bound error"));
+        var bound = result.Bind(value => new Result<string, string>.Error("bound error"));
 
         _ = bound.ShouldBeOfType<Result<string, string>.Error>();
 
@@ -323,7 +323,7 @@ public class ResultExtensionsShould
     {
         var result = new Result<int, string>.Error("original error");
 
-        var bound = result.Bind<int, string, string>(value => new Result<string, string>.Ok(value.ToString()));
+        var bound = result.Bind(value => new Result<string, string>.Ok(value.ToString()));
 
         _ = bound.ShouldBeOfType<Result<string, string>.Error>();
 

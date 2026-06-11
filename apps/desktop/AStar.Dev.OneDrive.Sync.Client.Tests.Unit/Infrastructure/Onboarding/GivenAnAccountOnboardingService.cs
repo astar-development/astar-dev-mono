@@ -130,7 +130,7 @@ public sealed class GivenAnAccountOnboardingService
     public async Task when_account_has_existing_sync_config_then_sync_config_is_not_overwritten()
     {
         var account      = BuildAccountWithFolders();
-        var existingPath = LocalSyncPathFactory.Create("/custom/path").Match<LocalSyncPath>(p => p, _ => throw new InvalidOperationException());
+        var existingPath = LocalSyncPathFactory.Create("/custom/path").Match(p => p, _ => throw new InvalidOperationException());
         var existingConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, existingPath);
         account.SyncConfig = existingConfig;
 

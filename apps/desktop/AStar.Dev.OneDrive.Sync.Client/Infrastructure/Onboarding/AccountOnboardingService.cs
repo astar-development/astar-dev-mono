@@ -32,7 +32,7 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
         string defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);
 
         return LocalSyncPathFactory.Create(defaultPath)
-            .Match<Option<AccountSyncConfig>>(p => Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, p)), _ => Option.None<AccountSyncConfig>());
+            .Match(p => Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, p)), _ => Option.None<AccountSyncConfig>());
     }
 
     private static AccountEntity ToEntity(OneDriveAccount account)

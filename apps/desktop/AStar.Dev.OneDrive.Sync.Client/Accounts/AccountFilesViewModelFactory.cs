@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 /// <summary>Container-backed factory for <see cref="AccountFilesViewModel"/> instances.</summary>
-public sealed class AccountFilesViewModelFactory(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : IAccountFilesViewModelFactory
+public sealed class AccountFilesViewModelFactory(IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : IAccountFilesViewModelFactory
 {
     /// <inheritdoc />
-    public AccountFilesViewModel Create(OneDriveAccount account) => new(account, authService, graphService, repository, syncRuleService, fileSystem, fileManagerService, logger, folderTreeNodeViewModelFactory, localizationService);
+    public AccountFilesViewModel Create(OneDriveAccount account) => new(account, authService, graphService, syncRuleService, fileSystem, fileManagerService, logger, folderTreeNodeViewModelFactory, localizationService);
 }

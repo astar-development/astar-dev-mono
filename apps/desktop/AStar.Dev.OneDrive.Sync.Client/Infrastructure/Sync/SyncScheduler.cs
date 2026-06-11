@@ -74,7 +74,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     {
         var accountOption = await accountRepository.GetByIdAsync(new AccountId(accountId), ct).ConfigureAwait(false);
 
-        await accountOption.Match<Task>(
+        await accountOption.Match(
             async entity =>
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);

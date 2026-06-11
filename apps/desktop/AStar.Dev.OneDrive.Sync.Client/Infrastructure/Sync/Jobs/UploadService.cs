@@ -44,7 +44,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
-        return await sessionResult.MatchAsync<Result<string, string>>(
+        return await sessionResult.MatchAsync(
             async sessionUrl =>
             {
                 var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
@@ -113,7 +113,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
 
             return await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct)
-                .BindAsync<string?, string, string>(async itemId =>
+                .BindAsync(async itemId =>
                 {
                     long newUploaded = uploaded + bytesRead;
                     progress?.Report(newUploaded);

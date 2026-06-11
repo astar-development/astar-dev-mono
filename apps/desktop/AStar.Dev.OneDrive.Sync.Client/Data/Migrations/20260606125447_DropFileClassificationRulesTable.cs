@@ -87,6 +87,6 @@ VALUES
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
-            => throw new System.NotSupportedException("DropFileClassificationRulesTable migration cannot be reversed.");
+            => throw new NotSupportedException("DropFileClassificationRulesTable migration cannot be reversed.");
     }
 }

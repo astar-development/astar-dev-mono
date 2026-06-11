@@ -18,7 +18,7 @@ public sealed class GivenADownloadJobHandler
     public GivenADownloadJobHandler()
     {
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+            .Returns(new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default));
     }
 
     private DownloadJobHandler CreateSut() => new(_downloader, _graphService, Substitute.For<ILogger<DownloadJobHandler>>());
@@ -137,7 +137,7 @@ public sealed class GivenADownloadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<global::System.Reactive.Unit, string>.Error(downloadError));
+            .Returns(new Result<System.Reactive.Unit, string>.Error(downloadError));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 

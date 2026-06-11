@@ -173,7 +173,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         try
         {
             var result = await authService.SignInInteractiveAsync(authCts.Token);
-            _ = result.Match<bool>(
+            _ = result.Match(
                 ok    => { UpdateSuccessfulLoginState(ok); return true; },
                 error => { DispatchAuthError(error); return false; });
         }

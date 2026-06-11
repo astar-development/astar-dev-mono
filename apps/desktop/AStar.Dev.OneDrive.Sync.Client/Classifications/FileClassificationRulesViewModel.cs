@@ -168,12 +168,9 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         NewCategoryName = string.Empty;
     }
 
-    private async Task AddKeywordToNewNodeAsync(CategoryNodeViewModel node, FileClassificationKeyword keyword)
-    {
-        await repository.AddKeywordAsync(node.CategoryId, keyword, CancellationToken.None)
+    private async Task AddKeywordToNewNodeAsync(CategoryNodeViewModel node, FileClassificationKeyword keyword) => await repository.AddKeywordAsync(node.CategoryId, keyword, CancellationToken.None)
             .TapAsync(keywordId => node.Keywords.Add(new KeywordRowViewModel(keywordId, keyword, repository, self => node.Keywords.Remove(self))))
             .ConfigureAwait(false);
-    }
 
     private void RemoveFromParent(CategoryNodeViewModel node, Dictionary<FileClassificationCategoryId, CategoryNodeViewModel> nodeDict)
     {
