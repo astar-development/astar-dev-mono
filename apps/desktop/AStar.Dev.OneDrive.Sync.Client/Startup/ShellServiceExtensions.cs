@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
@@ -38,6 +39,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddSingleton<IQuotaRefreshService, QuotaRefreshService>();
         _ = services.AddSingleton<IStartupService, StartupService>();
+        _ = services.AddSingleton<ISyncRuleService, SyncRuleService>();
         _ = services.AddSingleton<IHttpDownloader, HttpDownloader>();
         _ = services.AddSingleton<IUploadService, UploadService>();
         _ = services.AddSingleton<IConflictApplier, ConflictApplier>();

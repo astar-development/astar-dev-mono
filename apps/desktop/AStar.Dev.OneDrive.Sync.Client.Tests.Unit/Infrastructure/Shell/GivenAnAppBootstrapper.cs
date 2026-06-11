@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -35,7 +36,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private readonly IAuthService authService = Substitute.For<IAuthService>();
     private readonly IGraphService graphService = Substitute.For<IGraphService>();
     private readonly IAccountRepository accountRepository = Substitute.For<IAccountRepository>();
-    private readonly ISyncRuleRepository syncRuleRepository = Substitute.For<ISyncRuleRepository>();
+    private readonly ISyncRuleService syncRuleService = Substitute.For<ISyncRuleService>();
     private readonly ISyncEventAggregator syncEventAggregator = Substitute.For<ISyncEventAggregator>();
     private readonly ISyncService syncService = Substitute.For<ISyncService>();
     private readonly ISyncRepository syncRepository = Substitute.For<ISyncRepository>();
@@ -72,7 +73,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private MainWindowViewModel CreateMainWindowViewModel()
     {
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, localizationService, Substitute.For<ILogger<AccountsViewModel>>());
-        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleRepository, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
+        var files = new FilesViewModel(authService, graphService, accountRepository, syncRuleService, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService);
         var dashboard = new DashboardViewModel(schedulerForViewModel, localizationService, accountRepository, syncEventAggregator);
         var activity = new ActivityViewModel(syncService, syncRepository, syncEventAggregator, localizationService, new InlineUiDispatcher());
         var classificationRepo = Substitute.For<IFileClassificationRepository>();
