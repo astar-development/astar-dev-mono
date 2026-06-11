@@ -1,3 +1,4 @@
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -11,7 +12,7 @@ public sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactory<
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), "design_time_temp.db");
+        var dbPath = Path.GetTempPath().CombinePath("design_time_temp.db");
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite($"Data Source={dbPath}")
             .Options;
