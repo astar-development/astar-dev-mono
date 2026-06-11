@@ -47,6 +47,27 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         _ => localizationService.GetLocal("Dashboard.AllSynced")
     };
 
+    /// <summary>Localised "accounts" stat label.</summary>
+    public string AccountsLabelText => localizationService.GetLocal("Dashboard.Accounts");
+
+    /// <summary>Localised "folders synced" stat label.</summary>
+    public string FoldersSyncedLabelText => localizationService.GetLocal("Dashboard.FoldersSynced");
+
+    /// <summary>Localised "conflicts" stat label.</summary>
+    public string ConflictsLabelText => localizationService.GetLocal("Dashboard.Conflicts");
+
+    /// <summary>Localised "overall status" stat label.</summary>
+    public string OverallStatusLabelText => localizationService.GetLocal("Dashboard.OverallStatus");
+
+    /// <summary>Localised "last sync" stat label.</summary>
+    public string LastSyncLabelText => localizationService.GetLocal("Dashboard.LastSync");
+
+    /// <summary>Localised "No accounts connected" empty-state heading.</summary>
+    public string NoAccountsConnectedText => localizationService.GetLocal("Dashboard.NoAccountsConnected");
+
+    /// <summary>Localised "Add an account to see your sync health here." empty-state detail.</summary>
+    public string NoAccountsConnectedHintText => localizationService.GetLocal("Dashboard.NoAccountsConnectedHint");
+
     public void SubscribeToSyncEvents()
     {
         syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;

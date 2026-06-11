@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleRepository syncRuleRepository, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> accountFilesLogger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
+public sealed partial class FilesViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> accountFilesLogger, ILogger<FolderTreeNodeViewModel> folderTreeLogger, ILocalizationService localizationService) : ObservableObject
 {
     public ObservableCollection<AccountFilesViewModel> Tabs { get; } = [];
 
@@ -23,6 +24,18 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
 
     public bool HasTabs => Tabs.Count > 0;
     public bool HasNoAccounts => Tabs.Count == 0;
+
+    /// <summary>Localised "No accounts connected" empty-state heading.</summary>
+    public string NoAccountsConnectedText => localizationService.GetLocal("Files.NoAccountsConnected");
+
+    /// <summary>Localised "Add an account from the Accounts section." empty-state detail.</summary>
+    public string NoAccountsConnectedHintText => localizationService.GetLocal("Files.NoAccountsConnectedHint");
+
+    /// <summary>Localised "Loading folders ..." indicator text.</summary>
+    public string LoadingFoldersText => localizationService.GetLocal("Files.LoadingFolders");
+
+    /// <summary>Localised "Could not load folders" error heading.</summary>
+    public string CouldNotLoadText => localizationService.GetLocal("Files.CouldNotLoad");
 
     public event EventHandler<(string AccountId, string FolderId)>? ViewActivityRequested;
 
@@ -39,7 +52,7 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
             return;
 
         var tab = new AccountFilesViewModel(
-            account, authService, graphService, repository, syncRuleRepository, fileSystem, fileManagerService, accountFilesLogger, folderTreeLogger, localizationService);
+            account, authService, graphService, repository, syncRuleService, fileSystem, fileManagerService, accountFilesLogger, folderTreeLogger, localizationService);
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,

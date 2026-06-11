@@ -110,25 +110,25 @@
                                 Margin="0,8,0,0">
                         <controls:IconRailButton
                             IconData="{StaticResource IconDashboard}"
-                            TooltipLabel="Dashboard — all accounts overview"
+                            TooltipLabel="{Binding NavTooltipDashboardText}"
                             IsActive="{Binding IsDashboardActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Dashboard}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconFiles}"
-                            TooltipLabel="Files — browse and manage sync folders"
+                            TooltipLabel="{Binding NavTooltipFilesText}"
                             IsActive="{Binding IsFilesActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Files}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconActivity}"
-                            TooltipLabel="Activity — delta log and conflicts"
+                            TooltipLabel="{Binding NavTooltipActivityText}"
                             IsActive="{Binding IsActivityActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Activity}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconAccounts}"
-                            TooltipLabel="Accounts — add or remove OneDrive accounts"
+                            TooltipLabel="{Binding NavTooltipAccountsText}"
                             IsActive="{Binding IsAccountsActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Accounts}"/>
@@ -139,13 +139,13 @@
                                 Margin="0,0,0,8">
                         <controls:IconRailButton
                             IconData="{StaticResource IconClassifications}"
-                            TooltipLabel="Classifications — manage keyword rules"
+                            TooltipLabel="{Binding NavTooltipClassificationsText}"
                             IsActive="{Binding IsClassificationsActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Classifications}"/>
                         <controls:IconRailButton
                             IconData="{StaticResource IconSettings}"
-                            TooltipLabel="Settings — theme, language and sync policy"
+                            TooltipLabel="{Binding NavTooltipSettingsText}"
                             IsActive="{Binding IsSettingsActive}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="{x:Static local:NavSection.Settings}"/>
@@ -165,7 +165,7 @@
                     <Border DockPanel.Dock="Top"
                             Height="{StaticResource IconRailWidth}"
                             Padding="12,0">
-                        <TextBlock Text="Accounts"
+                        <TextBlock Text="{Binding AccountsPanelHeading}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    FontWeight="Medium"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
@@ -195,7 +195,7 @@
                                            FontSize="{StaticResource FontSizeLg}"
                                            Foreground="{DynamicResource TextAccentBrush}"
                                            VerticalAlignment="Center"/>
-                                <TextBlock Text="Add account"
+                                <TextBlock Text="{Binding AddAccountText}"
                                            FontSize="{StaticResource FontSizeSm}"
                                            Foreground="{DynamicResource TextAccentBrush}"
                                            VerticalAlignment="Center"/>
@@ -213,13 +213,13 @@
                                         HorizontalAlignment="Center"
                                         Margin="12,32,12,0"
                                         Spacing="6">
-                                <TextBlock Text="No accounts yet"
+                                <TextBlock Text="{Binding NoAccountsYetText}"
                                         FontSize="{StaticResource FontSizeSm}"
                                         Foreground="{DynamicResource TextTertiaryBrush}"
                                         HorizontalAlignment="Center"
                                         TextWrapping="Wrap"
                                         TextAlignment="Center"/>
-                                <TextBlock Text="Add a Microsoft account to get started."
+                                <TextBlock Text="{Binding NoAccountsYetHintText}"
                                         FontSize="{StaticResource FontSizeXs}"
                                         Foreground="{DynamicResource TextTertiaryBrush}"
                                         HorizontalAlignment="Center"
@@ -302,7 +302,7 @@
                 Height="{StaticResource StatusBarHeight}"
                 DataContext="{Binding StatusBar}">
             <TextBlock IsVisible="{Binding !HasAccount}"
-                       Text="No account selected"
+                       Text="{Binding NoAccountSelectedText}"
                        FontSize="{StaticResource FontSizeXs}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        VerticalAlignment="Center"

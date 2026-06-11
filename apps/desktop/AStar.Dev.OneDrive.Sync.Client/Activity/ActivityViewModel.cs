@@ -53,6 +53,42 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString(CultureInfo.CurrentCulture) : string.Empty;
 
+    /// <summary>Localised "Activity log" tab label.</summary>
+    public string LogTabText => loc.GetLocal("Activity.LogTab");
+
+    /// <summary>Localised "Conflicts" tab label.</summary>
+    public string ConflictsTabText => loc.GetLocal("Activity.ConflictsTab");
+
+    /// <summary>Localised "All" filter chip label.</summary>
+    public string FilterAllText => loc.GetLocal("Activity.Filter.All");
+
+    /// <summary>Localised "↓ downloads" filter chip label.</summary>
+    public string FilterDownloadsText => loc.GetLocal("Activity.Filter.Downloads");
+
+    /// <summary>Localised "↑ uploads" filter chip label.</summary>
+    public string FilterUploadsText => loc.GetLocal("Activity.Filter.Uploads");
+
+    /// <summary>Localised "⚠ errors" filter chip label.</summary>
+    public string FilterErrorsText => loc.GetLocal("Activity.Filter.Errors");
+
+    /// <summary>Localised "Clear" filter chip label.</summary>
+    public string FilterClearText => loc.GetLocal("Activity.Filter.Clear");
+
+    /// <summary>Localised "No activity yet" empty state heading.</summary>
+    public string NoActivityYetText => loc.GetLocal("Activity.NoActivityYet");
+
+    /// <summary>Localised "Sync activity will appear here." empty state detail.</summary>
+    public string SyncActivityWillAppearHereText => loc.GetLocal("Activity.SyncActivityWillAppearHere");
+
+    /// <summary>Localised "No conflicts" empty state heading.</summary>
+    public string NoConflictsText => loc.GetLocal("Activity.NoConflicts");
+
+    /// <summary>Localised "Any sync conflicts will appear here for resolution." empty state detail.</summary>
+    public string NoConflictsHintText => loc.GetLocal("Activity.NoConflictsHint");
+
+    /// <summary>Localised "resolved" badge label.</summary>
+    public string ResolvedText => loc.GetLocal("Activity.Conflict.Resolved");
+
     public void SubscribeToSyncEvents()
     {
         syncEventAggregator.SyncProgressChanged += OnSyncProgressChanged;

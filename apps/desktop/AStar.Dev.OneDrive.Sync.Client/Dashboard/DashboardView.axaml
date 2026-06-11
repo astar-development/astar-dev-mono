@@ -22,7 +22,7 @@
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="accounts"
+                    <TextBlock Text="{Binding AccountsLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -38,7 +38,7 @@
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="folders synced"
+                    <TextBlock Text="{Binding FoldersSyncedLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -58,7 +58,7 @@
                                 Converter={StaticResource ConflictCountToColorConverter}}"/>
                         </TextBlock.Foreground>
                     </TextBlock>
-                    <TextBlock Text="conflicts"
+                    <TextBlock Text="{Binding ConflictsLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -75,7 +75,7 @@
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="overall status"
+                    <TextBlock Text="{Binding OverallStatusLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -92,7 +92,7 @@
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
-                    <TextBlock Text="last sync"
+                    <TextBlock Text="{Binding LastSyncLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -107,11 +107,11 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8">
-            <TextBlock Text="No accounts connected"
+            <TextBlock Text="{Binding NoAccountsConnectedText}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Add an account to see your sync health here."
+            <TextBlock Text="{Binding NoAccountsConnectedHintText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"/>
@@ -184,7 +184,7 @@
                                         <StackPanel Grid.Column="4"
                                                     Orientation="Horizontal"
                                                     Spacing="6">
-                                            <Button Content="Sync now"
+                                            <Button Content="{Binding SyncNowButtonText}"
                                                     Padding="10,4"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Background="Transparent"
@@ -194,7 +194,7 @@
                                                     IsEnabled="{Binding !IsSyncing}"
                                                     Command="{Binding SyncNowCommand}"/>
 
-                                            <Button Content="Cancel"
+                                            <Button Content="{Binding CancelButtonText}"
                                                     Padding="10,4"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Background="Transparent"
@@ -225,7 +225,7 @@
                                     <!-- Storage + stats -->
                                     <StackPanel Grid.Column="0" Spacing="10">
 
-                                        <TextBlock Text="Storage"
+                                        <TextBlock Text="{Binding StorageHeadingText}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                                    FontWeight="Medium"/>
@@ -255,7 +255,7 @@
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="folders"
+                                                <TextBlock Text="{Binding FoldersLabelText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -264,7 +264,7 @@
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="conflicts"
+                                                <TextBlock Text="{Binding ConflictsLabelText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -273,7 +273,7 @@
                                                            FontSize="{StaticResource FontSizeSm}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                                <TextBlock Text="last sync"
+                                                <TextBlock Text="{Binding LastSyncLabelText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
@@ -290,13 +290,13 @@
                                     <!-- Recent activity -->
                                     <StackPanel Grid.Column="2" Spacing="6" Margin="30,0,0,0">
 
-                                        <TextBlock Text="Recent activity"
+                                        <TextBlock Text="{Binding RecentActivityText}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                                    FontWeight="Medium"/>
 
                                         <!-- Empty -->
-                                        <TextBlock Text="No recent activity"
+                                        <TextBlock Text="{Binding NoRecentActivityText}"
                                                    IsVisible="{Binding RecentActivity.Count,
                                                        Converter={StaticResource IntZeroToBoolConverter}}"
                                                    FontSize="{StaticResource FontSizeXs}"
