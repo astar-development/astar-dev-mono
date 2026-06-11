@@ -251,6 +251,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2905, Level = LogLevel.Warning, Message = "[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}")]
     public static partial void FolderChildrenLoadFailed(ILogger logger, string path, string error);
 
+    /// <summary>Logs refusal to open a path that escapes the OneDrive base directory.</summary>
+    [LoggerMessage(EventId = 2906, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Refused to open folder — path escapes OneDrive base: {CandidatePath}")]
+    public static partial void FileManagerPathEscapesBase(ILogger logger, string candidatePath);
+
     // Conflict Resolution (2950-2999)
 
     /// <summary>Logs conflict resolution failure to get download URL.</summary>

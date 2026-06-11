@@ -211,12 +211,29 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
     {
-        string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive", node.Name);
+        string oneDriveBase = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive"));
 
-        if (!fileSystem.Directory.Exists(path))
+        string candidatePath;
+        try
+        {
+            candidatePath = Path.GetFullPath(oneDriveBase.CombinePath(node.Name));
+        }
+        catch (ArgumentException)
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(_logger, node.Name);
+            return;
+        }
+
+        if (!candidatePath.StartsWith(oneDriveBase + Path.DirectorySeparatorChar, StringComparison.Ordinal) && candidatePath != oneDriveBase)
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(_logger, candidatePath);
+            return;
+        }
+
+        if (!fileSystem.Directory.Exists(candidatePath))
             return;
 
-        _fileManagerService.OpenFolder(path);
+        _fileManagerService.OpenFolder(candidatePath);
     }
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
