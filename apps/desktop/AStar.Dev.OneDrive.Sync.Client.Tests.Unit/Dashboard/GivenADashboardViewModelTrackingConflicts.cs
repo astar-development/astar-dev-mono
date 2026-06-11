@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -17,7 +18,7 @@ public sealed class GivenADashboardViewModelTrackingConflicts
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private DashboardViewModel CreateSut() => new(_scheduler, _localizationService, _accountRepository, _syncEventAggregator);
+    private DashboardViewModel CreateSut() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService)), new ActivityItemViewModelFactory(_localizationService));
 
     private static OneDriveAccount CreateAccount(string id) => new() { Id = new AccountId(id) };
 

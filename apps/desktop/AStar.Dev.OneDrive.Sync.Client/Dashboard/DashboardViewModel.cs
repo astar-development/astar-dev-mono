@@ -12,7 +12,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
-public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocalizationService localizationService, IAccountRepository accountRepository, ISyncEventAggregator syncEventAggregator) : ObservableObject
+public sealed partial class DashboardViewModel(ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator, IDashboardAccountViewModelFactory dashboardAccountViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -82,7 +82,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         if(AccountSections.Any(s => s.AccountId == account.Id.Id))
             return;
 
-        var section = new DashboardAccountViewModel(account, scheduler, accountRepository, localizationService);
+        var section = dashboardAccountViewModelFactory.Create(account);
 
         AccountSections.Add(section);
 
@@ -155,7 +155,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
         section.UpdateSyncState(args.SyncState, section.ConflictCount);
 
         if(args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
-            AddActivityItem(new ActivityItemViewModel(localizationService) { AccountId = args.AccountId, FileName = args.CurrentFile, Type = ActivityItemType.Info });
+            AddActivityItem(activityItemViewModelFactory.CreateInfo(args.AccountId, args.CurrentFile));
 
         RecalculateGlobals();
     }
@@ -164,7 +164,7 @@ public sealed partial class DashboardViewModel(ISyncScheduler scheduler, ILocali
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.Remote.AccountId.Id);
         string accountEmail = section?.Email ?? args.Job.Remote.AccountId.Id;
-        var item = ActivityItemViewModel.FromJob(args.Job, localizationService, accountEmail);
+        var item = activityItemViewModelFactory.CreateFromJob(args.Job, accountEmail);
         AddActivityItem(item);
     }
 

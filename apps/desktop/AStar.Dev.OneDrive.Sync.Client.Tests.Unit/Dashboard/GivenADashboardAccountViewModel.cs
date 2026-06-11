@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -14,10 +15,11 @@ public sealed class GivenADashboardAccountViewModel
             new OneDriveAccount { Id = new AccountId("test-account") },
             scheduler,
             Substitute.For<IAccountRepository>(),
-            localization ?? Substitute.For<ILocalizationService>());
+            localization ?? Substitute.For<ILocalizationService>(),
+            Substitute.For<IActivityItemViewModelFactory>());
 
     private static DashboardAccountViewModel CreateSutWithAccount(OneDriveAccount account, ILocalizationService localization)
-        => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization);
+        => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, new ActivityItemViewModelFactory(localization));
 
     [Fact]
     public async Task when_cancel_sync_command_invoked_then_scheduler_cancel_account_called_with_correct_id()

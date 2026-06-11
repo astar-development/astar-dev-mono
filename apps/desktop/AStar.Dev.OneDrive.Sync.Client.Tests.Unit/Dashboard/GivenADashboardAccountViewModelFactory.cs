@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -26,7 +27,7 @@ public sealed class GivenADashboardAccountViewModelFactory
     public void when_create_is_called_then_the_folder_count_matches_the_account_selection()
     {
         var sut = CreateSut();
-        var account = new OneDriveAccount { Id = new AccountId("account-1"), SelectedFolderIds = ["folder-1", "folder-2"] };
+        var account = new OneDriveAccount { Id = new AccountId("account-1"), SelectedFolderIds = [new OneDriveFolderId("folder-1"), new OneDriveFolderId("folder-2")] };
 
         var section = sut.Create(account);
 

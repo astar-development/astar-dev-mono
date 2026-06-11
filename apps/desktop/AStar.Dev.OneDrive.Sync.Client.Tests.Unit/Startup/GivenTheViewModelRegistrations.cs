@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
@@ -31,6 +32,7 @@ public sealed class GivenTheViewModelRegistrations
         _ = services.AddSingleton(Substitute.For<IGraphService>());
         _ = services.AddSingleton(Substitute.For<IAccountRepository>());
         _ = services.AddSingleton(Substitute.For<ISyncRuleRepository>());
+        _ = services.AddSingleton(Substitute.For<ISyncRuleService>());
         _ = services.AddSingleton(Substitute.For<ISyncRepository>());
         _ = services.AddSingleton(Substitute.For<IAccountOnboardingService>());
         _ = services.AddSingleton(Substitute.For<IQuotaRefreshService>());

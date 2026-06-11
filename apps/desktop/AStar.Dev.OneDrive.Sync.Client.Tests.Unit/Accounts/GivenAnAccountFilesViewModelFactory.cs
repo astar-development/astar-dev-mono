@@ -4,14 +4,16 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelFactory
 {
-    private static AccountFilesViewModelFactory CreateSut() => new(Substitute.For<IAuthService>(), Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>(), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>());
+    private static AccountFilesViewModelFactory CreateSut() => new(Substitute.For<IAuthService>(), Substitute.For<IGraphService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleService>(), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
 
     [Fact]
     public void when_create_is_called_then_the_view_model_targets_the_account()
