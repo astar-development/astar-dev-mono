@@ -11,10 +11,6 @@
     <EmbeddedResource Include="Assets\Localization\*.json" />
   </ItemGroup>
 
-    <ItemGroup Label="Application Insights">
-        <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
-    </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.ReactiveUI" />
