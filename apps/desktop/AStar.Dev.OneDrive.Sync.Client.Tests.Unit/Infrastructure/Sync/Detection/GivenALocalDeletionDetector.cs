@@ -19,7 +19,7 @@ public sealed class GivenALocalDeletionDetector
 
     public GivenALocalDeletionDetector()
         => _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<global::System.Reactive.Unit, string>.Ok(global::System.Reactive.Unit.Default));
+            .Returns(new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default));
 
     private LocalDeletionDetector CreateSut(MockFileSystem mockFileSystem) => new(_graphService, _syncedItemRepository, mockFileSystem, NullLogger<LocalDeletionDetector>.Instance);
 

@@ -16,9 +16,9 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private readonly IAuthService authService;
     private readonly IGraphService graphService;
     private readonly ILocalizationService loc;
-    private string _accountId = string.Empty;
-    private string? _accessToken;
-    private CancellationTokenSource? _authCts;
+    private string accountId = string.Empty;
+    private string? accessToken;
+    private CancellationTokenSource? authCts;
 
     public AddAccountWizardViewModel(IAuthService authService, IGraphService graphService, ILocalizationService localizationService)
     {
@@ -168,12 +168,12 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
         SetInitialSignInState();
 
-        _authCts = new CancellationTokenSource();
+        authCts = new CancellationTokenSource();
 
         try
         {
-            var result = await authService.SignInInteractiveAsync(_authCts.Token);
-            _ = result.Match<bool>(
+            var result = await authService.SignInInteractiveAsync(authCts.Token);
+            _ = result.Match(
                 ok    => { UpdateSuccessfulLoginState(ok); return true; },
                 error => { DispatchAuthError(error); return false; });
         }
@@ -207,8 +207,8 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
     private void UpdateSuccessfulLoginState(AuthResult authResult)
     {
-        _accountId = authResult.AccountId;
-        _accessToken = authResult.AccessToken;
+        accountId = authResult.AccountId;
+        accessToken = authResult.AccessToken;
         ConfirmedDisplayName = authResult.Profile.DisplayName;
         ConfirmedEmail = authResult.Profile.Email;
         IsSignedIn = true;
@@ -220,8 +220,8 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private void SetFinalSignInState()
     {
         IsWaitingForAuth = false;
-        _authCts?.Dispose();
-        _authCts = null;
+        authCts?.Dispose();
+        authCts = null;
     }
 
     private void SetInitialSignInState()
@@ -237,15 +237,15 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     [RelayCommand]
     private async Task CancelAsync()
     {
-        if(_authCts is not null)
-            await _authCts.CancelAsync();
+        if(authCts is not null)
+            await authCts.CancelAsync();
 
         Cancelled?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task LoadFoldersAsync()
     {
-        if(_accessToken is null)
+        if(accessToken is null)
             return;
 
         IsLoadingFolders = true;
@@ -254,7 +254,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
         try
         {
-            var folders = await graphService.GetRootFoldersAsync(_accountId, _ => Task.FromResult(_accessToken ?? string.Empty))
+            var folders = await graphService.GetRootFoldersAsync(accountId, _ => Task.FromResult(accessToken ?? string.Empty))
                 .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                     f => f,
                     error =>
@@ -290,7 +290,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private void Finish()
     {
         var account = OneDriveAccountFactory.CreateFromWizardResult(
-            _accountId, AccountProfileFactory.Create(ConfirmedDisplayName, ConfirmedEmail),
+            accountId, AccountProfileFactory.Create(ConfirmedDisplayName, ConfirmedEmail),
             Folders.Where(f => f.IsSelected));
         Completed?.Invoke(this, account);
     }
@@ -316,6 +316,6 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     public void Dispose()
     {
         loc.CultureChanged -= OnCultureChanged;
-        _authCts?.Dispose();
+        authCts?.Dispose();
     }
 }

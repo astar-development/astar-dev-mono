@@ -29,7 +29,7 @@ public sealed class GivenShellServiceExtensions
         _ = services.AddStartupTasks();
         _ = services.AddViews();
         _ = services.AddViewModels();
-        _ = services.AddSingleton<IOptions<EntraIdConfiguration>>(Options.Create(TestEntraIdConfig));
+        _ = services.AddSingleton(Options.Create(TestEntraIdConfig));
         _ = services.AddShell(inMemoryLogSink);
 
         return services;

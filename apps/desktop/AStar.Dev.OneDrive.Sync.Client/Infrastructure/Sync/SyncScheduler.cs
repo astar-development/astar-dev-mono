@@ -17,10 +17,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 /// </summary>
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository, ILogger<SyncScheduler> logger) : IAsyncDisposable, ISyncScheduler
 {
-    private readonly ConcurrentDictionary<string, CancellationTokenSource> _activeSyncs = new();
-    private Timer? _timer;
-    private TimeSpan _interval = TimeSpan.FromMinutes(60);
-    private long _runningFlag;
+    private readonly ConcurrentDictionary<string, CancellationTokenSource> activeSyncs = new();
+    private Timer? timer;
+    private TimeSpan interval = TimeSpan.FromMinutes(60);
+    private long runningFlag;
 
     /// <summary>
     /// Default interval for scheduled sync passes. Can be overridden by providing a different interval to StartSync or SetInterval.
@@ -36,12 +36,12 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public void StartSync(TimeSpan? interval = null)
     {
-        _interval = interval ?? DefaultInterval;
-        _timer?.Dispose();
+        this.interval = interval ?? DefaultInterval;
+        timer?.Dispose();
 
         try
         {
-            _timer = new Timer(OnTimerTickAsync, state: null, dueTime: _interval, period: _interval);
+            timer = new Timer(OnTimerTickAsync, state: null, dueTime: this.interval, period: this.interval);
         }
         catch (Exception ex)
         {
@@ -51,13 +51,13 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     }
 
     /// <inheritdoc />
-    public void StopSync() => _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+    public void StopSync() => timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
     /// <inheritdoc />
     public void SetInterval(TimeSpan interval)
     {
-        _interval = interval;
-        _ = (_timer?.Change(interval, interval));
+        this.interval = interval;
+        _ = (timer?.Change(interval, interval));
     }
 
     /// <inheritdoc />
@@ -74,7 +74,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     {
         var accountOption = await accountRepository.GetByIdAsync(new AccountId(accountId), ct).ConfigureAwait(false);
 
-        await accountOption.Match<Task>(
+        await accountOption.Match(
             async entity =>
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
@@ -91,7 +91,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        if (!_activeSyncs.TryAdd(account.Id.Id, cts))
+        if (!activeSyncs.TryAdd(account.Id.Id, cts))
         {
             OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
             return;
@@ -104,7 +104,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         finally
         {
-            _activeSyncs.TryRemove(account.Id.Id, out _);
+            activeSyncs.TryRemove(account.Id.Id, out _);
             SyncCompleted?.Invoke(this, account.Id.Id);
         }
     }
@@ -112,7 +112,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public Task CancelAccountSyncAsync(string accountId)
     {
-        if (_activeSyncs.TryGetValue(accountId, out var cts))
+        if (activeSyncs.TryGetValue(accountId, out var cts))
         {
             OneDriveSyncClientMessages.SyncSchedulerCancelled(logger, accountId);
             cts.Cancel();
@@ -137,7 +137,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
-    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref _runningFlag) == 1 || !_activeSyncs.IsEmpty;
+    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref runningFlag) == 1 || !activeSyncs.IsEmpty;
 
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {
@@ -152,7 +152,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        if (Interlocked.Exchange(ref _runningFlag, 1) == 1)
+        if (Interlocked.Exchange(ref runningFlag, 1) == 1)
             return;
 
         try
@@ -164,7 +164,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 var account = MapEntityToAccount(entity, rules);
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                if (!_activeSyncs.TryAdd(account.Id.Id, cts))
+                if (!activeSyncs.TryAdd(account.Id.Id, cts))
                 {
                     OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
                     continue;
@@ -181,14 +181,14 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 }
                 finally
                 {
-                    _activeSyncs.TryRemove(account.Id.Id, out _);
+                    activeSyncs.TryRemove(account.Id.Id, out _);
                     SyncCompleted?.Invoke(this, account.Id.Id);
                 }
             }
         }
         finally
         {
-            Interlocked.Exchange(ref _runningFlag, 0);
+            Interlocked.Exchange(ref runningFlag, 0);
         }
     }
 
@@ -197,12 +197,12 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     {
         StopSync();
 
-        foreach (var cts in _activeSyncs.Values)
+        foreach (var cts in activeSyncs.Values)
             cts.Cancel();
 
-        _activeSyncs.Clear();
+        activeSyncs.Clear();
 
-        if (_timer is not null)
-            await _timer.DisposeAsync();
+        if (timer is not null)
+            await timer.DisposeAsync();
     }
 }

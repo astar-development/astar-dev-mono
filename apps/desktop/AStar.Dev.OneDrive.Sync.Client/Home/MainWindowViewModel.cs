@@ -21,7 +21,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : ObservableObject
 {
-    private readonly ILogger<MainWindowViewModel> _logger = logger;
+    private readonly ILogger<MainWindowViewModel> logger = logger;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -191,7 +191,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 await initializer.InitializeAsync();
                 return Unit.Default;
             })
-            .TapErrorAsync(e => OneDriveSyncClientMessages.MainWindowInitializeFatal(_logger, e.Message, e));
+            .TapErrorAsync(e => OneDriveSyncClientMessages.MainWindowInitializeFatal(logger, e.Message, e));
 
     [RelayCommand]
     private async Task SyncNowAsync()
@@ -221,11 +221,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(card.Id, card.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountSelectError(_logger, e.Message, e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountSelectError(logger, e.Message, e));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountSelectUnhandledError(_logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountSelectUnhandledError(logger, ex.Message, ex);
         }
     }
 
@@ -243,11 +243,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(account.Id.Id, account.Profile.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(_logger, e.Message, e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(logger, e.Message, e));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountAddUnhandledError(_logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountAddUnhandledError(logger, ex.Message, ex);
         }
     }
 

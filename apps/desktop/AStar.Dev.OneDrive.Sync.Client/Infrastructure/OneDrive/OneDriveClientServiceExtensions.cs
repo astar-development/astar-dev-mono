@@ -17,7 +17,7 @@ public static class OneDriveClientServiceExtensions
     /// </summary>
     public static IServiceCollection AddOneDriveClient(this IServiceCollection services)
     {
-        _ = services.AddSingleton<IPublicClientApplication>(sp =>
+        _ = services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<EntraIdConfiguration>>().Value;
 

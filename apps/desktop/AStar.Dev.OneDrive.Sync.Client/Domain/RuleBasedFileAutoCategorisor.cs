@@ -36,7 +36,7 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
         }
 
         return TokenAnalyser.ExtractPersonName(filenameStem)
-            .Match<string>(
+            .Match(
                 _ => "Person",
                 () => tokens.Any(t => TokenAnalyser.ColourWords.Contains(t)) ? "Color" : "Unclassified"
             );
@@ -44,14 +44,14 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
 
     private static (Option<string> Level2, Option<string> Level3) DeriveLevel2AndLevel3(string filenameStem, IReadOnlyList<string> tokens) =>
         TokenAnalyser.ExtractPersonName(filenameStem)
-            .Match<(Option<string>, Option<string>)>(
+            .Match(
                 name => (Option.Some(name), Option.None<string>()),
                 () => DeriveColourLevels(tokens)
             );
 
     private static (Option<string> Level2, Option<string> Level3) DeriveColourLevels(IReadOnlyList<string> tokens) =>
         TokenAnalyser.ExtractColourPhrase(tokens)
-            .Match<(Option<string>, Option<string>)>(
+            .Match(
                 phrase => BuildColourLevels(phrase),
                 () => (Option.None<string>(), Option.None<string>())
             );

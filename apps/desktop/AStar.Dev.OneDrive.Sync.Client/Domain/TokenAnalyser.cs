@@ -75,7 +75,7 @@ public static partial class TokenAnalyser
             string afterColon = stem[(stem.IndexOf(':') + 1)..];
 
             return ExtractNamePairFromText(afterColon)
-                .Match<Option<string>>(Option.Some, () => ExtractNamePairFromText(stem));
+                .Match(Option.Some, () => ExtractNamePairFromText(stem));
         }
 
         return ExtractNamePairFromText(stem);

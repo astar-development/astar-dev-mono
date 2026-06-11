@@ -29,7 +29,7 @@ public partial class MainWindow : Window
     {
         int imgW = 0, imgH = 0;
 
-        if (item.IsImage && global::System.IO.File.Exists(item.FullPath))
+        if (item.IsImage && System.IO.File.Exists(item.FullPath))
         {
             try
             {

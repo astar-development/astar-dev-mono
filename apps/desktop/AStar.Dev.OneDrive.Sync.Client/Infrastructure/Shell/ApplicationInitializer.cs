@@ -24,7 +24,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             dashboard.SubscribeToSyncEvents();
 
             var restored = await startupService.RestoreAccountsAsync()
-                .MatchAsync<List<OneDriveAccount>, string, List<OneDriveAccount>>(
+                .MatchAsync(
                     ok => ok,
                     error => throw new InvalidOperationException(error))
                 .ConfigureAwait(false);

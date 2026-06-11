@@ -508,7 +508,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<global::System.Reactive.Unit, string>.Error>();
+        result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
     }
 
     private void SetupDriveContext(string driveId, string rootId)

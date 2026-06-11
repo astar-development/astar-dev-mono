@@ -12,12 +12,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 public sealed partial class FolderTreeNodeViewModel : ObservableObject
 {
-    private readonly IGraphService _graphService;
-    private readonly Func<CancellationToken, Task<string>> _tokenFactory;
-    private readonly DriveId _driveId;
-    private readonly ILogger<FolderTreeNodeViewModel> _logger;
+    private readonly IGraphService graphService;
+    private readonly Func<CancellationToken, Task<string>> tokenFactory;
+    private readonly DriveId driveId;
+    private readonly ILogger<FolderTreeNodeViewModel> logger;
     private readonly ILocalizationService loc;
-    private bool _childrenLoaded;
+    private bool childrenLoaded;
 
     public string Id { get; }
     public string Name { get; }
@@ -77,10 +77,10 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         Depth = depth;
         SyncState = node.SyncState;
         HasChildren = node.HasChildren;
-        _graphService = graphService;
-        _tokenFactory = tokenFactory;
-        _driveId = driveId;
-        _logger = logger;
+        this.graphService = graphService;
+        this.tokenFactory = tokenFactory;
+        this.driveId = driveId;
+        this.logger = logger;
         loc = localizationService;
         loc.CultureChanged += OnCultureChanged;
     }
@@ -139,17 +139,17 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private async Task EnsureChildrenLoadedAsync()
     {
-        if (_childrenLoaded) return;
+        if (childrenLoaded) return;
 
         IsLoadingChildren = true;
         try
         {
-            var folders = await _graphService.GetChildFoldersAsync(_tokenFactory, _driveId, Id)
+            var folders = await graphService.GetChildFoldersAsync(tokenFactory, driveId, Id)
                 .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                     f => f,
                     error =>
                     {
-                        OneDriveSyncClientMessages.FolderChildrenLoadFailed(_logger, RemotePath, error);
+                        OneDriveSyncClientMessages.FolderChildrenLoadFailed(logger, RemotePath, error);
                         HasChildren = false;
                         return null;
                     });
@@ -167,7 +167,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
             if (Children.Count == 0) HasChildren = false;
 
-            _childrenLoaded = true;
+            childrenLoaded = true;
         }
         finally
         {
@@ -185,7 +185,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, _graphService, _tokenFactory, _driveId, _logger, loc, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, graphService, tokenFactory, driveId, logger, loc, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);

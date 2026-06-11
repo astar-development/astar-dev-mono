@@ -56,12 +56,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private bool CanAddKeyword => !string.IsNullOrWhiteSpace(NewKeyword) && Children.Count == 0;
 
     [RelayCommand(CanExecute = nameof(CanAddKeyword))]
-    private async Task AddKeywordAsync()
-    {
-        await FileClassificationKeywordFactory.Create(NewKeyword.Trim(), NewKeywordIsSpecial ? Option.Some(true) : Option.None<bool>())
+    private async Task AddKeywordAsync() => await FileClassificationKeywordFactory.Create(NewKeyword.Trim(), NewKeywordIsSpecial ? Option.Some(true) : Option.None<bool>())
             .Match(AddValidatedKeywordAsync, _ => Task.CompletedTask)
             .ConfigureAwait(false);
-    }
 
     private async Task AddValidatedKeywordAsync(FileClassificationKeyword keyword)
     {
@@ -111,12 +108,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         NewChildCategoryName = string.Empty;
     }
 
-    private async Task AddKeywordToChildAsync(CategoryNodeViewModel child, FileClassificationKeyword keyword)
-    {
-        await repository.AddKeywordAsync(child.CategoryId, keyword, CancellationToken.None)
+    private async Task AddKeywordToChildAsync(CategoryNodeViewModel child, FileClassificationKeyword keyword) => await repository.AddKeywordAsync(child.CategoryId, keyword, CancellationToken.None)
             .TapAsync(keywordId => child.Keywords.Add(new KeywordRowViewModel(keywordId, keyword, repository, self => child.Keywords.Remove(self))))
             .ConfigureAwait(false);
-    }
 
     [RelayCommand]
     private async Task DeleteSelfAsync()

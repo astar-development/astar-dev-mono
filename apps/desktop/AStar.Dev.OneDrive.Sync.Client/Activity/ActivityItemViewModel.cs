@@ -10,9 +10,9 @@ public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, I
 
 public sealed partial class ActivityItemViewModel : ObservableObject
 {
-    private readonly ILocalizationService _loc;
+    private readonly ILocalizationService loc;
 
-    public ActivityItemViewModel(ILocalizationService loc) => _loc = loc;
+    public ActivityItemViewModel(ILocalizationService loc) => this.loc = loc;
 
     public Guid Id { get; init; } = Guid.NewGuid();
     public string AccountId { get; init; } = string.Empty;
@@ -27,12 +27,12 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public string TypeLabel => Type switch
     {
-        ActivityItemType.Downloaded => _loc.GetLocal("Activity.Downloaded"),
-        ActivityItemType.Uploaded   => _loc.GetLocal("Activity.Uploaded"),
-        ActivityItemType.Deleted    => _loc.GetLocal("Activity.Deleted"),
-        ActivityItemType.Conflict   => _loc.GetLocal("Activity.Conflict"),
-        ActivityItemType.Error      => _loc.GetLocal("Activity.Error"),
-        _                           => _loc.GetLocal("Activity.Info")
+        ActivityItemType.Downloaded => loc.GetLocal("Activity.Downloaded"),
+        ActivityItemType.Uploaded   => loc.GetLocal("Activity.Uploaded"),
+        ActivityItemType.Deleted    => loc.GetLocal("Activity.Deleted"),
+        ActivityItemType.Conflict   => loc.GetLocal("Activity.Conflict"),
+        ActivityItemType.Error      => loc.GetLocal("Activity.Error"),
+        _                           => loc.GetLocal("Activity.Info")
     };
 
     public string TypeIcon => Type switch
@@ -53,10 +53,10 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
             return elapsed switch
             {
-                { TotalSeconds: < 60 }  => _loc.GetLocal("Common.JustNow"),
+                { TotalSeconds: < 60 }  => loc.GetLocal("Common.JustNow"),
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
                 { TotalHours: < 24 } td  => $"{(int)td.TotalHours}h ago",
-                { TotalDays: < 2 }       => _loc.GetLocal("Common.Yesterday"),
+                { TotalDays: < 2 }       => loc.GetLocal("Common.Yesterday"),
                 var td                   => $"{(int)td.TotalDays}d ago"
             };
         }

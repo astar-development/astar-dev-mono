@@ -8,9 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
     public partial class AddFileClassificationRules : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "FileClassificationRules",
                 columns: table => new
                 {
@@ -26,13 +24,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                 {
                     table.PrimaryKey("PK_FileClassificationRules", x => x.Id);
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "FileClassificationRules");
-        }
     }
 }

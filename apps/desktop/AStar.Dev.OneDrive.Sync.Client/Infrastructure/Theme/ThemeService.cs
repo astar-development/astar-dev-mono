@@ -11,10 +11,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 /// </summary>
 public sealed class ThemeService : IThemeService, IDisposable
 {
-    private static readonly Uri _lightUri  = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
-    private static readonly Uri _darkUri   = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
-    private static readonly Uri _hackerUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Hacker.axaml");
-    private Disposable? _systemWatcher;
+    private static readonly Uri lightUri  = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
+    private static readonly Uri darkUri   = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
+    private static readonly Uri hackerUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Hacker.axaml");
+    private Disposable? systemWatcher;
 
     ///<inheritdoc />
     public AppTheme CurrentTheme { get; private set; } = AppTheme.System;
@@ -25,8 +25,8 @@ public sealed class ThemeService : IThemeService, IDisposable
     ///<inheritdoc />
     public void Apply(AppTheme theme)
     {
-        _systemWatcher?.Dispose();
-        _systemWatcher = null;
+        systemWatcher?.Dispose();
+        systemWatcher = null;
         CurrentTheme = theme;
         ThemeChanged?.Invoke(this, CurrentTheme);
 
@@ -67,7 +67,7 @@ public sealed class ThemeService : IThemeService, IDisposable
             return;
 
         app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
-        _systemWatcher = new Disposable(
+        systemWatcher = new Disposable(
             () => app.ActualThemeVariantChanged -= OnActualThemeVariantChanged);
     }
 
@@ -89,7 +89,7 @@ public sealed class ThemeService : IThemeService, IDisposable
         var merged = app.Resources.MergedDictionaries;
         var existing = merged
             .OfType<ResourceInclude>()
-            .FirstOrDefault(r => r.Source == _lightUri || r.Source == _darkUri || r.Source == _hackerUri);
+            .FirstOrDefault(r => r.Source == lightUri || r.Source == darkUri || r.Source == hackerUri);
 
         if (existing is not null)
             _ = merged.Remove(existing);
@@ -99,12 +99,12 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private static Uri ResolveUri(AppTheme resolved) => resolved switch
     {
-        AppTheme.Dark   => _darkUri,
-        AppTheme.Hacker => _hackerUri,
-        _               => _lightUri,
+        AppTheme.Dark   => darkUri,
+        AppTheme.Hacker => hackerUri,
+        _               => lightUri,
     };
 
-    public void Dispose() => _systemWatcher?.Dispose();
+    public void Dispose() => systemWatcher?.Dispose();
 
     private sealed class Disposable(Action action) : IDisposable
     {

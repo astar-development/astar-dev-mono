@@ -24,22 +24,22 @@ namespace AStar.Dev.OneDrive.Sync.Client.Localization;
 /// </summary>
 public sealed class LocalizationService : ILocalizationService
 {
-    private static readonly CultureInfo _fallbackCulture = new("en-GB");
+    private static readonly CultureInfo fallbackCulture = new("en-GB");
 
-    private readonly Assembly _assembly;
-    private readonly string   _resourcePrefix;
+    private readonly Assembly assembly;
+    private readonly string   resourcePrefix;
 
-    private Dictionary<string, string> _strings = [];
+    private Dictionary<string, string> strings = [];
 
-    public CultureInfo CurrentCulture { get; private set; } = _fallbackCulture;
+    public CultureInfo CurrentCulture { get; private set; } = fallbackCulture;
     public IReadOnlyList<CultureInfo> AvailableCultures { get; private set; } = [];
 
     public event EventHandler<CultureInfo>? CultureChanged;
 
     public LocalizationService()
     {
-        _assembly = Assembly.GetExecutingAssembly();
-        _resourcePrefix = _assembly.GetName().Name + ".Assets.Localization.";
+        assembly = Assembly.GetExecutingAssembly();
+        resourcePrefix = assembly.GetName().Name + ".Assets.Localization.";
 
         AvailableCultures = DiscoverCultures();
     }
@@ -50,11 +50,11 @@ public sealed class LocalizationService : ILocalizationService
     /// </summary>
     public void Initialise(CultureInfo? requested = null)
     {
-        var target = requested ?? _fallbackCulture;
+        var target = requested ?? fallbackCulture;
         Load(target);
     }
 
-    public string GetLocal(string key) => _strings.TryGetValue(key, out string? value) ? value : key;
+    public string GetLocal(string key) => strings.TryGetValue(key, out string? value) ? value : key;
 
     public string GetLocal(string key, params object[] args)
     {
@@ -84,13 +84,13 @@ public sealed class LocalizationService : ILocalizationService
         {
             target.Name,
             target.TwoLetterISOLanguageName,
-            _fallbackCulture.Name
+            fallbackCulture.Name
         }.Distinct();
 
         foreach(string name in candidates)
         {
-            string resourceName = $"{_resourcePrefix}{name}.json";
-             using var stream = _assembly.GetManifestResourceStream(resourceName);
+            string resourceName = $"{resourcePrefix}{name}.json";
+             using var stream = assembly.GetManifestResourceStream(resourceName);
             if(stream is null)
                 continue;
 
@@ -98,17 +98,17 @@ public sealed class LocalizationService : ILocalizationService
             if(loaded.Count == 0)
                 continue;
 
-            _strings = loaded;
+            strings = loaded;
 
             CurrentCulture = name == target.Name
                 ? target
-                : (name == _fallbackCulture.Name ? _fallbackCulture : new CultureInfo(name));
+                : (name == fallbackCulture.Name ? fallbackCulture : new CultureInfo(name));
                 
             return;
         }
 
-        _strings = [];
-        CurrentCulture = _fallbackCulture;
+        strings = [];
+        CurrentCulture = fallbackCulture;
     }
 
     private static Dictionary<string, string> Parse(Stream stream)
@@ -136,10 +136,10 @@ public sealed class LocalizationService : ILocalizationService
 
     private List<CultureInfo> DiscoverCultures()
     {
-        string prefix = _resourcePrefix;
+        string prefix = resourcePrefix;
         var cultures = new List<CultureInfo>();
 
-        foreach(string name in _assembly.GetManifestResourceNames())
+        foreach(string name in assembly.GetManifestResourceNames())
         {
             if(!name.StartsWith(prefix, StringComparison.Ordinal))
                 continue;
@@ -158,6 +158,6 @@ public sealed class LocalizationService : ILocalizationService
             }
         }
 
-        return cultures.Count > 0 ? cultures : [_fallbackCulture];
+        return cultures.Count > 0 ? cultures : [fallbackCulture];
     }
 }

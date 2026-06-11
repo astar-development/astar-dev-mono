@@ -16,9 +16,9 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     /// <summary>Default maximum number of log entries held in memory.</summary>
     public const int DefaultCapacity = 500;
 
-    private readonly int _capacity;
-    private readonly ConcurrentQueue<LogEntry> _entries = new();
-    private readonly Subject<LogEntry> _subject = new();
+    private readonly int capacity;
+    private readonly ConcurrentQueue<LogEntry> entries = new();
+    private readonly Subject<LogEntry> subject = new();
 
     /// <summary>Initialises the sink with <see cref="DefaultCapacity"/>.</summary>
     public InMemoryLogSink() : this(DefaultCapacity) { }
@@ -26,32 +26,32 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     private InMemoryLogSink(int capacity)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
-        _capacity = capacity;
+        this.capacity = capacity;
     }
 
     /// <inheritdoc />
-    public IObservable<LogEntry> EntryAdded => _subject;
+    public IObservable<LogEntry> EntryAdded => subject;
 
     /// <inheritdoc />
-    public IReadOnlyList<LogEntry> GetSnapshot() => [.._entries];
+    public IReadOnlyList<LogEntry> GetSnapshot() => [..entries];
 
     /// <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
     public void Emit(LogEvent logEvent)
     {
         var entry = ToLogEntry(logEvent);
-        _entries.Enqueue(entry);
+        entries.Enqueue(entry);
 
-        while (_entries.Count > _capacity)
-            _entries.TryDequeue(out _);
+        while (entries.Count > capacity)
+            entries.TryDequeue(out _);
 
-        _subject.OnNext(entry);
+        subject.OnNext(entry);
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        _subject.OnCompleted();
-        _subject.Dispose();
+        subject.OnCompleted();
+        subject.Dispose();
     }
 
     private static LogEntry ToLogEntry(LogEvent logEvent)

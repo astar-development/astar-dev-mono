@@ -7,8 +7,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 /// <inheritdoc />
 public sealed class SyncWorkerFactory(IEnumerable<IJobHandler> handlers, ISyncRepository syncRepository, ILogger<SyncWorker> workerLogger) : ISyncWorkerFactory
 {
-    private readonly IReadOnlyList<IJobHandler> _handlers = handlers.ToList().AsReadOnly();
+    private readonly IReadOnlyList<IJobHandler> handlers = handlers.ToList().AsReadOnly();
 
     /// <inheritdoc />
-    public ISyncWorker Create(int workerId) => new SyncWorker(workerId, _handlers, syncRepository, workerLogger);
+    public ISyncWorker Create(int workerId) => new SyncWorker(workerId, handlers, syncRepository, workerLogger);
 }

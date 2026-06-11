@@ -171,9 +171,11 @@ public static class StringExtensions
     /// <returns>The human-readable string format</returns>
     public static string FileSizeToText(this long fileSize) => fileSize switch
     {
+        // add gigabyte formatting
         0 => string.Empty,
         < 1024 => $"{fileSize} B",
         < 1024 * 1024 => $"{fileSize / 1024.0:F1} KB",
-        _ => $"{fileSize / (1024.0 * 1024):F1} MB"
+        < 1024 * 1024 * 1024 => $"{fileSize / (1024.0 * 1024):F1} MB",
+        _ => $"{fileSize / (1024.0 * 1024 * 1024):F1} GB"
     };
 }

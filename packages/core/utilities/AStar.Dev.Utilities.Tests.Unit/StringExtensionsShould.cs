@@ -2,8 +2,8 @@ namespace AStar.Dev.Utilities.Tests.Unit;
 
 public sealed class StringExtensionsShould
 {
-    private const string AnyJson          = "{\"AnyInt\":0,\"AnyString\":\"\"}";
-    private const string NotNullString    = "value does not matter";
+    private const string AnyJson = "{\"AnyInt\":0,\"AnyString\":\"\"}";
+    private const string NotNullString = "value does not matter";
     private const string WhitespaceString = " ";
 #pragma warning disable CA1805
     private readonly string? nullString = null;
@@ -34,15 +34,15 @@ public sealed class StringExtensionsShould
         AnyJson.FromJson<AnyClass>(new()).ShouldBeEquivalentTo(new AnyClass());
 
     [Theory]
-    [InlineData("no-Extension",           false)]
-    [InlineData("Wrong-Extension.txt",    false)]
-    [InlineData("Wrong-Extension.DOC",    false)]
-    [InlineData("Wrong-Extension.PdF",    false)]
-    [InlineData("Correct-Extension.jpG",  true)]
+    [InlineData("no-Extension", false)]
+    [InlineData("Wrong-Extension.txt", false)]
+    [InlineData("Wrong-Extension.DOC", false)]
+    [InlineData("Wrong-Extension.PdF", false)]
+    [InlineData("Correct-Extension.jpG", true)]
     [InlineData("Correct-Extension.jpeG", true)]
-    [InlineData("Correct-Extension.bmp",  true)]
-    [InlineData("Write-Extension.png",    true)]
-    [InlineData("Correct-Extension.gif",  true)]
+    [InlineData("Correct-Extension.bmp", true)]
+    [InlineData("Write-Extension.png", true)]
+    [InlineData("Correct-Extension.gif", true)]
     public void ContainTheIsImageExtensionReturningTheExpectedResults(string fileName, bool expectedResponse) =>
         fileName.IsImage().ShouldBe(expectedResponse);
 
@@ -64,13 +64,13 @@ public sealed class StringExtensionsShould
         fileName.TruncateIfRequired(truncateLength).ShouldBe(expectedResponse);
 
     [Theory]
-    [InlineData("no-number",                   false)]
-    [InlineData("number-at-the-end-123",       false)]
+    [InlineData("no-number", false)]
+    [InlineData("number-at-the-end-123", false)]
     [InlineData("123-number-at-the-beginning", false)]
-    [InlineData("number-in-the-123-middle",    false)]
-    [InlineData("1",                           true)]
-    [InlineData("12",                          true)]
-    [InlineData("123456",                      true)]
+    [InlineData("number-in-the-123-middle", false)]
+    [InlineData("1", true)]
+    [InlineData("12", true)]
+    [InlineData("123456", true)]
     public void ContainTheIsNumberOnlyExtensionReturningTheExpectedResults(string fileName, bool expectedResponse) =>
         fileName.IsNumberOnly().ShouldBe(expectedResponse);
 
@@ -86,7 +86,7 @@ public sealed class StringExtensionsShould
     [InlineData(1, "1 B")]
     [InlineData(1024, "1.0 KB")]
     [InlineData(1024 * 1024, "1.0 MB")]
-    [InlineData(1024 * 1024 * 1024, "1024.0 MB")]
+    [InlineData(1024 * 1024 * 1024, "1.0 GB")]
     [InlineData(0, "")]
     [InlineData(512, "512 B")]
     [InlineData(1536, "1.5 KB")]

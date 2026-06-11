@@ -17,7 +17,7 @@ public sealed class AutoRegisterEndpointAttribute(HttpMethod? methodType, string
     /// If no specific HTTP method is provided during initialization, the default value is <see cref="HttpMethod.Get"/>.
     /// </remarks>
     /// <value>
-    /// Represents the HTTP method used for the endpoint, as an instance of the <see cref="System.Net.Http.HttpMethod"/> class.
+    /// Represents the HTTP method used for the endpoint, as an instance of the <see cref="HttpMethod"/> class.
     /// </value>
     public HttpMethod MethodType { get; } = methodType ?? HttpMethod.Get;
 

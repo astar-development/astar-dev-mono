@@ -144,6 +144,6 @@ WHERE trim(s.kw) IS NOT NULL AND trim(s.kw) != '';");
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
-            => throw new System.NotSupportedException("HierarchicalFileClassificationRules migration cannot be reversed. Old FileClassificationRules table is still present.");
+            => throw new NotSupportedException("HierarchicalFileClassificationRules migration cannot be reversed. Old FileClassificationRules table is still present.");
     }
 }

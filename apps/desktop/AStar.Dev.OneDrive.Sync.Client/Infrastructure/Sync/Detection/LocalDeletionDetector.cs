@@ -27,7 +27,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
             {
                 var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct);
 
-                await deleteResult.MatchAsync<Unit>(
+                await deleteResult.MatchAsync(
                     async _ =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorRemoteDeleted(logger, remoteId);

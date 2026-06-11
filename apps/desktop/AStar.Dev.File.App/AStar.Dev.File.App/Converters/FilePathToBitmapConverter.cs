@@ -8,7 +8,7 @@ public class FilePathToBitmapConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not string path || !global::System.IO.File.Exists(path))
+        if (value is not string path || !System.IO.File.Exists(path))
             return null;
 
         try

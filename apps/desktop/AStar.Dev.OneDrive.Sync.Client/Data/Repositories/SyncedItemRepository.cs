@@ -58,8 +58,8 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         {
             SyncedItemId = syncedItemId,
             Level1       = c.Level1,
-            Level2       = c.Level2.MapOrDefault<string, string?>(v => v, null),
-            Level3       = c.Level3.MapOrDefault<string, string?>(v => v, null),
+            Level2       = c.Level2.MapOrDefault(v => v, null),
+            Level3       = c.Level3.MapOrDefault(v => v, null),
             TagName      = c.TagName,
             IsSpecial    = c.IsSpecial
         });
