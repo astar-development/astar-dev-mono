@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar, IFileSystem fileSystem, ILogger<DownloadJobBuilder> logger) : IDownloadJobBuilder
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncJob>> BuildAsync(OneDriveAccount account, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
+    public async Task<IReadOnlyList<SyncJob>> BuildAsync(OneDriveAccount account, AccountSyncConfig syncConfig, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
         List<SyncJob> jobs = [];
 
@@ -26,7 +26,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
 
             if (item is FolderDeltaItem folderItem)
             {
-                string folderLocalPath = BuildLocalPath(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
+                string folderLocalPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
                 await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
                 continue;
             }
@@ -34,7 +34,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
             if (item is not FileDeltaItem fileItem)
                 continue;
 
-            var job = await ProcessFileItemAsync(account, fileItem, syncedItems, onConflict, ct).ConfigureAwait(false);
+            var job = await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, ct).ConfigureAwait(false);
             if (job is not null)
                 jobs.Add(job);
         }
@@ -42,9 +42,9 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return jobs;
     }
 
-    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
+    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        string localPath = BuildLocalPath(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
+        string localPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
 
         if (knownItem?.Tags.ETag is Option<string>.Some && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
@@ -59,7 +59,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
             bool isConflict = localModified > knownItem.RemoteModifiedAt.AddSeconds(5);
 
             if (isConflict)
-                return await BuildConflictJobAsync(account, item, localPath, localModified, onConflict).ConfigureAwait(false);
+                return await BuildConflictJobAsync(account, syncConfig, item, localPath, localModified, onConflict).ConfigureAwait(false);
 
             bool remoteUnchanged = item.LastModified.Match(lm => lm <= knownItem.RemoteModifiedAt.AddSeconds(5), () => true);
             if (remoteUnchanged)
@@ -74,12 +74,12 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return BuildDownloadJob(account.Id, item, localPath);
     }
 
-    private async Task<SyncJob?> BuildConflictJobAsync(OneDriveAccount account, FileDeltaItem item, string localPath, DateTimeOffset localModified, Func<SyncConflict, Task> onConflict)
+    private async Task<SyncJob?> BuildConflictJobAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, string localPath, DateTimeOffset localModified, Func<SyncConflict, Task> onConflict)
     {
         var conflict = BuildConflict(account, item, localPath, localModified);
         await onConflict(conflict).ConfigureAwait(false);
 
-        var outcome = ConflictResolver.Resolve(account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).ConflictPolicy, localModified, item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue));
+        var outcome = ConflictResolver.Resolve(syncConfig.ConflictPolicy, localModified, item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue));
 
         return outcome switch
         {

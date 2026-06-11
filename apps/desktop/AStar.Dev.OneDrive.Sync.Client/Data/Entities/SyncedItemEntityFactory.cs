@@ -73,17 +73,20 @@ public static class SyncedItemEntityFactory
 
     /// <summary>
     /// Creates a tracking entity for a successfully completed upload job.
+    /// <paramref name="uploadedRemoteItemId"/> must be the unwrapped remote item ID assigned by OneDrive after upload;
+    /// callers are responsible for verifying the value is present before invoking this method.
     /// </summary>
     /// <param name="accountId">The ID of the account to which the item belongs.</param>
     /// <param name="job">The upload job that was completed.</param>
+    /// <param name="uploadedRemoteItemId">The remote item ID returned by OneDrive for the uploaded file.</param>
     /// <param name="remotePath">The remote path of the item in OneDrive.</param>
     /// <param name="fileSystem">The file system abstraction.</param>
     /// <returns>A new instance of <see cref="SyncedItemEntity"/>.</returns>
-    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, UploadSyncJob job, string remotePath, IFileSystem fileSystem)
+    public static SyncedItemEntity CreateFromUploadJob(AccountId accountId, UploadSyncJob job, string uploadedRemoteItemId, string remotePath, IFileSystem fileSystem)
         => new()
         {
             AccountId = accountId,
-            RemoteItemId = new OneDriveItemId(job.UploadedRemoteItemId.Match(v => v, () => throw new InvalidOperationException("UploadedRemoteItemId is None"))),
+            RemoteItemId = new OneDriveItemId(uploadedRemoteItemId),
             RemoteParentId = string.Empty,
             RemotePath = remotePath,
             LocalPath = job.Target.LocalPath,
