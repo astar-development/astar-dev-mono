@@ -44,20 +44,20 @@ public static partial class OneDriveSyncClientMessages
     // Sync Service (2100-2199)
 
     /// <summary>Logs start of account sync.</summary>
-    [LoggerMessage(EventId = 2100, Level = LogLevel.Information, Message = "[SyncService] SyncAccountAsync for {Email}")]
-    public static partial void SyncServiceStarting(ILogger logger, string email);
+    [LoggerMessage(EventId = 2100, Level = LogLevel.Information, Message = "[SyncService] SyncAccountAsync for {AccountId}")]
+    public static partial void SyncServiceStarting(ILogger logger, string accountId);
 
     /// <summary>Logs completion of account sync.</summary>
-    [LoggerMessage(EventId = 2101, Level = LogLevel.Information, Message = "[SyncService] Sync complete for {Email}")]
-    public static partial void SyncServiceComplete(ILogger logger, string email);
+    [LoggerMessage(EventId = 2101, Level = LogLevel.Information, Message = "[SyncService] Sync complete for {AccountId}")]
+    public static partial void SyncServiceComplete(ILogger logger, string accountId);
 
     /// <summary>Logs unhandled error during sync.</summary>
-    [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {Email}: {Error}")]
-    public static partial void SyncServiceError(ILogger logger, string email, string error, Exception ex);
+    [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {AccountId}: {Error}")]
+    public static partial void SyncServiceError(ILogger logger, string accountId, string error, Exception ex);
 
     /// <summary>Logs when re-authentication is required during sync.</summary>
-    [LoggerMessage(EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {Email}")]
-    public static partial void SyncServiceReAuthRequired(ILogger logger, string email);
+    [LoggerMessage(EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {AccountId}")]
+    public static partial void SyncServiceReAuthRequired(ILogger logger, string accountId);
 
     // Sync Scheduler (2200-2299)
 
@@ -134,16 +134,16 @@ public static partial class OneDriveSyncClientMessages
     // Remote Folder Enumeration (2600-2699)
 
     /// <summary>Logs enumeration of remote folder.</summary>
-    [LoggerMessage(EventId = 2600, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerating {Path} for {Email}")]
-    public static partial void RemoteFolderEnumeratorEnumerating(ILogger logger, string path, string email);
+    [LoggerMessage(EventId = 2600, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerating {Path} for {AccountId}")]
+    public static partial void RemoteFolderEnumeratorEnumerating(ILogger logger, string path, string accountId);
 
     /// <summary>Logs enumeration completed with item count.</summary>
     [LoggerMessage(EventId = 2601, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerated {Count} items under {Path}")]
     public static partial void RemoteFolderEnumeratorEnumerated(ILogger logger, int count, string path);
 
     /// <summary>Logs no sync rules configured for account.</summary>
-    [LoggerMessage(EventId = 2602, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] No sync rules configured for {Email} — nothing to sync")]
-    public static partial void RemoteFolderEnumeratorNoRules(ILogger logger, string email);
+    [LoggerMessage(EventId = 2602, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] No sync rules configured for {AccountId} — nothing to sync")]
+    public static partial void RemoteFolderEnumeratorNoRules(ILogger logger, string accountId);
 
     /// <summary>Logs backfill of RemoteItemId for rule.</summary>
     [LoggerMessage(EventId = 2603, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {Path}")]

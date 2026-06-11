@@ -30,7 +30,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
-        OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Profile.Email);
+        OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Id);
         RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
 
         var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
@@ -74,7 +74,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoFoldersSelected"), SyncState.Idle);
             else
             {
-                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Profile.Email);
+                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Id.Id);
                 RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Complete"), SyncState.Idle);
             }
         }
@@ -84,12 +84,12 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         }
         catch (SyncReAuthRequiredException)
         {
-            OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, account.Profile.Email);
+            OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, account.Id.Id);
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.ReAuthRequired"), SyncState.ReAuthRequired);
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SyncServiceError(logger, account.Profile.Email, ex.Message, ex);
+            OneDriveSyncClientMessages.SyncServiceError(logger, account.Id.Id, ex.Message, ex);
             RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
         }
     }

@@ -21,7 +21,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         if (rules.Count == 0)
         {
-            OneDriveSyncClientMessages.RemoteFolderEnumeratorNoRules(logger, account.Profile.Email);
+            OneDriveSyncClientMessages.RemoteFolderEnumeratorNoRules(logger, account.Id.Id);
 
             return new RemoteEnumerationResult([], new HashSet<string>(StringComparer.OrdinalIgnoreCase), [], [], HadNoRules: true);
         }
@@ -60,7 +60,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 continue;
             }
 
-            OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Profile.Email);
+            OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Id);
             var items = await graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, ct)
                 .MatchAsync<List<DeltaItem>, string, List<DeltaItem>?>(
                     deltaItems => deltaItems,
