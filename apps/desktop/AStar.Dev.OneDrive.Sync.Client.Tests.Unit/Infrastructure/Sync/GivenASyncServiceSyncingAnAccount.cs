@@ -57,7 +57,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Authenticating...")
+            if(args.CurrentFile == "Sync.Authenticating")
                 authCallOrder.Add("progress");
         };
 
@@ -76,7 +76,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Authenticating...")
+            if(args.CurrentFile == "Sync.Authenticating")
                 capturedState = args.SyncState;
         };
 
@@ -165,7 +165,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error && args.CurrentFile != "Authenticating...")
+            if(args.SyncState == SyncState.Error && args.CurrentFile != "Sync.Authenticating")
             {
                 capturedState = args.SyncState;
                 capturedMessage = args.CurrentFile;

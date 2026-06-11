@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Options;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
@@ -23,6 +24,13 @@ public sealed class GivenASyncPassOrchestrator
     private readonly ILocalChangeDetector    _localChangeDetector    = Substitute.For<ILocalChangeDetector>();
     private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
     private readonly IDownloadJobBuilder     _downloadJobBuilder     = Substitute.For<IDownloadJobBuilder>();
+    private readonly ILocalizationService    _localizationService    = Substitute.For<ILocalizationService>();
+
+    public GivenASyncPassOrchestrator()
+    {
+        _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
+    }
 
     private static IOptions<SyncSettings> SyncSettingsOptions
         => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
@@ -37,7 +45,7 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _localizationService);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
@@ -51,7 +59,7 @@ public sealed class GivenASyncPassOrchestrator
     private static RemoteEnumerationResult EmptyEnumerationResult() => new([], new HashSet<string>(), [], []);
 
     private static bool IsEnumerationProgressEvent(SyncProgressEventArgs args)
-        => args.CurrentFile.StartsWith("Enumerating:", StringComparison.Ordinal);
+        => args.CurrentFile.StartsWith("Sync.Enumerating", StringComparison.Ordinal);
 
     private void SetupDeepSyncPrerequisites()
     {
@@ -221,7 +229,7 @@ public sealed class GivenASyncPassOrchestrator
 
         await sut.OrchestrateAsync(account, _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
-        progressMessages.ShouldContain("No changes");
+        progressMessages.ShouldContain("Sync.NoChanges");
     }
 
     [Fact]
@@ -235,9 +243,9 @@ public sealed class GivenASyncPassOrchestrator
 
         await sut.OrchestrateAsync(account, _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
-        progressMessages.ShouldContain("Detecting remote deletions...");
-        progressMessages.ShouldContain("Detecting local changes...");
-        progressMessages.IndexOf("Detecting remote deletions...").ShouldBeLessThan(progressMessages.IndexOf("Detecting local changes..."));
+        progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
+        progressMessages.ShouldContain("Sync.DetectingLocalChanges");
+        progressMessages.IndexOf("Sync.DetectingRemoteDeletions").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingLocalChanges"));
     }
 
     [Fact]
@@ -301,8 +309,6 @@ public sealed class GivenASyncPassOrchestrator
 
         callbackInvoked.ShouldBeTrue();
     }
-
-    // --- enumeration progress throttle ---
 
     [Fact]
     public async Task when_enumeration_fires_99_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
