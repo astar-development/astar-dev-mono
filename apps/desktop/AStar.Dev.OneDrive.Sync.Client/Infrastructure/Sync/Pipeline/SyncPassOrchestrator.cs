@@ -11,7 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings) : ISyncPassOrchestrator
 {
-    public async Task<bool> OrchestrateAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
+    public async Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
     {
         var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
@@ -40,10 +40,10 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         RaiseProgress(account.Id.Id, 0, 0, "Detecting local changes...", onProgress);
         await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, syncedItemsDict, ct).ConfigureAwait(false);
 
-        var downloadJobs = await dependencies.DownloadJobBuilder.BuildAsync(account, enumerationResult.DeltaItems, enumerationResult.Rules, syncedItemsDict, conflictCallback, ct).ConfigureAwait(false);
+        var downloadJobs = await dependencies.DownloadJobBuilder.BuildAsync(account, syncConfig, enumerationResult.DeltaItems, enumerationResult.Rules, syncedItemsDict, conflictCallback, ct).ConfigureAwait(false);
 
         var syncedItemsByLocalPath = syncedItemsDict.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
-        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, account.SyncConfig.Match(v => v, () => throw new InvalidOperationException("SyncConfig is None")).LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
+        var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, syncConfig.LocalSyncPath.Value, enumerationResult.Rules, syncedItemsByLocalPath);
 
         var allJobs = new List<SyncJob>(downloadJobs.Count + uploadJobs.Count);
         allJobs.AddRange(downloadJobs);
