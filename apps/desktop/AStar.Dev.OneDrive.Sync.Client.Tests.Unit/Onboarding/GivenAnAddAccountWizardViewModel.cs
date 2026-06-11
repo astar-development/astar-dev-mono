@@ -289,6 +289,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_sign_in_succeeds_then_sign_in_status_text_contains_email()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.SignedInAs", Arg.Any<object[]>()).Returns(x => $"test-signed-in-as {x.ArgAt<object[]>(1)[0]}");
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "acc-1", AccountProfileFactory.Create("Test User", "test@example.com")));
         var sut = CreateSut();
@@ -349,13 +350,14 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_sign_in_is_cancelled_then_sign_in_status_text_is_sign_in_cancelled()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.SignInCancelled").Returns("test-cancelled");
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Cancelled());
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
 
-        sut.SignInStatusText.ShouldBe("Sign-in cancelled.");
+        sut.SignInStatusText.ShouldBe("test-cancelled");
     }
 
     [Fact]

@@ -24,6 +24,18 @@ public sealed partial class FilesViewModel(IAuthService authService, IGraphServi
     public bool HasTabs => Tabs.Count > 0;
     public bool HasNoAccounts => Tabs.Count == 0;
 
+    /// <summary>Localised "No accounts connected" empty-state heading.</summary>
+    public string NoAccountsConnectedText => localizationService.GetLocal("Files.NoAccountsConnected");
+
+    /// <summary>Localised "Add an account from the Accounts section." empty-state detail.</summary>
+    public string NoAccountsConnectedHintText => localizationService.GetLocal("Files.NoAccountsConnectedHint");
+
+    /// <summary>Localised "Loading folders ..." indicator text.</summary>
+    public string LoadingFoldersText => localizationService.GetLocal("Files.LoadingFolders");
+
+    /// <summary>Localised "Could not load folders" error heading.</summary>
+    public string CouldNotLoadText => localizationService.GetLocal("Files.CouldNotLoad");
+
     public event EventHandler<(string AccountId, string FolderId)>? ViewActivityRequested;
 
     /// <summary>Raised when the included folder count changes for any account; carries the account ID and new count.</summary>

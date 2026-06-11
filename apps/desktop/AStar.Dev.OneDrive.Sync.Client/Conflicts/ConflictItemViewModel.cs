@@ -49,6 +49,9 @@ public sealed partial class ConflictItemViewModel : ObservableObject
     /// <summary>Label for the expand/collapse toggle button, localised for the current culture.</summary>
     public string CollapseExpandLabel => loc.GetLocal(IsExpanded ? "Conflict.Collapse" : "Conflict.Resolve");
 
+    /// <summary>Localised "resolved" badge label.</summary>
+    public string ResolvedText => loc.GetLocal("Activity.Conflict.Resolved");
+
     [ObservableProperty]
     public partial bool IsResolving { get; set; }
 
@@ -98,6 +101,7 @@ public sealed partial class ConflictItemViewModel : ObservableObject
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
         OnPropertyChanged(nameof(PolicyOptions));
         OnPropertyChanged(nameof(CollapseExpandLabel));
+        OnPropertyChanged(nameof(ResolvedText));
     }
 
     private static string FormatDateTime(DateTimeOffset dt)

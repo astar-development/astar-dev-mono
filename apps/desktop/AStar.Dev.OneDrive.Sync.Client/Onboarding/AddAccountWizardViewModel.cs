@@ -82,6 +82,45 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     /// <summary>The label for the primary action button, localised for the current culture.</summary>
     public string NextLabel => CurrentStep == WizardStep.Confirm ? loc.GetLocal("Wizard.AddAccount.Finish") : loc.GetLocal("Wizard.AddAccount.Next");
 
+    /// <summary>Localised title for the wizard.</summary>
+    public string TitleText => loc.GetLocal("Wizard.AddAccount.Title");
+
+    /// <summary>Localised sign-in step heading.</summary>
+    public string SignInPromptText => loc.GetLocal("Wizard.AddAccount.SignInPrompt2");
+
+    /// <summary>Localised sign-in step detail.</summary>
+    public string BrowserPromptText => loc.GetLocal("Wizard.AddAccount.BrowserPrompt");
+
+    /// <summary>Localised button label for opening the browser.</summary>
+    public string OpenBrowserSignInText => loc.GetLocal("Wizard.AddAccount.OpenBrowserSignIn");
+
+    /// <summary>Localised folder-selection step heading.</summary>
+    public string WhichFoldersText => loc.GetLocal("Wizard.AddAccount.WhichFolders");
+
+    /// <summary>Localised folder-selection hint.</summary>
+    public string ChooseFolderHintText => loc.GetLocal("Wizard.AddAccount.ChooseFolderHint");
+
+    /// <summary>Localised loading folders text.</summary>
+    public string LoadingFoldersText => loc.GetLocal("Wizard.AddAccount.LoadingFolders");
+
+    /// <summary>Localised skip folders label.</summary>
+    public string SkipFoldersText => loc.GetLocal("Wizard.AddAccount.SkipFolders");
+
+    /// <summary>Localised confirm step heading.</summary>
+    public string ReadyToConnectText => loc.GetLocal("Wizard.AddAccount.ReadyToConnect");
+
+    /// <summary>Localised account label for the confirm summary.</summary>
+    public string AccountLabelText => loc.GetLocal("Wizard.AddAccount.Account");
+
+    /// <summary>Localised folders-to-sync label for the confirm summary.</summary>
+    public string FoldersToSyncText => loc.GetLocal("Wizard.AddAccount.FoldersToSync");
+
+    /// <summary>Localised Back button label.</summary>
+    public string BackText => loc.GetLocal("Wizard.AddAccount.Back");
+
+    /// <summary>Localised Cancel button label.</summary>
+    public string CancelText => loc.GetLocal("Wizard.AddAccount.Cancel");
+
     [RelayCommand]
     private void Back()
     {
@@ -162,7 +201,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
     private void SetCancelledLoginState()
     {
-        SignInStatusText = "Sign-in cancelled.";
+        SignInStatusText = loc.GetLocal("Wizard.AddAccount.SignInCancelled");
         SignInHasError = false;
     }
 
@@ -173,7 +212,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         ConfirmedDisplayName = authResult.Profile.DisplayName;
         ConfirmedEmail = authResult.Profile.Email;
         IsSignedIn = true;
-        SignInStatusText = $"Signed in as {ConfirmedEmail}";
+        SignInStatusText = loc.GetLocal("Wizard.AddAccount.SignedInAs", ConfirmedEmail);
         SignInHasError = false;
         NextCommand.NotifyCanExecuteChanged();
     }
@@ -188,7 +227,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private void SetInitialSignInState()
     {
         SignInHasError = false;
-        SignInStatusText = "Waiting for sign-in ...";
+        SignInStatusText = loc.GetLocal("Wizard.AddAccount.WaitingForSignIn");
         IsWaitingForAuth = true;
     }
 
@@ -256,7 +295,23 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         Completed?.Invoke(this, account);
     }
 
-    private void OnCultureChanged(object? sender, CultureInfo culture) => OnPropertyChanged(nameof(NextLabel));
+    private void OnCultureChanged(object? sender, CultureInfo culture)
+    {
+        OnPropertyChanged(nameof(NextLabel));
+        OnPropertyChanged(nameof(TitleText));
+        OnPropertyChanged(nameof(SignInPromptText));
+        OnPropertyChanged(nameof(BrowserPromptText));
+        OnPropertyChanged(nameof(OpenBrowserSignInText));
+        OnPropertyChanged(nameof(WhichFoldersText));
+        OnPropertyChanged(nameof(ChooseFolderHintText));
+        OnPropertyChanged(nameof(LoadingFoldersText));
+        OnPropertyChanged(nameof(SkipFoldersText));
+        OnPropertyChanged(nameof(ReadyToConnectText));
+        OnPropertyChanged(nameof(AccountLabelText));
+        OnPropertyChanged(nameof(FoldersToSyncText));
+        OnPropertyChanged(nameof(BackText));
+        OnPropertyChanged(nameof(CancelText));
+    }
 
     public void Dispose()
     {
