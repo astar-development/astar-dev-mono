@@ -56,6 +56,8 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         SelectedFolderIds = []
     };
 
+    private static AccountSyncConfig CreateSyncConfig(string localSyncPath = "/path/to/sync") => AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath));
+
     private static RemoteEnumerationResult EmptyEnumerationResult() => new([], new HashSet<string>(), [], []);
 
     private static SyncJob CreateMinimalDownloadJob()
@@ -73,7 +75,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
             .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
-        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns((IReadOnlyList<SyncJob>)[]);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
@@ -87,7 +89,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
             .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyEnumerationResult());
-        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
             .Returns((IReadOnlyList<SyncJob>)[CreateMinimalDownloadJob()]);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
@@ -102,7 +104,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.DetectingRemoteDeletions");
     }
@@ -114,7 +116,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.DetectingLocalChanges");
     }
@@ -126,7 +128,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: _ => { }, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: _ => { }, ct: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.NoChanges");
     }
@@ -138,7 +140,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.SyncingFiles", Arg.Any<object[]>());
     }
@@ -151,7 +153,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
     }
@@ -164,7 +166,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.DetectingLocalChanges");
     }
@@ -177,7 +179,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.NoChanges");
     }
