@@ -31,7 +31,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Id);
-        RaiseProgress(account.Id.Id, 0, 0, "Authenticating...", SyncState.Syncing);
+        RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
         var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
         bool authOk = initialAuth.Match<bool>(_ => true, _ => false);

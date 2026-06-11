@@ -74,6 +74,30 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
+    /// <summary>Localised "Storage" section heading.</summary>
+    public string StorageHeadingText => _localizationService.GetLocal("Dashboard.Storage");
+
+    /// <summary>Localised "folders" stat label.</summary>
+    public string FoldersLabelText => _localizationService.GetLocal("Dashboard.Folders");
+
+    /// <summary>Localised "conflicts" stat label.</summary>
+    public string ConflictsLabelText => _localizationService.GetLocal("Dashboard.Conflicts");
+
+    /// <summary>Localised "last sync" stat label.</summary>
+    public string LastSyncLabelText => _localizationService.GetLocal("Dashboard.LastSync");
+
+    /// <summary>Localised "Recent activity" section heading.</summary>
+    public string RecentActivityText => _localizationService.GetLocal("Dashboard.RecentActivity");
+
+    /// <summary>Localised "No recent activity" empty state.</summary>
+    public string NoRecentActivityText => _localizationService.GetLocal("Dashboard.NoRecentActivity");
+
+    /// <summary>Localised "Sync now" button label.</summary>
+    public string SyncNowButtonText => _localizationService.GetLocal("Dashboard.SyncNow");
+
+    /// <summary>Localised "Cancel" button label.</summary>
+    public string CancelButtonText => _localizationService.GetLocal("Common.Cancel");
+
     public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService)
     {
         _account = account;

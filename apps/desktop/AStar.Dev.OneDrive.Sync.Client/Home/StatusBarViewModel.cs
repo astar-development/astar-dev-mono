@@ -69,11 +69,18 @@ public sealed partial class StatusBarViewModel : ObservableObject
         _                  => loc.GetLocal("StatusBar.Synced")
     };
 
+    /// <summary>Localised "No account selected" placeholder shown when no account is active.</summary>
+    public string NoAccountSelectedText => loc.GetLocal("MainWindow.NoAccountSelected");
+
     partial void OnSyncStateChanged(SyncState value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnPendingCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnConflictCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
 
-    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture) => OnPropertyChanged(nameof(StatusLabel));
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
+    {
+        OnPropertyChanged(nameof(StatusLabel));
+        OnPropertyChanged(nameof(NoAccountSelectedText));
+    }
 
     private void OnAccountsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {

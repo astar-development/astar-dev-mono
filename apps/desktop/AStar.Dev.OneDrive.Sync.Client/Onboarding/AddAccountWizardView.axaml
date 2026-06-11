@@ -8,7 +8,7 @@
 
         <Grid ColumnDefinitions="*,Auto">
             <TextBlock Grid.Column="0"
-                       Text="Add OneDrive account"
+                       Text="{Binding TitleText}"
                        FontSize="{StaticResource FontSizeXl}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"
@@ -41,12 +41,12 @@
         <!-- Step 1 — Sign in -->
         <StackPanel IsVisible="{Binding IsSignInStep}" Spacing="16">
 
-            <TextBlock Text="Sign in to your Microsoft account"
+            <TextBlock Text="{Binding SignInPromptText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        TextWrapping="Wrap"/>
 
-            <TextBlock Text="A browser window will open for you to sign in. Only personal Microsoft accounts are supported (Outlook, Hotmail, Live)."
+            <TextBlock Text="{Binding BrowserPromptText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
@@ -58,7 +58,7 @@
                     BorderThickness="0"
                     Command="{Binding OpenBrowserCommand}"
                     IsEnabled="{Binding !IsWaitingForAuth}">
-                <TextBlock Text="Open browser to sign in"
+                <TextBlock Text="{Binding OpenBrowserSignInText}"
                            Foreground="White"
                            FontSize="{StaticResource FontSizeMd}"/>
             </Button>
@@ -84,17 +84,17 @@
         <!-- Step 2 — Select folders -->
         <StackPanel IsVisible="{Binding IsSelectFoldersStep}" Spacing="16">
 
-            <TextBlock Text="Which folders would you like to sync?"
+            <TextBlock Text="{Binding WhichFoldersText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-            <TextBlock Text="You can change this at any time from the Files section."
+            <TextBlock Text="{Binding ChooseFolderHintText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
 
             <!-- Loading state -->
-            <TextBlock Text="Loading folders..."
+            <TextBlock Text="{Binding LoadingFoldersText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        IsVisible="{Binding IsLoadingFolders}"/>
@@ -142,7 +142,7 @@
                     BorderThickness="0"
                     Command="{Binding SkipFoldersCommand}"
                     IsVisible="{Binding !IsLoadingFolders}">
-                <TextBlock Text="Skip — I'll choose folders later"
+                <TextBlock Text="{Binding SkipFoldersText}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>
             </Button>
@@ -152,7 +152,7 @@
         <!-- Step 3 — Confirm -->
         <StackPanel IsVisible="{Binding IsConfirmStep}" Spacing="12">
 
-            <TextBlock Text="Ready to connect"
+            <TextBlock Text="{Binding ReadyToConnectText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
 
@@ -164,7 +164,7 @@
                 <StackPanel Spacing="8">
                     <Grid ColumnDefinitions="120,*">
                         <TextBlock Grid.Column="0"
-                                   Text="Account"
+                                   Text="{Binding AccountLabelText}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
@@ -174,7 +174,7 @@
                     </Grid>
                     <Grid ColumnDefinitions="120,*">
                         <TextBlock Grid.Column="0"
-                                   Text="Folders to sync"
+                                   Text="{Binding FoldersToSyncText}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
@@ -193,7 +193,7 @@
         <Grid ColumnDefinitions="Auto,*,Auto,8,Auto">
 
             <Button Grid.Column="0"
-                    Content="Back"
+                    Content="{Binding BackText}"
                     Padding="12,6"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="Transparent"
@@ -203,7 +203,7 @@
                     Command="{Binding BackCommand}"/>
 
             <Button Grid.Column="2"
-                    Content="Cancel"
+                    Content="{Binding CancelText}"
                     Padding="12,6"
                     CornerRadius="{StaticResource RadiusMd}"
                     Background="Transparent"

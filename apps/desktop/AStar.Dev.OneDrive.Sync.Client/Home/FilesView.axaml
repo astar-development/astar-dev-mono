@@ -66,11 +66,11 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8">
-            <TextBlock Text="No accounts connected"
+            <TextBlock Text="{Binding NoAccountsConnectedText}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="Add an account from the Accounts section."
+            <TextBlock Text="{Binding NoAccountsConnectedHintText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"/>
@@ -95,7 +95,7 @@
                                              Width="200" Height="2"
                                              Foreground="{DynamicResource TextAccentBrush}"
                                              Background="Transparent"/>
-                                <TextBlock Text="Loading folders ..."
+                                <TextBlock Text="{Binding LoadingFoldersText}"
                                            FontSize="{StaticResource FontSizeSm}"
                                            Foreground="{DynamicResource TextTertiaryBrush}"
                                            HorizontalAlignment="Center"/>
@@ -106,7 +106,7 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Spacing="8">
-                                <TextBlock Text="Could not load folders"
+                                <TextBlock Text="{Binding CouldNotLoadText}"
                                            FontSize="{StaticResource FontSizeMd}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center"/>

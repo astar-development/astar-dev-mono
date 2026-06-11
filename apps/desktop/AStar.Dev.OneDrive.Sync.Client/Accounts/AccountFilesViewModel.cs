@@ -60,6 +60,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [ObservableProperty]
     public partial bool IsActiveTab { get; set; }
 
+    /// <summary>Localised "Loading folders ..." indicator text.</summary>
+    public string LoadingFoldersText => _localizationService.GetLocal("Files.LoadingFolders");
+
+    /// <summary>Localised "Could not load folders" error heading.</summary>
+    public string CouldNotLoadText => _localizationService.GetLocal("Files.CouldNotLoad");
+
     /// <summary>Raised after a folder is included or excluded; the argument is the new count of included rules for this account.</summary>
     public event EventHandler<int>? FolderCountChanged;
 

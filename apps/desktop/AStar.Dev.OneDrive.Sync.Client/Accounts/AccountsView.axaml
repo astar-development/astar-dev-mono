@@ -27,12 +27,12 @@
                 </Canvas>
             </Viewbox>
 
-            <TextBlock Text="No accounts added yet"
+            <TextBlock Text="{Binding NoAccountsAddedYetText}"
                        FontSize="{StaticResource FontSizeLg}"
                        Foreground="{DynamicResource TextSecondaryBrush}"
                        HorizontalAlignment="Center"/>
 
-            <TextBlock Text="Add a Microsoft personal account to get started."
+            <TextBlock Text="{Binding NoAccountsPersonalHintText}"
                        FontSize="{StaticResource FontSizeMd}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        HorizontalAlignment="Center"
@@ -48,7 +48,7 @@
                     Foreground="White"
                     BorderThickness="0"
                     Command="{Binding AddAccountCommand}">
-                <TextBlock Text="Add account"
+                <TextBlock Text="{Binding AddAccountButtonText}"
                            FontSize="{StaticResource FontSizeMd}"
                            Foreground="White"/>
             </Button>
@@ -62,7 +62,7 @@
                       VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="12">
 
-                <TextBlock Text="Connected accounts"
+                <TextBlock Text="{Binding ConnectedAccountsText}"
                            FontSize="{StaticResource FontSizeXl}"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            Margin="0,0,0,8"/>
@@ -120,8 +120,8 @@
                                                 Background="{DynamicResource TextAccentBrush}"
                                                 BorderThickness="0"
                                                 Command="{Binding ReAuthenticateCommand}"
-                                                ToolTip.Tip="Sign in again">
-                                            <TextBlock Text="Sign in again"
+                                                ToolTip.Tip="{Binding $parent[ItemsControl].((vmHome:MainWindowViewModel)DataContext).SignInAgainText}">
+                                            <TextBlock Text="{Binding $parent[ItemsControl].((vmHome:MainWindowViewModel)DataContext).SignInAgainText}"
                                                        FontSize="{StaticResource FontSizeXs}"
                                                        Foreground="White"/>
                                         </Button>
@@ -131,7 +131,7 @@
                                                 Background="Transparent"
                                                 BorderThickness="0"
                                                 Command="{Binding RemoveCommand}"
-                                                ToolTip.Tip="Remove account">
+                                                ToolTip.Tip="{Binding $parent[ItemsControl].((vmHome:MainWindowViewModel)DataContext).RemoveAccountText}">
                                             <TextBlock Text="✕"
                                                        FontSize="{StaticResource FontSizeSm}"
                                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
@@ -158,7 +158,7 @@
                                    FontSize="{StaticResource FontSizeLg}"
                                    Foreground="{DynamicResource TextAccentBrush}"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="Add another account"
+                        <TextBlock Text="{Binding AddAnotherAccountText}"
                                    FontSize="{StaticResource FontSizeMd}"
                                    Foreground="{DynamicResource TextAccentBrush}"
                                    VerticalAlignment="Center"/>
