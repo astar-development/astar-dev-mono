@@ -1,6 +1,6 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -8,12 +8,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory) : ISyncRuleRepository
 {
-    private const string UpsertSql =
-        "INSERT INTO SyncRules (AccountId, RemotePath, RuleType, RemoteItemId) " +
-        "VALUES (@accountId, @remotePath, @ruleType, @remoteItemId) " +
-        "ON CONFLICT(AccountId, RemotePath) DO UPDATE SET RuleType = excluded.RuleType, " +
-        "RemoteItemId = COALESCE(excluded.RemoteItemId, RemoteItemId)";
-
     public async Task<List<SyncRuleEntity>> GetByAccountIdAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -27,15 +21,28 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        List<object> parameters =
-        [
-            new SqliteParameter("@accountId",    accountId.Id),
-            new SqliteParameter("@remotePath",   remotePath),
-            new SqliteParameter("@ruleType",     (int)ruleType),
-            new SqliteParameter("@remoteItemId", (object?)remoteItemId ?? DBNull.Value),
-        ];
+        var existing = await db.SyncRules
+            .FirstOrDefaultAsync(r => r.AccountId == accountId && r.RemotePath == remotePath, cancellationToken);
 
-        _ = await db.Database.ExecuteSqlRawAsync(UpsertSql, parameters, cancellationToken);
+        if (existing is null)
+        {
+            db.SyncRules.Add(new SyncRuleEntity
+            {
+                AccountId = accountId,
+                RemotePath = remotePath,
+                RuleType = ruleType,
+                RemoteItemId = remoteItemId is not null ? Option.Some(remoteItemId) : Option.None<string>()
+            });
+        }
+        else
+        {
+            existing.RuleType = ruleType;
+
+            if (remoteItemId is not null)
+                existing.RemoteItemId = Option.Some(remoteItemId);
+        }
+
+        _ = await db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(AccountId accountId, string remotePath, CancellationToken cancellationToken)

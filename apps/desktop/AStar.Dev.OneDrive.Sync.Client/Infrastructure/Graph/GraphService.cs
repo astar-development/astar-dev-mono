@@ -66,11 +66,11 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                                 .Where(i => i.Folder is not null)
                                 .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
 
-                        if(page.OdataNextLink is null)
+                        if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
                             break;
 
                         page = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
-                            .WithUrl(page.OdataNextLink)
+                            .WithUrl(page.OdataNextLink!)
                             .GetAsync(cancellationToken: ct);
                     }
 
@@ -108,11 +108,11 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                         .Where(i => i.Folder is not null)
                         .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
 
-                if(page.OdataNextLink is null)
+                if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
                     break;
 
                 page = await client.Drives[driveId.Value].Items[parentFolderId].Children
-                    .WithUrl(page.OdataNextLink)
+                    .WithUrl(page.OdataNextLink!)
                     .GetAsync(cancellationToken: ct);
             }
 
@@ -281,11 +281,11 @@ public sealed class GraphService(IUploadService uploadService, IGraphClientFacto
                     await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, onItemDiscovered, ct);
             }
 
-            if(page.OdataNextLink is null)
+            if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
                 break;
 
             page = await client.Drives[driveId.Value].Items[parentId].Children
-                .WithUrl(page.OdataNextLink)
+                .WithUrl(page.OdataNextLink!)
                 .GetAsync(cancellationToken: ct);
         }
     }
