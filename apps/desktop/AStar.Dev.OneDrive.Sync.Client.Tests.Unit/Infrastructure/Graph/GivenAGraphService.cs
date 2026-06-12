@@ -19,12 +19,16 @@ public sealed class GivenAGraphService : IDisposable
     private const string AnyRemotePath = "/Documents";
     private const string AnyLocalPath = "/home/user/file.txt";
 
-    private readonly WireMockServer _server = WireMockServer.Start();
+    private readonly WireMockServer server = WireMockServer.Start();
 
-    public void Dispose() => _server.Stop();
+    public void Dispose() => server.Stop();
 
-    private GraphService CreateSut() =>
-        new(Substitute.For<IUploadService>(), new WireMockGraphClientFactory(_server));
+    private GraphService CreateSut()
+    {
+        var factory = new WireMockGraphClientFactory(server);
+
+        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory));
+    }
 
     [Fact]
     public void when_constructed_then_instance_is_not_null()
@@ -136,7 +140,7 @@ public sealed class GivenAGraphService : IDisposable
     public async Task when_get_root_folders_returns_mixed_items_then_only_folders_are_returned_ordered_by_name()
     {
         SetupDriveContext(AnyDriveId, "root-001");
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/root-001/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/root-001/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -161,7 +165,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_folder_id_by_path_receives_a_404_then_null_is_returned()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(404)
                 .WithHeader("Content-Type", "application/json")
@@ -176,7 +180,7 @@ public sealed class GivenAGraphService : IDisposable
     public async Task when_get_quota_response_has_null_total_then_zero_is_returned_for_both_values()
     {
         SetupDriveContext(AnyDriveId, "root-001");
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -193,7 +197,7 @@ public sealed class GivenAGraphService : IDisposable
     public async Task when_get_download_url_item_has_no_additional_data_then_null_is_returned()
     {
         SetupDriveContext(AnyDriveId, "root-001");
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -207,7 +211,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_enumerate_folder_contains_subfolders_then_recursive_enumeration_visits_each_child()
     {
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -219,7 +223,7 @@ public sealed class GivenAGraphService : IDisposable
                         new { id = "subfolder-001", name = "SubFolder", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } }
                     }
                 }));
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/subfolder-001/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/subfolder-001/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -243,7 +247,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_enumerate_folder_encounters_a_cycle_via_parentId_then_each_folder_is_visited_exactly_once()
     {
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -254,7 +258,7 @@ public sealed class GivenAGraphService : IDisposable
                         new { id = "subfolder-A", name = "SubFolderA", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } }
                     }
                 }));
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/subfolder-A/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/subfolder-A/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -284,13 +288,13 @@ public sealed class GivenAGraphService : IDisposable
         _ = await sut.GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), ct);
         _ = await sut.GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), ct);
 
-        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
+        (server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
     }
 
     [Fact]
     public async Task when_get_drive_id_is_called_and_graph_returns_null_drive_id_then_result_is_error()
     {
-        _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
+        server.Given(Request.Create().WithPath("/me/drive").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -304,12 +308,12 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_drive_id_is_called_and_graph_returns_null_root_item_id_then_result_is_error()
     {
-        _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
+        server.Given(Request.Create().WithPath("/me/drive").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = "drive-001" }));
-        _server.Given(Request.Create().WithPath("/drives/drive-001/root").UsingGet())
+        server.Given(Request.Create().WithPath("/drives/drive-001/root").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -331,7 +335,7 @@ public sealed class GivenAGraphService : IDisposable
         _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult(AnyAccessToken), ct);
         _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult("refreshed-token"), ct);
 
-        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
+        (server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(1);
     }
 
     [Fact]
@@ -346,15 +350,15 @@ public sealed class GivenAGraphService : IDisposable
         sut.EvictCachedDriveContext(accountId);
         _ = await sut.GetDriveIdAsync(accountId, _ => Task.FromResult(AnyAccessToken), ct);
 
-        (_server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
+        (server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains("/me/drive", StringComparison.OrdinalIgnoreCase) == true) ?? 0).ShouldBe(2);
     }
 
     [Fact]
     public async Task when_enumerate_folder_next_link_does_not_pass_guard_then_only_the_first_page_is_returned()
     {
-        var nonGraphNextLinkUrl = $"{_server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
+        var nonGraphNextLinkUrl = $"{server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
 
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -377,7 +381,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_drive_id_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -391,7 +395,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_root_folders_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -405,7 +409,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_quota_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -419,7 +423,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_folder_id_by_path_returns_server_error_then_null_is_returned()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -433,7 +437,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_download_url_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -447,7 +451,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_upload_file_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -471,7 +475,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_get_child_folders_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -485,7 +489,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_enumerate_folder_returns_server_error_then_result_is_error()
     {
-        _server.Given(Request.Create().UsingAnyMethod())
+        server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -500,7 +504,7 @@ public sealed class GivenAGraphService : IDisposable
     public async Task when_delete_item_returns_server_error_then_result_is_error()
     {
         SetupDriveContext(AnyDriveId, "root-001");
-        _server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingDelete())
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingDelete())
             .RespondWith(Response.Create()
                 .WithStatusCode(500)
                 .WithHeader("Content-Type", "application/json")
@@ -513,12 +517,12 @@ public sealed class GivenAGraphService : IDisposable
 
     private void SetupDriveContext(string driveId, string rootId)
     {
-        _server.Given(Request.Create().WithPath("/me/drive").UsingGet())
+        server.Given(Request.Create().WithPath("/me/drive").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { id = driveId }));
-        _server.Given(Request.Create().WithPath($"/drives/{driveId}/root").UsingGet())
+        server.Given(Request.Create().WithPath($"/drives/{driveId}/root").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
