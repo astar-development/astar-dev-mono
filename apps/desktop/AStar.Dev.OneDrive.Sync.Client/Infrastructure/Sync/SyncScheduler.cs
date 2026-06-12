@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -34,7 +35,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public event EventHandler<string>? SyncCompleted;
 
     /// <inheritdoc />
-    public void StartSync(TimeSpan? interval = null)
+    public Result<Unit, string> StartSync(TimeSpan? interval = null)
     {
         this.interval = interval ?? DefaultInterval;
         timer?.Dispose();
@@ -42,11 +43,14 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         try
         {
             timer = new Timer(OnTimerTickAsync, state: null, dueTime: this.interval, period: this.interval);
+
+            return new Result<Unit, string>.Ok(Unit.Default);
         }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.Message, ex);
-            throw;
+
+            return new Result<Unit, string>.Error(ex.Message);
         }
     }
 

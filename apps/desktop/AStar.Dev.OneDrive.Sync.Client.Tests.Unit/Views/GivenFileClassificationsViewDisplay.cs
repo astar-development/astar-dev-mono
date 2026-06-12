@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using System.IO.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -16,7 +17,7 @@ public sealed class GivenFileClassificationsViewDisplay
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
 
-        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization);
+        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
     }
 
     private static FileClassificationsView CreateViewWithViewModel(FileClassificationRulesViewModel viewModel)
