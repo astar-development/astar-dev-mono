@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Http;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
@@ -25,9 +26,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
-    private const int MaxRetries = 5;
-    private const double BaseDelaySeconds = 2.0;
-    private const double MaxDelaySeconds = 120.0;
     private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
 
     /// <summary>
@@ -155,11 +153,11 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    if (attempt > MaxRetries)
-                        return new Result<string?, string>.Error($"Upload rate limited after {MaxRetries} retries.");
+                    if (attempt > HttpRetryPolicy.MaxRetries)
+                        return new Result<string?, string>.Error($"Upload rate limited after {HttpRetryPolicy.MaxRetries} retries.");
 
-                    var delay = GetRetryDelay(response, attempt);
-                    OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                    var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
+                    OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
                     await Task.Delay(delay, ct);
                     continue;
@@ -175,10 +173,10 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
                 return new Result<string?, string>.Ok(null);
             }
-            catch (HttpRequestException) when (attempt <= MaxRetries)
+            catch (HttpRequestException) when (attempt <= HttpRetryPolicy.MaxRetries)
             {
-                var delay = GetBackoffDelay(attempt);
-                OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
+                OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
                 await Task.Delay(delay, ct);
             }
@@ -197,28 +195,5 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             return new Result<string?, string>.Error("Upload response missing item ID.");
 
         return new Result<string?, string>.Ok(itemId);
-    }
-
-    private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
-    {
-        if (response.Headers.RetryAfter?.Delta is { } delta)
-            return delta + TimeSpan.FromSeconds(1);
-
-        if (response.Headers.RetryAfter?.Date is { } date)
-        {
-            var wait = date - DateTimeOffset.UtcNow;
-            if (wait > TimeSpan.Zero)
-                return wait + TimeSpan.FromSeconds(1);
-        }
-
-        return GetBackoffDelay(attempt);
-    }
-
-    private static TimeSpan GetBackoffDelay(int attempt)
-    {
-        double seconds = Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
-        double jitter = seconds * 0.2 * Random.Shared.NextDouble();
-
-        return TimeSpan.FromSeconds(seconds + jitter);
     }
 }
