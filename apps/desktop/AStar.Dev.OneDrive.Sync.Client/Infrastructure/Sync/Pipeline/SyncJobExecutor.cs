@@ -19,7 +19,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
         if(jobs.Count == 0)
             return;
 
-        await syncRepository.EnqueueJobsAsync(jobs).ConfigureAwait(false);
+        await syncRepository.EnqueueJobsAsync(jobs, ct).ConfigureAwait(false);
 
         var successfulJobs = new ConcurrentBag<SyncJob>();
 

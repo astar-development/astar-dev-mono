@@ -33,7 +33,7 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
 
-        await repository.EnqueueJobsAsync(new List<SyncJob>());
+        await repository.EnqueueJobsAsync(new List<SyncJob>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class GivenASyncRepository
             MinimalJob(folderId: "folder-2")
         };
 
-        await repository.EnqueueJobsAsync(jobs);
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
 
         db.SyncJobs.Count().ShouldBe(2);
     }
@@ -58,7 +58,7 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
 
-        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -74,9 +74,9 @@ public sealed class GivenASyncRepository
             MinimalJob(folderId: "folder-2", state: SyncJobState.Completed),
             MinimalJob(folderId: "folder-3", state: SyncJobState.Failed)
         };
-        await repository.EnqueueJobsAsync(jobs);
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].State.ShouldBe(SyncJobState.Queued);
@@ -97,9 +97,9 @@ public sealed class GivenASyncRepository
             SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(1) } },
             SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(2) } }
         };
-        await repository.EnqueueJobsAsync(jobs);
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"));
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(3);
         result[0].QueuedAt.ShouldBeLessThan(result[1].QueuedAt);
@@ -114,11 +114,11 @@ public sealed class GivenASyncRepository
         var jobId = Guid.NewGuid();
         var baseJob = MinimalJob();
         var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
-        await repository.EnqueueJobsAsync(new[] { job });
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress, Option.None<string>());
+            await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress, Option.None<string>(), TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -133,11 +133,11 @@ public sealed class GivenASyncRepository
         var jobId = Guid.NewGuid();
         var baseJob = MinimalJob();
         var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
-        await repository.EnqueueJobsAsync(new[] { job });
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed, Option.None<string>());
+            await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed, Option.None<string>(), TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -152,11 +152,11 @@ public sealed class GivenASyncRepository
         var jobId = Guid.NewGuid();
         var baseJob = MinimalJob();
         var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
-        await repository.EnqueueJobsAsync(new[] { job });
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.UpdateJobStateAsync(jobId, SyncJobState.Failed, "Upload failed");
+            await repository.UpdateJobStateAsync(jobId, SyncJobState.Failed, "Upload failed", TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -174,11 +174,11 @@ public sealed class GivenASyncRepository
             MinimalJob(state: SyncJobState.Queued),
             MinimalJob(state: SyncJobState.Completed)
         };
-        await repository.EnqueueJobsAsync(jobs);
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.ClearCompletedJobsAsync(new AccountId("user-1"));
+            await repository.ClearCompletedJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -192,7 +192,7 @@ public sealed class GivenASyncRepository
         var repository = new SyncRepository(factory);
         var conflict = MinimalConflict(folderId: "folder-1");
 
-        await repository.AddConflictAsync(conflict);
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
 
         var inserted = await db.SyncConflicts.FindAsync([conflict.Id], cancellationToken: TestContext.Current.CancellationToken);
         _ = inserted.ShouldNotBeNull();
@@ -207,10 +207,10 @@ public sealed class GivenASyncRepository
         var conflict1 = MinimalConflict();
         var conflict2 = MinimalConflict(state: ConflictState.Resolved);
 
-        await repository.AddConflictAsync(conflict1);
-        await repository.AddConflictAsync(conflict2);
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"));
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].State.ShouldBe(ConflictState.Pending);
@@ -225,10 +225,10 @@ public sealed class GivenASyncRepository
         var conflict1 = MinimalConflict(detectedAt: now.AddSeconds(2));
         var conflict2 = MinimalConflict(detectedAt: now.AddSeconds(1));
 
-        await repository.AddConflictAsync(conflict1);
-        await repository.AddConflictAsync(conflict2);
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"));
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         result[0].DetectedAt.ShouldBeLessThan(result[1].DetectedAt);
     }
@@ -239,11 +239,11 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var conflict = MinimalConflict();
-        await repository.AddConflictAsync(conflict);
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.Ignore);
+            await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -256,11 +256,11 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
         var conflict = MinimalConflict();
-        await repository.AddConflictAsync(conflict);
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
 
         try
         {
-            await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.LocalWins);
+            await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.LocalWins, TestContext.Current.CancellationToken);
         }
         catch(InvalidOperationException)
         {
@@ -273,7 +273,7 @@ public sealed class GivenASyncRepository
         var (_, factory) = CreateInMemoryFactory();
         var repository = new SyncRepository(factory);
 
-        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"));
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         count.ShouldBe(0);
     }
@@ -287,11 +287,11 @@ public sealed class GivenASyncRepository
         var conflict2 = MinimalConflict();
         var conflict3 = MinimalConflict(state: ConflictState.Resolved);
 
-        await repository.AddConflictAsync(conflict1);
-        await repository.AddConflictAsync(conflict2);
-        await repository.AddConflictAsync(conflict3);
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict3, TestContext.Current.CancellationToken);
 
-        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"));
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
 
         count.ShouldBe(2);
     }
@@ -306,15 +306,39 @@ public sealed class GivenASyncRepository
             MinimalJob(accountId: "user-1"),
             MinimalJob(accountId: "user-2")
         };
-        await repository.EnqueueJobsAsync(jobs);
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
 
-        var user1Jobs = await repository.GetPendingJobsAsync(new AccountId("user-1"));
-        var user2Jobs = await repository.GetPendingJobsAsync(new AccountId("user-2"));
+        var user1Jobs = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+        var user2Jobs = await repository.GetPendingJobsAsync(new AccountId("user-2"), TestContext.Current.CancellationToken);
 
         user1Jobs.Count.ShouldBe(1);
         user1Jobs[0].AccountId.Id.ShouldBe("user-1");
         user2Jobs.Count.ShouldBe(1);
         user2Jobs[0].AccountId.Id.ShouldBe("user-2");
+    }
+
+    [Fact]
+    public async Task when_enqueue_jobs_is_called_with_a_token_then_the_token_is_forwarded_to_the_context_factory()
+    {
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
+        using var cts = new CancellationTokenSource();
+
+        await repository.EnqueueJobsAsync([MinimalJob()], cts.Token);
+
+        _ = await factory.Received(1).CreateDbContextAsync(cts.Token);
+    }
+
+    [Fact]
+    public async Task when_add_conflict_is_called_with_a_token_then_the_token_is_forwarded_to_the_context_factory()
+    {
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new SyncRepository(factory);
+        using var cts = new CancellationTokenSource();
+
+        await repository.AddConflictAsync(MinimalConflict(), cts.Token);
+
+        _ = await factory.Received(1).CreateDbContextAsync(cts.Token);
     }
 
     private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory) CreateInMemoryFactory()

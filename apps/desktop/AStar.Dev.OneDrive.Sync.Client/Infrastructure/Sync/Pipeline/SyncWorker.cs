@@ -24,7 +24,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
 
             OneDriveSyncClientMessages.SyncWorkerProcessing(logger, workerId, job.GetType().Name, job.Target.RelativePath);
 
-            await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.InProgress, Option.None<string>()).ConfigureAwait(false);
+            await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.InProgress, Option.None<string>(), ct).ConfigureAwait(false);
 
             var currentJob = job;
             string? error = null;
@@ -38,26 +38,26 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
                         reason => (currentJob, false, reason)).ConfigureAwait(false);
 
                 if (success)
-                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed, Option.None<string>()).ConfigureAwait(false);
+                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed, Option.None<string>(), ct).ConfigureAwait(false);
                 else
-                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Option<string>)error!).ConfigureAwait(false);
+                    await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Option<string>)error!, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
                 OneDriveSyncClientMessages.SyncWorkerJobCancelledRequeued(logger, workerId, job.Target.LocalPath);
-                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>()).ConfigureAwait(false);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None).ConfigureAwait(false);
                 throw;
             }
             catch (SyncReAuthRequiredException)
             {
-                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>()).ConfigureAwait(false);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None).ConfigureAwait(false);
                 throw;
             }
             catch (Exception ex)
             {
                 error = ex.Message;
                 OneDriveSyncClientMessages.SyncWorkerException(logger, workerId, ex.GetType().Name, ex.Message, job.Target.LocalPath, ex);
-                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Option<string>)ex.Message).ConfigureAwait(false);
+                await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Option<string>)ex.Message, CancellationToken.None).ConfigureAwait(false);
             }
             finally
             {

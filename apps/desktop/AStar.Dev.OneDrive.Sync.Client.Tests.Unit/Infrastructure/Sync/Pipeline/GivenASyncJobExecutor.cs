@@ -79,7 +79,7 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, jobs, [], _ => { }, _ => { }, TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Is<IEnumerable<SyncJob>>(j => j.Count() == 1));
+        await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Is<IEnumerable<SyncJob>>(j => j.Count() == 1), TestContext.Current.CancellationToken);
     }
 
     [Fact]

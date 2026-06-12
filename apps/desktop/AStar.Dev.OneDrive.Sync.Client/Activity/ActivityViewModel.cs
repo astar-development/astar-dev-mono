@@ -116,7 +116,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
 
     private async Task LoadPersistedConflictsAsync(string accountId)
     {
-        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId));
+        var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId), CancellationToken.None);
 
         foreach (var entity in persistedConflicts)
         {

@@ -41,7 +41,7 @@ public sealed class GivenASyncServiceResolvingConflicts
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class GivenASyncServiceResolvingConflicts
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed class GivenASyncServiceResolvingConflicts
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class GivenASyncServiceResolvingConflicts
 
         await sut.ResolveConflictAsync(CreateConflict(), ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]

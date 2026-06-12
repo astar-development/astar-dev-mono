@@ -65,7 +65,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 tokenFactory.GetTokenAsync,
                 async conflict =>
                 {
-                    await syncRepository.AddConflictAsync(conflict).ConfigureAwait(false);
+                    await syncRepository.AddConflictAsync(conflict, ct).ConfigureAwait(false);
                     ConflictDetected?.Invoke(this, conflict);
                 },
                 args => SyncProgressChanged?.Invoke(this, args),
@@ -118,7 +118,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
-        await syncRepository.ResolveConflictAsync(conflict.Id, policy).ConfigureAwait(false);
+        await syncRepository.ResolveConflictAsync(conflict.Id, policy, ct).ConfigureAwait(false);
         ConflictResolved?.Invoke(this, conflict);
     }
 

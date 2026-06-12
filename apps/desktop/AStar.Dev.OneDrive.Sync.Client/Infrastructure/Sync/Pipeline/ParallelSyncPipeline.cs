@@ -73,7 +73,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
             OneDriveSyncClientMessages.SyncPipelineFinalProgress(logger, tracker.Done, jobList.Count);
         }
 
-        await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId));
+        await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId), ct).ConfigureAwait(false);
 
         OneDriveSyncClientMessages.SyncPipelineJobsProcessed(logger, tracker.Done, jobList.Count);
     }

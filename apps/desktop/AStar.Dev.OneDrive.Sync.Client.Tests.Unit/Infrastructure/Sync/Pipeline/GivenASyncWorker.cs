@@ -84,7 +84,7 @@ public sealed class GivenASyncWorker
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed, Option.None<string>());
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Completed, Option.None<string>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public sealed class GivenASyncWorker
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, Arg.Any<Option<string>>());
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, Arg.Any<Option<string>>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class GivenASyncWorker
         }
         catch(OperationCanceledException) { }
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>());
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
     }
 
     [Fact]
