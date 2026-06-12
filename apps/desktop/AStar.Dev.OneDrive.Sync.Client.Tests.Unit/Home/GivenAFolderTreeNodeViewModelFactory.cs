@@ -20,7 +20,7 @@ public sealed class GivenAFolderTreeNodeViewModelFactory
     {
         var sut = CreateSut();
 
-        var viewModel = sut.Create(BuildNode(), TokenFactory, new DriveId("drive-1"));
+        var viewModel = sut.Create(BuildNode(), TokenFactory, new DriveId("drive-1"), _ => null);
 
         viewModel.Id.ShouldBe("folder-1");
         viewModel.Name.ShouldBe("Documents");
@@ -33,7 +33,7 @@ public sealed class GivenAFolderTreeNodeViewModelFactory
     {
         var sut = CreateSut();
 
-        var viewModel = sut.Create(BuildNode(), TokenFactory, new DriveId("drive-1"));
+        var viewModel = sut.Create(BuildNode(), TokenFactory, new DriveId("drive-1"), _ => null);
 
         viewModel.Depth.ShouldBe(0);
     }

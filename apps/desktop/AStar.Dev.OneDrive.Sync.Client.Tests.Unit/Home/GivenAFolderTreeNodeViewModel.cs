@@ -350,6 +350,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState:   syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
+        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), _ => null, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
     }
 }
