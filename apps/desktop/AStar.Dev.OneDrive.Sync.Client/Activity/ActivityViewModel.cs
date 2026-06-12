@@ -17,7 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
 public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
-    private const int MaxLogSize = 10_000;
+    private const int MaxLogSize = 500;
     private string? activeAccountId;
     private string activeAccountEmail = string.Empty;
 
@@ -118,7 +118,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     {
         var persistedConflicts = await syncRepository.GetPendingConflictsAsync(new AccountId(accountId));
 
-        foreach(var entity in persistedConflicts)
+        foreach (var entity in persistedConflicts)
         {
             var model = MapConflictEntityToViewModel(entity);
             AddConflict(model);
@@ -128,10 +128,10 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     private static SyncConflict MapConflictEntityToViewModel(SyncConflictEntity entity)
         => new()
         {
-            Id         = entity.Id,
-            Remote     = RemoteItemRefFactory.Create(entity.AccountId, entity.FolderId, entity.RemoteItemId),
-            Target     = SyncFileTargetFactory.Create(entity.LocalPath, entity.RelativePath),
-            Snapshot   = ConflictSnapshotFactory.Create(entity.LocalModified, entity.LocalSize, entity.RemoteModified, entity.RemoteSize),
+            Id = entity.Id,
+            Remote = RemoteItemRefFactory.Create(entity.AccountId, entity.FolderId, entity.RemoteItemId),
+            Target = SyncFileTargetFactory.Create(entity.LocalPath, entity.RelativePath),
+            Snapshot = ConflictSnapshotFactory.Create(entity.LocalModified, entity.LocalSize, entity.RemoteModified, entity.RemoteSize),
             DetectedAt = entity.DetectedAt
         };
 
@@ -140,7 +140,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
                                                                     {
                                                                         LogItems.Insert(0, item);
 
-                                                                        while(LogItems.Count > MaxLogSize)
+                                                                        while (LogItems.Count > MaxLogSize)
                                                                             LogItems.RemoveAt(LogItems.Count - 1);
 
                                                                         LogItemCount = LogItems.Count;
@@ -150,7 +150,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     /// <summary>Called when a new conflict is detected.</summary>
     public void AddConflictItem(SyncConflict conflict) => dispatcher.Post(() =>
                                                                {
-                                                                   if(Conflicts.Any(c => c.Id == conflict.Id))
+                                                                   if (Conflicts.Any(c => c.Id == conflict.Id))
                                                                        return;
                                                                    AddConflict(conflict);
                                                                    ConflictCount = Conflicts.Count;
@@ -175,7 +175,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
     {
-        if(args.Total != 0 || string.IsNullOrEmpty(args.CurrentFile))
+        if (args.Total != 0 || string.IsNullOrEmpty(args.CurrentFile))
             return;
 
         var item = activityItemViewModelFactory.CreateInfo(args.AccountId, args.CurrentFile);
@@ -208,10 +208,10 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
         var query = LogItems
             .Where(i => activeAccountId is null || i.AccountId == activeAccountId);
 
-        if(ActiveFilter.HasValue)
+        if (ActiveFilter.HasValue)
             query = query.Where(i => i.Type == ActiveFilter.Value);
 
-        foreach(var item in query)
+        foreach (var item in query)
             FilteredLog.Add(item);
 
         LogItemCount = FilteredLog.Count;
