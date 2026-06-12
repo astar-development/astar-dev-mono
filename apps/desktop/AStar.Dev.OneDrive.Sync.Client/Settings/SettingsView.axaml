@@ -11,6 +11,7 @@
     <Grid RowDefinitions="*">
         <ScrollViewer Grid.Row="0"
                       VerticalScrollBarVisibility="Auto"
+                      MinHeight="0"
                       Padding="24,20">
         <StackPanel Spacing="24" MaxWidth="640">
 

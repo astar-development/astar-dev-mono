@@ -160,9 +160,9 @@
                     Background="{DynamicResource BackgroundAccountPanelBrush}"
                     BorderThickness="0,0,1,0"
                     BorderBrush="{DynamicResource BorderSubtleBrush}">
-                <DockPanel LastChildFill="True">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-                    <Border DockPanel.Dock="Top"
+                    <Border Grid.Row="0"
                             Height="{StaticResource IconRailWidth}"
                             Padding="12,0">
                         <TextBlock Text="{Binding AccountsPanelHeading}"
@@ -173,39 +173,14 @@
                                    LetterSpacing="0.8"/>
                     </Border>
 
-                    <Rectangle DockPanel.Dock="Top"
+                    <Rectangle Grid.Row="1"
                                Height="1"
                                Fill="{DynamicResource BorderSubtleBrush}"/>
 
-                    <Border DockPanel.Dock="Bottom"
-                            BorderThickness="0,1,0,0"
-                            BorderBrush="{DynamicResource BorderSubtleBrush}"
-                            Padding="8">
-                        <Button HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Center"
-                                Padding="0,6"
-                                CornerRadius="{StaticResource RadiusMd}"
-                                Background="Transparent"
-                                BorderBrush="{DynamicResource BorderDefaultBrush}"
-                                BorderThickness="1"
-                                Command="{Binding AddAccountCommand}"
-                                Cursor="Hand">
-                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                <TextBlock Text="+"
-                                           FontSize="{StaticResource FontSizeLg}"
-                                           Foreground="{DynamicResource TextAccentBrush}"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding AddAccountText}"
-                                           FontSize="{StaticResource FontSizeSm}"
-                                           Foreground="{DynamicResource TextAccentBrush}"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Button>
-                    </Border>
-
-                    <ScrollViewer DockPanel.Dock="Top"
-                                VerticalScrollBarVisibility="Auto"
-                                HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer Grid.Row="2"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MinHeight="0">
                         <StackPanel Margin="0,4">
 
                             <!-- Empty state -->
@@ -278,7 +253,33 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                </DockPanel>
+                    <Border Grid.Row="3"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            Padding="8">
+                        <Button HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                Padding="0,6"
+                                CornerRadius="{StaticResource RadiusMd}"
+                                Background="Transparent"
+                                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                BorderThickness="1"
+                                Command="{Binding AddAccountCommand}"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="+"
+                                           FontSize="{StaticResource FontSizeLg}"
+                                           Foreground="{DynamicResource TextAccentBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding AddAccountText}"
+                                           FontSize="{StaticResource FontSizeSm}"
+                                           Foreground="{DynamicResource TextAccentBrush}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+
+                </Grid>
             </Border>
 
             <!-- Column 2 — Main content area -->

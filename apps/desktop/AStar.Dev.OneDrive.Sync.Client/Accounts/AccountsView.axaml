@@ -4,7 +4,9 @@
              xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
              xmlns:onboarding="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Onboarding"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsView"
-             x:DataType="vmHome:MainWindowViewModel">
+             x:DataType="vmHome:MainWindowViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch">
 
     <Grid RowDefinitions="*">
 
@@ -59,7 +61,8 @@
         <ScrollViewer Grid.Row="0"
                       IsVisible="{Binding Accounts.HasAccounts}"
                       Padding="24"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Auto"
+                      MinHeight="0">
             <StackPanel Spacing="12">
 
                 <TextBlock Text="{Binding ConnectedAccountsText}"

@@ -3,7 +3,9 @@
              xmlns:accounts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Accounts"
              xmlns:home="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Home"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Home.FilesView"
-             x:DataType="home:FilesViewModel">
+             x:DataType="home:FilesViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch">
 
     <Grid RowDefinitions="Auto,*">
 
@@ -123,6 +125,7 @@
                             <ScrollViewer IsVisible="{Binding !IsLoading}"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
+                                          MinHeight="0"
                                           Padding="12,8">
                                 <ItemsControl ItemsSource="{Binding RootFolders}">
                                     <ItemsControl.ItemTemplate>
