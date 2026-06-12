@@ -9,5 +9,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 public sealed class FolderTreeNodeViewModelFactory(IGraphService graphService, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService) : IFolderTreeNodeViewModelFactory
 {
     /// <inheritdoc />
-    public FolderTreeNodeViewModel Create(FolderTreeNode node, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId) => new(node, graphService, tokenFactory, driveId, logger, localizationService);
+    public FolderTreeNodeViewModel Create(FolderTreeNode node, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver) => new(node, graphService, tokenFactory, driveId, ruleStateResolver, logger, localizationService);
 }

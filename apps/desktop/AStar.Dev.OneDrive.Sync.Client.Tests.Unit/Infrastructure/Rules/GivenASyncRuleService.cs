@@ -119,41 +119,6 @@ public sealed class GivenASyncRuleService
         callOrder[1].ShouldBe("upsert");
     }
 
-    [Fact]
-    public async Task when_getting_included_rules_then_returns_rules_for_account()
-    {
-        var repo = Substitute.For<ISyncRuleRepository>();
-        repo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([
-                new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = ParentPath, RuleType = RuleType.Include }
-            ]);
-
-        var sut = BuildSut(repo);
-        var accountId = new AccountId(AccountIdString);
-
-        var result = await sut.GetIncludedPathsAsync(accountId, CancellationToken.None);
-
-        result.ShouldContain(ParentPath);
-    }
-
-    [Fact]
-    public async Task when_getting_included_rules_then_exclude_rules_are_not_returned()
-    {
-        var repo = Substitute.For<ISyncRuleRepository>();
-        repo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns([
-                new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = ParentPath, RuleType = RuleType.Include },
-                new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = ChildPath, RuleType = RuleType.Exclude }
-            ]);
-
-        var sut = BuildSut(repo);
-        var accountId = new AccountId(AccountIdString);
-
-        var result = await sut.GetIncludedPathsAsync(accountId, CancellationToken.None);
-
-        result.ShouldNotContain(ChildPath);
-    }
-
     private static SyncRuleService BuildSut(ISyncRuleRepository repo)
         => new(repo, Substitute.For<ILogger<SyncRuleService>>());
 }

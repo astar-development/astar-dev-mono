@@ -6,5 +6,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Home;
 public interface IFolderTreeNodeViewModelFactory
 {
     /// <summary>Creates a root tree node view model for the supplied folder node.</summary>
-    FolderTreeNodeViewModel Create(FolderTreeNode node, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId);
+    FolderTreeNodeViewModel Create(FolderTreeNode node, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver);
 }

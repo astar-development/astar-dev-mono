@@ -28,10 +28,10 @@ public sealed class SyncRuleService(ISyncRuleRepository syncRuleRepository, ILog
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlySet<string>> GetIncludedPathsAsync(AccountId accountId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyDictionary<string, RuleType>> GetRuleStatesAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken);
 
-        return rules.Where(rule => rule.RuleType == RuleType.Include).Select(rule => rule.RemotePath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return rules.ToDictionary(rule => rule.RemotePath, rule => rule.RuleType, StringComparer.OrdinalIgnoreCase);
     }
 }

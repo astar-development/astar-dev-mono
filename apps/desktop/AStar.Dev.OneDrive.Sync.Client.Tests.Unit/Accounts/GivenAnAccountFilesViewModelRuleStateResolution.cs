@@ -84,6 +84,26 @@ public sealed class GivenAnAccountFilesViewModelRuleStateResolution
         sut.RootFolders[0].Children[0].SyncState.ShouldBe(FolderSyncState.Included);
     }
 
+    [Fact]
+    public async Task when_parent_is_toggled_excluded_then_previously_included_child_is_excluded_when_expanded()
+    {
+        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([
+                new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{RootFolderName}", RuleType = RuleType.Include },
+                new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{RootFolderName}/{ChildFolderName}", RuleType = RuleType.Include }
+            ]);
+
+        var mocks = BuildMocksWithChild();
+        var sut = BuildSut(mocks, syncRuleRepo);
+
+        await sut.LoadCommand.ExecuteAsync(null);
+        sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
+        await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
+
+        sut.RootFolders[0].Children[0].SyncState.ShouldBe(FolderSyncState.Excluded);
+    }
+
     private static (IAuthService Auth, IGraphService Graph) BuildMocks()
     {
         var authService  = Substitute.For<IAuthService>();
