@@ -18,9 +18,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository, ILogger<SyncScheduler> logger) : IAsyncDisposable, ISyncScheduler
 {
     private readonly ConcurrentDictionary<string, CancellationTokenSource> activeSyncs = new();
+    private readonly SemaphoreSlim fullPassSemaphore = new(1, 1);
     private Timer? timer;
     private TimeSpan interval = TimeSpan.FromMinutes(60);
-    private long runningFlag;
 
     /// <summary>
     /// Default interval for scheduled sync passes. Can be overridden by providing a different interval to StartSync or SetInterval.
@@ -63,7 +63,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
-        if (SyncIsAlreadyRunning())
+        if (!activeSyncs.IsEmpty)
             return;
 
         await RunSyncPassAsync(ct);
@@ -124,7 +124,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     // ReSharper disable once AsyncVoidMethod - Timer requires this signature
     private async void OnTimerTickAsync(object? state)
     {
-        if (SyncIsAlreadyRunning())
+        if (!activeSyncs.IsEmpty)
             return;
 
         try
@@ -136,8 +136,6 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             OneDriveSyncClientMessages.SyncSchedulerTimerError(logger, ex.Message, ex);
         }
     }
-
-    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref runningFlag) == 1 || !activeSyncs.IsEmpty;
 
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {
@@ -152,7 +150,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        if (Interlocked.Exchange(ref runningFlag, 1) == 1)
+        if (!fullPassSemaphore.Wait(0, CancellationToken.None))
             return;
 
         try
@@ -188,7 +186,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         finally
         {
-            Interlocked.Exchange(ref runningFlag, 0);
+            fullPassSemaphore.Release();
         }
     }
 
@@ -204,5 +202,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         if (timer is not null)
             await timer.DisposeAsync();
+
+        fullPassSemaphore.Dispose();
     }
 }

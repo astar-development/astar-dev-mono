@@ -538,6 +538,36 @@ public sealed class GivenASyncScheduler
         await manualSync;
     }
 
+    [Fact]
+    public async Task when_trigger_now_called_concurrently_then_second_full_pass_is_skipped()
+    {
+        var firstPassStarted = new TaskCompletionSource();
+        var firstPassRelease = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                firstPassStarted.TrySetResult();
+                await firstPassRelease.Task;
+            });
+
+        var mockRepository = Substitute.For<IAccountRepository>();
+        mockRepository.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new AccountEntity { Id = new AccountId("pass-account"), Profile = AccountProfileFactory.Create("Test", "test@test.com") }]);
+
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        var firstPass = scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+        await firstPassStarted.Task;
+
+        await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        await mockRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
+
+        firstPassRelease.SetResult();
+        await firstPass;
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
