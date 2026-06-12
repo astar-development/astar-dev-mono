@@ -5,7 +5,9 @@
              xmlns:activity="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Activity"
              xmlns:conflicts="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Conflicts"
              x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.ActivityView"
-             x:DataType="activity:ActivityViewModel">
+             x:DataType="activity:ActivityViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch">
 
     <Grid RowDefinitions="Auto,*">
 
@@ -142,7 +144,8 @@
 
                 <!-- Log list -->
                 <ScrollViewer IsVisible="{Binding HasLogItems}"
-                              VerticalScrollBarVisibility="Auto">
+                              VerticalScrollBarVisibility="Auto"
+                              MinHeight="0">
                     <ItemsControl ItemsSource="{Binding FilteredLog}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="activity:ActivityItemViewModel">
@@ -225,7 +228,8 @@
 
                 <!-- Conflict list -->
                 <ScrollViewer IsVisible="{Binding HasConflicts}"
-                              VerticalScrollBarVisibility="Auto">
+                              VerticalScrollBarVisibility="Auto"
+                              MinHeight="0">
                     <ItemsControl ItemsSource="{Binding Conflicts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="conflicts:ConflictItemViewModel">

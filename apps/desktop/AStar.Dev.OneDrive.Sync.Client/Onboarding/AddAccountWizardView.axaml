@@ -113,27 +113,32 @@
                     CornerRadius="{StaticResource RadiusMd}"
                     MaxHeight="200"
                     IsVisible="{Binding !IsLoadingFolders}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Folders}"
-                                  Margin="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="onboarding:WizardFolderItem">
-                                <Grid ColumnDefinitions="Auto,*"
-                                      Margin="8,4">
-                                    <CheckBox Grid.Column="0"
-                                              IsChecked="{Binding IsSelected}"
-                                              VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding Name}"
-                                               FontSize="{StaticResource FontSizeMd}"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0,0,0"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                <Grid RowDefinitions="*">
+                    <ScrollViewer Grid.Row="0"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MinHeight="0">
+                        <ItemsControl ItemsSource="{Binding Folders}"
+                                      Margin="4">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="onboarding:WizardFolderItem">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          Margin="8,4">
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding IsSelected}"
+                                                  VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Name}"
+                                                   FontSize="{StaticResource FontSizeMd}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="8,0,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
             </Border>
 
             <Button HorizontalAlignment="Left"

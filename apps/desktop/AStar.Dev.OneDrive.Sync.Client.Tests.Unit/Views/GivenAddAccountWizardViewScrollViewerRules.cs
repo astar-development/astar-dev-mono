@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
-using Avalonia.VisualTree;
+using Avalonia.LogicalTree;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
@@ -13,9 +13,9 @@ public sealed class GivenAddAccountWizardViewScrollViewerRules
     {
         var sut = new AddAccountWizardView();
 
-        var stackPanelHostedScrollViewer = sut.GetVisualDescendants()
+        var stackPanelHostedScrollViewer = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .FirstOrDefault(sv => sv.GetVisualParent() is StackPanel || sv.GetVisualParent()?.GetVisualParent() is StackPanel);
+            .FirstOrDefault(sv => sv.GetLogicalParent() is StackPanel || sv.GetLogicalParent()?.GetLogicalParent() is StackPanel);
 
         stackPanelHostedScrollViewer.ShouldBeNull("folder-list ScrollViewer must not be hosted inside a StackPanel (unbounded height)");
     }
@@ -25,7 +25,7 @@ public sealed class GivenAddAccountWizardViewScrollViewerRules
     {
         var sut = new AddAccountWizardView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
             .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
@@ -39,12 +39,12 @@ public sealed class GivenAddAccountWizardViewScrollViewerRules
     {
         var sut = new AddAccountWizardView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
             .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
-        scrollViewers.ShouldAllBe(sv => sv.GetVisualParent() is Grid, "folder-list ScrollViewer must be a direct child of a Grid, not a Border inside a StackPanel");
+        scrollViewers.ShouldAllBe(sv => sv.GetLogicalParent() is Grid, "folder-list ScrollViewer must be a direct child of a Grid, not a Border inside a StackPanel");
     }
 }

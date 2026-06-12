@@ -1,5 +1,7 @@
 using Avalonia.Controls;
-using Avalonia.VisualTree;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless.XUnit;
+using Avalonia.LogicalTree;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
@@ -14,9 +16,9 @@ public sealed class GivenScrollViewerMinHeightRules
     {
         var sut = new AccountsView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
@@ -28,9 +30,9 @@ public sealed class GivenScrollViewerMinHeightRules
     {
         var sut = new ActivityView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
@@ -42,9 +44,9 @@ public sealed class GivenScrollViewerMinHeightRules
     {
         var sut = new ActivityView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.Count.ShouldBeGreaterThanOrEqualTo(2, "ActivityView must have at least two vertically-scrollable ScrollViewers (log list and conflict list)");
@@ -56,9 +58,9 @@ public sealed class GivenScrollViewerMinHeightRules
     {
         var sut = new DashboardView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
@@ -69,10 +71,12 @@ public sealed class GivenScrollViewerMinHeightRules
     public void when_files_view_folder_tree_scroll_viewer_is_inspected_then_min_height_is_zero()
     {
         var sut = new FilesView();
+        var activeTabTemplate = sut.GetLogicalDescendants().OfType<ContentControl>().SelectMany(contentControl => contentControl.DataTemplates).Single();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var activeTabContent = activeTabTemplate.Build(null);
+        var scrollViewers = activeTabContent!.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
@@ -84,9 +88,9 @@ public sealed class GivenScrollViewerMinHeightRules
     {
         var sut = new SettingsView();
 
-        var scrollViewers = sut.GetVisualDescendants()
+        var scrollViewers = sut.GetLogicalDescendants()
             .OfType<ScrollViewer>()
-            .Where(sv => sv.VerticalScrollBarVisibility == Avalonia.Controls.Primitives.ScrollBarVisibility.Auto)
+            .Where(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto)
             .ToList();
 
         scrollViewers.ShouldNotBeEmpty();
