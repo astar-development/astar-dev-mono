@@ -15,6 +15,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     private readonly IGraphService graphService;
     private readonly Func<CancellationToken, Task<string>> tokenFactory;
     private readonly DriveId driveId;
+    private readonly Func<string, FolderSyncState?> ruleStateResolver;
     private readonly ILogger<FolderTreeNodeViewModel> logger;
     private readonly ILocalizationService loc;
     private bool childrenLoaded;
@@ -68,7 +69,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
     {
         Id = node.Id;
         Name = node.Name;
@@ -80,6 +81,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         this.graphService = graphService;
         this.tokenFactory = tokenFactory;
         this.driveId = driveId;
+        this.ruleStateResolver = ruleStateResolver;
         this.logger = logger;
         loc = localizationService;
         loc.CultureChanged += OnCultureChanged;
@@ -185,7 +187,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, graphService, tokenFactory, driveId, logger, loc, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, graphService, tokenFactory, driveId, ruleStateResolver, logger, loc, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
@@ -195,5 +197,9 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     }
 
     private FolderTreeNode MapDriveFolderToChildNode(DriveFolder f, string childRemotePath)
-        => new(f.Id, f.Name, f.ParentId, AccountId: string.Empty, RemotePath: childRemotePath, SyncState, HasChildren: true);
+    {
+        var resolvedState = ruleStateResolver(childRemotePath) ?? SyncState;
+
+        return new(f.Id, f.Name, f.ParentId, AccountId: string.Empty, RemotePath: childRemotePath, resolvedState, HasChildren: true);
+    }
 }

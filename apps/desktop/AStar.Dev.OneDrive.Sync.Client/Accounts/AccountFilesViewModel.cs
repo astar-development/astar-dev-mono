@@ -24,6 +24,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 {
     private string? accessToken;
     private Option<DriveId> driveIdOption = DriveIdFactory.Empty;
+    private readonly Dictionary<string, RuleType> ruleStates = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The unique identifier for the account.</summary>
     public string AccountId => account.Id.Id;
@@ -104,8 +105,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             driveIdOption = new Option<DriveId>.Some(driveId.Value);
 
-            var includedPaths = await syncRuleService.GetIncludedPathsAsync(account.Id, CancellationToken.None);
-            await BuildRootFoldersAsync(includedPaths);
+            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, CancellationToken.None);
+            ruleStates.Clear();
+            foreach (var (path, ruleType) in loadedRuleStates)
+                ruleStates[path] = ruleType;
+
+            await BuildRootFoldersAsync();
         }
         catch (Exception ex)
         {
@@ -118,7 +123,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    private async Task BuildRootFoldersAsync(IReadOnlySet<string> includedPaths)
+    private async Task BuildRootFoldersAsync()
     {
         var folders = await graphService.GetRootFoldersAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty))
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
@@ -150,12 +155,10 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         foreach (var f in folders)
         {
             string remotePath = $"/{f.Name}";
-            var syncState = includedPaths.Contains(remotePath)
-                ? FolderSyncState.Included
-                : FolderSyncState.Excluded;
+            var syncState = ResolveRuleState(remotePath) ?? FolderSyncState.Excluded;
 
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value);
+            var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value, ResolveRuleState);
 
             vm.IncludeToggled += OnIncludeToggledAsync;
             vm.ViewActivityRequested += OnViewActivityRequested;
@@ -164,6 +167,20 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             RootFolders.Add(vm);
         }
     }
+
+    private FolderSyncState? ResolveRuleState(string remotePath)
+    {
+        if (!ruleStates.TryGetValue(remotePath, out var ruleType))
+            return null;
+
+        return ToFolderSyncState(ruleType);
+    }
+
+    private static FolderSyncState ToFolderSyncState(RuleType ruleType) => ruleType switch
+    {
+        RuleType.Include => FolderSyncState.Included,
+        _                => FolderSyncState.Excluded
+    };
 
     private async void OnIncludeToggledAsync(object? sender, FolderTreeNodeViewModel node)
     {
@@ -177,6 +194,13 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
             int includedCount = await syncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
+
+            var childPrefix = node.RemotePath + "/";
+            foreach (var key in ruleStates.Keys.Where(k => k.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
+                ruleStates.Remove(key);
+
+            foreach (var (path, _) in ruleNodes)
+                ruleStates[path] = ruleType;
 
             FolderCountChanged?.Invoke(this, includedCount);
         }

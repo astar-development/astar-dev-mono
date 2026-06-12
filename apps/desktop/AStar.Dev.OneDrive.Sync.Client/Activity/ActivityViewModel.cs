@@ -17,7 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Activity;
 
 public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
-    private const int MaxLogSize = 500;
+    private const int MaxLogSize = 100;
     private string? activeAccountId;
     private string activeAccountEmail = string.Empty;
 
