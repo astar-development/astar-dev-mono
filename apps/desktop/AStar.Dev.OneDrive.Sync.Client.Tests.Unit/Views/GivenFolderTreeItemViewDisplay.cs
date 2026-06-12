@@ -10,11 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
-/// <summary>
-/// Option 2: Logical Tree Content Tests for FolderTreeItemView.
-/// Instantiate the view with a FolderTreeNodeViewModel, inspect the logical tree
-/// for specific elements, visibility states, and control hierarchy.
-/// </summary>
 public sealed class GivenFolderTreeItemViewDisplay
 {
     private static FolderTreeItemView CreateViewWithViewModel(FolderTreeNodeViewModel viewModel)
@@ -32,8 +27,8 @@ public sealed class GivenFolderTreeItemViewDisplay
         FolderSyncState syncState)
     {
         var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal(Arg.Any<string>()).Returns("Label");
-        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns("Label");
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
 
         var logger = Substitute.For<ILogger<FolderTreeNodeViewModel>>();
         var graphService = Substitute.For<IGraphService>();
@@ -247,5 +242,117 @@ public sealed class GivenFolderTreeItemViewDisplay
         viewModel.IsLoadingChildren = true;
 
         viewModel.IsLoadingChildren.ShouldBeTrue("IsLoadingChildren property should be settable");
+    }
+
+    [AvaloniaFact]
+    public void when_folder_is_loading_children_then_progress_bar_is_visible()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, true, FolderSyncState.Included);
+        viewModel.IsLoadingChildren = true;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var progressBar = sut.GetLogicalDescendants().OfType<ProgressBar>().FirstOrDefault();
+        progressBar.ShouldNotBeNull();
+        progressBar.IsVisible.ShouldBeTrue("Loading indicator should be visible while children are loading");
+    }
+
+    [AvaloniaFact]
+    public void when_folder_is_not_loading_children_then_progress_bar_is_hidden()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, true, FolderSyncState.Included);
+        viewModel.IsLoadingChildren = false;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var progressBar = sut.GetLogicalDescendants().OfType<ProgressBar>().FirstOrDefault();
+        progressBar.ShouldNotBeNull();
+        progressBar.IsVisible.ShouldBeFalse("Loading indicator should be hidden when no children are loading");
+    }
+
+    [AvaloniaFact]
+    public void when_folder_is_collapsed_then_children_items_control_is_hidden()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, true, FolderSyncState.Included);
+        viewModel.IsExpanded = false;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var itemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().FirstOrDefault();
+        itemsControl.ShouldNotBeNull();
+        itemsControl.IsVisible.ShouldBeFalse("Children list should be hidden when the node is collapsed");
+    }
+
+    [AvaloniaFact]
+    public void when_folder_is_expanded_then_children_items_control_is_visible_and_bound_to_children()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, true, FolderSyncState.Included);
+        viewModel.Children.Add(CreateFolderTreeNode("Child", 1, false, FolderSyncState.Included));
+        viewModel.IsExpanded = true;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var itemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().FirstOrDefault();
+        itemsControl.ShouldNotBeNull();
+        itemsControl.IsVisible.ShouldBeTrue("Children list should be visible when the node is expanded");
+        itemsControl.ItemsSource.ShouldBe(viewModel.Children);
+    }
+
+    [AvaloniaFact]
+    public void when_expansion_toggles_after_render_then_expander_glyph_updates()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, true, FolderSyncState.Included);
+        viewModel.IsExpanded = false;
+        var sut = CreateViewWithViewModel(viewModel);
+
+        viewModel.IsExpanded = true;
+
+        var expanderText = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == "▾");
+        expanderText.ShouldNotBeNull("Expander glyph should update to down arrow (▾) when expanded after render");
+    }
+
+    [AvaloniaFact]
+    public void when_sync_state_changes_after_render_then_toggle_label_updates()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, false, FolderSyncState.Included);
+        var sut = CreateViewWithViewModel(viewModel);
+        var toggleLabel = sut.GetLogicalDescendants()
+            .OfType<Button>()
+            .Where(btn => btn.BorderThickness.Top > 0)
+            .Select(btn => btn.Content)
+            .OfType<TextBlock>()
+            .First();
+        toggleLabel.Text.ShouldBe("Files.Exclude");
+
+        viewModel.SyncState = FolderSyncState.Excluded;
+
+        toggleLabel.Text.ShouldBe("Files.Include", "Toggle label should flip to Include when the folder becomes excluded");
+    }
+
+    [AvaloniaTheory]
+    [InlineData(FolderSyncState.Excluded, "Files.FolderStatus.Excluded")]
+    [InlineData(FolderSyncState.Partial, "Files.FolderStatus.Partial")]
+    [InlineData(FolderSyncState.Synced, "Files.FolderStatus.Synced")]
+    [InlineData(FolderSyncState.Conflict, "Files.FolderStatus.Conflict")]
+    [InlineData(FolderSyncState.Error, "Files.FolderStatus.Error")]
+    public void when_sync_state_is_set_then_status_badge_displays_state_text(FolderSyncState syncState, string expectedBadgeText)
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, false, syncState);
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var badgeText = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == expectedBadgeText);
+        badgeText.ShouldNotBeNull($"Status badge should display '{expectedBadgeText}' for {syncState}");
+    }
+
+    [AvaloniaFact]
+    public void when_folder_node_is_leaf_then_spacer_border_is_visible()
+    {
+        var viewModel = CreateFolderTreeNode("Test", 0, false, FolderSyncState.Included);
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var spacer = sut.GetLogicalDescendants().OfType<Border>().FirstOrDefault(b => b.Width == 24 && b.IsVisible);
+        spacer.ShouldNotBeNull("Spacer border should keep alignment when the node has no children");
     }
 }

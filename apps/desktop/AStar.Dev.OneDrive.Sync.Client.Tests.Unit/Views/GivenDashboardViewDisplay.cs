@@ -12,17 +12,11 @@ using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
-/// <summary>
-/// Logical Tree Content Tests — instantiate Views with mocked ViewModels,
-/// inspect the logical tree for specific elements, visibility states, and control hierarchy.
-/// Tests UI display behavior without rendering visuals (fast, deterministic).
-/// </summary>
 public sealed class GivenDashboardViewDisplay
 {
     private static DashboardView CreateViewWithViewModel(DashboardViewModel viewModel)
     {
         var view = new DashboardView { DataContext = viewModel };
-        // Force layout pass to ensure bindings evaluate
         view.Measure(new(1000, 800));
         view.Arrange(new(0, 0, 1000, 800));
         return view;
@@ -154,5 +148,56 @@ public sealed class GivenDashboardViewDisplay
             .ToList();
 
         grids.ShouldNotBeEmpty("Root grid with Auto (header) and Star (content) rows should be present");
+    }
+
+    [AvaloniaFact]
+    public void when_dashboard_has_no_accounts_then_account_sections_scroll_viewer_is_hidden()
+    {
+        var viewModel = CreateViewModelWithNoAccounts();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var scrollViewer = sut.GetLogicalDescendants()
+            .OfType<ScrollViewer>()
+            .FirstOrDefault(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto && sv.MinHeight == 0);
+
+        scrollViewer.ShouldNotBeNull();
+        scrollViewer.IsVisible.ShouldBeFalse("Account sections ScrollViewer should be hidden when no accounts exist");
+    }
+
+    [AvaloniaFact]
+    public void when_total_accounts_is_set_then_header_displays_account_count()
+    {
+        var viewModel = CreateViewModelWithNoAccounts();
+        viewModel.TotalAccounts = 3;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var countTextBlock = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == "3");
+        countTextBlock.ShouldNotBeNull("Header should display the total account count");
+    }
+
+    [AvaloniaFact]
+    public void when_total_folders_is_set_then_header_displays_folder_count()
+    {
+        var viewModel = CreateViewModelWithNoAccounts();
+        viewModel.TotalFolders = 42;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var countTextBlock = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == "42");
+        countTextBlock.ShouldNotBeNull("Header should display the total folder count");
+    }
+
+    [AvaloniaFact]
+    public void when_total_conflicts_is_set_then_header_displays_conflict_count()
+    {
+        var viewModel = CreateViewModelWithNoAccounts();
+        viewModel.TotalConflicts = 7;
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var countTextBlock = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == "7");
+        countTextBlock.ShouldNotBeNull("Header should display the total conflict count");
     }
 }
