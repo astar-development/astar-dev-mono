@@ -13,11 +13,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 
 public sealed class GivenAConflictApplier
 {
-    private readonly IGraphService   _graphService   = Substitute.For<IGraphService>();
-    private readonly IHttpDownloader _httpDownloader = Substitute.For<IHttpDownloader>();
-    private readonly IFileSystem     _fileSystem     = Substitute.For<IFileSystem>();
+    private readonly IGraphService   graphService   = Substitute.For<IGraphService>();
+    private readonly IHttpDownloader httpDownloader = Substitute.For<IHttpDownloader>();
+    private readonly IFileSystem     fileSystem     = Substitute.For<IFileSystem>();
 
-    private ConflictApplier CreateSut() => new(_httpDownloader, _graphService, _fileSystem, Substitute.For<ILogger<ConflictApplier>>());
+    private ConflictApplier CreateSut() => new(httpDownloader, graphService, fileSystem, Substitute.For<ILogger<ConflictApplier>>());
 
     private static SyncConflict CreateUseRemoteConflict() => new()
     {
@@ -37,9 +37,9 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_succeeds_and_download_succeeds_then_returns_true()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
-        _httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<ReactiveUnit, string>.Ok(ReactiveUnit.Default));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
@@ -51,7 +51,7 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_returns_false()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error("url-resolution-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
@@ -63,9 +63,9 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_download_fails_then_returns_false()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
-        _httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<ReactiveUnit, string>.Error("download-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
@@ -77,13 +77,13 @@ public sealed class GivenAConflictApplier
     [Fact]
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_downloader_is_not_called()
     {
-        _graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(new Result<string, string>.Error("url-resolution-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
 
-        await _httpDownloader.DidNotReceive().DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
+        await httpDownloader.DidNotReceive().DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -94,11 +94,11 @@ public sealed class GivenAConflictApplier
         mockPath.GetFileNameWithoutExtension(Arg.Any<string>()).Returns("file");
         mockPath.GetExtension(Arg.Any<string>()).Returns(".txt");
         mockPath.Combine(Arg.Any<string>(), Arg.Any<string>()).Returns("/local/path/file (local 2024-01-01 00-00).txt");
-        _fileSystem.Path.Returns(mockPath);
+        fileSystem.Path.Returns(mockPath);
 
         var mockFile = Substitute.For<IFile>();
         mockFile.Exists(Arg.Any<string>()).Returns(true);
-        _fileSystem.File.Returns(mockFile);
+        fileSystem.File.Returns(mockFile);
 
         var conflict = new SyncConflict
         {
@@ -122,11 +122,11 @@ public sealed class GivenAConflictApplier
         mockPath.GetFileNameWithoutExtension(Arg.Any<string>()).Returns("file");
         mockPath.GetExtension(Arg.Any<string>()).Returns(".txt");
         mockPath.Combine(Arg.Any<string>(), Arg.Any<string>()).Returns("/local/path/file (local 2024-01-01 00-00).txt");
-        _fileSystem.Path.Returns(mockPath);
+        fileSystem.Path.Returns(mockPath);
 
         var mockFile = Substitute.For<IFile>();
         mockFile.Exists(Arg.Any<string>()).Returns(false);
-        _fileSystem.File.Returns(mockFile);
+        fileSystem.File.Returns(mockFile);
 
         var conflict = new SyncConflict
         {
@@ -140,6 +140,33 @@ public sealed class GivenAConflictApplier
 
         result.ShouldBeTrue();
         mockFile.DidNotReceive().Move(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task when_outcome_is_keep_both_and_file_move_throws_io_exception_then_exception_propagates()
+    {
+        var mockPath = Substitute.For<IPath>();
+        mockPath.GetDirectoryName(Arg.Any<string>()).Returns("/local/path");
+        mockPath.GetFileNameWithoutExtension(Arg.Any<string>()).Returns("file");
+        mockPath.GetExtension(Arg.Any<string>()).Returns(".txt");
+        mockPath.Combine(Arg.Any<string>(), Arg.Any<string>()).Returns("/local/path/file (local 2024-01-01 00-00).txt");
+        fileSystem.Path.Returns(mockPath);
+
+        var mockFile = Substitute.For<IFile>();
+        mockFile.Exists(Arg.Any<string>()).Returns(true);
+        mockFile.When(f => f.Move(Arg.Any<string>(), Arg.Any<string>())).Throw(new IOException("disk full"));
+        fileSystem.File.Returns(mockFile);
+
+        var conflict = new SyncConflict
+        {
+            Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+            Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+            Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
+        };
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        await Should.ThrowAsync<IOException>(
+            () => CreateSut().ApplyAsync(conflict, ConflictOutcome.KeepBoth, "user-1", tokenFactory, TestContext.Current.CancellationToken));
     }
 
     [Theory]
