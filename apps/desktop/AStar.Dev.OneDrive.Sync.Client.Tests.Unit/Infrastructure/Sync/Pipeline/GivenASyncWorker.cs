@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
@@ -139,5 +140,35 @@ public sealed class GivenASyncWorker
         await CreateSut().RunAsync(channel.Reader, AccountId, tokenFactory, (_, _, _) => { }, TestContext.Current.CancellationToken);
 
         await _handler.Received(1).HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_handler_throws_sync_re_auth_required_exception_then_job_state_set_to_queued()
+    {
+        var job = MakeDownloadJob();
+        _handler.CanHandle(job).Returns(true);
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns<Task<Result<SyncJob, string>>>(_ => throw new SyncReAuthRequiredException());
+
+        try
+        {
+            await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
+        }
+        catch(SyncReAuthRequiredException) { }
+
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task when_handler_throws_sync_re_auth_required_exception_then_exception_is_rethrown()
+    {
+        var job = MakeDownloadJob();
+        _handler.CanHandle(job).Returns(true);
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns<Task<Result<SyncJob, string>>>(_ => throw new SyncReAuthRequiredException());
+
+        var act = async () => await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
+
+        await act.ShouldThrowAsync<SyncReAuthRequiredException>();
     }
 }
