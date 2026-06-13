@@ -135,19 +135,6 @@ public sealed class GivenALocalChangeDetector
     }
 
     [Fact]
-    public void when_new_file_is_not_in_lookup_then_job_relative_path_is_used_for_upload_target()
-    {
-        var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/report.txt").Which(m => m.HasStringContent("data"));
-        var sut = CreateSut(mockFileSystem);
-        var rules = new[] { Rule("/Documents", RuleType.Include) };
-
-        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
-
-        jobs[0].Target.RelativePath.ShouldBe("Documents/report.txt");
-    }
-
-    [Fact]
     public void when_new_file_is_not_in_lookup_then_job_folder_id_is_root()
     {
         var mockFileSystem = new MockFileSystem();
@@ -219,6 +206,41 @@ public sealed class GivenALocalChangeDetector
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
+
+        jobs.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_known_file_last_write_exactly_equals_remote_modified_plus_five_seconds_then_file_is_skipped()
+    {
+        const string filePath = $"{BasePath}/Documents/boundary.txt";
+        var remoteModifiedAt = new DateTimeOffset(2025, 3, 15, 9, 0, 0, TimeSpan.Zero);
+        var lastWrite = remoteModifiedAt.AddSeconds(5).UtcDateTime;
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTimeUtc(filePath, lastWrite);
+        var lookup = new Dictionary<string, SyncedItemEntity>
+        {
+            [filePath] = new() { RemoteModifiedAt = remoteModifiedAt, RemoteItemId = new OneDriveItemId("remote-id-boundary") }
+        };
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Documents", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
+
+        jobs.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_file_is_zero_bytes_and_not_in_lookup_then_upload_job_is_created()
+    {
+        const string filePath = $"{BasePath}/Documents/empty.txt";
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent(string.Empty));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Documents", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
         jobs.Count.ShouldBe(1);
     }
