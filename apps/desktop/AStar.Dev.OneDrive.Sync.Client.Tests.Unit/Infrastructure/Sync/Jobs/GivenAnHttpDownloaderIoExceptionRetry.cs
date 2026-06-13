@@ -49,10 +49,72 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
     }
 
+    [Fact]
+    public async Task when_ct_cancelled_during_io_exception_backoff_then_operation_cancelled_exception_propagates()
+    {
+        using var cts = new CancellationTokenSource();
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ =>
+            new HttpClient(new CancellingIoHandler(cts)));
+
+        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
+    }
+
+    [Fact]
+    public async Task when_io_exception_occurs_on_first_attempt_then_temp_file_deleted_before_retry()
+    {
+        int callCount = 0;
+        var mockFileSystem = new MockFileSystem();
+        var deletedPaths = new List<string>();
+
+        var spyFile = Substitute.For<System.IO.Abstractions.IFile>();
+        spyFile.Exists(Arg.Any<string>()).Returns(false);
+        spyFile.When(f => f.Delete(Arg.Any<string>()))
+            .Do(callInfo => deletedPaths.Add(callInfo.ArgAt<string>(0)));
+        spyFile.When(f => f.Move(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>()))
+            .Do(callInfo => mockFileSystem.File.Move(callInfo.ArgAt<string>(0), callInfo.ArgAt<string>(1), callInfo.ArgAt<bool>(2)));
+        spyFile.When(f => f.SetLastWriteTimeUtc(Arg.Any<string>(), Arg.Any<DateTime>()))
+            .Do(x => mockFileSystem.File.SetLastWriteTimeUtc(x.ArgAt<string>(0), x.ArgAt<DateTime>(1)));
+
+        var spyFs = Substitute.For<System.IO.Abstractions.IFileSystem>();
+        spyFs.File.Returns(spyFile);
+        spyFs.FileStream.Returns(mockFileSystem.FileStream);
+        spyFs.Directory.Returns(mockFileSystem.Directory);
+        spyFs.Path.Returns(mockFileSystem.Path);
+
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ =>
+            new HttpClient(new FakeHttpMessageHandler(_ =>
+            {
+                callCount++;
+                return callCount == 1
+                    ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new IoThrowingContent() }
+                    : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("data", Encoding.UTF8) };
+            })));
+
+        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>());
+
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        deletedPaths.ShouldContain(path => path.StartsWith(LocalPath + ".") && path.EndsWith(".download"));
+    }
+
     private sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(respond(request));
+    }
+
+    private sealed class CancellingIoHandler(CancellationTokenSource cts) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cts.Cancel();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new IoThrowingContent() });
+        }
     }
 
     private sealed class IoThrowingContent : HttpContent

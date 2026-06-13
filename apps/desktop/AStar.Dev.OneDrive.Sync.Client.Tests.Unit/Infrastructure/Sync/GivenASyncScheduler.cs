@@ -555,6 +555,50 @@ public sealed class GivenASyncScheduler
         await firstPass;
     }
 
+    [Fact]
+    public async Task when_dispose_async_called_while_account_is_syncing_then_sync_token_is_cancelled()
+    {
+        CancellationToken capturedToken = default;
+        var syncStarted = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async callInfo =>
+            {
+                capturedToken = callInfo.ArgAt<CancellationToken>(1);
+                syncStarted.SetResult();
+                await Task.Delay(Timeout.Infinite, capturedToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            });
+
+        var scheduler = CreateScheduler(mockSyncService, Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
+        var account = new OneDriveAccount { Id = new AccountId("dispose-test") };
+
+        var triggerTask = scheduler.TriggerAccountAsync(account, TestContext.Current.CancellationToken);
+        await syncStarted.Task;
+
+        await scheduler.DisposeAsync();
+        await triggerTask;
+
+        capturedToken.IsCancellationRequested.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_trigger_now_called_with_pre_cancelled_token_then_sync_service_not_called()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        mockRepository.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new AccountEntity { Id = new AccountId("account-pre-cancel"), Profile = AccountProfileFactory.Create("Test", "test@test.com") }]);
+
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        await scheduler.TriggerNowAsync(cts.Token);
+
+        await mockSyncService.DidNotReceive().SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+    }
+
     private static ISyncRuleRepository BuildSyncRuleRepository()
     {
         var repo = Substitute.For<ISyncRuleRepository>();
