@@ -147,4 +147,24 @@ public sealed class GivenASyncRuleEvaluator
 
         result.ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_include_rule_is_root_slash_then_all_paths_are_included()
+    {
+        var rules = new[] { Rule("/", RuleType.Include) };
+
+        bool result = SyncRuleEvaluator.IsIncluded("/Documents/Reports/q1.pdf", rules);
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_path_contains_unicode_characters_and_rule_matches_then_is_included()
+    {
+        var rules = new[] { Rule("/Ärger/日本語", RuleType.Include) };
+
+        bool result = SyncRuleEvaluator.IsIncluded("/ärger/日本語/file.txt", rules);
+
+        result.ShouldBeTrue();
+    }
 }

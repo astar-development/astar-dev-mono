@@ -22,7 +22,7 @@ public static class SyncRuleEvaluator
             char afterPrefix = remotePath.Length > rule.RemotePath.Length
                 ? remotePath[rule.RemotePath.Length]
                 : (char)0;
-            if(remotePath.Length > rule.RemotePath.Length && afterPrefix != '/')
+            if(rule.RemotePath != "/" && remotePath.Length > rule.RemotePath.Length && afterPrefix != '/')
                 continue;
 
             if(match is null || rule.RemotePath.Length > match.RemotePath.Length)
