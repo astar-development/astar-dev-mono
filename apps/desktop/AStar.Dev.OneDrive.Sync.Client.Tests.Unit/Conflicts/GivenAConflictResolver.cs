@@ -137,6 +137,17 @@ public sealed class GivenAConflictResolver
     }
 
     [Fact]
+    public void when_resolving_with_unknown_policy_then_skip_is_returned()
+    {
+        var localModified = DateTimeOffset.UtcNow;
+        var remoteModified = DateTimeOffset.UtcNow.AddMinutes(-5);
+
+        var outcome = ConflictResolver.Resolve((ConflictPolicy)999, localModified, remoteModified);
+
+        outcome.ShouldBe(ConflictOutcome.Skip);
+    }
+
+    [Fact]
     public void when_making_keep_both_name_then_valid_filename_is_generated()
     {
         string localPath = "/home/jason/Documents/report.docx";
@@ -213,5 +224,15 @@ public sealed class GivenAConflictResolver
         string? resultDir = Path.GetDirectoryName(result);
         string? originalDir = Path.GetDirectoryName(localPath);
         resultDir.ShouldBe(originalDir);
+    }
+
+    [Fact]
+    public void when_making_keep_both_name_with_empty_local_path_then_result_is_not_null()
+    {
+        var localModified = DateTimeOffset.UtcNow;
+
+        string result = ConflictResolver.MakeKeepBothName(string.Empty, localModified, mockFileSystem);
+
+        result.ShouldNotBeNull();
     }
 }
