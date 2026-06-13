@@ -106,4 +106,30 @@ public sealed class GivenALocalDeletionDetector
 
         await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-ok"), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task when_cancellation_requested_mid_loop_then_remaining_items_not_deleted()
+    {
+        using var cts = new CancellationTokenSource();
+        var mockFileSystem = new MockFileSystem();
+
+        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-first"), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                cts.Cancel();
+                return new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default);
+            });
+
+        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        {
+            ["item-first"]  = new() { RemoteItemId = new OneDriveItemId("item-first"),  RemotePath = "/first.txt",  LocalPath = $"{BaseDir}/first.txt",  IsFolder = false },
+            ["item-second"] = new() { RemoteItemId = new OneDriveItemId("item-second"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false }
+        };
+        var sut = CreateSut(mockFileSystem);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, cts.Token);
+
+        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-second"), Arg.Any<CancellationToken>());
+    }
 }

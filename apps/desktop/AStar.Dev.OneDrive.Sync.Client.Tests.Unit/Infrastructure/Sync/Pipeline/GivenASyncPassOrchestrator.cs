@@ -331,8 +331,6 @@ public sealed class GivenASyncPassOrchestrator
         capturedPath.ShouldBe("/my/local/path");
     }
 
-    // --- enumeration progress throttle ---
-
     [Fact]
     public async Task when_enumeration_fires_99_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
     {
@@ -391,5 +389,44 @@ public sealed class GivenASyncPassOrchestrator
             ct: TestContext.Current.CancellationToken);
 
         enumerationProgressEvents.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_cancellation_requested_before_enumeration_then_operation_cancelled_exception_propagates()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => Task.FromCanceled<RemoteEnumerationResult>(callInfo.ArgAt<CancellationToken>(3)));
+
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: cts.Token));
+    }
+
+    [Fact]
+    public async Task when_cancellation_requested_after_enumeration_starts_then_operation_cancelled_exception_propagates()
+    {
+        using var cts = new CancellationTokenSource();
+
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                cts.Cancel();
+                return Task.FromCanceled<RemoteEnumerationResult>(callInfo.ArgAt<CancellationToken>(3));
+            });
+
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await Should.ThrowAsync<OperationCanceledException>(
+            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: cts.Token));
     }
 }

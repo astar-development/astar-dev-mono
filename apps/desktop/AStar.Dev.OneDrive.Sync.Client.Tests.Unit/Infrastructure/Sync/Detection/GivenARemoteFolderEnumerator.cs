@@ -166,4 +166,38 @@ public sealed class GivenARemoteFolderEnumerator
         result.Rules.ShouldHaveSingleItem();
         result.Rules[0].RemotePath.ShouldBe("/Documents");
     }
+
+    [Fact]
+    public async Task when_cancellation_requested_during_rule_loop_then_partial_results_returned()
+    {
+        using var cts = new CancellationTokenSource();
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1"), IncludeRule("/Pictures", remoteItemId: "folder-2")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Is("folder-1"), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                cts.Cancel();
+                return new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt")]);
+            });
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: cts.Token);
+
+        result.DeltaItems.ShouldHaveSingleItem();
+        result.DeltaItems[0].Id.Id.ShouldBe("item-a");
+    }
+
+    [Fact]
+    public async Task when_drive_id_resolution_fails_then_result_had_no_rules_is_false()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<DriveId, string>.Error("drive-id-resolution-failed"));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        var result = await CreateSut().EnumerateAsync(CreateAccount(), tokenFactory, ct: TestContext.Current.CancellationToken);
+
+        result.HadNoRules.ShouldBeFalse();
+    }
 }
