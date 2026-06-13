@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -87,7 +88,7 @@ public sealed class GivenAParallelSyncPipeline
     [Fact]
     public async Task when_three_download_jobs_are_processed_then_on_job_completed_is_called_three_times()
     {
-        var completedEvents = new List<JobCompletedEventArgs>();
+        var completedEvents = new ConcurrentBag<JobCompletedEventArgs>();
         var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt") };
         var sut = CreateSut();
 
