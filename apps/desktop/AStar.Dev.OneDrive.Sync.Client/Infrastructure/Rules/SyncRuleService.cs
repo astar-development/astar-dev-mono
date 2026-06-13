@@ -17,12 +17,12 @@ public sealed class SyncRuleService(ISyncRuleRepository syncRuleRepository, ILog
         string ruleTypeName = ruleType.ToString();
         OneDriveSyncClientMessages.RulePersisting(logger, ruleTypeName, parentRemotePath, accountId.Id);
 
-        await syncRuleRepository.DeleteChildRulesAsync(accountId, parentRemotePath, cancellationToken);
+        await syncRuleRepository.DeleteChildRulesAsync(accountId, parentRemotePath, cancellationToken).ConfigureAwait(false);
 
         foreach (var (remotePath, remoteItemId) in nodes)
-            await syncRuleRepository.UpsertAsync(accountId, remotePath, ruleType, remoteItemId, cancellationToken);
+            await syncRuleRepository.UpsertAsync(accountId, remotePath, ruleType, remoteItemId, cancellationToken).ConfigureAwait(false);
 
-        var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken);
+        var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         return rules.Count(rule => rule.RuleType == RuleType.Include);
     }
@@ -30,7 +30,7 @@ public sealed class SyncRuleService(ISyncRuleRepository syncRuleRepository, ILog
     /// <inheritdoc />
     public async Task<IReadOnlyDictionary<string, RuleType>> GetRuleStatesAsync(AccountId accountId, CancellationToken cancellationToken)
     {
-        var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken);
+        var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         return rules.ToDictionary(rule => rule.RemotePath, rule => rule.RuleType, StringComparer.OrdinalIgnoreCase);
     }

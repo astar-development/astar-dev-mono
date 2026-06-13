@@ -10,7 +10,7 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
     public async Task<Option<DriveStateEntity>> GetByAccountIdAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        var entity = await db.DriveStates.FirstOrDefaultAsync(d => d.AccountId == accountId, cancellationToken);
+        var entity = await db.DriveStates.FirstOrDefaultAsync(d => d.AccountId == accountId, cancellationToken).ConfigureAwait(false);
 
         return entity is null ? Option.None<DriveStateEntity>() : new Option<DriveStateEntity>.Some(entity);
     }
@@ -20,7 +20,7 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var existing = await db.DriveStates
-            .FirstOrDefaultAsync(d => d.AccountId == driveState.AccountId, cancellationToken);
+            .FirstOrDefaultAsync(d => d.AccountId == driveState.AccountId, cancellationToken).ConfigureAwait(false);
 
         if(existing is null)
         {
@@ -32,7 +32,7 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
             existing.LastSyncStartedAt = driveState.LastSyncStartedAt;
         }
 
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task ClearDeltaLinkAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -41,6 +41,6 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
 
         _ = await db.DriveStates
             .Where(d => d.AccountId == accountId)
-            .ExecuteUpdateAsync(s => s.SetProperty(d => d.DeltaLink, Option.None<string>()), cancellationToken);
+            .ExecuteUpdateAsync(s => s.SetProperty(d => d.DeltaLink, Option.None<string>()), cancellationToken).ConfigureAwait(false);
     }
 }

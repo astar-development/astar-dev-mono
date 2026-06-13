@@ -19,7 +19,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
               .MapFailureAsync(ex => ex.GetBaseException().Message);
 
     private Task<Result<(List<AccountEntity> entities, HashSet<string> cachedIds), Exception>> FetchWithCachedIdsAsync(List<AccountEntity> entities)
-        => Try.RunAsync(async () => (entities, (await authService.GetCachedAccountIdsAsync()).ToHashSet()));
+        => Try.RunAsync(async () => (entities, (await authService.GetCachedAccountIdsAsync().ConfigureAwait(false)).ToHashSet()));
 
     private Task<Result<List<OneDriveAccount>, Exception>> BuildFilteredAccountsAsync((List<AccountEntity> entities, HashSet<string> cachedIds) input)
         => Try.RunAsync(() => BuildAccountsAsync(FilterToCachedEntities(input.entities, input.cachedIds)));
@@ -33,7 +33,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
 
         foreach (var entity in entities)
         {
-            var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, CancellationToken.None);
+            var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, CancellationToken.None).ConfigureAwait(false);
             accounts.Add(BuildOneDriveAccount(entity, rules));
         }
 

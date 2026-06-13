@@ -25,20 +25,20 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
 
             try
             {
-                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct);
+                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct).ConfigureAwait(false);
 
                 await deleteResult.MatchAsync(
                     async _ =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorRemoteDeleted(logger, remoteId);
-                        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
+                        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct).ConfigureAwait(false);
                         return Unit.Default;
                     },
                     deleteError =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, remoteId, deleteError);
                         return Unit.Default;
-                    });
+                    }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

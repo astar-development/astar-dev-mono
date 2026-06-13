@@ -49,7 +49,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                 async ctx =>
                 {
                     var response = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
-                        .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct);
+                        .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct).ConfigureAwait(false);
 
                     List<DriveFolder> folders = [];
 
@@ -66,12 +66,12 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                         page = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
                             .WithUrl(page.OdataNextLink!)
-                            .GetAsync(cancellationToken: ct);
+                            .GetAsync(cancellationToken: ct).ConfigureAwait(false);
                     }
 
                     return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
                 },
-                error => new Result<List<DriveFolder>, string>.Error(error));
+                error => new Result<List<DriveFolder>, string>.Error(error)).ConfigureAwait(false);
         }
         catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
@@ -91,7 +91,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                 {
                     req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
                     req.QueryParameters.Top = 100;
-                }, ct);
+                }, ct).ConfigureAwait(false);
 
             List<DriveFolder> folders = [];
 
@@ -108,7 +108,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                 page = await client.Drives[driveId.Value].Items[parentFolderId].Children
                     .WithUrl(page.OdataNextLink!)
-                    .GetAsync(cancellationToken: ct);
+                    .GetAsync(cancellationToken: ct).ConfigureAwait(false);
             }
 
             return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
@@ -130,7 +130,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                 async ctx =>
                 {
                     var drive = await ctx.Client.Drives[ctx.Ctx.DriveId.Value]
-                        .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
+                        .GetAsync(req => req.QueryParameters.Select = ["quota"], ct).ConfigureAwait(false);
 
                     var quota = drive?.Quota is { Total: not null, Used: not null }
                         ? (drive.Quota.Total!.Value, drive.Quota.Used!.Value)
@@ -138,7 +138,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                     return new Result<(long Total, long Used), string>.Ok(quota);
                 },
-                error => new Result<(long Total, long Used), string>.Error(error));
+                error => new Result<(long Total, long Used), string>.Error(error)).ConfigureAwait(false);
         }
         catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
@@ -158,7 +158,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         try
         {
             var item = await client.Drives[driveId.Value].Items[$"{RootPathMarker}:{remotePath}"]
-                .GetAsync(req => req.QueryParameters.Select = ["id"], ct);
+                .GetAsync(req => req.QueryParameters.Select = ["id"], ct).ConfigureAwait(false);
 
             return item?.Id;
         }
@@ -194,7 +194,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                     return new Result<string, string>.Ok(url.ToString()!);
                 },
-                error => new Result<string, string>.Error(error));
+                error => new Result<string, string>.Error(error)).ConfigureAwait(false);
         }
         catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
@@ -211,7 +211,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
             return await contextResult.MatchAsync(
                 async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct).ConfigureAwait(false),
-                error => new Result<string, string>.Error(error));
+                error => new Result<string, string>.Error(error)).ConfigureAwait(false);
         }
         catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
@@ -229,7 +229,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
             {
                 try
                 {
-                    await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: ct);
+                    await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: ct).ConfigureAwait(false);
 
                     return new Result<Unit, string>.Ok(Unit.Default);
                 }
@@ -238,7 +238,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                     return new Result<Unit, string>.Error(ex.Message);
                 }
             },
-            error => new Result<Unit, string>.Error(error));
+            error => new Result<Unit, string>.Error(error)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

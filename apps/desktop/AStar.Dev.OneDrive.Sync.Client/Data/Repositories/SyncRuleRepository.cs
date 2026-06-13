@@ -14,7 +14,7 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
 
         return await db.SyncRules
              .Where(r => r.AccountId == accountId)
-             .ToListAsync(cancellationToken);
+             .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task UpsertAsync(AccountId accountId, string remotePath, RuleType ruleType, string? remoteItemId, CancellationToken cancellationToken)
@@ -22,7 +22,7 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var existing = await db.SyncRules
-            .FirstOrDefaultAsync(r => r.AccountId == accountId && r.RemotePath == remotePath, cancellationToken);
+            .FirstOrDefaultAsync(r => r.AccountId == accountId && r.RemotePath == remotePath, cancellationToken).ConfigureAwait(false);
 
         if (existing is null)
         {
@@ -42,7 +42,7 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
                 existing.RemoteItemId = Option.Some(remoteItemId);
         }
 
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteAsync(AccountId accountId, string remotePath, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
 
         _ = await db.SyncRules
                    .Where(r => r.AccountId == accountId && r.RemotePath == remotePath)
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -60,7 +60,7 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
 
         _ = await db.SyncRules
                    .Where(r => r.AccountId == accountId)
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteChildRulesAsync(AccountId accountId, string parentPath, CancellationToken cancellationToken)
@@ -70,6 +70,6 @@ public sealed class SyncRuleRepository(IDbContextFactory<AppDbContext> dbFactory
         string prefix = parentPath + "/";
         _ = await db.SyncRules
                    .Where(r => r.AccountId == accountId && r.RemotePath.StartsWith(prefix))
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 }

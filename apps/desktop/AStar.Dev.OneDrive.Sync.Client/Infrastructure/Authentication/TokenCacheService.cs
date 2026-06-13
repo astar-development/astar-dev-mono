@@ -56,7 +56,7 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(KeyringTimeoutSeconds));
                 var helper = await MsalCacheHelper
                     .CreateAsync(keyringProperties)
-                    .WaitAsync(cts.Token);
+                    .WaitAsync(cts.Token).ConfigureAwait(false);
                 helper.RegisterCache(app.UserTokenCache);
 
                 return;
@@ -83,7 +83,7 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
                 .Build();
         }
 
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
+        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties).ConfigureAwait(false);
         cacheHelper.RegisterCache(app.UserTokenCache);
     }
 

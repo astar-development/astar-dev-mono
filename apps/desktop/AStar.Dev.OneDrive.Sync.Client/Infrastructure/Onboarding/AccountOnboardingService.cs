@@ -16,13 +16,13 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
         if (account.SyncConfig is Option<AccountSyncConfig>.None)
             account.SyncConfig = ResolveDefaultSyncConfig(account.Profile.Email);
 
-        await accountRepository.UpsertAsync(ToEntity(account), ct);
+        await accountRepository.UpsertAsync(ToEntity(account), ct).ConfigureAwait(false);
 
         foreach (var (folderId, folderName) in account.FolderNames)
-            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, ct);
+            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, ct).ConfigureAwait(false);
 
         if (account.IsActive)
-            await accountRepository.SetActiveAccountAsync(account.Id, ct);
+            await accountRepository.SetActiveAccountAsync(account.Id, ct).ConfigureAwait(false);
 
         return account;
     }

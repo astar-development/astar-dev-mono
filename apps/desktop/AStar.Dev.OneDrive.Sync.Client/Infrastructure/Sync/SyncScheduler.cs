@@ -70,7 +70,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         if (!activeSyncs.IsEmpty)
             return;
 
-        await RunSyncPassAsync(ct);
+        await RunSyncPassAsync(ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -88,7 +88,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             {
                 OneDriveSyncClientMessages.SyncSchedulerUnknownAccount(logger, accountId);
                 return Task.CompletedTask;
-            });
+            }).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -104,7 +104,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         SyncStarted?.Invoke(this, account.Id.Id);
         try
         {
-            await syncService.SyncAccountAsync(account, cts.Token);
+            await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
         }
         finally
         {
@@ -133,7 +133,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         try
         {
-            await RunSyncPassAsync(CancellationToken.None);
+            await RunSyncPassAsync(CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -159,7 +159,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
         try
         {
-            var entities = await accountRepository.GetAllAsync(CancellationToken.None);
+            var entities = await accountRepository.GetAllAsync(CancellationToken.None).ConfigureAwait(false);
             foreach (var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
@@ -175,7 +175,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 SyncStarted?.Invoke(this, account.Id.Id);
                 try
                 {
-                    await syncService.SyncAccountAsync(account, cts.Token);
+                    await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -205,7 +205,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         activeSyncs.Clear();
 
         if (timer is not null)
-            await timer.DisposeAsync();
+            await timer.DisposeAsync().ConfigureAwait(false);
 
         fullPassSemaphore.Dispose();
     }

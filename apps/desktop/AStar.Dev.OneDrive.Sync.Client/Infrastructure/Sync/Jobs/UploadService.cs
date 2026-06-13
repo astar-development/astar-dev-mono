@@ -40,16 +40,16 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
+        var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct).ConfigureAwait(false);
 
         return await sessionResult.MatchAsync(
             async sessionUrl =>
             {
-                var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
+                var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct).ConfigureAwait(false);
 
                 return result.Tap(_ => OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath));
             },
-            error => new Result<string, string>.Error(error));
+            error => new Result<string, string>.Error(error)).ConfigureAwait(false);
     }
 
     private static async Task<Result<string, string>> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
@@ -80,7 +80,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             .Items[parentFolderId]
             .ItemWithPath(remotePath)
             .CreateUploadSession
-            .PostAsync(requestBody, cancellationToken: ct);
+            .PostAsync(requestBody, cancellationToken: ct).ConfigureAwait(false);
 
         if (session?.UploadUrl is null)
             return new Result<string, string>.Error("Graph API did not return an upload session URL.");
@@ -94,7 +94,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         await using var file = fileSystem.File.OpenRead(localPath);
         byte[] buffer = new byte[ChunkSize10Mb];
 
-        return await UploadNextChunkAsync(0L);
+        return await UploadNextChunkAsync(0L).ConfigureAwait(false);
 
         async Task<Result<string, string>> UploadNextChunkAsync(long uploaded)
         {
@@ -103,7 +103,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
             ct.ThrowIfCancellationRequested();
 
-            int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct);
+            int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct).ConfigureAwait(false);
 
             if (bytesRead == 0)
                 return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
@@ -119,8 +119,8 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     if (itemId is not null)
                         return new Result<string, string>.Ok(itemId);
 
-                    return await UploadNextChunkAsync(newUploaded);
-                });
+                    return await UploadNextChunkAsync(newUploaded).ConfigureAwait(false);
+                }).ConfigureAwait(false);
         }
     }
 
@@ -128,7 +128,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     {
         int bytesToRead = (int)Math.Min(ChunkSize10Mb, totalBytes - uploaded);
 
-        return await file.ReadAsync(buffer.AsMemory(0, bytesToRead), ct);
+        return await file.ReadAsync(buffer.AsMemory(0, bytesToRead), ct).ConfigureAwait(false);
     }
 
     private static long ComputeRangeEnd(long uploaded, int bytesRead) => uploaded + bytesRead - 1;
@@ -149,7 +149,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 content.Headers.Add("Content-Range", $"bytes {rangeStart}-{rangeEnd}/{totalBytes}");
                 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.CurrentCulture));
 
-                using var response = await http.PutAsync(sessionUrl, content, ct);
+                using var response = await http.PutAsync(sessionUrl, content, ct).ConfigureAwait(false);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
@@ -159,7 +159,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                    await Task.Delay(delay, ct);
+                    await Task.Delay(delay, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -167,7 +167,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     return new Result<string?, string>.Ok(null);
 
                 if (response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
-                    return await GetUploadedDocumentId(response, ct);
+                    return await GetUploadedDocumentId(response, ct).ConfigureAwait(false);
 
                 _ = response.EnsureSuccessStatusCode();
 
@@ -178,14 +178,14 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                await Task.Delay(delay, ct);
+                await Task.Delay(delay, ct).ConfigureAwait(false);
             }
         }
     }
 
     private static async Task<Result<string?, string>> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
     {
-        string json = await response.Content.ReadAsStringAsync(ct);
+        string json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         using var doc = System.Text.Json.JsonDocument.Parse(json);
 
         if (!doc.RootElement.TryGetProperty("id", out var idElement))

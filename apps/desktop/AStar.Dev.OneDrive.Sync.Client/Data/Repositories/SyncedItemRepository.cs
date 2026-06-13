@@ -15,7 +15,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         var items = await db.SyncedItems
             .Where(i => i.AccountId == accountId)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return items.ToDictionary(i => i.RemoteItemId.Id);
     }
@@ -25,12 +25,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var existing = await db.SyncedItems
-            .FirstOrDefaultAsync(i => i.AccountId == item.AccountId && i.RemoteItemId == item.RemoteItemId, cancellationToken);
+            .FirstOrDefaultAsync(i => i.AccountId == item.AccountId && i.RemoteItemId == item.RemoteItemId, cancellationToken).ConfigureAwait(false);
 
         if(existing is null)
         {
             _ = db.SyncedItems.Add(item);
-            _ = await db.SaveChangesAsync(cancellationToken);
+            _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return item.Id;
         }
@@ -41,7 +41,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         existing.IsFolder         = item.IsFolder;
         existing.RemoteModifiedAt = item.RemoteModifiedAt;
         existing.Tags             = item.Tags;
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return existing.Id;
     }
@@ -52,7 +52,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         _ = await db.SyncedItemClassifications
                    .Where(c => c.SyncedItemId == syncedItemId)
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         var entities = classifications.Select(c => new SyncedItemClassificationEntity
         {
@@ -65,7 +65,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         });
 
         db.SyncedItemClassifications.AddRange(entities);
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken)
@@ -74,7 +74,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         _ = await db.SyncedItems
                    .Where(i => i.AccountId == accountId && i.RemoteItemId == remoteItemId)
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -83,6 +83,6 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         _ = await db.SyncedItems
                    .Where(i => i.AccountId == accountId)
-                   .ExecuteDeleteAsync(cancellationToken);
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 }

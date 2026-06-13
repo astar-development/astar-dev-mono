@@ -18,7 +18,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
 
         return await db.Accounts
           .OrderBy(a => a.Profile.Email)
-          .ToListAsync(cancellationToken);
+          .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -26,7 +26,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken).ConfigureAwait(false);
 
         return entity is not null ? Option.Some(entity) : Option.None<AccountEntity>();
     }
@@ -37,7 +37,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var existing = await db.Accounts
-            .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken);
+            .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken).ConfigureAwait(false);
 
         if(existing is null)
         {
@@ -48,7 +48,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
             db.Entry(existing).CurrentValues.SetValues(account);
         }
 
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -56,19 +56,19 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+        var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken).ConfigureAwait(false);
         if(entity is null)
             return;
 
         entity.Quota = quota;
-        _ = await db.SaveChangesAsync(cancellationToken);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public async Task DeleteAsync(AccountId id, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        _ = await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken);
+        _ = await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -77,11 +77,11 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         _ = await db.Accounts.ExecuteUpdateAsync(s =>
-            s.SetProperty(a => a.IsActive, false), cancellationToken: cancellationToken);
+            s.SetProperty(a => a.IsActive, false), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _ = await db.Accounts
             .Where(a => a.Id == id)
             .ExecuteUpdateAsync(s =>
-                s.SetProperty(a => a.IsActive, true), cancellationToken: cancellationToken);
+                s.SetProperty(a => a.IsActive, true), cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }
