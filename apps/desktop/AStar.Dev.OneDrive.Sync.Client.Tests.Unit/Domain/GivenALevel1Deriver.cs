@@ -1,4 +1,3 @@
-using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
@@ -10,30 +9,53 @@ public sealed class GivenALevel1Deriver
         Level1Deriver.FolderTypeMap["people"].ShouldBe("Person");
 
     [Fact]
-    public void when_folder_type_map_accessed_then_places_maps_to_place() =>
-        Level1Deriver.FolderTypeMap["places"].ShouldBe("Place");
-
-    [Fact]
-    public void when_folder_type_map_accessed_then_events_maps_to_event() =>
-        Level1Deriver.FolderTypeMap["events"].ShouldBe("Event");
-
-    [Fact]
-    public void when_folder_type_map_accessed_then_photos_maps_to_object() =>
-        Level1Deriver.FolderTypeMap["photos"].ShouldBe("Unclassified");
-
-    [Fact]
     public void when_folder_type_map_accessed_then_portraits_maps_to_person() =>
         Level1Deriver.FolderTypeMap["portraits"].ShouldBe("Person");
+
+    [Fact]
+    public void when_folder_type_map_accessed_then_places_maps_to_place() =>
+        Level1Deriver.FolderTypeMap["places"].ShouldBe("Place");
 
     [Fact]
     public void when_folder_type_map_accessed_then_landscapes_maps_to_place() =>
         Level1Deriver.FolderTypeMap["landscapes"].ShouldBe("Place");
 
     [Fact]
+    public void when_folder_type_map_accessed_then_events_maps_to_event() =>
+        Level1Deriver.FolderTypeMap["events"].ShouldBe("Event");
+
+    [Fact]
+    public void when_folder_type_map_accessed_then_photos_maps_to_unclassified() =>
+        Level1Deriver.FolderTypeMap["photos"].ShouldBe("Unclassified");
+
+    [Fact]
+    public void when_folder_type_map_accessed_then_it_contains_exactly_six_entries() =>
+        Level1Deriver.FolderTypeMap.Count.ShouldBe(6);
+
+    [Fact]
+    public void when_folder_type_map_accessed_then_return_type_is_readonly_dictionary()
+    {
+        var map = Level1Deriver.FolderTypeMap;
+
+        _ = map.ShouldBeAssignableTo<IReadOnlyDictionary<string, string>>();
+    }
+
+    [Fact]
     public void when_derive_called_with_people_folder_segment_then_person_is_returned()
     {
         IReadOnlyList<string> folderSegments = ["People"];
         IReadOnlyList<string> filenameTokens = ["birthday", "party"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Person");
+    }
+
+    [Fact]
+    public void when_derive_called_with_portraits_folder_segment_then_person_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = ["Portraits"];
+        IReadOnlyList<string> filenameTokens = ["headshot", "studio"];
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
@@ -52,6 +74,17 @@ public sealed class GivenALevel1Deriver
     }
 
     [Fact]
+    public void when_derive_called_with_landscapes_folder_segment_then_place_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = ["Landscapes"];
+        IReadOnlyList<string> filenameTokens = ["sunset", "hills"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Place");
+    }
+
+    [Fact]
     public void when_derive_called_with_events_folder_segment_then_event_is_returned()
     {
         IReadOnlyList<string> folderSegments = ["Events"];
@@ -63,7 +96,7 @@ public sealed class GivenALevel1Deriver
     }
 
     [Fact]
-    public void when_derive_called_with_photos_folder_segment_then_object_is_returned()
+    public void when_derive_called_with_photos_folder_segment_then_unclassified_is_returned()
     {
         IReadOnlyList<string> folderSegments = ["Photos"];
         IReadOnlyList<string> filenameTokens = ["misc", "shot"];
@@ -82,50 +115,6 @@ public sealed class GivenALevel1Deriver
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
         result.ShouldBe("Event");
-    }
-
-    [Fact]
-    public void when_derive_called_with_no_folder_match_and_person_name_in_tokens_then_person_is_returned()
-    {
-        IReadOnlyList<string> folderSegments = ["Archive"];
-        IReadOnlyList<string> filenameTokens = ["john", "smith"];
-
-        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
-
-        result.ShouldBe("Person");
-    }
-
-    [Fact]
-    public void when_derive_called_with_no_folder_match_and_colour_in_tokens_then_color_is_returned()
-    {
-        IReadOnlyList<string> folderSegments = ["Archive"];
-        IReadOnlyList<string> filenameTokens = ["red", "car", "road"];
-
-        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
-
-        result.ShouldBe("Color");
-    }
-
-    [Fact]
-    public void when_derive_called_with_no_folder_match_and_no_person_and_no_colour_then_object_is_returned()
-    {
-        IReadOnlyList<string> folderSegments = ["Archive"];
-        IReadOnlyList<string> filenameTokens = ["misc", "shot", "img"];
-
-        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
-
-        result.ShouldBe("Unclassified");
-    }
-
-    [Fact]
-    public void when_derive_called_with_empty_folder_segments_and_no_person_and_no_colour_then_object_is_returned()
-    {
-        IReadOnlyList<string> folderSegments = [];
-        IReadOnlyList<string> filenameTokens = ["misc", "img"];
-
-        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
-
-        result.ShouldBe("Unclassified");
     }
 
     [Fact]
@@ -162,6 +151,17 @@ public sealed class GivenALevel1Deriver
     }
 
     [Fact]
+    public void when_derive_called_with_no_folder_match_and_person_name_in_tokens_then_person_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = ["Archive"];
+        IReadOnlyList<string> filenameTokens = ["john", "smith"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Person");
+    }
+
+    [Fact]
     public void when_derive_called_with_empty_folder_segments_and_person_name_tokens_then_person_is_returned()
     {
         IReadOnlyList<string> folderSegments = [];
@@ -173,25 +173,6 @@ public sealed class GivenALevel1Deriver
     }
 
     [Fact]
-    public void when_folder_type_map_return_type_is_readonly_dictionary()
-    {
-        var map = Level1Deriver.FolderTypeMap;
-
-        _ = map.ShouldBeAssignableTo<IReadOnlyDictionary<string, string>>();
-    }
-
-    [Fact]
-    public void when_derive_called_with_both_collections_empty_then_object_is_returned()
-    {
-        IReadOnlyList<string> folderSegments = [];
-        IReadOnlyList<string> filenameTokens = [];
-
-        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
-
-        result.ShouldBe("Unclassified");
-    }
-
-    [Fact]
     public void when_derive_called_with_no_folder_match_and_person_name_and_colour_in_tokens_then_person_takes_priority()
     {
         IReadOnlyList<string> folderSegments = ["Archive"];
@@ -200,5 +181,49 @@ public sealed class GivenALevel1Deriver
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
         result.ShouldBe("Person");
+    }
+
+    [Fact]
+    public void when_derive_called_with_no_folder_match_and_colour_in_tokens_then_color_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = ["Archive"];
+        IReadOnlyList<string> filenameTokens = ["red", "car", "road"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Color");
+    }
+
+    [Fact]
+    public void when_derive_called_with_no_folder_match_and_no_person_and_no_colour_then_unclassified_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = ["Archive"];
+        IReadOnlyList<string> filenameTokens = ["misc", "shot", "img"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Unclassified");
+    }
+
+    [Fact]
+    public void when_derive_called_with_empty_folder_segments_and_no_person_and_no_colour_then_unclassified_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = [];
+        IReadOnlyList<string> filenameTokens = ["misc", "img"];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Unclassified");
+    }
+
+    [Fact]
+    public void when_derive_called_with_both_collections_empty_then_unclassified_is_returned()
+    {
+        IReadOnlyList<string> folderSegments = [];
+        IReadOnlyList<string> filenameTokens = [];
+
+        string result = Level1Deriver.Derive(folderSegments, filenameTokens);
+
+        result.ShouldBe("Unclassified");
     }
 }
