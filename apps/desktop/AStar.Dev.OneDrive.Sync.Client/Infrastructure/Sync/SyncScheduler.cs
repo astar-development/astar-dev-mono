@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -18,9 +19,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository, ILogger<SyncScheduler> logger) : IAsyncDisposable, ISyncScheduler
 {
     private readonly ConcurrentDictionary<string, CancellationTokenSource> activeSyncs = new();
+    private readonly SemaphoreSlim fullPassSemaphore = new(1, 1);
     private Timer? timer;
     private TimeSpan interval = TimeSpan.FromMinutes(60);
-    private long runningFlag;
 
     /// <summary>
     /// Default interval for scheduled sync passes. Can be overridden by providing a different interval to StartSync or SetInterval.
@@ -34,7 +35,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public event EventHandler<string>? SyncCompleted;
 
     /// <inheritdoc />
-    public void StartSync(TimeSpan? interval = null)
+    public Result<Unit, string> StartSync(TimeSpan? interval = null)
     {
         this.interval = interval ?? DefaultInterval;
         timer?.Dispose();
@@ -42,11 +43,14 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         try
         {
             timer = new Timer(OnTimerTickAsync, state: null, dueTime: this.interval, period: this.interval);
+
+            return new Result<Unit, string>.Ok(Unit.Default);
         }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.Message, ex);
-            throw;
+
+            return new Result<Unit, string>.Error(ex.Message);
         }
     }
 
@@ -63,10 +67,10 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
-        if (SyncIsAlreadyRunning())
+        if (!activeSyncs.IsEmpty)
             return;
 
-        await RunSyncPassAsync(ct);
+        await RunSyncPassAsync(ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -84,7 +88,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
             {
                 OneDriveSyncClientMessages.SyncSchedulerUnknownAccount(logger, accountId);
                 return Task.CompletedTask;
-            });
+            }).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -100,7 +104,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         SyncStarted?.Invoke(this, account.Id.Id);
         try
         {
-            await syncService.SyncAccountAsync(account, cts.Token);
+            await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
         }
         finally
         {
@@ -124,20 +128,18 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     // ReSharper disable once AsyncVoidMethod - Timer requires this signature
     private async void OnTimerTickAsync(object? state)
     {
-        if (SyncIsAlreadyRunning())
+        if (!activeSyncs.IsEmpty)
             return;
 
         try
         {
-            await RunSyncPassAsync(CancellationToken.None);
+            await RunSyncPassAsync(CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncSchedulerTimerError(logger, ex.Message, ex);
         }
     }
-
-    private bool SyncIsAlreadyRunning() => Interlocked.Read(ref runningFlag) == 1 || !activeSyncs.IsEmpty;
 
     private static OneDriveAccount MapEntityToAccount(AccountEntity entity, IReadOnlyList<SyncRuleEntity> rules) => new()
     {
@@ -152,12 +154,12 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
-        if (Interlocked.Exchange(ref runningFlag, 1) == 1)
+        if (!fullPassSemaphore.Wait(0, CancellationToken.None))
             return;
 
         try
         {
-            var entities = await accountRepository.GetAllAsync(CancellationToken.None);
+            var entities = await accountRepository.GetAllAsync(CancellationToken.None).ConfigureAwait(false);
             foreach (var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
             {
                 var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
@@ -173,7 +175,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 SyncStarted?.Invoke(this, account.Id.Id);
                 try
                 {
-                    await syncService.SyncAccountAsync(account, cts.Token);
+                    await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -188,7 +190,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         finally
         {
-            Interlocked.Exchange(ref runningFlag, 0);
+            fullPassSemaphore.Release();
         }
     }
 
@@ -203,6 +205,8 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         activeSyncs.Clear();
 
         if (timer is not null)
-            await timer.DisposeAsync();
+            await timer.DisposeAsync().ConfigureAwait(false);
+
+        fullPassSemaphore.Dispose();
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -18,14 +19,16 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     private readonly IFilePickerService filePickerService;
     private readonly IConfirmationDialogService confirmationDialogService;
     private readonly ILocalizationService localizationService;
+    private readonly IFileSystem fileSystem;
 
-    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ILocalizationService localizationService)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ILocalizationService localizationService, IFileSystem fileSystem)
     {
         this.repository = repository;
         this.exportImportService = exportImportService;
         this.filePickerService = filePickerService;
         this.confirmationDialogService = confirmationDialogService;
         this.localizationService = localizationService;
+        this.fileSystem = fileSystem;
         Categories.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoCategories));
     }
 
@@ -113,7 +116,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         if (path is null)
             return;
 
-        await exportImportService.ExportAsync(path, ct).ConfigureAwait(false);
+        await exportImportService.ExportAsync(fileSystem.FileInfo.New(path), ct).ConfigureAwait(false);
     }
 
     /// <summary>Imports a taxonomy from a user-selected JSON file, replacing all existing data after confirmation.</summary>
@@ -127,7 +130,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         if (!confirmed)
             return;
 
-        await exportImportService.ImportAsync(path, ct).ConfigureAwait(false);
+        await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), ct).ConfigureAwait(false);
         await LoadAsync(ct).ConfigureAwait(false);
     }
 

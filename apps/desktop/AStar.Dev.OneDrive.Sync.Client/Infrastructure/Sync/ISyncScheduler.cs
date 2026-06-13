@@ -1,3 +1,5 @@
+using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -16,9 +18,10 @@ public interface ISyncScheduler
 
     /// <summary>
     /// Starts the sync scheduler with the specified interval. If no interval is provided, uses the default (60 minutes).
+    /// Returns an error result if the underlying timer cannot be created.
     /// </summary>
     /// <param name="interval">The interval at which to run sync passes.</param>
-    void StartSync(TimeSpan? interval = null);
+    Result<Unit, string> StartSync(TimeSpan? interval = null);
 
     /// <summary>
     /// Stops the sync scheduler, halting all scheduled sync passes until restarted. Does not affect manual syncs triggered via TriggerNowAsync or TriggerAccountAsync.

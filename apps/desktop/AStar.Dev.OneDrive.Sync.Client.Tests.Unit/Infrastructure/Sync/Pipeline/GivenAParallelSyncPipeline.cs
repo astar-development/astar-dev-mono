@@ -70,7 +70,7 @@ public sealed class GivenAParallelSyncPipeline
 
         await sut.RunAsync([], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
-        await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>());
+        await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public sealed class GivenAParallelSyncPipeline
 
         await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).ClearCompletedJobsAsync(Arg.Any<AccountId>());
+        await _syncRepository.Received(1).ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public sealed class GivenAParallelSyncPipeline
 
         await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).ClearCompletedJobsAsync(new AccountId(AccountIdValue));
+        await _syncRepository.Received(1).ClearCompletedJobsAsync(new AccountId(AccountIdValue), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public sealed class GivenAParallelSyncPipeline
         }
         catch(OperationCanceledException) { }
 
-        await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>());
+        await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]

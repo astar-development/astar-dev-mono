@@ -25,7 +25,7 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
                 continue;
 
             OneDriveSyncClientMessages.RemoteDeletionDetectorNotPresent(logger, knownItem.RemotePath);
-            await HandleRemoteDeleteAsync(accountId, knownItem, syncedItems, ct);
+            await HandleRemoteDeleteAsync(accountId, knownItem, syncedItems, ct).ConfigureAwait(false);
         }
     }
 
@@ -50,7 +50,7 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
             }
         }
 
-        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct);
+        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct).ConfigureAwait(false);
         syncedItems.Remove(knownItem.RemoteItemId.Id);
     }
 }

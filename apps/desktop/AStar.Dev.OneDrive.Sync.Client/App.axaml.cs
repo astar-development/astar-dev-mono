@@ -20,8 +20,7 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 
 public class App : Application, IDisposable
 {
-    private readonly ServiceProvider services = BuildServiceProvider();
-    private readonly CancellationTokenSource appLifetimeCts = new();
+    private ServiceProvider? services;
     private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -29,6 +28,8 @@ public class App : Application, IDisposable
     public override void OnFrameworkInitializationCompleted()
     {
         base.OnFrameworkInitializationCompleted();
+
+        services = BuildServiceProvider();
 
         if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
             return;
@@ -122,8 +123,7 @@ public class App : Application, IDisposable
             return;
 
         disposed = true;
-        appLifetimeCts.Dispose();
-        services.Dispose();
+        services?.Dispose();
 
         GC.SuppressFinalize(this);
     }

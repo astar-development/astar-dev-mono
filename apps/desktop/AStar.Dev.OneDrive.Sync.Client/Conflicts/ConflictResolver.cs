@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
@@ -30,6 +31,6 @@ public static class ConflictResolver
         string ext       = fileSystem.Path.GetExtension(localPath);
         string timestamp = localModified.LocalDateTime.ToString("yyyy-MM-dd HH-mm", CultureInfo.CurrentCulture);
 
-        return fileSystem.Path.Combine(dir, $"{stem} (local {timestamp}){ext}");
+        return dir.CombinePath($"{stem} (local {timestamp}){ext}");
     }
 }

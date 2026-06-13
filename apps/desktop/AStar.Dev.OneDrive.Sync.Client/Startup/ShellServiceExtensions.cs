@@ -36,6 +36,8 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAccountOnboardingService, AccountOnboardingService>();
         _ = services.AddSingleton<IAuthService, AuthService>();
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
+        _ = services.AddSingleton<DriveContextCache>();
+        _ = services.AddSingleton<GraphFolderEnumerator>();
         _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddSingleton<IQuotaRefreshService, QuotaRefreshService>();
         _ = services.AddSingleton<IStartupService, StartupService>();
@@ -74,17 +76,15 @@ internal static class ShellServiceExtensions
         return services;
     }
 
-#pragma warning disable CA1859
-    private static void RegisterAvailableFeatures(IFeatureRegistrar registrar)
-#pragma warning restore CA1859
+    private static void RegisterAvailableFeatures(FeatureAvailabilityService registrar)
     {
-        registrar.Register(NavSection.Dashboard);
-        registrar.Register(NavSection.Accounts);
-        registrar.Register(NavSection.Activity);
-        registrar.Register(NavSection.Conflicts);
-        registrar.Register(NavSection.LogViewer);
-        registrar.Register(NavSection.Classifications);
-        registrar.Register(NavSection.Settings);
-        registrar.Register(NavSection.Help);
+        _ = registrar.Register(NavSection.Dashboard);
+        _ = registrar.Register(NavSection.Accounts);
+        _ = registrar.Register(NavSection.Activity);
+        _ = registrar.Register(NavSection.Conflicts);
+        _ = registrar.Register(NavSection.LogViewer);
+        _ = registrar.Register(NavSection.Classifications);
+        _ = registrar.Register(NavSection.Settings);
+        _ = registrar.Register(NavSection.Help);
     }
 }

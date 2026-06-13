@@ -63,6 +63,6 @@ public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogServi
 
         await dialog.ShowDialog(mainWindow).ConfigureAwait(false);
 
-        return await tcs.Task.ConfigureAwait(false);
+        return await tcs.Task;
     }
 }

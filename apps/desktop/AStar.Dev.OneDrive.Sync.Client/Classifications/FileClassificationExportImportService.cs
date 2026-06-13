@@ -12,7 +12,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
     private static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
     /// <inheritdoc />
-    public async Task ExportAsync(string filePath, CancellationToken cancellationToken = default)
+    public async Task ExportAsync(IFileInfo fileInfo, CancellationToken cancellationToken = default)
     {
         var allCategories = await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -47,13 +47,13 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
 
         var exportRoot = new ClassificationExportRoot { Version = 1, Categories = rootNodes };
         string json = JsonSerializer.Serialize(exportRoot, SerializerOptions);
-        fileSystem.File.WriteAllText(filePath, json);
+        fileSystem.File.WriteAllText(fileInfo.FullName, json);
     }
 
     /// <inheritdoc />
-    public async Task ImportAsync(string filePath, CancellationToken cancellationToken = default)
+    public async Task ImportAsync(IFileInfo fileInfo, CancellationToken cancellationToken = default)
     {
-        string json = fileSystem.File.ReadAllText(filePath);
+        string json = fileSystem.File.ReadAllText(fileInfo.FullName);
         var exportRoot = JsonSerializer.Deserialize<ClassificationExportRoot>(json, SerializerOptions);
         if (exportRoot is null)
             return;

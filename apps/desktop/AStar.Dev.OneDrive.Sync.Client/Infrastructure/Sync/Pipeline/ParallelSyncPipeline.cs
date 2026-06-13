@@ -50,7 +50,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
             foreach (var job in jobList)
             {
                 ct.ThrowIfCancellationRequested();
-                await channel.Writer.WriteAsync(job, ct);
+                await channel.Writer.WriteAsync(job, ct).ConfigureAwait(false);
             }
         }
         finally
@@ -60,7 +60,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
 
         try
         {
-            await Task.WhenAll(workers);
+            await Task.WhenAll(workers).ConfigureAwait(false);
             OneDriveSyncClientMessages.SyncPipelineCompleted(logger);
         }
         catch (Exception ex)
@@ -73,7 +73,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
             OneDriveSyncClientMessages.SyncPipelineFinalProgress(logger, tracker.Done, jobList.Count);
         }
 
-        await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId));
+        await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId), ct).ConfigureAwait(false);
 
         OneDriveSyncClientMessages.SyncPipelineJobsProcessed(logger, tracker.Done, jobList.Count);
     }

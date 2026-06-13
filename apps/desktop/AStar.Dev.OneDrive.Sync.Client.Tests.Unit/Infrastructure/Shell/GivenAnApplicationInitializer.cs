@@ -157,7 +157,7 @@ public sealed class GivenAnApplicationInitializer
 
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).GetPendingConflictsAsync(new AccountId("acc-active"));
+        await _syncRepository.Received(1).GetPendingConflictsAsync(new AccountId("acc-active"), CancellationToken.None);
     }
 
     [Fact]

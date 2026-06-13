@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using AStar.Dev.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
@@ -55,7 +56,7 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(KeyringTimeoutSeconds));
                 var helper = await MsalCacheHelper
                     .CreateAsync(keyringProperties)
-                    .WaitAsync(cts.Token);
+                    .WaitAsync(cts.Token).ConfigureAwait(false);
                 helper.RegisterCache(app.UserTokenCache);
 
                 return;
@@ -82,19 +83,19 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
                 .Build();
         }
 
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
+        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties).ConfigureAwait(false);
         cacheHelper.RegisterCache(app.UserTokenCache);
     }
 
     private static string InitialiseCacheDirectory(IFileSystem fs)
     {
-        string directory = GetPlatformCacheDirectory(fs);
+        string directory = GetPlatformCacheDirectory();
         _ = fs.Directory.CreateDirectory(directory);
 
         return directory;
     }
 
-    private static string GetPlatformCacheDirectory(IFileSystem fs)
+    private static string GetPlatformCacheDirectory()
     {
         string appData = Environment.GetFolderPath(
             OperatingSystem.IsWindows()
@@ -102,9 +103,9 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
                 : Environment.SpecialFolder.UserProfile);
 
         return OperatingSystem.IsWindows()
-            ? fs.Path.Combine(appData, ApplicationMetadata.ApplicationNameHyphenated)
+            ? appData.CombinePath(ApplicationMetadata.ApplicationNameHyphenated)
             : OperatingSystem.IsMacOS()
-                ? fs.Path.Combine(appData, "Library", "Application Support", ApplicationMetadata.ApplicationNameHyphenated)
-                : fs.Path.Combine(appData, ".config", ApplicationMetadata.ApplicationNameHyphenated);
+                ? appData.CombinePath("Library", "Application Support", ApplicationMetadata.ApplicationNameHyphenated)
+                : appData.CombinePath(".config", ApplicationMetadata.ApplicationNameHyphenated);
     }
 }

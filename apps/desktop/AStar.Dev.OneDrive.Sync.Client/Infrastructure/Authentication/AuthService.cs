@@ -28,7 +28,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     /// <inheritdoc />
     public async Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken ct = default)
     {
-        await EnsureCacheRegisteredAsync();
+        await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
         try
         {
@@ -36,7 +36,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
                     .AcquireTokenInteractive(entraIdOptions.Value.Scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .WithUseEmbeddedWebView(false)
-                    .ExecuteAsync(ct);
+                    .ExecuteAsync(ct).ConfigureAwait(false);
 
             return BuildSuccess(result);
         }
@@ -65,11 +65,11 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     /// <inheritdoc />
     public async Task<Result<AuthResult, AuthError>> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
     {
-        await EnsureCacheRegisteredAsync();
+        await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
         try
         {
-            var accounts = await app.GetAccountsAsync();
+            var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
             var account = accounts.FirstOrDefault(a =>
                 string.Equals(a.HomeAccountId?.Identifier, accountId, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(a.Username, accountId, StringComparison.OrdinalIgnoreCase));
@@ -79,7 +79,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
 
             var result = await app
                 .AcquireTokenSilent(entraIdOptions.Value.Scopes, account)
-                .ExecuteAsync(ct);
+                .ExecuteAsync(ct).ConfigureAwait(false);
 
             return BuildSuccess(result);
         }
@@ -104,21 +104,21 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     /// <inheritdoc />
     public async Task SignOutAsync(string accountId, CancellationToken ct = default)
     {
-        await EnsureCacheRegisteredAsync();
+        await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
-        var accounts = await app.GetAccountsAsync();
+        var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
         var account = accounts.FirstOrDefault(a => a.HomeAccountId?.Identifier == accountId);
 
         if (account is not null)
-            await app.RemoveAsync(account);
+            await app.RemoveAsync(account).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetCachedAccountIdsAsync()
     {
-        await EnsureCacheRegisteredAsync();
+        await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
-        var accounts = await app.GetAccountsAsync();
+        var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
 
         return accounts
             .Select(account => account.HomeAccountId.Identifier)
@@ -130,7 +130,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         if (cacheRegistered)
             return;
 
-        await cacheService.RegisterAsync(app);
+        await cacheService.RegisterAsync(app).ConfigureAwait(false);
         cacheRegistered = true;
     }
 

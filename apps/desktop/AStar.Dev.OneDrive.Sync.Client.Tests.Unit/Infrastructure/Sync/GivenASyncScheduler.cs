@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Microsoft.Extensions.Logging;
+using ReactiveUnit = System.Reactive.Unit;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
@@ -29,48 +30,40 @@ public sealed class GivenASyncScheduler
         => SyncScheduler.DefaultInterval.ShouldBe(TimeSpan.FromMinutes(60));
 
     [Fact]
-    public void when_started_then_scheduler_is_not_null()
+    public void when_started_then_result_is_ok()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
 
-        scheduler.StartSync();
+        var result = scheduler.StartSync();
 
-        _ = scheduler.ShouldNotBeNull();
+        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
     }
 
     [Fact]
-    public void when_started_with_default_interval_then_scheduler_is_not_null()
+    public void when_started_with_default_interval_then_result_is_ok()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
 
-        scheduler.StartSync();
+        var result = scheduler.StartSync();
 
-        _ = scheduler.ShouldNotBeNull();
+        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
     }
 
     [Fact]
-    public void when_started_with_custom_interval_then_scheduler_is_not_null()
+    public void when_started_with_custom_interval_then_result_is_ok()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
         var customInterval = TimeSpan.FromMinutes(30);
 
-        scheduler.StartSync(customInterval);
+        var result = scheduler.StartSync(customInterval);
 
-        _ = scheduler.ShouldNotBeNull();
+        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
     }
 
     [Fact]
     public void when_stopped_after_start_then_scheduler_is_not_null()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
         scheduler.StartSync();
 
         scheduler.StopSync();
@@ -81,9 +74,7 @@ public sealed class GivenASyncScheduler
     [Fact]
     public void when_interval_set_after_start_then_scheduler_is_not_null()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
         scheduler.StartSync();
         var newInterval = TimeSpan.FromMinutes(30);
 
@@ -200,9 +191,7 @@ public sealed class GivenASyncScheduler
     [Fact]
     public void when_scheduler_created_then_it_is_async_disposable()
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
 
         _ = scheduler.ShouldBeAssignableTo<IAsyncDisposable>();
     }
@@ -212,16 +201,14 @@ public sealed class GivenASyncScheduler
     [InlineData(30)]
     [InlineData(60)]
     [InlineData(120)]
-    public void when_started_with_various_intervals_then_scheduler_is_not_null(int minutes)
+    public void when_started_with_various_intervals_then_result_is_ok(int minutes)
     {
-        var mockSyncService = Substitute.For<ISyncService>();
-        var mockRepository = Substitute.For<IAccountRepository>();
-        var scheduler = CreateScheduler(mockSyncService, mockRepository, Substitute.For<ISyncRuleRepository>());
+        var scheduler = CreateScheduler(Substitute.For<ISyncService>(), Substitute.For<IAccountRepository>(), Substitute.For<ISyncRuleRepository>());
         var interval = TimeSpan.FromMinutes(minutes);
 
-        scheduler.StartSync(interval);
+        var result = scheduler.StartSync(interval);
 
-        _ = scheduler.ShouldNotBeNull();
+        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
     }
 
     [Fact]
@@ -536,6 +523,36 @@ public sealed class GivenASyncScheduler
 
         syncRelease.SetResult();
         await manualSync;
+    }
+
+    [Fact]
+    public async Task when_trigger_now_called_concurrently_then_second_full_pass_is_skipped()
+    {
+        var firstPassStarted = new TaskCompletionSource();
+        var firstPassRelease = new TaskCompletionSource();
+        var mockSyncService = Substitute.For<ISyncService>();
+        mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                firstPassStarted.TrySetResult();
+                await firstPassRelease.Task;
+            });
+
+        var mockRepository = Substitute.For<IAccountRepository>();
+        mockRepository.GetAllAsync(Arg.Any<CancellationToken>())
+            .Returns([new AccountEntity { Id = new AccountId("pass-account"), Profile = AccountProfileFactory.Create("Test", "test@test.com") }]);
+
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+
+        var firstPass = scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+        await firstPassStarted.Task;
+
+        await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        await mockRepository.Received(1).GetAllAsync(Arg.Any<CancellationToken>());
+
+        firstPassRelease.SetResult();
+        await firstPass;
     }
 
     private static ISyncRuleRepository BuildSyncRuleRepository()

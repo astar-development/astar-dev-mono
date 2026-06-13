@@ -26,6 +26,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using ReactiveUnit = System.Reactive.Unit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Shell;
 
@@ -58,6 +59,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         localizationService.AvailableCultures.Returns([]);
         startupService.RestoreAccountsAsync().Returns(Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Ok([])));
         syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
+        syncScheduler.StartSync(Arg.Any<TimeSpan?>()).Returns(new Result<ReactiveUnit, string>.Ok(ReactiveUnit.Default));
 
         sqliteConnection = new SqliteConnection("Data Source=:memory:");
         sqliteConnection.Open();
@@ -86,7 +88,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localizationService, fileSystem), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());

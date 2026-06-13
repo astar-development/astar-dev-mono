@@ -60,7 +60,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
 
         await CreateSut().ResolveConflictAsync(CreateConflict(), ConflictPolicy.RemoteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -71,6 +71,6 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
 
         await CreateSut().ResolveConflictAsync(CreateConflict(), ConflictPolicy.RemoteWins, TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await _syncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>(), TestContext.Current.CancellationToken);
     }
 }

@@ -16,6 +16,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private readonly IAuthService authService;
     private readonly IGraphService graphService;
     private readonly ILocalizationService loc;
+    private readonly Lock authCtsLock = new();
     private string accountId = string.Empty;
     private string? accessToken;
     private CancellationTokenSource? authCts;
@@ -168,11 +169,16 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
         SetInitialSignInState();
 
-        authCts = new CancellationTokenSource();
+        lock(authCtsLock)
+            authCts = new CancellationTokenSource();
 
         try
         {
-            var result = await authService.SignInInteractiveAsync(authCts.Token);
+            CancellationToken token;
+            lock(authCtsLock)
+                token = authCts!.Token;
+
+            var result = await authService.SignInInteractiveAsync(token);
             _ = result.Match(
                 ok    => { UpdateSuccessfulLoginState(ok); return true; },
                 error => { DispatchAuthError(error); return false; });
@@ -220,8 +226,13 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private void SetFinalSignInState()
     {
         IsWaitingForAuth = false;
-        authCts?.Dispose();
-        authCts = null;
+        CancellationTokenSource? toDispose;
+        lock(authCtsLock)
+        {
+            toDispose = authCts;
+            authCts = null;
+        }
+        toDispose?.Dispose();
     }
 
     private void SetInitialSignInState()
@@ -237,8 +248,12 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     [RelayCommand]
     private async Task CancelAsync()
     {
-        if(authCts is not null)
-            await authCts.CancelAsync();
+        CancellationTokenSource? toCancel;
+        lock(authCtsLock)
+            toCancel = authCts;
+
+        if(toCancel is not null)
+            await toCancel.CancelAsync();
 
         Cancelled?.Invoke(this, EventArgs.Empty);
     }
@@ -316,6 +331,12 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     public void Dispose()
     {
         loc.CultureChanged -= OnCultureChanged;
-        authCts?.Dispose();
+        CancellationTokenSource? toDispose;
+        lock(authCtsLock)
+        {
+            toDispose = authCts;
+            authCts = null;
+        }
+        toDispose?.Dispose();
     }
 }
