@@ -54,6 +54,11 @@ public sealed class SyncedItemEntity
     public VersionInfo Tags { get; set; } = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>());
 
     /// <summary>
+    /// The size of the file in bytes at the time it was last synchronized. Null for folders or when size was not available at sync time.
+    /// </summary>
+    public long? SizeInBytes { get; set; }
+
+    /// <summary>
     /// Navigation property to the associated AccountEntity, allowing for access to the account's profile information, sync configuration, and other related data. This relationship is established through the AccountId foreign key, enabling the sync client to easily retrieve and manage the synchronized item in the context of the corresponding account. The navigation property is marked as nullable to indicate that there may be cases where the account information is not available or has been deleted, allowing for graceful handling of such scenarios within the application.
     /// </summary>
     [ForeignKey(nameof(AccountId))]
