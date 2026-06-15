@@ -85,4 +85,6 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
                    .Where(i => i.AccountId == accountId)
                    .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public Task<IReadOnlyList<SyncedItemSearchResult>> SearchAsync(SyncedItemSearchCriteria criteria, CancellationToken cancellationToken) => throw new NotImplementedException();
 }
