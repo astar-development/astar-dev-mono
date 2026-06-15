@@ -6,13 +6,14 @@ using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
+public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, SyncedFileSearchViewModel search, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
 {
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken ct = default)
@@ -45,6 +46,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             {
                 await files.ActivateAccountAsync(activeAccount.Id.Id).ConfigureAwait(false);
                 await activity.SetActiveAccountAsync(activeAccount.Id.Id, activeAccount.Profile.Email).ConfigureAwait(false);
+                search.SetActiveAccount(activeAccount.Id);
             }
 
             try

@@ -185,4 +185,76 @@ public sealed class GivenASyncedItemRepository
         results[0].TagNames.ShouldContain("Image");
         results[0].TagNames.ShouldContain("Media");
     }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_then_distinct_tags_for_account_are_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        var item = FileItem(remotePath: "/photo.jpg");
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Media", TagName = "Media", IsSpecial = false });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.Count.ShouldBe(2);
+        tags.ShouldContain("Image");
+        tags.ShouldContain("Media");
+    }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_for_account_with_no_classifications_then_empty_list_is_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.Add(FileItem(remotePath: "/file.txt"));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.ShouldNotBeNull();
+        tags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_then_only_tags_for_requested_account_are_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        var itemForAccountOne = FileItem(accountId: "user-1", remotePath: "/photo.jpg");
+        var itemForAccountTwo = FileItem(accountId: "user-2", remotePath: "/video.mp4");
+        db.SyncedItems.AddRange(itemForAccountOne, itemForAccountTwo);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = itemForAccountOne.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = itemForAccountTwo.Id, Level1 = "Video", TagName = "Video", IsSpecial = false });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.Count.ShouldBe(1);
+        tags.ShouldContain("Image");
+        tags.ShouldNotContain("Video");
+    }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_and_multiple_files_share_the_same_tag_then_tag_appears_once()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        var firstItem = FileItem(remotePath: "/photo1.jpg");
+        var secondItem = FileItem(remotePath: "/photo2.jpg");
+        db.SyncedItems.AddRange(firstItem, secondItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = firstItem.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = secondItem.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.Count.ShouldBe(1);
+        tags[0].ShouldBe("Image");
+    }
 }

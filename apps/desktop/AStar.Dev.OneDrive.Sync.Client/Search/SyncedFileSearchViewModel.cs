@@ -59,6 +59,9 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     /// <summary>Localised "Tags" label.</summary>
     public string TagsLabelText => loc.GetLocal("Search.Tags.Label");
 
+    /// <summary>Localised message shown when no classifications exist for the active account.</summary>
+    public string TagsNoClassificationsText => loc.GetLocal("Search.Tags.NoClassifications");
+
     /// <summary>Localised "Duplicates only" toggle label.</summary>
     public string DuplicatesOnlyLabelText => loc.GetLocal("Search.DuplicatesOnly.Label");
 
@@ -78,7 +81,11 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             SelectedTags.Add(tag);
     }
 
-    public void SetActiveAccount(AccountId accountId) => activeAccountId = accountId;
+    public void SetActiveAccount(AccountId accountId)
+    {
+        activeAccountId = accountId;
+        _ = LoadAvailableTagsAsync(accountId);
+    }
 
     [RelayCommand]
     private async Task SearchAsync(CancellationToken cancellationToken)
@@ -114,5 +121,17 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         {
             IsSearching = false;
         }
+    }
+
+    private async Task LoadAvailableTagsAsync(AccountId accountId)
+    {
+        var tags = await repository.GetDistinctTagNamesAsync(accountId, CancellationToken.None).ConfigureAwait(false);
+
+        dispatcher.Post(() =>
+        {
+            AvailableTags.Clear();
+            foreach (var tag in tags)
+                AvailableTags.Add(tag);
+        });
     }
 }

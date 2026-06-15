@@ -24,4 +24,7 @@ public interface ISyncedItemRepository
 
     /// <summary>Searches synced items for the specified account using the provided criteria.</summary>
     Task<IReadOnlyList<SyncedItemSearchResult>> SearchAsync(SyncedItemSearchCriteria criteria, CancellationToken cancellationToken);
+
+    /// <summary>Returns all distinct tag names for synced items belonging to the specified account.</summary>
+    Task<IReadOnlyList<string>> GetDistinctTagNamesAsync(AccountId accountId, CancellationToken cancellationToken);
 }

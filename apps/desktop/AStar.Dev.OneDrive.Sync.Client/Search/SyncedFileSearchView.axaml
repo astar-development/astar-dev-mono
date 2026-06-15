@@ -53,28 +53,38 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Tags multi-select (visible only when tags are available) -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding AvailableTags.Count, Converter={StaticResource IntZeroToBoolConverter}, ConverterParameter=negate}">
+                <!-- Tags multi-select -->
+                <StackPanel Spacing="4">
                     <TextBlock Text="{Binding TagsLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"/>
-                    <ItemsControl ItemsSource="{Binding AvailableTags}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type x:String}">
-                                <CheckBox Content="{Binding}"
-                                          Margin="0,0,8,4"
-                                          FontSize="{StaticResource FontSizeSm}"
-                                          Command="{Binding $parent[UserControl].((search:SyncedFileSearchViewModel)DataContext).ToggleTagCommand}"
-                                          CommandParameter="{Binding}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <TextBlock Text="{Binding TagsNoClassificationsText}"
+                               FontSize="{StaticResource FontSizeSm}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               FontStyle="Italic"
+                               IsVisible="{Binding AvailableTags.Count, Converter={StaticResource IntZeroToBoolConverter}}"/>
+                    <ScrollViewer MaxHeight="120"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MinHeight="0"
+                                  IsVisible="{Binding AvailableTags.Count, Converter={StaticResource IntZeroToBoolConverter}, ConverterParameter=negate}">
+                        <ItemsControl ItemsSource="{Binding AvailableTags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type x:String}">
+                                    <CheckBox Content="{Binding}"
+                                              Margin="0,0,8,4"
+                                              FontSize="{StaticResource FontSizeSm}"
+                                              Command="{Binding $parent[UserControl].((search:SyncedFileSearchViewModel)DataContext).ToggleTagCommand}"
+                                              CommandParameter="{Binding}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </StackPanel>
 
                 <!-- Duplicates toggle + Search button -->
