@@ -1,16 +1,22 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 
 /// <summary>
-/// Loads sync rules for an account, resolves drive and folder IDs, and enumerates
-/// remote delta items — returning raw results for downstream processing.
+/// Loads sync rules for an account, resolves drive and folder IDs, and streams
+/// remote delta items — populating a <see cref="RemoteEnumerationContext"/> for downstream processing.
 /// </summary>
 public interface IRemoteFolderEnumerator
 {
     /// <summary>
-    /// Performs a full remote enumeration pass for <paramref name="account"/>,
-    /// returning the raw delta-item list alongside seen IDs and rules.
+    /// Loads rules and synced-item state into <paramref name="context"/>, then yields each
+    /// discovered <see cref="DeltaItem"/> as it arrives from the Graph API.
+    /// <para>
+    /// <see cref="RemoteEnumerationContext.Rules"/>, <see cref="RemoteEnumerationContext.SyncedItems"/>,
+    /// and <see cref="RemoteEnumerationContext.HadNoRules"/> are set before the first item is yielded.
+    /// <see cref="RemoteEnumerationContext.SeenRemoteIds"/> is updated for each yielded item.
+    /// </para>
     /// </summary>
-    Task<RemoteEnumerationResult> EnumerateAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
+    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
 }

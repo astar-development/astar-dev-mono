@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
+
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 /// <summary>
@@ -41,6 +42,37 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
         });
 
         db.SyncJobs.AddRange(entities);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task EnqueueJobAsync(SyncJob job, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = new SyncJobEntity
+        {
+            Id             = job.Status.Id,
+            AccountId      = job.Remote.AccountId,
+            FolderId       = job.Remote.FolderId,
+            RemoteItemId   = job.Remote.RemoteItemId,
+            RelativePath   = job.Target.RelativePath,
+            LocalPath      = job.Target.LocalPath,
+            Direction      = job switch
+            {
+                DownloadSyncJob => SyncDirection.Download,
+                UploadSyncJob   => SyncDirection.Upload,
+                DeleteSyncJob   => SyncDirection.Delete,
+                _               => throw new System.Diagnostics.UnreachableException()
+            },
+            State          = job.Status.State,
+            DownloadUrl    = (job as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
+            FileSize       = job.Metadata.FileSize,
+            RemoteModified = job.Metadata.RemoteModified,
+            QueuedAt       = job.Status.QueuedAt
+        };
+
+        db.SyncJobs.Add(entity);
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 

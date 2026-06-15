@@ -33,7 +33,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     }
 
     private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100, MaxConcurrentDownloads = 4 });
 
     private ISyncPassOrchestrator CreateSut()
     {
@@ -58,7 +58,11 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
     private static AccountSyncConfig CreateSyncConfig(string localSyncPath = "/path/to/sync") => AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath));
 
-    private static RemoteEnumerationResult EmptyEnumerationResult() => new([], new HashSet<string>(), [], []);
+    private static async IAsyncEnumerable<DeltaItem> EmptyStream()
+    {
+        await Task.CompletedTask;
+        yield break;
+    }
 
     private static SyncJob CreateMinimalDownloadJob()
     {
@@ -73,10 +77,10 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(EmptyEnumerationResult());
-        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<SyncJob>)[]);
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(EmptyStream());
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+            .Returns((SyncJob?)null);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
@@ -87,12 +91,12 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.EnumerateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(EmptyEnumerationResult());
-        _downloadJobBuilder.BuildAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<IReadOnlyList<DeltaItem>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
-            .Returns((IReadOnlyList<SyncJob>)[CreateMinimalDownloadJob()]);
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(EmptyStream());
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+            .Returns((SyncJob?)null);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
-            .Returns([]);
+            .Returns([CreateMinimalDownloadJob()]);
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<AccountEntity>());
     }
@@ -134,7 +138,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     }
 
     [Fact]
-    public async Task when_jobs_exist_then_localisation_key_Sync_SyncingFiles_is_used()
+    public async Task when_jobs_exist_then_localisation_key_Sync_SyncingFiles_is_not_used_in_streaming_pipeline()
     {
         SetupWithOneDownloadJob();
 
@@ -142,7 +146,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
-        _localizationService.Received().GetLocal("Sync.SyncingFiles", Arg.Any<object[]>());
+        _localizationService.DidNotReceive().GetLocal("Sync.SyncingFiles", Arg.Any<object[]>());
     }
 
     [Fact]

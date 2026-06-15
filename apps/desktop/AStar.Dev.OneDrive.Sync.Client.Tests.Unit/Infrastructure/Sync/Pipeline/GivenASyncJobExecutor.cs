@@ -36,6 +36,13 @@ public sealed class GivenASyncJobExecutor
         _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<KeywordMapping>>([]));
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
         _settingsService.Current.Returns(new AppSettings());
+
+        _pipeline.RunAsync(Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                await foreach (var _ in call.Arg<IAsyncEnumerable<SyncJob>>().ConfigureAwait(false))
+                { }
+            });
     }
 
     private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRepository, mockFileSystem, _settingsService, _fileAutoCategorisor);
@@ -72,7 +79,15 @@ public sealed class GivenASyncJobExecutor
 
     private void SimulateJobCompleted(SyncJob completedJob)
         => _pipeline.When(p => p.RunAsync(Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
-                    .Do(call => call.Arg<Action<JobCompletedEventArgs>>()(new JobCompletedEventArgs(completedJob)));
+                    .Do(call =>
+                    {
+                        var jobs = call.Arg<IAsyncEnumerable<SyncJob>>();
+                        Task.Run(async () =>
+                        {
+                            await foreach (var _ in jobs.ConfigureAwait(false)) { }
+                        }).GetAwaiter().GetResult();
+                        call.Arg<Action<JobCompletedEventArgs>>()(new JobCompletedEventArgs(completedJob));
+                    });
 
     [Fact]
     public async Task when_jobs_list_is_empty_then_pipeline_is_not_called()
@@ -214,6 +229,11 @@ public sealed class GivenASyncJobExecutor
         _pipeline.When(p => p.RunAsync(Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
             .Do(call =>
             {
+                var jobs = call.Arg<IAsyncEnumerable<SyncJob>>();
+                Task.Run(async () =>
+                {
+                    await foreach (var _ in jobs.ConfigureAwait(false)) { }
+                }).GetAwaiter().GetResult();
                 var onJobCompleted = call.Arg<Action<JobCompletedEventArgs>>();
                 onJobCompleted(new JobCompletedEventArgs(job1.Complete()));
                 onJobCompleted(new JobCompletedEventArgs(job2.Complete()));
@@ -257,7 +277,15 @@ public sealed class GivenASyncJobExecutor
     {
         var job = MakeJob("item-1", SyncDirection.Download);
         _pipeline.When(p => p.RunAsync(Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>()))
-            .Do(call => call.Arg<Action<SyncProgressEventArgs>>()(new SyncProgressEventArgs("user-1", string.Empty, 1, 1, "file.txt", SyncState.Syncing)));
+            .Do(call =>
+            {
+                var jobs = call.Arg<IAsyncEnumerable<SyncJob>>();
+                Task.Run(async () =>
+                {
+                    await foreach (var _ in jobs.ConfigureAwait(false)) { }
+                }).GetAwaiter().GetResult();
+                call.Arg<Action<SyncProgressEventArgs>>()(new SyncProgressEventArgs("user-1", string.Empty, 1, 1, "file.txt", SyncState.Syncing));
+            });
 
         var progressReceived = new List<SyncProgressEventArgs>();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");

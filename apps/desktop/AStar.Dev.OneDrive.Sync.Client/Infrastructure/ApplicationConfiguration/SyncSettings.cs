@@ -12,4 +12,8 @@ public record SyncSettings
     /// </summary>
     [Range(1, int.MaxValue, ErrorMessage = "ProgressReportInterval must be at least 1.")]
     public required int ProgressReportInterval { get; init; }
+
+    /// <summary>Maximum number of parallel download workers. Must be between 1 and 8.</summary>
+    [Range(1, 8, ErrorMessage = "MaxConcurrentDownloads must be between 1 and 8.")]
+    public required int MaxConcurrentDownloads { get; init; }
 }
