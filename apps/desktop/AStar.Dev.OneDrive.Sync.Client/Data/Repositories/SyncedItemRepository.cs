@@ -139,4 +139,17 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         return items.Select(i => SyncedItemSearchResultFactory.Create(i.Id, i.AccountId, i.RemoteItemId, i.RemotePath, i.LocalPath, i.RemoteModifiedAt, i.SizeInBytes, i.TagNames)).ToList();
     }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<string>> GetDistinctTagNamesAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        return await db.SyncedItemClassifications
+            .Where(c => c.SyncedItem!.AccountId == accountId)
+            .Select(c => c.TagName)
+            .Distinct()
+            .OrderBy(tag => tag)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

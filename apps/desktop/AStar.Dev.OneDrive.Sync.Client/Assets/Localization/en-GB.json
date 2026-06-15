@@ -207,6 +207,7 @@
   "Search.MinSize.Label": "Min size (bytes)",
   "Search.MaxSize.Label": "Max size (bytes)",
   "Search.Tags.Label": "Tags",
+  "Search.Tags.NoClassifications": "No classifications found.",
   "Search.DuplicatesOnly.Label": "Duplicates only",
   "Search.Button": "Search",
   "Search.DuplicateDisclaimer": "Showing duplicate files only.",
