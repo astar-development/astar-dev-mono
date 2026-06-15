@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ILocalizationService localizationService) : ISyncPassOrchestrator
 {
-    public async Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default)
+    public async Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default)
     {
         var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
@@ -52,7 +52,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         }
 
         if (hasJobs)
-            await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(ct), context.SyncedItems, onProgress ?? (_ => { }), onJobCompleted ?? (_ => { }), ct).ConfigureAwait(false);
+            await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(ct), context.SyncedItems, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), ct).ConfigureAwait(false);
 
         await producerTask.ConfigureAwait(false);
 

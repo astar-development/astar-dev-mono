@@ -31,7 +31,7 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
         }
     }
 
-    internal void RecordCompletion(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted)
+    internal async Task RecordCompletion(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted)
     {
         int completedSoFar;
         bool shouldReportProgress;
@@ -51,6 +51,6 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
         if (shouldReportProgress)
             onProgress(new SyncProgressEventArgs(accountId, folderId, completedSoFar, currentTotal, job.Target.RelativePath, SyncState.Syncing));
 
-        onJobCompleted(new JobCompletedEventArgs(completedJob));
+        await onJobCompleted(new JobCompletedEventArgs(completedJob)).ConfigureAwait(false);
     }
 }

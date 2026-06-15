@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers, ISyncRepository syncRepository, ILogger<SyncWorker> logger) : ISyncWorker
 {
     /// <inheritdoc />
-    public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
+    public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncJob, bool, string?, Task> onJobComplete, CancellationToken ct)
     {
         await foreach (var job in reader.ReadAllAsync(ct))
         {
@@ -61,7 +61,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
             }
             finally
             {
-                onJobComplete(currentJob, success, error);
+                await onJobComplete(currentJob, success, error).ConfigureAwait(false);
             }
         }
     }

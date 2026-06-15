@@ -69,7 +69,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                     ConflictDetected?.Invoke(this, conflict);
                 },
                 args => SyncProgressChanged?.Invoke(this, args),
-                args => JobCompleted?.Invoke(this, args),
+                args => { JobCompleted?.Invoke(this, args); return Task.CompletedTask; },
                 ct).ConfigureAwait(false);
 
             if (!didRun)

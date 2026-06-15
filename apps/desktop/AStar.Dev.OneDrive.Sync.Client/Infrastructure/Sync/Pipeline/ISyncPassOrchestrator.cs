@@ -15,5 +15,5 @@ public interface ISyncPassOrchestrator
     /// <paramref name="syncConfig"/> is the unwrapped sync configuration, resolved by the caller before invoking this method.
     /// Returns <see langword="true"/> when at least one sync rule was active; <see langword="false"/> when no folders were selected.
     /// </summary>
-    Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Action<JobCompletedEventArgs>? onJobCompleted = null, CancellationToken ct = default);
+    Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default);
 }

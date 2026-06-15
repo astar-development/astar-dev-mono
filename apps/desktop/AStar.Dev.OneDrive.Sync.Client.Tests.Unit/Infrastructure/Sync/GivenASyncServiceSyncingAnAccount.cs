@@ -38,7 +38,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
     private void SetupOrchestratorReturns(bool didRun) =>
-        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<CancellationToken>())
+        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
             .Returns(didRun);
 
     [Fact]
@@ -132,7 +132,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     public async Task when_orchestrator_throws_operation_cancelled_then_progress_is_sync_cancelled_localisation_key_with_idle_state()
     {
         SetupAuthSuccess();
-        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<CancellationToken>())
+        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(new OperationCanceledException()));
 
         string? capturedMessage = null;
@@ -157,7 +157,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     public async Task when_orchestrator_throws_unexpected_exception_then_progress_is_error_state_with_exception_message()
     {
         SetupAuthSuccess();
-        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Action<JobCompletedEventArgs>>(), Arg.Any<CancellationToken>())
+        _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<bool>(new InvalidOperationException("unexpected")));
 
         SyncState? capturedState = null;
@@ -251,7 +251,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             Arg.Do<Func<CancellationToken, Task<string>>>(f => capturedFactory = f),
             Arg.Any<Func<SyncConflict, Task>>(),
             Arg.Any<Action<SyncProgressEventArgs>>(),
-            Arg.Any<Action<JobCompletedEventArgs>>(),
+            Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -276,7 +276,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             Arg.Do<Func<CancellationToken, Task<string>>>(f => capturedFactory = f),
             Arg.Any<Func<SyncConflict, Task>>(),
             Arg.Any<Action<SyncProgressEventArgs>>(),
-            Arg.Any<Action<JobCompletedEventArgs>>(),
+            Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>())
             .Returns(true);
 

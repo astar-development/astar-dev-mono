@@ -45,6 +45,8 @@ public sealed class GivenASyncWorker
         {
             completed.Add(job);
             errors.Add(error);
+
+            return Task.CompletedTask;
         }, ct);
 
         return (completed, errors);
@@ -137,7 +139,7 @@ public sealed class GivenASyncWorker
         channel.Writer.TryWrite(job);
         channel.Writer.Complete();
 
-        await CreateSut().RunAsync(channel.Reader, AccountId, tokenFactory, (_, _, _) => { }, TestContext.Current.CancellationToken);
+        await CreateSut().RunAsync(channel.Reader, AccountId, tokenFactory, (_, _, _) => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _handler.Received(1).HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
     }
