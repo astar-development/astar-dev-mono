@@ -13,6 +13,7 @@
   "Nav.Tooltip.Accounts": "US-Accounts — add or remove OneDrive accounts",
   "Nav.Tooltip.Classifications": "US-Classifications — manage keyword rules",
   "Nav.Tooltip.Settings": "US-Settings — theme, language and sync policy",
+  "Nav.Tooltip.Search": "US-Search — find synced files by name, size, or tags",
   "StatusBar.Synced": "US-Synced",
   "StatusBar.Syncing": "US-Syncing…",
   "StatusBar.Pending": "US-{0} pending",

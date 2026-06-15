@@ -18,6 +18,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using Microsoft.Extensions.Logging;
 using System.IO.Abstractions;
@@ -53,7 +54,7 @@ public sealed class GivenAccountsViewDisplay
         var classificationRules = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
         var statusBar = new StatusBarViewModel(accounts, localization);
 
-        return new MainWindowViewModel(Substitute.For<IApplicationInitializer>(), Substitute.For<ISyncScheduler>(), accounts, files, dashboard, activity, settings, classificationRules, statusBar, localization, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(Substitute.For<IApplicationInitializer>(), Substitute.For<ISyncScheduler>(), accounts, files, dashboard, activity, settings, classificationRules, new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), Substitute.For<IAccountRepository>(), Substitute.For<IUiDispatcher>(), localization), statusBar, localization, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private static AccountsView CreateViewWithViewModel(MainWindowViewModel viewModel)

@@ -14,5 +14,6 @@ public enum NavSection
     Accounts = 5,
     Classifications = 6,
     Settings = 7,
-    Help = 8
+    Help = 8,
+    Search = 9
 }

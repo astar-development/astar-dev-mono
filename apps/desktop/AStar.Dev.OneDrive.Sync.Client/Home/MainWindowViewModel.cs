@@ -3,10 +3,12 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,7 +21,7 @@ using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : ObservableObject
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, SyncedFileSearchViewModel search, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : ObservableObject
 {
     private readonly ILogger<MainWindowViewModel> logger = logger;
 
@@ -30,6 +32,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     [NotifyPropertyChangedFor(nameof(IsAccountsActive))]
     [NotifyPropertyChangedFor(nameof(IsClassificationsActive))]
     [NotifyPropertyChangedFor(nameof(IsSettingsActive))]
+    [NotifyPropertyChangedFor(nameof(IsSearchActive))]
     [NotifyPropertyChangedFor(nameof(ActiveView))]
     public partial NavSection ActiveSection { get; set; } = NavSection.Dashboard;
 
@@ -39,6 +42,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     public bool IsAccountsActive => ActiveSection == NavSection.Accounts;
     public bool IsClassificationsActive => ActiveSection == NavSection.Classifications;
     public bool IsSettingsActive => ActiveSection == NavSection.Settings;
+    public bool IsSearchActive => ActiveSection == NavSection.Search;
 
     /// <summary>Localised "Accounts" panel heading.</summary>
     public string AccountsPanelHeading => localizationService.GetLocal("MainWindow.Accounts");
@@ -94,6 +98,9 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     /// <summary>Localised tooltip for the Settings nav rail button.</summary>
     public string NavTooltipSettingsText => localizationService.GetLocal("Nav.Tooltip.Settings");
 
+    /// <summary>Localised tooltip for the Search nav rail button.</summary>
+    public string NavTooltipSearchText => localizationService.GetLocal("Nav.Tooltip.Search");
+
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
@@ -105,6 +112,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         NavSection.Accounts => AccountsViewInstance,
         NavSection.Classifications => FileClassificationsViewInstance,
         NavSection.Settings => SettingsViewInstance,
+        NavSection.Search => SearchViewInstance,
         _ => null
     };
 
@@ -168,6 +176,16 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         }
     }
 
+    private SyncedFileSearchView SearchViewInstance
+    {
+        get
+        {
+            field ??= new SyncedFileSearchView { DataContext = search };
+
+            return field;
+        }
+    }
+
     public AccountsViewModel Accounts => accounts;
 
     public FilesViewModel Files => files;
@@ -217,6 +235,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
             await Try.RunAsync(async () =>
                 {
                     ActiveSection = NavSection.Files;
+                    search.SetActiveAccount(new AccountId(card.Id));
                     await files.ActivateAccountAsync(card.Id);
                     await activity.SetActiveAccountAsync(card.Id, card.Email);
                     return Unit.Default;
@@ -238,6 +257,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     files.AddAccount(account);
                     dashboard.AddAccount(account);
                     settings.AddAccount(account);
+                    search.SetActiveAccount(account.Id);
                     ActiveSection = NavSection.Files;
                     await files.ActivateAccountAsync(account.Id.Id);
                     await activity.SetActiveAccountAsync(account.Id.Id, account.Profile.Email);
