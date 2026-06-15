@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 
@@ -18,10 +19,11 @@ public sealed class GivenASyncedFileSearchViewModel
     private readonly IFileTypeClassifier fileTypeClassifier = Substitute.For<IFileTypeClassifier>();
     private readonly IAccountRepository accountRepository = Substitute.For<IAccountRepository>();
     private readonly IUiDispatcher dispatcher = new InlineUiDispatcher();
+    private readonly ILocalizationService loc = Substitute.For<ILocalizationService>();
 
     private SyncedFileSearchViewModel CreateSut()
     {
-        var vm = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher);
+        var vm = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
         vm.SetActiveAccount(TestAccountId);
         return vm;
     }
@@ -127,5 +129,59 @@ public sealed class GivenASyncedFileSearchViewModel
         var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
 
         vm.OpenFileCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_instantiated_then_search_title_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.Title").Returns("Search files");
+        var sut = CreateSut();
+
+        sut.SearchTitleText.ShouldBe("Search files");
+    }
+
+    [Fact]
+    public void when_instantiated_then_search_button_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.Button").Returns("Search");
+        var sut = CreateSut();
+
+        sut.SearchButtonText.ShouldBe("Search");
+    }
+
+    [Fact]
+    public void when_instantiated_then_duplicate_disclaimer_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.DuplicateDisclaimer").Returns("Showing duplicate files only.");
+        var sut = CreateSut();
+
+        sut.DuplicateDisclaimerText.ShouldBe("Showing duplicate files only.");
+    }
+
+    [Fact]
+    public void when_result_is_not_local_present_then_card_opacity_is_reduced()
+    {
+        var result = MakeResult(localPath: "/this/path/does/not/exist/astar_test_file.jpg");
+        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+
+        vm.CardOpacity.ShouldBe(0.4);
+    }
+
+    [Fact]
+    public void when_result_is_local_present_then_card_opacity_is_full()
+    {
+        var existingPath = Path.GetTempFileName();
+        try
+        {
+            fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
+            var result = MakeResult(localPath: existingPath);
+            var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+
+            vm.CardOpacity.ShouldBe(1.0);
+        }
+        finally
+        {
+            File.Delete(existingPath);
+        }
     }
 }

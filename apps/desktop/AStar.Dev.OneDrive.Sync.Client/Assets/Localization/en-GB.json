@@ -199,5 +199,15 @@
   "Sync.NoChanges":                "No changes",
   "Dashboard.NoSyncPath": "No local sync path configured",
   "Dashboard.Pending": "Pending",
-  "Dashboard.AllSynced": "All synced"
+  "Dashboard.AllSynced": "All synced",
+  "Search.Title": "Search files",
+  "Search.Name.Label": "Name",
+  "Search.Name.Placeholder": "Enter filename...",
+  "Search.MinSize.Label": "Min size (bytes)",
+  "Search.MaxSize.Label": "Max size (bytes)",
+  "Search.Tags.Label": "Tags",
+  "Search.DuplicatesOnly.Label": "Duplicates only",
+  "Search.Button": "Search",
+  "Search.DuplicateDisclaimer": "Showing duplicate files only.",
+  "Search.NoResults": "No results found."
 }
