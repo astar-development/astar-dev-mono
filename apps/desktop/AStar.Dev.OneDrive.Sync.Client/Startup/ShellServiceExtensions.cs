@@ -29,6 +29,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         _ = services.AddSingleton<IFeatureRegistrar>(featureAvailability);
         _ = services.AddSingleton<IFileManagerService, FileManagerService>();
+        _ = services.AddTransient<IFileOpenerService, FileOpenerService>();
         _ = services.AddSingleton(inMemoryLogSink);
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, RealFileSystem>();
