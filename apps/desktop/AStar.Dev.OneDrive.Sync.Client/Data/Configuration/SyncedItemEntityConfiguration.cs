@@ -17,6 +17,7 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
                    .HasConversion(id => id.Id, str => new OneDriveItemId(str));
         _ = builder.HasIndex(e => new { e.AccountId, e.RemoteItemId }).IsUnique();
         _ = builder.HasIndex(e => new { e.AccountId, e.LocalPath });
+        _ = builder.HasIndex(e => new { e.AccountId, e.SizeInBytes });
         _ = builder.OwnsOne(e => e.Tags, b =>
         {
             _ = b.Property(v => v.ETag).HasColumnName("ETag")

@@ -27,7 +27,8 @@ public static class SyncedItemEntityFactory
             LocalPath = localPath,
             IsFolder = false,
             RemoteModifiedAt = item.LastModified.MapOrDefault(v => v, DateTimeOffset.MinValue),
-            Tags = item.VersionInfo
+            Tags = item.VersionInfo,
+            SizeInBytes = item.Size
         };
 
     /// <summary>
@@ -48,7 +49,8 @@ public static class SyncedItemEntityFactory
             LocalPath = localPath,
             IsFolder = true,
             RemoteModifiedAt = DateTimeOffset.MinValue,
-            Tags = item.VersionInfo
+            Tags = item.VersionInfo,
+            SizeInBytes = null
         };
 
     /// <summary>
@@ -68,7 +70,8 @@ public static class SyncedItemEntityFactory
             LocalPath = job.Target.LocalPath,
             IsFolder = false,
             RemoteModifiedAt = job.Metadata.RemoteModified,
-            Tags = job.Metadata.VersionInfo.Match(v => v, () => VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()))
+            Tags = job.Metadata.VersionInfo.Match(v => v, () => VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())),
+            SizeInBytes = job.Metadata.FileSize
         };
 
     /// <summary>
@@ -91,6 +94,7 @@ public static class SyncedItemEntityFactory
             RemotePath = remotePath,
             LocalPath = job.Target.LocalPath,
             IsFolder = false,
-            RemoteModifiedAt = new DateTimeOffset(fileSystem.FileInfo.New(job.Target.LocalPath).LastWriteTimeUtc, TimeSpan.Zero)
+            RemoteModifiedAt = new DateTimeOffset(fileSystem.FileInfo.New(job.Target.LocalPath).LastWriteTimeUtc, TimeSpan.Zero),
+            SizeInBytes = fileSystem.FileInfo.New(job.Target.LocalPath).Length
         };
 }
