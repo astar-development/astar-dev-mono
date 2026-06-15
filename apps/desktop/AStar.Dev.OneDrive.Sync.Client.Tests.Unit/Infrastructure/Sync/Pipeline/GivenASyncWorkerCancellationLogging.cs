@@ -50,7 +50,7 @@ public sealed class GivenASyncWorkerCancellationLogging
 
         try
         {
-            await CreateSut(logger).RunAsync(channel.Reader, AccountId, _ => Task.FromResult(AccessToken), (_, _, _) => { }, cts.Token);
+            await CreateSut(logger).RunAsync(channel.Reader, AccountId, _ => Task.FromResult(AccessToken), (_, _, _) => Task.CompletedTask, cts.Token);
         }
         catch (OperationCanceledException) { }
 

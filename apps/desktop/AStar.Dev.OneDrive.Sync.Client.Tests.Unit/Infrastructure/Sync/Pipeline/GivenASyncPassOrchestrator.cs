@@ -220,7 +220,7 @@ public sealed class GivenASyncPassOrchestrator
             Arg.Any<IAsyncEnumerable<SyncJob>>(),
             Arg.Any<Dictionary<string, SyncedItemEntity>>(),
             Arg.Any<Action<SyncProgressEventArgs>>(),
-            Arg.Any<Action<JobCompletedEventArgs>>(),
+            Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>());
     }
 

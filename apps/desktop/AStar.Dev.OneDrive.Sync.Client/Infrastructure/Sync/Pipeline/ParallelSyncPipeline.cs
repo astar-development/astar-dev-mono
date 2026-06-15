@@ -25,13 +25,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository, ILogger<ParallelSyncPipeline> logger, IOptions<SyncSettings> syncSettings) : ISyncPipeline
 {
     /// <inheritdoc />
-    public async Task RunAsync(IAsyncEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, int workerCount = 4, CancellationToken ct = default)
+    public async Task RunAsync(IAsyncEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, string accountId, string folderId, int workerCount = 4, CancellationToken ct = default)
     {
         var tracker = new SyncProgressTracker(accountId, folderId, syncSettings.Value.ProgressReportInterval);
         var channel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(workerId => workerFactory.Create(workerId).RunAsync(channel.Reader, accountId, tokenFactory, (job, success, error) => tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted), ct))
+            .Select(workerId => workerFactory.Create(workerId).RunAsync(channel.Reader, accountId, tokenFactory, async (job, success, error) => await tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted).ConfigureAwait(false), ct))
             .ToList();
 
         int enqueued = 0;

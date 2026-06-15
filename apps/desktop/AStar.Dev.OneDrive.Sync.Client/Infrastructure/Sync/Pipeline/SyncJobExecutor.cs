@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRepository classificationRepository, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor) : ISyncJobExecutor
 {
     /// <inheritdoc />
-    public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct)
+    public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
     {
         var enumerator = jobs.GetAsyncEnumerator(ct);
         bool hasFirst;
@@ -35,48 +35,41 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             return;
         }
 
-        var successfulJobs = new ConcurrentBag<SyncJob>();
+        var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct).ConfigureAwait(false);
         var firstJob = enumerator.Current;
 
         await syncPipeline.RunAsync(
             EnqueueAndYield(firstJob, enumerator, ct),
             tokenFactory,
             onProgress,
-            args =>
+            async args =>
             {
                 if (args.Job.Status.State == SyncJobState.Completed)
-                    successfulJobs.Add(args.Job);
-                onJobCompleted(args);
+                {
+                    string remotePath = NormaliseRemotePath(args.Job.Target.RelativePath);
+
+                    if (args.Job is DownloadSyncJob)
+                    {
+                        var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, args.Job, remotePath);
+                        int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
+                        syncedItems[args.Job.Remote.RemoteItemId.Id] = entity;
+                        await ClassifyAsync(syncedItemId, remotePath, mappings, ct).ConfigureAwait(false);
+                    }
+                    else if (args.Job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
+                    {
+                        var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, uploadedId.Value, remotePath, fileSystem);
+                        int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
+                        syncedItems[uploadedId.Value] = entity;
+                        await ClassifyAsync(syncedItemId, remotePath, mappings, ct).ConfigureAwait(false);
+                    }
+                }
+
+                await onJobCompleted(args).ConfigureAwait(false);
             },
             account.Id.Id,
             string.Empty,
             settingsService.Current.ConcurrentWorkerCount,
             ct).ConfigureAwait(false);
-
-        if (successfulJobs.IsEmpty)
-            return;
-
-        var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct).ConfigureAwait(false);
-
-        foreach (var job in successfulJobs)
-        {
-            string remotePath = NormaliseRemotePath(job.Target.RelativePath);
-
-            if (job is DownloadSyncJob)
-            {
-                var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, job, remotePath);
-                int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
-                syncedItems[job.Remote.RemoteItemId.Id] = entity;
-                await ClassifyAsync(syncedItemId, remotePath, mappings, ct).ConfigureAwait(false);
-            }
-            else if (job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
-            {
-                var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, uploadedId.Value, remotePath, fileSystem);
-                int syncedItemId = await syncedItemRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
-                syncedItems[uploadedId.Value] = entity;
-                await ClassifyAsync(syncedItemId, remotePath, mappings, ct).ConfigureAwait(false);
-            }
-        }
     }
 
     private async IAsyncEnumerable<SyncJob> EnqueueAndYield(SyncJob first, IAsyncEnumerator<SyncJob> rest, [EnumeratorCancellation] CancellationToken ct = default)
