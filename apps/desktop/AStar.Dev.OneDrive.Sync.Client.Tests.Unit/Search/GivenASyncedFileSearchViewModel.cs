@@ -184,4 +184,32 @@ public sealed class GivenASyncedFileSearchViewModel
             File.Delete(existingPath);
         }
     }
+
+    [Fact]
+    public async Task when_set_active_account_is_called_then_available_tags_are_populated_from_repository()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([]);
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video", "Document"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+
+        sut.SetActiveAccount(TestAccountId);
+        await Task.Yield();
+
+        sut.AvailableTags.ShouldContain("Image");
+        sut.AvailableTags.ShouldContain("Video");
+        sut.AvailableTags.ShouldContain("Document");
+    }
+
+    [Fact]
+    public async Task when_set_active_account_is_called_and_repository_returns_no_tags_then_available_tags_is_empty()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([]);
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(Array.Empty<string>());
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+
+        sut.SetActiveAccount(TestAccountId);
+        await Task.Yield();
+
+        sut.AvailableTags.ShouldBeEmpty();
+    }
 }
