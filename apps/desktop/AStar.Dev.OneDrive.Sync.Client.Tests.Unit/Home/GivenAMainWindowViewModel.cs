@@ -18,6 +18,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using Microsoft.Extensions.Logging;
@@ -62,12 +63,13 @@ public sealed class GivenAMainWindowViewModel
     }
 
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
+    private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), _accountRepository, Substitute.For<IUiDispatcher>(), _localizationService);
 
     private MainWindowViewModel CreateSut()
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     [Fact]
@@ -135,7 +137,7 @@ public sealed class GivenAMainWindowViewModel
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
         accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") }, _localizationService);
-        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
@@ -160,5 +162,15 @@ public sealed class GivenAMainWindowViewModel
         await sut.InitialiseAsync();
 
         await _initializer.Received(1).InitializeAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public void when_navigate_to_search_then_is_search_active_is_true()
+    {
+        var sut = CreateSut();
+
+        sut.NavigateCommand.Execute(NavSection.Search);
+
+        sut.IsSearchActive.ShouldBeTrue();
     }
 }

@@ -20,6 +20,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using Microsoft.Data.Sqlite;
@@ -88,7 +89,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localizationService, fileSystem), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localizationService, fileSystem), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), accountRepository, new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
