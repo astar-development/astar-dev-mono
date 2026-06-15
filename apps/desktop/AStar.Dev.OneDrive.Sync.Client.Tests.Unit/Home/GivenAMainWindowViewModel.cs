@@ -161,4 +161,14 @@ public sealed class GivenAMainWindowViewModel
 
         await _initializer.Received(1).InitializeAsync(Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public void when_navigate_to_search_then_is_search_active_is_true()
+    {
+        var sut = CreateSut();
+
+        sut.NavigateCommand.Execute(NavSection.Search);
+
+        sut.IsSearchActive.ShouldBeTrue();
+    }
 }
