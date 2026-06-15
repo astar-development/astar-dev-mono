@@ -30,152 +30,152 @@ public sealed class GivenASyncProgressTracker
         return tracker;
     }
 
-    private static void CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs>? onJobCompleted = null)
+    private static async Task CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task>? onJobCompleted = null)
     {
         for (var i = 0; i < count; i++)
-            sut.RecordCompletion(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => { }));
+            await sut.RecordCompletion(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => Task.CompletedTask));
     }
 
     [Fact]
-    public void when_single_job_completes_then_sync_state_is_syncing()
+    public async Task when_single_job_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1);
 
-        sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => { });
+        await sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public void when_job_succeeds_then_on_job_completed_receives_completed_state()
+    public async Task when_job_succeeds_then_on_job_completed_receives_completed_state()
     {
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, completedEvents.Add);
+        await sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Completed);
     }
 
     [Fact]
-    public void when_job_fails_then_on_job_completed_receives_failed_state()
+    public async Task when_job_fails_then_on_job_completed_receives_failed_state()
     {
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        sut.RecordCompletion(MakeDownloadJob(), false, "download error", _ => { }, completedEvents.Add);
+        await sut.RecordCompletion(MakeDownloadJob(), false, "download error", _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Failed);
     }
 
     [Fact]
-    public void when_single_job_completes_then_on_progress_is_called_once()
+    public async Task when_single_job_completes_then_on_progress_is_called_once()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1);
 
-        sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => { });
+        await sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void when_job_completes_then_on_job_completed_is_called_once()
+    public async Task when_job_completes_then_on_job_completed_is_called_once()
     {
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, completedEvents.Add);
+        await sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void when_last_of_two_jobs_completes_then_sync_state_is_syncing()
+    public async Task when_last_of_two_jobs_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(2);
 
-        sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => { });
-        sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => { });
+        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
+        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents.Last().SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public void when_99_of_1000_jobs_complete_then_no_progress_event_fires()
+    public async Task when_99_of_1000_jobs_complete_then_no_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1000);
 
-        CompleteJobs(sut, 99, progressEvents.Add);
+        await CompleteJobs(sut, 99, progressEvents.Add);
 
         progressEvents.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_100th_of_1000_jobs_completes_then_exactly_one_progress_event_fires()
+    public async Task when_100th_of_1000_jobs_completes_then_exactly_one_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1000);
 
-        CompleteJobs(sut, 100, progressEvents.Add);
+        await CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void when_100th_of_1000_jobs_completes_then_sync_state_is_syncing()
+    public async Task when_100th_of_1000_jobs_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1000);
 
-        CompleteJobs(sut, 100, progressEvents.Add);
+        await CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public void when_201_jobs_complete_then_progress_fires_at_100_200_and_final()
+    public async Task when_201_jobs_complete_then_progress_fires_at_100_200_and_final()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(201);
 
-        CompleteJobs(sut, 201, progressEvents.Add);
+        await CompleteJobs(sut, 201, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(3);
     }
 
     [Fact]
-    public void when_final_job_completes_at_non_100_boundary_then_progress_still_fires()
+    public async Task when_final_job_completes_at_non_100_boundary_then_progress_still_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(999);
 
-        CompleteJobs(sut, 999, progressEvents.Add);
+        await CompleteJobs(sut, 999, progressEvents.Add);
 
         progressEvents.Last().SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public void when_total_is_exactly_100_then_only_one_progress_event_fires()
+    public async Task when_total_is_exactly_100_then_only_one_progress_event_fires()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(100);
 
-        CompleteJobs(sut, 100, progressEvents.Add);
+        await CompleteJobs(sut, 100, progressEvents.Add);
 
         progressEvents.Count.ShouldBe(1);
     }
 
     [Fact]
-    public void when_on_job_completed_fires_for_every_job_regardless_of_throttle()
+    public async Task when_on_job_completed_fires_for_every_job_regardless_of_throttle()
     {
         var jobCompletedCount = 0;
         var sut = CreateTracker(1000);
 
-        CompleteJobs(sut, 99, _ => { }, _ => jobCompletedCount++);
+        await CompleteJobs(sut, 99, _ => { }, _ => { jobCompletedCount++; return Task.CompletedTask; });
 
         jobCompletedCount.ShouldBe(99);
     }
