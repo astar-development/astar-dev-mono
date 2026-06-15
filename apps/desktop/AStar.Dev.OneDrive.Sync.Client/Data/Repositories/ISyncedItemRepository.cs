@@ -21,4 +21,7 @@ public interface ISyncedItemRepository
 
     /// <summary>Removes all synced items for the specified account. Used when clearing state before a full re-enumeration.</summary>
     Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken);
+
+    /// <summary>Searches synced items for the specified account using the provided criteria.</summary>
+    Task<IReadOnlyList<SyncedItemSearchResult>> SearchAsync(SyncedItemSearchCriteria criteria, CancellationToken cancellationToken);
 }

@@ -85,4 +85,58 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
                    .Where(i => i.AccountId == accountId)
                    .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<IReadOnlyList<SyncedItemSearchResult>> SearchAsync(SyncedItemSearchCriteria criteria, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        var query = db.SyncedItems.Where(i => i.AccountId == criteria.AccountId && !i.IsFolder);
+
+        if (!string.IsNullOrEmpty(criteria.NameFragment))
+            query = query.Where(i => i.RemotePath.Contains(criteria.NameFragment));
+
+        if (criteria.MinBytes.HasValue)
+            query = query.Where(i => i.SizeInBytes != null && i.SizeInBytes >= criteria.MinBytes.Value);
+
+        if (criteria.MaxBytes.HasValue)
+            query = query.Where(i => i.SizeInBytes != null && i.SizeInBytes <= criteria.MaxBytes.Value);
+
+        if (criteria.Tags.Count > 0)
+        {
+            var tagList = criteria.Tags.ToList();
+            query = query.Where(i => db.SyncedItemClassifications.Any(c => c.SyncedItemId == i.Id && tagList.Contains(c.TagName)));
+        }
+
+        if (criteria.DuplicatesOnly)
+        {
+            var candidates = await db.SyncedItems
+                .Where(i => i.AccountId == criteria.AccountId && !i.IsFolder && i.SizeInBytes != null)
+                .Select(i => new { i.Id, i.SizeInBytes, FileName = i.RemotePath.Substring(i.RemotePath.LastIndexOf('/') + 1) })
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+            var duplicateIds = candidates
+                .GroupBy(i => new { i.SizeInBytes, i.FileName })
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.Select(i => i.Id))
+                .ToHashSet();
+
+            query = query.Where(i => duplicateIds.Contains(i.Id));
+        }
+
+        var items = await query
+            .Select(i => new
+            {
+                i.Id,
+                i.AccountId,
+                i.RemoteItemId,
+                i.RemotePath,
+                i.LocalPath,
+                i.RemoteModifiedAt,
+                i.SizeInBytes,
+                TagNames = db.SyncedItemClassifications.Where(c => c.SyncedItemId == i.Id).Select(c => c.TagName).ToList()
+            })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return items.Select(i => SyncedItemSearchResultFactory.Create(i.Id, i.AccountId, i.RemoteItemId, i.RemotePath, i.LocalPath, i.RemoteModifiedAt, i.SizeInBytes, i.TagNames)).ToList();
+    }
 }
