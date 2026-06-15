@@ -72,6 +72,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         _ = services.AddSingleton<IConfirmationDialogService, AvaloniaConfirmationDialogService>();
         _ = services.AddSingleton<IFileClassificationExportImportService, FileClassificationExportImportService>();
+        _ = services.AddSingleton<IFileTypeClassifier, SyncClientFileTypeClassifier>();
         _ = services.AddOneDriveClient();
 
         return services;
