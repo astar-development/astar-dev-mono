@@ -15,31 +15,23 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar, IFileSystem fileSystem, ILogger<DownloadJobBuilder> logger) : IDownloadJobBuilder
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncJob>> BuildAsync(OneDriveAccount account, AccountSyncConfig syncConfig, IReadOnlyList<DeltaItem> items, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
+    public async Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)
     {
-        List<SyncJob> jobs = [];
+        if (!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
+            return null;
 
-        foreach (var item in items.TakeWhile(_ => !ct.IsCancellationRequested))
+        if (item is FolderDeltaItem folderItem)
         {
-            if (!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
-                continue;
+            string folderLocalPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
+            await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
 
-            if (item is FolderDeltaItem folderItem)
-            {
-                string folderLocalPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
-                await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
-                continue;
-            }
-
-            if (item is not FileDeltaItem fileItem)
-                continue;
-
-            var job = await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, ct).ConfigureAwait(false);
-            if (job is not null)
-                jobs.Add(job);
+            return null;
         }
 
-        return jobs;
+        if (item is not FileDeltaItem fileItem)
+            return null;
+
+        return await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, ct).ConfigureAwait(false);
     }
 
     private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, CancellationToken ct)

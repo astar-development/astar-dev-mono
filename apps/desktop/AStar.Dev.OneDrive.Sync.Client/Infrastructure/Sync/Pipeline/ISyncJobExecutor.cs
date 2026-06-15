@@ -11,9 +11,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public interface ISyncJobExecutor
 {
     /// <summary>
-    /// Enqueues <paramref name="jobs"/> to the repository, runs them through the parallel pipeline,
-    /// and persists a <see cref="SyncedItemEntity"/> for each successfully completed download or upload.
+    /// Streams <paramref name="jobs"/> through the parallel pipeline, enqueuing each to the repository
+    /// as it arrives, and persists a <see cref="SyncedItemEntity"/> for each successfully completed download or upload.
     /// Progress and job-completion events are forwarded via the provided callbacks.
     /// </summary>
-    Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct);
+    Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, CancellationToken ct);
 }

@@ -22,7 +22,13 @@ public sealed class GivenASyncProgressTracker
         return SyncJobFactory.CreateDownload(remote, target, metadata, "https://example.com/file");
     }
 
-    private static SyncProgressTracker CreateTracker(int total) => new(total, AccountIdValue, FolderIdValue, TestProgressInterval);
+    private static SyncProgressTracker CreateTracker(int total)
+    {
+        var tracker = new SyncProgressTracker(AccountIdValue, FolderIdValue, TestProgressInterval);
+        tracker.SetTotal(total);
+
+        return tracker;
+    }
 
     private static void CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs>? onJobCompleted = null)
     {
@@ -31,14 +37,14 @@ public sealed class GivenASyncProgressTracker
     }
 
     [Fact]
-    public void when_single_job_completes_then_sync_state_is_idle()
+    public void when_single_job_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1);
 
         sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => { });
 
-        progressEvents[0].SyncState.ShouldBe(SyncState.Idle);
+        progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
@@ -86,7 +92,7 @@ public sealed class GivenASyncProgressTracker
     }
 
     [Fact]
-    public void when_last_of_two_jobs_completes_then_sync_state_is_idle()
+    public void when_last_of_two_jobs_completes_then_sync_state_is_syncing()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(2);
@@ -94,10 +100,8 @@ public sealed class GivenASyncProgressTracker
         sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => { });
         sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => { });
 
-        progressEvents.Last().SyncState.ShouldBe(SyncState.Idle);
+        progressEvents.Last().SyncState.ShouldBe(SyncState.Syncing);
     }
-
-    // --- throttle behaviour ---
 
     [Fact]
     public void when_99_of_1000_jobs_complete_then_no_progress_event_fires()
@@ -151,7 +155,7 @@ public sealed class GivenASyncProgressTracker
 
         CompleteJobs(sut, 999, progressEvents.Add);
 
-        progressEvents.Last().SyncState.ShouldBe(SyncState.Idle);
+        progressEvents.Last().SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]

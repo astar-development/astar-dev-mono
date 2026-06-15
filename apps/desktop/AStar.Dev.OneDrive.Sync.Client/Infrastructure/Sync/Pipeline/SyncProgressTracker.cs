@@ -9,30 +9,47 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 /// <paramref name="progressReportInterval"/> completions and always on the final job,
 /// keeping UI dispatches bounded regardless of sync size.
 /// <see cref="onJobCompleted"/> always fires for every job.
+/// Per-job progress events always carry <see cref="SyncState.Syncing"/>; the caller
+/// is responsible for emitting the terminal <see cref="SyncState.Idle"/> event after
+/// all workers have finished.
 /// </summary>
-internal sealed class SyncProgressTracker(int total, string accountId, string folderId, int progressReportInterval)
+internal sealed class SyncProgressTracker(string accountId, string folderId, int progressReportInterval)
 {
     private readonly Lock lockObj = new();
     private int done;
+    private int total = int.MaxValue;
+    private bool totalized;
 
     internal int Done => done;
+
+    internal void SetTotal(int value)
+    {
+        lock (lockObj)
+        {
+            total = value;
+            totalized = true;
+        }
+    }
 
     internal void RecordCompletion(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted)
     {
         int completedSoFar;
         bool shouldReportProgress;
-        lock(lockObj)
+        int currentTotal;
+        bool isTotalized;
+        lock (lockObj)
         {
             done++;
             completedSoFar = done;
-            shouldReportProgress = completedSoFar % progressReportInterval == 0 || completedSoFar == total;
+            currentTotal = total;
+            isTotalized = totalized;
+            shouldReportProgress = completedSoFar % progressReportInterval == 0 || (isTotalized && completedSoFar == currentTotal);
         }
 
         var completedJob = success ? job.Complete() : job.Fail(error!);
-        var syncState = completedSoFar == total ? SyncState.Idle : SyncState.Syncing;
 
         if (shouldReportProgress)
-            onProgress(new SyncProgressEventArgs(accountId, folderId, completedSoFar, total, job.Target.RelativePath, syncState));
+            onProgress(new SyncProgressEventArgs(accountId, folderId, completedSoFar, currentTotal, job.Target.RelativePath, SyncState.Syncing));
 
         onJobCompleted(new JobCompletedEventArgs(completedJob));
     }

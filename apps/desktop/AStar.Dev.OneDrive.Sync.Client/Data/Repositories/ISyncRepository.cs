@@ -13,6 +13,9 @@ public interface ISyncRepository
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>
     Task EnqueueJobsAsync(IEnumerable<SyncJob> jobs, CancellationToken cancellationToken = default);
 
+    /// <summary>Enqueues a single sync job with <see cref="SyncJobState.Queued"/> state.</summary>
+    Task EnqueueJobAsync(SyncJob job, CancellationToken cancellationToken = default);
+
     /// <summary>Retrieves pending sync jobs for the specified account.</summary>
     /// <param name="accountId">The ID of the account for which to retrieve pending jobs.</param>
     /// <param name="cancellationToken">A token to observe for cancellation requests.</param>

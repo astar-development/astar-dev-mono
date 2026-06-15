@@ -24,7 +24,7 @@ public sealed class GivenAParallelSyncPipeline
     private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("test-token");
 
     private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100, MaxConcurrentDownloads = 4 });
 
     public GivenAParallelSyncPipeline()
     {
@@ -42,13 +42,28 @@ public sealed class GivenAParallelSyncPipeline
         return SyncJobFactory.CreateDownload(remote, target, metadata, "https://example.com/file");
     }
 
+    private static async IAsyncEnumerable<SyncJob> EmptyJobStream()
+    {
+        await Task.CompletedTask;
+        yield break;
+    }
+
+    private static async IAsyncEnumerable<SyncJob> JobStream(params SyncJob[] jobs)
+    {
+        foreach (var job in jobs)
+        {
+            await Task.CompletedTask;
+            yield return job;
+        }
+    }
+
     [Fact]
     public async Task when_job_list_is_empty_then_on_progress_is_never_called()
     {
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents.ShouldBeEmpty();
     }
@@ -59,7 +74,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.ShouldBeEmpty();
     }
@@ -69,7 +84,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
@@ -80,7 +95,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(1);
     }
@@ -89,10 +104,9 @@ public sealed class GivenAParallelSyncPipeline
     public async Task when_three_download_jobs_are_processed_then_on_job_completed_is_called_three_times()
     {
         var completedEvents = new ConcurrentBag<JobCompletedEventArgs>();
-        var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt") };
         var sut = CreateSut();
 
-        await sut.RunAsync(jobs, TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt")), TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(3);
     }
@@ -102,7 +116,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
@@ -112,7 +126,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(new AccountId(AccountIdValue), TestContext.Current.CancellationToken);
     }
@@ -123,7 +137,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents[^1].SyncState.ShouldBe(SyncState.Idle);
     }
@@ -134,7 +148,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         progressEvents[^1].CurrentFile.ShouldBe(string.Empty);
     }
@@ -145,42 +159,41 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, completedEvents.Add, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Completed);
     }
 
     [Fact]
-    public async Task when_single_job_finishes_then_per_job_progress_event_has_sync_state_idle()
+    public async Task when_single_job_finishes_then_per_job_progress_event_has_sync_state_syncing()
     {
         var perJobProgressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, args =>
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, args =>
         {
             if(args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
         }, _ => { }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
 
         perJobProgressEvents.Count.ShouldBe(1);
-        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Idle);
+        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
-    public async Task when_two_jobs_run_below_throttle_threshold_then_only_final_per_job_progress_event_fires_as_idle()
+    public async Task when_two_jobs_run_below_throttle_threshold_then_only_final_per_job_progress_event_fires_as_syncing()
     {
         var perJobProgressEvents = new List<SyncProgressEventArgs>();
-        var jobs = new[] { MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt") };
         var sut = CreateSut();
 
-        await sut.RunAsync(jobs, TokenFactory, args =>
+        await sut.RunAsync(JobStream(MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt")), TokenFactory, args =>
         {
             if(args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
         }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 1, ct: TestContext.Current.CancellationToken);
 
         perJobProgressEvents.Count.ShouldBe(1);
-        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Idle);
+        perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
 
     [Fact]
@@ -192,7 +205,7 @@ public sealed class GivenAParallelSyncPipeline
 
         try
         {
-            await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: cts.Token);
+            await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, ct: cts.Token);
         }
         catch(OperationCanceledException) { }
 
@@ -204,7 +217,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync([MakeDownloadJob()], TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => { }, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
 
         _workerFactory.Received(3).Create(Arg.Any<int>());
     }

@@ -47,7 +47,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
             AuthorityForMicrosoftAccountsOnly = "https://login.microsoftonline.com/consumers",
             Scopes = ["Files.ReadWrite", "offline_access"]
         }));
-        services.AddSingleton(Options.Create(new SyncSettings { ProgressReportInterval = 1 }));
+        services.AddSingleton(Options.Create(new SyncSettings { ProgressReportInterval = 1, MaxConcurrentDownloads = 1 }));
 
         services.AddShell(inMemoryLogSink);
 
