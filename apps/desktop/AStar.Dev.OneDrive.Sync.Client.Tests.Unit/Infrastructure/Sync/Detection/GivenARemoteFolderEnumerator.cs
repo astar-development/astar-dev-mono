@@ -106,7 +106,7 @@ public sealed class GivenARemoteFolderEnumerator
 
         await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
 
-        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
+        _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
