@@ -31,6 +31,7 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     public string LocalPath { get; }
     public FileType FileType { get; }
     public bool IsLocalPresent { get; }
+    public double CardOpacity => IsLocalPresent ? 1.0 : 0.4;
 
     [ObservableProperty]
     public partial IImage? Thumbnail { get; set; }

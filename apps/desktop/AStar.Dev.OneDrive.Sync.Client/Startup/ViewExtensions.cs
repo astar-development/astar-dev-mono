@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Splash;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ public static class ViewExtensions
         _ = services.AddSingleton<FilesView>();
         _ = services.AddSingleton<FolderTreeItemView>();
         _ = services.AddSingleton<SettingsView>();
+        _ = services.AddSingleton<SyncedFileSearchView>();
 
         return services;
     }

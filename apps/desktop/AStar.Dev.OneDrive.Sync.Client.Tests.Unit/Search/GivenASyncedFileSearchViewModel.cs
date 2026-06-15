@@ -170,10 +170,18 @@ public sealed class GivenASyncedFileSearchViewModel
     [Fact]
     public void when_result_is_local_present_then_card_opacity_is_full()
     {
-        fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
-        var result = MakeResult(localPath: "/tmp/nonexistent_file_astar.jpg");
-        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+        var existingPath = Path.GetTempFileName();
+        try
+        {
+            fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
+            var result = MakeResult(localPath: existingPath);
+            var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
 
-        vm.CardOpacity.ShouldBe(1.0);
+            vm.CardOpacity.ShouldBe(1.0);
+        }
+        finally
+        {
+            File.Delete(existingPath);
+        }
     }
 }

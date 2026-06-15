@@ -5,12 +5,13 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Search;
 
-public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IAccountRepository accountRepository, IUiDispatcher dispatcher) : ObservableObject
+public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IAccountRepository accountRepository, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
     private readonly IAccountRepository accountRepository = accountRepository;
     private AccountId? activeAccountId;
@@ -39,6 +40,43 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     public ObservableCollection<string> AvailableTags { get; } = [];
 
     public bool ShowDuplicateDisclaimer => DuplicatesOnly;
+
+    /// <summary>Localised "Search files" heading.</summary>
+    public string SearchTitleText => loc.GetLocal("Search.Title");
+
+    /// <summary>Localised "Name" field label.</summary>
+    public string NameLabelText => loc.GetLocal("Search.Name.Label");
+
+    /// <summary>Localised placeholder for the name text field.</summary>
+    public string NamePlaceholderText => loc.GetLocal("Search.Name.Placeholder");
+
+    /// <summary>Localised "Min size (bytes)" label.</summary>
+    public string MinSizeLabelText => loc.GetLocal("Search.MinSize.Label");
+
+    /// <summary>Localised "Max size (bytes)" label.</summary>
+    public string MaxSizeLabelText => loc.GetLocal("Search.MaxSize.Label");
+
+    /// <summary>Localised "Tags" label.</summary>
+    public string TagsLabelText => loc.GetLocal("Search.Tags.Label");
+
+    /// <summary>Localised "Duplicates only" toggle label.</summary>
+    public string DuplicatesOnlyLabelText => loc.GetLocal("Search.DuplicatesOnly.Label");
+
+    /// <summary>Localised "Search" button label.</summary>
+    public string SearchButtonText => loc.GetLocal("Search.Button");
+
+    /// <summary>Localised disclaimer shown when DuplicatesOnly is active.</summary>
+    public string DuplicateDisclaimerText => loc.GetLocal("Search.DuplicateDisclaimer");
+
+    /// <summary>Localised "No results found." empty-state message.</summary>
+    public string NoResultsText => loc.GetLocal("Search.NoResults");
+
+    [RelayCommand]
+    private void ToggleTag(string tag)
+    {
+        if (!SelectedTags.Remove(tag))
+            SelectedTags.Add(tag);
+    }
 
     public void SetActiveAccount(AccountId accountId) => activeAccountId = accountId;
 

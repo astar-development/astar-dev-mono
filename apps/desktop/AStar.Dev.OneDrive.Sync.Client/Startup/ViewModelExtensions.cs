@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Search;
 using Microsoft.Extensions.DependencyInjection;
 using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewModel;
 using AccountSyncSettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountSyncSettingsViewModel;
@@ -31,6 +32,7 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<FileClassificationRulesViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();
         _ = services.AddSingleton<StatusBarViewModel>();
+        _ = services.AddSingleton<SyncedFileSearchViewModel>();
 
         _ = services.AddTransient<AccountSyncSettingsViewModel>();
 
