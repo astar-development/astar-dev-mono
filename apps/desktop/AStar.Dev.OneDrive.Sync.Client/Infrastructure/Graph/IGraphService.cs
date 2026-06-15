@@ -19,8 +19,8 @@ public interface IGraphService
     /// <summary>Returns the user's OneDrive storage quota.</summary>
     Task<Result<(long Total, long Used), string>> GetQuotaAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct = default);
 
-    /// <summary>Enumerates all descendants (files and folders) of the given folder. ETag and CTag are populated on each returned DeltaItem.</summary>
-    Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
+    /// <summary>Streams all descendants (files and folders) of the given folder. Items are yielded per Graph API page; no buffering. ETag and CTag are populated on each yielded DeltaItem.</summary>
+    IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
 
     /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns null if the path does not exist.</summary>
     Task<string?> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken ct = default);

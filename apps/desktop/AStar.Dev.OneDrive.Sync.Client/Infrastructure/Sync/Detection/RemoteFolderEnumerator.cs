@@ -61,24 +61,36 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Id);
-            var items = await graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, ct)
-                .MatchAsync<List<DeltaItem>, string, List<DeltaItem>?>(
-                    deltaItems => deltaItems,
-                    error =>
-                    {
-                        OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, rule.RemotePath, error);
-                        return null;
-                    }).ConfigureAwait(false);
+            var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, ct).GetAsyncEnumerator(ct);
+            int itemCount = 0;
 
-            if (items is null)
-                continue;
-
-            OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerated(logger, items.Count, rule.RemotePath);
-
-            foreach (var item in items)
+            try
             {
-                context.SeenRemoteIds.Add(item.Id.Id);
-                yield return item;
+                while (true)
+                {
+                    bool hasNext;
+                    try
+                    {
+                        hasNext = await folderEnumerator.MoveNextAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
+                    {
+                        OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, rule.RemotePath, ex.Message);
+                        break;
+                    }
+
+                    if (!hasNext)
+                        break;
+
+                    itemCount++;
+                    context.SeenRemoteIds.Add(folderEnumerator.Current.Id.Id);
+                    yield return folderEnumerator.Current;
+                }
+            }
+            finally
+            {
+                await folderEnumerator.DisposeAsync().ConfigureAwait(false);
+                OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerated(logger, itemCount, rule.RemotePath);
             }
         }
     }

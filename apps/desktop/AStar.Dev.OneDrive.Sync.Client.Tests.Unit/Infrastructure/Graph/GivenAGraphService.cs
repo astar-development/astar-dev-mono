@@ -93,7 +93,10 @@ public sealed class GivenAGraphService : IDisposable
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => sut.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token));
+        await Should.ThrowAsync<OperationCanceledException>(async () =>
+        {
+            await foreach (var _ in sut.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token)) { }
+        });
     }
 
     [Fact]
@@ -235,9 +238,10 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
+        var items = new List<DeltaItem>();
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken))
+            items.Add(item);
 
-        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(3);
         items.ShouldContain(i => i.Id.Id == "file-root");
         items.ShouldContain(i => i.Id.Id == "subfolder-001" && i is FolderDeltaItem);
@@ -270,9 +274,10 @@ public sealed class GivenAGraphService : IDisposable
                     }
                 }));
 
-        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken);
+        var items = new List<DeltaItem>();
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken))
+            items.Add(item);
 
-        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(2);
         items.ShouldContain(i => i.Id.Id == "subfolder-A");
         items.ShouldContain(i => i.Id.Id == AnyFolderId);
@@ -369,10 +374,11 @@ public sealed class GivenAGraphService : IDisposable
                 }));
 
         var reportedCounts = new List<int>();
+        var items = new List<DeltaItem>();
 
-        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken);
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken))
+            items.Add(item);
 
-        var items = result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Ok>()!.Value;
         items.Count.ShouldBe(1);
         reportedCounts.ShouldContain(1);
         reportedCounts.ShouldNotContain(2);
@@ -487,7 +493,7 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
-    public async Task when_enumerate_folder_returns_server_error_then_result_is_error()
+    public async Task when_enumerate_folder_returns_server_error_then_exception_is_thrown_when_iterating()
     {
         server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
@@ -495,9 +501,10 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
 
-        var result = await CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: TestContext.Current.CancellationToken);
-
-        result.ShouldBeAssignableTo<Result<List<DeltaItem>, string>.Error>();
+        await Should.ThrowAsync<Exception>(async () =>
+        {
+            await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: TestContext.Current.CancellationToken)) { }
+        });
     }
 
     [Fact]

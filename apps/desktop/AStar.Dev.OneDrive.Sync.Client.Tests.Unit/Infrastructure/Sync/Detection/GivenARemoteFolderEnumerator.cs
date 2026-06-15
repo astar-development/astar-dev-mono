@@ -47,6 +47,12 @@ public sealed class GivenARemoteFolderEnumerator
         yield break;
     }
 
+    private static async IAsyncEnumerable<DeltaItem> ItemStream(params DeltaItem[] items)
+    {
+        foreach (var item in items)
+            yield return item;
+    }
+
     [Fact]
     public async Task when_no_rules_configured_then_context_had_no_rules_flag_is_set()
     {
@@ -100,7 +106,7 @@ public sealed class GivenARemoteFolderEnumerator
 
         await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
 
-        await _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
+        _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -111,7 +117,7 @@ public sealed class GivenARemoteFolderEnumerator
         _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("folder-resolved");
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+            .Returns(EmptyStream());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
@@ -126,7 +132,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+            .Returns(EmptyStream());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
@@ -141,7 +147,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")]));
+            .Returns(ItemStream(FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
@@ -157,7 +163,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")]));
+            .Returns(ItemStream(FileItem("item-a", "a.txt", "/Documents/a.txt"), FileItem("item-b", "b.txt", "/Documents/b.txt")));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
         var items = new List<DeltaItem>();
@@ -176,7 +182,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DeltaItem>, string>.Ok([]));
+            .Returns(EmptyStream());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
@@ -193,10 +199,10 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1"), IncludeRule("/Pictures", remoteItemId: "folder-2")]);
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Is("folder-1"), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo =>
+            .Returns(_ =>
             {
                 cts.Cancel();
-                return new Result<List<DeltaItem>, string>.Ok([FileItem("item-a", "a.txt", "/Documents/a.txt")]);
+                return ItemStream(FileItem("item-a", "a.txt", "/Documents/a.txt"));
             });
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();

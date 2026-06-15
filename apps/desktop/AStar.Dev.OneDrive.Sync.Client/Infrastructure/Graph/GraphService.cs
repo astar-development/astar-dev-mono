@@ -147,7 +147,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
     }
 
     /// <inheritdoc />
-    public Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default)
+    public IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken ct = default)
         => graphFolderEnumerator.EnumerateFolderAsync(tokenFactory, driveId, folderId, remotePath, onItemDiscovered, ct);
 
     /// <inheritdoc />

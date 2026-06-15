@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -20,28 +21,25 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
         "eTag", "cTag", DownloadUrlKey
     ];
 
-    /// <summary>Enumerates all descendants of the specified folder, returning a flat list of <see cref="DeltaItem"/> instances. Cycles in the folder graph are detected and broken.</summary>
-    internal async Task<Result<List<DeltaItem>, string>> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered, CancellationToken ct)
+    /// <summary>Streams all descendants of the specified folder, yielding each item as it arrives from the Graph API. Cycles in the folder graph are detected and broken.</summary>
+    internal async IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered, [EnumeratorCancellation] CancellationToken ct)
     {
-        try
-        {
-            var client = graphClientFactory.CreateClient(tokenFactory);
-            List<DeltaItem> items = [];
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            await EnumerateSubFolderAsync(client, driveId, folderId, remotePath, items, visited, onItemDiscovered, ct).ConfigureAwait(false);
+        var client = graphClientFactory.CreateClient(tokenFactory);
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int count = 0;
 
-            return new Result<List<DeltaItem>, string>.Ok(items);
-        }
-        catch(Exception ex) when(ex is not OperationCanceledException and not SyncReAuthRequiredException)
+        await foreach (var item in EnumerateSubFolderAsync(client, driveId, folderId, remotePath, visited, ct))
         {
-            return new Result<List<DeltaItem>, string>.Error(ex.Message);
+            count++;
+            onItemDiscovered?.Invoke(count);
+            yield return item;
         }
     }
 
-    private static async Task EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, List<DeltaItem> items, HashSet<string> visited, Action<int>? onItemDiscovered, CancellationToken ct)
+    private static async IAsyncEnumerable<DeltaItem> EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, HashSet<string> visited, [EnumeratorCancellation] CancellationToken ct)
     {
         if(!visited.Add(parentId))
-            return;
+            yield break;
 
         var page = await client.Drives[driveId.Value].Items[parentId].Children
             .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct).ConfigureAwait(false);
@@ -51,12 +49,11 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
             foreach(var item in page.Value)
             {
                 string itemPath = BuildRelativePath(relativePath, item);
-
-                items.Add(MapToDeltaItem(item, itemPath));
-                onItemDiscovered?.Invoke(items.Count);
+                yield return MapToDeltaItem(item, itemPath);
 
                 if(item.Folder is not null && item.Id is not null)
-                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, visited, onItemDiscovered, ct).ConfigureAwait(false);
+                    await foreach(var child in EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, visited, ct))
+                        yield return child;
             }
 
             if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
