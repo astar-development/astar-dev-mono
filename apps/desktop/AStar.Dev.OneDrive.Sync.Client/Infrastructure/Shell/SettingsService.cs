@@ -39,6 +39,8 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
             OneDriveSyncClientMessages.SettingsDeserializeFailed(logger, path, ex);
             Current = new AppSettings();
         }
+
+        SettingsChanged?.Invoke(this, Current);
     }
 
     /// <inheritdoc />

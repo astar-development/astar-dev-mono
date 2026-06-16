@@ -102,4 +102,57 @@ public sealed class GivenASettingsServiceLoadAsync
 
         sut.Current.Theme.ShouldBe(AppTheme.Dark);
     }
+
+    [Fact]
+    public async Task when_settings_file_exists_then_settings_changed_event_is_raised()
+    {
+        var sut = CreateService(CreateMockFileSystemWithSettings(new AppSettings { Theme = AppTheme.Dark }));
+        var raised = false;
+        sut.SettingsChanged += (_, _) => raised = true;
+
+        await sut.LoadAsync();
+
+        raised.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_settings_file_does_not_exist_then_settings_changed_event_is_not_raised()
+    {
+        var sut = CreateService(CreateEmptyMockileSystem());
+        var raised = false;
+        sut.SettingsChanged += (_, _) => raised = true;
+
+        await sut.LoadAsync();
+
+        raised.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_settings_file_exists_then_settings_changed_event_passes_loaded_settings()
+    {
+        var expected = new AppSettings { Theme = AppTheme.Hacker };
+        var sut = CreateService(CreateMockFileSystemWithSettings(expected));
+        AppSettings? received = null;
+        sut.SettingsChanged += (_, settings) => received = settings;
+
+        await sut.LoadAsync();
+
+        received.ShouldNotBeNull();
+        received.Theme.ShouldBe(AppTheme.Hacker);
+    }
+
+    [Fact]
+    public async Task when_settings_file_is_malformed_then_settings_changed_event_is_raised_with_defaults()
+    {
+        var mockFileSystem = CreateEmptyMockileSystem();
+        mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("not json at all"));
+        var sut = CreateService(mockFileSystem);
+        AppSettings? received = null;
+        sut.SettingsChanged += (_, settings) => received = settings;
+
+        await sut.LoadAsync();
+
+        received.ShouldNotBeNull();
+        received.Theme.ShouldBe(AppTheme.System);
+    }
 }

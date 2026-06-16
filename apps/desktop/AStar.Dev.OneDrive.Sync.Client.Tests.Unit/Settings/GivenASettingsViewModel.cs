@@ -748,4 +748,84 @@ public sealed class GivenASettingsViewModel
 
         sut.AccountSettings.Count.ShouldBe(1);
     }
+
+    [Fact]
+    public void when_settings_changed_fires_with_hacker_theme_then_hacker_option_becomes_selected()
+    {
+        var settingsService = BuildSettingsService(new AppSettings { Theme = AppTheme.System });
+        var sut = BuildSut(settingsService: settingsService);
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { Theme = AppTheme.Hacker });
+
+        sut.ThemeOptions.Single(option => option.Theme == AppTheme.Hacker).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_with_hacker_theme_then_system_option_is_no_longer_selected()
+    {
+        var settingsService = BuildSettingsService(new AppSettings { Theme = AppTheme.System });
+        var sut = BuildSut(settingsService: settingsService);
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { Theme = AppTheme.Hacker });
+
+        sut.ThemeOptions.Single(option => option.Theme == AppTheme.System).IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_then_theme_service_apply_is_not_called()
+    {
+        var themeService = Substitute.For<IThemeService>();
+        var settingsService = BuildSettingsService();
+        var sut = BuildSut(settingsService: settingsService, themeService: themeService);
+        themeService.ClearReceivedCalls();
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { Theme = AppTheme.Hacker });
+
+        themeService.DidNotReceive().Apply(Arg.Any<AppTheme>());
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_then_settings_are_not_saved()
+    {
+        var settingsService = BuildSettingsService();
+        var sut = BuildSut(settingsService: settingsService);
+        settingsService.ClearReceivedCalls();
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { Theme = AppTheme.Hacker });
+
+        settingsService.DidNotReceive().SaveAsync();
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_with_new_sync_interval_then_matching_interval_option_becomes_selected()
+    {
+        var settingsService = BuildSettingsService(new AppSettings { SyncIntervalMinutes = 60 });
+        var sut = BuildSut(settingsService: settingsService);
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { SyncIntervalMinutes = 15 });
+
+        sut.IntervalOptions.Single(option => option.Minutes == 15).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_with_new_conflict_policy_then_matching_policy_option_becomes_selected()
+    {
+        var settingsService = BuildSettingsService(new AppSettings { DefaultConflictPolicy = ConflictPolicy.Ignore });
+        var sut = BuildSut(settingsService: settingsService);
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { DefaultConflictPolicy = ConflictPolicy.RemoteWins });
+
+        sut.PolicyOptions.Single(option => option.Policy == ConflictPolicy.RemoteWins).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_settings_changed_fires_with_new_worker_count_then_matching_worker_count_option_becomes_selected()
+    {
+        var settingsService = BuildSettingsService(new AppSettings { ConcurrentWorkerCount = 4 });
+        var sut = BuildSut(settingsService: settingsService);
+
+        settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { ConcurrentWorkerCount = 8 });
+
+        sut.WorkerCountOptions.Single(option => option.Count == 8).IsSelected.ShouldBeTrue();
+    }
 }
