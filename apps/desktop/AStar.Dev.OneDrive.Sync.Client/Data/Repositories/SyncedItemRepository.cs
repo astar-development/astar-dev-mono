@@ -123,6 +123,14 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             query = query.Where(i => duplicateIds.Contains(i.Id));
         }
 
+        query = criteria.SortOrder switch
+        {
+            SearchSortOrder.NameDescending => query.OrderByDescending(i => i.RemotePath),
+            SearchSortOrder.SizeAscending  => query.OrderBy(i => i.SizeInBytes),
+            SearchSortOrder.SizeDescending => query.OrderByDescending(i => i.SizeInBytes),
+            _                              => query.OrderBy(i => i.RemotePath)
+        };
+
         var items = await query
             .Select(i => new
             {
