@@ -14,15 +14,17 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
 {
     private readonly OneDriveAccount account;
     private readonly IAccountRepository repository;
+    private readonly ILocalizationService loc;
 
     public AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository, ILocalizationService loc)
     {
         this.account = account;
         this.repository = repository;
+        this.loc = loc;
         LocalSyncPath = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
         ConflictPolicy = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
-        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
-        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc); OnPropertyChanged(nameof(PolicyOptions)); };
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
+        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy); OnPropertyChanged(nameof(PolicyOptions)); };
     }
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
@@ -36,6 +38,12 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial ConflictPolicy ConflictPolicy { get; set; }
+
+    partial void OnConflictPolicyChanged(ConflictPolicy value)
+    {
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(PolicyOptions));
+    }
 
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 

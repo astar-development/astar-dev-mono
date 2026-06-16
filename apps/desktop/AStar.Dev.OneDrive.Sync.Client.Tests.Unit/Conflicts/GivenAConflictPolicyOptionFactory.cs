@@ -16,9 +16,7 @@ public sealed class GivenAConflictPolicyOptionFactory
     [Fact]
     public void when_create_is_called_then_five_options_are_returned()
     {
-        var loc = BuildLocalizationService();
-
-        var options = ConflictPolicyOptionFactory.Create(loc);
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.Ignore);
 
         options.Count.ShouldBe(5);
     }
@@ -26,9 +24,7 @@ public sealed class GivenAConflictPolicyOptionFactory
     [Fact]
     public void when_create_is_called_then_all_conflict_policy_values_are_represented()
     {
-        var loc = BuildLocalizationService();
-
-        var options = ConflictPolicyOptionFactory.Create(loc);
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.Ignore);
 
         var policies = options.Select(option => option.Policy).ToList();
         policies.ShouldContain(ConflictPolicy.Ignore);
@@ -43,7 +39,7 @@ public sealed class GivenAConflictPolicyOptionFactory
     {
         var loc = BuildLocalizationService();
 
-        _ = ConflictPolicyOptionFactory.Create(loc);
+        _ = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
 
         loc.Received(1).GetLocal("ConflictPolicy.Ignore");
         loc.Received(1).GetLocal("ConflictPolicy.KeepBoth");
@@ -57,7 +53,7 @@ public sealed class GivenAConflictPolicyOptionFactory
     {
         var loc = BuildLocalizationService();
 
-        _ = ConflictPolicyOptionFactory.Create(loc);
+        _ = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
 
         loc.Received(1).GetLocal("ConflictPolicy.Ignore.Description");
         loc.Received(1).GetLocal("ConflictPolicy.KeepBoth.Description");
@@ -76,7 +72,7 @@ public sealed class GivenAConflictPolicyOptionFactory
         loc.GetLocal("ConflictPolicy.LocalWins").Returns("Local gagne");
         loc.GetLocal("ConflictPolicy.RemoteWins").Returns("Distant gagne");
 
-        var options = ConflictPolicyOptionFactory.Create(loc);
+        var options = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
 
         options.Single(option => option.Policy == ConflictPolicy.Ignore).Label.ShouldBe("Ignorer");
         options.Single(option => option.Policy == ConflictPolicy.KeepBoth).Label.ShouldBe("Garder les deux");
@@ -95,12 +91,44 @@ public sealed class GivenAConflictPolicyOptionFactory
         loc.GetLocal("ConflictPolicy.LocalWins.Description").Returns("Local description");
         loc.GetLocal("ConflictPolicy.RemoteWins.Description").Returns("Distant description");
 
-        var options = ConflictPolicyOptionFactory.Create(loc);
+        var options = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
 
         options.Single(option => option.Policy == ConflictPolicy.Ignore).Description.ShouldBe("Ignorer la description");
         options.Single(option => option.Policy == ConflictPolicy.KeepBoth).Description.ShouldBe("Garder les deux description");
         options.Single(option => option.Policy == ConflictPolicy.LastWriteWins).Description.ShouldBe("Dernière écriture description");
         options.Single(option => option.Policy == ConflictPolicy.LocalWins).Description.ShouldBe("Local description");
         options.Single(option => option.Policy == ConflictPolicy.RemoteWins).Description.ShouldBe("Distant description");
+    }
+
+    [Fact]
+    public void when_selected_policy_is_ignore_then_ignore_option_is_selected()
+    {
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.Ignore);
+
+        options.Single(option => option.Policy == ConflictPolicy.Ignore).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_selected_policy_is_ignore_then_other_options_are_not_selected()
+    {
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.Ignore);
+
+        options.Where(option => option.Policy != ConflictPolicy.Ignore).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_selected_policy_is_local_wins_then_local_wins_option_is_selected()
+    {
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.LocalWins);
+
+        options.Single(option => option.Policy == ConflictPolicy.LocalWins).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_selected_policy_is_remote_wins_then_remote_wins_option_is_selected()
+    {
+        var options = ConflictPolicyOptionFactory.Create(BuildLocalizationService(), ConflictPolicy.RemoteWins);
+
+        options.Single(option => option.Policy == ConflictPolicy.RemoteWins).IsSelected.ShouldBeTrue();
     }
 }

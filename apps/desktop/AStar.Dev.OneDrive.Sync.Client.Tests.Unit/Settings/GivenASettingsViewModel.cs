@@ -34,6 +34,7 @@ public sealed class GivenASettingsViewModel
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
         loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
         loc.AvailableCultures.Returns([CultureInfo.GetCultureInfo("en-GB"), CultureInfo.GetCultureInfo("en-US")]);
+        loc.CurrentCulture.Returns(CultureInfo.GetCultureInfo("en-GB"));
 
         return loc;
     }
@@ -194,6 +195,45 @@ public sealed class GivenASettingsViewModel
     }
 
     [Fact]
+    public void when_constructed_with_dark_theme_then_dark_theme_option_is_selected()
+    {
+        var settings = new AppSettings { Theme = AppTheme.Dark };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.ThemeOptions.Single(option => option.Theme == AppTheme.Dark).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_constructed_with_dark_theme_then_other_theme_options_are_not_selected()
+    {
+        var settings = new AppSettings { Theme = AppTheme.Dark };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.ThemeOptions.Where(option => option.Theme != AppTheme.Dark).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_theme_set_to_hacker_then_hacker_option_becomes_selected()
+    {
+        var sut = BuildSut();
+
+        sut.Theme = AppTheme.Hacker;
+
+        sut.ThemeOptions.Single(option => option.Theme == AppTheme.Hacker).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_theme_set_to_hacker_then_previous_option_is_no_longer_selected()
+    {
+        var settings = new AppSettings { Theme = AppTheme.Light };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.Theme = AppTheme.Hacker;
+
+        sut.ThemeOptions.Single(option => option.Theme == AppTheme.Light).IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
     public void when_constructed_then_interval_options_contains_exactly_five_entries()
     {
         var sut = BuildSut();
@@ -243,6 +283,45 @@ public sealed class GivenASettingsViewModel
 
         loc.Received().GetLocal("Settings.DeltaSyncInterval.Minutes", Arg.Any<object[]>());
         loc.Received(1).GetLocal("Settings.Interval.Hours", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_constructed_with_interval_30_then_30_minute_option_is_selected()
+    {
+        var settings = new AppSettings { SyncIntervalMinutes = 30 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.IntervalOptions.Single(option => option.Minutes == 30).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_constructed_with_interval_30_then_other_interval_options_are_not_selected()
+    {
+        var settings = new AppSettings { SyncIntervalMinutes = 30 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.IntervalOptions.Where(option => option.Minutes != 30).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_sync_interval_set_to_60_then_60_minute_option_becomes_selected()
+    {
+        var sut = BuildSut();
+
+        sut.SyncIntervalMinutes = 60;
+
+        sut.IntervalOptions.Single(option => option.Minutes == 60).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_sync_interval_set_to_60_then_previous_option_is_no_longer_selected()
+    {
+        var settings = new AppSettings { SyncIntervalMinutes = 30 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.SyncIntervalMinutes = 60;
+
+        sut.IntervalOptions.Single(option => option.Minutes == 30).IsSelected.ShouldBeFalse();
     }
 
     [Fact]
@@ -309,6 +388,45 @@ public sealed class GivenASettingsViewModel
     }
 
     [Fact]
+    public void when_constructed_with_last_write_wins_policy_then_last_write_wins_option_is_selected()
+    {
+        var settings = new AppSettings { DefaultConflictPolicy = ConflictPolicy.LastWriteWins };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.PolicyOptions.Single(option => option.Policy == ConflictPolicy.LastWriteWins).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_constructed_with_last_write_wins_policy_then_other_policy_options_are_not_selected()
+    {
+        var settings = new AppSettings { DefaultConflictPolicy = ConflictPolicy.LastWriteWins };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.PolicyOptions.Where(option => option.Policy != ConflictPolicy.LastWriteWins).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_default_conflict_policy_set_to_local_wins_then_local_wins_option_becomes_selected()
+    {
+        var sut = BuildSut();
+
+        sut.DefaultConflictPolicy = ConflictPolicy.LocalWins;
+
+        sut.PolicyOptions.Single(option => option.Policy == ConflictPolicy.LocalWins).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_default_conflict_policy_set_to_local_wins_then_previous_option_is_no_longer_selected()
+    {
+        var settings = new AppSettings { DefaultConflictPolicy = ConflictPolicy.Ignore };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.DefaultConflictPolicy = ConflictPolicy.LocalWins;
+
+        sut.PolicyOptions.Single(option => option.Policy == ConflictPolicy.Ignore).IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
     public void when_constructed_then_language_options_count_matches_available_cultures()
     {
         var loc = BuildLocalizationService();
@@ -339,6 +457,73 @@ public sealed class GivenASettingsViewModel
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("en-GB"));
 
         sut.LanguageOptions.ShouldNotBeSameAs(initialOptions);
+    }
+
+    [Fact]
+    public void when_constructed_then_current_language_option_is_selected()
+    {
+        var loc = BuildLocalizationService();
+        loc.CurrentCulture.Returns(CultureInfo.GetCultureInfo("en-GB"));
+        var sut = BuildSut(localizationService: loc);
+
+        sut.LanguageOptions.Single(option => option.Culture.Name == "en-GB").IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_constructed_then_non_current_language_options_are_not_selected()
+    {
+        var loc = BuildLocalizationService();
+        loc.CurrentCulture.Returns(CultureInfo.GetCultureInfo("en-GB"));
+        var sut = BuildSut(localizationService: loc);
+
+        sut.LanguageOptions.Where(option => option.Culture.Name != "en-GB").ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_constructed_then_worker_count_options_contains_exactly_four_entries()
+    {
+        var sut = BuildSut();
+
+        sut.WorkerCountOptions.Count.ShouldBe(4);
+    }
+
+    [Fact]
+    public void when_constructed_with_worker_count_4_then_count_4_option_is_selected()
+    {
+        var settings = new AppSettings { ConcurrentWorkerCount = 4 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.WorkerCountOptions.Single(option => option.Count == 4).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_constructed_with_worker_count_4_then_other_worker_count_options_are_not_selected()
+    {
+        var settings = new AppSettings { ConcurrentWorkerCount = 4 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.WorkerCountOptions.Where(option => option.Count != 4).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_concurrent_worker_count_set_to_8_then_count_8_option_becomes_selected()
+    {
+        var sut = BuildSut();
+
+        sut.ConcurrentWorkerCount = 8;
+
+        sut.WorkerCountOptions.Single(option => option.Count == 8).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_concurrent_worker_count_set_to_8_then_previous_option_is_no_longer_selected()
+    {
+        var settings = new AppSettings { ConcurrentWorkerCount = 4 };
+        var sut = BuildSut(settingsService: BuildSettingsService(settings));
+
+        sut.ConcurrentWorkerCount = 8;
+
+        sut.WorkerCountOptions.Single(option => option.Count == 4).IsSelected.ShouldBeFalse();
     }
 
     [Fact]

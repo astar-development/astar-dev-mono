@@ -17,9 +17,7 @@ public sealed class GivenAThemeOptionFactory
     [Fact]
     public void when_create_called_then_returns_four_options()
     {
-        var loc = BuildLocalizationService();
-
-        var options = ThemeOptionFactory.Create(loc);
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Light);
 
         options.Count.ShouldBe(4);
     }
@@ -27,9 +25,7 @@ public sealed class GivenAThemeOptionFactory
     [Fact]
     public void when_create_called_then_all_theme_enum_values_are_covered()
     {
-        var loc = BuildLocalizationService();
-
-        var options = ThemeOptionFactory.Create(loc);
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Light);
 
         var themes = options.Select(option => option.Theme).ToList();
         themes.ShouldContain(AppTheme.Light);
@@ -43,8 +39,48 @@ public sealed class GivenAThemeOptionFactory
     {
         var loc = BuildLocalizationService();
 
-        _ = ThemeOptionFactory.Create(loc);
+        _ = ThemeOptionFactory.Create(loc, AppTheme.Light);
 
         loc.Received(1).GetLocal("Settings.Theme.Hacker");
+    }
+
+    [Fact]
+    public void when_selected_theme_is_dark_then_dark_option_is_selected()
+    {
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Dark);
+
+        options.Single(option => option.Theme == AppTheme.Dark).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_selected_theme_is_dark_then_other_options_are_not_selected()
+    {
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Dark);
+
+        options.Where(option => option.Theme != AppTheme.Dark).ShouldAllBe(option => !option.IsSelected);
+    }
+
+    [Fact]
+    public void when_selected_theme_is_light_then_light_option_is_selected()
+    {
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Light);
+
+        options.Single(option => option.Theme == AppTheme.Light).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_selected_theme_is_hacker_then_hacker_option_is_selected()
+    {
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.Hacker);
+
+        options.Single(option => option.Theme == AppTheme.Hacker).IsSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_selected_theme_is_system_then_system_option_is_selected()
+    {
+        var options = ThemeOptionFactory.Create(BuildLocalizationService(), AppTheme.System);
+
+        options.Single(option => option.Theme == AppTheme.System).IsSelected.ShouldBeTrue();
     }
 }

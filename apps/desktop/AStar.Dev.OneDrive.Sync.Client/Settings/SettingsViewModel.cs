@@ -35,10 +35,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
         ConcurrentWorkerCount = settingsService.Current.ConcurrentWorkerCount;
-        ThemeOptions = ThemeOptionFactory.Create(loc);
+        ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         IntervalOptions = BuildIntervalOptions();
-        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
-        WorkerCountOptions = WorkerCountOptionFactory.Create(loc);
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
+        WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
         LanguageOptions = LanguageOptionFactory.Create(loc);
         loc.CultureChanged += OnCultureChanged;
         isLoaded = true;
@@ -55,6 +55,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         themeService.Apply(value);
         settingsService.Current.Theme = value;
         _ = settingsService.SaveAsync();
+        ThemeOptions = ThemeOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(ThemeOptions));
     }
 
     /// <summary>The available theme options, localised for the current culture.</summary>
@@ -70,6 +72,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         settingsService.Current.DefaultConflictPolicy = value;
         _ = settingsService.SaveAsync();
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(PolicyOptions));
     }
 
     [ObservableProperty]
@@ -83,6 +87,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         settingsService.Current.SyncIntervalMinutes = value;
         scheduler.SetInterval(TimeSpan.FromMinutes(value));
         _ = settingsService.SaveAsync();
+        IntervalOptions = BuildIntervalOptions();
+        OnPropertyChanged(nameof(IntervalOptions));
     }
 
     [ObservableProperty]
@@ -95,6 +101,8 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         settingsService.Current.ConcurrentWorkerCount = value;
         _ = settingsService.SaveAsync();
+        WorkerCountOptions = WorkerCountOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(WorkerCountOptions));
     }
 
     /// <summary>The available sync interval options, localised for the current culture.</summary>
@@ -169,22 +177,22 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private IReadOnlyList<SyncIntervalOption> BuildIntervalOptions() =>
     [
-        new(5,   loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 5)),
-        new(15,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 15)),
-        new(30,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 30)),
-        new(60,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 60)),
-        new(120, loc.GetLocal("Settings.Interval.Hours", 2)),
+        new(5,   loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 5),   SyncIntervalMinutes == 5),
+        new(15,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 15),  SyncIntervalMinutes == 15),
+        new(30,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 30),  SyncIntervalMinutes == 30),
+        new(60,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 60),  SyncIntervalMinutes == 60),
+        new(120, loc.GetLocal("Settings.Interval.Hours", 2),              SyncIntervalMinutes == 120),
     ];
 
     private void OnCultureChanged(object? sender, CultureInfo culture)
     {
-        ThemeOptions = ThemeOptionFactory.Create(loc);
+        ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         OnPropertyChanged(nameof(ThemeOptions));
         IntervalOptions = BuildIntervalOptions();
         OnPropertyChanged(nameof(IntervalOptions));
-        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
         OnPropertyChanged(nameof(PolicyOptions));
-        WorkerCountOptions = WorkerCountOptionFactory.Create(loc);
+        WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
         OnPropertyChanged(nameof(WorkerCountOptions));
         LanguageOptions = LanguageOptionFactory.Create(loc);
         OnPropertyChanged(nameof(LanguageOptions));
