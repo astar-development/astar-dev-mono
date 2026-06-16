@@ -330,4 +330,68 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         (account.SyncConfig is Option<AccountSyncConfig>.None).ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_local_sync_folder_label_text_is_accessed_then_localisation_service_is_called_with_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        var result = sut.LocalSyncFolderLabelText;
+
+        loc.Received(1).GetLocal("AccountSync.LocalSyncFolderLabel");
+        result.ShouldBe("AccountSync.LocalSyncFolderLabel");
+    }
+
+    [Fact]
+    public void when_local_sync_folder_placeholder_text_is_accessed_then_localisation_service_is_called_with_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        var result = sut.LocalSyncFolderPlaceholderText;
+
+        loc.Received(1).GetLocal("AccountSync.LocalSyncFolderPlaceholder");
+        result.ShouldBe("AccountSync.LocalSyncFolderPlaceholder");
+    }
+
+    [Fact]
+    public void when_browse_button_text_is_accessed_then_localisation_service_is_called_with_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        var result = sut.BrowseButtonText;
+
+        loc.Received(1).GetLocal("AccountSync.BrowseButton");
+        result.ShouldBe("AccountSync.BrowseButton");
+    }
+
+    [Fact]
+    public void when_save_button_text_is_accessed_then_localisation_service_is_called_with_correct_key()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+
+        var result = sut.SaveButtonText;
+
+        loc.Received(1).GetLocal("AccountSync.SaveButton");
+        result.ShouldBe("AccountSync.SaveButton");
+    }
+
+    [Fact]
+    public void when_culture_changed_then_localised_text_properties_raise_property_changed()
+    {
+        var loc = BuildLocalizationService();
+        var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
+        var raisedProperties = new List<string?>();
+        sut.PropertyChanged += (_, args) => raisedProperties.Add(args.PropertyName);
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
+
+        raisedProperties.ShouldContain(nameof(sut.LocalSyncFolderLabelText));
+        raisedProperties.ShouldContain(nameof(sut.LocalSyncFolderPlaceholderText));
+        raisedProperties.ShouldContain(nameof(sut.BrowseButtonText));
+        raisedProperties.ShouldContain(nameof(sut.SaveButtonText));
+    }
 }
