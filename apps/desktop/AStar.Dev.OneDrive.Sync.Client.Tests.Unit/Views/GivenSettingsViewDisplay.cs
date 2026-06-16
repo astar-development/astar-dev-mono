@@ -54,6 +54,18 @@ public sealed class GivenSettingsViewDisplay
     }
 
     [AvaloniaFact]
+    public void when_settings_view_is_rendered_then_scroll_viewer_has_horizontal_scrolling_disabled()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var scrollViewer = sut.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
+        scrollViewer.ShouldNotBeNull();
+        scrollViewer!.HorizontalScrollBarVisibility.ShouldBe(ScrollBarVisibility.Disabled, "HorizontalScrollBarVisibility=Disabled prevents the horizontal scrollbar from expanding the content width measurement, which can break the vertical scroll layout");
+    }
+
+    [AvaloniaFact]
     public void when_settings_view_is_rendered_then_theme_items_control_is_bound_to_theme_options()
     {
         var viewModel = CreateViewModel();
