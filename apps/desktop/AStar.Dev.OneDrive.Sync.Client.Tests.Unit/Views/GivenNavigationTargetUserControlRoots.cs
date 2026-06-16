@@ -4,6 +4,7 @@ using Avalonia.Layout;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Settings;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -69,6 +70,22 @@ public sealed class GivenNavigationTargetUserControlRoots
     public void when_activity_view_root_is_inspected_then_horizontal_content_alignment_is_stretch()
     {
         var sut = new ActivityView();
+
+        sut.HorizontalContentAlignment.ShouldBe(HorizontalAlignment.Stretch);
+    }
+
+    [AvaloniaFact]
+    public void when_settings_view_root_is_inspected_then_vertical_content_alignment_is_stretch()
+    {
+        var sut = new SettingsView();
+
+        sut.VerticalContentAlignment.ShouldBe(VerticalAlignment.Stretch);
+    }
+
+    [AvaloniaFact]
+    public void when_settings_view_root_is_inspected_then_horizontal_content_alignment_is_stretch()
+    {
+        var sut = new SettingsView();
 
         sut.HorizontalContentAlignment.ShouldBe(HorizontalAlignment.Stretch);
     }

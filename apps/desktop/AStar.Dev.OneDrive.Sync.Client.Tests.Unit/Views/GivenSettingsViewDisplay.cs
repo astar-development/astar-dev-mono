@@ -2,12 +2,15 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -148,5 +151,16 @@ public sealed class GivenSettingsViewDisplay
         var accountItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.AccountSettings));
         viewModel.AccountSettings.Count.ShouldBe(0, "AccountSettings should be empty before any accounts are loaded");
         accountItemsControl.ItemsSource.ShouldBe(viewModel.AccountSettings);
+    }
+
+    [AvaloniaFact]
+    public void when_account_is_loaded_then_account_settings_collection_contains_that_account()
+    {
+        var viewModel = CreateViewModel();
+        var account = new OneDriveAccount { Id = new AccountId("test-account-id"), Profile = AccountProfileFactory.Empty };
+
+        viewModel.LoadAccounts([account]);
+
+        viewModel.AccountSettings.Count.ShouldBe(1, "AccountSettings must contain the loaded account so the Save button card can be rendered");
     }
 }
