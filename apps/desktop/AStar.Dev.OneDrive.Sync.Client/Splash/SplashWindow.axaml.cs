@@ -8,7 +8,7 @@ public partial class SplashWindow : Window
 {
     private readonly SplashWindowViewModel viewModel;
 
-    public SplashWindow() : this(Options.Create(new ClientConfiguration(string.Empty, string.Empty))) { }
+    public SplashWindow() : this(Options.Create(new ClientConfiguration { ApplicationName = string.Empty, ApplicationVersion = string.Empty })) { }
 
     public SplashWindow(IOptions<ClientConfiguration> config)
     {
