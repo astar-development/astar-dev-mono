@@ -8,11 +8,28 @@
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch">
 
-    <Grid RowDefinitions="*">
-        <ScrollViewer Grid.Row="0"
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+
+        <StackPanel Grid.Row="0"
+                    Margin="24,20,24,12"
+                    Spacing="4">
+            <TextBlock Text="Settings"
+                       FontSize="{StaticResource FontSizeXl}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="Configure application preferences and account sync settings."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
                       MinHeight="0"
-                      Padding="24,20">
+                      Padding="24,0,24,20">
         <StackPanel Spacing="24" MaxWidth="640">
 
             <!-- ── Appearance ── -->
@@ -321,7 +338,8 @@
             </StackPanel>
 
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
     </Grid>
 
 </UserControl>

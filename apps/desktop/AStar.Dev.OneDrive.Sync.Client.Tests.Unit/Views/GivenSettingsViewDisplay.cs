@@ -2,12 +2,15 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -48,6 +51,38 @@ public sealed class GivenSettingsViewDisplay
 
         var scrollViewer = sut.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto && sv.MinHeight == 0);
         scrollViewer.ShouldNotBeNull("settings ScrollViewer must declare VerticalScrollBarVisibility=Auto and MinHeight=0");
+    }
+
+    [AvaloniaFact]
+    public void when_settings_view_is_rendered_then_scroll_viewer_has_horizontal_scrolling_disabled()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var scrollViewer = sut.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
+        scrollViewer.ShouldNotBeNull();
+        scrollViewer!.HorizontalScrollBarVisibility.ShouldBe(ScrollBarVisibility.Disabled, "HorizontalScrollBarVisibility=Disabled prevents the horizontal scrollbar from expanding the content width measurement, which can break the vertical scroll layout");
+    }
+
+    [AvaloniaFact]
+    public void when_settings_view_is_rendered_then_root_grid_uses_auto_star_rows_for_scrollviewer_bounding()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var rootGrid = sut.GetLogicalDescendants()
+            .OfType<Grid>()
+            .FirstOrDefault(g => g.RowDefinitions.Count == 2 && g.RowDefinitions[0].Height.IsAuto && g.RowDefinitions[1].Height.IsStar);
+
+        rootGrid.ShouldNotBeNull("SettingsView root must be a Grid with Auto,* row definitions to bound the ScrollViewer.");
+
+        var scrollViewer = rootGrid.Children
+            .OfType<ScrollViewer>()
+            .FirstOrDefault(sv => Grid.GetRow(sv) == 1 && sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto && sv.MinHeight == 0);
+
+        scrollViewer.ShouldNotBeNull("SettingsView ScrollViewer must sit in the star row of the root grid and declare MinHeight=0.");
     }
 
     [AvaloniaFact]
@@ -148,5 +183,16 @@ public sealed class GivenSettingsViewDisplay
         var accountItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.AccountSettings));
         viewModel.AccountSettings.Count.ShouldBe(0, "AccountSettings should be empty before any accounts are loaded");
         accountItemsControl.ItemsSource.ShouldBe(viewModel.AccountSettings);
+    }
+
+    [AvaloniaFact]
+    public void when_account_is_loaded_then_account_settings_collection_contains_that_account()
+    {
+        var viewModel = CreateViewModel();
+        var account = new OneDriveAccount { Id = new AccountId("test-account-id"), Profile = AccountProfileFactory.Empty };
+
+        viewModel.LoadAccounts([account]);
+
+        viewModel.AccountSettings.Count.ShouldBe(1, "AccountSettings must contain the loaded account so the Save button card can be rendered");
     }
 }
