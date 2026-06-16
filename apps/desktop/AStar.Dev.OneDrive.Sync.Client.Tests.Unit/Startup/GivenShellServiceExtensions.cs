@@ -10,13 +10,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Startup;
 
 public sealed class GivenShellServiceExtensions
 {
-    private static readonly EntraIdConfiguration TestEntraIdConfig = new
-    (
-        "test-client-id",
-        "http://localhost",
-        ["Files.ReadWrite"],
-        "https://login.microsoftonline.com/consumers"
-    );
+    private static readonly EntraIdConfiguration TestEntraIdConfig = new()
+    {
+        ClientId = "test-client-id",
+        RedirectUri = "http://localhost",
+        Scopes = ["Files.ReadWrite"],
+        AuthorityForMicrosoftAccountsOnly = "https://login.microsoftonline.com/consumers"
+    };
 
     private static ServiceCollection BuildServicesWithShell()
     {

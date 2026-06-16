@@ -41,13 +41,13 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         services.AddSingleton<IDbContextFactory<AppDbContext>>(new TestDbContextFactory(tempDbPath));
 
         services.AddSingleton(Options.Create(new EntraIdConfiguration
-        (
-            "test-client-id",
-            "http://localhost",
-            ["Files.ReadWrite", "offline_access"],
-            "https://login.microsoftonline.com/consumers"
-        )));
-        services.AddSingleton(Options.Create(new SyncSettings { ProgressReportInterval = 1, MaxConcurrentDownloads = 1 }));
+        {
+            ClientId = "test-client-id",
+            RedirectUri = "http://localhost",
+            Scopes = ["Files.ReadWrite", "offline_access"],
+            AuthorityForMicrosoftAccountsOnly = "https://login.microsoftonline.com/consumers"
+        }));
+        services.AddSingleton(Options.Create(new SyncSettings { ProgressReportInterval = 1 }));
 
         services.AddShell(inMemoryLogSink);
 
