@@ -5,6 +5,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration
 /// <summary>Runtime-configurable settings for the sync pipeline.</summary>
 public record SyncSettings
 {
+    internal static string SectionName => "Sync";
+
     /// <summary>
     /// How many files must complete before a progress event is dispatched to the UI.
     /// Applies to both the file-sync phase and the enumeration phase.

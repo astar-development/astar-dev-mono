@@ -82,15 +82,15 @@ public class App : Application, IDisposable
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
         _ = services.AddOptions<EntraIdConfiguration>()
-                .Bind(configuration.GetSection("EntraId"))
+                .Bind(configuration.GetSection(EntraIdConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
         _ = services.AddOptions<SyncSettings>()
-                .Bind(configuration.GetSection("Sync"))
+                .Bind(configuration.GetSection(SyncSettings.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
         _ = services.AddOptions<ClientConfiguration>()
-                .Bind(configuration.GetSection("AStarDevOneDriveClient"))
+                .Bind(configuration.GetSection(ClientConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 

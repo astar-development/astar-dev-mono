@@ -21,12 +21,12 @@ public sealed class GivenAnAuthService
 
     private static IOptions<EntraIdConfiguration> BuildOptions() =>
         Options.Create(new EntraIdConfiguration
-        {
-            ClientId = ClientId,
-            RedirectUri = RedirectUri,
-            Scopes = Scopes,
-            AuthorityForMicrosoftAccountsOnly = Authority
-        });
+        (
+            ClientId,
+            RedirectUri,
+            Scopes,
+            Authority
+        ));
 
     private static IAccount BuildMockAccount(string homeAccountIdentifier, string username)
     {
