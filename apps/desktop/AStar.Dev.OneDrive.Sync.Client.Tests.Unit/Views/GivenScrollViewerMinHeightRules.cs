@@ -96,4 +96,18 @@ public sealed class GivenScrollViewerMinHeightRules
         scrollViewers.ShouldNotBeEmpty();
         scrollViewers.ShouldAllBe(sv => sv.MinHeight == 0, "SettingsView ScrollViewer must declare MinHeight=0");
     }
+
+    [AvaloniaFact]
+    public void when_settings_view_scroll_viewer_is_inspected_then_it_is_not_the_sole_child_of_a_single_star_row_grid()
+    {
+        var sut = new SettingsView();
+
+        var scrollViewer = sut.GetLogicalDescendants()
+            .OfType<ScrollViewer>()
+            .First(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
+
+        var parent = scrollViewer.GetLogicalParent();
+        var isSingleStarRowGrid = parent is Grid g && g.RowDefinitions.Count == 1 && g.RowDefinitions[0].Height.IsStar;
+        isSingleStarRowGrid.ShouldBeFalse("SettingsView ScrollViewer must not be the sole child of a single-star-row Grid — the star row cannot bind the viewport when the Grid is measured with infinite height; remove the Grid wrapper so the UserControl ContentPresenter bounds the ScrollViewer directly");
+    }
 }
