@@ -13,6 +13,7 @@ public sealed class FileClassificationCategoryEntityConfiguration : IEntityTypeC
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.Name).IsRequired();
         _ = builder.HasIndex(e => new { e.ParentId, e.Name }).IsUnique();
+        _ = builder.HasIndex(e => e.Name ).IsUnique(false);
         _ = builder.HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
     }
 }

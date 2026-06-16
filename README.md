@@ -353,6 +353,12 @@ to build the release changelog automatically.
 
 ---
 
+## Migrations
+
+```bash
+dotnet ef migrations add Indexes --project AStar.Dev.OneDrive.Sync.Client -o Data/Migrations
+```
+
 ## Troubleshooting
 
 **`dotnet restore` fails with 401 Unauthorized**
