@@ -24,7 +24,7 @@ public sealed class GivenAParallelSyncPipeline
     private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("test-token");
 
     private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100, MaxConcurrentDownloads = 4 });
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
 
     public GivenAParallelSyncPipeline()
     {

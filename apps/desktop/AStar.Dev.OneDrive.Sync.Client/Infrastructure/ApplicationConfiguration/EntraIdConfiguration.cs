@@ -1,9 +1,6 @@
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 
-public record EntraIdConfiguration
+public record EntraIdConfiguration(string RedirectUri, string ClientId, IReadOnlyList<string> Scopes, string AuthorityForMicrosoftAccountsOnly)
 {
-    public required string RedirectUri { get; init; }
-    public required string ClientId { get; init; }
-    public required IReadOnlyList<string> Scopes { get; init; }
-    public required string AuthorityForMicrosoftAccountsOnly { get; init; }
+internal static string SectionName => "EntraId";
 }
