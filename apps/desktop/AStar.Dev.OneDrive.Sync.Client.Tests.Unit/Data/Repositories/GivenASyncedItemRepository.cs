@@ -257,4 +257,84 @@ public sealed class GivenASyncedItemRepository
         tags.Count.ShouldBe(1);
         tags[0].ShouldBe("Image");
     }
+
+    [Fact]
+    public async Task when_search_sort_order_is_name_ascending_then_results_are_ordered_a_to_z()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.AddRange(
+            FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
+            FileItem(remotePath: "/files/alpha.txt", sizeInBytes: 3000),
+            FileItem(remotePath: "/files/charlie.txt", sizeInBytes: 1000));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), sortOrder: SearchSortOrder.NameAscending);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(3);
+        results[0].RemotePath.ShouldBe("/files/alpha.txt");
+        results[1].RemotePath.ShouldBe("/files/bravo.txt");
+        results[2].RemotePath.ShouldBe("/files/charlie.txt");
+    }
+
+    [Fact]
+    public async Task when_search_sort_order_is_name_descending_then_results_are_ordered_z_to_a()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.AddRange(
+            FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
+            FileItem(remotePath: "/files/alpha.txt", sizeInBytes: 3000),
+            FileItem(remotePath: "/files/charlie.txt", sizeInBytes: 1000));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), sortOrder: SearchSortOrder.NameDescending);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(3);
+        results[0].RemotePath.ShouldBe("/files/charlie.txt");
+        results[1].RemotePath.ShouldBe("/files/bravo.txt");
+        results[2].RemotePath.ShouldBe("/files/alpha.txt");
+    }
+
+    [Fact]
+    public async Task when_search_sort_order_is_size_ascending_then_results_are_ordered_smallest_first()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.AddRange(
+            FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
+            FileItem(remotePath: "/files/alpha.txt", sizeInBytes: 3000),
+            FileItem(remotePath: "/files/charlie.txt", sizeInBytes: 1000));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), sortOrder: SearchSortOrder.SizeAscending);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(3);
+        results[0].RemotePath.ShouldBe("/files/charlie.txt");
+        results[1].RemotePath.ShouldBe("/files/bravo.txt");
+        results[2].RemotePath.ShouldBe("/files/alpha.txt");
+    }
+
+    [Fact]
+    public async Task when_search_sort_order_is_size_descending_then_results_are_ordered_largest_first()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.AddRange(
+            FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
+            FileItem(remotePath: "/files/alpha.txt", sizeInBytes: 3000),
+            FileItem(remotePath: "/files/charlie.txt", sizeInBytes: 1000));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), sortOrder: SearchSortOrder.SizeDescending);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(3);
+        results[0].RemotePath.ShouldBe("/files/alpha.txt");
+        results[1].RemotePath.ShouldBe("/files/bravo.txt");
+        results[2].RemotePath.ShouldBe("/files/charlie.txt");
+    }
 }
