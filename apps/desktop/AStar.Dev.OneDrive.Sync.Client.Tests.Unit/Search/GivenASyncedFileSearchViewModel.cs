@@ -6,6 +6,8 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
+using Avalonia.Headless.XUnit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Search;
 
@@ -211,5 +213,27 @@ public sealed class GivenASyncedFileSearchViewModel
         await Task.Yield();
 
         sut.AvailableTags.ShouldBeEmpty();
+    }
+
+    [AvaloniaFact]
+    public async Task when_search_returns_image_result_and_file_exists_then_thumbnail_is_loaded()
+    {
+        var tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
+        await File.WriteAllBytesAsync(tmpPath, PngFixtures.OneByOnePng, TestContext.Current.CancellationToken);
+        try
+        {
+            fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Image);
+            repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeResult(tmpPath)]);
+            var sut = CreateSut();
+
+            await sut.SearchCommand.ExecuteAsync(null);
+            await Task.Delay(500); // LoadThumbnailAsync is fire-and-forget from SearchAsync; allow background decode to complete
+
+            sut.Results[0].Thumbnail.ShouldNotBeNull();
+        }
+        finally
+        {
+            File.Delete(tmpPath);
+        }
     }
 }
