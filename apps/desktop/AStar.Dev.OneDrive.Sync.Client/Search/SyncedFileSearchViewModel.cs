@@ -35,9 +35,20 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     [ObservableProperty]
     public partial int ResultCount { get; private set; }
 
+    [ObservableProperty]
+    public partial int SelectedSortOrderIndex { get; set; }
+
     public ObservableCollection<SyncedFileResultViewModel> Results { get; } = [];
     public ObservableCollection<string> SelectedTags { get; } = [];
     public ObservableCollection<string> AvailableTags { get; } = [];
+
+    public IReadOnlyList<string> AvailableSortOrders { get; } =
+    [
+        loc.GetLocal("Search.SortOrder.NameAsc"),
+        loc.GetLocal("Search.SortOrder.NameDesc"),
+        loc.GetLocal("Search.SortOrder.SizeAsc"),
+        loc.GetLocal("Search.SortOrder.SizeDesc")
+    ];
 
     public bool ShowDuplicateDisclaimer => DuplicatesOnly;
 
@@ -74,6 +85,9 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     /// <summary>Localised "No results found." empty-state message.</summary>
     public string NoResultsText => loc.GetLocal("Search.NoResults");
 
+    /// <summary>Localised "Sort by" label for the sort order selector.</summary>
+    public string SortOrderLabelText => loc.GetLocal("Search.SortOrder.Label");
+
     [RelayCommand]
     private void ToggleTag(string tag)
     {
@@ -105,7 +119,8 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
                 MinSize,
                 MaxSize,
                 SelectedTags.Count > 0 ? [.. SelectedTags] : null,
-                DuplicatesOnly);
+                DuplicatesOnly,
+                IndexToSortOrder(SelectedSortOrderIndex));
 
             var results = await repository.SearchAsync(criteria, cancellationToken);
 
@@ -126,6 +141,14 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             IsSearching = false;
         }
     }
+
+    private static SearchSortOrder IndexToSortOrder(int index) => index switch
+    {
+        1 => SearchSortOrder.NameDescending,
+        2 => SearchSortOrder.SizeAscending,
+        3 => SearchSortOrder.SizeDescending,
+        _ => SearchSortOrder.NameAscending
+    };
 
     private async Task LoadAvailableTagsAsync(AccountId accountId)
     {
