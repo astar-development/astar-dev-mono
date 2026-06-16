@@ -13,7 +13,9 @@ public sealed class SyncedItemClassificationEntityConfiguration : IEntityTypeCon
         _ = builder.Property(e => e.Level2).IsRequired(false);
         _ = builder.Property(e => e.Level3).IsRequired(false);
         _ = builder.Property(e => e.TagName).IsRequired();
-        _ = builder.HasIndex(e => e.TagName);
+        _ = builder.HasIndex(e => e.Level1);
+        _ = builder.HasIndex(e => e.Level2);
+        _ = builder.HasIndex(e => e.Level3);
         _ = builder.HasOne(e => e.SyncedItem)
                    .WithMany()
                    .HasForeignKey(e => e.SyncedItemId)
