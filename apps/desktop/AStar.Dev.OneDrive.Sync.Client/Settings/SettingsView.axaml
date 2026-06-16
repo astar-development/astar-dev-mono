@@ -50,6 +50,7 @@
                                             CornerRadius="{StaticResource RadiusMd}"
                                             BorderThickness="1"
                                             FontSize="{StaticResource FontSizeSm}"
+                                            Classes.selected="{Binding IsSelected}"
                                             Click="OnThemeClick"
                                             Tag="{Binding Theme}">
                                         <TextBlock Text="{Binding Label}"
@@ -97,6 +98,7 @@
                                             CornerRadius="{StaticResource RadiusMd}"
                                             BorderThickness="1"
                                             FontSize="{StaticResource FontSizeSm}"
+                                            Classes.selected="{Binding IsSelected}"
                                             Click="OnLanguageClick"
                                             Tag="{Binding Culture}">
                                         <TextBlock Text="{Binding Label}"
@@ -146,6 +148,7 @@
                                             BorderThickness="1"
                                             FontSize="{StaticResource FontSizeSm}"
                                             ToolTip.Tip="{Binding Description}"
+                                            Classes.selected="{Binding IsSelected}"
                                             Click="OnPolicyClick"
                                             Tag="{Binding Policy}">
                                         <TextBlock Text="{Binding Label}"
@@ -186,6 +189,7 @@
                                             CornerRadius="{StaticResource RadiusMd}"
                                             BorderThickness="1"
                                             FontSize="{StaticResource FontSizeSm}"
+                                            Classes.selected="{Binding IsSelected}"
                                             Click="OnIntervalClick"
                                             Tag="{Binding Minutes}">
                                         <TextBlock Text="{Binding Label}"
@@ -226,6 +230,7 @@
                                             CornerRadius="{StaticResource RadiusMd}"
                                             BorderThickness="1"
                                             FontSize="{StaticResource FontSizeSm}"
+                                            Classes.selected="{Binding IsSelected}"
                                             Click="OnWorkerCountClick"
                                             Tag="{Binding Count}">
                                         <TextBlock Text="{Binding Label}"

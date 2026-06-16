@@ -2,14 +2,6 @@
 
 A single repository containing all AStar Development products and shared libraries:
 **Blazor** web applications, **Next.js** web applications, **Avalonia** desktop
-applications, and ~50 published **NuGet packages**.
-
----
-
-## Contents
-
-- [Repo map](#repo-map)
-- [Prerequisites](#prerequisites)
 - [First-time setup](#first-time-setup)
 - [Building](#building)
 - [Running](#running)

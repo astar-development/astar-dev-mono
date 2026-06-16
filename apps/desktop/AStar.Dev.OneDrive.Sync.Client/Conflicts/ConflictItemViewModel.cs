@@ -20,7 +20,7 @@ public sealed partial class ConflictItemViewModel : ObservableObject
         this.conflict = conflict;
         this.syncService = syncService;
         this.loc = loc;
-        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, SelectedPolicy);
         loc.CultureChanged += OnCultureChanged;
     }
 
@@ -61,6 +61,12 @@ public sealed partial class ConflictItemViewModel : ObservableObject
     [ObservableProperty]
     public partial ConflictPolicy SelectedPolicy { get; set; } = ConflictPolicy.Ignore;
 
+    partial void OnSelectedPolicyChanged(ConflictPolicy value)
+    {
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(PolicyOptions));
+    }
+
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
 
     public event EventHandler<ConflictItemViewModel>? Resolved;
@@ -98,7 +104,7 @@ public sealed partial class ConflictItemViewModel : ObservableObject
 
     private void OnCultureChanged(object? sender, CultureInfo culture)
     {
-        PolicyOptions = ConflictPolicyOptionFactory.Create(loc);
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, SelectedPolicy);
         OnPropertyChanged(nameof(PolicyOptions));
         OnPropertyChanged(nameof(CollapseExpandLabel));
         OnPropertyChanged(nameof(ResolvedText));

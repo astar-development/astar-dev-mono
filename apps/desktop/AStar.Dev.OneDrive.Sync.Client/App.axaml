@@ -57,6 +57,14 @@
             <Setter Property="Background" Value="{DynamicResource BackgroundActiveBrush}"/>
         </Style>
 
+        <Style Selector="Button.selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundSelectedBrush}"/>
+        </Style>
+
+        <Style Selector="Button.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderAccentBrush}"/>
+        </Style>
+
         <Style Selector="ScrollBar">
             <Setter Property="Opacity" Value="0.5"/>
         </Style>
