@@ -236,4 +236,81 @@ public sealed class GivenASyncedFileSearchViewModel
             File.Delete(tmpPath);
         }
     }
+
+    [Fact]
+    public void when_instantiated_then_selected_sort_order_index_defaults_to_zero()
+    {
+        var sut = CreateSut();
+
+        sut.SelectedSortOrderIndex.ShouldBe(0);
+    }
+
+    [Fact]
+    public void when_instantiated_then_available_sort_orders_has_four_entries()
+    {
+        var sut = CreateSut();
+
+        sut.AvailableSortOrders.Count.ShouldBe(4);
+    }
+
+    [Fact]
+    public void when_instantiated_then_sort_order_label_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.SortOrder.Label").Returns("Sort by");
+        var sut = CreateSut();
+
+        sut.SortOrderLabelText.ShouldBe("Sort by");
+    }
+
+    [Fact]
+    public async Task when_selected_sort_order_index_is_0_then_criteria_sort_order_is_name_ascending()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        var sut = CreateSut();
+        sut.SelectedSortOrderIndex = 0;
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.SortOrder.ShouldBe(SearchSortOrder.NameAscending);
+    }
+
+    [Fact]
+    public async Task when_selected_sort_order_index_is_1_then_criteria_sort_order_is_name_descending()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        var sut = CreateSut();
+        sut.SelectedSortOrderIndex = 1;
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.SortOrder.ShouldBe(SearchSortOrder.NameDescending);
+    }
+
+    [Fact]
+    public async Task when_selected_sort_order_index_is_2_then_criteria_sort_order_is_size_ascending()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        var sut = CreateSut();
+        sut.SelectedSortOrderIndex = 2;
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.SortOrder.ShouldBe(SearchSortOrder.SizeAscending);
+    }
+
+    [Fact]
+    public async Task when_selected_sort_order_index_is_3_then_criteria_sort_order_is_size_descending()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        var sut = CreateSut();
+        sut.SelectedSortOrderIndex = 3;
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.SortOrder.ShouldBe(SearchSortOrder.SizeDescending);
+    }
 }
