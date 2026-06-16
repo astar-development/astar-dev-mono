@@ -19,7 +19,8 @@
 ```
 
 Rules:
-- `ScrollViewer` MUST be in a `*` Grid row — never `Auto` or inside `StackPanel`.
+- `ScrollViewer` MUST be in a `*` Grid row, OR the direct child of a `UserControl` with `VerticalContentAlignment="Stretch"` — never `Auto` or inside `StackPanel`.
+- **NEVER wrap a `ScrollViewer` in a single-star-row `<Grid RowDefinitions="*">`** — a lone `*` row cannot bind viewport height when the Grid is measured with infinite space. Use `Auto,*` (with real Auto content) or remove the Grid.
 - `MinHeight="0"` REQUIRED — Avalonia's default minimum breaks star-row collapse.
 - Nav-host `ContentControl` MUST set `HorizontalContentAlignment="Stretch"` `VerticalContentAlignment="Stretch"` and live in a `*` row.
 
