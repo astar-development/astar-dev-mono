@@ -66,6 +66,26 @@ public sealed class GivenSettingsViewDisplay
     }
 
     [AvaloniaFact]
+    public void when_settings_view_is_rendered_then_root_grid_uses_auto_star_rows_for_scrollviewer_bounding()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var rootGrid = sut.GetLogicalDescendants()
+            .OfType<Grid>()
+            .FirstOrDefault(g => g.RowDefinitions.Count == 2 && g.RowDefinitions[0].Height.IsAuto && g.RowDefinitions[1].Height.IsStar);
+
+        rootGrid.ShouldNotBeNull("SettingsView root must be a Grid with Auto,* row definitions to bound the ScrollViewer.");
+
+        var scrollViewer = rootGrid.Children
+            .OfType<ScrollViewer>()
+            .FirstOrDefault(sv => Grid.GetRow(sv) == 1 && sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto && sv.MinHeight == 0);
+
+        scrollViewer.ShouldNotBeNull("SettingsView ScrollViewer must sit in the star row of the root grid and declare MinHeight=0.");
+    }
+
+    [AvaloniaFact]
     public void when_settings_view_is_rendered_then_theme_items_control_is_bound_to_theme_options()
     {
         var viewModel = CreateViewModel();
