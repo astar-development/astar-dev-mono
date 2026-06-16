@@ -87,6 +87,18 @@
                     </ScrollViewer>
                 </StackPanel>
 
+                <!-- Sort order -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding SortOrderLabelText}"
+                               FontSize="{StaticResource FontSizeXs}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <ComboBox ItemsSource="{Binding AvailableSortOrders}"
+                              SelectedIndex="{Binding SelectedSortOrderIndex}"
+                              HorizontalAlignment="Stretch"
+                              FontSize="{StaticResource FontSizeSm}"
+                              CornerRadius="{StaticResource RadiusMd}"/>
+                </StackPanel>
+
                 <!-- Duplicates toggle + Search button -->
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <ToggleButton Grid.Column="0"
