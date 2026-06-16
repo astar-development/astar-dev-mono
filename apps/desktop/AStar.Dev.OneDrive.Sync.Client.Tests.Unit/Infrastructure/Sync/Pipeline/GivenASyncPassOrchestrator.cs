@@ -2,6 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
@@ -26,15 +27,17 @@ public sealed class GivenASyncPassOrchestrator
     private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
     private readonly IDownloadJobBuilder     _downloadJobBuilder     = Substitute.For<IDownloadJobBuilder>();
     private readonly ILocalizationService    _localizationService    = Substitute.For<ILocalizationService>();
+    private readonly ISettingsService        _settingsService        = Substitute.For<ISettingsService>();
 
     public GivenASyncPassOrchestrator()
     {
         _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
         _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
+        _settingsService.Current.Returns(new AppSettings { ConcurrentWorkerCount = 4 });
     }
 
     private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100, MaxConcurrentDownloads = 4 });
+        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
 
     private ISyncPassOrchestrator CreateSut()
     {
@@ -46,7 +49,7 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _localizationService);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()

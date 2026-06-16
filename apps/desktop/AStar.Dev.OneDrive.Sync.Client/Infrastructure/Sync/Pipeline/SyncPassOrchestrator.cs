@@ -6,6 +6,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
-internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ILocalizationService localizationService) : ISyncPassOrchestrator
+internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService) : ISyncPassOrchestrator
 {
     public async Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default)
     {
@@ -25,7 +26,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
         int progressReportInterval = syncSettings.Value.ProgressReportInterval;
-        int workerCount = syncSettings.Value.MaxConcurrentDownloads;
+        int workerCount = settingsService.Current.ConcurrentWorkerCount;
         var context = new RemoteEnumerationContext();
 
         Action<int>? enumerationProgress = onProgress is null ? null : count =>
