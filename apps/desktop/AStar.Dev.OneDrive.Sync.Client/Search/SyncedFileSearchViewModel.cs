@@ -112,7 +112,11 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             dispatcher.Post(() =>
             {
                 foreach (var result in results)
-                    Results.Add(new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher));
+                {
+                    var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+                    Results.Add(vm);
+                    _ = vm.LoadThumbnailAsync();
+                }
 
                 ResultCount = Results.Count;
             });
