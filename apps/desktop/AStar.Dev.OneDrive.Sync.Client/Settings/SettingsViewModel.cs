@@ -22,6 +22,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly ILocalizationService loc;
     private readonly IFolderPickerService folderPickerService;
     private bool isLoaded;
+    private bool isRefreshing;
 
     public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService)
     {
@@ -41,6 +42,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
         LanguageOptions = LanguageOptionFactory.Create(loc);
         loc.CultureChanged += OnCultureChanged;
+        settingsService.SettingsChanged += OnSettingsServiceChanged;
         isLoaded = true;
     }
 
@@ -49,7 +51,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnThemeChanged(AppTheme value)
     {
-        if (!isLoaded)
+        if (!isLoaded || isRefreshing)
             return;
 
         themeService.Apply(value);
@@ -67,7 +69,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnDefaultConflictPolicyChanged(ConflictPolicy value)
     {
-        if (!isLoaded)
+        if (!isLoaded || isRefreshing)
             return;
 
         settingsService.Current.DefaultConflictPolicy = value;
@@ -81,7 +83,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnSyncIntervalMinutesChanged(int value)
     {
-        if (!isLoaded)
+        if (!isLoaded || isRefreshing)
             return;
 
         settingsService.Current.SyncIntervalMinutes = value;
@@ -96,7 +98,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     partial void OnConcurrentWorkerCountChanged(int value)
     {
-        if (!isLoaded)
+        if (!isLoaded || isRefreshing)
             return;
 
         settingsService.Current.ConcurrentWorkerCount = value;
@@ -183,6 +185,24 @@ public sealed partial class SettingsViewModel : ObservableObject
         new(60,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 60),  SyncIntervalMinutes == 60),
         new(120, loc.GetLocal("Settings.Interval.Hours", 2),              SyncIntervalMinutes == 120),
     ];
+
+    private void OnSettingsServiceChanged(object? sender, AppSettings settings)
+    {
+        isRefreshing = true;
+        Theme = settings.Theme;
+        DefaultConflictPolicy = settings.DefaultConflictPolicy;
+        SyncIntervalMinutes = settings.SyncIntervalMinutes;
+        ConcurrentWorkerCount = settings.ConcurrentWorkerCount;
+        isRefreshing = false;
+        ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
+        OnPropertyChanged(nameof(ThemeOptions));
+        IntervalOptions = BuildIntervalOptions();
+        OnPropertyChanged(nameof(IntervalOptions));
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
+        OnPropertyChanged(nameof(PolicyOptions));
+        WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
+        OnPropertyChanged(nameof(WorkerCountOptions));
+    }
 
     private void OnCultureChanged(object? sender, CultureInfo culture)
     {
