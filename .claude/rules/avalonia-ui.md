@@ -19,9 +19,11 @@
 ```
 
 Rules:
-- `ScrollViewer` MUST be in a `*` Grid row, OR the direct child of a `UserControl` with `VerticalContentAlignment="Stretch"` — never `Auto` or inside `StackPanel`.
-- **NEVER wrap a `ScrollViewer` in a single-star-row `<Grid RowDefinitions="*">`** — a lone `*` row cannot bind viewport height when the Grid is measured with infinite space. Use `Auto,*` (with real Auto content) or remove the Grid.
+- `ScrollViewer` MUST be in a `*` row of a `Grid RowDefinitions="Auto,*"` — this is the **only** reliably bounded pattern.
+- **NEVER** place `ScrollViewer` as a direct child of `UserControl` even with `VerticalContentAlignment="Stretch"` — `VerticalContentAlignment` affects rendering/positioning only, NOT measurement; ContentPresenter still passes infinite height to its child during measure, so the ScrollViewer's Extent equals its Viewport and scrolling never triggers.
+- **NEVER wrap a `ScrollViewer` in a single-star-row `<Grid RowDefinitions="*">`** — a lone `*` row cannot bind viewport height when the Grid is measured with infinite space.
 - `MinHeight="0"` REQUIRED — Avalonia's default minimum breaks star-row collapse.
+- The `Auto` row MUST contain real content (a header strip, title bar, toolbar). A zero-height `Auto` row also works structurally but prefer real content.
 - Nav-host `ContentControl` MUST set `HorizontalContentAlignment="Stretch"` `VerticalContentAlignment="Stretch"` and live in a `*` row.
 
 ## UserControl Root

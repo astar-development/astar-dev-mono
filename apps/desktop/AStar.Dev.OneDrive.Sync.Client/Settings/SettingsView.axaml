@@ -8,10 +8,13 @@
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  MinHeight="0"
-                  Padding="24,20">
+    <Grid RowDefinitions="Auto,*">
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0"
+                      Padding="24,20">
         <StackPanel Spacing="24" MaxWidth="640">
 
             <!-- ── Appearance ── -->
@@ -320,6 +323,8 @@
             </StackPanel>
 
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
+    </Grid>
 
 </UserControl>
