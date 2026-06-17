@@ -10,7 +10,7 @@ using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
 /// <inheritdoc />
-public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileClassificationRepository classificationRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor) : ISyncedItemRegistrar
+public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileClassificationRepository classificationRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService) : ISyncedItemRegistrar
 {
     /// <inheritdoc />
     public async Task RegisterFolderAsync(AccountId accountId, FolderDeltaItem item, string remotePath, string localPath, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
@@ -31,7 +31,8 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct).ConfigureAwait(false);
         var analyserResult = fileAutoCategorisor.Categorise(remotePath);
         var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
-        await syncedItemRepository.UpsertClassificationsAsync(syncedItemId, classifications, ct).ConfigureAwait(false);
+        var categoryIds = await categoryResolutionService.ResolveManyAsync(classifications, ct).ConfigureAwait(false);
+        await syncedItemRepository.UpsertFileClassificationsAsync(syncedItemId, categoryIds, ct).ConfigureAwait(false);
         syncedItems[item.Id.Id] = phantomItem;
     }
 }

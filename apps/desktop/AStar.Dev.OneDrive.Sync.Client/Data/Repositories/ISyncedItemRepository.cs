@@ -16,6 +16,9 @@ public interface ISyncedItemRepository
     /// <summary>Replaces all classification rows for the specified synced item with the provided classifications.</summary>
     Task UpsertClassificationsAsync(int syncedItemId, IReadOnlyList<FileClassification> classifications, CancellationToken cancellationToken);
 
+    /// <summary>Replaces all junction rows for the specified synced item with rows pointing to the provided category IDs.</summary>
+    Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken);
+
     /// <summary>Removes the synced item record with the specified remote item ID.</summary>
     Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken);
 

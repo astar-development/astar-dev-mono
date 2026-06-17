@@ -68,6 +68,24 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        _ = await db.SyncedItemFileClassifications
+                   .Where(c => c.SyncedItemId == syncedItemId)
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        var entities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
+        {
+            SyncedItemId = syncedItemId,
+            CategoryId   = categoryId
+        });
+
+        db.SyncedItemFileClassifications.AddRange(entities);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

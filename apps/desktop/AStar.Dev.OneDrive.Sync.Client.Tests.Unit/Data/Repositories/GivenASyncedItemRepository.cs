@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Repositories;
@@ -30,6 +31,26 @@ public sealed class GivenASyncedItemRepository
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
 
         return (seedingContext, factory);
+    }
+
+    private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory, SqliteConnection connection) CreateSqliteFactory()
+    {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            _ = cmd.ExecuteNonQuery();
+        }
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        var seedingContext = new AppDbContext(options);
+        _ = seedingContext.Database.EnsureCreated();
+        var factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
+
+        return (seedingContext, factory, connection);
     }
 
     [Fact]
@@ -336,5 +357,50 @@ public sealed class GivenASyncedItemRepository
         results[0].RemotePath.ShouldBe("/files/alpha.txt");
         results[1].RemotePath.ShouldBe("/files/bravo.txt");
         results[2].RemotePath.ShouldBe("/files/charlie.txt");
+    }
+
+    [Fact]
+    public async Task when_upsert_file_classifications_then_replaces_existing_rows()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var catA = new FileClassificationCategoryEntity { Name = "CatA", Level = 1 };
+        var catB = new FileClassificationCategoryEntity { Name = "CatB", Level = 1 };
+        var catOld = new FileClassificationCategoryEntity { Name = "CatOld", Level = 1 };
+        var item = FileItem(remotePath: "/photo.jpg");
+        db.FileClassificationCategories.AddRange(catA, catB, catOld);
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = catOld.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.UpsertFileClassificationsAsync(item.Id, [catA.Id, catB.Id], TestContext.Current.CancellationToken);
+
+        var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == item.Id).ToList();
+        rows.Count.ShouldBe(2);
+        rows.ShouldContain(r => r.CategoryId == catA.Id);
+        rows.ShouldContain(r => r.CategoryId == catB.Id);
+        rows.ShouldNotContain(r => r.CategoryId == catOld.Id);
+    }
+
+    [Fact]
+    public async Task when_upsert_file_classifications_with_empty_list_then_existing_rows_are_deleted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var cat = new FileClassificationCategoryEntity { Name = "SomeCat", Level = 1 };
+        var item = FileItem(remotePath: "/photo.jpg");
+        db.FileClassificationCategories.Add(cat);
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = cat.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.UpsertFileClassificationsAsync(item.Id, [], TestContext.Current.CancellationToken);
+
+        var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == item.Id).ToList();
+        rows.ShouldBeEmpty();
     }
 }
