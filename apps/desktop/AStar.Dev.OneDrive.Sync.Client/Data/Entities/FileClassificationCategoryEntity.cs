@@ -15,6 +15,12 @@ public sealed class FileClassificationCategoryEntity
     /// <summary>FK to parent category; null for root nodes.</summary>
     public int? ParentId { get; set; }
 
+    /// <summary>Whether this keyword defines a famous person.</summary>
+    public bool IsFamous { get; set; }
+
+    /// <summary>Whether this keyword defines the internet classification.</summary>
+    public bool IsInternet { get; set; }
+
     /// <summary>Navigation to parent category.</summary>
     public FileClassificationCategoryEntity? Parent { get; set; }
 

@@ -29,9 +29,10 @@ public sealed class GivenAFileClassificationCategoryEntity
     [Fact]
     public void when_parent_id_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new FileClassificationCategoryEntity();
-
-        entity.ParentId = 42;
+        var entity = new FileClassificationCategoryEntity
+        {
+            ParentId = 42
+        };
 
         entity.ParentId.ShouldBe(42);
     }
@@ -39,9 +40,10 @@ public sealed class GivenAFileClassificationCategoryEntity
     [Fact]
     public void when_name_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new FileClassificationCategoryEntity();
-
-        entity.Name = "Photos";
+        var entity = new FileClassificationCategoryEntity
+        {
+            Name = "Photos"
+        };
 
         entity.Name.ShouldBe("Photos");
     }
@@ -49,10 +51,33 @@ public sealed class GivenAFileClassificationCategoryEntity
     [Fact]
     public void when_level_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new FileClassificationCategoryEntity();
-
-        entity.Level = 2;
+        var entity = new FileClassificationCategoryEntity
+        {
+            Level = 2
+        };
 
         entity.Level.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_is_famous_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity
+        {
+            IsFamous = true
+        };
+
+        entity.IsFamous.ShouldBe(true);
+    }
+
+    [Fact]
+    public void when_is_internet_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity
+        {
+            IsInternet = true
+        };
+
+        entity.IsInternet.ShouldBe(true);
     }
 }

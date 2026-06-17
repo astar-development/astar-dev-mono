@@ -156,11 +156,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        return await db.SyncedItemFileClassifications
+        var categories = await db.SyncedItemFileClassifications
             .Where(jt => jt.SyncedItem!.AccountId == accountId)
             .Select(jt => jt.Category!.Name)
             .Distinct()
             .OrderBy(name => name)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+        return categories;
     }
 }

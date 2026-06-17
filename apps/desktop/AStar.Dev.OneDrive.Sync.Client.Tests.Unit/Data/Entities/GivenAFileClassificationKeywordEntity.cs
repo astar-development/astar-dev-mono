@@ -17,9 +17,10 @@ public sealed class GivenAFileClassificationKeywordEntity
     [Fact]
     public void when_category_id_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new FileClassificationKeywordEntity();
-
-        entity.CategoryId = 7;
+        var entity = new FileClassificationKeywordEntity
+        {
+            CategoryId = 7
+        };
 
         entity.CategoryId.ShouldBe(7);
     }
@@ -27,9 +28,10 @@ public sealed class GivenAFileClassificationKeywordEntity
     [Fact]
     public void when_keyword_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new FileClassificationKeywordEntity();
-
-        entity.Keyword = "holiday";
+        var entity = new FileClassificationKeywordEntity
+        {
+            Keyword = "holiday"
+        };
 
         entity.Keyword.ShouldBe("holiday");
     }
