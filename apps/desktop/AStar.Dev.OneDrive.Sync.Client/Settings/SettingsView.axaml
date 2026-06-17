@@ -297,17 +297,17 @@
 
                                     <!-- Local path -->
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Local sync folder"
+                                        <TextBlock Text="{Binding LocalSyncFolderLabelText}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                                         <Grid ColumnDefinitions="*,8,Auto">
                                             <TextBox Grid.Column="0"
                                                      Text="{Binding LocalSyncPath}"
                                                      FontSize="{StaticResource FontSizeSm}"
-                                                     PlaceholderText="e.g. /home/user/OneDrive/personal"
+                                                     PlaceholderText="{Binding LocalSyncFolderPlaceholderText}"
                                                      CornerRadius="{StaticResource RadiusMd}"/>
                                             <Button Grid.Column="2"
-                                                    Content="Browse ..."
+                                                    Content="{Binding BrowseButtonText}"
                                                     Padding="10,6"
                                                     CornerRadius="{StaticResource RadiusMd}"
                                                     Background="Transparent"
@@ -320,7 +320,7 @@
                                     </StackPanel>
 
                                     <!-- Save button -->
-                                    <Button Content="Save"
+                                    <Button Content="{Binding SaveButtonText}"
                                             HorizontalAlignment="Right"
                                             Padding="14,6"
                                             CornerRadius="{StaticResource RadiusMd}"
