@@ -1,4 +1,3 @@
-using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -44,28 +43,6 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return existing.Id;
-    }
-
-    public async Task UpsertClassificationsAsync(int syncedItemId, IReadOnlyList<FileClassification> classifications, CancellationToken cancellationToken)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-
-        _ = await db.SyncedItemClassifications
-                   .Where(c => c.SyncedItemId == syncedItemId)
-                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-
-        var entities = classifications.Select(c => new SyncedItemClassificationEntity
-        {
-            SyncedItemId = syncedItemId,
-            Level1       = c.Level1,
-            Level2       = c.Level2.MapOrDefault(v => v, null),
-            Level3       = c.Level3.MapOrDefault(v => v, null),
-            TagName      = c.TagName,
-            IsSpecial    = c.IsSpecial
-        });
-
-        db.SyncedItemClassifications.AddRange(entities);
-        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken)

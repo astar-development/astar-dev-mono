@@ -13,9 +13,6 @@ public interface ISyncedItemRepository
     /// <summary>Inserts or updates the synced item record. Returns the database Id of the entity after the operation.</summary>
     Task<int> UpsertAsync(SyncedItemEntity item, CancellationToken cancellationToken);
 
-    /// <summary>Replaces all classification rows for the specified synced item with the provided classifications.</summary>
-    Task UpsertClassificationsAsync(int syncedItemId, IReadOnlyList<FileClassification> classifications, CancellationToken cancellationToken);
-
     /// <summary>Replaces all junction rows for the specified synced item with rows pointing to the provided category IDs.</summary>
     Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken);
 

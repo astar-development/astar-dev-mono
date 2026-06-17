@@ -20,6 +20,12 @@ public sealed class GivenAClassificationDataMigrationService
         var seedingContext = new AppDbContext(options);
         _ = seedingContext.Database.EnsureCreated();
 
+        using (var pragmaCmd = connection.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA foreign_keys = OFF;";
+            _ = pragmaCmd.ExecuteNonQuery();
+        }
+
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = @"
@@ -67,85 +73,88 @@ public sealed class GivenAClassificationDataMigrationService
     public async Task when_junction_table_already_populated_then_skips()
     {
         var (db, factory, connection) = CreateSqliteFactory();
-        await using var _ = connection;
-
-        var item = new SyncedItemEntity
+        await using (connection)
         {
-            AccountId = new AccountId("user-1"),
-            RemoteItemId = new OneDriveItemId("remote-1"),
-            RemotePath = "/file.txt",
-            LocalPath = "/local/file.txt",
-            RemoteModifiedAt = DateTimeOffset.UtcNow
-        };
-        db.SyncedItems.Add(item);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            var item = new SyncedItemEntity
+            {
+                AccountId = new AccountId("user-1"),
+                RemoteItemId = new OneDriveItemId("remote-1"),
+                RemotePath = "/file.txt",
+                LocalPath = "/local/file.txt",
+                RemoteModifiedAt = DateTimeOffset.UtcNow
+            };
+            db.SyncedItems.Add(item);
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var category = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
-        db.FileClassificationCategories.Add(category);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            var category = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+            db.FileClassificationCategories.Add(category);
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = category.Id });
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = category.Id });
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        InsertOldRow(connection, item.Id, "Photos", null, null, false);
+            InsertOldRow(connection, item.Id, "Photos", null, null, false);
 
-        var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
-        var sut = CreateSut(factory, categoryResolutionService);
+            var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
+            var sut = CreateSut(factory, categoryResolutionService);
 
-        await sut.MigrateAsync(TestContext.Current.CancellationToken);
+            await sut.MigrateAsync(TestContext.Current.CancellationToken);
 
-        await categoryResolutionService.DidNotReceive().ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+            await categoryResolutionService.DidNotReceive().ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+        }
     }
 
     [Fact]
     public async Task when_old_table_has_rows_then_migrates_all()
     {
         var (db, factory, connection) = CreateSqliteFactory();
-        await using var _ = connection;
+        await using (connection)
+        {
+            var item1 = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r1"), RemotePath = "/a.jpg", LocalPath = "/local/a.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
+            var item2 = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r2"), RemotePath = "/b.jpg", LocalPath = "/local/b.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
+            db.SyncedItems.AddRange(item1, item2);
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var item1 = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r1"), RemotePath = "/a.jpg", LocalPath = "/local/a.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
-        var item2 = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r2"), RemotePath = "/b.jpg", LocalPath = "/local/b.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
-        db.SyncedItems.AddRange(item1, item2);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            InsertOldRow(connection, item1.Id, "Photos", null, null, false);
+            InsertOldRow(connection, item2.Id, "Documents", null, null, false);
 
-        InsertOldRow(connection, item1.Id, "Photos", null, null, false);
-        InsertOldRow(connection, item2.Id, "Documents", null, null, false);
+            var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
+            categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>())
+                                     .Returns(callInfo => Task.FromResult<IReadOnlyList<int>>([1]));
+            var sut = CreateSut(factory, categoryResolutionService);
 
-        var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
-        categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>())
-                                 .Returns(callInfo => Task.FromResult<IReadOnlyList<int>>([1]));
-        var sut = CreateSut(factory, categoryResolutionService);
+            await sut.MigrateAsync(TestContext.Current.CancellationToken);
 
-        await sut.MigrateAsync(TestContext.Current.CancellationToken);
-
-        await categoryResolutionService.Received(2).ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+            await categoryResolutionService.Received(2).ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>());
+        }
     }
 
     [Fact]
     public async Task when_text_has_no_matching_category_then_creates_category()
     {
         var (db, factory, connection) = CreateSqliteFactory();
-        await using var _ = connection;
+        await using (connection)
+        {
+            var item = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r1"), RemotePath = "/file.jpg", LocalPath = "/local/file.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
+            db.SyncedItems.Add(item);
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var item = new SyncedItemEntity { AccountId = new AccountId("u"), RemoteItemId = new OneDriveItemId("r1"), RemotePath = "/file.jpg", LocalPath = "/local/file.jpg", RemoteModifiedAt = DateTimeOffset.UtcNow };
-        db.SyncedItems.Add(item);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            InsertOldRow(connection, item.Id, "BrandNewCategory", null, null, false);
 
-        InsertOldRow(connection, item.Id, "BrandNewCategory", null, null, false);
+            var category = new FileClassificationCategoryEntity { Name = "BrandNewCategory", Level = 1 };
+            db.FileClassificationCategories.Add(category);
+            _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var category = new FileClassificationCategoryEntity { Name = "BrandNewCategory", Level = 1 };
-        db.FileClassificationCategories.Add(category);
-        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
+            categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>())
+                                     .Returns(callInfo => Task.FromResult<IReadOnlyList<int>>([category.Id]));
+            var sut = CreateSut(factory, categoryResolutionService);
 
-        var categoryResolutionService = Substitute.For<ICategoryResolutionService>();
-        categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>())
-                                 .Returns(_ => Task.FromResult<IReadOnlyList<int>>([category.Id]));
-        var sut = CreateSut(factory, categoryResolutionService);
+            await sut.MigrateAsync(TestContext.Current.CancellationToken);
 
-        await sut.MigrateAsync(TestContext.Current.CancellationToken);
-
-        var junctionRows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == item.Id).ToList();
-        junctionRows.ShouldHaveSingleItem();
-        junctionRows[0].CategoryId.ShouldBe(category.Id);
+            var junctionRows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == item.Id).ToList();
+            junctionRows.ShouldHaveSingleItem();
+            junctionRows[0].CategoryId.ShouldBe(category.Id);
+        }
     }
 }

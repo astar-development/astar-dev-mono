@@ -11,7 +11,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<DriveStateEntity> DriveStates => Set<DriveStateEntity>();
     public DbSet<SyncRuleEntity> SyncRules => Set<SyncRuleEntity>();
     public DbSet<SyncedItemEntity> SyncedItems => Set<SyncedItemEntity>();
-    public DbSet<SyncedItemClassificationEntity> SyncedItemClassifications => Set<SyncedItemClassificationEntity>();
     public DbSet<SyncedItemFileClassificationEntity> SyncedItemFileClassifications => Set<SyncedItemFileClassificationEntity>();
     public DbSet<FileClassificationCategoryEntity> FileClassificationCategories => Set<FileClassificationCategoryEntity>();
     public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
