@@ -37,8 +37,8 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
         await registrar.RegisterPhantomAsync(accountId, BuildFileItem("phantom-id-classifications"), "Documents/test.txt", "/local/phantom-class/test.txt", [], CancellationToken.None);
 
         var items = await repository.GetAllByAccountAsync(accountId, CancellationToken.None);
-        var classifications = await GetClassificationsAsync(items["phantom-id-classifications"].Id);
-        classifications.ShouldNotBeEmpty();
+        var categoryNames = await GetFileClassificationCategoryNamesAsync(items["phantom-id-classifications"].Id);
+        categoryNames.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
 
         var expectedLevel1 = categorisor.Categorise(remotePath).Match(c => c.Level1, () => "Unclassified");
         var items = await repository.GetAllByAccountAsync(accountId, CancellationToken.None);
-        var classifications = await GetClassificationsAsync(items["phantom-id-autocategorise"].Id);
-        classifications.ShouldContain(c => c.Level1 == expectedLevel1);
+        var categoryNames = await GetFileClassificationCategoryNamesAsync(items["phantom-id-autocategorise"].Id);
+        categoryNames.ShouldContain(name => name == expectedLevel1);
     }
 
     private async Task SeedAccountAsync(AccountId accountId)
@@ -67,14 +67,16 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
         await context.SaveChangesAsync();
     }
 
-    private async Task<List<SyncedItemClassificationEntity>> GetClassificationsAsync(int syncedItemId)
+    private async Task<List<string>> GetFileClassificationCategoryNamesAsync(int syncedItemId)
     {
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
         await using var context = await factory.CreateDbContextAsync();
 
-        return await context.SyncedItemClassifications
+        return await context.SyncedItemFileClassifications
+            .Include(c => c.Category)
             .Where(c => c.SyncedItemId == syncedItemId)
             .AsNoTracking()
+            .Select(c => c.Category!.Name)
             .ToListAsync();
     }
 
