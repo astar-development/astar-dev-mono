@@ -351,21 +351,31 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var classificationRepository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var syncedItemRepository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
+        var accountId = new AccountId("search-user-tag-junction");
+        await SeedAccountAsync(accountId, ct);
         var placeholder = new FileClassificationCategoryId(0);
         var category = FileClassificationCategoryFactory.Create(placeholder, "Photos", 1, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await classificationRepository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var photoItem = new SyncedItemEntity { AccountId = new AccountId("search-user"), RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/photo.jpg", LocalPath = "/local/photo.jpg", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 1024 };
-        var untaggedItem = new SyncedItemEntity { AccountId = new AccountId("search-user"), RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/doc.txt", LocalPath = "/local/doc.txt", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 512 };
+        var photoItem = new SyncedItemEntity { AccountId = accountId, RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/photo.jpg", LocalPath = "/local/photo.jpg", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 1024 };
+        var untaggedItem = new SyncedItemEntity { AccountId = accountId, RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/doc.txt", LocalPath = "/local/doc.txt", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 512 };
         var photoItemId = await syncedItemRepository.UpsertAsync(photoItem, ct);
         _ = await syncedItemRepository.UpsertAsync(untaggedItem, ct);
         await syncedItemRepository.UpsertFileClassificationsAsync(photoItemId, [categoryId.Id], ct);
-        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("search-user"), tags: ["Photos"]);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(accountId, tags: ["Photos"]);
 
         var results = await syncedItemRepository.SearchAsync(criteria, ct);
 
         results.Count.ShouldBe(1);
         results[0].RemotePath.ShouldBe("/photo.jpg");
+    }
+
+    private async Task SeedAccountAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
+        await using var context = await factory.CreateDbContextAsync(cancellationToken);
+        context.Set<AccountEntity>().Add(new AccountEntity { Id = accountId });
+        await context.SaveChangesAsync(cancellationToken);
     }
 }
