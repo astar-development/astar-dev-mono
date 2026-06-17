@@ -120,13 +120,16 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_tag_filter_then_only_tagged_items_are_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
         var taggedItem = FileItem(remotePath: "/photo.jpg");
         var untaggedItem = FileItem(remotePath: "/doc.txt");
+        db.FileClassificationCategories.Add(imageCategory);
         db.SyncedItems.AddRange(taggedItem, untaggedItem);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = taggedItem.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = taggedItem.Id, CategoryId = imageCategory.Id });
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), tags: ["Image"]);
 
@@ -189,13 +192,18 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_then_tag_names_are_populated_in_result()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var mediaCategory = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
         var item = FileItem(remotePath: "/photo.jpg");
+        db.FileClassificationCategories.AddRange(imageCategory, mediaCategory);
         db.SyncedItems.Add(item);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Media", TagName = "Media", IsSpecial = false });
+        db.SyncedItemFileClassifications.AddRange(
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = imageCategory.Id },
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = mediaCategory.Id });
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"));
 
@@ -210,13 +218,18 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_get_distinct_tag_names_is_called_then_distinct_tags_for_account_are_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var mediaCategory = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
         var item = FileItem(remotePath: "/photo.jpg");
+        db.FileClassificationCategories.AddRange(imageCategory, mediaCategory);
         db.SyncedItems.Add(item);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = item.Id, Level1 = "Media", TagName = "Media", IsSpecial = false });
+        db.SyncedItemFileClassifications.AddRange(
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = imageCategory.Id },
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = mediaCategory.Id });
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
@@ -243,14 +256,19 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_get_distinct_tag_names_is_called_then_only_tags_for_requested_account_are_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var videoCategory = new FileClassificationCategoryEntity { Name = "Video", Level = 1 };
         var itemForAccountOne = FileItem(accountId: "user-1", remotePath: "/photo.jpg");
         var itemForAccountTwo = FileItem(accountId: "user-2", remotePath: "/video.mp4");
+        db.FileClassificationCategories.AddRange(imageCategory, videoCategory);
         db.SyncedItems.AddRange(itemForAccountOne, itemForAccountTwo);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = itemForAccountOne.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = itemForAccountTwo.Id, Level1 = "Video", TagName = "Video", IsSpecial = false });
+        db.SyncedItemFileClassifications.AddRange(
+            new SyncedItemFileClassificationEntity { SyncedItemId = itemForAccountOne.Id, CategoryId = imageCategory.Id },
+            new SyncedItemFileClassificationEntity { SyncedItemId = itemForAccountTwo.Id, CategoryId = videoCategory.Id });
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
@@ -263,14 +281,18 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_get_distinct_tag_names_is_called_and_multiple_files_share_the_same_tag_then_tag_appears_once()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
         var firstItem = FileItem(remotePath: "/photo1.jpg");
         var secondItem = FileItem(remotePath: "/photo2.jpg");
+        db.FileClassificationCategories.Add(imageCategory);
         db.SyncedItems.AddRange(firstItem, secondItem);
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = firstItem.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
-        db.SyncedItemClassifications.Add(new SyncedItemClassificationEntity { SyncedItemId = secondItem.Id, Level1 = "Image", TagName = "Image", IsSpecial = false });
+        db.SyncedItemFileClassifications.AddRange(
+            new SyncedItemFileClassificationEntity { SyncedItemId = firstItem.Id, CategoryId = imageCategory.Id },
+            new SyncedItemFileClassificationEntity { SyncedItemId = secondItem.Id, CategoryId = imageCategory.Id });
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
@@ -402,5 +424,51 @@ public sealed class GivenASyncedItemRepository
 
         var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == item.Id).ToList();
         rows.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_searching_by_tag_then_returns_items_with_matching_junction_row()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var taggedItem = FileItem(remotePath: "/photo.jpg");
+        var untaggedItem = FileItem(remotePath: "/doc.txt");
+        db.FileClassificationCategories.Add(imageCategory);
+        db.SyncedItems.AddRange(taggedItem, untaggedItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = taggedItem.Id, CategoryId = imageCategory.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), tags: ["Image"]);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].RemotePath.ShouldBe("/photo.jpg");
+    }
+
+    [Fact]
+    public async Task when_getting_distinct_tag_names_then_reads_from_junction_table()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var videoCategory = new FileClassificationCategoryEntity { Name = "Video", Level = 1 };
+        var item = FileItem(remotePath: "/photo.jpg");
+        db.FileClassificationCategories.AddRange(imageCategory, videoCategory);
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.AddRange(
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = imageCategory.Id },
+            new SyncedItemFileClassificationEntity { SyncedItemId = item.Id, CategoryId = videoCategory.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.Count.ShouldBe(2);
+        tags.ShouldContain("Image");
+        tags.ShouldContain("Video");
     }
 }

@@ -122,7 +122,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         if (criteria.Tags.Count > 0)
         {
             var tagList = criteria.Tags.ToList();
-            query = query.Where(i => db.SyncedItemClassifications.Any(c => c.SyncedItemId == i.Id && tagList.Contains(c.TagName)));
+            var tagCategoryIds = await db.FileClassificationCategories
+                .Where(c => tagList.Contains(c.Name))
+                .Select(c => c.Id)
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+            query = query.Where(i => db.SyncedItemFileClassifications
+                .Any(jt => jt.SyncedItemId == i.Id && tagCategoryIds.Contains(jt.CategoryId)));
         }
 
         if (criteria.DuplicatesOnly)
@@ -159,7 +164,10 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
                 i.LocalPath,
                 i.RemoteModifiedAt,
                 i.SizeInBytes,
-                TagNames = db.SyncedItemClassifications.Where(c => c.SyncedItemId == i.Id).Select(c => c.TagName).ToList()
+                TagNames = db.SyncedItemFileClassifications
+                    .Where(jt => jt.SyncedItemId == i.Id)
+                    .Select(jt => jt.Category!.Name)
+                    .ToList()
             })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -171,11 +179,11 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        return await db.SyncedItemClassifications
-            .Where(c => c.SyncedItem!.AccountId == accountId)
-            .Select(c => c.TagName)
+        return await db.SyncedItemFileClassifications
+            .Where(jt => jt.SyncedItem!.AccountId == accountId)
+            .Select(jt => jt.Category!.Name)
             .Distinct()
-            .OrderBy(tag => tag)
+            .OrderBy(name => name)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
     }
 }
