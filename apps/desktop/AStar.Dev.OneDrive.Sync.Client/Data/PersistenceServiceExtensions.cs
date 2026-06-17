@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ internal static class PersistenceServiceExtensions
         _ = services.AddSingleton<ISyncRuleRepository, SyncRuleRepository>();
         _ = services.AddSingleton<ISyncedItemRepository, SyncedItemRepository>();
         _ = services.AddSingleton<IFileClassificationRepository, FileClassificationRepository>();
+        _ = services.AddTransient<ICategoryResolutionService, CategoryResolutionService>();
 
         return services;
     }
