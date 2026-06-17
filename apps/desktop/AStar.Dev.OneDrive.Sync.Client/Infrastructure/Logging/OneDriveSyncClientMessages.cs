@@ -353,6 +353,12 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3300, Level = LogLevel.Warning, Message = "[FileClassificationRepository] Skipping persisted category {EntityId} — validation failed: {Error}")]
     public static partial void ClassificationRowSkipped(ILogger logger, int entityId, string error);
 
+    // Classification Data Migration (3400-3499)
+
+    /// <summary>Logs total rows migrated from the legacy classification table to the junction table.</summary>
+    [LoggerMessage(EventId = 3400, Level = LogLevel.Information, Message = "[ClassificationDataMigrationService] Migration complete — {Count} rows migrated")]
+    public static partial void ClassificationDataMigrated(ILogger logger, int count);
+
     // Application Lifecycle (use ApplicationMessages for these)
     // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping
     // - Unhandled exception handled by MainWindowInitializeFatal, BootstrapFatal, etc.

@@ -13,6 +13,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.DataMigration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
@@ -92,7 +93,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localizationService, fileSystem), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), accountRepository, new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
-    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
+    private AppBootstrapper CreateSut() => new(dbContextFactory, Substitute.For<IClassificationDataMigrationService>(), settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
 
     [Fact]
     public async Task when_bootstrap_async_is_called_then_settings_load_async_is_called()
