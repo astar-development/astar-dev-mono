@@ -1,5 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;
@@ -14,6 +15,8 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
     {
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
         await using var context = await factory.CreateDbContextAsync();
+        context.SyncedItemFileClassifications.RemoveRange(context.SyncedItemFileClassifications);
+        context.SyncedItems.RemoveRange(context.SyncedItems);
         context.FileClassificationKeywords.RemoveRange(context.FileClassificationKeywords);
         context.FileClassificationCategories.RemoveRange(context.FileClassificationCategories);
         await context.SaveChangesAsync();
@@ -341,5 +344,28 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
         keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
     }
-}
 
+    [Fact]
+    public async Task when_searching_synced_items_by_tag_using_junction_table_then_items_with_matching_category_are_returned()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var classificationRepository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
+        var syncedItemRepository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
+        var placeholder = new FileClassificationCategoryId(0);
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Photos", 1, Option.None<FileClassificationCategoryId>())
+            .Match(ok => ok, err => throw new InvalidOperationException(err));
+        var categoryId = await classificationRepository.AddCategoryAsync(category, ct)
+            .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
+        var photoItem = new SyncedItemEntity { AccountId = new AccountId("search-user"), RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/photo.jpg", LocalPath = "/local/photo.jpg", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 1024 };
+        var untaggedItem = new SyncedItemEntity { AccountId = new AccountId("search-user"), RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/doc.txt", LocalPath = "/local/doc.txt", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 512 };
+        var photoItemId = await syncedItemRepository.UpsertAsync(photoItem, ct);
+        _ = await syncedItemRepository.UpsertAsync(untaggedItem, ct);
+        await syncedItemRepository.UpsertFileClassificationsAsync(photoItemId, [categoryId.Id], ct);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("search-user"), tags: ["Photos"]);
+
+        var results = await syncedItemRepository.SearchAsync(criteria, ct);
+
+        results.Count.ShouldBe(1);
+        results[0].RemotePath.ShouldBe("/photo.jpg");
+    }
+}
