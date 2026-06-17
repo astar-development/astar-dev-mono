@@ -8,10 +8,21 @@
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch">
 
-    <Grid RowDefinitions="*">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+
+        <StackPanel Grid.Row="0"
+                    Margin="24,20,24,12"
+                    Spacing="4">
+            <TextBlock Text="{Binding ConnectedAccountsText}"
+                       FontSize="{StaticResource FontSizeXl}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+        </StackPanel>
 
         <!-- Empty state -->
-        <StackPanel Grid.Row="0"
+        <StackPanel Grid.Row="1"
                     IsVisible="{Binding !Accounts.HasAccounts}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
@@ -58,17 +69,13 @@
         </StackPanel>
 
         <!-- Account list -->
-        <ScrollViewer Grid.Row="0"
+        <ScrollViewer Grid.Row="1"
                       IsVisible="{Binding Accounts.HasAccounts}"
-                      Padding="24"
+                      Padding="24,0,24,20"
                       VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
                       MinHeight="0">
             <StackPanel Spacing="12">
-
-                <TextBlock Text="{Binding ConnectedAccountsText}"
-                           FontSize="{StaticResource FontSizeXl}"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
-                           Margin="0,0,0,8"/>
 
                 <ItemsControl ItemsSource="{Binding Accounts.Accounts}">
                     <ItemsControl.ItemTemplate>
@@ -172,7 +179,7 @@
         </ScrollViewer>
 
         <!-- Wizard overlay -->
-        <Grid Grid.Row="0"
+        <Grid Grid.Row="1"
               IsVisible="{Binding Accounts.IsWizardVisible}"
               Background="#80000000">
             <Border Background="{DynamicResource BackgroundPrimaryBrush}"
