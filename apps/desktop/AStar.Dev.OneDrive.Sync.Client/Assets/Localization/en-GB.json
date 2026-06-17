@@ -216,5 +216,9 @@
   "Search.SortOrder.NameAsc": "Name A → Z",
   "Search.SortOrder.NameDesc": "Name Z → A",
   "Search.SortOrder.SizeAsc": "Size smallest first",
-  "Search.SortOrder.SizeDesc": "Size largest first"
+  "Search.SortOrder.SizeDesc": "Size largest first",
+  "AccountSync.LocalSyncFolderLabel": "Local sync folder",
+  "AccountSync.LocalSyncFolderPlaceholder": "e.g. /home/user/OneDrive/personal",
+  "AccountSync.BrowseButton": "Browse ...",
+  "AccountSync.SaveButton": "Save"
 }

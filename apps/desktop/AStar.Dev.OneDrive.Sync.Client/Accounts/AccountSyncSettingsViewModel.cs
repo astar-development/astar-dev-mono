@@ -24,7 +24,15 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
         LocalSyncPath = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
         ConflictPolicy = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
-        loc.CultureChanged += (_, _) => { PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy); OnPropertyChanged(nameof(PolicyOptions)); };
+        loc.CultureChanged += (_, _) =>
+        {
+            PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
+            OnPropertyChanged(nameof(PolicyOptions));
+            OnPropertyChanged(nameof(LocalSyncFolderLabelText));
+            OnPropertyChanged(nameof(LocalSyncFolderPlaceholderText));
+            OnPropertyChanged(nameof(BrowseButtonText));
+            OnPropertyChanged(nameof(SaveButtonText));
+        };
     }
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
@@ -46,6 +54,11 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
     }
 
     public IReadOnlyList<ConflictPolicyOption> PolicyOptions { get; private set; }
+
+    public string LocalSyncFolderLabelText => loc.GetLocal("AccountSync.LocalSyncFolderLabel");
+    public string LocalSyncFolderPlaceholderText => loc.GetLocal("AccountSync.LocalSyncFolderPlaceholder");
+    public string BrowseButtonText => loc.GetLocal("AccountSync.BrowseButton");
+    public string SaveButtonText => loc.GetLocal("AccountSync.SaveButton");
 
     [RelayCommand]
     private static async Task BrowseAsync()
