@@ -8,9 +8,11 @@
         ShowInTaskbar="False"
         WindowDecorations="None"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BackgroundPrimaryBrush}">
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
 
-    <Border BorderBrush="{DynamicResource BorderSubtleBrush}"
+    <Border Background="{DynamicResource BackgroundPrimaryBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="1"
             CornerRadius="12">
 
