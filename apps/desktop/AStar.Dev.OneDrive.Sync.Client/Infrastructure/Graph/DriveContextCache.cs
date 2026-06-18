@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Home;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using Microsoft.Graph;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;

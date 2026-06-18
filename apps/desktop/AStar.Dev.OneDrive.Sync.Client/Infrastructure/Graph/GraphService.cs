@@ -4,7 +4,6 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
-using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;

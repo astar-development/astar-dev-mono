@@ -6,7 +6,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Platform.Storage;
 using System.IO.Abstractions;
-using Testably.Abstractions.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Classifications;
 
@@ -162,7 +161,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_import_command_invoked_and_file_picker_returns_null_then_delete_all_not_called()
     {
-        IStorageProvider storageProvider = Substitute.For<IStorageProvider>();
+        var storageProvider = Substitute.For<IStorageProvider>();
         filePickerService.PickOpenFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(null));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
@@ -175,7 +174,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_import_command_invoked_and_confirmation_declined_then_delete_all_not_called()
     {
-        IStorageProvider storageProvider = Substitute.For<IStorageProvider>();
+        var storageProvider = Substitute.For<IStorageProvider>();
         filePickerService.PickOpenFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>("/some/file.json"));
         confirmationDialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -190,7 +189,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_import_command_invoked_and_confirmed_then_load_async_called_after_import()
     {
-        IStorageProvider storageProvider = Substitute.For<IStorageProvider>();
+        var storageProvider = Substitute.For<IStorageProvider>();
         const string importFilePath = "/some/file.json";
         filePickerService.PickOpenFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(importFilePath));
@@ -209,7 +208,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_export_command_invoked_and_file_picker_returns_null_then_export_not_called()
     {
-        IStorageProvider storageProvider = Substitute.For<IStorageProvider>();
+        var storageProvider = Substitute.For<IStorageProvider>();
         filePickerService.PickSaveFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(null));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
@@ -222,7 +221,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_export_command_invoked_with_valid_path_then_export_service_called()
     {
-        IStorageProvider storageProvider = Substitute.For<IStorageProvider>();
+        var storageProvider = Substitute.For<IStorageProvider>();
         const string exportFilePath = "/some/export.json";
         filePickerService.PickSaveFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(exportFilePath));

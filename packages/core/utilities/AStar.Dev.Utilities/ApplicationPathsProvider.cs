@@ -20,7 +20,7 @@ public static class ApplicationPathsProvider
         ///
         /// </summary>
         /// <returns></returns>
-        public string LogsDirectory() => ResolveLogDirectory(applicationName);
+        public string LogsDirectory() => ResolveLogsDirectory(applicationName);
 
         /// <summary>
         ///
@@ -29,9 +29,9 @@ public static class ApplicationPathsProvider
         public string UserDirectory() => ResolveUsersDirectory(applicationName);
     }
 
-    private static string ResolveLogDirectory(string applicationName)
+    private static string ResolveLogsDirectory(string applicationName)
     {
-        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(applicationName, "logs");
+        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).CombinePath(applicationName, "logs");
 
         _ = Directory.CreateDirectory(logDirectory);
 
@@ -40,18 +40,18 @@ public static class ApplicationPathsProvider
 
     private static string ResolveUsersDirectory(string applicationName)
     {
-        string logDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).CombinePath(applicationName, "sync");
+        string usersDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).CombinePath(applicationName, "sync");
 
-        _ = Directory.CreateDirectory(logDirectory);
+        _ = Directory.CreateDirectory(usersDirectory);
 
-        return logDirectory;
+        return usersDirectory;
     }
 
     private static string GetPlatformDataDirectory(string applicationName)
     {
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-        string directory= OperatingSystem.IsWindows()
+        string directory = OperatingSystem.IsWindows()
             ? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 applicationName)

@@ -5,7 +5,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
 public sealed class GivenAFileClassificationKeywordFactory
 {
-    private const string AnyValidValue = "cats";
+    private const string AnyValidValue = "Cats";
 
     [Fact]
     public void when_value_is_empty_then_result_is_failure()

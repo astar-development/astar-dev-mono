@@ -2,6 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -82,7 +83,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         var entity = new FileClassificationCategoryEntity
         {
-            Name = category.Name,
+            Name = category.Name.ToTitleCase(),
             Level = category.Level,
             ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
         };
@@ -103,7 +104,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         if (entity is null)
             return new Result<FileClassificationCategoryId, string>.Error("Category not found.");
 
-        entity.Name = category.Name;
+        entity.Name = category.Name.ToTitleCase();
         entity.Level = category.Level;
         entity.ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null);
 
@@ -141,7 +142,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         var entity = new FileClassificationKeywordEntity
         {
-            Keyword = keyword.Value,
+            Keyword = keyword.Value.ToTitleCase(),
             CategoryId = rawCategoryId,
             IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false)
         };
@@ -168,7 +169,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         if (hasChildren)
             return new Result<int, string>.Error("Cannot update keyword on a non-leaf category.");
 
-        entity.Keyword = keyword.Value;
+        entity.Keyword = keyword.Value.ToTitleCase();
         entity.IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -212,10 +213,10 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             }
         }
 
-        string level1 = ancestorNames.GetValueOrDefault(1, string.Empty);
-        Option<string> level2 = ancestorNames.TryGetValue(2, out string? level2Name) ? Option.Some(level2Name) : Option.None<string>();
-        Option<string> level3 = ancestorNames.TryGetValue(3, out string? level3Name) ? Option.Some(level3Name) : Option.None<string>();
+        string level1 = ancestorNames.GetValueOrDefault(1, string.Empty).ToTitleCase();
+        var level2 = ancestorNames.TryGetValue(2, out string? level2Name) ? Option.Some(level2Name.ToTitleCase()) : Option.None<string>();
+        var level3 = ancestorNames.TryGetValue(3, out string? level3Name) ? Option.Some(level3Name.ToTitleCase()) : Option.None<string>();
 
-        return new KeywordMapping(keyword.Keyword, level1, level2, level3, false);
+        return new KeywordMapping(keyword.Keyword.ToTitleCase(), level1, level2, level3, false);
     }
 }

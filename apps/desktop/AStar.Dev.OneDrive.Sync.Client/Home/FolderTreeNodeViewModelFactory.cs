@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;

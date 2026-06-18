@@ -137,7 +137,7 @@ public static class StringExtensions
     /// <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
     public static string NormalizeLinux(this string path)
     {
-        if(string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
             return "/";
 
         path = path.Trim()
@@ -154,7 +154,7 @@ public static class StringExtensions
     /// <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
     public static string NormalizeWindows(this string path)
     {
-        if(string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
             return "\\";
 
         path = path.Trim()
@@ -178,4 +178,17 @@ public static class StringExtensions
         < 1024 * 1024 * 1024 => $"{fileSize / (1024.0 * 1024):F1} MB",
         _ => $"{fileSize / (1024.0 * 1024 * 1024):F1} GB"
     };
+
+    /// <summary>
+    ///   The TitleCased method converts a string to title case using the specified culture.
+    /// </summary>
+    /// <param name="value">The string to convert</param>
+    /// <param name="cultureName">The culture to use for title casing</param>
+    /// <returns>The title-cased string</returns>
+    public static string ToTitleCase(this string value, string cultureName = "en-GB")
+#pragma warning disable CA1308 // Normalize strings to uppercase
+        => string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : new System.Globalization.CultureInfo(cultureName, false).TextInfo.ToTitleCase(value.ToLowerInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
 }

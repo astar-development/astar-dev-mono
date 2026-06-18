@@ -1,9 +1,10 @@
 using System.Net;
 using System.Text;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Sync.Jobs;
 
 public sealed class GivenAnHttpDownloader
 {
@@ -33,42 +34,31 @@ public sealed class GivenAnHttpDownloader
     private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>());
 
     [Fact]
-    public void when_constructed_then_service_implements_ihttp_downloader() =>
-        CreateSut(Substitute.For<IHttpClientFactory>(), new MockFileSystem()).ShouldBeAssignableTo<IHttpDownloader>();
-
-    [Fact]
-    public async Task when_download_async_is_called_with_pre_cancelled_token_then_operation_is_cancelled()
+    public async Task when_download_is_rate_limited_beyond_max_retries_then_result_is_error()
     {
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-        var sut = CreateSut(CreateOkFactory(), new MockFileSystem());
+        var factory = CreateAlways429Factory();
+        var sut = CreateSut(factory, new MockFileSystem());
 
-        await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
+        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        var error = result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
+        error!.Reason.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
-    public async Task when_download_async_succeeds_then_file_is_written_with_correct_content()
+    public async Task when_download_async_succeeds_with_progress_then_progress_is_reported()
     {
         var mockFileSystem = new MockFileSystem();
+        var reportedValues = new List<long>();
+        var progress = new Progress<long>(reportedValues.Add);
         var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, progress, TestContext.Current.CancellationToken);
 
-        mockFileSystem.File.Exists(LocalPath).ShouldBeTrue();
-        string writtenContent = mockFileSystem.File.ReadAllText(LocalPath);
-        writtenContent.ShouldBe(FileContent);
-    }
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
-    [Fact]
-    public async Task when_download_async_succeeds_then_file_last_write_time_matches_remote_modified()
-    {
-        var mockFileSystem = new MockFileSystem();
-        var sut = CreateSut(CreateOkFactory(), mockFileSystem);
-
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
-
-        mockFileSystem.File.GetLastWriteTimeUtc(LocalPath).ShouldBe(RemoteModified.UtcDateTime);
+        reportedValues.ShouldNotBeEmpty();
+        reportedValues[^1].ShouldBe(Encoding.UTF8.GetByteCount(FileContent));
     }
 
     private static IHttpClientFactory CreateAlways429Factory()

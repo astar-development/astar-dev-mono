@@ -25,9 +25,10 @@ public sealed class GivenASyncedItemFileClassificationEntity
     [Fact]
     public void when_synced_item_id_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new SyncedItemFileClassificationEntity();
-
-        entity.SyncedItemId = 42;
+        var entity = new SyncedItemFileClassificationEntity
+        {
+            SyncedItemId = 42
+        };
 
         entity.SyncedItemId.ShouldBe(42);
     }
@@ -35,9 +36,10 @@ public sealed class GivenASyncedItemFileClassificationEntity
     [Fact]
     public void when_category_id_is_set_then_it_reflects_in_the_property()
     {
-        var entity = new SyncedItemFileClassificationEntity();
-
-        entity.CategoryId = 7;
+        var entity = new SyncedItemFileClassificationEntity
+        {
+            CategoryId = 7
+        };
 
         entity.CategoryId.ShouldBe(7);
     }

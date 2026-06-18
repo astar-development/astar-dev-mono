@@ -132,17 +132,17 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         };
 
         var items = await query
-            .Select(i => new
+            .Select(syncedItem => new
             {
-                i.Id,
-                i.AccountId,
-                i.RemoteItemId,
-                i.RemotePath,
-                i.LocalPath,
-                i.RemoteModifiedAt,
-                i.SizeInBytes,
+                syncedItem.Id,
+                syncedItem.AccountId,
+                syncedItem.RemoteItemId,
+                syncedItem.RemotePath,
+                syncedItem.LocalPath,
+                syncedItem.RemoteModifiedAt,
+                syncedItem.SizeInBytes,
                 TagNames = db.SyncedItemFileClassifications
-                    .Where(jt => jt.SyncedItemId == i.Id)
+                    .Where(jt => jt.SyncedItemId == syncedItem.Id)
                     .Select(jt => jt.Category!.Name)
                     .ToList()
             })
@@ -156,11 +156,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        return await db.SyncedItemFileClassifications
+        var categories = await db.SyncedItemFileClassifications
             .Where(jt => jt.SyncedItem!.AccountId == accountId)
             .Select(jt => jt.Category!.Name)
             .Distinct()
             .OrderBy(name => name)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+        return categories;
     }
 }

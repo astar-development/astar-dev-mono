@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
@@ -130,5 +131,5 @@ public static partial class TokenAnalyser
         return Option.Some(Capitalise(words[0]) + " " + Capitalise(words[1]));
     }
 
-    private static string Capitalise(string word) => char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant();
+    private static string Capitalise(string word) => word.ToTitleCase();
 }

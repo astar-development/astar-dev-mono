@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;

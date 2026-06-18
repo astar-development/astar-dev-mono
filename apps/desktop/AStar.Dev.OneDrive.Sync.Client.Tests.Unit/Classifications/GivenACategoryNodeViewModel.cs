@@ -24,7 +24,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_keyword_command_executed_then_keyword_persisted_and_added()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewKeyword = "cats";
 
         await sut.AddKeywordCommand.ExecuteAsync(null);
@@ -36,7 +36,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_keyword_command_executed_then_form_cleared()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewKeyword = "cats";
         sut.NewKeywordIsSpecial = true;
 
@@ -49,7 +49,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public void when_new_keyword_empty_then_add_keyword_command_disabled()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewKeyword = string.Empty;
 
         sut.AddKeywordCommand.CanExecute(null).ShouldBeFalse();
@@ -58,7 +58,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public void when_has_children_then_add_keyword_command_disabled()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewKeyword = "cats";
         sut.Children.Add(new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Photos", 2, repository, _ => { }));
 
@@ -68,7 +68,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_child_category_command_executed_then_category_persisted_and_child_added()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewChildCategoryName = "Photos";
 
         await sut.AddChildCategoryCommand.ExecuteAsync(null);
@@ -80,7 +80,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_child_category_command_executed_then_new_child_name_cleared()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewChildCategoryName = "Photos";
 
         await sut.AddChildCategoryCommand.ExecuteAsync(null);
@@ -91,7 +91,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public void when_level_is_3_then_add_child_category_command_disabled()
     {
-        CategoryNodeViewModel sut = CreateSut(level: 3);
+        var sut = CreateSut(level: 3);
         sut.NewChildCategoryName = "Deep";
 
         sut.AddChildCategoryCommand.CanExecute(null).ShouldBeFalse();
@@ -111,7 +111,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_child_category_command_executed_then_keyword_also_persisted()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewChildCategoryName = "Photos";
 
         await sut.AddChildCategoryCommand.ExecuteAsync(null);
@@ -122,7 +122,7 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_add_child_category_command_executed_then_new_child_category_has_one_keyword()
     {
-        CategoryNodeViewModel sut = CreateSut();
+        var sut = CreateSut();
         sut.NewChildCategoryName = "Photos";
 
         await sut.AddChildCategoryCommand.ExecuteAsync(null);
