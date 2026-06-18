@@ -22,13 +22,8 @@ public sealed class GivenAFileClassificationExportImportService
 
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        // repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-        //           .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
-        // repository.DeleteAllAsync(Arg.Any<CancellationToken>())
-        //           .Returns(Task.CompletedTask);
-
         sut = new FileClassificationExportImportService(repository, fileSystem);
     }
 
