@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>AStar.Dev.OneDrive.Sync.Client.Tests.Unit</RootNamespace>
-        <NoWarn>NU1902;CA1859</NoWarn>
+        <NoWarn>NU1902;CA1859;IDE1006;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
