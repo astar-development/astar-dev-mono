@@ -28,7 +28,7 @@ public sealed class GivenAPathNormaliser
     [Fact]
     public void when_strip_root_path_called_with_leading_slash_then_leading_slash_does_not_count_as_a_segment()
     {
-        var result = PathNormaliser.StripRootPath(RootedEightSegmentPath);
+        string result = PathNormaliser.StripRootPath(RootedEightSegmentPath);
 
         result.ShouldBe("meaningful/further/file.jpg");
     }

@@ -76,7 +76,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
             .New(Arg.Any<string>(), Arg.Any<FileMode>(), Arg.Any<FileAccess>(), Arg.Any<FileShare>(), Arg.Any<int>(), Arg.Any<bool>())
             .Returns(callInfo =>
             {
-                var path = callInfo.ArgAt<string>(0);
+                string path = callInfo.ArgAt<string>(0);
                 writtenPaths.Add(path);
                 return mockFs.FileStream.New(path, callInfo.ArgAt<FileMode>(1), callInfo.ArgAt<FileAccess>(2), callInfo.ArgAt<FileShare>(3), callInfo.ArgAt<int>(4), callInfo.ArgAt<bool>(5));
             });

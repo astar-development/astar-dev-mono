@@ -468,7 +468,7 @@ public sealed class GivenASyncScheduler
         const string accountId = "shared-account";
         var syncStarted = new TaskCompletionSource();
         var syncRelease = new TaskCompletionSource();
-        var callCount = 0;
+        int callCount = 0;
         var mockSyncService = Substitute.For<ISyncService>();
         mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
             .Returns(async _ =>

@@ -23,7 +23,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
 
         var nodesByCategoryId = new Dictionary<FileClassificationCategoryId, ClassificationCategoryNode>();
         foreach (var category in allCategories)
-            nodesByCategoryId[category.Id] = new ClassificationCategoryNode { Name = category.Name, Children = [], Keywords = [] };
+            nodesByCategoryId[category.Id] = new ClassificationCategoryNode { Name = category.Name, IsFamous = category.IsFamous, IsInternet = category.IsInternet, Children = [], Keywords = [] };
 
         foreach (var category in allCategories)
         {
@@ -32,7 +32,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
                 continue;
 
             var keywords = await repository.GetKeywordsForCategoryAsync(category.Id, cancellationToken).ConfigureAwait(false);
-            nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsSpecialOverride is Option<bool>.Some s ? s.Value : null)));
+            nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsFamous is Option<bool>.Some f ? f.Value : null, k.Keyword.IsInternet is Option<bool>.Some i ? i.Value : null)));
         }
 
         var rootNodes = new List<ClassificationCategoryNode>();
@@ -61,23 +61,23 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         await repository.DeleteAllAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var node in exportRoot.Categories)
-            await InsertNodeAsync(node, 1, Option.None<FileClassificationCategoryId>(), cancellationToken).ConfigureAwait(false);
+            await InsertNodeAsync(node, 1, false, false, Option.None<FileClassificationCategoryId>(), cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task InsertNodeAsync(ClassificationCategoryNode node, int level, Option<FileClassificationCategoryId> parentId, CancellationToken cancellationToken)
+    private async Task InsertNodeAsync(ClassificationCategoryNode node, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, CancellationToken cancellationToken)
     {
         var placeholder = new FileClassificationCategoryId(0);
 
-        await FileClassificationCategoryFactory.Create(placeholder, node.Name, level, parentId)
+        await FileClassificationCategoryFactory.Create(placeholder, node.Name, level, isFamous, isInternet, parentId)
             .BindAsync(category => repository.AddCategoryAsync(category, cancellationToken))
             .MatchAsync(
                 async newId =>
                 {
                     foreach (var child in node.Children)
-                        await InsertNodeAsync(child, level + 1, Option.Some(newId), cancellationToken).ConfigureAwait(false);
+                        await InsertNodeAsync(child, level + 1, isFamous, isInternet, Option.Some(newId), cancellationToken).ConfigureAwait(false);
 
                     foreach (var keyword in node.Keywords)
-                        await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsSpecialOverride.HasValue ? Option.Some(keyword.IsSpecialOverride.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
+                        await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsFamous.HasValue ? Option.Some(keyword.IsFamous.Value) : Option.None<bool>(), keyword.IsInternet.HasValue ? Option.Some(keyword.IsInternet.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
                 },
                 _ => Task.CompletedTask)
             .ConfigureAwait(false);
@@ -93,8 +93,10 @@ internal sealed record ClassificationExportRoot
 internal sealed record ClassificationCategoryNode
 {
     public string Name { get; init; } = string.Empty;
+    public bool? IsFamous { get; init; }
+    public bool? IsInternet { get; init; }
     public List<ClassificationCategoryNode> Children { get; set; } = [];
     public List<ClassificationKeywordNode> Keywords { get; set; } = [];
 }
 
-internal sealed record ClassificationKeywordNode(string Value, bool? IsSpecialOverride);
+internal sealed record ClassificationKeywordNode(string Value, bool? IsFamous, bool? IsInternet);

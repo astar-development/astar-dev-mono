@@ -2,38 +2,37 @@
 
 #nullable disable
 
-namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
+namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations;
+
+/// <inheritdoc />
+public partial class AddSizeInBytesToSyncedItems : Migration
 {
+    private static readonly string[] accountIdSizeInBytesColumns = ["AccountId", "SizeInBytes"];
+
     /// <inheritdoc />
-    public partial class AddSizeInBytesToSyncedItems : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        private static readonly string[] accountIdSizeInBytesColumns = ["AccountId", "SizeInBytes"];
+        migrationBuilder.AddColumn<long>(
+            name: "SizeInBytes",
+            table: "SyncedItems",
+            type: "INTEGER",
+            nullable: true);
 
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<long>(
-                name: "SizeInBytes",
-                table: "SyncedItems",
-                type: "INTEGER",
-                nullable: true);
+        migrationBuilder.CreateIndex(
+            name: "IX_SyncedItems_AccountId_SizeInBytes",
+            table: "SyncedItems",
+            columns: accountIdSizeInBytesColumns);
+    }
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SyncedItems_AccountId_SizeInBytes",
-                table: "SyncedItems",
-                columns: accountIdSizeInBytesColumns);
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropIndex(
+            name: "IX_SyncedItems_AccountId_SizeInBytes",
+            table: "SyncedItems");
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropIndex(
-                name: "IX_SyncedItems_AccountId_SizeInBytes",
-                table: "SyncedItems");
-
-            migrationBuilder.DropColumn(
-                name: "SizeInBytes",
-                table: "SyncedItems");
-        }
+        migrationBuilder.DropColumn(
+            name: "SizeInBytes",
+            table: "SyncedItems");
     }
 }

@@ -125,7 +125,7 @@
                                                             <Border Background="{DynamicResource TextAccentBrush}"
                                                                     CornerRadius="{StaticResource RadiusSm}"
                                                                     Padding="4,1"
-                                                                    IsVisible="{Binding IsSpecialOverride}">
+                                                                    IsVisible="{Binding IsFamous}">
                                                                 <TextBlock Text="Special"
                                                                            FontSize="{StaticResource FontSizeXs}"
                                                                            Foreground="White"/>
@@ -143,7 +143,7 @@
                                                                      CornerRadius="{StaticResource RadiusSm}"
                                                                      MinWidth="160"/>
                                                             <CheckBox Content="Special"
-                                                                      IsChecked="{Binding IsSpecialOverride}"
+                                                                      IsChecked="{Binding IsFamous}"
                                                                       FontSize="{StaticResource FontSizeSm}"
                                                                       VerticalAlignment="Center"/>
                                                         </StackPanel>
@@ -207,8 +207,13 @@
                                                      FontSize="{StaticResource FontSizeSm}"
                                                      CornerRadius="{StaticResource RadiusSm}"
                                                      MinWidth="180"/>
-                                            <CheckBox Content="Special"
-                                                      IsChecked="{Binding NewKeywordIsSpecial}"
+                                            <CheckBox Content="Famous"
+                                                      IsChecked="{Binding IsFamous}"
+                                                      FontSize="{StaticResource FontSizeSm}"
+                                                      VerticalAlignment="Center"
+                                                      MinWidth="180"/>
+                                            <CheckBox Content="Internet"
+                                                      IsChecked="{Binding IsInternet}"
                                                       FontSize="{StaticResource FontSizeSm}"
                                                       VerticalAlignment="Center"/>
                                             <Button Content="Add keyword"
@@ -307,7 +312,7 @@
                                                                                 <Border Background="{DynamicResource TextAccentBrush}"
                                                                                         CornerRadius="{StaticResource RadiusSm}"
                                                                                         Padding="4,1"
-                                                                                        IsVisible="{Binding IsSpecialOverride}">
+                                                                                        IsVisible="{Binding IsFamous}">
                                                                                     <TextBlock Text="Special"
                                                                                                FontSize="{StaticResource FontSizeXs}"
                                                                                                Foreground="White"/>
@@ -323,7 +328,7 @@
                                                                                          CornerRadius="{StaticResource RadiusSm}"
                                                                                          MinWidth="140"/>
                                                                                 <CheckBox Content="Special"
-                                                                                          IsChecked="{Binding IsSpecialOverride}"
+                                                                                          IsChecked="{Binding IsFamous}"
                                                                                           FontSize="{StaticResource FontSizeSm}"
                                                                                           VerticalAlignment="Center"/>
                                                                             </StackPanel>
@@ -384,9 +389,13 @@
                                                                      CornerRadius="{StaticResource RadiusSm}"
                                                                      MinWidth="160"/>
                                                             <CheckBox Content="Special"
-                                                                      IsChecked="{Binding NewKeywordIsSpecial}"
+                                                                      IsChecked="{Binding IsFamous}"
                                                                       FontSize="{StaticResource FontSizeSm}"
                                                                       VerticalAlignment="Center"/>
+                                                            <CheckBox Content="Internet"
+                                                                    IsChecked="{Binding IsInternet}"
+                                                                    FontSize="{StaticResource FontSizeSm}"
+                                                                    VerticalAlignment="Center"/>
                                                             <Button Content="Add keyword"
                                                                     Padding="8,4"
                                                                     CornerRadius="{StaticResource RadiusMd}"
@@ -478,7 +487,7 @@
                                                                                                     <Border Background="{DynamicResource TextAccentBrush}"
                                                                                                             CornerRadius="{StaticResource RadiusSm}"
                                                                                                             Padding="4,1"
-                                                                                                            IsVisible="{Binding IsSpecialOverride}">
+                                                                                                            IsVisible="{Binding IsFamous}">
                                                                                                         <TextBlock Text="Special"
                                                                                                                    FontSize="{StaticResource FontSizeXs}"
                                                                                                                    Foreground="White"/>
@@ -494,7 +503,7 @@
                                                                                                              CornerRadius="{StaticResource RadiusSm}"
                                                                                                              MinWidth="120"/>
                                                                                                     <CheckBox Content="Special"
-                                                                                                              IsChecked="{Binding IsSpecialOverride}"
+                                                                                                              IsChecked="{Binding IsFamous}"
                                                                                                               FontSize="{StaticResource FontSizeSm}"
                                                                                                               VerticalAlignment="Center"/>
                                                                                                 </StackPanel>
@@ -552,9 +561,13 @@
                                                                                          CornerRadius="{StaticResource RadiusSm}"
                                                                                          MinWidth="140"/>
                                                                                 <CheckBox Content="Special"
-                                                                                          IsChecked="{Binding NewKeywordIsSpecial}"
+                                                                                          IsChecked="{Binding IsFamous}"
                                                                                           FontSize="{StaticResource FontSizeSm}"
                                                                                           VerticalAlignment="Center"/>
+                                                                                <CheckBox Content="Internet"
+                                                                                        IsChecked="{Binding IsInternet}"
+                                                                                        FontSize="{StaticResource FontSizeSm}"
+                                                                                        VerticalAlignment="Center"/>
                                                                                 <Button Content="Add keyword"
                                                                                         Padding="8,4"
                                                                                         CornerRadius="{StaticResource RadiusMd}"
@@ -595,10 +608,18 @@
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox Text="{Binding NewCategoryName}"
-                                     PlaceholderText="Category name"
-                                     FontSize="{StaticResource FontSizeSm}"
-                                     CornerRadius="{StaticResource RadiusMd}"
-                                     MinWidth="220"/>
+                                    PlaceholderText="Category name"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    MinWidth="220"/>
+                            <CheckBox Content="Famous"
+                                    IsChecked="{Binding IsFamous}"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    VerticalAlignment="Center"/>
+                            <CheckBox Content="Internet"
+                                    IsChecked="{Binding IsInternet}"
+                                    FontSize="{StaticResource FontSizeSm}"
+                                    VerticalAlignment="Center"/>
                             <Button Content="Add"
                                     Padding="14,6"
                                     CornerRadius="{StaticResource RadiusMd}"

@@ -361,7 +361,7 @@ public sealed class GivenAGraphService : IDisposable
     [Fact]
     public async Task when_enumerate_folder_next_link_does_not_pass_guard_then_only_the_first_page_is_returned()
     {
-        var nonGraphNextLinkUrl = $"{server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
+        string nonGraphNextLinkUrl = $"{server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2";
 
         server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
             .RespondWith(Response.Create()

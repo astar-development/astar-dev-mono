@@ -11,7 +11,7 @@ public sealed class GivenTheEnGbJson
 
     private static JsonElement RootElement()
     {
-        var json = File.ReadAllText(JsonPath);
+        string json = File.ReadAllText(JsonPath);
 
         return JsonDocument.Parse(json).RootElement;
     }

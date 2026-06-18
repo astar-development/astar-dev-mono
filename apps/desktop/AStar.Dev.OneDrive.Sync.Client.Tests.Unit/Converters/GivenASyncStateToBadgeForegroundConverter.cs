@@ -27,7 +27,7 @@ public sealed class GivenASyncStateToBadgeForegroundConverter
     [Fact]
     public void when_value_is_null_then_transparent_is_returned()
     {
-        var result = Sut.Convert(null, typeof(Color), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert(null, typeof(Color), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(Colors.Transparent);
     }
@@ -35,7 +35,7 @@ public sealed class GivenASyncStateToBadgeForegroundConverter
     [Fact]
     public void when_value_is_non_folder_sync_state_then_transparent_is_returned()
     {
-        var result = Sut.Convert("not a state", typeof(Color), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert("not a state", typeof(Color), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(Colors.Transparent);
     }

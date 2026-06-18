@@ -2,28 +2,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
+namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations;
+
+/// <inheritdoc />
+public partial class DropFileClassificationRulesTable : Migration
 {
     /// <inheritdoc />
-    public partial class DropFileClassificationRulesTable : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
 SELECT DISTINCT Level1, 1, NULL
 FROM FileClassificationRules
 WHERE Level1 IS NOT NULL AND Level1 != '';");
 
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
 SELECT DISTINCT r.Level2, 2, c1.Id
 FROM FileClassificationRules r
 JOIN FileClassificationCategories c1 ON c1.Name = r.Level1 AND c1.Level = 1
 WHERE r.Level2 IS NOT NULL AND r.Level2 != '';");
 
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
 SELECT DISTINCT r.Level3, 3, c2.Id
 FROM FileClassificationRules r
@@ -31,7 +31,7 @@ JOIN FileClassificationCategories c1 ON c1.Name = r.Level1 AND c1.Level = 1
 JOIN FileClassificationCategories c2 ON c2.Name = r.Level2 AND c2.Level = 2 AND c2.ParentId = c1.Id
 WHERE r.Level3 IS NOT NULL AND r.Level3 != '';");
 
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 WITH RECURSIVE split(level1, level2, level3, kw, rest) AS (
     SELECT Level1, Level2, Level3,
         CASE WHEN instr(Keywords, '|') > 0 THEN substr(Keywords, 1, instr(Keywords, '|') - 1) ELSE Keywords END,
@@ -73,7 +73,7 @@ AND NOT EXISTS (
     WHERE fck.Keyword = categorised.kw AND fck.CategoryId = categorised.category_id
 );");
 
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
 VALUES
     ('Person', 1, NULL),
@@ -90,7 +90,7 @@ VALUES
     ('Black',  2, 2),
     ('Purple',  2, 2);");
 
-            migrationBuilder.Sql(@"
+        migrationBuilder.Sql(@"
 INSERT OR IGNORE INTO FileClassificationKeywords (Keyword, CategoryId)
 VALUES
     ('Person', 1),
@@ -99,11 +99,10 @@ VALUES
     ('Place',  4),
     ('Event',  5);");
 
-            migrationBuilder.DropTable(name: "FileClassificationRules");
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-            => throw new NotSupportedException("DropFileClassificationRulesTable migration cannot be reversed.");
+        migrationBuilder.DropTable(name: "FileClassificationRules");
     }
+
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+        => throw new NotSupportedException("DropFileClassificationRulesTable migration cannot be reversed.");
 }

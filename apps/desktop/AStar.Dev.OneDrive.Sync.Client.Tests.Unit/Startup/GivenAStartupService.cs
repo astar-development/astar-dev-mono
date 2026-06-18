@@ -167,7 +167,7 @@ public sealed class GivenAStartupService
             .Returns(Task.FromException<List<AccountEntity>>(new InvalidOperationException("DB unavailable")));
 
 
-        var errorMessage = (await CreateSut().RestoreAccountsAsync()).Match(_ => string.Empty, error => error);
+        string errorMessage = (await CreateSut().RestoreAccountsAsync()).Match(_ => string.Empty, error => error);
 
         errorMessage.ShouldBe("DB unavailable");
     }

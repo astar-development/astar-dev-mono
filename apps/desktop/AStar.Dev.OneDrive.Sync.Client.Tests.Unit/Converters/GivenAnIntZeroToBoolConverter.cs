@@ -10,7 +10,7 @@ public sealed class GivenAnIntZeroToBoolConverter
     [Fact]
     public void when_value_is_zero_then_result_is_true()
     {
-        var result = Sut.Convert(0, typeof(bool), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert(0, typeof(bool), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(true);
     }
@@ -18,7 +18,7 @@ public sealed class GivenAnIntZeroToBoolConverter
     [Fact]
     public void when_value_is_one_then_result_is_false()
     {
-        var result = Sut.Convert(1, typeof(bool), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert(1, typeof(bool), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(false);
     }
@@ -26,7 +26,7 @@ public sealed class GivenAnIntZeroToBoolConverter
     [Fact]
     public void when_value_is_negative_then_result_is_false()
     {
-        var result = Sut.Convert(-1, typeof(bool), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert(-1, typeof(bool), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(false);
     }
@@ -34,7 +34,7 @@ public sealed class GivenAnIntZeroToBoolConverter
     [Fact]
     public void when_value_is_null_then_result_is_false()
     {
-        var result = Sut.Convert(null, typeof(bool), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert(null, typeof(bool), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(false);
     }
@@ -42,7 +42,7 @@ public sealed class GivenAnIntZeroToBoolConverter
     [Fact]
     public void when_value_is_non_integer_then_result_is_false()
     {
-        var result = Sut.Convert("zero", typeof(bool), null, CultureInfo.InvariantCulture);
+        object result = Sut.Convert("zero", typeof(bool), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(false);
     }

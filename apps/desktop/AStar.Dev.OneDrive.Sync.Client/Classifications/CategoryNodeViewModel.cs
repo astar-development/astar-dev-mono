@@ -14,11 +14,13 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private readonly IFileClassificationRepository repository;
     private readonly Action<CategoryNodeViewModel> onDeleteSelf;
 
-    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf)
+    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf)
     {
         CategoryId = categoryId;
         Name = name;
         Level = level;
+        IsFamous = isFamous;
+        IsInternet = isInternet;
         this.repository = repository;
         this.onDeleteSelf = onDeleteSelf;
 
@@ -48,7 +50,12 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     public partial string NewKeyword { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial bool NewKeywordIsSpecial { get; set; }
+    [NotifyCanExecuteChangedFor(nameof(AddKeywordCommand))]
+    public partial bool IsFamous { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddKeywordCommand))]
+    public partial bool IsInternet { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddChildCategoryCommand))]
@@ -57,7 +64,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private bool CanAddKeyword => !string.IsNullOrWhiteSpace(NewKeyword) && Children.Count == 0;
 
     [RelayCommand(CanExecute = nameof(CanAddKeyword))]
-    private async Task AddKeywordAsync() => await FileClassificationKeywordFactory.Create(NewKeyword.Trim(), NewKeywordIsSpecial ? Option.Some(true) : Option.None<bool>())
+    private async Task AddKeywordAsync() => await FileClassificationKeywordFactory.Create(NewKeyword.Trim(), IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
             .Match(AddValidatedKeywordAsync, _ => Task.CompletedTask)
             .ConfigureAwait(false);
 
@@ -68,7 +75,8 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             .ConfigureAwait(false);
 
         NewKeyword = string.Empty;
-        NewKeywordIsSpecial = false;
+        IsFamous = false;
+        IsInternet = false;
     }
 
     private bool CanAddChildCategory => !string.IsNullOrWhiteSpace(NewChildCategoryName) && Level < 3;
@@ -80,7 +88,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         var placeholder = new FileClassificationCategoryId(0);
         string trimmedName = NewChildCategoryName.Trim().ToTitleCase();
 
-        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, childLevel, Option.Some(CategoryId))
+        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId))
             .Match(category => AddValidatedChildCategoryAsync(category, trimmedName, childLevel), _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }
@@ -92,7 +100,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .TapAsync(newId =>
             {
-                newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, repository, self => Children.Remove(self));
+                newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, repository, self => Children.Remove(self));
                 Children.Add(newChild);
             })
             .TapAsync(async _ =>
@@ -100,7 +108,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
                 if (newChild is null)
                     return;
 
-                await FileClassificationKeywordFactory.Create(trimmedName, Option.None<bool>())
+                await FileClassificationKeywordFactory.Create(trimmedName, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
                     .Match(keyword => AddKeywordToChildAsync(newChild, keyword), _ => Task.CompletedTask)
                     .ConfigureAwait(false);
             })

@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 public static class FileClassificationCategoryFactory
 {
     /// <summary>Creates a <see cref="FileClassificationCategory"/> with validation.</summary>
-    public static Result<FileClassificationCategory, string> Create(FileClassificationCategoryId id, string name, int level, Option<FileClassificationCategoryId> parentId)
+    public static Result<FileClassificationCategory, string> Create(FileClassificationCategoryId id, string name, int level, bool IsFamous, bool IsInternet, Option<FileClassificationCategoryId> parentId)
     {
         string trimmedName = name?.Trim() ?? string.Empty;
         if(string.IsNullOrEmpty(trimmedName))
@@ -21,6 +21,6 @@ public static class FileClassificationCategoryFactory
         if(level is 2 or 3 && parentId is Option<FileClassificationCategoryId>.None)
             return new Result<FileClassificationCategory, string>.Error("Level 2 and 3 categories must have a parent.");
 
-        return new Result<FileClassificationCategory, string>.Ok(new(id, trimmedName, level, parentId));
+        return new Result<FileClassificationCategory, string>.Ok(new(id, trimmedName, level, IsFamous, IsInternet, parentId));
     }
 }

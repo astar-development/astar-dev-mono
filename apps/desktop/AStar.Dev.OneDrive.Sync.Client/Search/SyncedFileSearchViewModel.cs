@@ -157,7 +157,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         dispatcher.Post(() =>
         {
             AvailableTags.Clear();
-            foreach (var tag in tags)
+            foreach (string tag in tags)
                 AvailableTags.Add(tag);
         });
     }

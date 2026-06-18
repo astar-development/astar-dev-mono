@@ -9,7 +9,7 @@ public sealed class GivenTheEnGbLocalisationFile
     [Fact]
     public void when_en_gb_json_is_read_then_activity_info_key_exists()
     {
-        var json = File.ReadAllText(JsonFilePath);
+        string json = File.ReadAllText(JsonFilePath);
         var document = JsonDocument.Parse(json);
 
         document.RootElement.TryGetProperty("Activity.Info", out _).ShouldBeTrue();
@@ -18,7 +18,7 @@ public sealed class GivenTheEnGbLocalisationFile
     [Fact]
     public void when_en_gb_json_is_read_then_activity_sync_error_key_exists()
     {
-        var json = File.ReadAllText(JsonFilePath);
+        string json = File.ReadAllText(JsonFilePath);
         var document = JsonDocument.Parse(json);
 
         document.RootElement.TryGetProperty("Activity.SyncError", out _).ShouldBeTrue();

@@ -10,7 +10,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_is_empty_then_result_is_failure()
     {
-        var result = FileClassificationKeywordFactory.Create("", Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create("", Option.None<bool>(), Option.None<bool>());
 
         _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
     }
@@ -18,7 +18,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_is_whitespace_then_result_is_failure()
     {
-        var result = FileClassificationKeywordFactory.Create("   ", Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create("   ", Option.None<bool>(), Option.None<bool>());
 
         _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
     }
@@ -26,7 +26,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_has_leading_and_trailing_spaces_then_value_is_trimmed()
     {
-        var result = FileClassificationKeywordFactory.Create("  cats  ", Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create("  cats  ", Option.None<bool>(), Option.None<bool>());
 
         result.Match(k => k.Value, _ => string.Empty).ShouldBe(AnyValidValue);
     }
@@ -34,7 +34,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_has_uppercase_then_value_is_lowercased()
     {
-        var result = FileClassificationKeywordFactory.Create("CATS", Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create("CATS", Option.None<bool>(), Option.None<bool>());
 
         result.Match(k => k.Value, _ => string.Empty).ShouldBe(AnyValidValue);
     }
@@ -42,7 +42,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_is_valid_then_result_is_success()
     {
-        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.None<bool>(), Option.None<bool>());
 
         _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Ok>();
     }
@@ -50,31 +50,31 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_is_valid_with_special_override_true_then_result_is_success()
     {
-        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.Some(true));
+        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.Some(true), Option.None<bool>());
 
-        result.Match(k => k.IsSpecialOverride, _ => Option.None<bool>()).ShouldBe(Option.Some(true));
+        result.Match(k => k.IsFamous, _ => Option.None<bool>()).ShouldBe(Option.Some(true));
     }
 
     [Fact]
     public void when_value_is_valid_with_special_override_false_then_result_is_success()
     {
-        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.Some(false));
+        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.Some(false), Option.None<bool>());
 
-        result.Match(k => k.IsSpecialOverride, _ => Option.None<bool>()).ShouldBe(Option.Some(false));
+        result.Match(k => k.IsFamous, _ => Option.None<bool>()).ShouldBe(Option.Some(false));
     }
 
     [Fact]
     public void when_value_is_valid_with_no_override_then_is_special_override_is_none()
     {
-        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.None<bool>(), Option.None<bool>());
 
-        result.Match(k => k.IsSpecialOverride, _ => Option.Some(true)).ShouldBe(Option.None<bool>());
+        result.Match(k => k.IsFamous, _ => Option.Some(true)).ShouldBe(Option.None<bool>());
     }
 
     [Fact]
     public void when_value_is_null_then_result_is_failure()
     {
-        var result = FileClassificationKeywordFactory.Create(null!, Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create(null!, Option.None<bool>(), Option.None<bool>());
 
         _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
     }
@@ -82,7 +82,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     [Fact]
     public void when_value_has_mixed_case_and_surrounding_spaces_then_value_is_trimmed_and_lowercased()
     {
-        var result = FileClassificationKeywordFactory.Create("  CaTs  ", Option.None<bool>());
+        var result = FileClassificationKeywordFactory.Create("  CaTs  ", Option.None<bool>(), Option.None<bool>());
 
         result.Match(k => k.Value, _ => string.Empty).ShouldBe(AnyValidValue);
     }
