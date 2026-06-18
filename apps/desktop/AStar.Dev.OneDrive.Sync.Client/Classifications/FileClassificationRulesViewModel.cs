@@ -98,16 +98,6 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                     Categories.Add(node);
             }
 
-            // var leafNodes = nodeDict.Values.Where(node => node.Children.Count == 0).ToList();
-
-            // foreach (var leafNode in leafNodes)
-            // {
-            //     var keywords = await repository.GetKeywordsForCategoryAsync(leafNode.CategoryId, cancellationToken).ConfigureAwait(false);
-
-            //     foreach (var entry in keywords)
-            //         leafNode.Keywords.Add(new KeywordRowViewModel(entry.Id, entry.Keyword, repository, self => leafNode.Keywords.Remove(self)));
-            // }
-
             IsLoaded = true;
         }
         finally
@@ -164,23 +154,10 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), repository, self => Categories.Remove(self));
                 Categories.Add(newNode);
             })
-            .TapAsync(async _ =>
-            {
-                if (newNode is null)
-                    return;
-
-                // await FileClassificationKeywordFactory.Create(trimmedName, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
-                //     .Match(keyword => AddKeywordToNewNodeAsync(newNode, keyword), _ => Task.CompletedTask)
-                //     .ConfigureAwait(false);
-            })
             .ConfigureAwait(false);
 
         NewCategoryName = string.Empty;
     }
-
-    // private async Task AddKeywordToNewNodeAsync(CategoryNodeViewModel node, FileClassificationKeyword keyword) => await repository.AddKeywordAsync(node.CategoryId, keyword, CancellationToken.None)
-    //         .TapAsync(keywordId => node.Keywords.Add(new KeywordRowViewModel(keywordId, keyword, repository, self => node.Keywords.Remove(self))))
-    //         .ConfigureAwait(false);
 
     private void RemoveFromParent(CategoryNodeViewModel node, Dictionary<FileClassificationCategoryId, CategoryNodeViewModel> nodeDict)
     {

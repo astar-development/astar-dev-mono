@@ -60,7 +60,6 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     public ObservableCollection<KeywordRowViewModel> Keywords { get; } = [];
 
     [ObservableProperty]
-    //[NotifyCanExecuteChangedFor(nameof(AddKeywordCommand))]
     public partial bool IsFamous { get; set; }
 
     [ObservableProperty]
@@ -100,15 +99,13 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     }
 
     private async Task PersistUpdateAsync(FileClassificationCategory category, string trimmedName)
-    {
-        await repository.UpdateCategoryAsync(CategoryId, category, CancellationToken.None)
+        => await repository.UpdateCategoryAsync(CategoryId, category, CancellationToken.None)
             .TapAsync(_ =>
             {
                 Name = trimmedName;
                 IsEditing = false;
             })
             .ConfigureAwait(false);
-    }
 
     [RelayCommand]
     private void Cancel()
@@ -121,7 +118,6 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     private bool CanAddKeyword => !string.IsNullOrWhiteSpace(NewKeyword) && Children.Count == 0;
 
-    // TODO: Implement AddKeywordAsync when AddKeywordAsync is available in IFileClassificationRepository
     [RelayCommand(CanExecute = nameof(CanAddKeyword))]
     private Task AddKeywordAsync() => Task.CompletedTask;
 

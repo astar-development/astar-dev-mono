@@ -29,12 +29,8 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        // repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-        //           .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
-        // repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
-        //           .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
     }
 
     [Fact]
@@ -71,10 +67,6 @@ public sealed class GivenAFileClassificationRulesViewModel
         sut.Categories.Count.ShouldBe(1);
         sut.Categories[0].Children.Count.ShouldBe(1);
     }
-
-    // [Fact]
-    // public async Task when_load_async_called_then_keywords_loaded_for_leaf_categories()
-    // Keyword loading is not yet implemented — GetKeywordsForCategoryAsync stub pending.
 
     [Fact]
     public async Task when_add_category_command_executed_then_category_persisted_and_added()
@@ -139,34 +131,6 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         sut.HasNoCategories.ShouldBeFalse();
     }
-
-    // [Fact]
-    // public async Task when_import_command_invoked_and_file_picker_returns_null_then_delete_all_not_called()
-    // {
-    //     var storageProvider = Substitute.For<IStorageProvider>();
-    //     filePickerService.PickOpenFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-    //                      .Returns(Task.FromResult<string?>(null));
-    //     FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
-
-    //     await sut.ImportAsync(storageProvider, CancellationToken.None);
-
-    //     await repository.DidNotReceive().DeleteAllAsync(Arg.Any<CancellationToken>());
-    // }
-
-    // [Fact]
-    // public async Task when_import_command_invoked_and_confirmation_declined_then_delete_all_not_called()
-    // {
-    //     var storageProvider = Substitute.For<IStorageProvider>();
-    //     filePickerService.PickOpenFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-    //                      .Returns(Task.FromResult<string?>("/some/file.json"));
-    //     confirmationDialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-    //                              .Returns(Task.FromResult(false));
-    //     FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
-
-    //     await sut.ImportAsync(storageProvider, CancellationToken.None);
-
-    //     await repository.DidNotReceive().DeleteAllAsync(Arg.Any<CancellationToken>());
-    // }
 
     [Fact]
     public async Task when_import_command_invoked_and_confirmed_then_load_async_called_after_import()
@@ -345,23 +309,6 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         sut.LoadingText.ShouldBe(expectedText);
     }
-
-    // [Fact]
-    // public async Task when_add_category_command_executed_then_keyword_also_persisted()
-    // {
-    //     FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem)
-    //     {
-    //         NewCategoryName = "Media"
-    //     };
-
-    //     await sut.AddCategoryCommand.ExecuteAsync(null);
-
-    //     await repository.Received(1).AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>());
-    // }
-
-    // [Fact]
-    // public async Task when_add_category_command_executed_then_new_category_has_one_keyword()
-    // Keyword creation on AddCategory is not yet implemented — AddKeywordAsync stub pending.
 
     [Fact]
     public async Task when_load_async_called_with_categories_at_same_level_then_categories_ordered_alphabetically_by_name()

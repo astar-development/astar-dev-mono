@@ -8,11 +8,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations;
 public partial class NormaliseSyncedItemClassificationsDropOldTable : Migration
 {
     /// <inheritdoc />
-    protected override void Up(MigrationBuilder migrationBuilder)
-    {
-        migrationBuilder.DropTable(
+    protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
             name: "SyncedItemClassifications");
-    }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
