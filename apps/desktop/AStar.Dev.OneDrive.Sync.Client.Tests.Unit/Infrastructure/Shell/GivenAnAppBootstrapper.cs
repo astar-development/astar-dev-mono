@@ -85,8 +85,6 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var classificationRepo = Substitute.For<IFileClassificationRepository>();
         classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                           .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        classificationRepo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-                          .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 

@@ -38,45 +38,45 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default)
-    {
-        int rawId = categoryId.Id;
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    // public async Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default)
+    // {
+    //     int rawId = categoryId.Id;
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = await db.FileClassificationKeywords
-            .AsNoTracking()
-            .Where(k => k.CategoryId == rawId)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+    //     var entities = await db.FileClassificationKeywords
+    //         .AsNoTracking()
+    //         .Where(k => k.CategoryId == rawId)
+    //         .ToListAsync(cancellationToken)
+    //         .ConfigureAwait(false);
 
-        return entities
-            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.Some(e.IsFamous), Option.Some(e.IsInternet))))
-            .ToList()
-            .AsReadOnly();
-    }
+    //     return entities
+    //         .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.Some(e.IsFamous), Option.Some(e.IsInternet))))
+    //         .ToList()
+    //         .AsReadOnly();
+    // }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<KeywordMapping>> GetAllKeywordMappingsAsync(CancellationToken cancellationToken = default)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    // /// <inheritdoc />
+    // public async Task<IReadOnlyList<KeywordMapping>> GetAllKeywordMappingsAsync(CancellationToken cancellationToken = default)
+    // {
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var categories = await db.FileClassificationCategories
-            .AsNoTracking()
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+    //     var categories = await db.FileClassificationCategories
+    //         .AsNoTracking()
+    //         .ToListAsync(cancellationToken)
+    //         .ConfigureAwait(false);
 
-        var keywords = await db.FileClassificationKeywords
-            .AsNoTracking()
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
+    //     var keywords = await db.FileClassificationKeywords
+    //         .AsNoTracking()
+    //         .ToListAsync(cancellationToken)
+    //         .ConfigureAwait(false);
 
-        var categoryById = categories.ToDictionary(c => c.Id);
+    //     var categoryById = categories.ToDictionary(c => c.Id);
 
-        return keywords
-            .Select(k => BuildKeywordMapping(k, categoryById))
-            .ToList()
-            .AsReadOnly();
-    }
+    //     return keywords
+    //         .Select(k => BuildKeywordMapping(k, categoryById))
+    //         .ToList()
+    //         .AsReadOnly();
+    // }
 
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default)
@@ -129,76 +129,76 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task<Result<int, string>> AddKeywordAsync(FileClassificationCategoryId categoryId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default)
-    {
-        int rawCategoryId = categoryId.Id;
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    // /// <inheritdoc />
+    // public async Task<Result<int, string>> AddKeywordAsync(FileClassificationCategoryId categoryId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default)
+    // {
+    //     int rawCategoryId = categoryId.Id;
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        bool hasChildren = await db.FileClassificationCategories
-            .AnyAsync(c => c.ParentId == rawCategoryId, cancellationToken)
-            .ConfigureAwait(false);
+    //     bool hasChildren = await db.FileClassificationCategories
+    //         .AnyAsync(c => c.ParentId == rawCategoryId, cancellationToken)
+    //         .ConfigureAwait(false);
 
-        if (hasChildren)
-            return new Result<int, string>.Error("Cannot add keyword to a non-leaf category.");
+    //     if (hasChildren)
+    //         return new Result<int, string>.Error("Cannot add keyword to a non-leaf category.");
 
-        var entity = new FileClassificationKeywordEntity
-        {
-            Keyword = keyword.Value.ToTitleCase(),
-            CategoryId = rawCategoryId,
-            IsFamous = keyword.IsFamous.Match(v => v, () => false)
-        };
+    //     var entity = new FileClassificationKeywordEntity
+    //     {
+    //         Keyword = keyword.Value.ToTitleCase(),
+    //         CategoryId = rawCategoryId,
+    //         IsFamous = keyword.IsFamous.Match(v => v, () => false)
+    //     };
 
-        db.FileClassificationKeywords.Add(entity);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    //     db.FileClassificationKeywords.Add(entity);
+    //     await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return new Result<int, string>.Ok(entity.Id);
-    }
+    //     return new Result<int, string>.Ok(entity.Id);
+    // }
 
-    /// <inheritdoc />
-    public async Task<Result<int, string>> UpdateKeywordAsync(int keywordId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    // /// <inheritdoc />
+    // public async Task<Result<int, string>> UpdateKeywordAsync(int keywordId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default)
+    // {
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = await db.FileClassificationKeywords.FindAsync([keywordId], cancellationToken).ConfigureAwait(false);
-        if (entity is null)
-            return new Result<int, string>.Error("Keyword not found.");
+    //     var entity = await db.FileClassificationKeywords.FindAsync([keywordId], cancellationToken).ConfigureAwait(false);
+    //     if (entity is null)
+    //         return new Result<int, string>.Error("Keyword not found.");
 
-        bool hasChildren = await db.FileClassificationCategories
-            .AnyAsync(c => c.ParentId == entity.CategoryId, cancellationToken)
-            .ConfigureAwait(false);
+    //     bool hasChildren = await db.FileClassificationCategories
+    //         .AnyAsync(c => c.ParentId == entity.CategoryId, cancellationToken)
+    //         .ConfigureAwait(false);
 
-        if (hasChildren)
-            return new Result<int, string>.Error("Cannot update keyword on a non-leaf category.");
+    //     if (hasChildren)
+    //         return new Result<int, string>.Error("Cannot update keyword on a non-leaf category.");
 
-        entity.Keyword = keyword.Value.ToTitleCase();
-        entity.IsFamous = keyword.IsFamous.Match(v => v, () => false);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    //     entity.Keyword = keyword.Value.ToTitleCase();
+    //     entity.IsFamous = keyword.IsFamous.Match(v => v, () => false);
+    //     await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return new Result<int, string>.Ok(entity.Id);
-    }
+    //     return new Result<int, string>.Ok(entity.Id);
+    // }
 
-    /// <inheritdoc />
-    public async Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    // /// <inheritdoc />
+    // public async Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default)
+    // {
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = await db.FileClassificationKeywords.FindAsync([keywordId], cancellationToken).ConfigureAwait(false);
-        if (entity is null)
-            return;
+    //     var entity = await db.FileClassificationKeywords.FindAsync([keywordId], cancellationToken).ConfigureAwait(false);
+    //     if (entity is null)
+    //         return;
 
-        db.FileClassificationKeywords.Remove(entity);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-    }
+    //     db.FileClassificationKeywords.Remove(entity);
+    //     await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    // }
 
-    /// <inheritdoc />
-    public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        db.FileClassificationKeywords.RemoveRange(db.FileClassificationKeywords);
-        db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-    }
+    // /// <inheritdoc />
+    // public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+    // {
+    //     await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    //     db.FileClassificationKeywords.RemoveRange(db.FileClassificationKeywords);
+    //     db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories);
+    //     await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    // }
 
     private static KeywordMapping BuildKeywordMapping(FileClassificationKeywordEntity keyword, Dictionary<int, FileClassificationCategoryEntity> categoryById)
     {

@@ -87,12 +87,5 @@
     </CFBundleIdentifier>
   </PropertyGroup>
 
-  <!-- ── Avalonia design-time support ──────────────────────────────────────
-    The Avalonia SDK auto-includes **/*.axaml — no explicit include needed.
-    PNG assets are included for Debug builds so the previewer can resolve them. -->
-  <ItemGroup>
-    <AvaloniaResource Include="**\*.png"
-                      Condition="'$(Configuration)' == 'Debug'" />
-  </ItemGroup>
 
 </Project>

@@ -30,7 +30,7 @@ public sealed class GivenACategoryResolutionService
         db.FileClassificationCategories.Add(existing);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false, false);
         var sut = CreateSut(factory);
 
         var result = await sut.ResolveManyAsync([classification], TestContext.Current.CancellationToken);
@@ -43,7 +43,7 @@ public sealed class GivenACategoryResolutionService
     public async Task when_level1_missing_then_creates_and_returns_new_id()
     {
         var (_, factory) = CreateInMemoryFactory();
-        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false, false);
         var sut = CreateSut(factory);
 
         var result = await sut.ResolveManyAsync([classification], TestContext.Current.CancellationToken);
@@ -64,7 +64,7 @@ public sealed class GivenACategoryResolutionService
         db.FileClassificationCategories.Add(level2);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.None<string>(), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.None<string>(), false, false);
         var sut = CreateSut(factory);
 
         var result = await sut.ResolveManyAsync([classification], TestContext.Current.CancellationToken);
@@ -89,7 +89,7 @@ public sealed class GivenACategoryResolutionService
         db.FileClassificationCategories.Add(level3);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.Some("Christmas"), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.Some("Christmas"), false, false);
         var sut = CreateSut(factory);
 
         var result = await sut.ResolveManyAsync([classification], TestContext.Current.CancellationToken);
@@ -106,7 +106,7 @@ public sealed class GivenACategoryResolutionService
         db.FileClassificationCategories.Add(level1);
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.None<string>(), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.Some("Holidays"), Option.None<string>(), false, false);
         var sut = CreateSut(factory);
 
         await sut.ResolveManyAsync([classification], TestContext.Current.CancellationToken);
@@ -121,7 +121,7 @@ public sealed class GivenACategoryResolutionService
     public async Task when_duplicate_classifications_then_returns_distinct_ids()
     {
         var (_, factory) = CreateInMemoryFactory();
-        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false);
+        var classification = FileClassificationFactory.Create("Photos", Option.None<string>(), Option.None<string>(), false, false);
         var sut = CreateSut(factory);
 
         var result = await sut.ResolveManyAsync([classification, classification], TestContext.Current.CancellationToken);

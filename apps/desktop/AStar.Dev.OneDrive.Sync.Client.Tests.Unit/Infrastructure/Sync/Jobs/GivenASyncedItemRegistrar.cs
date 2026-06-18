@@ -22,22 +22,22 @@ public sealed class GivenASyncedItemRegistrar
     public GivenASyncedItemRegistrar()
     {
         _fileSystem.Directory.Returns(_mockDirectory);
-        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<KeywordMapping>>([]));
-        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false));
+        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
+        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false, false));
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<int>>([]));
     }
 
     private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService);
 
-    private SyncedItemRegistrar CreateSutWithMappings(IReadOnlyList<KeywordMapping> mappings)
+    private SyncedItemRegistrar CreateSutWithMappings(IReadOnlyList<FileClassificationCategory> mappings)
     {
-        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
+        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
 
         return new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService);
     }
 
-    private static KeywordMapping KeywordMap(string keyword, string level1)
-        => ((Result<KeywordMapping, string>.Ok)KeywordMappingFactory.Create(keyword, level1, Option.None<string>(), Option.None<string>(), false)).Value;
+    private static FileClassificationCategory KeywordMap(string name, int level)
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), name, level, false, false, Option.None<FileClassificationCategoryId>())).Value;
 
     private static FolderDeltaItem FolderItem(string id, string remotePath)
         => DeltaItemFactory.CreateFolder(new OneDriveItemId(id), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create(id, remotePath), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()));
@@ -111,14 +111,14 @@ public sealed class GivenASyncedItemRegistrar
     {
         const int entityId = 42;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
         var item = FileItem("file-1", "/photos/beach.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, TestContext.Current.CancellationToken);
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(
-            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Media")),
+            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "photos")),
             Arg.Any<CancellationToken>());
     }
 
@@ -146,7 +146,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         const int entityId = 7;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithMappings([KeywordMap("spacecraft", "Science")]);
+        var sut = CreateSutWithMappings([KeywordMap("spacecraft", 1)]);
         var item = FileItem("file-2", "/docs/report.pdf");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -159,7 +159,7 @@ public sealed class GivenASyncedItemRegistrar
     public async Task when_register_phantom_called_twice_then_upsert_file_classifications_is_called_each_time()
     {
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
-        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
         var item = FileItem("file-3", "/photos/sunset.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -172,7 +172,7 @@ public sealed class GivenASyncedItemRegistrar
     [Fact]
     public async Task when_register_folder_called_then_upsert_file_classifications_is_not_called()
     {
-        var sut = CreateSutWithMappings([KeywordMap("photos", "Media")]);
+        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
         var item = FolderItem("folder-2", "/photos");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -199,7 +199,7 @@ public sealed class GivenASyncedItemRegistrar
         const int entityId = 99;
         IReadOnlyList<int> resolvedIds = [7];
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Color", Option.Some("Red"), Option.None<string>(), false));
+        _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Color", Option.Some("Red"), Option.None<string>(), false, false));
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(resolvedIds));
         var sut = CreateSut();
         var item = FileItem("file-auto-2", "/Photos/a red car on the road.jpg");

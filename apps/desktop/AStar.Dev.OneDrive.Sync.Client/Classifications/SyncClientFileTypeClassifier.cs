@@ -108,7 +108,7 @@ public sealed class SyncClientFileTypeClassifier : IFileTypeClassifier
         if (string.IsNullOrEmpty(fileExtension))
             return FileType.Unknown;
 
-        return extensionMap.TryGetValue(fileExtension, out FileType type)
+        return extensionMap.TryGetValue(fileExtension, out var type)
             ? type
             : FileType.Unknown;
     }

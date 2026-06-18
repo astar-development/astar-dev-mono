@@ -31,10 +31,12 @@ public sealed class GivenASyncJobExecutor
         Id = new AccountId("user-1"),
         Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com")
     };
+    private IFileClassificationRepository _fileClassificationRepository;
 
     public GivenASyncJobExecutor()
     {
-        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<KeywordMapping>>([]));
+        _fileClassificationRepository = Substitute.For<IFileClassificationRepository>();
+        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<int>>([1]));
         _settingsService.Current.Returns(new AppSettings());
@@ -47,7 +49,7 @@ public sealed class GivenASyncJobExecutor
             });
     }
 
-    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, _classificationRepository, mockFileSystem, _settingsService, _fileAutoCategorisor, _categoryResolutionService);
+    private SyncJobExecutor CreateSut(MockFileSystem mockFileSystem) => new(_syncRepository, _syncedItemRepository, _pipeline, mockFileSystem, _settingsService, _fileAutoCategorisor, _categoryResolutionService, _fileClassificationRepository);
 
     private static SyncJob MakeJob(string remoteId, SyncDirection direction, string localPath = "/tmp/file.txt", string relativePath = "Documents/file.txt")
     {
@@ -147,8 +149,11 @@ public sealed class GivenASyncJobExecutor
     {
         const int syncedItemId = 55;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
-        IReadOnlyList<KeywordMapping> mappings = [((Result<KeywordMapping, string>.Ok)KeywordMappingFactory.Create("documents", "Documents", Option.None<string>(), Option.None<string>(), false)).Value];
-        _classificationRepository.GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
+        IReadOnlyList<FileClassificationCategory> mappings =
+        [
+            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
+        ];
+        _fileClassificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
         var job = MakeJob("item-1", SyncDirection.Download);
         SimulateJobCompleted(job.Complete());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -245,7 +250,7 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job1, job2), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _classificationRepository.Received(1).GetAllKeywordMappingsAsync(Arg.Any<CancellationToken>());
+        await _fileClassificationRepository.Received(1).GetAllCategoriesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

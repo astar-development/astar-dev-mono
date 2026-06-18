@@ -13,18 +13,18 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
     public Option<FileClassification> Categorise(string remotePath)
     {
         string strippedPath = PathNormaliser.StripRootPath(remotePath);
-        IReadOnlyList<string> folderSegments = PathNormaliser.GetFolderSegments(strippedPath);
+        var folderSegments = PathNormaliser.GetFolderSegments(strippedPath);
         string filenameStem = PathNormaliser.GetFilenameStem(strippedPath);
-        List<string> tokens = Tokenise(filenameStem);
+        var tokens = Tokenise(filenameStem);
 
         string level1 = DeriveLevel1(folderSegments, filenameStem, tokens);
 
         if (level1 == "Unclassified")
             return Option.None<FileClassification>();
 
-        (Option<string> level2, Option<string> level3) = DeriveLevel2AndLevel3(filenameStem, tokens);
+        (var level2, var level3) = DeriveLevel2AndLevel3(filenameStem, tokens);
 
-        return Option.Some(FileClassificationFactory.Create(level1, level2, level3, isSpecial: false));
+        return Option.Some(FileClassificationFactory.Create(level1, level2, level3, false, false));
     }
 
     private static string DeriveLevel1(IReadOnlyList<string> folderSegments, string filenameStem, IReadOnlyList<string> tokens)

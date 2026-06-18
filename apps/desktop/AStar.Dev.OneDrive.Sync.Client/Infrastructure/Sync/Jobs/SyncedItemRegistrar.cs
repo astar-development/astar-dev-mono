@@ -27,7 +27,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         var phantomItem = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         int syncedItemId = await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
 
-        var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct).ConfigureAwait(false);
+        var mappings = await classificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
         var analyserResult = fileAutoCategorisor.Categorise(remotePath);
         var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
         var categoryIds = await categoryResolutionService.ResolveManyAsync(classifications, ct).ConfigureAwait(false);

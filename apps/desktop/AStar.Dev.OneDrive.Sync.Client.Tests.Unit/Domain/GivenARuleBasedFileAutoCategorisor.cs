@@ -178,7 +178,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Photos/a red car on the road.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.IsSpecial.ShouldBeFalse();
+        classification.IsFamous.ShouldBeFalse();
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/People/a file with a persons name: john smith - in it.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.IsSpecial.ShouldBeFalse();
+        classification.IsFamous.ShouldBeFalse();
     }
 
     [Fact]

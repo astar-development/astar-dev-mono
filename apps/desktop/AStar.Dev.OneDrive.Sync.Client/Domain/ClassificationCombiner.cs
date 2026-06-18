@@ -11,14 +11,14 @@ public static class ClassificationCombiner
         var seen = new HashSet<(string, Option<string>, Option<string>)>();
         var combined = new List<FileClassification>();
 
-        foreach (FileClassification classification in ruleResults)
+        foreach (var classification in ruleResults)
         {
             var key = (classification.Level1, classification.Level2, classification.Level3);
             if (seen.Add(key))
                 combined.Add(classification);
         }
 
-        foreach (FileClassification classification in analyserResults)
+        foreach (var classification in analyserResults)
         {
             var key = (classification.Level1, classification.Level2, classification.Level3);
             if (seen.Add(key))

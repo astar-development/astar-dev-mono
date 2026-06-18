@@ -55,8 +55,8 @@ public sealed class GivenAMainWindowViewModel
         var repo = Substitute.For<IFileClassificationRepository>();
         repo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        repo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
+        // repo.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+        //     .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
 
         return new FileClassificationRulesViewModel(repo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), _localizationService, _fileSystem);
     }
