@@ -50,7 +50,7 @@ public sealed class GivenASettingsViewModelWithLocalSyncPathApply
         var sut = BuildSut();
         sut.AddAccount(BuildAccount(KnownAccountId));
 
-        var result = sut.TryApplyLocalSyncPath(KnownAccountId, NewPath);
+        bool result = sut.TryApplyLocalSyncPath(KnownAccountId, NewPath);
 
         result.ShouldBeTrue();
     }
@@ -71,7 +71,7 @@ public sealed class GivenASettingsViewModelWithLocalSyncPathApply
     {
         var sut = BuildSut();
 
-        var result = sut.TryApplyLocalSyncPath(UnknownAccountId, NewPath);
+        bool result = sut.TryApplyLocalSyncPath(UnknownAccountId, NewPath);
 
         result.ShouldBeFalse();
     }

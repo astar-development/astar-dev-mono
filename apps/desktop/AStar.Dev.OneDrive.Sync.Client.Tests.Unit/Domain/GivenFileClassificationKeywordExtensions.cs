@@ -10,10 +10,10 @@ public sealed class GivenFileClassificationKeywordExtensions
     [Fact]
     public void when_override_is_true_and_classification_is_not_special_then_result_is_true()
     {
-        var keyword = new FileClassificationKeyword(AnyValidValue, Option.Some(true));
+        var keyword = new FileClassificationKeyword(AnyValidValue, Option.Some(true), Option.None<bool>());
         var classification = FileClassificationFactory.Create("Archive", Option.None<string>(), Option.None<string>(), false);
 
-        var result = keyword.ResolveIsSpecial(classification);
+        bool result = keyword.ResolveIsSpecial(classification);
 
         result.ShouldBeTrue();
     }
@@ -21,10 +21,10 @@ public sealed class GivenFileClassificationKeywordExtensions
     [Fact]
     public void when_override_is_false_and_classification_is_special_then_result_is_false()
     {
-        var keyword = new FileClassificationKeyword(AnyValidValue, Option.Some(false));
+        var keyword = new FileClassificationKeyword(AnyValidValue, Option.Some(false), Option.None<bool>());
         var classification = FileClassificationFactory.Create("Archive", Option.None<string>(), Option.None<string>(), true);
 
-        var result = keyword.ResolveIsSpecial(classification);
+        bool result = keyword.ResolveIsSpecial(classification);
 
         result.ShouldBeFalse();
     }
@@ -32,10 +32,10 @@ public sealed class GivenFileClassificationKeywordExtensions
     [Fact]
     public void when_override_is_none_and_classification_is_special_then_result_is_true()
     {
-        var keyword = new FileClassificationKeyword(AnyValidValue, Option.None<bool>());
+        var keyword = new FileClassificationKeyword(AnyValidValue, Option.None<bool>(), Option.None<bool>());
         var classification = FileClassificationFactory.Create("Archive", Option.None<string>(), Option.None<string>(), true);
 
-        var result = keyword.ResolveIsSpecial(classification);
+        bool result = keyword.ResolveIsSpecial(classification);
 
         result.ShouldBeTrue();
     }
@@ -43,10 +43,10 @@ public sealed class GivenFileClassificationKeywordExtensions
     [Fact]
     public void when_override_is_none_and_classification_is_not_special_then_result_is_false()
     {
-        var keyword = new FileClassificationKeyword(AnyValidValue, Option.None<bool>());
+        var keyword = new FileClassificationKeyword(AnyValidValue, Option.None<bool>(), Option.None<bool>());
         var classification = FileClassificationFactory.Create("Archive", Option.None<string>(), Option.None<string>(), false);
 
-        var result = keyword.ResolveIsSpecial(classification);
+        bool result = keyword.ResolveIsSpecial(classification);
 
         result.ShouldBeFalse();
     }

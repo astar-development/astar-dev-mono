@@ -172,7 +172,7 @@ public sealed class GivenASyncedFileSearchViewModel
     [Fact]
     public void when_result_is_local_present_then_card_opacity_is_full()
     {
-        var existingPath = Path.GetTempFileName();
+        string existingPath = Path.GetTempFileName();
         try
         {
             fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
@@ -218,7 +218,7 @@ public sealed class GivenASyncedFileSearchViewModel
     [AvaloniaFact]
     public async Task when_search_returns_image_result_and_file_exists_then_thumbnail_is_loaded()
     {
-        var tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
+        string tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
         await File.WriteAllBytesAsync(tmpPath, PngFixtures.OneByOnePng, TestContext.Current.CancellationToken);
         try
         {

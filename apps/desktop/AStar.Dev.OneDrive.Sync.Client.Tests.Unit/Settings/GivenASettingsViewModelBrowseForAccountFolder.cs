@@ -81,7 +81,7 @@ public sealed class GivenASettingsViewModelBrowseForAccountFolder
     {
         var sut = BuildSut(BuildFolderPickerService(null));
         sut.AddAccount(BuildAccount(KnownAccountId));
-        var originalPath = sut.AccountSettings.Single(a => a.AccountId == KnownAccountId).LocalSyncPath;
+        string originalPath = sut.AccountSettings.Single(a => a.AccountId == KnownAccountId).LocalSyncPath;
 
         await sut.BrowseForAccountFolderAsync(KnownAccountId, Substitute.For<IStorageProvider>(), TestContext.Current.CancellationToken);
 

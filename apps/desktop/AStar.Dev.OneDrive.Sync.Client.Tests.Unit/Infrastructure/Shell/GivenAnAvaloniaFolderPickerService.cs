@@ -17,7 +17,7 @@ public sealed class GivenAnAvaloniaFolderPickerService
                        .Returns(Task.FromResult<IReadOnlyList<IStorageFolder>>([folder]));
         var sut = new AvaloniaFolderPickerService();
 
-        var result = await sut.PickFolderAsync(storageProvider, "Choose a folder", TestContext.Current.CancellationToken);
+        string? result = await sut.PickFolderAsync(storageProvider, "Choose a folder", TestContext.Current.CancellationToken);
 
         result.ShouldBe(FolderLocalPath);
     }
@@ -30,7 +30,7 @@ public sealed class GivenAnAvaloniaFolderPickerService
                        .Returns(Task.FromResult<IReadOnlyList<IStorageFolder>>([]));
         var sut = new AvaloniaFolderPickerService();
 
-        var result = await sut.PickFolderAsync(storageProvider, "Choose a folder", TestContext.Current.CancellationToken);
+        string? result = await sut.PickFolderAsync(storageProvider, "Choose a folder", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }

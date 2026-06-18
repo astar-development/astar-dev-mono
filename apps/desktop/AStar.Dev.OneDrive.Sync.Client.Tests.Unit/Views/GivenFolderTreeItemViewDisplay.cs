@@ -114,7 +114,7 @@ public sealed class GivenFolderTreeItemViewDisplay
     [AvaloniaFact]
     public void when_folder_name_is_set_then_name_text_block_displays_folder_name()
     {
-        var folderName = "My Documents";
+        string folderName = "My Documents";
         var viewModel = CreateFolderTreeNode(folderName, 0, false, FolderSyncState.Included);
         var sut = CreateViewWithViewModel(viewModel);
 
@@ -186,7 +186,7 @@ public sealed class GivenFolderTreeItemViewDisplay
     [AvaloniaFact]
     public void when_folder_depth_is_set_then_depth_property_reflects_hierarchy_level()
     {
-        var depth = 3;
+        int depth = 3;
         var viewModel = CreateFolderTreeNode("Test", depth, false, FolderSyncState.Included);
 
         viewModel.Depth.ShouldBe(depth, "Depth property should be set correctly for tree hierarchy");

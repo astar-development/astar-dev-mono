@@ -18,8 +18,8 @@ public sealed class GivenAKeywordRowViewModel
                   .Returns(Task.CompletedTask);
     }
 
-    private static KeywordRowViewModel CreateSut(IFileClassificationRepository repo, string value = "cats", bool isSpecial = false) =>
-        new(keywordId: 1, keyword: new FileClassificationKeyword(value, isSpecial ? Option.Some(true) : Option.None<bool>()), repository: repo, onDeleteSelf: _ => { });
+    private static KeywordRowViewModel CreateSut(IFileClassificationRepository repo, string value = "cats", bool isFamous = false, bool isInternet = false) =>
+        new(keywordId: 1, keyword: new FileClassificationKeyword(value, isFamous ? Option.Some(true) : Option.None<bool>(), isInternet ? Option.Some(true) : Option.None<bool>()), repository: repo, onDeleteSelf: _ => { });
 
     [Fact]
     public async Task when_save_command_executed_with_valid_value_then_repository_update_called()
@@ -104,7 +104,7 @@ public sealed class GivenAKeywordRowViewModel
     public async Task when_delete_command_executed_then_on_delete_self_callback_invoked()
     {
         bool callbackInvoked = false;
-        KeywordRowViewModel sut = new(keywordId: 1, keyword: new FileClassificationKeyword("cats", Option.None<bool>()), repository: repository, onDeleteSelf: _ => callbackInvoked = true);
+        KeywordRowViewModel sut = new(keywordId: 1, keyword: new FileClassificationKeyword("cats", Option.None<bool>(), Option.None<bool>()), repository: repository, onDeleteSelf: _ => callbackInvoked = true);
 
         await sut.DeleteCommand.ExecuteAsync(null);
 

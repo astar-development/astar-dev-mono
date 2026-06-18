@@ -13,7 +13,7 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     private readonly Action<KeywordRowViewModel> onDeleteSelf;
 
     private string originalValue;
-    private bool originalIsSpecialOverride;
+    private bool originalIsFamous;
 
     public KeywordRowViewModel(int keywordId, FileClassificationKeyword keyword, IFileClassificationRepository repository, Action<KeywordRowViewModel> onDeleteSelf)
     {
@@ -22,10 +22,10 @@ public sealed partial class KeywordRowViewModel : ObservableObject
         this.onDeleteSelf = onDeleteSelf;
 
         Value = keyword.Value;
-        IsSpecialOverride = keyword.IsSpecialOverride.MapOrDefault(v => v, false);
-
+        IsFamous = keyword.IsFamous.MapOrDefault(v => v, false);
+        IsInternet = keyword.IsInternet.MapOrDefault(v => v, false);
         originalValue = Value;
-        originalIsSpecialOverride = IsSpecialOverride;
+        originalIsFamous = IsFamous;
     }
 
     /// <summary>Database identifier for this keyword.</summary>
@@ -35,7 +35,10 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     public partial string Value { get; set; }
 
     [ObservableProperty]
-    public partial bool IsSpecialOverride { get; set; }
+    public partial bool IsFamous { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsInternet { get; set; }
 
     [ObservableProperty]
     public partial bool IsEditing { get; set; }
@@ -44,7 +47,7 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     private void Edit() => IsEditing = true;
 
     [RelayCommand]
-    private async Task SaveAsync() => await FileClassificationKeywordFactory.Create(Value, IsSpecialOverride ? Option.Some(true) : Option.None<bool>())
+    private async Task SaveAsync() => await FileClassificationKeywordFactory.Create(Value, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
             .Match(PersistKeywordAsync, _ => Task.CompletedTask)
             .ConfigureAwait(false);
 
@@ -52,7 +55,7 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     {
         await repository.UpdateKeywordAsync(KeywordId, keyword, CancellationToken.None).ConfigureAwait(false);
         originalValue = Value;
-        originalIsSpecialOverride = IsSpecialOverride;
+        originalIsFamous = IsFamous;
         IsEditing = false;
     }
 
@@ -60,7 +63,7 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     private void Cancel()
     {
         Value = originalValue;
-        IsSpecialOverride = originalIsSpecialOverride;
+        IsFamous = originalIsFamous;
         IsEditing = false;
     }
 

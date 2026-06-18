@@ -468,7 +468,7 @@ internal sealed class CallbackFiringStream(Action<int>? onItemDiscovered, int ca
 {
     public async IAsyncEnumerator<DeltaItem> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
-        for (var i = 1; i <= callbackCount; i++)
+        for (int i = 1; i <= callbackCount; i++)
         {
             onItemDiscovered?.Invoke(i);
             await Task.CompletedTask;

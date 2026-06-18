@@ -21,7 +21,7 @@ internal static class GraphApiStubs
         foreach(var stub in items)
             valueArray.Add(BuildDriveItemNode(stub));
 
-        var body = new JsonObject
+        string body = new JsonObject
         {
             ["@odata.deltaLink"] = FakeDeltaLink,
             ["value"] = valueArray
@@ -35,7 +35,7 @@ internal static class GraphApiStubs
     /// <summary>Stubs GET /v1.0/me/drive/root/delta to return an empty value array with a deltaLink (sync already up to date).</summary>
     public static void StubEmptyDelta(WireMockServer server)
     {
-        var body = new JsonObject
+        string body = new JsonObject
         {
             ["@odata.deltaLink"] = FakeDeltaLink,
             ["value"] = new JsonArray()
@@ -49,7 +49,7 @@ internal static class GraphApiStubs
     /// <summary>Stubs POST /oauth2/v2.0/token to return a fake bearer token.</summary>
     public static void StubAuthToken(WireMockServer server)
     {
-        var body = new JsonObject
+        string body = new JsonObject
         {
             ["token_type"] = "Bearer",
             ["access_token"] = "fake-access-token-for-testing",

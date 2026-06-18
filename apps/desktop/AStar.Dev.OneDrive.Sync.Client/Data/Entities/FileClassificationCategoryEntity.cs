@@ -23,10 +23,4 @@ public sealed class FileClassificationCategoryEntity
 
     /// <summary>Navigation to parent category.</summary>
     public FileClassificationCategoryEntity? Parent { get; set; }
-
-    /// <summary>Navigation to child categories.</summary>
-    //public ICollection<FileClassificationCategoryEntity> Children { get; set; } = [];
-
-    /// <summary>Navigation to keywords associated with this category.</summary>
-    //public ICollection<FileClassificationKeywordEntity> Keywords { get; set; } = [];
 }

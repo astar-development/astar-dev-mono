@@ -32,7 +32,7 @@ public sealed class GivenASyncProgressTracker
 
     private static async Task CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task>? onJobCompleted = null)
     {
-        for (var i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
             await sut.RecordCompletion(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => Task.CompletedTask));
     }
 
@@ -172,7 +172,7 @@ public sealed class GivenASyncProgressTracker
     [Fact]
     public async Task when_on_job_completed_fires_for_every_job_regardless_of_throttle()
     {
-        var jobCompletedCount = 0;
+        int jobCompletedCount = 0;
         var sut = CreateTracker(1000);
 
         await CompleteJobs(sut, 99, _ => { }, _ => { jobCompletedCount++; return Task.CompletedTask; });

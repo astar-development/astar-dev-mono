@@ -19,7 +19,7 @@ public sealed class GivenACategoryNodeViewModel
     }
 
     private CategoryNodeViewModel CreateSut(int level = 1) =>
-        new(new FileClassificationCategoryId(1), "Media", level, repository, _ => { });
+        new(new FileClassificationCategoryId(1), "Media", level, false, false, repository, _ => { });
 
     [Fact]
     public async Task when_add_keyword_command_executed_then_keyword_persisted_and_added()
@@ -38,12 +38,12 @@ public sealed class GivenACategoryNodeViewModel
     {
         var sut = CreateSut();
         sut.NewKeyword = "cats";
-        sut.NewKeywordIsSpecial = true;
+        sut.IsFamous = true;
 
         await sut.AddKeywordCommand.ExecuteAsync(null);
 
         sut.NewKeyword.ShouldBeEmpty();
-        sut.NewKeywordIsSpecial.ShouldBeFalse();
+        sut.IsFamous.ShouldBeFalse();
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public sealed class GivenACategoryNodeViewModel
     {
         var sut = CreateSut();
         sut.NewKeyword = "cats";
-        sut.Children.Add(new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Photos", 2, repository, _ => { }));
+        sut.Children.Add(new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Photos", 2, false, false, repository, _ => { }));
 
         sut.AddKeywordCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -101,7 +101,7 @@ public sealed class GivenACategoryNodeViewModel
     public async Task when_delete_self_command_executed_then_on_delete_self_callback_invoked()
     {
         bool callbackInvoked = false;
-        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, repository, _ => callbackInvoked = true);
+        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, repository, _ => callbackInvoked = true);
 
         await sut.DeleteSelfCommand.ExecuteAsync(null);
 

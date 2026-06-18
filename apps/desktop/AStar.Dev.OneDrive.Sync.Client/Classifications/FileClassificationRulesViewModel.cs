@@ -60,6 +60,13 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
     public partial string NewCategoryName { get; set; } = string.Empty;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
+    public partial bool IsFamous { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
+    public partial bool IsInternet { get; set; }
     partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(HasNoCategories));
 
     /// <summary>Loads all categories from the repository and builds the tree, then populates keywords for each leaf node.</summary>
@@ -75,7 +82,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
             foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
-                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, repository, self => RemoveFromParent(self, nodeDict));
+                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, repository, self => RemoveFromParent(self, nodeDict));
                 nodeDict[category.Id] = node;
             }
 
@@ -112,7 +119,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>Exports the current taxonomy to a user-selected JSON file.</summary>
     public async Task ExportAsync(IStorageProvider storageProvider, CancellationToken ct = default)
     {
-        var path = await filePickerService.PickSaveFileAsync(storageProvider, "Export classifications", "classifications.json", "json", ct).ConfigureAwait(false);
+        string? path = await filePickerService.PickSaveFileAsync(storageProvider, "Export classifications", "classifications.json", "json", ct).ConfigureAwait(false);
         if (path is null)
             return;
 
@@ -122,7 +129,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>Imports a taxonomy from a user-selected JSON file, replacing all existing data after confirmation.</summary>
     public async Task ImportAsync(IStorageProvider storageProvider, CancellationToken ct = default)
     {
-        var path = await filePickerService.PickOpenFileAsync(storageProvider, "Import classifications", "json", ct).ConfigureAwait(false);
+        string? path = await filePickerService.PickOpenFileAsync(storageProvider, "Import classifications", "json", ct).ConfigureAwait(false);
         if (path is null)
             return;
 
@@ -142,7 +149,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         var placeholder = new FileClassificationCategoryId(0);
         string trimmedName = NewCategoryName.Trim();
 
-        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, Option.None<FileClassificationCategoryId>())
+        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>())
             .Match(category => AddValidatedCategoryAsync(category, trimmedName), _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }
@@ -154,7 +161,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .TapAsync(newId =>
             {
-                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, repository, self => Categories.Remove(self));
+                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, repository, self => Categories.Remove(self));
                 Categories.Add(newNode);
             })
             .TapAsync(async _ =>
@@ -162,7 +169,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 if (newNode is null)
                     return;
 
-                await FileClassificationKeywordFactory.Create(trimmedName, Option.None<bool>())
+                await FileClassificationKeywordFactory.Create(trimmedName, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
                     .Match(keyword => AddKeywordToNewNodeAsync(newNode, keyword), _ => Task.CompletedTask)
                     .ConfigureAwait(false);
             })

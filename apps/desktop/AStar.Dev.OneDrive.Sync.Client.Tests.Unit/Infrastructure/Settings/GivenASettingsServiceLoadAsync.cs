@@ -107,7 +107,7 @@ public sealed class GivenASettingsServiceLoadAsync
     public async Task when_settings_file_exists_then_settings_changed_event_is_raised()
     {
         var sut = CreateService(CreateMockFileSystemWithSettings(new AppSettings { Theme = AppTheme.Dark }));
-        var raised = false;
+        bool raised = false;
         sut.SettingsChanged += (_, _) => raised = true;
 
         await sut.LoadAsync();
@@ -119,7 +119,7 @@ public sealed class GivenASettingsServiceLoadAsync
     public async Task when_settings_file_does_not_exist_then_settings_changed_event_is_not_raised()
     {
         var sut = CreateService(CreateEmptyMockileSystem());
-        var raised = false;
+        bool raised = false;
         sut.SettingsChanged += (_, _) => raised = true;
 
         await sut.LoadAsync();

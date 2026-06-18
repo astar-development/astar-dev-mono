@@ -170,7 +170,7 @@ public sealed class GivenFilesViewDisplay
 
         var sut = CreateViewWithViewModel(viewModel);
 
-        var hiddenContentExists = sut.GetLogicalDescendants()
+        bool hiddenContentExists = sut.GetLogicalDescendants()
             .OfType<Grid>()
             .Where(g => !g.IsVisible)
             .SelectMany(g => g.GetLogicalDescendants().OfType<ContentControl>())

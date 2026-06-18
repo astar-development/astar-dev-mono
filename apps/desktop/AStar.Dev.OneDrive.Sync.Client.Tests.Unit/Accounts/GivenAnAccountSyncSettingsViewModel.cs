@@ -337,7 +337,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var loc = BuildLocalizationService();
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
 
-        var result = sut.LocalSyncFolderLabelText;
+        string result = sut.LocalSyncFolderLabelText;
 
         loc.Received(1).GetLocal("AccountSync.LocalSyncFolderLabel");
         result.ShouldBe("AccountSync.LocalSyncFolderLabel");
@@ -349,7 +349,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var loc = BuildLocalizationService();
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
 
-        var result = sut.LocalSyncFolderPlaceholderText;
+        string result = sut.LocalSyncFolderPlaceholderText;
 
         loc.Received(1).GetLocal("AccountSync.LocalSyncFolderPlaceholder");
         result.ShouldBe("AccountSync.LocalSyncFolderPlaceholder");
@@ -361,7 +361,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var loc = BuildLocalizationService();
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
 
-        var result = sut.BrowseButtonText;
+        string result = sut.BrowseButtonText;
 
         loc.Received(1).GetLocal("AccountSync.BrowseButton");
         result.ShouldBe("AccountSync.BrowseButton");
@@ -373,7 +373,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var loc = BuildLocalizationService();
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), Substitute.For<IAccountRepository>(), loc);
 
-        var result = sut.SaveButtonText;
+        string result = sut.SaveButtonText;
 
         loc.Received(1).GetLocal("AccountSync.SaveButton");
         result.ShouldBe("AccountSync.SaveButton");

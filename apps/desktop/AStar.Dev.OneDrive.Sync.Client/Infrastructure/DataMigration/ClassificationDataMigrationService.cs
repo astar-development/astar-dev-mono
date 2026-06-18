@@ -64,7 +64,7 @@ public sealed class ClassificationDataMigrationService(IDbContextFactory<AppDbCo
 
     private static async Task<bool> OldTableExistsAsync(AppDbContext db, CancellationToken cancellationToken)
     {
-        var count = await db.Database
+        int count = await db.Database
             .SqlQuery<int>($"SELECT COUNT(*) AS Value FROM sqlite_master WHERE type='table' AND name={OldTableName}")
             .FirstAsync(cancellationToken).ConfigureAwait(false);
 

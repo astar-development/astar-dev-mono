@@ -93,8 +93,8 @@ public static partial class TokenAnalyser
         if (tokens.Count == 0)
             return Option.None<string>();
 
-        var colourIndex = -1;
-        for (var index = 0; index < tokens.Count; index++)
+        int colourIndex = -1;
+        for (int index = 0; index < tokens.Count; index++)
         {
             if (!ColourWords.Contains(tokens[index]))
                 continue;
@@ -107,7 +107,7 @@ public static partial class TokenAnalyser
             return Option.None<string>();
 
         string colourToken = tokens[colourIndex];
-        var nextIndex = colourIndex + 1;
+        int nextIndex = colourIndex + 1;
 
         if (nextIndex < tokens.Count && ConcretePairableNouns.Contains(tokens[nextIndex]))
             return Option.Some(colourToken + " " + tokens[nextIndex]);

@@ -29,7 +29,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddCategoryAsync(category, ct);
@@ -45,11 +45,11 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(categoryId, keyword, ct);
@@ -65,11 +65,11 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
@@ -85,14 +85,14 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var parentCategory = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var parentCategory = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var parentId = await repository.AddCategoryAsync(parentCategory, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var childCategory = FileClassificationCategoryFactory.Create(placeholder, "Invoices", 2, Option.Some(parentId))
+        var childCategory = FileClassificationCategoryFactory.Create(placeholder, "Invoices", 2, false, false, Option.Some(parentId))
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddCategoryAsync(childCategory, ct);
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(parentId, keyword, ct)
@@ -107,18 +107,18 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var parentCategory = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var parentCategory = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var parentId = await repository.AddCategoryAsync(parentCategory, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordId = await repository.AddKeywordAsync(parentId, keyword, ct)
+        int keywordId = await repository.AddKeywordAsync(parentId, keyword, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var childCategory = FileClassificationCategoryFactory.Create(placeholder, "Invoices", 2, Option.Some(parentId))
+        var childCategory = FileClassificationCategoryFactory.Create(placeholder, "Invoices", 2, false, false, Option.Some(parentId))
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddCategoryAsync(childCategory, ct);
-        var updatedKeyword = FileClassificationKeywordFactory.Create("receipt", Option.None<bool>())
+        var updatedKeyword = FileClassificationKeywordFactory.Create("receipt", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct)
@@ -133,11 +133,11 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false,     Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
@@ -155,11 +155,11 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var updatedCategory = FileClassificationCategoryFactory.Create(categoryId, "Accounts", 1, Option.None<FileClassificationCategoryId>())
+        var updatedCategory = FileClassificationCategoryFactory.Create(categoryId, "Accounts", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.UpdateCategoryAsync(categoryId, updatedCategory, ct);
@@ -175,15 +175,15 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordA = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keywordA = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordB = FileClassificationKeywordFactory.Create("receipt", Option.None<bool>())
+        var keywordB = FileClassificationKeywordFactory.Create("receipt", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordIdA = await repository.AddKeywordAsync(categoryId, keywordA, ct)
+        int keywordIdA = await repository.AddKeywordAsync(categoryId, keywordA, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddKeywordAsync(categoryId, keywordB, ct);
 
@@ -200,7 +200,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddCategoryAsync(category, ct);
 
@@ -216,11 +216,11 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
@@ -247,17 +247,17 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(true));
+        keywords.ShouldContain(k => k.Keyword.IsFamous == Option.Some(true));
     }
 
     [Fact]
@@ -266,17 +266,17 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("receipt", Option.Some(false))
+        var keyword = FileClassificationKeywordFactory.Create("receipt", Option.Some(false), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+        keywords.ShouldContain(k => k.Keyword.IsFamous == Option.Some(false));
     }
 
     [Fact]
@@ -285,17 +285,17 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("statement", Option.None<bool>())
+        var keyword = FileClassificationKeywordFactory.Create("statement", Option.None<bool>(), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.AddKeywordAsync(categoryId, keyword, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+        keywords.ShouldContain(k => k.Keyword.IsFamous == Option.Some(false));
     }
 
     [Fact]
@@ -304,21 +304,21 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false))
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
+        int keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(true));
+        keywords.ShouldContain(k => k.Keyword.IsFamous == Option.Some(true));
     }
 
     [Fact]
@@ -327,21 +327,21 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var ct = TestContext.Current.CancellationToken;
         var repository = fixture.Services.GetRequiredService<IFileClassificationRepository>();
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Finance", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await repository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true))
+        var keyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(true), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
-        var keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
+        int keywordId = await repository.AddKeywordAsync(categoryId, keyword, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
-        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false))
+        var updatedKeyword = FileClassificationKeywordFactory.Create("invoice", Option.Some(false), Option.None<bool>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
 
         await repository.UpdateKeywordAsync(keywordId, updatedKeyword, ct);
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
-        keywords.ShouldContain(k => k.Keyword.IsSpecialOverride == Option.Some(false));
+        keywords.ShouldContain(k => k.Keyword.IsFamous == Option.Some(false));
     }
 
     [Fact]
@@ -353,13 +353,13 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var accountId = new AccountId("search-user-tag-junction");
         await SeedAccountAsync(accountId, ct);
         var placeholder = new FileClassificationCategoryId(0);
-        var category = FileClassificationCategoryFactory.Create(placeholder, "Photos", 1, Option.None<FileClassificationCategoryId>())
+        var category = FileClassificationCategoryFactory.Create(placeholder, "Photos", 1, false, false, Option.None<FileClassificationCategoryId>())
             .Match(ok => ok, err => throw new InvalidOperationException(err));
         var categoryId = await classificationRepository.AddCategoryAsync(category, ct)
             .MatchAsync(ok => ok, err => throw new InvalidOperationException(err));
         var photoItem = new SyncedItemEntity { AccountId = accountId, RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/photo.jpg", LocalPath = "/local/photo.jpg", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 1024 };
         var untaggedItem = new SyncedItemEntity { AccountId = accountId, RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()), RemotePath = "/doc.txt", LocalPath = "/local/doc.txt", IsFolder = false, RemoteModifiedAt = DateTimeOffset.UtcNow, SizeInBytes = 512 };
-        var photoItemId = await syncedItemRepository.UpsertAsync(photoItem, ct);
+        int photoItemId = await syncedItemRepository.UpsertAsync(photoItem, ct);
         _ = await syncedItemRepository.UpsertAsync(untaggedItem, ct);
         await syncedItemRepository.UpsertFileClassificationsAsync(photoItemId, [categoryId.Id], ct);
         var criteria = SyncedItemSearchCriteriaFactory.Create(accountId, tags: ["Photos"]);

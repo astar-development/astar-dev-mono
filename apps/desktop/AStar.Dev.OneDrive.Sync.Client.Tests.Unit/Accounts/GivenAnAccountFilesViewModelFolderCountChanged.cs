@@ -26,7 +26,7 @@ public sealed class GivenAnAccountFilesViewModelFolderCountChanged
     public async Task when_a_folder_is_toggled_included_then_folder_count_changed_event_is_raised_with_include_rule_count()
     {
         int? capturedCount = null;
-        var callCount = 0;
+        int callCount = 0;
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(callCount++ == 0
@@ -46,7 +46,7 @@ public sealed class GivenAnAccountFilesViewModelFolderCountChanged
     public async Task when_a_folder_is_toggled_excluded_then_folder_count_changed_event_is_raised_with_zero_count()
     {
         int? capturedCount = null;
-        var callCount = 0;
+        int callCount = 0;
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(callCount++ == 0

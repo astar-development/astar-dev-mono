@@ -35,7 +35,7 @@ public sealed class GivenScrollViewerMinHeightRules
             .First(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
 
         var parent = scrollViewer.GetLogicalParent();
-        var isSingleStarRowGrid = parent is Grid g && g.RowDefinitions.Count == 1 && g.RowDefinitions[0].Height.IsStar;
+        bool isSingleStarRowGrid = parent is Grid g && g.RowDefinitions.Count == 1 && g.RowDefinitions[0].Height.IsStar;
         isSingleStarRowGrid.ShouldBeFalse("AccountsView ScrollViewer must not be the sole child of a single-star-row Grid — the star row cannot bind the viewport when the Grid is measured with infinite height");
     }
 
@@ -49,8 +49,8 @@ public sealed class GivenScrollViewerMinHeightRules
             .First(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
 
         var parent = scrollViewer.GetLogicalParent();
-        var rowIndex = (int)scrollViewer.GetValue(Grid.RowProperty);
-        var isInStarRowOfMultiRowGrid = parent is Grid g && g.RowDefinitions.Count > 1 && g.RowDefinitions[rowIndex].Height.IsStar;
+        int rowIndex = (int)scrollViewer.GetValue(Grid.RowProperty);
+        bool isInStarRowOfMultiRowGrid = parent is Grid g && g.RowDefinitions.Count > 1 && g.RowDefinitions[rowIndex].Height.IsStar;
         isInStarRowOfMultiRowGrid.ShouldBeTrue("AccountsView ScrollViewer must be in a * row of a multi-row Grid — a direct UserControl child or lone-star-row Grid cannot bind the viewport height during measure; only star allocation in a Grid with real Auto content above provides a finite available height to the ScrollViewer");
     }
 
@@ -136,7 +136,7 @@ public sealed class GivenScrollViewerMinHeightRules
             .First(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
 
         var parent = scrollViewer.GetLogicalParent();
-        var isSingleStarRowGrid = parent is Grid g && g.RowDefinitions.Count == 1 && g.RowDefinitions[0].Height.IsStar;
+        bool isSingleStarRowGrid = parent is Grid g && g.RowDefinitions.Count == 1 && g.RowDefinitions[0].Height.IsStar;
         isSingleStarRowGrid.ShouldBeFalse("SettingsView ScrollViewer must not be the sole child of a single-star-row Grid — the star row cannot bind the viewport when the Grid is measured with infinite height");
     }
 
@@ -150,8 +150,8 @@ public sealed class GivenScrollViewerMinHeightRules
             .First(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
 
         var parent = scrollViewer.GetLogicalParent();
-        var rowIndex = (int)scrollViewer.GetValue(Grid.RowProperty);
-        var isInStarRowOfMultiRowGrid = parent is Grid g && g.RowDefinitions.Count > 1 && g.RowDefinitions[rowIndex].Height.IsStar;
+        int rowIndex = (int)scrollViewer.GetValue(Grid.RowProperty);
+        bool isInStarRowOfMultiRowGrid = parent is Grid g && g.RowDefinitions.Count > 1 && g.RowDefinitions[rowIndex].Height.IsStar;
         isInStarRowOfMultiRowGrid.ShouldBeTrue("SettingsView ScrollViewer must be in a * row of a multi-row Grid — a direct UserControl child or lone-star-row Grid cannot bound the viewport height during measure; only star allocation in a Grid with real Auto content above provides a finite available height to the ScrollViewer");
     }
 }

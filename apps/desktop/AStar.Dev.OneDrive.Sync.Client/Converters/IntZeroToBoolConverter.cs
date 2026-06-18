@@ -10,7 +10,7 @@ public sealed class IntZeroToBoolConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        var isZero = value is int n && n == 0;
+        bool isZero = value is int n && n == 0;
 
         return parameter is string s && s == "negate" ? !isZero : isZero;
     }

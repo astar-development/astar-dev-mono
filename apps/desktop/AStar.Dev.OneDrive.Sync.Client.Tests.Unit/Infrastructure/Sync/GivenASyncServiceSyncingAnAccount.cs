@@ -259,7 +259,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        var token = await capturedFactory!(TestContext.Current.CancellationToken);
+        string token = await capturedFactory!(TestContext.Current.CancellationToken);
 
         token.ShouldBe("token");
     }

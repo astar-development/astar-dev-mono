@@ -194,8 +194,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
             int includedCount = await syncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
 
-            var childPrefix = node.RemotePath + "/";
-            foreach (var key in ruleStates.Keys.Where(k => k.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
+            string childPrefix = node.RemotePath + "/";
+            foreach (string? key in ruleStates.Keys.Where(k => k.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
                 ruleStates.Remove(key);
 
             foreach (var (path, _) in ruleNodes)

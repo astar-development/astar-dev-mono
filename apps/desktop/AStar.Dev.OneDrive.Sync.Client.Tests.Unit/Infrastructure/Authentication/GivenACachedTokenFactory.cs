@@ -26,7 +26,7 @@ public sealed class GivenACachedTokenFactory
     {
         var sut = CreateSut(DateTimeOffset.UtcNow.AddMinutes(10));
 
-        var token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
+        string token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
 
         token.ShouldBe(InitialToken);
     }
@@ -70,7 +70,7 @@ public sealed class GivenACachedTokenFactory
         SetupRefreshSuccess();
         var sut = CreateSut(DateTimeOffset.UtcNow.AddMinutes(2));
 
-        var token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
+        string token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
 
         token.ShouldBe(RefreshedToken);
     }
@@ -81,7 +81,7 @@ public sealed class GivenACachedTokenFactory
         SetupRefreshFailure();
         var sut = CreateSut(DateTimeOffset.UtcNow.AddMinutes(2));
 
-        var token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
+        string token = await sut.GetTokenAsync(TestContext.Current.CancellationToken);
 
         token.ShouldBe(InitialToken);
     }

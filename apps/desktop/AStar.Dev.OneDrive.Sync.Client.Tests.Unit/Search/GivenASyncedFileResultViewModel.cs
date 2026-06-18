@@ -35,7 +35,7 @@ public sealed class GivenASyncedFileResultViewModel
     [Fact]
     public async Task when_file_type_is_not_image_then_thumbnail_stays_null()
     {
-        var tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         await File.WriteAllBytesAsync(tmpPath, PngFixtures.OneByOnePng, TestContext.Current.CancellationToken);
         try
         {
@@ -55,7 +55,7 @@ public sealed class GivenASyncedFileResultViewModel
     [AvaloniaFact]
     public async Task when_file_exists_and_type_is_image_then_thumbnail_is_set()
     {
-        var tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
+        string tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
         await File.WriteAllBytesAsync(tmpPath, PngFixtures.OneByOnePng, TestContext.Current.CancellationToken);
         try
         {

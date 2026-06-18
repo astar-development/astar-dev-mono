@@ -26,7 +26,7 @@ public sealed class GivenASyncStateToForegroundConverter
     [Fact]
     public void when_value_is_null_then_transparent_brush_is_returned()
     {
-        var result = Sut.Convert(null, typeof(IBrush), null, CultureInfo.InvariantCulture);
+        object? result = Sut.Convert(null, typeof(IBrush), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(Brushes.Transparent);
     }
@@ -34,7 +34,7 @@ public sealed class GivenASyncStateToForegroundConverter
     [Fact]
     public void when_value_is_non_sync_state_then_transparent_brush_is_returned()
     {
-        var result = Sut.Convert("not a state", typeof(IBrush), null, CultureInfo.InvariantCulture);
+        object? result = Sut.Convert("not a state", typeof(IBrush), null, CultureInfo.InvariantCulture);
 
         result.ShouldBe(Brushes.Transparent);
     }

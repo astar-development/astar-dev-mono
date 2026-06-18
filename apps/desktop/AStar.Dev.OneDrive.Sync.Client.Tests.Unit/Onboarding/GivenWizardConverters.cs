@@ -58,7 +58,7 @@ public sealed class GivenWizardConverters
         [Fact]
         public void when_value_is_non_empty_string_then_result_is_true()
         {
-            var result = Sut.Convert("hello", typeof(bool), null, CultureInfo.InvariantCulture);
+            object result = Sut.Convert("hello", typeof(bool), null, CultureInfo.InvariantCulture);
 
             result.ShouldBe(true);
         }
@@ -66,7 +66,7 @@ public sealed class GivenWizardConverters
         [Fact]
         public void when_value_is_empty_string_then_result_is_false()
         {
-            var result = Sut.Convert(string.Empty, typeof(bool), null, CultureInfo.InvariantCulture);
+            object result = Sut.Convert(string.Empty, typeof(bool), null, CultureInfo.InvariantCulture);
 
             result.ShouldBe(false);
         }
@@ -74,7 +74,7 @@ public sealed class GivenWizardConverters
         [Fact]
         public void when_value_is_null_then_result_is_false()
         {
-            var result = Sut.Convert(null, typeof(bool), null, CultureInfo.InvariantCulture);
+            object result = Sut.Convert(null, typeof(bool), null, CultureInfo.InvariantCulture);
 
             result.ShouldBe(false);
         }
@@ -82,7 +82,7 @@ public sealed class GivenWizardConverters
         [Fact]
         public void when_value_is_whitespace_then_result_is_true()
         {
-            var result = Sut.Convert("   ", typeof(bool), null, CultureInfo.InvariantCulture);
+            object result = Sut.Convert("   ", typeof(bool), null, CultureInfo.InvariantCulture);
 
             result.ShouldBe(true);
         }

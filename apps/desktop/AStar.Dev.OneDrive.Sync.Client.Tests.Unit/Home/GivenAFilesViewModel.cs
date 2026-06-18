@@ -198,7 +198,7 @@ public sealed class GivenAFilesViewModel
     [Fact]
     public async Task when_a_tab_raises_folder_count_changed_then_event_is_forwarded_with_account_id()
     {
-        var callCount = 0;
+        int callCount = 0;
         var syncRuleRepository = Substitute.For<ISyncRuleRepository>();
         syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(callCount++ == 0 ? new List<SyncRuleEntity>() : [new SyncRuleEntity { AccountId = new AccountId(FirstAccountId), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]));
         var sut = CreateSut(CreateFactory(syncRuleRepository));

@@ -13,7 +13,7 @@ public sealed class GivenTheMigrationDropFileClassificationRulesTable(Integratio
         var ct = TestContext.Current.CancellationToken;
         await using var context = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
-        var tableCount = await context.Database.SqlQueryRaw<int>(
+        int tableCount = await context.Database.SqlQueryRaw<int>(
             "SELECT COUNT(*) AS Value FROM sqlite_master WHERE type='table' AND name='FileClassificationRules'"
         ).FirstOrDefaultAsync(ct);
 

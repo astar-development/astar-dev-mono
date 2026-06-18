@@ -25,6 +25,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 new FileClassificationCategoryId(e.Id),
                 e.Name,
                 e.Level,
+                e.IsFamous,
+                e.IsInternet,
                 e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>());
 
             _ = result.Match<object?>(
@@ -48,7 +50,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             .ConfigureAwait(false);
 
         return entities
-            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.Some(e.IsSpecial))))
+            .Select(e => new FileClassificationKeywordEntry(e.Id, new FileClassificationKeyword(e.Keyword, Option.Some(e.IsFamous), Option.Some(e.IsInternet))))
             .ToList()
             .AsReadOnly();
     }
@@ -144,7 +146,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         {
             Keyword = keyword.Value.ToTitleCase(),
             CategoryId = rawCategoryId,
-            IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false)
+            IsFamous = keyword.IsFamous.Match(v => v, () => false)
         };
 
         db.FileClassificationKeywords.Add(entity);
@@ -170,7 +172,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
             return new Result<int, string>.Error("Cannot update keyword on a non-leaf category.");
 
         entity.Keyword = keyword.Value.ToTitleCase();
-        entity.IsSpecial = keyword.IsSpecialOverride.Match(v => v, () => false);
+        entity.IsFamous = keyword.IsFamous.Match(v => v, () => false);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return new Result<int, string>.Ok(entity.Id);

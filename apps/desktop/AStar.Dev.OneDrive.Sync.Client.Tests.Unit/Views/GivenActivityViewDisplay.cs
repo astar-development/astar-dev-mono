@@ -41,8 +41,8 @@ public sealed class GivenActivityViewDisplay
         return view.GetLogicalDescendants().OfType<Grid>().First(g =>
         {
             var itemsControls = g.GetLogicalDescendants().OfType<ItemsControl>().ToList();
-            var hasLog = itemsControls.Any(ic => ReferenceEquals(ic.ItemsSource, viewModel.FilteredLog));
-            var hasConflicts = itemsControls.Any(ic => ReferenceEquals(ic.ItemsSource, viewModel.Conflicts));
+            bool hasLog = itemsControls.Any(ic => ReferenceEquals(ic.ItemsSource, viewModel.FilteredLog));
+            bool hasConflicts = itemsControls.Any(ic => ReferenceEquals(ic.ItemsSource, viewModel.Conflicts));
 
             return logTab ? hasLog && !hasConflicts : hasConflicts && !hasLog;
         });
