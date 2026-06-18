@@ -5,9 +5,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
 public sealed class GivenAClassificationCombiner
 {
-    private static readonly FileClassification AnyRuleClassification = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
-    private static readonly FileClassification AnyAnalyserClassification = FileClassificationFactory.Create("Nature", Option.Some("Wildlife"), Option.None<string>(), false);
-    private static readonly FileClassification AnySharedClassification = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
+    private static readonly FileClassification AnyRuleClassification = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false, false);
+    private static readonly FileClassification AnyAnalyserClassification = FileClassificationFactory.Create("Nature", Option.Some("Wildlife"), Option.None<string>(), false, false);
+    private static readonly FileClassification AnySharedClassification = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false, false);
 
     [Fact]
     public void when_both_inputs_empty_then_result_contains_only_unclassified()
@@ -54,8 +54,8 @@ public sealed class GivenAClassificationCombiner
     [Fact]
     public void when_rule_and_analyser_have_same_L1_L2_L3_then_deduped_to_single_entry()
     {
-        var ruleVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
-        var analyserVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true);
+        var ruleVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false, false);
+        var analyserVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true, false);
         IReadOnlyList<FileClassification> ruleResults = [ruleVersion];
         IReadOnlyList<FileClassification> analyserResults = [analyserVersion];
 
@@ -77,8 +77,8 @@ public sealed class GivenAClassificationCombiner
     [Fact]
     public void when_rule_results_contains_duplicate_L1_L2_L3_then_only_first_is_kept()
     {
-        var first = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
-        var second = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true);
+        var first = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false, false);
+        var second = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true, false);
         IReadOnlyList<FileClassification> ruleResults = [first, second];
 
         var result = ClassificationCombiner.Combine(ruleResults, []);
@@ -90,8 +90,8 @@ public sealed class GivenAClassificationCombiner
     [Fact]
     public void when_same_L1_L2_L3_different_IsSpecial_then_deduped_to_rule_result()
     {
-        var ruleVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false);
-        var analyserVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true);
+        var ruleVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), false, false);
+        var analyserVersion = FileClassificationFactory.Create("Memories", Option.Some("Holidays"), Option.None<string>(), true, false);
         IReadOnlyList<FileClassification> ruleResults = [ruleVersion];
         IReadOnlyList<FileClassification> analyserResults = [analyserVersion];
 

@@ -18,7 +18,7 @@ internal static class OdataNextLinkGuard
         if (string.IsNullOrEmpty(nextLink))
             return false;
 
-        if (!Uri.TryCreate(nextLink, UriKind.Absolute, out Uri? uri))
+        if (!Uri.TryCreate(nextLink, UriKind.Absolute, out var uri))
             return false;
 
         if (uri.Scheme != Uri.UriSchemeHttps)

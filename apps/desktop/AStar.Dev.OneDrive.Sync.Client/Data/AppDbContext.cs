@@ -13,7 +13,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<SyncedItemEntity> SyncedItems => Set<SyncedItemEntity>();
     public DbSet<SyncedItemFileClassificationEntity> SyncedItemFileClassifications => Set<SyncedItemFileClassificationEntity>();
     public DbSet<FileClassificationCategoryEntity> FileClassificationCategories => Set<FileClassificationCategoryEntity>();
-    public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
+    // public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

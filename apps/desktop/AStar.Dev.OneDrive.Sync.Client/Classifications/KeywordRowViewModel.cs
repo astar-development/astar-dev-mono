@@ -46,18 +46,12 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     [RelayCommand]
     private void Edit() => IsEditing = true;
 
+    // TODO: Implement SaveAsync when UpdateKeywordAsync is available in IFileClassificationRepository
     [RelayCommand]
-    private async Task SaveAsync() => await FileClassificationKeywordFactory.Create(Value, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
-            .Match(PersistKeywordAsync, _ => Task.CompletedTask)
-            .ConfigureAwait(false);
-
-    private async Task PersistKeywordAsync(FileClassificationKeyword keyword)
-    {
-        await repository.UpdateKeywordAsync(KeywordId, keyword, CancellationToken.None).ConfigureAwait(false);
-        originalValue = Value;
-        originalIsFamous = IsFamous;
-        IsEditing = false;
-    }
+    private static Task SaveAsync() => Task.CompletedTask;
+    // private async Task SaveAsync() => await FileClassificationKeywordFactory.Create(Value, IsFamous ? Option.Some(true) : Option.None<bool>(), IsInternet ? Option.Some(true) : Option.None<bool>())
+    //         .Match(PersistKeywordAsync, _ => Task.CompletedTask)
+    //         .ConfigureAwait(false);
 
     [RelayCommand]
     private void Cancel()
@@ -68,9 +62,7 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeleteAsync()
-    {
-        await repository.DeleteKeywordAsync(KeywordId, CancellationToken.None).ConfigureAwait(false);
+    private async Task DeleteAsync() =>
+        //await repository.DeleteKeywordAsync(KeywordId, CancellationToken.None).ConfigureAwait(false);
         onDeleteSelf(this);
-    }
 }

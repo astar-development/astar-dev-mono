@@ -5,5 +5,5 @@ public static class FileClassificationKeywordExtensions
 {
     /// <summary>Resolves the effective IsSpecial flag, preferring the keyword's override when present.</summary>
     public static bool ResolveIsSpecial(this FileClassificationKeyword keyword, FileClassification classification) =>
-        keyword.IsFamous.Match(overrideValue => overrideValue, () => classification.IsSpecial);
+        keyword.IsFamous.Match(overrideValue => overrideValue, () => classification.IsFamous);
 }

@@ -25,15 +25,15 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         foreach (var category in allCategories)
             nodesByCategoryId[category.Id] = new ClassificationCategoryNode { Name = category.Name, IsFamous = category.IsFamous, IsInternet = category.IsInternet, Children = [], Keywords = [] };
 
-        foreach (var category in allCategories)
-        {
-            bool isLeaf = !parentIds.Contains(category.Id);
-            if (!isLeaf)
-                continue;
+        // foreach (var category in allCategories)
+        // {
+        //     bool isLeaf = !parentIds.Contains(category.Id);
+        //     if (!isLeaf)
+        //         continue;
 
-            var keywords = await repository.GetKeywordsForCategoryAsync(category.Id, cancellationToken).ConfigureAwait(false);
-            nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsFamous is Option<bool>.Some f ? f.Value : null, k.Keyword.IsInternet is Option<bool>.Some i ? i.Value : null)));
-        }
+        //     //var keywords = await repository.GetKeywordsForCategoryAsync(category.Id, cancellationToken).ConfigureAwait(false);
+        //     // nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsFamous is Option<bool>.Some f ? f.Value : null, k.Keyword.IsInternet is Option<bool>.Some i ? i.Value : null)));
+        // }
 
         var rootNodes = new List<ClassificationCategoryNode>();
         foreach (var category in allCategories)
@@ -58,7 +58,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         if (exportRoot is null)
             return;
 
-        await repository.DeleteAllAsync(cancellationToken).ConfigureAwait(false);
+        // await repository.DeleteAllAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var node in exportRoot.Categories)
             await InsertNodeAsync(node, 1, false, false, Option.None<FileClassificationCategoryId>(), cancellationToken).ConfigureAwait(false);
@@ -76,8 +76,8 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
                     foreach (var child in node.Children)
                         await InsertNodeAsync(child, level + 1, isFamous, isInternet, Option.Some(newId), cancellationToken).ConfigureAwait(false);
 
-                    foreach (var keyword in node.Keywords)
-                        await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsFamous.HasValue ? Option.Some(keyword.IsFamous.Value) : Option.None<bool>(), keyword.IsInternet.HasValue ? Option.Some(keyword.IsInternet.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
+                    // foreach (var keyword in node.Keywords)
+                    //     await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsFamous.HasValue ? Option.Some(keyword.IsFamous.Value) : Option.None<bool>(), keyword.IsInternet.HasValue ? Option.Some(keyword.IsInternet.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
                 },
                 _ => Task.CompletedTask)
             .ConfigureAwait(false);

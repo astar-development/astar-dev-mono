@@ -1,3 +1,5 @@
+using AStar.Dev.Functional.Extensions;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
 
 /// <summary>Classifies a remote file path against a set of configured rules.</summary>
@@ -11,13 +13,13 @@ public static class FileClassifier
     /// </summary>
     /// <param name="remotePath">The remote path to classify.</param>
     /// <param name="mappings">The keyword mappings to match against.</param>
-    public static IReadOnlyList<FileClassification> Classify(string remotePath, IReadOnlyList<KeywordMapping> mappings)
+    public static IReadOnlyList<FileClassification> Classify(string remotePath, IReadOnlyList<FileClassificationCategory> mappings)
     {
         var tokens = Tokenise(remotePath);
         var matches = mappings
             .Where(mapping =>
             {
-                string kw = mapping.Keyword.ToLowerInvariant();
+                string kw = mapping.Name.ToLowerInvariant();
                 if (!kw.Contains(' '))
                     return tokens.Contains(kw);
                 string[] words = kw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -26,7 +28,7 @@ public static class FileClassifier
                        tokens.Contains(kw.Replace(" ", string.Empty)) ||
                        words.All(tokens.Contains);
             })
-            .Select(mapping => FileClassificationFactory.Create(mapping.Level1, mapping.Level2, mapping.Level3, mapping.IsSpecial))
+            .Select(mapping => FileClassificationFactory.Create(mapping.Level == 1 ? mapping.Name : string.Empty, mapping.Level == 2 ? Option.Some(mapping.Name) : Option.None<string>(), mapping.Level == 3 ? Option.Some(mapping.Name) : Option.None<string>(), mapping.IsFamous, mapping.IsInternet))
             .ToList();
 
         return matches.AsReadOnly();

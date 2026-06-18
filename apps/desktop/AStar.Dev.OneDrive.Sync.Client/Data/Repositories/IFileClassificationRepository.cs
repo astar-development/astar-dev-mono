@@ -10,10 +10,10 @@ public interface IFileClassificationRepository
     Task<IReadOnlyList<FileClassificationCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Returns all keywords belonging to the specified category, including their database identifiers.</summary>
-    Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default);
+    // Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default);
 
     /// <summary>Returns all keywords projected as flat <see cref="KeywordMapping"/> records for use in classification pipelines.</summary>
-    Task<IReadOnlyList<KeywordMapping>> GetAllKeywordMappingsAsync(CancellationToken cancellationToken = default);
+    //Task<IReadOnlyList<KeywordMapping>> GetAllKeywordMappingsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Persists a new category and returns its generated identifier.</summary>
     Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default);
@@ -25,14 +25,14 @@ public interface IFileClassificationRepository
     Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default);
 
     /// <summary>Adds a keyword to a leaf category and returns the generated keyword identifier.</summary>
-    Task<Result<int, string>> AddKeywordAsync(FileClassificationCategoryId categoryId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default);
+    //Task<Result<int, string>> AddKeywordAsync(FileClassificationCategoryId categoryId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default);
 
     /// <summary>Updates a keyword's value. Fails if the owning category is not a leaf.</summary>
-    Task<Result<int, string>> UpdateKeywordAsync(int keywordId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default);
+    //Task<Result<int, string>> UpdateKeywordAsync(int keywordId, FileClassificationKeyword keyword, CancellationToken cancellationToken = default);
 
     /// <summary>Deletes a keyword. No-op if the keyword does not exist.</summary>
-    Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default);
+    // Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default);
 
     /// <summary>Deletes all keywords and all categories. Used before importing a new taxonomy.</summary>
-    Task DeleteAllAsync(CancellationToken cancellationToken = default);
+    // Task DeleteAllAsync(CancellationToken cancellationToken = default);
 }

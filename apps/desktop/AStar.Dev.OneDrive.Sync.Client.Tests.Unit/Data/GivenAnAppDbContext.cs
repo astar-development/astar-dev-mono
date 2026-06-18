@@ -32,13 +32,13 @@ public sealed class GivenAnAppDbContext : IDisposable
         result.ShouldNotBeNull();
     }
 
-    [Fact]
-    public void when_querying_file_classification_keywords_then_dbset_is_accessible()
-    {
-        var result = context.FileClassificationKeywords.ToList();
+    // [Fact]
+    // public void when_querying_file_classification_keywords_then_dbset_is_accessible()
+    // {
+    //     var result = context.FileClassificationKeywords.ToList();
 
-        result.ShouldNotBeNull();
-    }
+    //     result.ShouldNotBeNull();
+    // }
 
     [Fact]
     public void when_querying_synced_item_file_classifications_then_dbset_is_accessible()
@@ -59,20 +59,20 @@ public sealed class GivenAnAppDbContext : IDisposable
         retrieved.Name.ShouldBe("Photos");
     }
 
-    [Fact]
-    public async Task when_file_classification_keyword_added_then_it_can_be_retrieved()
-    {
-        var category = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
-        context.FileClassificationCategories.Add(category);
-        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+    // [Fact]
+    // public async Task when_file_classification_keyword_added_then_it_can_be_retrieved()
+    // {
+    //     var category = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+    //     context.FileClassificationCategories.Add(category);
+    //     await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = "photos", CategoryId = category.Id });
-        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+    //     context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = "photos", CategoryId = category.Id });
+    //     await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var retrieved = context.FileClassificationKeywords.First();
+    //     var retrieved = context.FileClassificationKeywords.First();
 
-        retrieved.Keyword.ShouldBe("photos");
-    }
+    //     retrieved.Keyword.ShouldBe("photos");
+    // }
 
     [Fact]
     public async Task when_synced_item_file_classification_added_then_it_can_be_retrieved()

@@ -11,7 +11,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileClassificationRepository classificationRepository, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService, IFileClassificationRepository fileClassificationRepository) : ISyncJobExecutor
 {
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
@@ -34,7 +34,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             return;
         }
 
-        var mappings = await classificationRepository.GetAllKeywordMappingsAsync(ct).ConfigureAwait(false);
+        var mappings = await fileClassificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
         var firstJob = enumerator.Current;
 
         await syncPipeline.RunAsync(
@@ -90,7 +90,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
         }
     }
 
-    private async Task ClassifyAsync(int syncedItemId, string remotePath, IReadOnlyList<KeywordMapping> mappings, CancellationToken ct)
+    private async Task ClassifyAsync(int syncedItemId, string remotePath, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
     {
         var analyserResult = fileAutoCategorisor.Categorise(remotePath);
         var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));

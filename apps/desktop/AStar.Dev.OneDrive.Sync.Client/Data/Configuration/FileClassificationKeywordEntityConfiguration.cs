@@ -10,6 +10,7 @@ public sealed class FileClassificationKeywordEntityConfiguration : IEntityTypeCo
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<FileClassificationKeywordEntity> builder)
     {
+        _ = builder.ToTable("FileClassificationKeywords");
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.Keyword).IsRequired();
         _ = builder.Property(e => e.IsFamous).IsRequired();

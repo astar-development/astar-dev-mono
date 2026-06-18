@@ -11,7 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.DataMigration;
 /// <inheritdoc />
 public sealed class ClassificationDataMigrationService(IDbContextFactory<AppDbContext> dbFactory, ICategoryResolutionService categoryResolutionService, ILogger<ClassificationDataMigrationService> logger) : IClassificationDataMigrationService
 {
-    private sealed record OldClassificationRow(int SyncedItemId, string Level1, string? Level2, string? Level3, bool IsSpecial);
+    private sealed record OldClassificationRow(int SyncedItemId, string Level1, string? Level2, string? Level3, bool IsFamous, bool IsInternet);
 
     private const int BatchSize = 1_000;
     private const string OldTableName = "SyncedItemClassifications";
@@ -43,7 +43,7 @@ public sealed class ClassificationDataMigrationService(IDbContextFactory<AppDbCo
                     row.Level1,
                     string.IsNullOrEmpty(row.Level2) ? Option.None<string>() : Option.Some(row.Level2),
                     string.IsNullOrEmpty(row.Level3) ? Option.None<string>() : Option.Some(row.Level3),
-                    row.IsSpecial)).ToList();
+                    row.IsFamous, row.IsInternet)).ToList();
 
                 var categoryIds = await categoryResolutionService.ResolveManyAsync(classifications, cancellationToken).ConfigureAwait(false);
 

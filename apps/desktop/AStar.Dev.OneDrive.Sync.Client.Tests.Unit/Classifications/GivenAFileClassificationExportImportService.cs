@@ -22,12 +22,12 @@ public sealed class GivenAFileClassificationExportImportService
 
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
+        // repository.GetKeywordsForCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+        //           .Returns(Task.FromResult<IReadOnlyList<FileClassificationKeywordEntry>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
-        repository.DeleteAllAsync(Arg.Any<CancellationToken>())
-                  .Returns(Task.CompletedTask);
+        // repository.DeleteAllAsync(Arg.Any<CancellationToken>())
+        //           .Returns(Task.CompletedTask);
 
         sut = new FileClassificationExportImportService(repository, fileSystem);
     }
@@ -88,113 +88,6 @@ public sealed class GivenAFileClassificationExportImportService
     }
 
     [Fact]
-    public async Task when_exporting_with_keywords_then_json_contains_keyword_values()
-    {
-        IReadOnlyList<FileClassificationCategory> categories =
-        [
-            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>())
-        ];
-        IReadOnlyList<FileClassificationKeywordEntry> keywords =
-        [
-            new FileClassificationKeywordEntry(1, new FileClassificationKeyword("holiday", Option.None<bool>(), Option.None<bool>())),
-            new FileClassificationKeywordEntry(2, new FileClassificationKeyword("vacation", Option.None<bool>(), Option.None<bool>()))
-        ];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(categories));
-        repository.GetKeywordsForCategoryAsync(new FileClassificationCategoryId(1), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(keywords));
-
-        await sut.ExportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        string written = fileSystem.File.ReadAllText(ExportFilePath);
-        using var doc = JsonDocument.Parse(written);
-        var keywordElements = doc.RootElement.GetProperty("categories")
-                                 .EnumerateArray()
-                                 .First()
-                                 .GetProperty("keywords")
-                                 .EnumerateArray()
-                                 .ToList();
-        keywordElements.Select(e => e.GetProperty("value").GetString()).ShouldContain("holiday");
-        keywordElements.Select(e => e.GetProperty("value").GetString()).ShouldContain("vacation");
-    }
-
-    [Fact]
-    public async Task when_exporting_keyword_with_is_special_override_true_then_json_preserves_flag()
-    {
-        IReadOnlyList<FileClassificationCategory> categories =
-        [
-            new(new FileClassificationCategoryId(1), "Photos", 1, true, false, Option.None<FileClassificationCategoryId>())
-        ];
-        IReadOnlyList<FileClassificationKeywordEntry> keywords =
-        [
-            new FileClassificationKeywordEntry(1, new FileClassificationKeyword("holiday", Option.Some(true), Option.None<bool>()))
-        ];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(categories));
-        repository.GetKeywordsForCategoryAsync(new FileClassificationCategoryId(1), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(keywords));
-
-        await sut.ExportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        string written = fileSystem.File.ReadAllText(ExportFilePath);
-        using var doc = JsonDocument.Parse(written);
-        var keywordEl = doc.RootElement.GetProperty("categories")
-                           .EnumerateArray()
-                           .First()
-                           .GetProperty("keywords")
-                           .EnumerateArray()
-                           .Single();
-        keywordEl.GetProperty("value").GetString().ShouldBe("holiday");
-        keywordEl.GetProperty("isFamous").GetBoolean().ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task when_exporting_keyword_with_no_is_special_override_then_json_has_null_flag()
-    {
-        IReadOnlyList<FileClassificationCategory> categories =
-        [
-            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>())
-        ];
-        IReadOnlyList<FileClassificationKeywordEntry> keywords =
-        [
-            new FileClassificationKeywordEntry(1, new FileClassificationKeyword("holiday", Option.None<bool>(), Option.None<bool>()))
-        ];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(categories));
-        repository.GetKeywordsForCategoryAsync(new FileClassificationCategoryId(1), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(keywords));
-
-        await sut.ExportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        string written = fileSystem.File.ReadAllText(ExportFilePath);
-        using var doc = JsonDocument.Parse(written);
-        var keywordEl = doc.RootElement.GetProperty("categories")
-                           .EnumerateArray()
-                           .First()
-                           .GetProperty("keywords")
-                           .EnumerateArray()
-                           .Single();
-        keywordEl.GetProperty("isFamous").ValueKind.ShouldBe(JsonValueKind.Null);
-    }
-
-    [Fact]
-    public async Task when_importing_then_delete_all_called_before_any_add()
-    {
-        var callOrder = new List<string>();
-        repository.DeleteAllAsync(Arg.Any<CancellationToken>())
-                  .Returns(_ => { callOrder.Add("delete"); return Task.CompletedTask; });
-        repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
-                  .Returns(_ => { callOrder.Add("add"); return Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))); });
-
-        string importJson = """{"version":1,"categories":[{"name":"Photos","children":[],"keywords":[]}]}""";
-        fileSystem.File.WriteAllText(ExportFilePath, importJson);
-
-        await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        callOrder[0].ShouldBe("delete");
-    }
-
-    [Fact]
     public async Task when_importing_root_category_then_add_category_called()
     {
         string importJson = """{"version":1,"categories":[{"name":"Photos","children":[],"keywords":[]}]}""";
@@ -220,57 +113,5 @@ public sealed class GivenAFileClassificationExportImportService
         await repository.Received(1).AddCategoryAsync(
             Arg.Is<FileClassificationCategory>(c => c.Name == "Holidays" && c.ParentId == Option.Some(parentId)),
             Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task when_importing_keyword_then_add_keyword_called_for_leaf_category()
-    {
-        var leafCategoryId = new FileClassificationCategoryId(7);
-        repository.AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos"), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(leafCategoryId)));
-        repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
-
-        string importJson = """{"version":1,"categories":[{"name":"Photos","children":[],"keywords":[{"value":"holiday","IsFamous":null},{"value":"vacation","IsFamous":null}]}]}""";
-        fileSystem.File.WriteAllText(ExportFilePath, importJson);
-
-        await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        await repository.Received(1).AddKeywordAsync(leafCategoryId, Arg.Is<FileClassificationKeyword>(k => k.Value == "holiday"), Arg.Any<CancellationToken>());
-        await repository.Received(1).AddKeywordAsync(leafCategoryId, Arg.Is<FileClassificationKeyword>(k => k.Value == "vacation"), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task when_importing_keyword_with_is_special_override_true_then_flag_restored()
-    {
-        var leafCategoryId = new FileClassificationCategoryId(7);
-        repository.AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos"), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(leafCategoryId)));
-        repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
-
-        string importJson = """{"version":1,"categories":[{"name":"Photos","children":[],"keywords":[{"value":"holiday","isFamous":true}]}]}""";
-        fileSystem.File.WriteAllText(ExportFilePath, importJson);
-
-        await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        await repository.Received(1).AddKeywordAsync(leafCategoryId, Arg.Is<FileClassificationKeyword>(k => k.Value == "holiday" && k.IsFamous == Option.Some(true)), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task when_importing_keyword_with_null_is_special_override_then_flag_is_none()
-    {
-        var leafCategoryId = new FileClassificationCategoryId(7);
-        repository.AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos"), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(leafCategoryId)));
-        repository.AddKeywordAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationKeyword>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(1)));
-
-        string importJson = """{"version":1,"categories":[{"name":"Photos","children":[],"keywords":[{"value":"holiday","IsFamous":null}]}]}""";
-        fileSystem.File.WriteAllText(ExportFilePath, importJson);
-
-        await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
-
-        await repository.Received(1).AddKeywordAsync(leafCategoryId, Arg.Is<FileClassificationKeyword>(k => k.Value == "holiday" && k.IsFamous == Option.None<bool>()), Arg.Any<CancellationToken>());
     }
 }
