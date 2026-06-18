@@ -15,7 +15,7 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly string path = settingsFilePath ?? ApplicationMetadata.ApplicationName.ApplicationDirectory().CombinePath("settings.json");
+    private readonly string path = settingsFilePath ?? ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath("settings.json");
 
     /// <inheritdoc />
     public AppSettings Current { get; private set; } = new();

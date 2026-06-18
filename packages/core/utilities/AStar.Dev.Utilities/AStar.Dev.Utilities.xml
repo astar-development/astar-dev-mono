@@ -334,6 +334,14 @@
             <param name="fileSize">The file size in bytes (represented as a long integer)</param>
             <returns>The human-readable string format</returns>
         </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.ToTitleCase(System.String,System.String)">
+            <summary>
+              The TitleCased method converts a string to title case using the specified culture.
+            </summary>
+            <param name="value">The string to convert</param>
+            <param name="cultureName">The culture to use for title casing</param>
+            <returns>The title-cased string</returns>
+        </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.</summary>
         </member>

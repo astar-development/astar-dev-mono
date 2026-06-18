@@ -20,7 +20,7 @@ internal sealed class Program
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            string logPath = ApplicationMetadata.ApplicationName.LogsDirectory().CombinePath(ApplicationMetadata.ApplicationLogName);
+            string logPath = ApplicationMetadata.ApplicationNameHyphenated.LogsDirectory().CombinePath(ApplicationMetadata.ApplicationLogName);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .WriteTo.File(
@@ -33,7 +33,7 @@ internal sealed class Program
                 )
                 .CreateLogger();
 
-            Serilog.Log.Information("Application Starting");
+            Log.Information("Application Starting");
             var appBuilder = BuildAvaloniaApp();
 
             _ = appBuilder.StartWithClassicDesktopLifetime(args);
@@ -48,7 +48,7 @@ internal sealed class Program
         }
     }
 
-    // Avalonia configuration, don't remove; also used by visualdddd designer.
+    // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()

@@ -77,10 +77,27 @@ AND NOT EXISTS (
 INSERT OR IGNORE INTO FileClassificationCategories (Name, Level, ParentId)
 VALUES
     ('Person', 1, NULL),
-    ('Color',  1, NULL),
+    ('Colour',  1, NULL),
     ('Object', 1, NULL),
     ('Place',  1, NULL),
-    ('Event',  1, NULL);");
+    ('Event',  1, NULL),
+    ('Red',  2, 2),
+    ('Yellow',  2, 2),
+    ('Green',  2, 2),
+    ('Blue',  2, 2),
+    ('Orange',  2, 2),
+    ('Pink',  2, 2),
+    ('Black',  2, 2),
+    ('Purple',  2, 2);");
+
+            migrationBuilder.Sql(@"
+INSERT OR IGNORE INTO FileClassificationKeywords (Keyword, CategoryId)
+VALUES
+    ('Person', 1),
+    ('Colour',  2),
+    ('Object', 3),
+    ('Place',  4),
+    ('Event',  5);");
 
             migrationBuilder.DropTable(name: "FileClassificationRules");
         }

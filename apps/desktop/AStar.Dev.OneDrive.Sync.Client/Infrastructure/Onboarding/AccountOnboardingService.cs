@@ -29,7 +29,11 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
 
     private static Option<AccountSyncConfig> ResolveDefaultSyncConfig(string email)
     {
-        string defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);
+        string defaultPath = string.Empty;
+        if(email is "jason.barden@outlook.com" or "jason.barden1@outlook.com")
+            defaultPath = "/run/media/jbarden/Tbdrive/sync/".CombinePath(email);
+        else
+            defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);
 
         return LocalSyncPathFactory.Create(defaultPath)
             .Match(p => Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, p)), _ => Option.None<AccountSyncConfig>());

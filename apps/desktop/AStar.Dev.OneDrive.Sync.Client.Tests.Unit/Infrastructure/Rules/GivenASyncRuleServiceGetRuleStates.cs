@@ -21,7 +21,7 @@ public sealed class GivenASyncRuleServiceGetRuleStates
 
         var sut = BuildSut(repo);
 
-        IReadOnlyDictionary<string, RuleType> result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
+        var result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
 
         result.ShouldContainKey(IncludePath);
         result[IncludePath].ShouldBe(RuleType.Include);
@@ -36,7 +36,7 @@ public sealed class GivenASyncRuleServiceGetRuleStates
 
         var sut = BuildSut(repo);
 
-        IReadOnlyDictionary<string, RuleType> result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
+        var result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
 
         result.ShouldContainKey(ExcludePath);
         result[ExcludePath].ShouldBe(RuleType.Exclude);
@@ -54,7 +54,7 @@ public sealed class GivenASyncRuleServiceGetRuleStates
 
         var sut = BuildSut(repo);
 
-        IReadOnlyDictionary<string, RuleType> result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
+        var result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
 
         result.Count.ShouldBe(2);
     }
@@ -68,7 +68,7 @@ public sealed class GivenASyncRuleServiceGetRuleStates
 
         var sut = BuildSut(repo);
 
-        IReadOnlyDictionary<string, RuleType> result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
+        var result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
 
         result.ShouldContainKey(MixedCasePath);
     }
@@ -82,7 +82,7 @@ public sealed class GivenASyncRuleServiceGetRuleStates
 
         var sut = BuildSut(repo);
 
-        IReadOnlyDictionary<string, RuleType> result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
+        var result = await sut.GetRuleStatesAsync(new AccountId(AccountIdString), CancellationToken.None);
 
         result.ShouldBeEmpty();
     }

@@ -1,6 +1,5 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;
@@ -57,7 +56,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
         keywords.ShouldNotBeEmpty();
-        keywords.ShouldContain(k => k.Keyword.Value == "invoice");
+        keywords.ShouldContain(k => k.Keyword.Value == "Invoice");
     }
 
     [Fact]
@@ -77,7 +76,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
         var mappings = await repository.GetAllKeywordMappingsAsync(ct);
 
         mappings.ShouldNotBeEmpty();
-        mappings.ShouldContain(m => m.Keyword == "invoice" && m.Level1 == "Finance");
+        mappings.ShouldContain(m => m.Keyword == "Invoice" && m.Level1 == "Finance");
     }
 
     [Fact]
@@ -192,7 +191,7 @@ public sealed class GivenAFileClassificationRepository(IntegrationTestFixture fi
 
         var keywords = await repository.GetKeywordsForCategoryAsync(categoryId, ct);
         keywords.ShouldNotContain(k => k.Keyword.Value == "invoice");
-        keywords.ShouldContain(k => k.Keyword.Value == "receipt");
+        keywords.ShouldContain(k => k.Keyword.Value == "Receipt");
     }
 
     [Fact]

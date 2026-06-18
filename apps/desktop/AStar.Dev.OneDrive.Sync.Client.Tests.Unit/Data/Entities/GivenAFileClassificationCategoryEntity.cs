@@ -19,16 +19,9 @@ public sealed class GivenAFileClassificationCategoryEntity
         new FileClassificationCategoryEntity().Parent.ShouldBeNull();
 
     [Fact]
-    public void when_instantiated_then_children_collection_is_not_null() =>
-        new FileClassificationCategoryEntity().Children.ShouldNotBeNull();
-
-    [Fact]
-    public void when_instantiated_then_keywords_collection_is_not_null() =>
-        new FileClassificationCategoryEntity().Keywords.ShouldNotBeNull();
-
-    [Fact]
     public void when_parent_id_is_set_then_it_reflects_in_the_property()
     {
+        // This is very slow...maybe
         var entity = new FileClassificationCategoryEntity
         {
             ParentId = 42

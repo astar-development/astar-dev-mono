@@ -93,4 +93,10 @@ public sealed class StringExtensionsShould
     [InlineData(5 * 1024 * 1024, "5.0 MB")]
     [InlineData((5 * 1024 * 1024) + (512 * 1024 * 1024), "517.0 MB")]
     public void ConvertTheFileSizeToHumanReadableFormat(long fileSizeToConvert, string expected) => fileSizeToConvert.FileSizeToText().ShouldBe(expected);
+
+    [Theory]
+    [InlineData("example text", "Example Text")]
+    [InlineData("exampletext", "Exampletext")]
+    [InlineData("EXAMPLE TEXT", "Example Text")]
+    public void ContainTheToTitleCaseMethodWhichReturnsTheExpectedResult(string input, string expected) => input.ToTitleCase().ShouldBe(expected);
 }

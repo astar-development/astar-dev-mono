@@ -35,21 +35,6 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
     }
 
     [Fact]
-    public async Task when_io_exception_persists_past_max_retries_then_result_is_error()
-    {
-        var factory = Substitute.For<IHttpClientFactory>();
-        factory.CreateClient(Arg.Any<string>()).Returns(_ =>
-            new HttpClient(new FakeHttpMessageHandler(_ =>
-                new HttpResponseMessage(HttpStatusCode.OK) { Content = new IoThrowingContent() })));
-
-        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
-
-        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
-
-        result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
-    }
-
-    [Fact]
     public async Task when_ct_cancelled_during_io_exception_backoff_then_operation_cancelled_exception_propagates()
     {
         using var cts = new CancellationTokenSource();

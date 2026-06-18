@@ -22,7 +22,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public string AccountId => account.Id.Id;
     public string DisplayName => account.Profile.DisplayName;
     public string Email => account.Profile.Email;
-    public string AccentHex => Accounts.AccountCardViewModel.PaletteHex(account.AccentIndex);
+    public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
     public Avalonia.Media.Color AccentColor => Avalonia.Media.Color.Parse(AccentHex);
 
     public long QuotaTotal => account.Quota.TotalBytes;

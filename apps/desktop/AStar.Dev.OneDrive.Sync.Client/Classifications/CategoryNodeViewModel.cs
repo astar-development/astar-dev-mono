@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -77,7 +78,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     {
         int childLevel = Level + 1;
         var placeholder = new FileClassificationCategoryId(0);
-        string trimmedName = NewChildCategoryName.Trim();
+        string trimmedName = NewChildCategoryName.Trim().ToTitleCase();
 
         await FileClassificationCategoryFactory.Create(placeholder, trimmedName, childLevel, Option.Some(CategoryId))
             .Match(category => AddValidatedChildCategoryAsync(category, trimmedName, childLevel), _ => Task.CompletedTask)

@@ -24,19 +24,19 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public async Task when_save_command_executed_with_valid_value_then_repository_update_called()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
         sut.Value = "dogs";
         sut.IsEditing = true;
 
         await sut.SaveCommand.ExecuteAsync(null);
 
-        await repository.Received(1).UpdateKeywordAsync(1, Arg.Is<FileClassificationKeyword>(k => k.Value == "dogs"), Arg.Any<CancellationToken>());
+        await repository.Received(1).UpdateKeywordAsync(1, Arg.Is<FileClassificationKeyword>(k => k.Value == "Dogs"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_save_command_executed_with_valid_value_then_is_editing_set_to_false()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
         sut.Value = "dogs";
         sut.IsEditing = true;
 
@@ -48,7 +48,7 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public async Task when_save_command_executed_with_empty_value_then_repository_not_called()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
         sut.Value = string.Empty;
 
         await sut.SaveCommand.ExecuteAsync(null);
@@ -59,7 +59,7 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public async Task when_save_command_executed_with_empty_value_then_is_editing_unchanged()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
         sut.IsEditing = true;
         sut.Value = string.Empty;
 
@@ -71,7 +71,7 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public void when_cancel_command_executed_then_value_restored_to_original()
     {
-        KeywordRowViewModel sut = CreateSut(repository, value: "cats");
+        var sut = CreateSut(repository, value: "cats");
         sut.Value = "changed";
 
         sut.CancelCommand.Execute(null);
@@ -82,7 +82,7 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public void when_cancel_command_executed_then_is_editing_set_to_false()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
         sut.IsEditing = true;
 
         sut.CancelCommand.Execute(null);
@@ -93,7 +93,7 @@ public sealed class GivenAKeywordRowViewModel
     [Fact]
     public async Task when_delete_command_executed_then_repository_delete_called()
     {
-        KeywordRowViewModel sut = CreateSut(repository);
+        var sut = CreateSut(repository);
 
         await sut.DeleteCommand.ExecuteAsync(null);
 
