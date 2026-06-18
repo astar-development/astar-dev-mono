@@ -87,6 +87,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         {
             Name = category.Name.ToTitleCase(),
             Level = category.Level,
+            IsFamous = category.IsFamous,
+            IsInternet = category.IsInternet,
             ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
         };
 
@@ -108,6 +110,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         entity.Name = category.Name.ToTitleCase();
         entity.Level = category.Level;
+        entity.IsFamous = category.IsFamous;
+        entity.IsInternet = category.IsInternet;
         entity.ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null);
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

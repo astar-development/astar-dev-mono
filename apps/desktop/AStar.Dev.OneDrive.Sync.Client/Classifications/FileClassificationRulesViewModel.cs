@@ -82,7 +82,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
             foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
-                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, repository, self => RemoveFromParent(self, nodeDict));
+                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, category.ParentId, repository, self => RemoveFromParent(self, nodeDict));
                 nodeDict[category.Id] = node;
             }
 
@@ -161,7 +161,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .TapAsync(newId =>
             {
-                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, repository, self => Categories.Remove(self));
+                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), repository, self => Categories.Remove(self));
                 Categories.Add(newNode);
             })
             .TapAsync(async _ =>
