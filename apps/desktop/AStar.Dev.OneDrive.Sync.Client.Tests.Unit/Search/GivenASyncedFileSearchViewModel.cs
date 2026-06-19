@@ -188,14 +188,34 @@ public sealed class GivenASyncedFileSearchViewModel
     }
 
     [Fact]
-    public async Task when_set_active_account_is_called_then_available_tags_are_populated_from_repository()
+    public void when_set_active_account_is_called_then_repository_is_not_called()
     {
-        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([]);
-        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video", "Document"]);
         var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
 
         sut.SetActiveAccount(TestAccountId);
-        await Task.Yield();
+
+        _ = repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public void when_set_active_account_is_called_then_available_tags_remain_empty()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+
+        sut.SetActiveAccount(TestAccountId);
+
+        sut.AvailableTags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_then_available_tags_are_populated_from_repository()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video", "Document"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
 
         sut.AvailableTags.ShouldContain("Image");
         sut.AvailableTags.ShouldContain("Video");
@@ -203,14 +223,72 @@ public sealed class GivenASyncedFileSearchViewModel
     }
 
     [Fact]
-    public async Task when_set_active_account_is_called_and_repository_returns_no_tags_then_available_tags_is_empty()
+    public async Task when_view_is_activated_with_no_active_account_then_repository_is_not_called()
     {
-        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([]);
-        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(Array.Empty<string>());
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        _ = repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_again_with_same_tag_count_then_available_tags_collection_is_not_rebuilt()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+        sut.AvailableTags.Add("ManualTag");
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.AvailableTags.ShouldContain("ManualTag");
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_again_with_more_tags_then_available_tags_are_updated()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>())
+            .Returns(["Image", "Video"], ["Image", "Video", "Document"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.AvailableTags.ShouldContain("Document");
+        sut.AvailableTags.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_account_changes_then_view_activation_loads_tags_for_new_account()
+    {
+        var secondAccountId = new AccountId("acc-2");
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image"]);
+        repository.GetDistinctTagNamesAsync(secondAccountId, Arg.Any<CancellationToken>()).Returns(["Video", "Audio"]);
         var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
 
         sut.SetActiveAccount(TestAccountId);
-        await Task.Yield();
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.SetActiveAccount(secondAccountId);
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.AvailableTags.ShouldContain("Video");
+        sut.AvailableTags.ShouldContain("Audio");
+        sut.AvailableTags.ShouldNotContain("Image");
+    }
+
+    [Fact]
+    public async Task when_account_changes_then_available_tags_are_cleared_immediately()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.SetActiveAccount(new AccountId("acc-2"));
 
         sut.AvailableTags.ShouldBeEmpty();
     }

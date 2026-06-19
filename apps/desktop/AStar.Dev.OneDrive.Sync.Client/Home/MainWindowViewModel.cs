@@ -104,6 +104,12 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
+    partial void OnActiveSectionChanged(NavSection value)
+    {
+        if (value == NavSection.Search)
+            _ = search.OnViewActivatedAsync(CancellationToken.None);
+    }
+
     public object? ActiveView => ActiveSection switch
     {
         NavSection.Dashboard => DashboardViewInstance,
