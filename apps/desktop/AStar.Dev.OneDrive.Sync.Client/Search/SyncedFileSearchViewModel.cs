@@ -15,6 +15,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
 {
     private readonly IAccountRepository accountRepository = accountRepository;
     private AccountId? activeAccountId;
+    private int cachedTagCount;
 
     [ObservableProperty]
     public partial string? NameFragment { get; set; }
@@ -95,10 +96,40 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             SelectedTags.Add(tag);
     }
 
+    /// <summary>
+    /// Records the active account and clears the tag cache.
+    /// Tags are not loaded here — they load lazily on the first call to <see cref="OnViewActivatedAsync"/>.
+    /// </summary>
     public void SetActiveAccount(AccountId accountId)
     {
         activeAccountId = accountId;
-        _ = LoadAvailableTagsAsync(accountId);
+        cachedTagCount = 0;
+        dispatcher.Post(AvailableTags.Clear);
+    }
+
+    /// <summary>
+    /// Loads available tags from the repository when the search view is activated.
+    /// On subsequent activations the collection is only rebuilt when the tag count has grown,
+    /// avoiding redundant UI mutations when nothing has changed.
+    /// </summary>
+    public async Task OnViewActivatedAsync(CancellationToken ct)
+    {
+        if (activeAccountId is null)
+            return;
+
+        var tags = await repository.GetDistinctTagNamesAsync(activeAccountId.Value, ct).ConfigureAwait(false);
+
+        if (tags.Count <= cachedTagCount)
+            return;
+
+        cachedTagCount = tags.Count;
+
+        dispatcher.Post(() =>
+        {
+            AvailableTags.Clear();
+            foreach (string tag in tags)
+                AvailableTags.Add(tag);
+        });
     }
 
     [RelayCommand]
@@ -149,16 +180,4 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         3 => SearchSortOrder.SizeDescending,
         _ => SearchSortOrder.NameAscending
     };
-
-    private async Task LoadAvailableTagsAsync(AccountId accountId)
-    {
-        var tags = await repository.GetDistinctTagNamesAsync(accountId, CancellationToken.None).ConfigureAwait(false);
-
-        dispatcher.Post(() =>
-        {
-            AvailableTags.Clear();
-            foreach (string tag in tags)
-                AvailableTags.Add(tag);
-        });
-    }
 }
