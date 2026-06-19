@@ -23,11 +23,12 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override object OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
 
-        optionsBuilder.UseAsyncSeeding(async (context, _, cancellationToken) =>
+        optionsBuilder
+            .UseAsyncSeeding(async (context, _, cancellationToken) =>
             {
                 if (!await context.Set<FileClassificationCategoryEntity>().AnyAsync(cancellationToken))
                 {
@@ -41,6 +42,15 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
                     await context.Set<FileClassificationCategoryEntity>().AddRangeAsync(classifications, cancellationToken);
                     await context.SaveChangesAsync(cancellationToken);
+                }
+            })
+            .UseSeeding((context, _) =>
+            {
+                var classification = context.Set<FileClassificationCategoryEntity>().FirstOrDefault(b => b.Name == "Colour");
+                if (classification == null)
+                {
+                    context.Set<FileClassificationCategoryEntity>().Add(new FileClassificationCategoryEntity { Name = "Colour" });
+                    context.SaveChanges();
                 }
             });
     }
