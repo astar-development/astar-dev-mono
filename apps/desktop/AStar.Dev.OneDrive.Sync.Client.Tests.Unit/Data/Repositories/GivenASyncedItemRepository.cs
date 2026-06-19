@@ -470,4 +470,93 @@ public sealed class GivenASyncedItemRepository
         tags.ShouldContain("Image");
         tags.ShouldContain("Video");
     }
+
+    [Fact]
+    public async Task when_upsert_with_classifications_is_called_for_new_item_then_item_and_classifications_are_persisted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var catA = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var catB = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.AddRange(catA, catB);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var newItem = FileItem(remotePath: "/photo.jpg");
+
+        var syncedItemId = await repository.UpsertWithClassificationsAsync(newItem, [catA.Id, catB.Id], TestContext.Current.CancellationToken);
+
+        var persistedItem = db.SyncedItems.FirstOrDefault(i => i.Id == syncedItemId);
+        persistedItem.ShouldNotBeNull();
+        persistedItem.RemotePath.ShouldBe("/photo.jpg");
+        var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == syncedItemId).ToList();
+        rows.Count.ShouldBe(2);
+        rows.ShouldContain(r => r.CategoryId == catA.Id);
+        rows.ShouldContain(r => r.CategoryId == catB.Id);
+    }
+
+    [Fact]
+    public async Task when_upsert_with_classifications_is_called_for_existing_item_then_item_is_updated_and_classifications_replaced()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var catOld = new FileClassificationCategoryEntity { Name = "OldCat", Level = 1 };
+        var catNew = new FileClassificationCategoryEntity { Name = "NewCat", Level = 1 };
+        var existingItem = FileItem(remotePath: "/original.jpg");
+        db.FileClassificationCategories.AddRange(catOld, catNew);
+        db.SyncedItems.Add(existingItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = existingItem.Id, CategoryId = catOld.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var updatedItem = new SyncedItemEntity
+        {
+            AccountId = existingItem.AccountId,
+            RemoteItemId = existingItem.RemoteItemId,
+            RemotePath = "/updated.jpg",
+            LocalPath = existingItem.LocalPath,
+            IsFolder = existingItem.IsFolder,
+            RemoteModifiedAt = DateTimeOffset.UtcNow,
+            SizeInBytes = existingItem.SizeInBytes
+        };
+
+        var syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [catNew.Id], TestContext.Current.CancellationToken);
+
+        db.ChangeTracker.Clear();
+        var persistedItem = db.SyncedItems.Find(syncedItemId);
+        persistedItem.ShouldNotBeNull();
+        persistedItem.RemotePath.ShouldBe("/updated.jpg");
+        var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == syncedItemId).ToList();
+        rows.Count.ShouldBe(1);
+        rows[0].CategoryId.ShouldBe(catNew.Id);
+    }
+
+    [Fact]
+    public async Task when_upsert_with_classifications_is_called_with_empty_category_list_then_item_is_persisted_with_no_classifications()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var catOld = new FileClassificationCategoryEntity { Name = "OldCat", Level = 1 };
+        var existingItem = FileItem(remotePath: "/file.txt");
+        db.FileClassificationCategories.Add(catOld);
+        db.SyncedItems.Add(existingItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity { SyncedItemId = existingItem.Id, CategoryId = catOld.Id });
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var updatedItem = new SyncedItemEntity
+        {
+            AccountId = existingItem.AccountId,
+            RemoteItemId = existingItem.RemoteItemId,
+            RemotePath = existingItem.RemotePath,
+            LocalPath = existingItem.LocalPath,
+            IsFolder = existingItem.IsFolder,
+            RemoteModifiedAt = DateTimeOffset.UtcNow,
+            SizeInBytes = existingItem.SizeInBytes
+        };
+
+        var syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [], TestContext.Current.CancellationToken);
+
+        var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == syncedItemId).ToList();
+        rows.ShouldBeEmpty();
+    }
 }
