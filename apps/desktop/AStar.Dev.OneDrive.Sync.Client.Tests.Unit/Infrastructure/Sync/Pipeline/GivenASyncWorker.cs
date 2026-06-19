@@ -91,6 +91,32 @@ public sealed class GivenASyncWorker
     }
 
     [Fact]
+    public async Task when_handler_succeeds_then_in_progress_state_is_never_written()
+    {
+        var job = MakeDownloadJob();
+        _handler.CanHandle(job).Returns(true);
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncJob, string>.Ok(job));
+
+        await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
+
+        await _syncRepository.DidNotReceive().UpdateJobStateAsync(job.Status.Id, SyncJobState.InProgress, Arg.Any<Option<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_handler_succeeds_then_exactly_one_state_update_is_written()
+    {
+        var job = MakeDownloadJob();
+        _handler.CanHandle(job).Returns(true);
+        _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
+            .Returns(new Result<SyncJob, string>.Ok(job));
+
+        await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
+
+        await _syncRepository.Received(1).UpdateJobStateAsync(Arg.Any<Guid>(), Arg.Any<SyncJobState>(), Arg.Any<Option<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task when_handler_fails_then_job_state_set_to_failed()
     {
         var job = MakeDownloadJob();
