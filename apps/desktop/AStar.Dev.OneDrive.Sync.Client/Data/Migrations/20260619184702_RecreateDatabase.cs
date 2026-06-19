@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations;
 
 /// <inheritdoc />
-public partial class InitialCreate : Migration
+public partial class RecreateDatabase : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +26,32 @@ public partial class InitialCreate : Migration
                 ConflictPolicy = table.Column<int>(type: "INTEGER", nullable: false),
                 LocalSyncPath = table.Column<string>(type: "TEXT", nullable: false)
             },
-            constraints: table => table.PrimaryKey("PK_Accounts", x => x.Id));
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_Accounts", x => x.Id);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "FileClassificationCategories",
+            columns: table => new
+            {
+                Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    .Annotation("Sqlite:Autoincrement", true),
+                Name = table.Column<string>(type: "TEXT", nullable: false),
+                Level = table.Column<int>(type: "INTEGER", nullable: false),
+                ParentId = table.Column<int>(type: "INTEGER", nullable: true),
+                IsFamous = table.Column<bool>(type: "INTEGER", nullable: false),
+                IsInternet = table.Column<bool>(type: "INTEGER", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_FileClassificationCategories", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_FileClassificationCategories_FileClassificationCategories_ParentId",
+                    column: x => x.ParentId,
+                    principalTable: "FileClassificationCategories",
+                    principalColumn: "Id");
+            });
 
         migrationBuilder.CreateTable(
             name: "DriveStates",
@@ -92,7 +118,8 @@ public partial class InitialCreate : Migration
                 IsFolder = table.Column<bool>(type: "INTEGER", nullable: false),
                 RemoteModifiedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
                 ETag = table.Column<string>(type: "TEXT", nullable: true),
-                CTag = table.Column<string>(type: "TEXT", nullable: true)
+                CTag = table.Column<string>(type: "TEXT", nullable: true),
+                SizeInBytes = table.Column<long>(type: "INTEGER", nullable: true)
             },
             constraints: table =>
             {
@@ -157,6 +184,32 @@ public partial class InitialCreate : Migration
                     onDelete: ReferentialAction.Cascade);
             });
 
+        migrationBuilder.CreateTable(
+            name: "SyncedItemFileClassifications",
+            columns: table => new
+            {
+                Id = table.Column<int>(type: "INTEGER", nullable: false)
+                    .Annotation("Sqlite:Autoincrement", true),
+                SyncedItemId = table.Column<int>(type: "INTEGER", nullable: false),
+                CategoryId = table.Column<int>(type: "INTEGER", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_SyncedItemFileClassifications", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_SyncedItemFileClassifications_FileClassificationCategories_CategoryId",
+                    column: x => x.CategoryId,
+                    principalTable: "FileClassificationCategories",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+                table.ForeignKey(
+                    name: "FK_SyncedItemFileClassifications_SyncedItems_SyncedItemId",
+                    column: x => x.SyncedItemId,
+                    principalTable: "SyncedItems",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Cascade);
+            });
+
         migrationBuilder.CreateIndex(
             name: "IX_DriveStates_AccountId",
             table: "DriveStates",
@@ -164,9 +217,31 @@ public partial class InitialCreate : Migration
             unique: true);
 
         migrationBuilder.CreateIndex(
+            name: "IX_FileClassificationCategories_Name",
+            table: "FileClassificationCategories",
+            column: "Name");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_FileClassificationCategories_ParentId_Name",
+            table: "FileClassificationCategories",
+            columns: ["ParentId", "Name"],
+            unique: true);
+
+        migrationBuilder.CreateIndex(
             name: "IX_SyncConflicts_AccountId_State",
             table: "SyncConflicts",
             columns: ["AccountId", "State"]);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_SyncedItemFileClassifications_CategoryId",
+            table: "SyncedItemFileClassifications",
+            column: "CategoryId");
+
+        migrationBuilder.CreateIndex(
+            name: "IX_SyncedItemFileClassifications_SyncedItemId_CategoryId",
+            table: "SyncedItemFileClassifications",
+            columns: ["SyncedItemId", "CategoryId"],
+            unique: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_SyncedItems_AccountId_LocalPath",
@@ -178,6 +253,11 @@ public partial class InitialCreate : Migration
             table: "SyncedItems",
             columns: ["AccountId", "RemoteItemId"],
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_SyncedItems_AccountId_SizeInBytes",
+            table: "SyncedItems",
+            columns: ["AccountId", "SizeInBytes"]);
 
         migrationBuilder.CreateIndex(
             name: "IX_SyncJobs_AccountId_State",
@@ -201,13 +281,19 @@ public partial class InitialCreate : Migration
             name: "SyncConflicts");
 
         migrationBuilder.DropTable(
-            name: "SyncedItems");
+            name: "SyncedItemFileClassifications");
 
         migrationBuilder.DropTable(
             name: "SyncJobs");
 
         migrationBuilder.DropTable(
             name: "SyncRules");
+
+        migrationBuilder.DropTable(
+            name: "FileClassificationCategories");
+
+        migrationBuilder.DropTable(
+            name: "SyncedItems");
 
         migrationBuilder.DropTable(
             name: "Accounts");

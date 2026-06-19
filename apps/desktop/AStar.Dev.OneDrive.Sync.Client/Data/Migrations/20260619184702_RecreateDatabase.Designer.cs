@@ -12,14 +12,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260616084333_Indexes")]
-    partial class Indexes
+    [Migration("20260619184702_RecreateDatabase")]
+    partial class RecreateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountEntity", b =>
                 {
@@ -112,6 +112,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsFamous")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInternet")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Level")
                         .HasColumnType("INTEGER");
 
@@ -130,32 +136,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("FileClassificationCategories");
-                });
-
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationKeywordEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsSpecial")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Keyword")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Keyword");
-
-                    b.HasIndex("CategoryId", "Keyword")
-                        .IsUnique();
-
-                    b.ToTable("FileClassificationKeywords");
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncConflictEntity", b =>
@@ -305,45 +285,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.ToTable("SyncRules");
                 });
 
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemClassificationEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsSpecial")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Level1")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Level2")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Level3")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SyncedItemId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("TagName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Level1");
-
-                    b.HasIndex("Level2");
-
-                    b.HasIndex("Level3");
-
-                    b.HasIndex("SyncedItemId");
-
-                    b.ToTable("SyncedItemClassifications");
-                });
-
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -391,6 +332,28 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.ToTable("SyncedItems");
                 });
 
+            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemFileClassificationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SyncedItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("SyncedItemId", "CategoryId")
+                        .IsUnique();
+
+                    b.ToTable("SyncedItemFileClassifications");
+                });
+
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.DriveStateEntity", b =>
                 {
                     b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountEntity", "Account")
@@ -405,22 +368,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", b =>
                 {
                     b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", "Parent")
-                        .WithMany("Children")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .WithMany()
+                        .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationKeywordEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", "Category")
-                        .WithMany("Keywords")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncConflictEntity", b =>
@@ -454,17 +405,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemClassificationEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemEntity", "SyncedItem")
-                        .WithMany()
-                        .HasForeignKey("SyncedItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SyncedItem");
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemEntity", b =>
@@ -502,11 +442,23 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", b =>
+            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemFileClassificationEntity", b =>
                 {
-                    b.Navigation("Children");
+                    b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("Keywords");
+                    b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemEntity", "SyncedItem")
+                        .WithMany()
+                        .HasForeignKey("SyncedItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("SyncedItem");
                 });
 #pragma warning restore 612, 618
         }
