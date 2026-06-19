@@ -63,6 +63,32 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task<int> UpsertWithClassificationsAsync(SyncedItemEntity item, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+
+        int syncedItemId = await UpsertInContextAsync(db, item, cancellationToken).ConfigureAwait(false);
+
+        _ = await db.SyncedItemFileClassifications
+                   .Where(c => c.SyncedItemId == syncedItemId)
+                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        var classificationEntities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
+        {
+            SyncedItemId = syncedItemId,
+            CategoryId   = categoryId
+        });
+
+        db.SyncedItemFileClassifications.AddRange(classificationEntities);
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+
+        return syncedItemId;
+    }
+
     public async Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -162,6 +188,31 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             .Distinct()
             .OrderBy(name => name)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
+
         return categories;
+    }
+
+    private static async Task<int> UpsertInContextAsync(AppDbContext db, SyncedItemEntity item, CancellationToken cancellationToken)
+    {
+        var existing = await db.SyncedItems
+            .FirstOrDefaultAsync(i => i.AccountId == item.AccountId && i.RemoteItemId == item.RemoteItemId, cancellationToken).ConfigureAwait(false);
+
+        if (existing is null)
+        {
+            _ = db.SyncedItems.Add(item);
+            _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return item.Id;
+        }
+
+        existing.RemoteParentId   = item.RemoteParentId;
+        existing.RemotePath       = item.RemotePath;
+        existing.LocalPath        = item.LocalPath;
+        existing.IsFolder         = item.IsFolder;
+        existing.RemoteModifiedAt = item.RemoteModifiedAt;
+        existing.Tags             = item.Tags;
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return existing.Id;
     }
 }

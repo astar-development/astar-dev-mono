@@ -37,7 +37,7 @@ public sealed class GivenASyncJobExecutor
     {
         _fileClassificationRepository = Substitute.For<IFileClassificationRepository>();
         _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
+        _syncedItemRepository.UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<int>>([1]));
         _settingsService.Current.Returns(new AppSettings());
 
@@ -174,14 +174,12 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-1"), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task when_pipeline_completes_download_job_successfully_then_classifications_are_upserted()
+    public async Task when_pipeline_completes_download_job_successfully_then_classifications_are_upserted_atomically()
     {
-        const int syncedItemId = 99;
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
         var job = MakeJob("item-1", SyncDirection.Download);
         SimulateJobCompleted(job.Complete());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -189,14 +187,12 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertFileClassificationsAsync(syncedItemId, Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_pipeline_completes_download_job_with_matching_rule_then_matched_classification_is_persisted()
     {
-        const int syncedItemId = 55;
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
         IReadOnlyList<FileClassificationCategory> mappings =
         [
             ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
@@ -215,8 +211,6 @@ public sealed class GivenASyncJobExecutor
     [Fact]
     public async Task when_pipeline_completes_download_job_with_colour_in_path_then_auto_categoriser_classification_is_persisted()
     {
-        const int syncedItemId = 42;
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
         var job = MakeJob("item-1", SyncDirection.Download, relativePath: ColourDownloadRelativePath);
         SimulateJobCompleted(job.Complete());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -230,8 +224,6 @@ public sealed class GivenASyncJobExecutor
     [Fact]
     public async Task when_pipeline_completes_upload_job_with_colour_in_path_then_auto_categoriser_classification_is_persisted()
     {
-        const int syncedItemId = 43;
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(ColourUploadLocalPath).Which(m => m.HasStringContent("data"));
         var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, localPath: ColourUploadLocalPath, relativePath: ColourUploadRelativePath);
@@ -256,14 +248,12 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task when_pipeline_completes_upload_job_successfully_then_classifications_are_upserted()
+    public async Task when_pipeline_completes_upload_job_successfully_then_classifications_are_upserted_atomically()
     {
-        const int syncedItemId = 77;
-        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(syncedItemId));
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(UploadFilePath).Which(m => m.HasStringContent("data"));
         var job = (UploadSyncJob)MakeJob("item-1", SyncDirection.Upload, UploadFilePath);
@@ -273,7 +263,7 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertFileClassificationsAsync(syncedItemId, Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -311,7 +301,7 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.DidNotReceive().UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.DidNotReceive().UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
