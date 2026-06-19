@@ -16,6 +16,11 @@ public sealed class GivenAnAppDbContext : IDisposable
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options;
         context = new AppDbContext(options);
         context.Database.EnsureCreated();
+        foreach(var classification in context.FileClassificationCategories)
+        {
+            context.FileClassificationCategories.Remove(classification);
+        }
+        context.SaveChanges();
     }
 
     public void Dispose()
