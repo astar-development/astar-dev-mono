@@ -23,7 +23,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 
-    protected override object OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
 
