@@ -13,7 +13,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 public sealed class GivenASyncedItemRegistrar
 {
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
-    private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
     private readonly IDirectory _mockDirectory = Substitute.For<IDirectory>();
     private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
     private readonly IFileAutoCategorisor _fileAutoCategorisor = Substitute.For<IFileAutoCategorisor>();
@@ -22,19 +21,11 @@ public sealed class GivenASyncedItemRegistrar
     public GivenASyncedItemRegistrar()
     {
         _fileSystem.Directory.Returns(_mockDirectory);
-        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
         _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false, false));
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<int>>([]));
     }
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService);
-
-    private SyncedItemRegistrar CreateSutWithMappings(IReadOnlyList<FileClassificationCategory> mappings)
-    {
-        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(mappings));
-
-        return new(_syncedItemRepository, _classificationRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService);
-    }
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService);
 
     private static FileClassificationCategory KeywordMap(string name, int level)
         => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), name, level, false, false, Option.None<FileClassificationCategoryId>())).Value;
@@ -89,7 +80,7 @@ public sealed class GivenASyncedItemRegistrar
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, [], TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-phantom"), Arg.Any<CancellationToken>());
     }
@@ -101,7 +92,7 @@ public sealed class GivenASyncedItemRegistrar
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, [], TestContext.Current.CancellationToken);
 
         syncedItems.ShouldContainKey("item-phantom");
     }
@@ -111,11 +102,12 @@ public sealed class GivenASyncedItemRegistrar
     {
         const int entityId = 42;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
+        var sut = CreateSut();
         var item = FileItem("file-1", "/photos/beach.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("photos", 1)];
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, mappings, TestContext.Current.CancellationToken);
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(
             Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "photos")),
@@ -133,7 +125,7 @@ public sealed class GivenASyncedItemRegistrar
         var item = FileItem("file-1", "/photos/beach.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertFileClassificationsAsync(
             entityId,
@@ -146,11 +138,12 @@ public sealed class GivenASyncedItemRegistrar
     {
         const int entityId = 7;
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
-        var sut = CreateSutWithMappings([KeywordMap("spacecraft", 1)]);
+        var sut = CreateSut();
         var item = FileItem("file-2", "/docs/report.pdf");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("spacecraft", 1)];
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/docs/report.pdf", "/sync/docs/report.pdf", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/docs/report.pdf", "/sync/docs/report.pdf", syncedItems, mappings, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertFileClassificationsAsync(entityId, Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -159,12 +152,13 @@ public sealed class GivenASyncedItemRegistrar
     public async Task when_register_phantom_called_twice_then_upsert_file_classifications_is_called_each_time()
     {
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
-        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
+        var sut = CreateSut();
         var item = FileItem("file-3", "/photos/sunset.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("photos", 1)];
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/sunset.jpg", "/sync/photos/sunset.jpg", syncedItems, TestContext.Current.CancellationToken);
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/sunset.jpg", "/sync/photos/sunset.jpg", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/sunset.jpg", "/sync/photos/sunset.jpg", syncedItems, mappings, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/sunset.jpg", "/sync/photos/sunset.jpg", syncedItems, mappings, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(2).UpsertFileClassificationsAsync(Arg.Any<int>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -172,7 +166,7 @@ public sealed class GivenASyncedItemRegistrar
     [Fact]
     public async Task when_register_folder_called_then_upsert_file_classifications_is_not_called()
     {
-        var sut = CreateSutWithMappings([KeywordMap("photos", 1)]);
+        var sut = CreateSut();
         var item = FolderItem("folder-2", "/photos");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
@@ -188,7 +182,7 @@ public sealed class GivenASyncedItemRegistrar
         var item = FileItem("file-auto-1", "/Photos/a red car on the road.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
         _fileAutoCategorisor.Received(1).Categorise("/Photos/a red car on the road.jpg");
     }
@@ -205,7 +199,7 @@ public sealed class GivenASyncedItemRegistrar
         var item = FileItem("file-auto-2", "/Photos/a red car on the road.jpg");
         var syncedItems = new Dictionary<string, SyncedItemEntity>();
 
-        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, TestContext.Current.CancellationToken);
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertFileClassificationsAsync(
             entityId,
@@ -223,5 +217,22 @@ public sealed class GivenASyncedItemRegistrar
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Photos", "/sync/Photos", syncedItems, TestContext.Current.CancellationToken);
 
         _fileAutoCategorisor.DidNotReceive().Categorise(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task when_register_phantom_called_with_preloaded_mappings_then_classification_uses_those_mappings()
+    {
+        const int entityId = 50;
+        _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
+        var sut = CreateSut();
+        var item = FileItem("file-mapping", "/Videos/clip.mp4");
+        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("Videos", 1)];
+
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Videos/clip.mp4", "/sync/Videos/clip.mp4", syncedItems, mappings, TestContext.Current.CancellationToken);
+
+        await _categoryResolutionService.Received(1).ResolveManyAsync(
+            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Videos")),
+            Arg.Any<CancellationToken>());
     }
 }

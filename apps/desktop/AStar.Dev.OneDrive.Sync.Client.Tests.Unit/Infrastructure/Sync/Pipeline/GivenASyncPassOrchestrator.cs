@@ -18,22 +18,24 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline
 
 public sealed class GivenASyncPassOrchestrator
 {
-    private readonly IAccountRepository      _accountRepository      = Substitute.For<IAccountRepository>();
-    private readonly IDriveStateRepository   _driveStateRepository   = Substitute.For<IDriveStateRepository>();
-    private readonly IRemoteFolderEnumerator _remoteFolderEnumerator = Substitute.For<IRemoteFolderEnumerator>();
-    private readonly IRemoteDeletionDetector _remoteDeletionDetector = Substitute.For<IRemoteDeletionDetector>();
-    private readonly ILocalDeletionDetector  _localDeletionDetector  = Substitute.For<ILocalDeletionDetector>();
-    private readonly ILocalChangeDetector    _localChangeDetector    = Substitute.For<ILocalChangeDetector>();
-    private readonly ISyncJobExecutor        _syncJobExecutor        = Substitute.For<ISyncJobExecutor>();
-    private readonly IDownloadJobBuilder     _downloadJobBuilder     = Substitute.For<IDownloadJobBuilder>();
-    private readonly ILocalizationService    _localizationService    = Substitute.For<ILocalizationService>();
-    private readonly ISettingsService        _settingsService        = Substitute.For<ISettingsService>();
+    private readonly IAccountRepository           _accountRepository           = Substitute.For<IAccountRepository>();
+    private readonly IDriveStateRepository        _driveStateRepository        = Substitute.For<IDriveStateRepository>();
+    private readonly IRemoteFolderEnumerator      _remoteFolderEnumerator      = Substitute.For<IRemoteFolderEnumerator>();
+    private readonly IRemoteDeletionDetector      _remoteDeletionDetector      = Substitute.For<IRemoteDeletionDetector>();
+    private readonly ILocalDeletionDetector       _localDeletionDetector       = Substitute.For<ILocalDeletionDetector>();
+    private readonly ILocalChangeDetector         _localChangeDetector         = Substitute.For<ILocalChangeDetector>();
+    private readonly ISyncJobExecutor             _syncJobExecutor             = Substitute.For<ISyncJobExecutor>();
+    private readonly IDownloadJobBuilder          _downloadJobBuilder          = Substitute.For<IDownloadJobBuilder>();
+    private readonly ILocalizationService         _localizationService         = Substitute.For<ILocalizationService>();
+    private readonly ISettingsService             _settingsService             = Substitute.For<ISettingsService>();
+    private readonly IFileClassificationRepository _classificationRepository  = Substitute.For<IFileClassificationRepository>();
 
     public GivenASyncPassOrchestrator()
     {
         _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
         _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
         _settingsService.Current.Returns(new AppSettings { ConcurrentWorkerCount = 4 });
+        _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
     }
 
     private static IOptions<SyncSettings> SyncSettingsOptions
@@ -49,7 +51,7 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
@@ -81,7 +83,7 @@ public sealed class GivenASyncPassOrchestrator
             .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyStream());
-        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
@@ -95,7 +97,7 @@ public sealed class GivenASyncPassOrchestrator
             .Returns(Option.None<DriveStateEntity>());
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => new CallbackFiringStream(callInfo.ArgAt<Action<int>?>(3), callbackCount));
-        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
@@ -120,6 +122,19 @@ public sealed class GivenASyncPassOrchestrator
             Arg.Any<RemoteEnumerationContext>(),
             Arg.Any<Action<int>?>(),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_orchestrate_is_called_then_classification_categories_are_loaded_once()
+    {
+        SetupDeepSyncPrerequisites();
+
+        var sut     = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+
+        await _classificationRepository.Received(1).GetAllCategoriesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -304,7 +319,7 @@ public sealed class GivenASyncPassOrchestrator
         };
         bool callbackInvoked = false;
 
-        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<CancellationToken>())
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns(async args =>
             {
                 var callback = args.ArgAt<Func<SyncConflict, Task>>(5);
