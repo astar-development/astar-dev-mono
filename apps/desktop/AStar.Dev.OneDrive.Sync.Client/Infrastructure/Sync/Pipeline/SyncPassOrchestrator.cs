@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
-internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService) : ISyncPassOrchestrator
+internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, IFileClassificationRepository classificationRepository) : ISyncPassOrchestrator
 {
     public async Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default)
     {
@@ -79,9 +79,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         bool signaled = false;
         try
         {
+            var mappings = await classificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
+
             await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, ct).ConfigureAwait(false))
             {
-                var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, ct).ConfigureAwait(false);
+                var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, ct).ConfigureAwait(false);
                 if (job is not null)
                 {
                     await writer.WriteAsync(job, ct).ConfigureAwait(false);
