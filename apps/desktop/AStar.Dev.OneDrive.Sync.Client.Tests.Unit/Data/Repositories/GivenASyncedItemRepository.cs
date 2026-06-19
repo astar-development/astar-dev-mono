@@ -559,4 +559,67 @@ public sealed class GivenASyncedItemRepository
         var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == syncedItemId).ToList();
         rows.ShouldBeEmpty();
     }
+
+    [Fact]
+    public async Task when_delete_many_is_called_with_zero_ids_then_no_items_are_deleted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var item = FileItem(remotePath: "/file.txt");
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteManyByRemoteIdAsync(new AccountId("user-1"), [], TestContext.Current.CancellationToken);
+
+        db.SyncedItems.Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_delete_many_is_called_with_single_id_then_that_item_is_deleted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var item = FileItem(remotePath: "/file.txt");
+        db.SyncedItems.Add(item);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteManyByRemoteIdAsync(new AccountId("user-1"), [item.RemoteItemId], TestContext.Current.CancellationToken);
+
+        db.SyncedItems.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_delete_many_is_called_with_more_than_200_ids_then_all_matching_items_are_deleted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var items = Enumerable.Range(1, 250).Select(index => FileItem(remotePath: $"/file{index}.txt")).ToList();
+        db.SyncedItems.AddRange(items);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var idsToDelete = items.Select(item => item.RemoteItemId).ToList();
+
+        await repository.DeleteManyByRemoteIdAsync(new AccountId("user-1"), idsToDelete, TestContext.Current.CancellationToken);
+
+        db.SyncedItems.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_delete_many_is_called_then_only_matching_account_items_are_deleted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var itemForAccountOne = FileItem(accountId: "user-1", remotePath: "/file.txt");
+        var itemForAccountTwo = FileItem(accountId: "user-2", remotePath: "/other.txt");
+        db.SyncedItems.AddRange(itemForAccountOne, itemForAccountTwo);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteManyByRemoteIdAsync(new AccountId("user-1"), [itemForAccountOne.RemoteItemId], TestContext.Current.CancellationToken);
+
+        db.SyncedItems.Count().ShouldBe(1);
+        db.SyncedItems.Single().AccountId.ShouldBe(new AccountId("user-2"));
+    }
 }

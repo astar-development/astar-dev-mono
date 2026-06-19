@@ -8,6 +8,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFactory) : ISyncedItemRepository
 {
+    private const int DeleteChunkSize = 200;
+
     public async Task<Dictionary<string, SyncedItemEntity>> GetAllByAccountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
@@ -96,6 +98,25 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         _ = await db.SyncedItems
                    .Where(i => i.AccountId == accountId && i.RemoteItemId == remoteItemId)
                    .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteManyByRemoteIdAsync(AccountId accountId, IReadOnlyList<OneDriveItemId> remoteIds, CancellationToken cancellationToken)
+    {
+        if (remoteIds.Count == 0)
+            return;
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        for (int offset = 0; offset < remoteIds.Count; offset += DeleteChunkSize)
+        {
+            var chunk = remoteIds.Skip(offset).Take(DeleteChunkSize).ToList();
+
+            _ = await db.SyncedItems
+                       .Where(item => item.AccountId == accountId && chunk.Contains(item.RemoteItemId))
+                       .ExecuteDeleteAsync(cancellationToken)
+                       .ConfigureAwait(false);
+        }
     }
 
     public async Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken)
