@@ -24,8 +24,6 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
 
             OneDriveSyncClientMessages.SyncWorkerProcessing(logger, workerId, job.GetType().Name, job.Target.RelativePath);
 
-            await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.InProgress, Option.None<string>(), ct).ConfigureAwait(false);
-
             var currentJob = job;
             string? error = null;
             bool success = false;
