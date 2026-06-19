@@ -54,26 +54,26 @@
   <ItemGroup Label="AStar.Dev packages">
     <PackageVersion Include="AStar.Dev.Utilities" Version="1.6.8" />
     <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
-    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup Label="Core framework and hosting">
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Features" Version="9.0.8" />
     <PackageVersion Include="Microsoft.Identity.Web.DownstreamApi" Version="3.8.4" />
     <PackageVersion Include="Microsoft.Identity.Web.UI" Version="3.8.4" />
@@ -82,7 +82,7 @@
     <PackageVersion Include="Microsoft.Identity.Web.TokenAcquisition" Version="3.8.4" />
     <PackageVersion Include="Asp.Versioning.Mvc" Version="10.0.0" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.9" />
     <PackageVersion Include="Aspire.RabbitMQ.Client.v7" Version="9.4.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0" PrivateAssets="all" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" Version="1.1.2" />
@@ -115,14 +115,14 @@
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
   </ItemGroup>
   <ItemGroup Label="Data access">
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup Label="Authentication and security">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
@@ -134,7 +134,7 @@
     <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
   </ItemGroup>
   <ItemGroup Label="HTTP and API">
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />
     <PackageVersion Include="Microsoft.Kiota.Http.HttpClientLibrary" Version="1.22.2" />
     <PackageVersion Include="Microsoft.Kiota.Serialization.Json" Version="1.22.2" />
