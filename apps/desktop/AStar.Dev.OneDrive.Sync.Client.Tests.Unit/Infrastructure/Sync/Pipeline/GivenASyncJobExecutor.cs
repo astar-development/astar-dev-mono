@@ -105,7 +105,7 @@ public sealed class GivenASyncJobExecutor
     }
 
     [Fact]
-    public async Task when_jobs_are_provided_then_sync_repository_enqueue_job_is_called_once()
+    public async Task when_jobs_are_provided_then_sync_repository_enqueue_job_async_is_never_called()
     {
         var job = MakeJob("item-1", SyncDirection.Download);
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -113,7 +113,55 @@ public sealed class GivenASyncJobExecutor
 
         await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
-        await _syncRepository.Received(1).EnqueueJobAsync(Arg.Any<SyncJob>(), Arg.Any<CancellationToken>());
+        await _syncRepository.DidNotReceive().EnqueueJobAsync(Arg.Any<SyncJob>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_fewer_than_batch_size_jobs_are_provided_then_enqueue_jobs_is_called_once()
+    {
+        var jobs = Enumerable.Range(1, 5).Select(i => MakeJob($"item-{i}", SyncDirection.Download)).ToArray();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_exactly_batch_size_jobs_are_provided_then_enqueue_jobs_is_called_once()
+    {
+        var jobs = Enumerable.Range(1, 100).Select(i => MakeJob($"item-{i}", SyncDirection.Download)).ToArray();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_more_than_batch_size_jobs_are_provided_then_enqueue_jobs_is_called_multiple_times()
+    {
+        var jobs = Enumerable.Range(1, 101).Select(i => MakeJob($"item-{i}", SyncDirection.Download)).ToArray();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        await _syncRepository.Received(2).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_250_jobs_are_provided_then_enqueue_jobs_is_called_three_times()
+    {
+        var jobs = Enumerable.Range(1, 250).Select(i => MakeJob($"item-{i}", SyncDirection.Download)).ToArray();
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var sut = CreateSut(new MockFileSystem());
+
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+
+        await _syncRepository.Received(3).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

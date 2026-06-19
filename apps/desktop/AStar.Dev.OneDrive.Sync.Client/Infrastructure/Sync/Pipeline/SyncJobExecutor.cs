@@ -13,6 +13,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 /// <inheritdoc />
 public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService, IFileClassificationRepository fileClassificationRepository) : ISyncJobExecutor
 {
+    private const int EnqueueBatchSize = 100;
+
     /// <inheritdoc />
     public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
     {
@@ -73,15 +75,28 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
     private async IAsyncEnumerable<SyncJob> EnqueueAndYield(SyncJob first, IAsyncEnumerator<SyncJob> rest, [EnumeratorCancellation] CancellationToken ct = default)
     {
+        var batch = new List<SyncJob>(EnqueueBatchSize) { first };
+
         try
         {
-            await syncRepository.EnqueueJobAsync(first, ct).ConfigureAwait(false);
-            yield return first;
-
             while (await rest.MoveNextAsync().ConfigureAwait(false))
             {
-                await syncRepository.EnqueueJobAsync(rest.Current, ct).ConfigureAwait(false);
-                yield return rest.Current;
+                batch.Add(rest.Current);
+
+                if (batch.Count >= EnqueueBatchSize)
+                {
+                    await syncRepository.EnqueueJobsAsync(batch, ct).ConfigureAwait(false);
+                    foreach (var job in batch)
+                        yield return job;
+                    batch.Clear();
+                }
+            }
+
+            if (batch.Count > 0)
+            {
+                await syncRepository.EnqueueJobsAsync(batch, ct).ConfigureAwait(false);
+                foreach (var job in batch)
+                    yield return job;
             }
         }
         finally
