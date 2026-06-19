@@ -194,7 +194,7 @@ public sealed class GivenASyncedFileSearchViewModel
 
         sut.SetActiveAccount(TestAccountId);
 
-        repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
+        _ = repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -229,7 +229,7 @@ public sealed class GivenASyncedFileSearchViewModel
 
         await sut.OnViewActivatedAsync(CancellationToken.None);
 
-        repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
+        _ = repository.DidNotReceive().GetDistinctTagNamesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
