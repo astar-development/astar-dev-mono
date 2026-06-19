@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.7");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountEntity", b =>
                 {
@@ -76,7 +76,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.DriveStateEntity", b =>
@@ -100,7 +100,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.HasIndex("AccountId")
                         .IsUnique();
 
-                    b.ToTable("DriveStates");
+                    b.ToTable("DriveStates", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", b =>
@@ -132,36 +132,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.HasIndex("ParentId", "Name")
                         .IsUnique();
 
-                    b.ToTable("FileClassificationCategories");
-                });
-
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationKeywordEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsFamous")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsInternet")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Keyword")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Keyword");
-
-                    b.HasIndex("CategoryId", "Keyword")
-                        .IsUnique();
-
-                    b.ToTable("FileClassificationKeywords", (string)null);
+                    b.ToTable("FileClassificationCategories", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncConflictEntity", b =>
@@ -221,7 +192,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 
                     b.HasIndex("AccountId", "State");
 
-                    b.ToTable("SyncConflicts");
+                    b.ToTable("SyncConflicts", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncJobEntity", b =>
@@ -280,7 +251,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 
                     b.HasIndex("AccountId", "State");
 
-                    b.ToTable("SyncJobs");
+                    b.ToTable("SyncJobs", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncRuleEntity", b =>
@@ -308,7 +279,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.HasIndex("AccountId", "RemotePath")
                         .IsUnique();
 
-                    b.ToTable("SyncRules");
+                    b.ToTable("SyncRules", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemEntity", b =>
@@ -355,7 +326,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 
                     b.HasIndex("AccountId", "SizeInBytes");
 
-                    b.ToTable("SyncedItems");
+                    b.ToTable("SyncedItems", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncedItemFileClassificationEntity", b =>
@@ -377,7 +348,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                     b.HasIndex("SyncedItemId", "CategoryId")
                         .IsUnique();
 
-                    b.ToTable("SyncedItemFileClassifications");
+                    b.ToTable("SyncedItemFileClassifications", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.DriveStateEntity", b =>
@@ -398,17 +369,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
                         .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationKeywordEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.OneDrive.Sync.Client.Data.Entities.FileClassificationCategoryEntity", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Data.Entities.SyncConflictEntity", b =>
@@ -467,7 +427,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 
                             b1.HasKey("SyncedItemEntityId");
 
-                            b1.ToTable("SyncedItems");
+                            b1.ToTable("SyncedItems", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("SyncedItemEntityId");

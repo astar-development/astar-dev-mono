@@ -1,4 +1,6 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data;
@@ -13,12 +15,33 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<SyncedItemEntity> SyncedItems => Set<SyncedItemEntity>();
     public DbSet<SyncedItemFileClassificationEntity> SyncedItemFileClassifications => Set<SyncedItemFileClassificationEntity>();
     public DbSet<FileClassificationCategoryEntity> FileClassificationCategories => Set<FileClassificationCategoryEntity>();
-    // public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseSqliteFriendlyConversions();
 
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseAsyncSeeding(async (context, _, cancellationToken) =>
+            {
+                if (!await context.Set<FileClassificationCategoryEntity>().AnyAsync(cancellationToken))
+                {
+                    var classifications = new[]
+                    {
+                        new FileClassificationCategoryEntity
+                        {
+                            Id = 1, Name = "Colour", Level = 1, IsFamous = false, IsInternet = false
+                        }
+                    };
+
+                    await context.Set<FileClassificationCategoryEntity>().AddRangeAsync(classifications, cancellationToken);
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+            });
     }
 }
