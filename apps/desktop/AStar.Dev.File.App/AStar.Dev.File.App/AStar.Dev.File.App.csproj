@@ -17,6 +17,10 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
   <!--
     NU1608: CentralPackageTransitivePinningEnabled pins Microsoft.CodeAnalysis.CSharp.Workspaces
     to 5.0.0 (required by the source-generators project), which upgrades
