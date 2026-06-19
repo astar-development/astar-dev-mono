@@ -13,55 +13,55 @@ public sealed class CategoryResolutionService(IDbContextFactory<AppDbContext> db
     {
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var lookup = await BuildLookupAsync(context, cancellationToken).ConfigureAwait(false);
+        var entityLookup = await BuildEntityLookupAsync(context, cancellationToken).ConfigureAwait(false);
 
-        HashSet<int> leafIds = [];
+        List<FileClassificationCategoryEntity> leafEntities = [];
         foreach (var classification in classifications)
         {
-            int leafId = await ResolveClassificationAsync(context, lookup, classification, cancellationToken).ConfigureAwait(false);
-            _ = leafIds.Add(leafId);
+            var leaf = ResolveClassification(context, entityLookup, classification);
+            leafEntities.Add(leaf);
         }
 
-        return [..leafIds];
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return [.. leafEntities.Select(e => e.Id).Distinct()];
     }
 
-    private static async Task<Dictionary<(string Name, int Level, int? ParentId), int>> BuildLookupAsync(AppDbContext context, CancellationToken cancellationToken)
+    private static async Task<Dictionary<(string Name, int Level, FileClassificationCategoryEntity? Parent), FileClassificationCategoryEntity>> BuildEntityLookupAsync(AppDbContext context, CancellationToken cancellationToken)
     {
         var categories = await context.FileClassificationCategories
-            .AsNoTracking()
+            .Include(c => c.Parent)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return categories.ToDictionary(c => (c.Name, c.Level, c.ParentId), c => c.Id);
+        return categories.ToDictionary(c => (c.Name, c.Level, c.Parent));
     }
 
-    private static async Task<int> ResolveClassificationAsync(AppDbContext context, Dictionary<(string Name, int Level, int? ParentId), int> lookup, FileClassification classification, CancellationToken cancellationToken)
+    private static FileClassificationCategoryEntity ResolveClassification(AppDbContext context, Dictionary<(string Name, int Level, FileClassificationCategoryEntity? Parent), FileClassificationCategoryEntity> entityLookup, FileClassification classification)
     {
-        int level1Id = await ResolveNodeAsync(context, lookup, classification.Level1, 1, null, cancellationToken).ConfigureAwait(false);
+        var level1 = ResolveNode(context, entityLookup, classification.Level1, 1, null);
 
         if (classification.Level2 is not Option<string>.Some { Value: var level2Name })
-            return level1Id;
+            return level1;
 
-        int level2Id = await ResolveNodeAsync(context, lookup, level2Name, 2, level1Id, cancellationToken).ConfigureAwait(false);
+        var level2 = ResolveNode(context, entityLookup, level2Name, 2, level1);
 
         if (classification.Level3 is not Option<string>.Some { Value: var level3Name })
-            return level2Id;
+            return level2;
 
-        return await ResolveNodeAsync(context, lookup, level3Name, 3, level2Id, cancellationToken).ConfigureAwait(false);
+        return ResolveNode(context, entityLookup, level3Name, 3, level2);
     }
 
-    private static async Task<int> ResolveNodeAsync(AppDbContext context, Dictionary<(string Name, int Level, int? ParentId), int> lookup, string name, int level, int? parentId, CancellationToken cancellationToken)
+    private static FileClassificationCategoryEntity ResolveNode(AppDbContext context, Dictionary<(string Name, int Level, FileClassificationCategoryEntity? Parent), FileClassificationCategoryEntity> entityLookup, string name, int level, FileClassificationCategoryEntity? parent)
     {
-        var key = (name, level, parentId);
-        if (lookup.TryGetValue(key, out int existingId))
-            return existingId;
+        var key = (name, level, parent);
+        if (entityLookup.TryGetValue(key, out var existing))
+            return existing;
 
-        var entity = new FileClassificationCategoryEntity { Name = name, Level = level, ParentId = parentId };
+        var entity = new FileClassificationCategoryEntity { Name = name, Level = level, Parent = parent };
         context.FileClassificationCategories.Add(entity);
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        entityLookup[key] = entity;
 
-        lookup[key] = entity.Id;
-
-        return entity.Id;
+        return entity;
     }
 }
