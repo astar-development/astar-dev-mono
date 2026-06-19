@@ -15,6 +15,8 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
+        List<OneDriveItemId> successfullyDeletedIds = [];
+
         foreach (var (remoteId, knownItem) in syncedItems)
         {
             if (knownItem.IsFolder) continue;
@@ -28,11 +30,11 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
                 var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct).ConfigureAwait(false);
 
                 await deleteResult.MatchAsync(
-                    async _ =>
+                    _ =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorRemoteDeleted(logger, remoteId);
-                        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct).ConfigureAwait(false);
-                        return Unit.Default;
+                        successfullyDeletedIds.Add(knownItem.RemoteItemId);
+                        return Task.FromResult(Unit.Default);
                     },
                     deleteError =>
                     {
@@ -45,5 +47,8 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
                 OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, remoteId, ex.Message, ex);
             }
         }
+
+        if (successfullyDeletedIds.Count > 0)
+            await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, successfullyDeletedIds, ct).ConfigureAwait(false);
     }
 }

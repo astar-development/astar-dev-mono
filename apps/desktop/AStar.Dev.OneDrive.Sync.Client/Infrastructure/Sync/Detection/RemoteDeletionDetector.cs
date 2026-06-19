@@ -13,6 +13,8 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
     /// <inheritdoc />
     public async Task DetectAndApplyAsync(AccountId accountId, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct)
     {
+        List<OneDriveItemId> deletedRemoteIds = [];
+
         foreach (var (remoteId, knownItem) in syncedItems.ToList())
         {
             if (ct.IsCancellationRequested)
@@ -25,11 +27,20 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
                 continue;
 
             OneDriveSyncClientMessages.RemoteDeletionDetectorNotPresent(logger, knownItem.RemotePath);
-            await HandleRemoteDeleteAsync(accountId, knownItem, syncedItems, ct).ConfigureAwait(false);
+            DeleteLocalItem(knownItem);
+            deletedRemoteIds.Add(knownItem.RemoteItemId);
         }
+
+        if (deletedRemoteIds.Count == 0)
+            return;
+
+        await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, deletedRemoteIds, ct).ConfigureAwait(false);
+
+        foreach (var remoteId in deletedRemoteIds)
+            syncedItems.Remove(remoteId.Id);
     }
 
-    private async Task HandleRemoteDeleteAsync(AccountId accountId, SyncedItemEntity knownItem, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    private void DeleteLocalItem(SyncedItemEntity knownItem)
     {
         string localPath = knownItem.LocalPath;
 
@@ -49,8 +60,5 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
                 fileSystem.File.Delete(localPath);
             }
         }
-
-        await syncedItemRepository.DeleteByRemoteIdAsync(accountId, knownItem.RemoteItemId, ct).ConfigureAwait(false);
-        syncedItems.Remove(knownItem.RemoteItemId.Id);
     }
 }

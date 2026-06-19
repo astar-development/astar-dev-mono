@@ -57,7 +57,7 @@ public sealed class GivenALocalDeletionDetector
     }
 
     [Fact]
-    public async Task when_local_file_is_missing_then_synced_item_repository_delete_is_called()
+    public async Task when_local_file_is_missing_then_batch_delete_is_called_with_that_id()
     {
         var mockFileSystem = new MockFileSystem();
         var syncedItems = new Dictionary<string, SyncedItemEntity>
@@ -69,7 +69,24 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).DeleteByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<OneDriveItemId>(id => id.Id == "item-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Id == "item-1"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_multiple_local_files_are_missing_then_batch_delete_is_called_once_with_all_ids()
+    {
+        var mockFileSystem = new MockFileSystem();
+        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        {
+            ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/first.txt", LocalPath = $"{BaseDir}/first.txt", IsFolder = false },
+            ["item-2"] = new() { RemoteItemId = new OneDriveItemId("item-2"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false }
+        };
+        var sut = CreateSut(mockFileSystem);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 2), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -105,6 +122,7 @@ public sealed class GivenALocalDeletionDetector
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
 
         await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-ok"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Id == "item-ok"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -131,5 +149,22 @@ public sealed class GivenALocalDeletionDetector
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, cts.Token);
 
         await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-second"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_no_local_files_are_missing_then_batch_delete_is_not_called()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
+        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        {
+            ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
+        };
+        var sut = CreateSut(mockFileSystem);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+
+        await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.DidNotReceive().DeleteManyByRemoteIdAsync(Arg.Any<AccountId>(), Arg.Any<IReadOnlyList<OneDriveItemId>>(), Arg.Any<CancellationToken>());
     }
 }
