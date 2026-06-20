@@ -13,7 +13,7 @@ public interface ISyncPassOrchestrator
     /// <summary>
     /// Runs the full sync pass pipeline for <paramref name="account"/> using <paramref name="tokenFactory"/> for Graph API calls.
     /// <paramref name="syncConfig"/> is the unwrapped sync configuration, resolved by the caller before invoking this method.
-    /// Returns <see langword="true"/> when at least one sync rule was active; <see langword="false"/> when no folders were selected.
+    /// Returns a <see cref="SyncPassResult"/> indicating whether the pass ran and how many jobs failed.
     /// </summary>
-    Task<bool> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default);
+    Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default);
 }

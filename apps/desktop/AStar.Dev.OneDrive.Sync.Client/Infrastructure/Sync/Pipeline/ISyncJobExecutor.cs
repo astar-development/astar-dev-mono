@@ -14,6 +14,7 @@ public interface ISyncJobExecutor
     /// Streams <paramref name="jobs"/> through the parallel pipeline, enqueuing each to the repository
     /// as it arrives, and persists a <see cref="SyncedItemEntity"/> for each successfully completed download or upload.
     /// Progress and job-completion events are forwarded via the provided callbacks.
+    /// Returns the number of jobs that failed.
     /// </summary>
-    Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct);
+    Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct);
 }

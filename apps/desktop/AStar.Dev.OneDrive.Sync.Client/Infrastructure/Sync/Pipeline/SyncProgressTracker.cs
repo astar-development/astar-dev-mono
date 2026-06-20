@@ -17,10 +17,12 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
 {
     private readonly Lock lockObj = new();
     private int done;
+    private int failed;
     private int total = int.MaxValue;
     private bool totalized;
 
     internal int Done => done;
+    internal int FailedCount => failed;
 
     internal void SetTotal(int value)
     {
@@ -40,6 +42,8 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
         lock (lockObj)
         {
             done++;
+            if (!success)
+                failed++;
             completedSoFar = done;
             currentTotal = total;
             isTotalized = totalized;

@@ -59,7 +59,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
         try
         {
-            bool didRun = await syncPassOrchestrator.OrchestrateAsync(
+            var syncResult = await syncPassOrchestrator.OrchestrateAsync(
                 account,
                 syncConfig,
                 tokenFactory.GetTokenAsync,
@@ -72,8 +72,15 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 args => { JobCompleted?.Invoke(this, args); return Task.CompletedTask; },
                 ct).ConfigureAwait(false);
 
-            if (!didRun)
+            if (!syncResult.DidRun)
+            {
                 RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoFoldersSelected"), SyncState.Idle);
+            }
+            else if (syncResult.FailedJobCount > 0)
+            {
+                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Id.Id);
+                RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.CompletedWithErrors", syncResult.FailedJobCount), SyncState.Error);
+            }
             else
             {
                 OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Id.Id);

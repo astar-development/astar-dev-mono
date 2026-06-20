@@ -20,7 +20,10 @@ public sealed class GivenASyncServiceSyncingAnAccount
     private readonly ILocalizationService  _localizationService  = Substitute.For<ILocalizationService>();
 
     public GivenASyncServiceSyncingAnAccount()
-        => _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+    {
+        _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        _localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
+    }
 
     private SyncService CreateSut()
         => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService);
@@ -37,9 +40,9 @@ public sealed class GivenASyncServiceSyncingAnAccount
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
-    private void SetupOrchestratorReturns(bool didRun) =>
+    private void SetupOrchestratorReturns(bool didRun, int failedJobCount = 0) =>
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
-            .Returns(didRun);
+            .Returns(SyncPassResultFactory.Create(didRun, failedJobCount));
 
     [Fact]
     public async Task when_sync_starts_then_authenticating_progress_is_raised_before_auth_call()
@@ -133,7 +136,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<bool>(new OperationCanceledException()));
+            .Returns(Task.FromException<SyncPassResult>(new OperationCanceledException()));
 
         string? capturedMessage = null;
         SyncState? capturedState = null;
@@ -158,7 +161,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     {
         SetupAuthSuccess();
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<bool>(new InvalidOperationException("unexpected")));
+            .Returns(Task.FromException<SyncPassResult>(new InvalidOperationException("unexpected")));
 
         SyncState? capturedState = null;
         string? capturedMessage = null;
@@ -227,6 +230,30 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     [Fact]
+    public async Task when_orchestrator_returns_true_with_failed_jobs_then_completed_with_errors_localisation_key_is_raised_with_error_state()
+    {
+        SetupAuthSuccess();
+        SetupOrchestratorReturns(didRun: true, failedJobCount: 3);
+
+        string? capturedMessage = null;
+        SyncState? capturedState = null;
+        var sut = CreateSut();
+        sut.SyncProgressChanged += (_, args) =>
+        {
+            if(args.SyncState == SyncState.Error && args.CurrentFile == "Sync.CompletedWithErrors")
+            {
+                capturedMessage = args.CurrentFile;
+                capturedState = args.SyncState;
+            }
+        };
+
+        await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
+
+        capturedMessage.ShouldBe("Sync.CompletedWithErrors");
+        capturedState.ShouldBe(SyncState.Error);
+    }
+
+    [Fact]
     public async Task when_sync_completes_then_acquire_token_silent_is_called_exactly_once()
     {
         SetupAuthSuccess();
@@ -253,7 +280,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             Arg.Any<Action<SyncProgressEventArgs>>(),
             Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>())
-            .Returns(true);
+            .Returns(SyncPassResultFactory.Create(true, 0));
 
         var sut = CreateSut();
 
@@ -278,7 +305,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
             Arg.Any<Action<SyncProgressEventArgs>>(),
             Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>())
-            .Returns(true);
+            .Returns(SyncPassResultFactory.Create(true, 0));
 
         var sut = CreateSut();
 

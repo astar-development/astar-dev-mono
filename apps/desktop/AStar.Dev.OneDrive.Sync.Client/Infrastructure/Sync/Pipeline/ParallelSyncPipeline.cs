@@ -25,7 +25,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISyncRepository syncRepository, ILogger<ParallelSyncPipeline> logger, IOptions<SyncSettings> syncSettings) : ISyncPipeline
 {
     /// <inheritdoc />
-    public async Task RunAsync(IAsyncEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, string accountId, string folderId, int workerCount = 4, CancellationToken ct = default)
+    public async Task<int> RunAsync(IAsyncEnumerable<SyncJob> jobs, Func<CancellationToken, Task<string>> tokenFactory, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, string accountId, string folderId, int workerCount = 4, CancellationToken ct = default)
     {
         var tracker = new SyncProgressTracker(accountId, folderId, syncSettings.Value.ProgressReportInterval);
         var channel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
@@ -63,12 +63,15 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
         }
 
         if (enqueued == 0)
-            return;
+            return 0;
 
-        onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: tracker.Done, total: enqueued, currentFile: string.Empty, syncState: SyncState.Idle));
+        var finalSyncState = tracker.FailedCount > 0 ? SyncState.Error : SyncState.Idle;
+        onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: tracker.Done, total: enqueued, currentFile: string.Empty, syncState: finalSyncState));
         OneDriveSyncClientMessages.SyncPipelineFinalProgress(logger, tracker.Done, enqueued);
 
         await syncRepository.ClearCompletedJobsAsync(new AccountId(accountId), ct).ConfigureAwait(false);
         OneDriveSyncClientMessages.SyncPipelineJobsProcessed(logger, tracker.Done, enqueued);
+
+        return tracker.FailedCount;
     }
 }

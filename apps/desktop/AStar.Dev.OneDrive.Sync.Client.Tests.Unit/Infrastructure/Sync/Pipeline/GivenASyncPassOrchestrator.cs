@@ -148,9 +148,9 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        bool result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
-        result.ShouldBeFalse();
+        result.DidRun.ShouldBeFalse();
     }
 
     [Fact]
@@ -182,9 +182,9 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        bool result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
 
-        result.ShouldBeTrue();
+        result.DidRun.ShouldBeTrue();
     }
 
     [Fact]

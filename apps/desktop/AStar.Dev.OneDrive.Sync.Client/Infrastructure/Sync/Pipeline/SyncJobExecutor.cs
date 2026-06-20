@@ -16,7 +16,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
     private const int EnqueueBatchSize = 100;
 
     /// <inheritdoc />
-    public async Task ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
+    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
     {
         var enumerator = jobs.GetAsyncEnumerator(ct);
         bool hasFirst;
@@ -33,13 +33,13 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
         if (!hasFirst)
         {
             await enumerator.DisposeAsync().ConfigureAwait(false);
-            return;
+            return 0;
         }
 
         var mappings = await fileClassificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
         var firstJob = enumerator.Current;
 
-        await syncPipeline.RunAsync(
+        return await syncPipeline.RunAsync(
             EnqueueAndYield(firstJob, enumerator, ct),
             tokenFactory,
             onProgress,
