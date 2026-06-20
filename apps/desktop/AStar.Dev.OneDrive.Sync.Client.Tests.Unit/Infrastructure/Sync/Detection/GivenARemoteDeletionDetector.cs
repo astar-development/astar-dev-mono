@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public sealed class GivenARemoteDeletionDetector
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
@@ -41,7 +42,7 @@ public sealed class GivenARemoteDeletionDetector
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
@@ -57,7 +58,7 @@ public sealed class GivenARemoteDeletionDetector
     public async Task when_remote_id_absent_and_local_file_does_not_exist_then_no_exception_is_thrown()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/gone.txt", LocalPath = $"{BaseDir}/gone.txt", IsFolder = false }
         };
@@ -77,7 +78,7 @@ public sealed class GivenARemoteDeletionDetector
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Directory.CreateDirectory(localDir);
         mockFileSystem.Initialize().WithFile(childFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["folder-1"] = new() { RemoteItemId = new OneDriveItemId("folder-1"), RemotePath = "/subfolder", LocalPath = localDir, IsFolder = true }
         };
@@ -93,7 +94,7 @@ public sealed class GivenARemoteDeletionDetector
     public async Task when_remote_id_absent_then_batch_delete_is_called_with_that_id()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = $"{BaseDir}/file.txt", IsFolder = false }
         };
@@ -109,7 +110,7 @@ public sealed class GivenARemoteDeletionDetector
     public async Task when_multiple_remote_ids_absent_then_batch_delete_is_called_once_with_all_ids()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file1.txt", LocalPath = $"{BaseDir}/file1.txt", IsFolder = false },
             ["item-2"] = new() { RemoteItemId = new OneDriveItemId("item-2"), RemotePath = "/file2.txt", LocalPath = $"{BaseDir}/file2.txt", IsFolder = false }
@@ -126,7 +127,7 @@ public sealed class GivenARemoteDeletionDetector
     public async Task when_no_remote_ids_are_absent_then_batch_delete_is_not_called()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
@@ -143,7 +144,7 @@ public sealed class GivenARemoteDeletionDetector
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/Other/other.txt", LocalPath = LocalFile, IsFolder = false }
         };

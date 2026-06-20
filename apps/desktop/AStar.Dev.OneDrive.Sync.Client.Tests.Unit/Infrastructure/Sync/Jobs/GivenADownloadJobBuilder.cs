@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -44,7 +45,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-a", "/Other/a.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -56,9 +57,9 @@ public sealed class GivenADownloadJobBuilder
         var item = FolderItem("subfolder-1", "/Documents/Sub");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -68,7 +69,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FolderItem("subfolder-1", "/Documents/Sub");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -80,7 +81,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-a", "/Documents/a.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.ShouldBeOfType<DownloadSyncJob>();
@@ -103,7 +104,7 @@ public sealed class GivenADownloadJobBuilder
             Tags = VersionInfoFactory.Create("etag-123", Option.None<string>()),
             RemoteModifiedAt = DateTimeOffset.UtcNow.AddDays(-1)
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", etag: "etag-123");
@@ -131,7 +132,7 @@ public sealed class GivenADownloadJobBuilder
             LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var conflictsDetected = new List<SyncConflict>();
         var sut = CreateSut(mockFileSystem);
@@ -159,9 +160,9 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -179,9 +180,9 @@ public sealed class GivenADownloadJobBuilder
             ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
         ];
 
-        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, mappings, TestContext.Current.CancellationToken);
+        await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, mappings, TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Any<FileDeltaItem>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Dictionary<string, SyncedItemEntity>>(), Arg.Is<IReadOnlyList<FileClassificationCategory>>(m => m.Count == 1), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Any<FileDeltaItem>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Is<IReadOnlyList<FileClassificationCategory>>(m => m.Count == 1), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -195,7 +196,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -218,7 +219,7 @@ public sealed class GivenADownloadJobBuilder
             RemoteModifiedAt = remoteModified,
             Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified);
@@ -248,7 +249,7 @@ public sealed class GivenADownloadJobBuilder
             RemoteModifiedAt = storedRemoteModified,
             Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", lastModified: newRemoteModified);
@@ -267,7 +268,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-a", "/Documents/2024/report.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.Target.LocalPath.ShouldStartWith(BasePath);
@@ -280,7 +281,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-a", "/Documents/2024/report.txt");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.Target.LocalPath.ShouldNotBe(BasePath);
@@ -303,7 +304,7 @@ public sealed class GivenADownloadJobBuilder
             LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified);
@@ -332,7 +333,7 @@ public sealed class GivenADownloadJobBuilder
             LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified);
@@ -361,7 +362,7 @@ public sealed class GivenADownloadJobBuilder
             LocalPath = localFile,
             RemoteModifiedAt = remoteModified
         };
-        var syncedItems = new Dictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-a"] = knownItem };
 
         var sut = CreateSut(mockFileSystem);
         var item = FileItem("item-a", "/Documents/a.txt", lastModified: remoteModified);
@@ -379,7 +380,7 @@ public sealed class GivenADownloadJobBuilder
         var item = FileItem("item-a", "/Documents/a.txt", etag: "etag-from-delta");
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
 
-        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, [], _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
+        var result = await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.Metadata.VersionInfo.TryGetValue(out var vi).ShouldBeTrue();

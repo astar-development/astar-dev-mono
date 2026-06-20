@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -28,7 +29,7 @@ public sealed class GivenALocalDeletionDetector
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
@@ -44,7 +45,7 @@ public sealed class GivenALocalDeletionDetector
     public async Task when_local_file_is_missing_then_graph_delete_is_called()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/deleted.txt", LocalPath = $"{BaseDir}/deleted.txt", IsFolder = false }
         };
@@ -60,7 +61,7 @@ public sealed class GivenALocalDeletionDetector
     public async Task when_local_file_is_missing_then_batch_delete_is_called_with_that_id()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/deleted.txt", LocalPath = $"{BaseDir}/deleted.txt", IsFolder = false }
         };
@@ -76,7 +77,7 @@ public sealed class GivenALocalDeletionDetector
     public async Task when_multiple_local_files_are_missing_then_batch_delete_is_called_once_with_all_ids()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/first.txt", LocalPath = $"{BaseDir}/first.txt", IsFolder = false },
             ["item-2"] = new() { RemoteItemId = new OneDriveItemId("item-2"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false }
@@ -93,7 +94,7 @@ public sealed class GivenALocalDeletionDetector
     public async Task when_synced_item_is_a_folder_then_it_is_skipped()
     {
         var mockFileSystem = new MockFileSystem();
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["folder-1"] = new() { RemoteItemId = new OneDriveItemId("folder-1"), RemotePath = "/SubDir", LocalPath = $"{BaseDir}/SubDir", IsFolder = true }
         };
@@ -111,10 +112,10 @@ public sealed class GivenALocalDeletionDetector
         var mockFileSystem = new MockFileSystem();
         _graphService.When(x => x.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-fail"), Arg.Any<CancellationToken>()))
             .Throw(new HttpRequestException("network error"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-fail"] = new() { RemoteItemId = new OneDriveItemId("item-fail"), RemotePath = "/fail.txt", LocalPath = $"{BaseDir}/fail.txt", IsFolder = false },
-            ["item-ok"] = new() { RemoteItemId = new OneDriveItemId("item-ok"), RemotePath = "/ok.txt", LocalPath = $"{BaseDir}/ok.txt", IsFolder = false }
+            ["item-ok"]   = new() { RemoteItemId = new OneDriveItemId("item-ok"),   RemotePath = "/ok.txt",   LocalPath = $"{BaseDir}/ok.txt",   IsFolder = false }
         };
         var sut = CreateSut(mockFileSystem);
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -130,25 +131,29 @@ public sealed class GivenALocalDeletionDetector
     {
         using var cts = new CancellationTokenSource();
         var mockFileSystem = new MockFileSystem();
+        int callCount = 0;
 
-        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-first"), Arg.Any<CancellationToken>())
-            .Returns(callInfo =>
+        _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
             {
-                cts.Cancel();
+                if (Interlocked.Increment(ref callCount) == 1)
+                    cts.Cancel();
+
                 return new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default);
             });
 
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
-            ["item-first"]  = new() { RemoteItemId = new OneDriveItemId("item-first"),  RemotePath = "/first.txt",  LocalPath = $"{BaseDir}/first.txt",  IsFolder = false },
-            ["item-second"] = new() { RemoteItemId = new OneDriveItemId("item-second"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false }
+            ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/first.txt",  LocalPath = $"{BaseDir}/first.txt",  IsFolder = false },
+            ["item-2"] = new() { RemoteItemId = new OneDriveItemId("item-2"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false },
+            ["item-3"] = new() { RemoteItemId = new OneDriveItemId("item-3"), RemotePath = "/third.txt",  LocalPath = $"{BaseDir}/third.txt",  IsFolder = false }
         };
         var sut = CreateSut(mockFileSystem);
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, cts.Token);
 
-        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-second"), Arg.Any<CancellationToken>());
+        await _graphService.Received(1).DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -156,7 +161,7 @@ public sealed class GivenALocalDeletionDetector
     {
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(LocalFile).Which(m => m.HasStringContent("data"));
-        var syncedItems = new Dictionary<string, SyncedItemEntity>
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/file.txt", LocalPath = LocalFile, IsFolder = false }
         };
