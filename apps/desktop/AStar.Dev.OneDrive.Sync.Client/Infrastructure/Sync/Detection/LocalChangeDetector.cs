@@ -101,5 +101,6 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
     private static bool IsTemporaryFile(string extension)
         => extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
         || extension.Equals(".temp", StringComparison.OrdinalIgnoreCase)
-        || extension.Equals(".partial", StringComparison.OrdinalIgnoreCase);
+        || extension.Equals(".partial", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".download", StringComparison.OrdinalIgnoreCase);
 }
