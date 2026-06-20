@@ -320,6 +320,19 @@ public sealed class GivenALocalChangeDetector
     }
 
     [Fact]
+    public void when_file_has_download_extension_then_file_is_skipped()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Documents/0023.jpg.f027d572fc8f4f79b66c3bb0f9b7d155.download").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Documents", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.ShouldBeEmpty();
+    }
+
+    [Fact]
     public void when_subdirectory_name_starts_with_dot_then_files_inside_are_not_scanned()
     {
         var mockFileSystem = new MockFileSystem();
