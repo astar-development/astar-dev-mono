@@ -46,6 +46,7 @@ public sealed class GivenASyncJobExecutor
             {
                 await foreach (var _ in call.Arg<IAsyncEnumerable<SyncJob>>().ConfigureAwait(false))
                 { }
+                return 0;
             });
     }
 

@@ -179,4 +179,36 @@ public sealed class GivenASyncProgressTracker
 
         jobCompletedCount.ShouldBe(99);
     }
+
+    [Fact]
+    public async Task when_all_jobs_succeed_then_failed_count_is_zero()
+    {
+        var sut = CreateTracker(2);
+
+        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, _ => { }, _ => Task.CompletedTask);
+
+        sut.FailedCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_one_job_fails_then_failed_count_is_one()
+    {
+        var sut = CreateTracker(1);
+
+        await sut.RecordCompletion(MakeDownloadJob(), false, "upload error", _ => { }, _ => Task.CompletedTask);
+
+        sut.FailedCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_two_jobs_fail_then_failed_count_is_two()
+    {
+        var sut = CreateTracker(2);
+
+        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), false, "error-1", _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), false, "error-2", _ => { }, _ => Task.CompletedTask);
+
+        sut.FailedCount.ShouldBe(2);
+    }
 }

@@ -198,6 +198,7 @@
   "Sync.DetectingLocalChanges": "US-Detecting local changes...",
   "Sync.SyncingFiles": "US-Syncing {0:N0} file(s)...",
   "Sync.NoChanges": "US-No changes",
+  "Sync.CompletedWithErrors": "US-Sync completed with {0:N0} error(s) — check the log for details",
   "Dashboard.NoSyncPath": "US-No local sync path configured",
   "Dashboard.Pending": "US-Pending",
   "Dashboard.AllSynced": "US-All synced",
