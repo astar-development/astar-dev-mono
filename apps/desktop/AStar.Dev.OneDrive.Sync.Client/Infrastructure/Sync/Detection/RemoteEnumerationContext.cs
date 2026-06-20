@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
@@ -11,8 +12,8 @@ public sealed class RemoteEnumerationContext
     /// <summary>All sync rules loaded before streaming begins.</summary>
     public IReadOnlyList<SyncRuleEntity> Rules { get; internal set; } = [];
 
-    /// <summary>Synced items loaded before streaming begins, keyed by remote item ID.</summary>
-    public Dictionary<string, SyncedItemEntity> SyncedItems { get; internal set; } = [];
+    /// <summary>Synced items loaded before streaming begins, keyed by remote item ID. Thread-safe for concurrent producer/worker access.</summary>
+    public ConcurrentDictionary<string, SyncedItemEntity> SyncedItems { get; internal set; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Remote item IDs seen so far; populated as items are yielded.</summary>
     public HashSet<string> SeenRemoteIds { get; } = new(StringComparer.OrdinalIgnoreCase);

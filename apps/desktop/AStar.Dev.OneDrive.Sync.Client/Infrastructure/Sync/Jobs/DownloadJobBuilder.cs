@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -15,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar, IFileSystem fileSystem, ILogger<DownloadJobBuilder> logger) : IDownloadJobBuilder
 {
     /// <inheritdoc />
-    public async Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    public async Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
     {
         if (!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
             return null;
@@ -34,7 +35,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         return await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, mappings, ct).ConfigureAwait(false);
     }
 
-    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, Dictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
     {
         string localPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);

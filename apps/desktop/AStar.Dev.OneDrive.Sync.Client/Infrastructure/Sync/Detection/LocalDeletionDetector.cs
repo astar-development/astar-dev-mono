@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using System.Reactive;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -13,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<LocalDeletionDetector> logger) : ILocalDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
     {
         List<OneDriveItemId> successfullyDeletedIds = [];
 

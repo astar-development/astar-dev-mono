@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -28,7 +29,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         context.Rules = rules;
-        context.SyncedItems = await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false);
+        context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
 
         var driveId = await graphService.GetDriveIdAsync(account.Id.Id, tokenFactory, ct)
             .MatchAsync<DriveId, string, DriveId?>(
@@ -95,7 +96,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
     }
 
-    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, Dictionary<string, SyncedItemEntity> syncedItems, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken ct)
+    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken ct)
     {
         string? folderId = rule.RemoteItemId is Option<string>.Some existingId
             ? existingId.Value
@@ -111,6 +112,6 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         return folderId;
     }
 
-    private static string? TryResolveFromSyncedItems(Dictionary<string, SyncedItemEntity> syncedItems, string remotePath)
+    private static string? TryResolveFromSyncedItems(ConcurrentDictionary<string, SyncedItemEntity> syncedItems, string remotePath)
         => syncedItems.Values.FirstOrDefault(i => i.IsFolder && string.Equals(i.RemotePath, remotePath, StringComparison.OrdinalIgnoreCase))?.RemoteItemId.Id;
 }
