@@ -1,9 +1,10 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
 
 /// <summary>Resolves file classification text levels to leaf category IDs, inserting missing nodes on demand.</summary>
 public sealed class CategoryResolutionService(IDbContextFactory<AppDbContext> dbContextFactory) : ICategoryResolutionService
