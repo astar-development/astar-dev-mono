@@ -1,6 +1,5 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -99,7 +98,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncServiceError(logger, account.Id.Id, ex.Message, ex);
-            RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
+            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.UnexpectedError"), SyncState.Error);
         }
     }
 

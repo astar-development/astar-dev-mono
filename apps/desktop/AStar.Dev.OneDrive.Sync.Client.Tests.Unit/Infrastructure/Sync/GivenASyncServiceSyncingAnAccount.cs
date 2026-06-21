@@ -157,7 +157,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     [Fact]
-    public async Task when_orchestrator_throws_unexpected_exception_then_progress_is_error_state_with_exception_message()
+    public async Task when_orchestrator_throws_unexpected_exception_then_progress_is_error_state_with_unexpected_error_localisation_key()
     {
         SetupAuthSuccess();
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
@@ -178,7 +178,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
         capturedState.ShouldBe(SyncState.Error);
-        capturedMessage.ShouldBe("unexpected");
+        capturedMessage.ShouldBe("Sync.UnexpectedError");
     }
 
     [Fact]
