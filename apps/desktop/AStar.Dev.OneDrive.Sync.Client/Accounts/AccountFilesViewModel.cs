@@ -159,7 +159,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
             var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value, ResolveRuleState);
 
-            vm.IncludeToggled += OnIncludeToggledAsync;
+            vm.IncludeToggled += OnIncludeToggled;
             vm.ViewActivityRequested += OnViewActivityRequested;
             vm.OpenInFileManagerRequested += OnOpenInFileManager;
 
@@ -181,7 +181,10 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         _                => FolderSyncState.Excluded
     };
 
-    private async void OnIncludeToggledAsync(object? sender, FolderTreeNodeViewModel node)
+    private void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
+        => _ = HandleIncludeToggledAsync(node);
+
+    private async Task HandleIncludeToggledAsync(FolderTreeNodeViewModel node)
     {
         try
         {
@@ -206,6 +209,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Id, ex.Message, ex);
+            HasLoadError = true;
+            LoadError = ex.Message;
         }
     }
 
