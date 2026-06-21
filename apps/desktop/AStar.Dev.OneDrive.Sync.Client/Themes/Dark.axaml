@@ -59,6 +59,7 @@
     <SolidColorBrush x:Key="TextWarningBrush"       Color="#FAC775"/>
     <SolidColorBrush x:Key="BackgroundSuccessBrush" Color="#173404"/>
     <SolidColorBrush x:Key="TextSuccessBrush"       Color="#C0DD97"/>
+    <SolidColorBrush x:Key="TextErrorBrush"         Color="#FF6B6B"/>
     <SolidColorBrush x:Key="StatusConflictBrush"    Color="#E24B4A"/>
 
     <!-- Icon rail active indicator -->
