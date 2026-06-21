@@ -24,6 +24,8 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         driveState.DeltaLink = Option.None<string>();
         await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
 
+        var mappings = await classificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
+
         int progressReportInterval = syncSettings.Value.ProgressReportInterval;
         int workerCount = settingsService.Current.ConcurrentWorkerCount;
         var context = new RemoteEnumerationContext();
@@ -37,7 +39,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, context, onProgress, jobChannel.Writer, firstJobSignal, ct);
+        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, ct);
 
         bool hasJobs;
         try
@@ -53,7 +55,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
 
         int failedJobCount = 0;
         if (hasJobs)
-            failedJobCount = await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(ct), context.SyncedItems, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), ct).ConfigureAwait(false);
+            failedJobCount = await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(ct), context.SyncedItems, mappings, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), ct).ConfigureAwait(false);
 
         await producerTask.ConfigureAwait(false);
 
@@ -75,13 +77,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
 
-    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, CancellationToken ct)
+    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
     {
         bool signaled = false;
         try
         {
-            var mappings = await classificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
-
             await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, ct).ConfigureAwait(false))
             {
                 var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, ct).ConfigureAwait(false);
