@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,11 +13,15 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
 {
     private readonly IFileOpenerService fileOpenerService;
     private readonly IUiDispatcher dispatcher;
+    private readonly ILocalizationService loc;
+    private readonly Func<CancellationToken, Task> onDeleteAsync;
 
-    public SyncedFileResultViewModel(SyncedItemSearchResult result, IFileTypeClassifier fileTypeClassifier, IFileOpenerService fileOpenerService, IUiDispatcher dispatcher)
+    public SyncedFileResultViewModel(SyncedItemSearchResult result, IFileTypeClassifier fileTypeClassifier, IFileOpenerService fileOpenerService, IUiDispatcher dispatcher, ILocalizationService loc, Func<CancellationToken, Task> onDeleteAsync)
     {
         this.fileOpenerService = fileOpenerService;
         this.dispatcher = dispatcher;
+        this.loc = loc;
+        this.onDeleteAsync = onDeleteAsync;
         FileName = Path.GetFileName(result.LocalPath);
         FormattedSize = FormatSize(result.SizeInBytes);
         TagName = string.Join(", ", result.TagNames);
@@ -33,11 +38,16 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     public bool IsLocalPresent { get; }
     public double CardOpacity => IsLocalPresent ? 1.0 : 0.4;
 
+    public string DeleteButtonText => loc.GetLocal("Search.Result.Delete.Button");
+
     [ObservableProperty]
     public partial IImage? Thumbnail { get; set; }
 
     [RelayCommand(CanExecute = nameof(IsLocalPresent))]
     private void OpenFile() => fileOpenerService.OpenFile(LocalPath);
+
+    [RelayCommand]
+    private Task DeleteFileAsync(CancellationToken ct) => onDeleteAsync(ct);
 
     public async Task LoadThumbnailAsync()
     {

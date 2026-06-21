@@ -221,6 +221,7 @@
   "Search.SortOrder.NameDesc": "US-Name Z → A",
   "Search.SortOrder.SizeAsc": "US-Size smallest first",
   "Search.SortOrder.SizeDesc": "US-Size largest first",
+  "Search.Result.Delete.Button": "US-Delete",
   "AccountSync.LocalSyncFolderLabel": "Local sync folder",
   "AccountSync.LocalSyncFolderPlaceholder": "e.g. /home/user/OneDrive/personal",
   "AccountSync.BrowseButton": "Browse ...",

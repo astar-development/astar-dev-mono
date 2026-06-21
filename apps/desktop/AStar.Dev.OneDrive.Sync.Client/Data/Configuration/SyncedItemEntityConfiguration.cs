@@ -31,5 +31,9 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
                    .WithMany()
                    .HasForeignKey(e => e.AccountId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+        _ = builder.HasIndex(i => i.RemotePath);
+        _ = builder.HasIndex(i => i.LocalPath);
+        _ = builder.HasIndex(i => i.SizeInBytes);
     }
 }

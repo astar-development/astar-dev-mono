@@ -128,7 +128,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public void when_result_local_path_does_not_exist_then_open_file_command_is_disabled()
     {
         var result = MakeResult(localPath: "/this/path/does/not/exist/astar_test_file.jpg");
-        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, _ => Task.CompletedTask);
 
         vm.OpenFileCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -164,7 +164,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public void when_result_is_not_local_present_then_card_opacity_is_reduced()
     {
         var result = MakeResult(localPath: "/this/path/does/not/exist/astar_test_file.jpg");
-        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+        var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, _ => Task.CompletedTask);
 
         vm.CardOpacity.ShouldBe(0.4);
     }
@@ -177,7 +177,7 @@ public sealed class GivenASyncedFileSearchViewModel
         {
             fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
             var result = MakeResult(localPath: existingPath);
-            var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+            var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, _ => Task.CompletedTask);
 
             vm.CardOpacity.ShouldBe(1.0);
         }
@@ -291,6 +291,63 @@ public sealed class GivenASyncedFileSearchViewModel
         sut.SetActiveAccount(new AccountId("acc-2"));
 
         sut.AvailableTags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_then_repository_delete_by_remote_id_is_called()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeResult()]);
+        var sut = CreateSut();
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+        await repository.Received(1).DeleteByRemoteIdAsync(TestAccountId, TestItemId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_then_result_is_removed_from_collection()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeResult(), MakeResult()]);
+        var sut = CreateSut();
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+        sut.Results.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_then_result_count_decrements()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeResult(), MakeResult()]);
+        var sut = CreateSut();
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+        sut.ResultCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_and_local_file_exists_then_file_is_deleted_from_disk()
+    {
+        string tmpPath = Path.GetTempFileName();
+        try
+        {
+            repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeResult(tmpPath)]);
+            var sut = CreateSut();
+            await sut.SearchCommand.ExecuteAsync(null);
+
+            await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+            File.Exists(tmpPath).ShouldBeFalse();
+        }
+        finally
+        {
+            if (File.Exists(tmpPath))
+                File.Delete(tmpPath);
+        }
     }
 
     [AvaloniaFact]
