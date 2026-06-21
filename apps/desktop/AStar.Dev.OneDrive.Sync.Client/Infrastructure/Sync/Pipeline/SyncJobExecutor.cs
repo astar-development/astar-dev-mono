@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
@@ -12,7 +11,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipeline syncPipeline, ISettingsService settingsService, ISyncedItemRegistrar syncedItemRegistrar) : ISyncJobExecutor
 {
     private const int EnqueueBatchSize = 100;
 
@@ -51,15 +50,11 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
 
                     if (args.Job is DownloadSyncJob)
                     {
-                        var entity = SyncedItemEntityFactory.CreateFromDownloadJob(account.Id, args.Job, remotePath);
-                        await UpsertWithClassificationsAsync(entity, remotePath, mappings, ct).ConfigureAwait(false);
-                        syncedItems[args.Job.Remote.RemoteItemId.Id] = entity;
+                        await syncedItemRegistrar.RegisterDownloadAsync(account.Id, args.Job, remotePath, mappings, syncedItems, ct).ConfigureAwait(false);
                     }
                     else if (args.Job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
                     {
-                        var entity = SyncedItemEntityFactory.CreateFromUploadJob(account.Id, uploadJob, uploadedId.Value, remotePath, fileSystem);
-                        await UpsertWithClassificationsAsync(entity, remotePath, mappings, ct).ConfigureAwait(false);
-                        syncedItems[uploadedId.Value] = entity;
+                        await syncedItemRegistrar.RegisterUploadAsync(account.Id, uploadJob, uploadedId.Value, remotePath, mappings, syncedItems, ct).ConfigureAwait(false);
                     }
                 }
 
@@ -101,14 +96,6 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
         {
             await rest.DisposeAsync().ConfigureAwait(false);
         }
-    }
-
-    private async Task UpsertWithClassificationsAsync(SyncedItemEntity entity, string remotePath, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
-    {
-        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
-        var categoryIds = await categoryResolutionService.ResolveManyAsync(classifications, ct).ConfigureAwait(false);
-        await syncedItemRepository.UpsertWithClassificationsAsync(entity, categoryIds, ct).ConfigureAwait(false);
     }
 
     private static string NormaliseRemotePath(string? relativePath)
