@@ -4,10 +4,17 @@
 
 Mono-repo: Blazor web, Avalonia desktop, ~25 NuGet packages. Solution: `AStar.Dev.slnx`.
 
-## Build Gotcha
+## Build — mandatory clean before every verification
+
+`TreatWarningsAsErrors=true` is set unconditionally in `Directory.Build.props`. Incremental builds can cache stale analyzer results and hide warnings. **Always clean first** — no exceptions:
 
 ```bash
-# Stale generated files / changed base props
+dotnet clean && dotnet build --no-restore
+```
+
+Never use `dotnet build` alone as a done check. If artifacts are suspect, wipe fully:
+
+```bash
 dotnet clean && rm -rf artifacts/ && dotnet build
 ```
 
@@ -72,8 +79,8 @@ When a plan is approved, raise one GitHub issue per phase before writing any cod
 
 ## Definition of Done
 
-1. `dotnet build` — zero errors, zero warnings. Paste exact output.
-2. `dotnet test` — paste EXACT pass/fail count. New failures = zero. If this change broke tests, diagnose and fix them — never dismiss as pre-existing.
+1. `dotnet clean && dotnet build --no-restore` — zero errors, zero warnings. Paste exact output. `dotnet clean` is mandatory — incremental cache can hide analyser warnings.
+2. `dotnet test --no-build` — paste EXACT pass/fail count. New failures = zero. If this change broke tests, diagnose and fix them — never dismiss as pre-existing.
 3. Confirm all call sites and test files found and updated.
 4. Human review BEFORE committing.
 5. Commit to branch (not main).
