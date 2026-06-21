@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Kiota.Abstractions;
+using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
@@ -47,26 +48,14 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
             return await contextResult.MatchAsync<Result<List<DriveFolder>, string>>(
                 async ctx =>
                 {
-                    var response = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
+                    var firstPage = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
                         .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct).ConfigureAwait(false);
 
-                    List<DriveFolder> folders = [];
-
-                    var page = response;
-                    while(page?.Value is not null)
-                    {
-                        folders.AddRange(
-                            page.Value
-                                .Where(i => i.Folder is not null)
-                                .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
-
-                        if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
-                            break;
-
-                        page = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
-                            .WithUrl(page.OdataNextLink!)
-                            .GetAsync(cancellationToken: ct).ConfigureAwait(false);
-                    }
+                    var folders = await PaginateDriveFoldersAsync(
+                        firstPage,
+                        nextLink => ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
+                            .WithUrl(nextLink)
+                            .GetAsync(cancellationToken: ct)).ConfigureAwait(false);
 
                     return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
                 },
@@ -85,30 +74,18 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             var client = graphClientFactory.CreateClient(tokenFactory);
 
-            var result = await client.Drives[driveId.Value].Items[parentFolderId].Children
+            var firstPage = await client.Drives[driveId.Value].Items[parentFolderId].Children
                 .GetAsync(req =>
                 {
                     req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
                     req.QueryParameters.Top = 100;
                 }, ct).ConfigureAwait(false);
 
-            List<DriveFolder> folders = [];
-
-            var page = result;
-            while(page?.Value is not null)
-            {
-                folders.AddRange(
-                    page.Value
-                        .Where(i => i.Folder is not null)
-                        .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
-
-                if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
-                    break;
-
-                page = await client.Drives[driveId.Value].Items[parentFolderId].Children
-                    .WithUrl(page.OdataNextLink!)
-                    .GetAsync(cancellationToken: ct).ConfigureAwait(false);
-            }
+            var folders = await PaginateDriveFoldersAsync(
+                firstPage,
+                nextLink => client.Drives[driveId.Value].Items[parentFolderId].Children
+                    .WithUrl(nextLink)
+                    .GetAsync(cancellationToken: ct)).ConfigureAwait(false);
 
             return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
         }
@@ -242,6 +219,26 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
     /// <inheritdoc />
     public void EvictCachedDriveContext(string accountId) => driveContextCache.Evict(accountId);
+
+    private static async Task<List<DriveFolder>> PaginateDriveFoldersAsync(DriveItemCollectionResponse? firstPage, Func<string, Task<DriveItemCollectionResponse?>> fetchNext)
+    {
+        List<DriveFolder> folders = [];
+        var page = firstPage;
+        while(page?.Value is not null)
+        {
+            folders.AddRange(
+                page.Value
+                    .Where(i => i.Folder is not null)
+                    .Select(i => new DriveFolder(Id: i.Id!, Name: i.Name!, ParentId: ToOptionString(i.ParentReference?.Id))));
+
+            if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
+                break;
+
+            page = await fetchNext(page.OdataNextLink!).ConfigureAwait(false);
+        }
+
+        return folders;
+    }
 
     private static Option<string> ToOptionString(string? value) => value is not null ? Option.Some(value) : Option.None<string>();
 }

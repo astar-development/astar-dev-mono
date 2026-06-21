@@ -166,6 +166,72 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
+    public async Task when_get_root_folders_has_next_link_that_fails_guard_then_only_first_page_folders_are_returned()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/root-001/children").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new Dictionary<string, object>
+                {
+                    ["value"] = new object[] { new { id = "f1", name = "OnlyFolder", folder = new { }, parentReference = new { id = "root-001", driveId = AnyDriveId } } },
+                    ["@odata.nextLink"] = $"{server.Url}/drives/{AnyDriveId}/items/root-001/children?$skiptoken=page2"
+                }));
+
+        var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
+
+        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        folders.Count.ShouldBe(1);
+        folders[0].Name.ShouldBe("OnlyFolder");
+    }
+
+    [Fact]
+    public async Task when_get_child_folders_returns_mixed_items_then_only_folders_are_returned_ordered_by_name()
+    {
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new
+                {
+                    value = new object[]
+                    {
+                        new { id = "c1", name = "ZChild", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } },
+                        new { id = "c2", name = "AChild", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } },
+                        new { id = "fi1", name = "notes.txt", file = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } }
+                    }
+                }));
+
+        var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
+
+        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        folders.Count.ShouldBe(2);
+        folders[0].Name.ShouldBe("AChild");
+        folders[1].Name.ShouldBe("ZChild");
+    }
+
+    [Fact]
+    public async Task when_get_child_folders_has_next_link_that_fails_guard_then_only_first_page_folders_are_returned()
+    {
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new Dictionary<string, object>
+                {
+                    ["value"] = new object[] { new { id = "c1", name = "OnlyChild", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } },
+                    ["@odata.nextLink"] = $"{server.Url}/drives/{AnyDriveId}/items/{AnyFolderId}/children?$skiptoken=page2"
+                }));
+
+        var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
+
+        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        folders.Count.ShouldBe(1);
+        folders[0].Name.ShouldBe("OnlyChild");
+    }
+
+    [Fact]
     public async Task when_get_folder_id_by_path_receives_a_404_then_null_is_returned()
     {
         server.Given(Request.Create().UsingAnyMethod())
