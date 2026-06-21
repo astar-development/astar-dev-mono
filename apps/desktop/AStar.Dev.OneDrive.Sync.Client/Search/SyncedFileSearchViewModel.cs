@@ -159,7 +159,18 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             {
                 foreach (var result in results)
                 {
-                    var vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher);
+                    SyncedFileResultViewModel vm = null!;
+                    vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, async ct =>
+                    {
+                        if (File.Exists(result.LocalPath))
+                            File.Delete(result.LocalPath);
+                        await repository.DeleteByRemoteIdAsync(result.AccountId, result.RemoteItemId, ct).ConfigureAwait(false);
+                        dispatcher.Post(() =>
+                        {
+                            Results.Remove(vm);
+                            ResultCount = Results.Count;
+                        });
+                    });
                     Results.Add(vm);
                     _ = vm.LoadThumbnailAsync();
                 }

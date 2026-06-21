@@ -231,6 +231,17 @@
                                                 BorderThickness="1"
                                                 BorderBrush="{DynamicResource BorderDefaultBrush}"/>
 
+                                        <!-- Delete button -->
+                                        <Button Content="{Binding DeleteButtonText}"
+                                                Command="{Binding DeleteFileCommand}"
+                                                HorizontalAlignment="Stretch"
+                                                Padding="8,4"
+                                                FontSize="{StaticResource FontSizeXs}"
+                                                CornerRadius="{StaticResource RadiusSm}"
+                                                BorderThickness="1"
+                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                Foreground="{DynamicResource TextErrorBrush}"/>
+
                                     </StackPanel>
                                 </Border>
 

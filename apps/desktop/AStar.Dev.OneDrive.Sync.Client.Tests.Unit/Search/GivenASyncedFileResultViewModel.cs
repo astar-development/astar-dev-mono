@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
@@ -16,16 +17,20 @@ public sealed class GivenASyncedFileResultViewModel
 
     private readonly IFileOpenerService fileOpenerService = Substitute.For<IFileOpenerService>();
     private readonly IFileTypeClassifier fileTypeClassifier = Substitute.For<IFileTypeClassifier>();
+    private readonly ILocalizationService loc = Substitute.For<ILocalizationService>();
     private readonly IUiDispatcher dispatcher = new InlineUiDispatcher();
 
     private static SyncedItemSearchResult MakeResult(string localPath) =>
         new(1, TestAccountId, TestItemId, "/remote/image.png", localPath, DateTimeOffset.UtcNow, 1024, []);
 
+    private SyncedFileResultViewModel CreateSut(string localPath, Func<CancellationToken, Task>? onDelete = null) =>
+        new(MakeResult(localPath), fileTypeClassifier, fileOpenerService, dispatcher, loc, onDelete ?? ((_) => Task.CompletedTask));
+
     [Fact]
     public async Task when_file_does_not_exist_then_thumbnail_stays_null()
     {
         fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Image);
-        var vm = new SyncedFileResultViewModel(MakeResult("/no/such/file/astar_test.png"), fileTypeClassifier, fileOpenerService, dispatcher);
+        var vm = CreateSut("/no/such/file/astar_test.png");
 
         await vm.LoadThumbnailAsync();
 
@@ -40,7 +45,7 @@ public sealed class GivenASyncedFileResultViewModel
         try
         {
             fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Document);
-            var vm = new SyncedFileResultViewModel(MakeResult(tmpPath), fileTypeClassifier, fileOpenerService, dispatcher);
+            var vm = CreateSut(tmpPath);
 
             await vm.LoadThumbnailAsync();
 
@@ -60,7 +65,7 @@ public sealed class GivenASyncedFileResultViewModel
         try
         {
             fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Image);
-            var vm = new SyncedFileResultViewModel(MakeResult(tmpPath), fileTypeClassifier, fileOpenerService, dispatcher);
+            var vm = CreateSut(tmpPath);
 
             await vm.LoadThumbnailAsync();
 
@@ -70,5 +75,25 @@ public sealed class GivenASyncedFileResultViewModel
         {
             File.Delete(tmpPath);
         }
+    }
+
+    [Fact]
+    public async Task when_delete_command_is_executed_then_on_delete_callback_is_invoked()
+    {
+        bool callbackInvoked = false;
+        var vm = CreateSut("/no/such/file/astar_test.png", _ => { callbackInvoked = true; return Task.CompletedTask; });
+
+        await vm.DeleteFileCommand.ExecuteAsync(null);
+
+        callbackInvoked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_delete_button_text_is_read_then_it_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.Result.Delete.Button").Returns("Delete");
+        var vm = CreateSut("/no/such/file/astar_test.png");
+
+        vm.DeleteButtonText.ShouldBe("Delete");
     }
 }

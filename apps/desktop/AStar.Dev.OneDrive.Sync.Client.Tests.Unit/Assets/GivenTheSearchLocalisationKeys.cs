@@ -54,4 +54,8 @@ public sealed class GivenTheSearchLocalisationKeys
     [Fact]
     public void when_read_then_search_no_results_key_exists() =>
         RootElement().TryGetProperty("Search.NoResults", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_search_result_delete_button_key_exists() =>
+        RootElement().TryGetProperty("Search.Result.Delete.Button", out _).ShouldBeTrue();
 }
