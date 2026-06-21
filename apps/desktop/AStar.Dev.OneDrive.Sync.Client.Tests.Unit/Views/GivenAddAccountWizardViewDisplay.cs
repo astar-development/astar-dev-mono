@@ -208,7 +208,7 @@ public sealed class GivenAddAccountWizardViewDisplay
 
     private static List<Ellipse> FindVisibleAccentEllipses(AddAccountWizardView view)
     {
-        return view.GetLogicalDescendants().OfType<Grid>().Where(g => g.Width == 8 && g.Height == 8).Select(g => g.Children.OfType<Ellipse>().Skip(1).First()).Where(accent => accent.IsVisible).ToList();
+        return [.. view.GetLogicalDescendants().OfType<Grid>().Where(g => g.Width == 8 && g.Height == 8).Select(g => g.Children.OfType<Ellipse>().Skip(1).First()).Where(accent => accent.IsVisible)];
     }
 
     [AvaloniaFact]
