@@ -182,8 +182,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             lastSyncedAt => (DateTimeOffset.UtcNow - lastSyncedAt) switch
             {
                 { TotalSeconds: < 60 } => localizationService.GetLocal("Common.JustNow"),
-                { TotalMinutes: < 60 } td => localizationService.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
-                { TotalHours: < 24 } td => localizationService.GetLocal("Common.HoursAgo", (int)td.TotalHours),
+                { TotalMinutes: < 60 } td => (int)td.TotalMinutes == 1 ? localizationService.GetLocal("Common.MinuteAgo", (int)td.TotalMinutes) : localizationService.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
+                { TotalHours: < 24 } td => (int)td.TotalHours == 1 ? localizationService.GetLocal("Common.HourAgo", (int)td.TotalHours) : localizationService.GetLocal("Common.HoursAgo", (int)td.TotalHours),
                 { TotalDays: < 2 } => localizationService.GetLocal("Common.Yesterday"),
                 var td => localizationService.GetLocal("Common.DaysAgo", (int)td.TotalDays)
             },
