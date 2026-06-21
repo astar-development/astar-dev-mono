@@ -40,7 +40,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        var sessionResult = await CreateSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct).ConfigureAwait(false);
+        var sessionResult = await CreateUploadSessionAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct).ConfigureAwait(false);
 
         return await sessionResult.MatchAsync(
             async sessionUrl =>
@@ -52,7 +52,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             error => new Result<string, string>.Error(error)).ConfigureAwait(false);
     }
 
-    private static async Task<Result<string, string>> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
+    private static async Task<Result<string, string>> CreateUploadSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
     {
         string fileName = remotePath.Contains('/')
             ? remotePath[(remotePath.LastIndexOf('/') + 1)..]
@@ -146,8 +146,8 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             {
                 var array = MemoryMarshal.TryGetArray(chunk, out var segment) ? segment : new ArraySegment<byte>(chunk.ToArray());
                 using var content = new ByteArrayContent(array.Array!, array.Offset, array.Count);
-                content.Headers.Add("Content-Range", $"bytes {rangeStart}-{rangeEnd}/{totalBytes}");
-                content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.CurrentCulture));
+                content.Headers.Add("Content-Range", FormattableString.Invariant($"bytes {rangeStart}-{rangeEnd}/{totalBytes}"));
+                content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.InvariantCulture));
 
                 using var response = await http.PutAsync(sessionUrl, content, ct).ConfigureAwait(false);
 
