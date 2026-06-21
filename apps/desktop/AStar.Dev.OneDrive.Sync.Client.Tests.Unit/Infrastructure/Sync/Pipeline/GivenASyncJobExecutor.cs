@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -100,7 +101,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, EmptyJobStream(), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, EmptyJobStream(), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _pipeline.DidNotReceive().RunAsync(Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
@@ -112,7 +113,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncRepository.DidNotReceive().EnqueueJobAsync(Arg.Any<SyncJob>(), Arg.Any<CancellationToken>());
     }
@@ -124,7 +125,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
     }
@@ -136,7 +137,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
     }
@@ -148,7 +149,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(2).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
     }
@@ -160,7 +161,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(jobs), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(3).EnqueueJobsAsync(Arg.Any<IEnumerable<SyncJob>>(), Arg.Any<CancellationToken>());
     }
@@ -173,7 +174,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-1"), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -186,7 +187,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -204,7 +205,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Documents")), Arg.Any<CancellationToken>());
     }
@@ -217,7 +218,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Color")), Arg.Any<CancellationToken>());
     }
@@ -232,7 +233,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(mockFileSystem);
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Color")), Arg.Any<CancellationToken>());
     }
@@ -247,7 +248,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(mockFileSystem);
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -262,7 +263,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(mockFileSystem);
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -287,7 +288,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job1, job2), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job1, job2), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _fileClassificationRepository.Received(1).GetAllCategoriesAsync(Arg.Any<CancellationToken>());
     }
@@ -300,7 +301,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.DidNotReceive().UpsertWithClassificationsAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -313,7 +314,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), _ => { }, _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.DidNotReceive().UpsertFileClassificationsAsync(Arg.Any<int>(), Arg.Any<IReadOnlyList<int>>(), Arg.Any<CancellationToken>());
     }
@@ -337,7 +338,7 @@ public sealed class GivenASyncJobExecutor
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var sut = CreateSut(new MockFileSystem());
 
-        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), [], args => progressReceived.Add(args), _ => Task.CompletedTask, TestContext.Current.CancellationToken);
+        await sut.ExecuteAsync(_account, tokenFactory, JobStream(job), new ConcurrentDictionary<string, SyncedItemEntity>(), args => progressReceived.Add(args), _ => Task.CompletedTask, TestContext.Current.CancellationToken);
 
         progressReceived.ShouldHaveSingleItem();
         progressReceived[0].CurrentFile.ShouldBe("file.txt");

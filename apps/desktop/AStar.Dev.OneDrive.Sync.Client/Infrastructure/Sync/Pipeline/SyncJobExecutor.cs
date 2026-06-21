@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using AStar.Dev.Functional.Extensions;
@@ -16,7 +17,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
     private const int EnqueueBatchSize = 100;
 
     /// <inheritdoc />
-    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
+    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
     {
         var enumerator = jobs.GetAsyncEnumerator(ct);
         bool hasFirst;

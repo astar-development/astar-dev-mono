@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -11,7 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<RemoteDeletionDetector> logger) : IRemoteDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct)
+    public async Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct)
     {
         List<OneDriveItemId> deletedRemoteIds = [];
 
@@ -37,7 +38,7 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
         await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, deletedRemoteIds, ct).ConfigureAwait(false);
 
         foreach (var remoteId in deletedRemoteIds)
-            syncedItems.Remove(remoteId.Id);
+            syncedItems.TryRemove(remoteId.Id, out _);
     }
 
     private void DeleteLocalItem(SyncedItemEntity knownItem)

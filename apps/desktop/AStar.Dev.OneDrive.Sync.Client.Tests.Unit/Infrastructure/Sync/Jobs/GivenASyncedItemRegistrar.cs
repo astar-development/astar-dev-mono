@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -41,7 +42,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FolderItem("folder-1", "/Documents/Sub");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
 
@@ -53,7 +54,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FolderItem("folder-1", "/Documents/Sub");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
 
@@ -65,7 +66,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FolderItem("folder-1", "/Documents/Sub");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
 
@@ -78,7 +79,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, [], TestContext.Current.CancellationToken);
 
@@ -90,7 +91,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FileItem("item-phantom", "/Documents/phantom.txt");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, [], TestContext.Current.CancellationToken);
 
@@ -104,7 +105,7 @@ public sealed class GivenASyncedItemRegistrar
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
         var sut = CreateSut();
         var item = FileItem("file-1", "/photos/beach.jpg");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
         IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("photos", 1)];
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, mappings, TestContext.Current.CancellationToken);
@@ -123,7 +124,7 @@ public sealed class GivenASyncedItemRegistrar
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(resolvedIds));
         var sut = CreateSut();
         var item = FileItem("file-1", "/photos/beach.jpg");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
@@ -140,7 +141,7 @@ public sealed class GivenASyncedItemRegistrar
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
         var sut = CreateSut();
         var item = FileItem("file-2", "/docs/report.pdf");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
         IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("spacecraft", 1)];
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/docs/report.pdf", "/sync/docs/report.pdf", syncedItems, mappings, TestContext.Current.CancellationToken);
@@ -154,7 +155,7 @@ public sealed class GivenASyncedItemRegistrar
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(1));
         var sut = CreateSut();
         var item = FileItem("file-3", "/photos/sunset.jpg");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
         IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("photos", 1)];
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/sunset.jpg", "/sync/photos/sunset.jpg", syncedItems, mappings, TestContext.Current.CancellationToken);
@@ -168,7 +169,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FolderItem("folder-2", "/photos");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/photos", "/sync/photos", syncedItems, TestContext.Current.CancellationToken);
 
@@ -180,7 +181,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FileItem("file-auto-1", "/Photos/a red car on the road.jpg");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
@@ -197,7 +198,7 @@ public sealed class GivenASyncedItemRegistrar
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(resolvedIds));
         var sut = CreateSut();
         var item = FileItem("file-auto-2", "/Photos/a red car on the road.jpg");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Photos/a red car on the road.jpg", "/sync/Photos/a red car on the road.jpg", syncedItems, [], TestContext.Current.CancellationToken);
 
@@ -212,7 +213,7 @@ public sealed class GivenASyncedItemRegistrar
     {
         var sut = CreateSut();
         var item = FolderItem("folder-auto-1", "/Photos");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Photos", "/sync/Photos", syncedItems, TestContext.Current.CancellationToken);
 
@@ -226,7 +227,7 @@ public sealed class GivenASyncedItemRegistrar
         _syncedItemRepository.UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(entityId));
         var sut = CreateSut();
         var item = FileItem("file-mapping", "/Videos/clip.mp4");
-        var syncedItems = new Dictionary<string, SyncedItemEntity>();
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
         IReadOnlyList<FileClassificationCategory> mappings = [KeywordMap("Videos", 1)];
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Videos/clip.mp4", "/sync/Videos/clip.mp4", syncedItems, mappings, TestContext.Current.CancellationToken);

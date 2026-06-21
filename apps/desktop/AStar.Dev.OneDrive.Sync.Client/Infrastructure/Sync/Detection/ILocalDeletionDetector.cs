@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 
@@ -12,5 +13,5 @@ public interface ILocalDeletionDetector
     /// Walks <paramref name="syncedItems"/> and, for each file no longer present on disk,
     /// deletes the corresponding remote item via Graph and removes the local tracking record.
     /// </summary>
-    Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, Dictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct);
+    Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct);
 }
