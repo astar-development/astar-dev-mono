@@ -195,6 +195,28 @@ public sealed class GivenADashboardAccountViewModel
     }
 
     [Fact]
+    public void when_constructed_with_sync_one_minute_ago_then_localization_receives_common_minute_ago_key()
+    {
+        var localization = Substitute.For<ILocalizationService>();
+        var account = new OneDriveAccount { Id = new AccountId("test-account"), LastSyncedAt = DateTimeOffset.UtcNow.AddMinutes(-1) };
+
+        _ = CreateSutWithAccount(account, localization);
+
+        localization.Received(1).GetLocal("Common.MinuteAgo", Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void when_constructed_with_sync_one_hour_ago_then_localization_receives_common_hour_ago_key()
+    {
+        var localization = Substitute.For<ILocalizationService>();
+        var account = new OneDriveAccount { Id = new AccountId("test-account"), LastSyncedAt = DateTimeOffset.UtcNow.AddHours(-1) };
+
+        _ = CreateSutWithAccount(account, localization);
+
+        localization.Received(1).GetLocal("Common.HourAgo", Arg.Any<object[]>());
+    }
+
+    [Fact]
     public void when_refresh_time_displays_called_then_localization_service_receives_last_sync_key_again()
     {
         var localization = Substitute.For<ILocalizationService>();
