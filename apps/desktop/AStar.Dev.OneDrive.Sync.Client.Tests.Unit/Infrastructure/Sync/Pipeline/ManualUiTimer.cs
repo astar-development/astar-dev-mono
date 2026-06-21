@@ -8,7 +8,5 @@ internal sealed class ManualUiTimer : IUiTimer
 
     public void Start(TimeSpan interval, Action callback) => this.callback = callback;
 
-    public void Stop() { }
-
     public void Tick() => callback?.Invoke();
 }
