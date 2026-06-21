@@ -48,7 +48,7 @@ public sealed class GivenAccountsViewDisplay
         settingsService.Current.Returns(new AppSettings());
 
         var files = new FilesViewModel(Substitute.For<IAccountFilesViewModelFactory>(), localization);
-        var dashboard = new DashboardViewModel(localization, Substitute.For<ISyncEventAggregator>(), Substitute.For<IDashboardAccountViewModelFactory>(), Substitute.For<IActivityItemViewModelFactory>());
+        var dashboard = new DashboardViewModel(localization, Substitute.For<ISyncEventAggregator>(), Substitute.For<IDashboardAccountViewModelFactory>(), Substitute.For<IActivityItemViewModelFactory>(), Substitute.For<IUiTimer>());
         var activity = new ActivityViewModel(Substitute.For<ISyncRepository>(), Substitute.For<ISyncEventAggregator>(), Substitute.For<IConflictItemViewModelFactory>(), Substitute.For<IActivityItemViewModelFactory>(), Substitute.For<IUiDispatcher>(), localization);
         var settings = new SettingsViewModel(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, Substitute.For<IFolderPickerService>());
         var classificationRules = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());

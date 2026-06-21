@@ -64,6 +64,9 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public string FileSizeText => FileSize.FileSizeToText();
 
+    /// <summary>Raises <see cref="System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/> for <see cref="TimeAgoText"/> so bound UI refreshes the relative timestamp.</summary>
+    public void RefreshTimeAgoText() => OnPropertyChanged(nameof(TimeAgoText));
+
     public static ActivityItemViewModel FromJob(SyncJob job, ILocalizationService loc, string accountEmail, string folderName = "") => new(loc)
     {
         AccountId = job.Remote.AccountId.Id,

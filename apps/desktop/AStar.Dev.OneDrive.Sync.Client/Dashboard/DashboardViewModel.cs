@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
-public sealed partial class DashboardViewModel(ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator, IDashboardAccountViewModelFactory dashboardAccountViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory) : ObservableObject
+public sealed partial class DashboardViewModel(ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator, IDashboardAccountViewModelFactory dashboardAccountViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiTimer uiTimer) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -75,6 +75,9 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
         syncEventAggregator.ConflictDetected += OnConflictDetected;
         syncEventAggregator.ConflictResolved += OnConflictResolved;
     }
+
+    /// <summary>Starts the periodic timer that refreshes relative timestamps on the dashboard. Call once during app initialisation.</summary>
+    public void StartRefreshTimer() => uiTimer.Start(TimeSpan.FromMinutes(1), OnTimerTick);
 
     public void AddAccount(OneDriveAccount account)
     {
@@ -143,6 +146,14 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == item.AccountId);
         section?.AddRecentActivity(item);
+    }
+
+    private void OnTimerTick()
+    {
+        foreach (var section in AccountSections)
+            section.RefreshTimeDisplays();
+
+        RecalculateGlobals();
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
