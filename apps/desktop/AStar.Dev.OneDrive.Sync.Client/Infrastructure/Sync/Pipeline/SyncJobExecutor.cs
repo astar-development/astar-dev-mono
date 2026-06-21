@@ -12,12 +12,12 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <inheritdoc />
-public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService, IFileClassificationRepository fileClassificationRepository) : ISyncJobExecutor
+public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemRepository syncedItemRepository, ISyncPipeline syncPipeline, IFileSystem fileSystem, ISettingsService settingsService, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService) : ISyncJobExecutor
 {
     private const int EnqueueBatchSize = 100;
 
     /// <inheritdoc />
-    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
+    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
     {
         var enumerator = jobs.GetAsyncEnumerator(ct);
         bool hasFirst;
@@ -37,7 +37,6 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncedItemR
             return 0;
         }
 
-        var mappings = await fileClassificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
         var firstJob = enumerator.Current;
 
         return await syncPipeline.RunAsync(

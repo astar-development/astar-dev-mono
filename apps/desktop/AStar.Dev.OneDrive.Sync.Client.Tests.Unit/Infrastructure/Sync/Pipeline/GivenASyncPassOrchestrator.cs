@@ -238,6 +238,7 @@ public sealed class GivenASyncPassOrchestrator
             Arg.Any<Func<CancellationToken, Task<string>>>(),
             Arg.Any<IAsyncEnumerable<SyncJob>>(),
             Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(),
+            Arg.Any<IReadOnlyList<FileClassificationCategory>>(),
             Arg.Any<Action<SyncProgressEventArgs>>(),
             Arg.Any<Func<JobCompletedEventArgs, Task>>(),
             Arg.Any<CancellationToken>());
