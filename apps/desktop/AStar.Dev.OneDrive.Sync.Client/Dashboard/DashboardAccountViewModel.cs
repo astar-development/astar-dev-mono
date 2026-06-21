@@ -166,6 +166,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             RecentActivity.RemoveAt(RecentActivity.Count - 1);
     }
 
+    /// <summary>Re-evaluates the relative timestamp for <see cref="LastSyncText"/> and all <see cref="RecentActivity"/> items. Call on a periodic timer tick.</summary>
+    public void RefreshTimeDisplays()
+    {
+        UpdateLastSyncText(SyncState);
+        foreach (var item in RecentActivity)
+            item.RefreshTimeAgoText();
+    }
+
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
         syncState == SyncState.NoSyncPathConfigured ? localizationService.GetLocal("Dashboard.NoSyncPath") :

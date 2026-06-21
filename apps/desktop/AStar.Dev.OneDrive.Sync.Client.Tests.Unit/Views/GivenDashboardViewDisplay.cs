@@ -27,7 +27,7 @@ public sealed class GivenDashboardViewDisplay
         var accountFactory = Substitute.For<IDashboardAccountViewModelFactory>();
         var activityFactory = Substitute.For<IActivityItemViewModelFactory>();
 
-        return new DashboardViewModel(localization, syncAggregator, accountFactory, activityFactory);
+        return new DashboardViewModel(localization, syncAggregator, accountFactory, activityFactory, Substitute.For<IUiTimer>());
     }
 
     [AvaloniaFact]

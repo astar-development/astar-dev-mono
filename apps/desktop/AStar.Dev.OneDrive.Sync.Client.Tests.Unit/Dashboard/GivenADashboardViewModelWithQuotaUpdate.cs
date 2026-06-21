@@ -16,7 +16,7 @@ public sealed class GivenADashboardViewModelWithQuotaUpdate
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private DashboardViewModel CreateSut() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService)), new ActivityItemViewModelFactory(_localizationService));
+    private DashboardViewModel CreateSut() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService)), new ActivityItemViewModelFactory(_localizationService), Substitute.For<IUiTimer>());
 
     private static OneDriveAccount BuildAccount(string id) => new() { Id = new AccountId(id) };
 

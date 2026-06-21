@@ -22,6 +22,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             accounts.SubscribeToSyncEvents();
             activity.SubscribeToSyncEvents();
             dashboard.SubscribeToSyncEvents();
+            dashboard.StartRefreshTimer();
 
             var restored = await startupService.RestoreAccountsAsync()
                 .MatchAsync(

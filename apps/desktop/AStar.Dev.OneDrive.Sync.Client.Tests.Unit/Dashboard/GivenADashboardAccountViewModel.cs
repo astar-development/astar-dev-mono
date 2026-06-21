@@ -193,4 +193,17 @@ public sealed class GivenADashboardAccountViewModel
 
         localization.Received(1).GetLocal("Common.DaysAgo", Arg.Any<object[]>());
     }
+
+    [Fact]
+    public void when_refresh_time_displays_called_then_localization_service_receives_last_sync_key_again()
+    {
+        var localization = Substitute.For<ILocalizationService>();
+        var account = new OneDriveAccount { Id = new AccountId("test-account"), LastSyncedAt = DateTimeOffset.UtcNow.AddSeconds(-30) };
+        var sut = CreateSutWithAccount(account, localization);
+        localization.ClearReceivedCalls();
+
+        sut.RefreshTimeDisplays();
+
+        localization.Received(1).GetLocal("Common.JustNow");
+    }
 }

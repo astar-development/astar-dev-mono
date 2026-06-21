@@ -40,6 +40,7 @@ public sealed class GivenTheViewModelRegistrations
         _ = services.AddSingleton(Substitute.For<ISyncService>());
         _ = services.AddSingleton(Substitute.For<ISyncScheduler>());
         _ = services.AddSingleton(Substitute.For<IUiDispatcher>());
+        _ = services.AddSingleton(Substitute.For<IUiTimer>());
         _ = services.AddSingleton(Substitute.For<ILocalizationService>());
         _ = services.AddSingleton(Substitute.For<IFileSystem>());
         _ = services.AddSingleton(Substitute.For<IFileManagerService>());
