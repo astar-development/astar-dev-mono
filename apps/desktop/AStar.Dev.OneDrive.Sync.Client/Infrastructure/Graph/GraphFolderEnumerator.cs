@@ -40,27 +40,33 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
         if(!visited.Add(parentId))
             yield break;
 
-        var page = await client.Drives[driveId.Value].Items[parentId].Children
+        var firstPage = await client.Drives[driveId.Value].Items[parentId].Children
             .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct).ConfigureAwait(false);
 
+        await foreach (var item in EnumeratePageItemsAsync(firstPage, nextLink => client.Drives[driveId.Value].Items[parentId].Children.WithUrl(nextLink).GetAsync(cancellationToken: ct), ct))
+        {
+            string itemPath = BuildRelativePath(relativePath, item);
+            yield return MapToDeltaItem(item, itemPath);
+
+            if(item.Folder is not null && item.Id is not null)
+                await foreach(var child in EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, visited, ct))
+                    yield return child;
+        }
+    }
+
+    private static async IAsyncEnumerable<DriveItem> EnumeratePageItemsAsync(DriveItemCollectionResponse? firstPage, Func<string, Task<DriveItemCollectionResponse?>> fetchNext, [EnumeratorCancellation] CancellationToken ct)
+    {
+        var page = firstPage;
         while(page?.Value is not null)
         {
             foreach(var item in page.Value)
-            {
-                string itemPath = BuildRelativePath(relativePath, item);
-                yield return MapToDeltaItem(item, itemPath);
-
-                if(item.Folder is not null && item.Id is not null)
-                    await foreach(var child in EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, visited, ct))
-                        yield return child;
-            }
+                yield return item;
 
             if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
-                break;
+                yield break;
 
-            page = await client.Drives[driveId.Value].Items[parentId].Children
-                .WithUrl(page.OdataNextLink!)
-                .GetAsync(cancellationToken: ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            page = await fetchNext(page.OdataNextLink!).ConfigureAwait(false);
         }
     }
 
