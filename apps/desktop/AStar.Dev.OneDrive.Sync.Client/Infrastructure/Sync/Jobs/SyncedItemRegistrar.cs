@@ -27,11 +27,34 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         OneDriveSyncClientMessages.SyncedItemLocalExists(logger, localPath);
         var phantomItem = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         int syncedItemId = await syncedItemRepository.UpsertAsync(phantomItem, ct).ConfigureAwait(false);
-
-        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
-        var categoryIds = await categoryResolutionService.ResolveManyAsync(classifications, ct).ConfigureAwait(false);
+        var categoryIds = await ResolveClassificationsAsync(remotePath, mappings, ct).ConfigureAwait(false);
         await syncedItemRepository.UpsertFileClassificationsAsync(syncedItemId, categoryIds, ct).ConfigureAwait(false);
         syncedItems[item.Id.Id] = phantomItem;
+    }
+
+    /// <inheritdoc />
+    public async Task RegisterDownloadAsync(AccountId accountId, SyncJob job, string remotePath, IReadOnlyList<FileClassificationCategory> mappings, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    {
+        var entity = SyncedItemEntityFactory.CreateFromDownloadJob(accountId, job, remotePath);
+        var categoryIds = await ResolveClassificationsAsync(remotePath, mappings, ct).ConfigureAwait(false);
+        await syncedItemRepository.UpsertWithClassificationsAsync(entity, categoryIds, ct).ConfigureAwait(false);
+        syncedItems[job.Remote.RemoteItemId.Id] = entity;
+    }
+
+    /// <inheritdoc />
+    public async Task RegisterUploadAsync(AccountId accountId, UploadSyncJob job, string uploadedRemoteItemId, string remotePath, IReadOnlyList<FileClassificationCategory> mappings, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    {
+        var entity = SyncedItemEntityFactory.CreateFromUploadJob(accountId, job, uploadedRemoteItemId, remotePath, fileSystem);
+        var categoryIds = await ResolveClassificationsAsync(remotePath, mappings, ct).ConfigureAwait(false);
+        await syncedItemRepository.UpsertWithClassificationsAsync(entity, categoryIds, ct).ConfigureAwait(false);
+        syncedItems[uploadedRemoteItemId] = entity;
+    }
+
+    private async Task<IReadOnlyList<int>> ResolveClassificationsAsync(string remotePath, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    {
+        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
+        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
+
+        return await categoryResolutionService.ResolveManyAsync(classifications, ct).ConfigureAwait(false);
     }
 }
