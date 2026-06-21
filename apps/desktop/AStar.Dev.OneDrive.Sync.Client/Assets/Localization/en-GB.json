@@ -199,6 +199,7 @@
   "Sync.SyncingFiles": "Syncing {0:N0} file(s)...",
   "Sync.NoChanges": "No changes",
   "Sync.CompletedWithErrors": "Sync completed with {0:N0} error(s) — check the log for details",
+  "Sync.UnexpectedError": "An unexpected error occurred. Please try again.",
   "Dashboard.NoSyncPath": "No local sync path configured",
   "Dashboard.Pending": "Pending",
   "Dashboard.AllSynced": "All synced",
