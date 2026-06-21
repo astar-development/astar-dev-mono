@@ -64,7 +64,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
     [RelayCommand]
-    public async Task LoadAsync()
+    public async Task LoadAsync(CancellationToken ct)
     {
         if (IsLoading)
             return;
@@ -76,7 +76,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id)
+            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
                 .MatchAsync<AuthResult, AuthError, string?>(
                     ok => ok.AccessToken,
                     error =>
@@ -89,7 +89,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if (accessToken is null)
                 return;
 
-            var driveId = await graphService.GetDriveIdAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty))
+            var driveId = await graphService.GetDriveIdAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty), ct)
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -104,7 +104,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             driveIdOption = new Option<DriveId>.Some(driveId.Value);
 
-            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, CancellationToken.None);
+            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, ct);
             ruleStates.Clear();
             foreach (var (path, ruleType) in loadedRuleStates)
                 ruleStates[path] = ruleType;
