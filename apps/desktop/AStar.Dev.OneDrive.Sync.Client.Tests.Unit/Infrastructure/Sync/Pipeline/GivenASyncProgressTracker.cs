@@ -211,4 +211,13 @@ public sealed class GivenASyncProgressTracker
 
         sut.FailedCount.ShouldBe(2);
     }
+
+    [Fact]
+    public async Task when_record_completion_is_called_with_success_false_and_null_error_then_throws_argument_null_exception()
+    {
+        var sut = CreateTracker(1);
+
+        await Should.ThrowAsync<ArgumentNullException>(() =>
+            sut.RecordCompletion(MakeDownloadJob(), false, null, _ => { }, _ => Task.CompletedTask));
+    }
 }

@@ -50,7 +50,7 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
             shouldReportProgress = completedSoFar % progressReportInterval == 0 || (isTotalized && completedSoFar == currentTotal);
         }
 
-        var completedJob = success ? job.Complete() : job.Fail(error!);
+        var completedJob = success ? job.Complete() : job.Fail(error ?? throw new ArgumentNullException(nameof(error), "Error message required when success is false."));
 
         if (shouldReportProgress)
             onProgress(new SyncProgressEventArgs(accountId, folderId, completedSoFar, currentTotal, job.Target.RelativePath, SyncState.Syncing));
