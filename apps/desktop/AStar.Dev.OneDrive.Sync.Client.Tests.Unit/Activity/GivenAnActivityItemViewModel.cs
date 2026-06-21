@@ -496,4 +496,16 @@ public sealed class GivenAnActivityItemViewModel
 
         loc.Received(1).GetLocal("Activity.SyncError");
     }
+
+    [Fact]
+    public void when_refresh_time_ago_text_called_then_property_changed_raised_for_time_ago_text()
+    {
+        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddSeconds(-30) };
+        var raisedProperties = new List<string?>();
+        sut.PropertyChanged += (_, e) => raisedProperties.Add(e.PropertyName);
+
+        sut.RefreshTimeAgoText();
+
+        raisedProperties.ShouldContain(nameof(ActivityItemViewModel.TimeAgoText));
+    }
 }
