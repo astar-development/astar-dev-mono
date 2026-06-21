@@ -28,7 +28,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         var existing = await db.SyncedItems
             .FirstOrDefaultAsync(i => i.AccountId == item.AccountId && i.RemoteItemId == item.RemoteItemId, cancellationToken).ConfigureAwait(false);
 
-        if(existing is null)
+        if (existing is null)
         {
             _ = db.SyncedItems.Add(item);
             _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -36,12 +36,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             return item.Id;
         }
 
-        existing.RemoteParentId   = item.RemoteParentId;
-        existing.RemotePath       = item.RemotePath;
-        existing.LocalPath        = item.LocalPath;
-        existing.IsFolder         = item.IsFolder;
+        existing.RemoteParentId = item.RemoteParentId;
+        existing.RemotePath = item.RemotePath;
+        existing.LocalPath = item.LocalPath;
+        existing.IsFolder = item.IsFolder;
         existing.RemoteModifiedAt = item.RemoteModifiedAt;
-        existing.Tags             = item.Tags;
+        existing.Tags = item.Tags;
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return existing.Id;
@@ -58,7 +58,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         var entities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
         {
             SyncedItemId = syncedItemId,
-            CategoryId   = categoryId
+            CategoryId = categoryId
         });
 
         db.SyncedItemFileClassifications.AddRange(entities);
@@ -80,7 +80,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         var classificationEntities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
         {
             SyncedItemId = syncedItemId,
-            CategoryId   = categoryId
+            CategoryId = categoryId
         });
 
         db.SyncedItemFileClassifications.AddRange(classificationEntities);
@@ -156,16 +156,10 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
 
         if (criteria.DuplicatesOnly)
         {
-            var candidates = await db.SyncedItems
-                .Where(i => i.AccountId == criteria.AccountId && !i.IsFolder && i.SizeInBytes != null)
-                .Select(i => new { i.Id, i.SizeInBytes, FileName = i.RemotePath.Substring(i.RemotePath.LastIndexOf('/') + 1) })
-                .ToListAsync(cancellationToken).ConfigureAwait(false);
+            var duplicateIds = await ResolveDuplicateIdsAsync(db, criteria.AccountId, cancellationToken).ConfigureAwait(false);
 
-            var duplicateIds = candidates
-                .GroupBy(i => new { i.SizeInBytes, i.FileName })
-                .Where(g => g.Count() > 1)
-                .SelectMany(g => g.Select(i => i.Id))
-                .ToHashSet();
+            if (duplicateIds.Count == 0)
+                return [];
 
             query = query.Where(i => duplicateIds.Contains(i.Id));
         }
@@ -173,9 +167,9 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         query = criteria.SortOrder switch
         {
             SearchSortOrder.NameDescending => query.OrderByDescending(i => i.RemotePath),
-            SearchSortOrder.SizeAscending  => query.OrderBy(i => i.SizeInBytes),
+            SearchSortOrder.SizeAscending => query.OrderBy(i => i.SizeInBytes),
             SearchSortOrder.SizeDescending => query.OrderByDescending(i => i.SizeInBytes),
-            _                              => query.OrderBy(i => i.RemotePath)
+            _ => query.OrderBy(i => i.RemotePath)
         };
 
         var items = await query
@@ -213,6 +207,29 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         return categories;
     }
 
+    private static async Task<HashSet<int>> ResolveDuplicateIdsAsync(AppDbContext db, AccountId accountId, CancellationToken cancellationToken)
+    {
+        var sizesWithDuplicates = await db.SyncedItems
+            .Where(i => i.AccountId == accountId && !i.IsFolder && i.SizeInBytes != null)
+            .GroupBy(i => i.SizeInBytes)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        if (sizesWithDuplicates.Count == 0)
+            return [];
+
+        var candidates = await db.SyncedItems
+            .Where(i => i.AccountId == accountId && !i.IsFolder && sizesWithDuplicates.Contains(i.SizeInBytes))
+            .Select(i => new { i.Id, i.SizeInBytes, i.RemotePath })
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return [.. candidates
+            .GroupBy(i => new { i.SizeInBytes, FileName = i.RemotePath[(i.RemotePath.LastIndexOf('/') + 1)..] })
+            .Where(g => g.Count() > 1)
+            .SelectMany(g => g.Select(i => i.Id))];
+    }
+
     private static async Task<int> UpsertInContextAsync(AppDbContext db, SyncedItemEntity item, CancellationToken cancellationToken)
     {
         var existing = await db.SyncedItems
@@ -226,12 +243,12 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             return item.Id;
         }
 
-        existing.RemoteParentId   = item.RemoteParentId;
-        existing.RemotePath       = item.RemotePath;
-        existing.LocalPath        = item.LocalPath;
-        existing.IsFolder         = item.IsFolder;
+        existing.RemoteParentId = item.RemoteParentId;
+        existing.RemotePath = item.RemotePath;
+        existing.LocalPath = item.LocalPath;
+        existing.IsFolder = item.IsFolder;
         existing.RemoteModifiedAt = item.RemoteModifiedAt;
-        existing.Tags             = item.Tags;
+        existing.Tags = item.Tags;
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return existing.Id;
