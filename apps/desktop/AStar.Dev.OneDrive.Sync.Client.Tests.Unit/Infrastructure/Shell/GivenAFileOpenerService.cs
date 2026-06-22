@@ -13,6 +13,12 @@ public sealed class GivenAFileOpenerService
     }
 
     [Fact]
+    public void when_file_does_not_exist_and_path_contains_spaces_then_open_file_does_not_throw()
+    {
+        Should.NotThrow(() => sut.OpenFile("/nonexistent/path with spaces/to file.txt"));
+    }
+
+    [Fact]
     public void when_path_is_empty_string_then_open_file_does_not_throw()
     {
         Should.NotThrow(() => sut.OpenFile(string.Empty));

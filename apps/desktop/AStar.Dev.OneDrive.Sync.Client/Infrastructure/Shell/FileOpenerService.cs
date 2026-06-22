@@ -11,7 +11,7 @@ public sealed class FileOpenerService : IFileOpenerService
         if (!File.Exists(localPath))
             return;
 
-        _ = Process.Start(GetOpener(), localPath);
+        _ = Process.Start(new ProcessStartInfo(GetOpener()) { ArgumentList = { localPath }, UseShellExecute = false });
     }
 
     internal static string GetOpener()
