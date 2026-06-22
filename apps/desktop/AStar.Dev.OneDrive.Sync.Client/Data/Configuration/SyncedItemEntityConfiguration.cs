@@ -35,5 +35,7 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
         _ = builder.HasIndex(i => i.RemotePath);
         _ = builder.HasIndex(i => i.LocalPath);
         _ = builder.HasIndex(i => i.SizeInBytes);
+        _ = builder.HasIndex(e => new { e.AccountId, e.IsFolder, e.SizeInBytes });
+        _ = builder.HasIndex(e => new { e.AccountId, e.IsFolder, e.RemotePath });
     }
 }
