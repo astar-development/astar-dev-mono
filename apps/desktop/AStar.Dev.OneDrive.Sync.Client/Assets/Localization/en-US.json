@@ -211,6 +211,7 @@
   "Search.MinSize.Label": "US-Min size (bytes)",
   "Search.MaxSize.Label": "US-Max size (bytes)",
   "Search.Tags.Label": "US-Tags",
+  "Search.Tags.Loading": "US-Loading categories...",
   "Search.Tags.NoClassifications": "US-No classifications found.",
   "Search.DuplicatesOnly.Label": "US-Duplicates only",
   "Search.Button": "US-Search",

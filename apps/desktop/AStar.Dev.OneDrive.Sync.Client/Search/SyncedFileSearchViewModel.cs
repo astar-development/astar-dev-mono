@@ -44,6 +44,12 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     [ObservableProperty]
     public partial bool IsCapped { get; private set; }
 
+    [ObservableProperty]
+    public partial bool IsLoadingTags { get; private set; }
+
+    [ObservableProperty]
+    public partial bool ShowNoClassificationsHint { get; private set; }
+
     public ObservableCollection<SyncedFileResultViewModel> Results { get; } = [];
     public ObservableCollection<string> SelectedTags { get; } = [];
     public ObservableCollection<string> AvailableTags { get; } = [];
@@ -75,6 +81,9 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
 
     /// <summary>Localised "Tags" label.</summary>
     public string TagsLabelText => loc.GetLocal("Search.Tags.Label");
+
+    /// <summary>Localised message shown while categories are being loaded.</summary>
+    public string TagsLoadingText => loc.GetLocal("Search.Tags.Loading");
 
     /// <summary>Localised message shown when no classifications exist for the active account.</summary>
     public string TagsNoClassificationsText => loc.GetLocal("Search.Tags.NoClassifications");
@@ -125,10 +134,18 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         if (activeAccountId is null)
             return;
 
+        IsLoadingTags = true;
+        ShowNoClassificationsHint = false;
+
         var tags = await repository.GetDistinctTagNamesAsync(activeAccountId.Value, ct).ConfigureAwait(false);
 
         if (tags.Count <= cachedTagCount)
+        {
+            IsLoadingTags = false;
+            ShowNoClassificationsHint = AvailableTags.Count == 0;
+
             return;
+        }
 
         cachedTagCount = tags.Count;
 
@@ -137,6 +154,8 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             AvailableTags.Clear();
             foreach (string tag in tags)
                 AvailableTags.Add(tag);
+            IsLoadingTags = false;
+            ShowNoClassificationsHint = tags.Count == 0;
         });
     }
 
