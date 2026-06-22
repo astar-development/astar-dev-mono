@@ -96,4 +96,26 @@ public sealed class GivenASyncedFileResultViewModel
 
         vm.DeleteButtonText.ShouldBe("Delete");
     }
+
+    [Fact]
+    public async Task when_cancel_thumbnail_load_is_called_during_load_then_thumbnail_stays_null()
+    {
+        string tmpPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".png");
+        await File.WriteAllBytesAsync(tmpPath, PngFixtures.OneByOnePng, TestContext.Current.CancellationToken);
+        try
+        {
+            fileTypeClassifier.Classify(Arg.Any<string>()).Returns(FileType.Image);
+            var vm = CreateSut(tmpPath);
+
+            _ = vm.LoadThumbnailAsync();
+            vm.CancelThumbnailLoad();
+            await Task.Yield();
+
+            vm.Thumbnail.ShouldBeNull();
+        }
+        finally
+        {
+            File.Delete(tmpPath);
+        }
+    }
 }

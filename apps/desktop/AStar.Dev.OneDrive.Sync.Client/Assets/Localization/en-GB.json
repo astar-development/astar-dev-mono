@@ -222,6 +222,7 @@
   "Search.SortOrder.SizeAsc": "Size smallest first",
   "Search.SortOrder.SizeDesc": "Size largest first",
   "Search.Result.Delete.Button": "Delete",
+  "Search.ResultsCapped": "Showing top 500 results. Refine your search to see more.",
   "AccountSync.LocalSyncFolderLabel": "Local sync folder",
   "AccountSync.LocalSyncFolderPlaceholder": "e.g. /home/user/OneDrive/personal",
   "AccountSync.BrowseButton": "Browse ...",

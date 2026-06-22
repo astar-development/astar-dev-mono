@@ -15,6 +15,7 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     private readonly IUiDispatcher dispatcher;
     private readonly ILocalizationService loc;
     private readonly Func<CancellationToken, Task> onDeleteAsync;
+    private CancellationTokenSource? thumbnailCts;
 
     public SyncedFileResultViewModel(SyncedItemSearchResult result, IFileTypeClassifier fileTypeClassifier, IFileOpenerService fileOpenerService, IUiDispatcher dispatcher, ILocalizationService loc, Func<CancellationToken, Task> onDeleteAsync)
     {
@@ -30,14 +31,28 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
         IsLocalPresent = File.Exists(result.LocalPath);
     }
 
+    /// <summary>File name extracted from the local path.</summary>
     public string FileName { get; }
+
+    /// <summary>Human-readable file size (e.g. "1.2 MB").</summary>
     public string FormattedSize { get; }
+
+    /// <summary>Comma-separated list of tag names associated with this file.</summary>
     public string TagName { get; }
+
+    /// <summary>Absolute local path of the synced file.</summary>
     public string LocalPath { get; }
+
+    /// <summary>Classified type of the file (Image, Document, etc.).</summary>
     public FileType FileType { get; }
+
+    /// <summary>True when the file exists at <see cref="LocalPath"/>.</summary>
     public bool IsLocalPresent { get; }
+
+    /// <summary>Card opacity — reduced when the local file is absent.</summary>
     public double CardOpacity => IsLocalPresent ? 1.0 : 0.4;
 
+    /// <summary>Localised label for the delete button.</summary>
     public string DeleteButtonText => loc.GetLocal("Search.Result.Delete.Button");
 
     [ObservableProperty]
@@ -49,18 +64,41 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     [RelayCommand]
     private Task DeleteFileAsync(CancellationToken ct) => onDeleteAsync(ct);
 
+    /// <summary>
+    /// Cancels any in-progress thumbnail load and clears any thumbnail already set by a racing load.
+    /// Safe to call from any thread; idempotent.
+    /// </summary>
+    public void CancelThumbnailLoad()
+    {
+        var cts = Interlocked.Exchange(ref thumbnailCts, null);
+        cts?.Cancel();
+        dispatcher.Post(() => Thumbnail = null);
+    }
+
+    /// <summary>Loads a 150-px-wide thumbnail from <see cref="LocalPath"/> when the file is a locally-present image.</summary>
     public async Task LoadThumbnailAsync()
     {
+        var previous = Interlocked.Exchange(ref thumbnailCts, null);
+        previous?.Cancel();
+
+        var cts = new CancellationTokenSource();
+        thumbnailCts = cts;
+
         if (!IsLocalPresent || FileType != FileType.Image)
             return;
 
-        var bitmap = await Task.Run(() =>
+        try
         {
-            using var stream = File.OpenRead(LocalPath);
-            return Avalonia.Media.Imaging.Bitmap.DecodeToWidth(stream, 150);
-        });
+            var bitmap = await Task.Run(() =>
+            {
+                using var stream = File.OpenRead(LocalPath);
+                return Avalonia.Media.Imaging.Bitmap.DecodeToWidth(stream, 150);
+            }, cts.Token);
 
-        dispatcher.Post(() => Thumbnail = bitmap);
+            if (!cts.IsCancellationRequested)
+                dispatcher.Post(() => Thumbnail = bitmap);
+        }
+        catch (OperationCanceledException) { }
     }
 
     private static string FormatSize(long? bytes) => bytes switch

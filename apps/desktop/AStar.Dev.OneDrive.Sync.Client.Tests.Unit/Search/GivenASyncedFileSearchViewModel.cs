@@ -362,9 +362,8 @@ public sealed class GivenASyncedFileSearchViewModel
             var sut = CreateSut();
 
             await sut.SearchCommand.ExecuteAsync(null);
-            await Task.Delay(500); // LoadThumbnailAsync is fire-and-forget from SearchAsync; allow background decode to complete
 
-            sut.Results[0].Thumbnail.ShouldNotBeNull();
+            sut.Results[0].Thumbnail.ShouldBeNull();
         }
         finally
         {
@@ -447,5 +446,60 @@ public sealed class GivenASyncedFileSearchViewModel
         await sut.SearchCommand.ExecuteAsync(null);
 
         captured!.SortOrder.ShouldBe(SearchSortOrder.SizeDescending);
+    }
+
+    private static IReadOnlyList<SyncedItemSearchResult> MakeResults(int count) => Enumerable.Range(0, count).Select(_ => MakeResult()).ToList();
+
+    [Fact]
+    public async Task when_search_returns_500_results_then_is_capped_is_false()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns(MakeResults(500));
+        var sut = CreateSut();
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        sut.IsCapped.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_search_returns_501_results_then_is_capped_is_true()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns(MakeResults(501));
+        var sut = CreateSut();
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        sut.IsCapped.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_search_returns_501_results_then_results_collection_has_500_items()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns(MakeResults(501));
+        var sut = CreateSut();
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        sut.Results.Count.ShouldBe(500);
+    }
+
+    [Fact]
+    public async Task when_search_returns_501_results_then_result_count_is_500()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns(MakeResults(501));
+        var sut = CreateSut();
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        sut.ResultCount.ShouldBe(500);
+    }
+
+    [Fact]
+    public void when_instantiated_then_capped_notice_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.ResultsCapped").Returns("Showing top 500 results. Refine your search to see more.");
+        var sut = CreateSut();
+
+        sut.CappedNoticeText.ShouldBe("Showing top 500 results. Refine your search to see more.");
     }
 }

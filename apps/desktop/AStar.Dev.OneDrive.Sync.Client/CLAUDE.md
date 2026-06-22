@@ -11,3 +11,7 @@ When a feature is implemented, the `appsettings.json` must be update so the `ASt
 ## Text Blocks
 
 All text displayed in the application must be supplied from the localisation service, NOT hard-coded.
+
+## Rules
+
+NEVER use `null` as a return type, ALWAYS use `Option<T>`
