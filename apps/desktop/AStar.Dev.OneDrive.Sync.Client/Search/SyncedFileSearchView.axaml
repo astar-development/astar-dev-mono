@@ -58,11 +58,16 @@
                     <TextBlock Text="{Binding TagsLabelText}"
                                FontSize="{StaticResource FontSizeXs}"
                                Foreground="{DynamicResource TextTertiaryBrush}"/>
+                    <TextBlock Text="{Binding TagsLoadingText}"
+                               FontSize="{StaticResource FontSizeSm}"
+                               Foreground="{DynamicResource TextTertiaryBrush}"
+                               FontStyle="Italic"
+                               IsVisible="{Binding IsLoadingTags}"/>
                     <TextBlock Text="{Binding TagsNoClassificationsText}"
                                FontSize="{StaticResource FontSizeSm}"
                                Foreground="{DynamicResource TextTertiaryBrush}"
                                FontStyle="Italic"
-                               IsVisible="{Binding AvailableTags.Count, Converter={StaticResource IntZeroToBoolConverter}}"/>
+                               IsVisible="{Binding ShowNoClassificationsHint}"/>
                     <ScrollViewer MaxHeight="120"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"

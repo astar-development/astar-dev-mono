@@ -502,4 +502,49 @@ public sealed class GivenASyncedFileSearchViewModel
 
         sut.CappedNoticeText.ShouldBe("Showing top 500 results. Refine your search to see more.");
     }
+
+    [Fact]
+    public void when_instantiated_then_tags_loading_text_delegates_to_localisation_service()
+    {
+        loc.GetLocal("Search.Tags.Loading").Returns("Loading categories...");
+        var sut = CreateSut();
+
+        sut.TagsLoadingText.ShouldBe("Loading categories...");
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_then_is_loading_tags_is_false_after_load()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns([]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.IsLoadingTags.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_with_no_tags_then_show_no_classifications_hint_is_true()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns([]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.ShowNoClassificationsHint.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_with_tags_then_show_no_classifications_hint_is_false()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        sut.SetActiveAccount(TestAccountId);
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.ShowNoClassificationsHint.ShouldBeFalse();
+    }
 }

@@ -58,4 +58,8 @@ public sealed class GivenTheSearchLocalisationKeys
     [Fact]
     public void when_read_then_search_result_delete_button_key_exists() =>
         RootElement().TryGetProperty("Search.Result.Delete.Button", out _).ShouldBeTrue();
+
+    [Fact]
+    public void when_read_then_search_tags_loading_key_exists() =>
+        RootElement().TryGetProperty("Search.Tags.Loading", out _).ShouldBeTrue();
 }
