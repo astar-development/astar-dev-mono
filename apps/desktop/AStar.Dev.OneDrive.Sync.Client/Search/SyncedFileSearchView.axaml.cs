@@ -7,19 +7,19 @@ public partial class SyncedFileSearchView : UserControl
     public SyncedFileSearchView()
     {
         InitializeComponent();
-        ResultsList.ContainerPrepared += OnContainerPrepared;
-        ResultsList.ContainerClearing += OnContainerClearing;
+        ResultsList.ElementPrepared += OnElementPrepared;
+        ResultsList.ElementClearing += OnElementClearing;
     }
 
-    private static void OnContainerPrepared(object? sender, ContainerPreparedEventArgs e)
+    private static void OnElementPrepared(object? sender, ItemsRepeaterElementPreparedEventArgs e)
     {
-        if (e.Container.DataContext is SyncedFileResultViewModel vm)
+        if (e.Element.DataContext is SyncedFileResultViewModel vm)
             _ = vm.LoadThumbnailAsync();
     }
 
-    private static void OnContainerClearing(object? sender, ContainerClearingEventArgs e)
+    private static void OnElementClearing(object? sender, ItemsRepeaterElementClearingEventArgs e)
     {
-        if (e.Container.DataContext is SyncedFileResultViewModel vm)
+        if (e.Element.DataContext is SyncedFileResultViewModel vm)
             vm.CancelThumbnailLoad();
     }
 }

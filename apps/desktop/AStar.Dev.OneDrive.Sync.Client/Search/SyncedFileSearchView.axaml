@@ -179,14 +179,12 @@
                           HorizontalScrollBarVisibility="Disabled"
                           MinHeight="0"
                           Padding="16,8">
-                <ItemsControl x:Name="ResultsList"
-                              ItemsSource="{Binding Results}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
+                <ItemsRepeater x:Name="ResultsList"
+                               ItemsSource="{Binding Results}">
+                    <ItemsRepeater.Layout>
+                        <WrapLayout Orientation="Horizontal"/>
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
                         <DataTemplate DataType="search:SyncedFileResultViewModel">
 
                             <Border Width="180"
@@ -257,8 +255,8 @@
                             </Border>
 
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
             </ScrollViewer>
 
         </Grid>
