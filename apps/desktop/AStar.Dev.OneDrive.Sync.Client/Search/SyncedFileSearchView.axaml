@@ -124,9 +124,12 @@
         </Border>
 
         <!-- ── Results area (* row) ── -->
-        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+        <Grid Grid.Row="1"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              RowDefinitions="Auto,Auto,Auto,*">
 
-            <!-- Result count badge + duplicate disclaimer + searching indicator -->
+            <!-- Row 0: Result count badge + duplicate disclaimer + searching indicator -->
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal"
                             Spacing="8"
@@ -152,104 +155,110 @@
                              IsVisible="{Binding IsSearching}"/>
             </Grid>
 
-            <!-- Results ScrollViewer (* row, MinHeight="0" per bounded-viewport rule) -->
-            <ScrollViewer Grid.Row="1"
+            <!-- Row 1: Capped notice -->
+            <TextBlock Grid.Row="1"
+                       IsVisible="{Binding IsCapped}"
+                       Text="{Binding CappedNoticeText}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       FontStyle="Italic"
+                       Margin="16,4,16,4"/>
+
+            <!-- Row 2: Empty state -->
+            <TextBlock Grid.Row="2"
+                       Text="{Binding NoResultsText}"
+                       FontSize="{StaticResource FontSizeMd}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,32,0,0"
+                       IsVisible="{Binding ResultCount, Converter={StaticResource IntZeroToBoolConverter}}"/>
+
+            <!-- Row 3: Results list (MinHeight="0" per bounded-viewport rule) -->
+            <ScrollViewer Grid.Row="3"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           MinHeight="0"
                           Padding="16,8">
-                <StackPanel>
+                <ItemsControl x:Name="ResultsList"
+                              ItemsSource="{Binding Results}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="search:SyncedFileResultViewModel">
 
-                    <!-- Empty state -->
-                    <TextBlock Text="{Binding NoResultsText}"
-                               FontSize="{StaticResource FontSizeMd}"
-                               Foreground="{DynamicResource TextTertiaryBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,32,0,0"
-                               IsVisible="{Binding ResultCount, Converter={StaticResource IntZeroToBoolConverter}}"/>
+                            <Border Width="180"
+                                    Margin="0,0,8,8"
+                                    Opacity="{Binding CardOpacity}"
+                                    Background="{DynamicResource BackgroundSecondaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusLg}"
+                                    Padding="10">
 
-                    <!-- Result cards grid -->
-                    <ItemsControl ItemsSource="{Binding Results}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="search:SyncedFileResultViewModel">
+                                <StackPanel Spacing="6">
 
-                                <Border Width="180"
-                                        Margin="0,0,8,8"
-                                        Opacity="{Binding CardOpacity}"
-                                        Background="{DynamicResource BackgroundSecondaryBrush}"
-                                        BorderBrush="{DynamicResource BorderSubtleBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="{StaticResource RadiusLg}"
-                                        Padding="10">
+                                    <!-- Thumbnail / placeholder -->
+                                    <Border Width="150" Height="150"
+                                            HorizontalAlignment="Center"
+                                            Background="{DynamicResource BackgroundTertiaryBrush}"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding Thumbnail}"
+                                               Width="150" Height="150"
+                                               Stretch="UniformToFill"/>
+                                    </Border>
 
-                                    <StackPanel Spacing="6">
+                                    <!-- Filename -->
+                                    <TextBlock Text="{Binding FileName}"
+                                               FontSize="{StaticResource FontSizeSm}"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="160"/>
 
-                                        <!-- Thumbnail / placeholder -->
-                                        <Border Width="150" Height="150"
-                                                HorizontalAlignment="Center"
-                                                Background="{DynamicResource BackgroundTertiaryBrush}"
-                                                CornerRadius="{StaticResource RadiusMd}"
-                                                ClipToBounds="True">
-                                            <Image Source="{Binding Thumbnail}"
-                                                   Width="150" Height="150"
-                                                   Stretch="UniformToFill"/>
-                                        </Border>
+                                    <!-- Formatted size -->
+                                    <TextBlock Text="{Binding FormattedSize}"
+                                               FontSize="{StaticResource FontSizeXs}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"/>
 
-                                        <!-- Filename -->
-                                        <TextBlock Text="{Binding FileName}"
-                                                   FontSize="{StaticResource FontSizeSm}"
-                                                   FontWeight="Medium"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxWidth="160"/>
+                                    <!-- Tag name -->
+                                    <TextBlock Text="{Binding TagName}"
+                                               FontSize="{StaticResource FontSizeXs}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               MaxWidth="160"
+                                               IsVisible="{Binding TagName, Converter={StaticResource StringNotEmptyConverter}}"/>
 
-                                        <!-- Formatted size -->
-                                        <TextBlock Text="{Binding FormattedSize}"
-                                                   FontSize="{StaticResource FontSizeXs}"
-                                                   Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                    <!-- Open button -->
+                                    <Button Content="Open"
+                                            Command="{Binding OpenFileCommand}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="8,4"
+                                            FontSize="{StaticResource FontSizeXs}"
+                                            CornerRadius="{StaticResource RadiusSm}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource BorderDefaultBrush}"/>
 
-                                        <!-- Tag name -->
-                                        <TextBlock Text="{Binding TagName}"
-                                                   FontSize="{StaticResource FontSizeXs}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxWidth="160"
-                                                   IsVisible="{Binding TagName, Converter={StaticResource StringNotEmptyConverter}}"/>
+                                    <!-- Delete button -->
+                                    <Button Content="{Binding DeleteButtonText}"
+                                            Command="{Binding DeleteFileCommand}"
+                                            HorizontalAlignment="Stretch"
+                                            Padding="8,4"
+                                            FontSize="{StaticResource FontSizeXs}"
+                                            CornerRadius="{StaticResource RadiusSm}"
+                                            BorderThickness="1"
+                                            BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                            Foreground="{DynamicResource TextErrorBrush}"/>
 
-                                        <!-- Open button -->
-                                        <Button Content="Open"
-                                                Command="{Binding OpenFileCommand}"
-                                                HorizontalAlignment="Stretch"
-                                                Padding="8,4"
-                                                FontSize="{StaticResource FontSizeXs}"
-                                                CornerRadius="{StaticResource RadiusSm}"
-                                                BorderThickness="1"
-                                                BorderBrush="{DynamicResource BorderDefaultBrush}"/>
+                                </StackPanel>
+                            </Border>
 
-                                        <!-- Delete button -->
-                                        <Button Content="{Binding DeleteButtonText}"
-                                                Command="{Binding DeleteFileCommand}"
-                                                HorizontalAlignment="Stretch"
-                                                Padding="8,4"
-                                                FontSize="{StaticResource FontSizeXs}"
-                                                CornerRadius="{StaticResource RadiusSm}"
-                                                BorderThickness="1"
-                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
-                                                Foreground="{DynamicResource TextErrorBrush}"/>
-
-                                    </StackPanel>
-                                </Border>
-
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
 
         </Grid>

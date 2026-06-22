@@ -13,6 +13,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Search;
 
 public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IAccountRepository accountRepository, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
+    private const int SearchResultCap = 500;
+
     private readonly IAccountRepository accountRepository = accountRepository;
     private AccountId? activeAccountId;
     private int cachedTagCount;
@@ -38,6 +40,9 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
 
     [ObservableProperty]
     public partial int SelectedSortOrderIndex { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsCapped { get; private set; }
 
     public ObservableCollection<SyncedFileResultViewModel> Results { get; } = [];
     public ObservableCollection<string> SelectedTags { get; } = [];
@@ -88,6 +93,9 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
 
     /// <summary>Localised "Sort by" label for the sort order selector.</summary>
     public string SortOrderLabelText => loc.GetLocal("Search.SortOrder.Label");
+
+    /// <summary>Localised notice shown when results are capped at the search limit.</summary>
+    public string CappedNoticeText => loc.GetLocal("Search.ResultsCapped");
 
     [RelayCommand]
     private void ToggleTag(string tag)
@@ -155,9 +163,14 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
 
             var results = await repository.SearchAsync(criteria, cancellationToken);
 
+            bool capped = results.Count > SearchResultCap;
+            var displayResults = capped ? (IReadOnlyList<SyncedItemSearchResult>)results.Take(SearchResultCap).ToList() : results;
+
             dispatcher.Post(() =>
             {
-                foreach (var result in results)
+                IsCapped = capped;
+
+                foreach (var result in displayResults)
                 {
                     SyncedFileResultViewModel vm = null!;
                     vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, async ct =>
@@ -172,7 +185,6 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
                         });
                     });
                     Results.Add(vm);
-                    _ = vm.LoadThumbnailAsync();
                 }
 
                 ResultCount = Results.Count;
