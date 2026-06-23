@@ -121,7 +121,11 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     {
         activeAccountId = accountId;
         cachedTagCount = 0;
-        dispatcher.Post(AvailableTags.Clear);
+        dispatcher.Post(() =>
+        {
+            AvailableTags.Clear();
+            SelectedTags.Clear();
+        });
     }
 
     /// <summary>
@@ -152,6 +156,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         dispatcher.Post(() =>
         {
             AvailableTags.Clear();
+            SelectedTags.Clear();
             foreach (string tag in tags)
                 AvailableTags.Add(tag);
             IsLoadingTags = false;
