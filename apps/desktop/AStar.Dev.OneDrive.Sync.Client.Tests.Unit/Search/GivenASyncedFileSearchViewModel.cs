@@ -547,4 +547,48 @@ public sealed class GivenASyncedFileSearchViewModel
 
         sut.ShowNoClassificationsHint.ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task when_account_changes_then_selected_tags_are_cleared()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image"]);
+        var sut = CreateSut();
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+        sut.ToggleTagCommand.Execute("Image");
+
+        sut.SetActiveAccount(new AccountId("acc-2"));
+
+        sut.SelectedTags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_again_with_more_tags_then_selected_tags_are_cleared()
+    {
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>())
+            .Returns(["Image"], ["Image", "Video"]);
+        var sut = CreateSut();
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+        sut.ToggleTagCommand.Execute("Image");
+
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        sut.SelectedTags.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_view_is_activated_again_with_more_tags_then_search_does_not_apply_stale_selected_tags()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>())
+            .Returns(["Image"], ["Image", "Video"]);
+        var sut = CreateSut();
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+        sut.ToggleTagCommand.Execute("Image");
+        await sut.OnViewActivatedAsync(CancellationToken.None);
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.Tags.ShouldBeEmpty();
+    }
 }
