@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <UserSecretsId>c35e09dc-dc30-416a-95a6-ec1a5ba1b43f</UserSecretsId>
+        <ApplicationIcon>Assets/astar.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <!--
+      SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+      Upgrading to 3.x (which tracks SQLite version numbers) is a major-scheme
+      change with potential compatibility risk against Microsoft.Data.Sqlite 10.0.8.
+      This suppression is intentional and matches the same decision already made
+      in AStar.Dev.Infrastructure.FilesDb.
+    -->
+    <ItemGroup>
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.Sqlite" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Microsoft.Playwright" />
+        <PackageReference Include="Serilog.Exceptions" />
+        <PackageReference Include="Serilog.Settings.Configuration" />
+        <PackageReference Include="Serilog.Sinks.Console" />
+        <PackageReference Include="Serilog.Sinks.Seq" />
+        <PackageReference Include="SkiaSharp" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Testably.Abstractions" />
+        <PackageReference Include="Tmds.DBus.Protocol" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
+        <ProjectReference Include="../AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
+        <ProjectReference Include="../AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
+        <ProjectReference Include="../AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+    </ItemGroup>
+
+</Project>

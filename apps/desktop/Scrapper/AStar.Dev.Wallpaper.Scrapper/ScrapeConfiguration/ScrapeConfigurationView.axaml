@@ -1,0 +1,234 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor"
+        x:Class="AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor.ScrapeConfigurationView"
+        x:DataType="vm:ScrapeConfigurationViewModel"
+        Title="Edit Scrape Configuration"
+        Width="960"
+        Height="720"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel>
+
+        <!-- Status bar + Export/Import/Save/Close -->
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto,Auto,Auto,Auto" Margin="12,8">
+            <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" x:Name="ExportScrapeConfigButton" Content="Export Config" Click="OnExportScrapeConfigClicked" MinWidth="100" Margin="0,0,8,0" />
+            <Button Grid.Column="2" x:Name="ImportScrapeConfigButton" Content="Import Config" Click="OnImportScrapeConfigClicked" MinWidth="100" Margin="0,0,8,0" />
+            <Button Grid.Column="3" Content="Save" Command="{Binding SaveCommand}" MinWidth="80" Margin="0,0,8,0" />
+            <Button Grid.Column="4" Content="Close" Click="OnCloseClicked" MinWidth="80" />
+        </Grid>
+
+        <!-- Loading overlay -->
+        <Panel>
+            <TabControl IsVisible="{Binding !IsLoading}">
+
+                <!-- ─── Connection ──────────────────────────────────────────── -->
+                <TabItem Header="Connection">
+                    <ScrollViewer Padding="16">
+                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto" Margin="0,0,0,12">
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="SQLite Connection String" VerticalAlignment="Center" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Sqlite}" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ─── User ────────────────────────────────────────────────── -->
+                <TabItem Header="User">
+                    <ScrollViewer Padding="16">
+                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0" >
+                            <Grid.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="Margin" Value="0,6" />
+                                </Style>
+                                <Style Selector="TextBox">
+                                    <Setter Property="Margin" Value="8,4" />
+                                </Style>
+                            </Grid.Styles>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Login Email Address" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding LoginEmailAddress}" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Username" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Username}" />
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Password" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Password}" PasswordChar="●" />
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Session Cookie" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SessionCookie}" AcceptsReturn="False" TextWrapping="Wrap" MaxHeight="80" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ─── Search ──────────────────────────────────────────────── -->
+                <TabItem Header="Search">
+                    <ScrollViewer Padding="16">
+                        <StackPanel Spacing="0">
+
+                            <!-- URLs -->
+                            <TextBlock Text="URLs" FontWeight="SemiBold" Margin="0,0,0,6" />
+                            <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto">
+                                <Grid.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="Margin" Value="0,4" />
+                                    </Style>
+                                    <Style Selector="TextBox">
+                                        <Setter Property="Margin" Value="8,3" />
+                                    </Style>
+                                </Grid.Styles>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Base URL" />
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding BaseUrl}" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Login URL" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LoginUrl}" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="API Key" />
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ApiKey}" />
+                            </Grid>
+
+                            <!-- Search paths -->
+                            <TextBlock Text="Search Paths" FontWeight="SemiBold" Margin="0,16,0,6" />
+                            <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                <Grid.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="Margin" Value="0,4" />
+                                    </Style>
+                                    <Style Selector="TextBox">
+                                        <Setter Property="Margin" Value="8,3" />
+                                    </Style>
+                                </Grid.Styles>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Search String" />
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SearchString}" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Search String Prefix" />
+                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SearchStringPrefix}" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Search String Suffix" />
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SearchStringSuffix}" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Top Wallpapers Path" />
+                                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TopWallpapers}" />
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Subscriptions Path" />
+                                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Subscriptions}" />
+                            </Grid>
+
+                            <!-- Pages & timing -->
+                            <TextBlock Text="Pages &amp; Timing" FontWeight="SemiBold" Margin="0,16,0,6" />
+                            <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Grid.Styles>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="Margin" Value="0,4" />
+                                    </Style>
+                                    <Style Selector="NumericUpDown">
+                                        <Setter Property="Margin" Value="8,3" />
+                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                        <Setter Property="MinWidth" Value="140" />
+                                    </Style>
+                                </Grid.Styles>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Image Pause (seconds)" />
+                                <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding ImagePauseInSeconds}" Minimum="0" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Slow Motion Delay" />
+                                <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SlowMotionDelay}" Minimum="0" FormatString="F2" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Starting Page Number" />
+                                <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding StartingPageNumber}" Minimum="1" />
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Total Pages" />
+                                <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding TotalPages}" Minimum="0" />
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Subscriptions Starting Page" />
+                                <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding SubscriptionsStartingPageNumber}" Minimum="1" />
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Subscriptions Total Pages" />
+                                <NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding SubscriptionsTotalPages}" Minimum="0" />
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Top Wallpapers Starting Page" />
+                                <NumericUpDown Grid.Row="6" Grid.Column="1" Value="{Binding TopWallpapersStartingPageNumber}" Minimum="1" />
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Top Wallpapers Total Pages" />
+                                <NumericUpDown Grid.Row="7" Grid.Column="1" Value="{Binding TopWallpapersTotalPages}" Minimum="0" />
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Headless Browser" />
+                                <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding UseHeadless}" Margin="8,3" />
+                            </Grid>
+
+                            <!-- Search Categories -->
+                            <TextBlock Text="Search Categories" FontWeight="SemiBold" Margin="0,16,0,6" />
+                            <ItemsControl ItemsSource="{Binding SearchCategories}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:SearchCategoryViewModel">
+                                        <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Margin="0,4"
+                                                Padding="10,8">
+                                            <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                                <Grid.Styles>
+                                                    <Style Selector="TextBlock">
+                                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                                        <Setter Property="Margin" Value="0,3" />
+                                                    </Style>
+                                                    <Style Selector="TextBox">
+                                                        <Setter Property="Margin" Value="8,2" />
+                                                    </Style>
+                                                    <Style Selector="NumericUpDown">
+                                                        <Setter Property="Margin" Value="8,2" />
+                                                        <Setter Property="MinWidth" Value="120" />
+                                                        <Setter Property="HorizontalAlignment" Value="Left" />
+                                                    </Style>
+                                                </Grid.Styles>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" />
+                                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Id}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Name" />
+                                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name}" />
+                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Last Known Image Count" />
+                                                <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding LastKnownImageCount}" Minimum="0" />
+                                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Last Page Visited" />
+                                                <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding LastPageVisited}" Minimum="0" />
+                                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Total Pages" />
+                                                <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding TotalPages}" Minimum="0" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ─── Directories ─────────────────────────────────────────── -->
+                <TabItem Header="Directories">
+                    <ScrollViewer Padding="16">
+                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                            <Grid.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="Margin" Value="0,6" />
+                                </Style>
+                                <Style Selector="TextBox">
+                                    <Setter Property="Margin" Value="8,4" />
+                                </Style>
+                            </Grid.Styles>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Root Directory" />
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding RootDirectory}" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Base Save Directory" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BaseSaveDirectory}" />
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Base Directory" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding BaseDirectory}" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Base Directory (Famous)" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding BaseDirectoryFamous}" />
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Sub Directory Name" />
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SubDirectoryName}" />
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+            </TabControl>
+
+            <!-- Loading indicator -->
+            <Panel IsVisible="{Binding IsLoading}"
+                   Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
+                   Opacity="0.8">
+                <TextBlock Text="Loading…"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="20" />
+            </Panel>
+        </Panel>
+
+    </DockPanel>
+</Window>

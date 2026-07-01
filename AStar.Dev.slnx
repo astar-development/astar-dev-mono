@@ -10,6 +10,10 @@
         <Project Path="apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App.Tests.Unit/AStar.Dev.File.App.Tests.Unit.csproj" />
         <Project Path="apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App/AStar.Dev.File.App.csproj" />
     </Folder>
+    <Folder Name="/apps/desktop/Scrapper/">
+        <Project Path="apps/desktop/Scrapper/AStar.Dev.Wallpaper.Scrapper.Tests.Unit/AStar.Dev.Wallpaper.Scrapper.Tests.Unit.csproj" />
+        <Project Path="apps/desktop/Scrapper/AStar.Dev.Wallpaper.Scrapper/AStar.Dev.Wallpaper.Scrapper.csproj" />
+    </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/infra/" />
     <Folder Name="/packages/" />
