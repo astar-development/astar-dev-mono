@@ -12,10 +12,7 @@ public sealed class GivenADatabaseResetService
     private readonly MockFileSystem fileSystem = new();
     private readonly DatabaseResetService sut;
 
-    public GivenADatabaseResetService()
-    {
-        sut = new DatabaseResetService(repo, fileSystem);
-    }
+    public GivenADatabaseResetService() => sut = new DatabaseResetService(repo, fileSystem);
 
     [Fact]
     public async Task when_resetting_then_reset_search_categories_is_called()

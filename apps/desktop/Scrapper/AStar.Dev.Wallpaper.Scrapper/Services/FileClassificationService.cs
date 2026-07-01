@@ -47,7 +47,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
         foreach (var classification in distinct)
             context.DownloadedFileClassifications.Add(new DownloadedFileClassification
             {
-                FileDetailId         = fileDetail.Id,
+                FileDetailId = fileDetail.Id,
                 FileClassificationId = classification.Id
             });
 
@@ -84,7 +84,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
             else
             {
                 existing.IncludeInSearch = classification.IncludeInSearch;
-                existing.UpdatedAt       = timeProvider.GetUtcNow();
+                existing.UpdatedAt = timeProvider.GetUtcNow();
 
                 var existingParts = existing.FileNameParts.ToList();
                 foreach (var part in classification.FileNameParts)
@@ -140,7 +140,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
 
     private async Task<FileClassification> FindOrCreateClassificationAsync(FilesContext context, string name, CancellationToken token)
     {
-        var normalizedName = TitleCaseInfo.ToTitleCase(name);
+        string normalizedName = TitleCaseInfo.ToTitleCase(name);
         var tracked = context.ChangeTracker.Entries<FileClassification>()
             .FirstOrDefault(e => e.Entity.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))?.Entity;
         if (tracked is not null) return tracked;
@@ -150,7 +150,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
             .ConfigureAwait(false);
         if (existing is not null) return existing;
 
-        var now     = timeProvider.GetUtcNow();
+        var now = timeProvider.GetUtcNow();
         var created = new FileClassification { Name = normalizedName, CreatedAt = now, UpdatedAt = now };
         context.FileClassifications.Add(created);
 

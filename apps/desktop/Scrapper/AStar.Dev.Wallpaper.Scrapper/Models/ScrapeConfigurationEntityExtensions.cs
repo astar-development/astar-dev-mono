@@ -16,9 +16,9 @@ public static class ScrapeConfigurationEntityExtensions
 
     private static SearchConfiguration ToSearchConfiguration(ScrapeConfigurationEntity entity)
         => new(
-                    entity.SearchConfiguration.BaseUrl,
+                    entity.SearchConfiguration.BaseUrl.ToString(),
                     entity.SearchConfiguration.ApiKey,
-                    entity.SearchConfiguration.LoginUrl,
+                    entity.SearchConfiguration.LoginUrl.ToString(),
                     [.. entity.SearchConfiguration.SearchCategories.Select(c => new Category
                         {
                             Id                  = c.Id,

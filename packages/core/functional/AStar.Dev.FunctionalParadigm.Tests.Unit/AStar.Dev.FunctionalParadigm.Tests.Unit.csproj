@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AStar.Dev.FunctionalParadigm\AStar.Dev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="..\AStar.Dev.FunctionalParadigm\AStar.Dev.FunctionalParadigm.csproj" />
   </ItemGroup>
 
   <ItemGroup>

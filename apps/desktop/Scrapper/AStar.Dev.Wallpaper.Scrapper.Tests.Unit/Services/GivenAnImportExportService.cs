@@ -12,16 +12,16 @@ namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Services;
 
 public sealed class GivenAnImportExportService
 {
-    private static readonly string scrapperDirectory           = Path.GetDirectoryName(ApplicationMetadata.FileClassificationsExportFilePath)!;
+    private static readonly string scrapperDirectory = Path.GetDirectoryName(ApplicationMetadata.FileClassificationsExportFilePath)!;
     private static readonly string scrapeConfigScrapperDirectory = Path.GetDirectoryName(ApplicationMetadata.ScrapeConfigurationExportFilePath)!;
-    private static readonly string scrapperTagsDirectory       = Path.GetDirectoryName(ApplicationMetadata.ScrapedTagsExportFilePath)!;
+    private static readonly string scrapperTagsDirectory = Path.GetDirectoryName(ApplicationMetadata.ScrapedTagsExportFilePath)!;
 
     private const string CelebrityClassificationName = "Test Celebrity";
-    private const string NormalClassificationName    = "Test Normal";
-    private const string ValidPassword               = "super-secret-password";
+    private const string NormalClassificationName = "Test Normal";
+    private const string ValidPassword = "super-secret-password";
 
     private const string ActionTagValue = "Action";
-    private const string GenreCategory  = "Genre";
+    private const string GenreCategory = "Genre";
     private const string ComedyTagValue = "Comedy";
 
     private const string ValidClassificationsJson = """
@@ -115,8 +115,8 @@ public sealed class GivenAnImportExportService
     {
         timeProvider = new FakeTimeProvider();
         mockFileSystem = new MockFileSystem();
-        mockLogger     = Substitute.For<ILogger>();
-        sut            = new ImportExportService(mockFileSystem, timeProvider, mockLogger);
+        mockLogger = Substitute.For<ILogger>();
+        sut = new ImportExportService(mockFileSystem, timeProvider, mockLogger);
     }
 
     [Fact]
@@ -231,7 +231,7 @@ public sealed class GivenAnImportExportService
         var throwingFileSystem = Substitute.For<IFileSystem>();
         throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
                                .Throw(new IOException("Disk full"));
-        var throwingSut = new ImportExportService(throwingFileSystem,timeProvider,  mockLogger);
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
 
         Should.Throw<IOException>(() => throwingSut.ExportFileClassificationsToFile([]));
 
@@ -499,7 +499,7 @@ public sealed class GivenAnImportExportService
         var throwingFileSystem = Substitute.For<IFileSystem>();
         throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
                                .Throw(new IOException("Disk full"));
-        var throwingSut = new ImportExportService(throwingFileSystem,timeProvider,  mockLogger);
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
 
         var act = () => throwingSut.ExportScrapedTagsToFile([]);
 
@@ -512,7 +512,7 @@ public sealed class GivenAnImportExportService
         var throwingFileSystem = Substitute.For<IFileSystem>();
         throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
                                .Throw(new IOException("Disk full"));
-        var throwingSut = new ImportExportService(throwingFileSystem,timeProvider,  mockLogger);
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
 
         Should.Throw<IOException>(() => throwingSut.ExportScrapedTagsToFile([]));
 
@@ -549,15 +549,14 @@ public sealed class GivenAnImportExportService
         UserConfiguration = new UserConfiguration
         {
             LoginEmailAddress = "user@example.com",
-            Username          = "testuser",
-            Password          = ValidPassword,
-            SessionCookie     = "actual-session-cookie"
+            Username = "testuser",
+            Password = ValidPassword,
+            SessionCookie = "actual-session-cookie"
         },
         SearchConfiguration = new SearchConfiguration
         {
-            BaseUrl          = "https://example.com",
-            ApiKey           = "actual-api-key",
-            SearchCategories = []
+            BaseUrl = new Uri("https://example.com"),
+            ApiKey = "actual-api-key"
         },
         ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
     };

@@ -1,4 +1,3 @@
-using Serilog.Events;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.LogViewer;

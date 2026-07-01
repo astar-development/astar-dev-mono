@@ -148,9 +148,9 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         seedCtx.FileClassifications.Add(classification);
         var fileDetail = new FileDetail
         {
-            FileName      = new FileName("test.jpg"),
+            FileName = new FileName("test.jpg"),
             DirectoryName = new DirectoryName("/tmp"),
-            FileHandle    = new FileHandle("test-handle-category")
+            FileHandle = new FileHandle("test-handle-category")
         };
         seedCtx.Files.Add(fileDetail);
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -169,7 +169,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     {
         var fileDetail = new FileDetail
         {
-            FileName      = new FileName("test.jpg"),
+            FileName = new FileName("test.jpg"),
             DirectoryName = new DirectoryName("/tmp")
         };
         var pageData = new PageClassificationData([], null, []);
@@ -187,16 +187,16 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await using var seedCtx = new FilesContext(options);
         var classification = new FileClassification
         {
-            Name            = "Animals",
-            IncludeInSearch = true,
-            FileNameParts   = [new FileNamePart { Text = "animals" }]
+            Name = "Animals",
+            IncludeInSearch = true
         };
+        classification.FileNameParts.Add(new FileNamePart { Text = "animals" });
         seedCtx.FileClassifications.Add(classification);
         var fileDetail = new FileDetail
         {
-            FileName      = new FileName("animals-photo.jpg"),
+            FileName = new FileName("animals-photo.jpg"),
             DirectoryName = new DirectoryName("/tmp"),
-            FileHandle    = new FileHandle("test-handle-filename")
+            FileHandle = new FileHandle("test-handle-filename")
         };
         seedCtx.Files.Add(fileDetail);
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -212,21 +212,20 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntity() => new()
     {
-        ConnectionStrings   = new ConnectionStrings   { Sqlite = "Data Source=test.db" },
-        UserConfiguration   = new UserConfiguration   { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
-        SearchConfiguration = new SearchConfiguration { BaseUrl = "https://example.com" },
-        ScrapeDirectories   = new ScrapeDirectories   { RootDirectory = "/tmp" }
+        ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=test.db" },
+        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
+        SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://example.com") },
+        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
     };
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntityWithCategory(string categoryId, string categoryName, bool includeInSearch) => new()
     {
-        ConnectionStrings   = new ConnectionStrings   { Sqlite = "Data Source=test.db" },
-        UserConfiguration   = new UserConfiguration   { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
+        ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=test.db" },
+        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
         SearchConfiguration = new SearchConfiguration
         {
-            BaseUrl          = "https://example.com",
-            SearchCategories = [new SearchCategories { Id = categoryId, Name = categoryName, IncludeInSearch = includeInSearch }]
+            BaseUrl = new Uri("https://example.com")
         },
-        ScrapeDirectories   = new ScrapeDirectories   { RootDirectory = "/tmp" }
+        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
     };
 }

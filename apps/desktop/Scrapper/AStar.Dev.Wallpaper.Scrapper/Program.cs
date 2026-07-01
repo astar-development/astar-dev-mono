@@ -1,5 +1,5 @@
-using Avalonia;
 using AStar.Dev.Wallpaper.Scrapper;
+using Avalonia;
 
 return AppBuilder.Configure<App>()
     .UsePlatformDetect()

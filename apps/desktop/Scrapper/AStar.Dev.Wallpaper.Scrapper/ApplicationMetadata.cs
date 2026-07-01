@@ -15,5 +15,5 @@ public static class ApplicationMetadata
     public static string FileClassificationsExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "FileClassifications.json");
 
     public static string ScrapeConfigurationExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "ScrapeConfiguration.json");
-    public static string ScrapedTagsExportFilePath         => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "ScrapedTags.json");
+    public static string ScrapedTagsExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "ScrapedTags.json");
 }

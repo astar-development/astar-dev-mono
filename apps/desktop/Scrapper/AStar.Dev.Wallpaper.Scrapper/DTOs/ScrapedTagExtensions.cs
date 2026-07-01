@@ -1,6 +1,6 @@
-using ScrapedTagDto      = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
-using ScrapedTagDomain   = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
 using ScrapedTagDomainId = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTagId;
+using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 
@@ -23,7 +23,9 @@ public static class ScrapedTagExtensions
             Id = new ScrapedTagId(domain.Id.Value),
             Value = domain.Value,
             Category = domain.Category,
-            IncludeInSearch = domain.IncludeInSearch, CreatedAt = domain.CreatedAt, UpdatedAt = domain.UpdatedAt
+            IncludeInSearch = domain.IncludeInSearch,
+            CreatedAt = domain.CreatedAt,
+            UpdatedAt = domain.UpdatedAt
         };
 
     public static List<ScrapedTagDomain> ToDomain(this List<ScrapedTagDto> dtos, TimeProvider timeProvider)

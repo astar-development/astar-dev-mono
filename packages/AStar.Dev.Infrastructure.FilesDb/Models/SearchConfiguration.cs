@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
@@ -23,7 +25,7 @@ public class SearchConfiguration : AuditableEntity
     /// <summary>
     /// The base URL of the target website to be scraped. This is the starting point for the scraper and is essential for constructing the full URLs for search queries, image pages, and other relevant endpoints. The base URL should be set to the main domain of the website being scraped, such as "https://example.com". It serves as the foundation for all subsequent navigation and scraping activities, allowing the scraper to access the necessary pages and resources to collect the desired data effectively.
     /// </summary>
-    public string BaseUrl { get; set; } = string.Empty;
+    public Uri BaseUrl { get; set; } = new("https://example.com");
 
     /// <summary>
     /// The API key is a unique identifier used to authenticate requests to the target website's API, if applicable. This key is essential for accessing certain features or data that may be restricted to authenticated users or for making authorized requests to the website's API endpoints. The API key should be kept secure and should not be shared publicly, as it may grant access to sensitive information or allow unauthorized actions if misused. In the context of web scraping, the API key can help ensure that the scraper can access the necessary data while adhering to the website's usage policies and rate limits.
@@ -33,7 +35,7 @@ public class SearchConfiguration : AuditableEntity
     /// <summary>
     /// The search categories represent the different categories or topics that the scraper will target during the scraping process. Each category includes its unique identifier, name, last known image count, last page visited, and total pages available. This information is crucial for managing and tracking the scraping progress for each category, allowing the scraper to efficiently navigate through search results and resume from the last visited page in case of interruptions. The search categories help organize the scraping process and ensure that the scraper can focus on specific areas of interest while collecting relevant data effectively.
     /// </summary>
-    public List<SearchCategories> SearchCategories { get; set; } = new();
+    public Collection<SearchCategories> SearchCategories { get; } = [];
 
     /// <summary>
     /// The search string is a specific query or keyword that the scraper will use to perform searches on the target website. This string can be customized to target specific types of content or to refine the search results based on user preferences. The search string is essential for guiding the scraper in finding relevant images and data that match the specified criteria, allowing for a more focused and efficient scraping process. By using a well-defined search string, users can ensure that the scraper collects data that is most relevant to their interests and needs.
@@ -98,7 +100,7 @@ public class SearchConfiguration : AuditableEntity
     /// <summary>
     /// The URL of the login page on the target website.
     /// </summary>
-    public string LoginUrl { get; set; } = string.Empty;
+    public Uri LoginUrl { get; set; } = new("https://example.com/login");
 
     /// <summary>
     /// Whether the browser runs in headless mode.

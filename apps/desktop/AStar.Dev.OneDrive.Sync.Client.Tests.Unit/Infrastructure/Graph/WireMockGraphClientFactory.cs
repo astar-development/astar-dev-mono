@@ -1,8 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using Microsoft.Graph;
-using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
-using WireMock.Server;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
 

@@ -16,7 +16,7 @@ public sealed class AsyncRelayCommand(Func<Task> executeAsync, Func<bool>? canEx
 
     private async Task ExecuteAsync()
     {
-        if(_isExecuting)
+        if (_isExecuting)
             return;
 
         _isExecuting = true;

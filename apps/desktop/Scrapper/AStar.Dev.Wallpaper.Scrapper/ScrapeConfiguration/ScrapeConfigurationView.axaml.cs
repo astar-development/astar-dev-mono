@@ -1,8 +1,8 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Services;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using AStar.Dev.Wallpaper.Scrapper.Services;
-using AStar.Dev.FunctionalParadigm;
 using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
@@ -33,7 +33,7 @@ public partial class ScrapeConfigurationView : Window, IDisposable
     {
         base.OnClosed(e);
         cts?.Dispose();
-        if(DataContext is IAsyncDisposable disposable)
+        if (DataContext is IAsyncDisposable disposable)
             await disposable.DisposeAsync();
     }
 

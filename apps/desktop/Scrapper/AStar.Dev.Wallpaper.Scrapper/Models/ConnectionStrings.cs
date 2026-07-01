@@ -1,3 +1,3 @@
-﻿namespace AStar.Dev.Wallpaper.Scrapper.Models;
+namespace AStar.Dev.Wallpaper.Scrapper.Models;
 
 public record ConnectionStrings(string Sqlite);

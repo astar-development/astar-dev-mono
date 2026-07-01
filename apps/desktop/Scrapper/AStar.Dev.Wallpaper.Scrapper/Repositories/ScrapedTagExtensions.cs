@@ -1,6 +1,6 @@
-using ScrapedTagDto      = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
-using ScrapedTagDomain   = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
 using ScrapedTagDomainId = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTagId;
+using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Repositories;
 

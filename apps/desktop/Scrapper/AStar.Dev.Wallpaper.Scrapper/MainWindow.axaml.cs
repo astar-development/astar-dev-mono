@@ -1,17 +1,17 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Classifications;
+using AStar.Dev.Wallpaper.Scrapper.Dialogs;
+using AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
+using AStar.Dev.Wallpaper.Scrapper.Services;
+using AStar.Dev.Wallpaper.Scrapper.Support;
+using AStar.Dev.Wallpaper.Scrapper.Tags;
+using AStar.Dev.Wallpaper.Scrapper.Workflows;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using SkiaSharp;
-using AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
-using AStar.Dev.Wallpaper.Scrapper.Support;
-using AStar.Dev.Wallpaper.Scrapper.Classifications;
-using AStar.Dev.Wallpaper.Scrapper.Tags;
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Wallpaper.Scrapper.Workflows;
-using AStar.Dev.Wallpaper.Scrapper.Dialogs;
 using Serilog;
-using AStar.Dev.Wallpaper.Scrapper.Services;
+using SkiaSharp;
 
 namespace AStar.Dev.Wallpaper.Scrapper;
 
@@ -58,7 +58,7 @@ public partial class MainWindow : Window, IDisposable
         try
         {
             var dbDialog = new ConfirmationDialog("This will reset search category progress and delete all file records. Continue?");
-            var dbConfirmed = await dbDialog.ShowDialog<bool>(this);
+            bool dbConfirmed = await dbDialog.ShowDialog<bool>(this);
 
             if (!dbConfirmed)
                 return;
@@ -76,7 +76,7 @@ public partial class MainWindow : Window, IDisposable
             }
 
             var fileDialog = new ConfirmationDialog("This will permanently delete all downloaded files from the save directory. Continue?");
-            var fileConfirmed = await fileDialog.ShowDialog<bool>(this);
+            bool fileConfirmed = await fileDialog.ShowDialog<bool>(this);
 
             if (!fileConfirmed)
                 return;
@@ -170,11 +170,11 @@ public partial class MainWindow : Window, IDisposable
         var canvas = surface.Canvas;
         canvas.Clear(SKColors.Transparent);
 
-        var scale = Math.Min(500f / original.Width, 500f / original.Height);
-        var drawWidth = original.Width * scale;
-        var drawHeight = original.Height * scale;
-        var offsetX = (500f - drawWidth) / 2f;
-        var offsetY = (500f - drawHeight) / 2f;
+        float scale = Math.Min(500f / original.Width, 500f / original.Height);
+        float drawWidth = original.Width * scale;
+        float drawHeight = original.Height * scale;
+        float offsetX = (500f - drawWidth) / 2f;
+        float offsetY = (500f - drawHeight) / 2f;
         var destRect = new SKRect(offsetX, offsetY, offsetX + drawWidth, offsetY + drawHeight);
 
         using var clipPath = new SKPath();

@@ -1,27 +1,36 @@
-using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
 using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
+using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
 using FileNamePartDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 
-public static class FileClassificationExtensions    
+public static class FileClassificationExtensions
 {
     public static List<FileClassificationDomain> ToDomain(this List<FileClassificationDto> fileClassificationDtos)
-        => [.. fileClassificationDtos.Select(dto => new FileClassificationDomain
+        => [.. fileClassificationDtos.Select(dto =>
         {
-            Id = dto.Id,
-            Name = dto.Name,
-            Celebrity = dto.Celebrity,
-            IncludeInSearch = dto.IncludeInSearch,
-            CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt,
-            FileNameParts = [.. dto.FileNameParts.Select(partDto => new FileNamePartDomain
+            var domain = new FileClassificationDomain
             {
-                Id = partDto.Id,
-                Text = partDto.Text,
-                CreatedAt = partDto.CreatedAt,
-                UpdatedAt = partDto.UpdatedAt
-            })]
+                Id = dto.Id,
+                Name = dto.Name,
+                Celebrity = dto.Celebrity,
+                IncludeInSearch = dto.IncludeInSearch,
+                CreatedAt = dto.CreatedAt,
+                UpdatedAt = dto.UpdatedAt
+            };
+
+            foreach (var partDto in dto.FileNameParts)
+            {
+                domain.FileNameParts.Add(new FileNamePartDomain
+                {
+                    Id = partDto.Id,
+                    Text = partDto.Text,
+                    CreatedAt = partDto.CreatedAt,
+                    UpdatedAt = partDto.UpdatedAt
+                });
+            }
+
+            return domain;
         })];
 
     public static List<FileClassificationDto> ToDtos(this List<FileClassificationDomain> fileClassificationDomains)

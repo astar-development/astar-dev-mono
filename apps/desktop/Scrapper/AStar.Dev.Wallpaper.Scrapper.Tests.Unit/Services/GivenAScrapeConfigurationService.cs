@@ -8,11 +8,11 @@ namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Services;
 
 public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
 {
-    private const string ExistingPassword      = "real-database-password";
+    private const string ExistingPassword = "real-database-password";
     private const string ExistingSessionCookie = "real-session-cookie";
-    private const string ExistingApiKey        = "real-api-key";
-    private const string ExistingSqlite        = "Data Source=production.db";
-    private const string ExistingCategoryId    = "existing-cat";
+    private const string ExistingApiKey = "real-api-key";
+    private const string ExistingSqlite = "Data Source=production.db";
+    private const string ExistingCategoryId = "existing-cat";
 
     private SqliteConnection connection = null!;
     private DbContextOptions<FilesContext> options = null!;
@@ -194,49 +194,38 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
         UserConfiguration = new UserConfiguration
         {
             LoginEmailAddress = "user@example.com",
-            Username          = "testuser",
-            Password          = ExistingPassword,
-            SessionCookie     = ExistingSessionCookie
+            Username = "testuser",
+            Password = ExistingPassword,
+            SessionCookie = ExistingSessionCookie
         },
         SearchConfiguration = new SearchConfiguration
         {
-            BaseUrl          = "https://example.com",
-            ApiKey           = ExistingApiKey,
-            SearchCategories =
-            [
-                new SearchCategories
-                {
-                    Id              = ExistingCategoryId,
-                    Name            = "Existing Category",
-                    TotalPages      = 5,
-                    IncludeInSearch = true
-                }
-            ]
+            BaseUrl = new Uri("https://example.com"),
+            ApiKey = ExistingApiKey
         },
         ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
     };
 
     private static ScrapeConfigurationEntity CreateImportEntity(
-        string sqlite        = "Data Source=updated.db",
-        string password      = "new-password",
+        string sqlite = "Data Source=updated.db",
+        string password = "new-password",
         string sessionCookie = "new-session-cookie",
-        string apiKey        = "new-api-key",
+        string apiKey = "new-api-key",
         List<SearchCategories>? categories = null) => new()
-    {
-        ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
-        UserConfiguration = new UserConfiguration
         {
-            LoginEmailAddress = "updated@example.com",
-            Username          = "updateduser",
-            Password          = password,
-            SessionCookie     = sessionCookie
-        },
-        SearchConfiguration = new SearchConfiguration
-        {
-            BaseUrl          = "https://updated.com",
-            ApiKey           = apiKey,
-            SearchCategories = categories ?? []
-        },
-        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/updated" }
-    };
+            ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
+            UserConfiguration = new UserConfiguration
+            {
+                LoginEmailAddress = "updated@example.com",
+                Username = "updateduser",
+                Password = password,
+                SessionCookie = sessionCookie
+            },
+            SearchConfiguration = new SearchConfiguration
+            {
+                BaseUrl = new Uri("https://updated.com"),
+                ApiKey = apiKey
+            },
+            ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/updated" }
+        };
 }

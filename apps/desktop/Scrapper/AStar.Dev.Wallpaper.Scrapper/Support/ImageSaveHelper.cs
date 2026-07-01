@@ -8,8 +8,8 @@ internal sealed class ImageSaveHelper
     {
         imageNameWithPath = imageNameWithPath.CleanPath();
 
-        if(imageNameWithPath.LastIndexOf(':') > 2) imageNameWithPath = imageNameWithPath[..2] + imageNameWithPath[2..].Replace(":", "_");
+        if (imageNameWithPath.LastIndexOf(':') > 2) imageNameWithPath = imageNameWithPath[..2] + imageNameWithPath[2..].Replace(":", "_");
 
-        if(image.Length > 0) await File.WriteAllBytesAsync(imageNameWithPath, image);
+        if (image.Length > 0) await File.WriteAllBytesAsync(imageNameWithPath, image);
     }
 }

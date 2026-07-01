@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Playwright;
@@ -18,12 +18,12 @@ public sealed class TopWallpapersPage(IPlaywrightService playwrightService, Sear
 
     public async Task<int> PageInfoAsync()
     {
-        var text = await PageCount.First.TextContentAsync();
+        string? text = await PageCount.First.TextContentAsync();
 
-        if(text is null) return 0;
+        if (text is null) return 0;
 
-        var firstSlashIndex = text.IndexOf('/') + 1;
-        var pages           = text[firstSlashIndex..].Trim();
+        int firstSlashIndex = text.IndexOf('/') + 1;
+        string pages = text[firstSlashIndex..].Trim();
 
         return int.Parse(pages, CultureInfo.InvariantCulture);
     }
@@ -31,14 +31,14 @@ public sealed class TopWallpapersPage(IPlaywrightService playwrightService, Sear
     public async Task<IReadOnlyCollection<string>> GetImagePageLinks()
     {
         page ??= await playwrightService.ConfigurePlaywrightAsync();
-        List<string>            wantedLinks   = [];
-        IReadOnlyList<ILocator> imagePreviews = await ImagePreviews.AllAsync();
+        List<string> wantedLinks = [];
+        var imagePreviews = await ImagePreviews.AllAsync();
 
-        foreach(ILocator imagePreview in imagePreviews)
+        foreach (var imagePreview in imagePreviews)
         {
-            var hrefString = await imagePreview.GetAttributeAsync("href");
+            string? hrefString = await imagePreview.GetAttributeAsync("href");
 
-            if(hrefString != null && hrefString.Contains("/w/")) wantedLinks.Add(hrefString);
+            if (hrefString != null && hrefString.Contains("/w/")) wantedLinks.Add(hrefString);
         }
 
         return [.. wantedLinks.Take(24)];

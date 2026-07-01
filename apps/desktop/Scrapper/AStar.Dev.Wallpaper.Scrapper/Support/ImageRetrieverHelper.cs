@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Wallpaper.Scrapper.Support;
+namespace AStar.Dev.Wallpaper.Scrapper.Support;
 
 internal static class ImageRetrieverHelper
 {
@@ -6,7 +6,7 @@ internal static class ImageRetrieverHelper
 
     public static async Task<byte[]> GetTheImageAsync(string src)
     {
-        HttpResponseMessage response = await _client.GetAsync(src);
+        var response = await _client.GetAsync(src);
 
         return response is { IsSuccessStatusCode: true, } ? await response.Content.ReadAsByteArrayAsync() : [];
     }

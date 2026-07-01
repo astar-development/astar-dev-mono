@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Wallpaper.Scrapper.Models;
+namespace AStar.Dev.Wallpaper.Scrapper.Models;
 
 public record ScrapeConfiguration(ConnectionStrings ConnectionStrings, UserConfiguration UserConfiguration, SearchConfiguration SearchConfiguration, ScrapeDirectories ScrapeDirectories)
 {

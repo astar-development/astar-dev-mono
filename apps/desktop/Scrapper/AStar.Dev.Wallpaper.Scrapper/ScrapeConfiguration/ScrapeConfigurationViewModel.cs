@@ -103,12 +103,12 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
                 .Include(e => e.ConnectionStrings)
                 .Include(e => e.UserConfiguration)
                 .Include(e => e.SearchConfiguration).ThenInclude(sc => sc.SearchCategories)
-                .Include(e => e.ScrapeDirectories).OrderByDescending(s=>s.Id)
+                .Include(e => e.ScrapeDirectories).OrderByDescending(s => s.Id)
                 .FirstAsync();
 
             MapFromEntity(_entity);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             StatusMessage = $"Failed to load: {ex.Message}";
         }
@@ -134,9 +134,9 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         SessionCookie = entity.UserConfiguration.SessionCookie;
 
         var search = entity.SearchConfiguration;
-        BaseUrl = search.BaseUrl;
+        BaseUrl = search.BaseUrl.ToString();
         ApiKey = search.ApiKey;
-        LoginUrl = search.LoginUrl;
+        LoginUrl = search.LoginUrl.ToString();
         SearchString = search.SearchString;
         SearchStringPrefix = search.SearchStringPrefix;
         SearchStringSuffix = search.SearchStringSuffix;
@@ -160,13 +160,13 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         SubDirectoryName = dirs.SubDirectoryName;
 
         SearchCategories.Clear();
-        foreach(var category in search.SearchCategories)
+        foreach (var category in search.SearchCategories)
             SearchCategories.Add(SearchCategoryViewModel.FromEntity(category));
     }
 
     private async Task SaveAsync()
     {
-        if(_entity is null)
+        if (_entity is null)
             return;
 
         StatusMessage = string.Empty;
@@ -177,7 +177,7 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
             await _context.SaveChangesAsync();
             StatusMessage = "Saved successfully.";
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             StatusMessage = $"Save failed: {ex.Message}";
         }
@@ -193,9 +193,9 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         entity.UserConfiguration.SessionCookie = SessionCookie;
 
         var search = entity.SearchConfiguration;
-        search.BaseUrl = BaseUrl;
+        search.BaseUrl = new Uri(BaseUrl);
         search.ApiKey = ApiKey;
-        search.LoginUrl = LoginUrl;
+        search.LoginUrl = new Uri(LoginUrl);
         search.SearchString = SearchString;
         search.SearchStringPrefix = SearchStringPrefix;
         search.SearchStringSuffix = SearchStringSuffix;
@@ -211,10 +211,10 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         search.TopWallpapersTotalPages = TopWallpapersTotalPages;
         search.TopWallpapersStartingPageNumber = TopWallpapersStartingPageNumber;
 
-        foreach(var categoryVm in SearchCategories)
+        foreach (var categoryVm in SearchCategories)
         {
             var existing = search.SearchCategories.FirstOrDefault(c => c.Id == categoryVm.Id);
-            if(existing is not null)
+            if (existing is not null)
                 categoryVm.ApplyTo(existing);
         }
 

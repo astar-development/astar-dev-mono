@@ -46,10 +46,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
-        <ProjectReference Include="../AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
-        <ProjectReference Include="../AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
-        <ProjectReference Include="../AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
+        <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
+        <ProjectReference Include="../../../../packages/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

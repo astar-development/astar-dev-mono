@@ -15,20 +15,20 @@ public static class ChromeCookieExtractor
 
     public static async Task<IReadOnlyList<Cookie>> ExtractAsync(string domain, Serilog.ILogger? logger = null)
     {
-        var dbPath = Path.Combine(
+        string dbPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             ".config", "google-chrome", "Default", "Cookies");
 
-        if(!File.Exists(dbPath)) return [];
+        if (!File.Exists(dbPath)) return [];
 
-        var tempPath = Path.Combine(Path.GetTempPath(), $"chrome_cookies_{Guid.NewGuid():N}.db");
+        string tempPath = Path.Combine(Path.GetTempPath(), $"chrome_cookies_{Guid.NewGuid():N}.db");
         File.Copy(dbPath, tempPath, overwrite: true);
 
         try
         {
-            var keystoreKey = await TryGetKeystoreKeyAsync();
+            byte[]? keystoreKey = await TryGetKeystoreKeyAsync();
             logger?.Debug("Keystore key {Status}", keystoreKey is null ? "NOT found — using peanuts fallback" : "found via GNOME keyring");
-            var cookies     = new List<Cookie>();
+            var cookies = new List<Cookie>();
 
             using var conn = new SqliteConnection($"Data Source={tempPath};Mode=ReadOnly");
             conn.Open();
@@ -42,35 +42,35 @@ public static class ChromeCookieExtractor
             cmd.Parameters.AddWithValue("$pattern", $"%{domain.TrimStart('.')}%");
 
             using var reader = cmd.ExecuteReader();
-            while(reader.Read())
+            while (reader.Read())
             {
-                var host      = reader.GetString(0);
-                var name      = reader.GetString(1);
-                var encrypted = reader.GetFieldValue<byte[]>(2);
-                var path      = reader.GetString(3);
-                var expires   = reader.GetInt64(4);
-                var secure    = reader.GetBoolean(5);
-                var httpOnly  = reader.GetBoolean(6);
+                string host = reader.GetString(0);
+                string name = reader.GetString(1);
+                byte[] encrypted = reader.GetFieldValue<byte[]>(2);
+                string path = reader.GetString(3);
+                long expires = reader.GetInt64(4);
+                bool secure = reader.GetBoolean(5);
+                bool httpOnly = reader.GetBoolean(6);
 
-                var value = Decrypt(encrypted, keystoreKey);
-                if(string.IsNullOrEmpty(name)) continue;
-                if(value is null)
+                string? value = Decrypt(encrypted, keystoreKey);
+                if (string.IsNullOrEmpty(name)) continue;
+                if (value is null)
                 {
                     logger?.Debug("Cookie '{Name}' decrypt failed (null) — skipped", name);
                     continue;
                 }
                 logger?.Debug("Cookie '{Name}' value preview: [{Preview}]", name, value.Length > 20 ? value[..20] + "…" : value);
 
-                var unixExpiry = expires > 0 ? expires / 1_000_000L - ChromeEpochOffsetSeconds : -1L;
+                long unixExpiry = expires > 0 ? expires / 1_000_000L - ChromeEpochOffsetSeconds : -1L;
 
                 cookies.Add(new Cookie
                 {
-                    Name     = name,
-                    Value    = value ?? string.Empty,
-                    Domain   = host,
-                    Path     = string.IsNullOrEmpty(path) ? "/" : path,
+                    Name = name,
+                    Value = value ?? string.Empty,
+                    Domain = host,
+                    Path = string.IsNullOrEmpty(path) ? "/" : path,
                     HttpOnly = httpOnly,
-                    Expires  = unixExpiry > 0 ? (float)unixExpiry : -1,
+                    Expires = unixExpiry > 0 ? (float)unixExpiry : -1,
                 });
             }
 
@@ -84,13 +84,13 @@ public static class ChromeCookieExtractor
 
     private static string? Decrypt(byte[] data, byte[]? keystoreKey)
     {
-        if(data.Length == 0) return string.Empty;
+        if (data.Length == 0) return string.Empty;
 
-        if(data.Length > 3)
+        if (data.Length > 3)
         {
-            var prefix = Encoding.ASCII.GetString(data, 0, 3);
-            if(prefix == "v10") return AesCbcDecrypt(data[3..], DeriveKey("peanuts"));
-            if(prefix == "v11") return AesCbcDecrypt(data[3..], keystoreKey ?? DeriveKey("peanuts"));
+            string prefix = Encoding.ASCII.GetString(data, 0, 3);
+            if (prefix == "v10") return AesCbcDecrypt(data[3..], DeriveKey("peanuts"));
+            if (prefix == "v11") return AesCbcDecrypt(data[3..], keystoreKey ?? DeriveKey("peanuts"));
         }
 
         return Encoding.UTF8.GetString(data);
@@ -101,12 +101,12 @@ public static class ChromeCookieExtractor
         try
         {
             using var aes = Aes.Create();
-            aes.Key     = key;
-            aes.IV      = Iv;
-            aes.Mode    = CipherMode.CBC;
+            aes.Key = key;
+            aes.IV = Iv;
+            aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.PKCS7;
             using var dec = aes.CreateDecryptor();
-            var plain = dec.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
+            byte[] plain = dec.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
             // Chrome 127+ prepends a 32-byte random nonce before the actual value
             return plain.Length > 32
                 ? Encoding.UTF8.GetString(plain, 32, plain.Length - 32)
@@ -129,15 +129,15 @@ public static class ChromeCookieExtractor
         // derive it from the UID so secret-tool can reach the GNOME keyring.
         var env = await BuildDbusEnvAsync();
 
-        foreach(var lookupArgs in (string[])
+        foreach (string lookupArgs in (string[])
         [
             "lookup xdg:schema chrome_libsecret_os_crypt_password_v2 application chrome",
             "lookup xdg:schema chrome_libsecret_os_crypt_password_v2 application chromium",
             "lookup application chrome",
         ])
         {
-            var raw = await RunAsync("secret-tool", lookupArgs, env);
-            if(raw is not null) return DeriveKey(raw.Trim());
+            string? raw = await RunAsync("secret-tool", lookupArgs, env);
+            if (raw is not null) return DeriveKey(raw.Trim());
         }
 
         return null;
@@ -150,13 +150,13 @@ public static class ChromeCookieExtractor
         // /proc/self/status gives us the real UID without P/Invoke
         try
         {
-            var status  = await File.ReadAllTextAsync("/proc/self/status");
-            var uidLine = status.Split('\n').FirstOrDefault(l => l.StartsWith("Uid:", StringComparison.Ordinal));
-            if(uidLine is not null)
+            string status = await File.ReadAllTextAsync("/proc/self/status");
+            string? uidLine = status.Split('\n').FirstOrDefault(l => l.StartsWith("Uid:", StringComparison.Ordinal));
+            if (uidLine is not null)
             {
-                var uid      = uidLine.Split('\t', StringSplitOptions.RemoveEmptyEntries)[1];
-                var sockPath = $"/run/user/{uid}/bus";
-                if(File.Exists(sockPath))
+                string uid = uidLine.Split('\t', StringSplitOptions.RemoveEmptyEntries)[1];
+                string sockPath = $"/run/user/{uid}/bus";
+                if (File.Exists(sockPath))
                     env["DBUS_SESSION_BUS_ADDRESS"] = $"unix:path={sockPath}";
             }
         }
@@ -172,17 +172,17 @@ public static class ChromeCookieExtractor
             var psi = new ProcessStartInfo(exe, arguments)
             {
                 RedirectStandardOutput = true,
-                UseShellExecute        = false,
-                CreateNoWindow         = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
             };
 
-            if(extraEnv is not null)
-                foreach(var (k, v) in extraEnv)
+            if (extraEnv is not null)
+                foreach (var (k, v) in extraEnv)
                     psi.Environment[k] = v;
 
             using var proc = Process.Start(psi);
-            if(proc is null) return null;
-            var output = await proc.StandardOutput.ReadToEndAsync();
+            if (proc is null) return null;
+            string output = await proc.StandardOutput.ReadToEndAsync();
             await proc.WaitForExitAsync();
             return proc.ExitCode == 0 && !string.IsNullOrWhiteSpace(output) ? output : null;
         }

@@ -6,7 +6,6 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
-using Avalonia.Headless.XUnit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Search;
 

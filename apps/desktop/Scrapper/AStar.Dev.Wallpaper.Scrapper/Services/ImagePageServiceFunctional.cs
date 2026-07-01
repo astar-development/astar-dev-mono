@@ -25,7 +25,7 @@ public sealed class ImagePageServiceFunctional(IDbContextFactory<FilesContext> d
             .Tap(_ => logger.Information("Scrape completed..."));
 
         // await GetTheImagePagesAsync([], ct: CancellationToken.None);
-    
+
         return Unit.Value;
     }
 

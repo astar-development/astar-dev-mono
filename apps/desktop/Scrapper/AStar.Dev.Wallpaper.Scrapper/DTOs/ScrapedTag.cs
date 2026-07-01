@@ -20,16 +20,16 @@ public sealed class ScrapedTag
     /// <summary>
     ///     Gets or sets the category for the tag.
     /// </summary>
-    public string Category {get;set;} = string.Empty;
+    public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// 
     /// </summary>
     public bool IncludeInSearch { get; set; }
 
-    public DateTimeOffset CreatedAt {get;set;} = DateTimeOffset.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public DateTimeOffset UpdatedAt {get;set;} = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     /// <inheritdoc />
     public override string ToString()

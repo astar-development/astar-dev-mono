@@ -1,4 +1,4 @@
-﻿
+
 namespace AStar.Dev.Wallpaper.Scrapper.Models;
 
 public record ScrapeDirectories(string RootDirectory, string BaseSaveDirectory, string BaseDirectory, string BaseDirectoryFamous, string SubDirectoryName)

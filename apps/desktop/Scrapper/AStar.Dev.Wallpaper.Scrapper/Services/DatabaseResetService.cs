@@ -1,5 +1,5 @@
-using AStar.Dev.Wallpaper.Scrapper.Repositories;
 using System.IO.Abstractions;
+using AStar.Dev.Wallpaper.Scrapper.Repositories;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
@@ -13,7 +13,7 @@ public sealed class DatabaseResetService(IDatabaseResetRepository repository, IF
 
     public async Task DeleteSaveDirectoryAsync(CancellationToken cancellationToken = default)
     {
-        var path = await repository.GetBaseSaveDirectoryAsync(cancellationToken).ConfigureAwait(false);
+        string? path = await repository.GetBaseSaveDirectoryAsync(cancellationToken).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(path))
             return;

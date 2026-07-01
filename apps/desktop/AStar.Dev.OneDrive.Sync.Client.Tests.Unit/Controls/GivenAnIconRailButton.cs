@@ -1,10 +1,9 @@
 using System.Windows.Input;
+using AStar.Dev.OneDrive.Sync.Client.Controls;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Avalonia.Headless.XUnit;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using AStar.Dev.OneDrive.Sync.Client.Controls;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Controls;
 

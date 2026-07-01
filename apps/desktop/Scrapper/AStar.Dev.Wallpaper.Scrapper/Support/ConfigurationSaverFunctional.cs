@@ -14,7 +14,7 @@ public sealed class ConfigurationSaverFunctional(ScrapeConfiguration scrapeConfi
         {
             await UpdateAndSaveTheConfigurationAsync();
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             logger.Error(exception.GetBaseException().Message);
             throw;
@@ -33,26 +33,26 @@ public sealed class ConfigurationSaverFunctional(ScrapeConfiguration scrapeConfi
                                                    .DistinctBy(c => c.Id)
                                                    .ToList();
 
-        foreach(var cat in dedupedCategories)
+        foreach (var cat in dedupedCategories)
         {
             var existing = entity.SearchConfiguration.SearchCategories
                                  .FirstOrDefault(ec => ec.Id == cat.Id);
-            if(existing != null)
+            if (existing != null)
             {
                 existing.LastKnownImageCount = cat.LastKnownImageCount;
-                existing.LastPageVisited     = cat.LastPageVisited;
-                existing.TotalPages          = cat.TotalPages;
+                existing.LastPageVisited = cat.LastPageVisited;
+                existing.TotalPages = cat.TotalPages;
             }
             else
             {
                 entity.SearchConfiguration.SearchCategories.Add(new SearchCategories
                 {
                     SearchConfigurationId = entity.SearchConfiguration.Id,
-                    Id                    = cat.Id,
-                    Name                  = cat.Name,
-                    LastKnownImageCount   = cat.LastKnownImageCount,
-                    LastPageVisited       = cat.LastPageVisited,
-                    TotalPages            = cat.TotalPages,
+                    Id = cat.Id,
+                    Name = cat.Name,
+                    LastKnownImageCount = cat.LastKnownImageCount,
+                    LastPageVisited = cat.LastPageVisited,
+                    TotalPages = cat.TotalPages,
                 });
             }
         }

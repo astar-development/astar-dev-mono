@@ -8,8 +8,8 @@ namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Services;
 
 public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLifetime
 {
-    private const string OlderSqlite    = "Data Source=old.db";
-    private const string NewerSqlite    = "Data Source=new.db";
+    private const string OlderSqlite = "Data Source=old.db";
+    private const string NewerSqlite = "Data Source=new.db";
     private const string ImportedSqlite = "Data Source=imported.db";
 
     private SqliteConnection connection = null!;
@@ -77,9 +77,9 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntity(string sqlite) => new()
     {
-        ConnectionStrings   = new ConnectionStrings   { Sqlite = sqlite },
-        UserConfiguration   = new UserConfiguration   { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
-        SearchConfiguration = new SearchConfiguration { BaseUrl = "https://example.com" },
-        ScrapeDirectories   = new ScrapeDirectories   { RootDirectory = "/tmp" }
+        ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
+        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
+        SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://example.com") },
+        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
     };
 }

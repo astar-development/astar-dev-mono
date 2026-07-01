@@ -15,12 +15,12 @@ public sealed class ScrapedTagRepository(IDbContextFactory<FilesContext> context
         var titleCasedTags = tags.Select(t => new ScrapedTagDto
         {
             Category = textInfo.ToTitleCase(t.Category ?? ""),
-            Value    = textInfo.ToTitleCase(t.Tag)
+            Value = textInfo.ToTitleCase(t.Tag)
         }).ToList();
 
-        foreach(var tag in titleCasedTags)
+        foreach (var tag in titleCasedTags)
         {
-            if(!await context.ScrapedTags.AnyAsync(t => t.Value == tag.Value && tag.Category == t.Category))
+            if (!await context.ScrapedTags.AnyAsync(t => t.Value == tag.Value && tag.Category == t.Category))
                 _ = await context.ScrapedTags.AddAsync(tag.ToDomain());
         }
 
@@ -38,15 +38,15 @@ public sealed class ScrapedTagRepository(IDbContextFactory<FilesContext> context
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var values      = tags.Select(t => t.Value).ToList();
+        var values = tags.Select(t => t.Value).ToList();
         var existingMap = await context.ScrapedTags
             .Where(t => values.Contains(t.Value))
             .ToListAsync(ct);
 
-        foreach(var tag in tags)
+        foreach (var tag in tags)
         {
             var existing = existingMap.FirstOrDefault(t => t.Value == tag.Value && t.Category == tag.Category);
-            if(existing is not null)
+            if (existing is not null)
             {
                 existing.IncludeInSearch = tag.IncludeInSearch;
                 existing.UpdatedAt = DateTimeOffset.UtcNow;

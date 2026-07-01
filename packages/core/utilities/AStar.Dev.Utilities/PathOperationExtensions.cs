@@ -19,13 +19,27 @@ public static class PathOperationExtensions
     {
         string combined = basePath;
 
-        foreach(string? segment in segments.Where(s => s is not null))
+        foreach (string? segment in segments.Where(s => s is not null))
         {
-            if(Path.IsPathRooted(segment)) throw new ArgumentException("Path segments must be relative.", nameof(segments));
+            if (Path.IsPathRooted(segment)) throw new ArgumentException("Path segments must be relative.", nameof(segments));
 
             combined = Path.Join(combined, segment);
         }
 
         return combined;
+    }
+
+    /// <summary>
+    ///     Normalizes path separators while preserving the path content.
+    /// </summary>
+    /// <param name="path">The path to normalize.</param>
+    /// <returns>The normalized path.</returns>
+    public static string CleanPath(this string path)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+
+        return string.IsNullOrEmpty(path)
+            ? string.Empty
+            : path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
     }
 }

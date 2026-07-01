@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Wallpaper.Scrapper.Models;
+namespace AStar.Dev.Wallpaper.Scrapper.Models;
 
 public sealed class Configuration
 {

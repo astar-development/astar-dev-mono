@@ -65,11 +65,8 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, Logger l
             browser = null;
         }
 
-        if (playwright is not null)
-        {
-            playwright.Dispose();
-            playwright = null;
-        }
+        playwright?.Dispose();
+        playwright = null;
 
         GC.SuppressFinalize(this);
     }
@@ -78,7 +75,7 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, Logger l
     {
         var chromeCookies = await ChromeCookieExtractor.ExtractAsync("wallhaven.cc", null);
         logger.Information("Extracted {Count} cookies from Chrome profile", chromeCookies.Count);
-        var injected = 0;
+        int injected = 0;
         foreach (var cookie in chromeCookies)
         {
             try

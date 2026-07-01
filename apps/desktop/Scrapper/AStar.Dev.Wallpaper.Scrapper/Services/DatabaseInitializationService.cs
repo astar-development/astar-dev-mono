@@ -14,7 +14,7 @@ public class DatabaseInitializationService(IDbContextFactory<FilesContext> conte
 
         await DataSeed.SeedTagsToIgnoreAsync(logger, context);
 
-        var csvPath = Path.Combine(ApplicationMetadata.ApplicationFolder, "Mappings.csv");
+        string csvPath = Path.Combine(ApplicationMetadata.ApplicationFolder, "Mappings.csv");
         await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
     }
 }

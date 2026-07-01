@@ -15,11 +15,8 @@ public sealed class GivenADownloadJobHandler
     private readonly IHttpDownloader _downloader = Substitute.For<IHttpDownloader>();
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
 
-    public GivenADownloadJobHandler()
-    {
-        _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+    public GivenADownloadJobHandler() => _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default));
-    }
 
     private DownloadJobHandler CreateSut() => new(_downloader, _graphService, Substitute.For<ILogger<DownloadJobHandler>>());
 

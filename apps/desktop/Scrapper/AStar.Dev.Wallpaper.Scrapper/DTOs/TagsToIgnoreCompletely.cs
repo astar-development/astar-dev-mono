@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
+namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 
 public sealed class TagsToIgnoreCompletely
 {

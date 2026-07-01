@@ -1,25 +1,25 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
+using System.Globalization;
+using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.FilesDb.Data;
 using AStar.Dev.Wallpaper.Scrapper.Classifications;
 using AStar.Dev.Wallpaper.Scrapper.Models;
+using AStar.Dev.Wallpaper.Scrapper.Pages;
 using AStar.Dev.Wallpaper.Scrapper.Repositories;
 using AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using AStar.Dev.Wallpaper.Scrapper.Support;
 using AStar.Dev.Wallpaper.Scrapper.Tags;
+using AStar.Dev.Wallpaper.Scrapper.Workflows;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Exceptions;
-using AStar.Dev.Wallpaper.Scrapper.Pages;
-using AStar.Dev.Wallpaper.Scrapper.Workflows;
-using System.Globalization;
 using Testably.Abstractions;
-using System.IO.Abstractions;
 
 namespace AStar.Dev.Wallpaper.Scrapper;
 
@@ -57,7 +57,8 @@ public partial class App : Application
             })
             .AddSingleton<LogBroadcaster>()
             .AddSingleton<ImageBroadcaster>()
-            .AddSingleton(sp => {
+            .AddSingleton(sp =>
+            {
                 var broadcaster = sp.GetRequiredService<LogBroadcaster>();
                 return new LoggerConfiguration()
                     .MinimumLevel.Debug()
@@ -72,11 +73,13 @@ public partial class App : Application
             .AddSingleton<Serilog.ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
             .AddDbContextFactory<FilesContext>(options =>
                 options.UseSqlite(builder.Configuration["scrapeConfiguration:connectionStrings:sqlite"]))
-            .AddSingleton(sp => {
+            .AddSingleton(sp =>
+            {
                 using var ctx = sp.GetRequiredService<IDbContextFactory<FilesContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsToIgnoreCompletely(ctx);
             })
-            .AddSingleton(sp => {
+            .AddSingleton(sp =>
+            {
                 using var ctx = sp.GetRequiredService<IDbContextFactory<FilesContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsTextToIgnore(ctx);
             })
@@ -116,7 +119,7 @@ public partial class App : Application
             await _host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync()
         ).GetAwaiter().GetResult();
 
-        if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = _host.Services.GetRequiredService<MainWindow>();
             desktop.Exit += OnExit;

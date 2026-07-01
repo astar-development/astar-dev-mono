@@ -1,4 +1,6 @@
-﻿namespace AStar.Dev.Infrastructure.FilesDb.Models;
+﻿using System.Collections.ObjectModel;
+
+namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
 ///     Represents a classification of files, providing metadata about the type of files
@@ -24,7 +26,7 @@ public sealed class FileClassification : AuditableEntity
     ///     This property establishes the relationship between the <see cref="FileClassification" /> entity
     ///     and multiple <see cref="FileDetail" /> entities.
     /// </summary>
-    public ICollection<FileDetail> FileDetails { get; set; } = [];
+    public ICollection<FileDetail> FileDetails { get; } = [];
 
     /// <summary>
     ///     Gets or sets a value indicating whether the file classification is considered a "Celebrity."
@@ -43,5 +45,5 @@ public sealed class FileClassification : AuditableEntity
     ///     This property represents the one-to-many relationship between a file classification
     ///     and its constituent parts that define or describe its naming structure.
     /// </summary>
-    public List<FileNamePart> FileNameParts { get; set; } = [];
+    public Collection<FileNamePart> FileNameParts { get; } = [];
 }

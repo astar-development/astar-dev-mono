@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\AStar.Dev.Wallpaper.Scrapper\AStar.Dev.Wallpaper.Scrapper.csproj" />
+    <ProjectReference Include="..\AStar.Dev.Wallpaper.Scrapper\AStar.Dev.Wallpaper.Scrapper.csproj" />
   </ItemGroup>
 
   <!--

@@ -34,7 +34,7 @@ public static class DataSeed
 
         logger.Information("Seeding file classifications from {CsvPath}...", csvPath);
 
-        var lines = await File.ReadAllLinesAsync(csvPath);
+        string[] lines = await File.ReadAllLinesAsync(csvPath);
         var rows = lines.Skip(1)
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .Select(line => line.Split(','))
@@ -55,9 +55,14 @@ public static class DataSeed
             {
                 Name = group.Key,
                 Celebrity = first.Celebrity,
-                IncludeInSearch = first.Searchable,
-                FileNameParts = [.. group.Select(r => new FileNamePart { Text = r.FileNameContains, IncludeInSearch = r.Searchable })]
+                IncludeInSearch = first.Searchable
             };
+
+            foreach (var part in group.Select(r => new FileNamePart { Text = r.FileNameContains, IncludeInSearch = r.Searchable }))
+            {
+                classification.FileNameParts.Add(part);
+            }
+
             dbContext.FileClassifications.Add(classification);
         }
 

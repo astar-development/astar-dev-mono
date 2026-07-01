@@ -8,11 +8,11 @@ using Serilog.Core;
 namespace AStar.Dev.Wallpaper.Scrapper.Workflows;
 
 public sealed class TopWallpapersWorkflow(
-    TopWallpapersPage   topWallpapersPage,
-    ImagePageService    imagePageService,
+    TopWallpapersPage topWallpapersPage,
+    ImagePageService imagePageService,
     SearchConfiguration searchConfiguration,
-    ConfigurationSaver  configurationSaver,
-    Logger              logger)
+    ConfigurationSaver configurationSaver,
+    Logger logger)
 {
     private SearchConfiguration _searchConfiguration = searchConfiguration;
 
@@ -22,7 +22,7 @@ public sealed class TopWallpapersWorkflow(
         {
             await GetTheNewTopWallpapersAsync(ct);
         }
-        catch(Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.Error(exception.GetBaseException().Message);
             throw;
@@ -31,27 +31,27 @@ public sealed class TopWallpapersWorkflow(
 
     private async Task GetTheNewTopWallpapersAsync(CancellationToken ct)
     {
-        IResponse? pageDetails = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
+        var pageDetails = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
 
-        if(pageDetails is { Ok: false, }) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(1);
+        if (pageDetails is { Ok: false, }) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(1);
 
-        var pageCount = await topWallpapersPage.PageInfoAsync();
+        int pageCount = await topWallpapersPage.PageInfoAsync();
         logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", pageCount);
         _searchConfiguration = _searchConfiguration with { TopWallpapersTotalPages = pageCount };
 
         await configurationSaver.SaveUpdatedConfigurationAsync();
 
-        for(var currentPageNumber = _searchConfiguration.TopWallpapersStartingPageNumber;
+        for (int currentPageNumber = _searchConfiguration.TopWallpapersStartingPageNumber;
             currentPageNumber <= _searchConfiguration.TopWallpapersTotalPages;
             currentPageNumber++)
         {
             ct.ThrowIfCancellationRequested();
-            var delay = Random.Shared.Next(_searchConfiguration.ImagePauseInSeconds, _searchConfiguration.ImagePauseInSeconds + 4);
+            int delay = Random.Shared.Next(_searchConfiguration.ImagePauseInSeconds, _searchConfiguration.ImagePauseInSeconds + 4);
             await Task.Delay(TimeSpan.FromSeconds(delay), ct);
             _searchConfiguration = _searchConfiguration with { TopWallpapersStartingPageNumber = currentPageNumber };
             await configurationSaver.SaveUpdatedConfigurationAsync();
             _ = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
-            IReadOnlyCollection<string> imagePageLinks = await topWallpapersPage.GetImagePageLinks();
+            var imagePageLinks = await topWallpapersPage.GetImagePageLinks();
 
             await imagePageService.GetTheImagePagesAsync(imagePageLinks, "", "", ct: ct);
         }

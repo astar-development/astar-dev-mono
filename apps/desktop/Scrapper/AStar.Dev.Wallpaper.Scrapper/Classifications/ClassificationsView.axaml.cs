@@ -1,9 +1,9 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Services;
+using AStar.Dev.Wallpaper.Scrapper.Support;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using AStar.Dev.Wallpaper.Scrapper.Services;
-using AStar.Dev.Wallpaper.Scrapper.Support;
-using AStar.Dev.FunctionalParadigm;
 using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Classifications;

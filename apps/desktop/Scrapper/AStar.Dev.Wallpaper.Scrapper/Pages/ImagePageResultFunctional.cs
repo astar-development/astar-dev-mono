@@ -19,7 +19,7 @@ public class ImagePageResultFunctional(IDbContextFactory<FilesContext> dbContext
     {
         using var ctx = dbContextFactory.CreateDbContext();
         var scrapeConfiguration = ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
-    
+
         logger.Information("BaseDirectory: {BaseDirectory}", scrapeConfiguration.ScrapeDirectories.BaseDirectory);
         logger.Information("Image pages retrieved.");
 

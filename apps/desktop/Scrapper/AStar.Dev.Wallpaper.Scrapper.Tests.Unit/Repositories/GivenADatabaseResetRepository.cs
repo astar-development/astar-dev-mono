@@ -9,7 +9,7 @@ namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Repositories;
 public sealed class GivenADatabaseResetRepository : IAsyncLifetime
 {
     private const string FirstBaseSaveDirectory = "/old/save/dir";
-    private const string LastBaseSaveDirectory  = "/new/save/dir";
+    private const string LastBaseSaveDirectory = "/new/save/dir";
 
     private SqliteConnection connection = null!;
     private DbContextOptions<FilesContext> options = null!;
@@ -51,9 +51,9 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
 
     private static ScrapeConfigurationEntity CreateScrapeConfigurationEntity(string baseSaveDirectory) => new()
     {
-        ConnectionStrings   = new ConnectionStrings { Sqlite = "Data Source=test.db" },
-        UserConfiguration   = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "testuser", Password = "password", SessionCookie = "cookie" },
-        SearchConfiguration = new SearchConfiguration { BaseUrl = "https://example.com", ApiKey = "key" },
-        ScrapeDirectories   = new ScrapeDirectories { BaseSaveDirectory = baseSaveDirectory }
+        ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=test.db" },
+        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "testuser", Password = "password", SessionCookie = "cookie" },
+        SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://example.com"), ApiKey = "key" },
+        ScrapeDirectories = new ScrapeDirectories { BaseSaveDirectory = baseSaveDirectory }
     };
 }

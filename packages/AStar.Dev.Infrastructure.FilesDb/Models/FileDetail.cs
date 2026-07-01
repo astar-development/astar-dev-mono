@@ -1,4 +1,4 @@
-﻿using System.IO.Abstractions;
+using System.IO.Abstractions;
 using AStar.Dev.Utilities;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
@@ -23,14 +23,14 @@ public sealed class FileDetail
     /// </param>
     public FileDetail(IFileInfo fileInfo)
     {
-        FileName      = new FileName(fileInfo.Name);
+        FileName = new FileName(fileInfo.Name);
         DirectoryName = new DirectoryName(fileInfo.DirectoryName!);
-        FileSize      = fileInfo.Length;
+        FileSize = fileInfo.Length;
     }
 
     /// <summary>
     /// </summary>
-    public ICollection<FileClassification> FileClassifications { get; set; } = [];
+    public ICollection<FileClassification> FileClassifications { get; } = [];
 
     /// <summary>
     ///     Gets or sets the ID of the <see href="FileDetail"></see>. I know, shocking...

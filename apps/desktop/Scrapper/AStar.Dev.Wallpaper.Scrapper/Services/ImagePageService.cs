@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AStar.Dev.Infrastructure.FilesDb.Models;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.Models;
@@ -16,14 +15,14 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
     {
         var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, ct).ConfigureAwait(false);
 
-        foreach(var pageLink in imagePageLinks)
+        foreach (string pageLink in imagePageLinks)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
-                var fileName = Path.GetFileName(pageLink);
+                string fileName = Path.GetFileName(pageLink);
 
-                if(await fileDetailRepository.ExistsAsync(fileName).ConfigureAwait(false))
+                if (await fileDetailRepository.ExistsAsync(fileName).ConfigureAwait(false))
                 {
                     logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
                     await Task.Delay(TimeSpan.FromMilliseconds(500), ct).ConfigureAwait(false);
@@ -32,7 +31,7 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
 
                 await ProcessImagePageAsync(pageLink, name, pageData, ct).ConfigureAwait(false);
             }
-            catch(Exception ex) when (ex is not OperationCanceledException)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 logger.Warning(ex, "Failed to process {pageLink}, retrying after delay.", pageLink);
                 await Task.Delay(TimeSpan.FromSeconds(10), ct).ConfigureAwait(false);
@@ -43,11 +42,11 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
 
     private async Task ProcessImagePageAsync(string pageLink, string name, PageClassificationData pageData, CancellationToken ct)
     {
-        var delay = Random.Shared.Next(scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds, scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds + 4);
+        int delay = Random.Shared.Next(scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds, scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds + 4);
         await Task.Delay(TimeSpan.FromSeconds(delay), ct).ConfigureAwait(false);
 
         var result = await imagePage.GetImageFromPage(pageLink, name).ConfigureAwait(false);
-        if(result.Skip || result.ImageUrl is null)
+        if (result.Skip || result.ImageUrl is null)
         {
             logger.Information("Skipping {Name} with Tags: {Tags}", name, string.Join(", ", result.Tags));
             return;
@@ -55,31 +54,31 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
 
         var directoryName = DirectoryHelper.CreateDirectoryIfRequired(result.DirectoryName);
 
-        var filename = Path.GetFileName(result.ImageUrl).ToLowerInvariant();
-        var fileNameCombined = !string.IsNullOrEmpty(result.FilePrefix) ? result.FilePrefix + " " + filename : filename;
+        string filename = Path.GetFileName(result.ImageUrl).ToLowerInvariant();
+        string fileNameCombined = !string.IsNullOrEmpty(result.FilePrefix) ? result.FilePrefix + " " + filename : filename;
 
-        var imageNameWithPath = directoryName.Value.CombinePath(fileNameCombined.ToLowerInvariant());
-        var image             = await ImageRetrieverHelper.GetTheImageAsync(result.ImageUrl).ConfigureAwait(false);
+        string imageNameWithPath = directoryName.Value.CombinePath(fileNameCombined.ToLowerInvariant());
+        byte[] image = await ImageRetrieverHelper.GetTheImageAsync(result.ImageUrl).ConfigureAwait(false);
         logger.Information("About to save {filename} as {imageNameWithPath} as we don't appear to have it.", filename, imageNameWithPath);
         await ImageSaveHelper.SaveImage(image, imageNameWithPath).ConfigureAwait(false);
         imageBroadcaster.Broadcast(imageNameWithPath);
 
-        var fileInfo   = new FileInfo(imageNameWithPath);
+        var fileInfo = new FileInfo(imageNameWithPath);
         var fileDetail = new FileDetail
         {
             DirectoryName = directoryName,
-            FileName      = new FileName(filename),
-            FileSize      = fileInfo.Length,
-            IsImage       = filename.IsImage()
+            FileName = new FileName(filename),
+            FileSize = fileInfo.Length,
+            IsImage = filename.IsImage()
         };
 
-        if(fileDetail.IsImage)
+        if (fileDetail.IsImage)
         {
             var imageDetail = SKImage.FromEncodedData(imageNameWithPath);
-            if(imageDetail is not null)
+            if (imageDetail is not null)
             {
-                fileDetail.Height      = imageDetail.Height;
-                fileDetail.Width       = imageDetail.Width;
+                fileDetail.Height = imageDetail.Height;
+                fileDetail.Width = imageDetail.Width;
                 fileDetail.ImageDetail = new ImageDetail { Width = imageDetail.Width, Height = imageDetail.Height };
             }
         }

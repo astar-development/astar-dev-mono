@@ -1,7 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.ApplicationConfiguration;
 

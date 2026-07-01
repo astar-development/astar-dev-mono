@@ -24,7 +24,7 @@ public class GivenTap
         var resultTask = ValueTask.FromResult<Result<int, string>>(Result.Success<int, string>(9));
         var sideEffect = false;
 
-        var actual = await resultTask.Tap(value => sideEffect = value == 9);
+        var actual = await resultTask.TapAsync(value => sideEffect = value == 9);
 
         actual.ShouldBeOfType<Ok<int, string>>();
         actual.ShouldBe(new Ok<int, string>(9));

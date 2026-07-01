@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Playwright;
 using Serilog.Core;
@@ -21,10 +21,10 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
     {
         try
         {
-        page ??= await playwrightService.ConfigurePlaywrightAsync();
+            page ??= await playwrightService.ConfigurePlaywrightAsync();
             return await GotoSearchPageAsync(searchString, pageNumber);
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             logger.Error(exception.GetBaseException().Message);
 
@@ -36,10 +36,10 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
     {
         try
         {
-        page ??= await playwrightService.ConfigurePlaywrightAsync();
+            page ??= await playwrightService.ConfigurePlaywrightAsync();
             return await GetPageInfoAsync();
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             logger.Error(exception.GetBaseException().Message);
 
@@ -51,10 +51,10 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
     {
         try
         {
-        page ??= await playwrightService.ConfigurePlaywrightAsync();
+            page ??= await playwrightService.ConfigurePlaywrightAsync();
             return await GetTheImagePageLinksAsync();
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             logger.Error(exception.GetBaseException().Message);
 
@@ -64,21 +64,21 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
 
     private async Task<IResponse?> GotoSearchPageAsync(string searchString, int pageNumber)
     {
-        IResponse? searchPage = await GotoPageAsync(searchString, pageNumber);
+        var searchPage = await GotoPageAsync(searchString, pageNumber);
 
         return searchPage is { Ok: true, } ? searchPage : await GotoPageAsync(searchString, pageNumber);
     }
 
     private async Task<IReadOnlyCollection<string>> GetTheImagePageLinksAsync()
     {
-        List<string>            wantedLinks   = [];
-        IReadOnlyList<ILocator> imagePreviews = await ImagePreviews.AllAsync();
+        List<string> wantedLinks = [];
+        var imagePreviews = await ImagePreviews.AllAsync();
 
-        foreach(ILocator imagePreview in imagePreviews)
+        foreach (var imagePreview in imagePreviews)
         {
-            var hrefString = await imagePreview.GetAttributeAsync("href");
+            string? hrefString = await imagePreview.GetAttributeAsync("href");
 
-            if(hrefString != null && hrefString.Contains("/w/")) wantedLinks.Add(hrefString);
+            if (hrefString != null && hrefString.Contains("/w/")) wantedLinks.Add(hrefString);
         }
 
         return [.. wantedLinks.Take(24)];
@@ -86,18 +86,18 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
 
     private async Task<(int pageCount, int imageCount, string subDirectoryName)> GetPageInfoAsync()
     {
-        var text = await GetPageHeader();
+        string? text = await GetPageHeader();
 
-        if(text is null) return (0, 0, string.Empty);
+        if (text is null) return (0, 0, string.Empty);
 
-        var firstSpaceIndex  = text.IndexOf(' ');
-        var hashIndex        = text.IndexOf("for ", StringComparison.Ordinal) + 3;
-        var subDirectoryName = string.Empty;
+        int firstSpaceIndex = text.IndexOf(' ');
+        int hashIndex = text.IndexOf("for ", StringComparison.Ordinal) + 3;
+        string subDirectoryName = string.Empty;
 
-        if(hashIndex > 0) subDirectoryName = text[(hashIndex + 1)..].Replace(" ", "-").Replace("#", string.Empty);
+        if (hashIndex > 0) subDirectoryName = text[(hashIndex + 1)..].Replace(" ", "-").Replace("#", string.Empty);
 
-        var searchResults = text.Replace(",", string.Empty)[..firstSpaceIndex];
-        var imageCount    = decimal.Parse(searchResults, CultureInfo.InvariantCulture);
+        string searchResults = text.Replace(",", string.Empty)[..firstSpaceIndex];
+        decimal imageCount = decimal.Parse(searchResults, CultureInfo.InvariantCulture);
 
         return (Convert.ToInt32(Math.Ceiling(imageCount / 24)), (int)imageCount, subDirectoryName);
     }
@@ -118,7 +118,7 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
             text = await WallpaperSearchHeaderGeneral.TextContentAsync();
         }
 
-        if(text?.Length == 0) text = await NewSubscriptionWallpapersHeader.TextContentAsync();
+        if (text?.Length == 0) text = await NewSubscriptionWallpapersHeader.TextContentAsync();
 
         return text;
     }
