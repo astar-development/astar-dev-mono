@@ -1,6 +1,5 @@
 using System.Reflection;
 using AStar.Dev.Utilities;
-using Microsoft.VisualBasic.FileIO;
 
 namespace AStar.Dev.Wallpaper.Scrapper;
 
@@ -12,8 +11,8 @@ public static class ApplicationMetadata
 
     public static string ApplicationFolder => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!.CombinePath("..", "..", "..");
 
-    public static string FileClassificationsExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "FileClassifications.json");
+    public static string FileClassificationsExportFilePath => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).CombinePath("Scrapper", "FileClassifications.json");
 
-    public static string ScrapeConfigurationExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "ScrapeConfiguration.json");
-    public static string ScrapedTagsExportFilePath => SpecialDirectories.MyDocuments.CombinePath("Scrapper", "ScrapedTags.json");
+    public static string ScrapeConfigurationExportFilePath => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).CombinePath("Scrapper", "ScrapeConfiguration.json");
+    public static string ScrapedTagsExportFilePath => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments).CombinePath("Scrapper", "ScrapedTags.json");
 }
