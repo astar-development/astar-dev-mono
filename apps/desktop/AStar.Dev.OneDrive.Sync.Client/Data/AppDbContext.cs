@@ -13,12 +13,20 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<SyncedItemEntity> SyncedItems => Set<SyncedItemEntity>();
     public DbSet<SyncedItemFileClassificationEntity> SyncedItemFileClassifications => Set<SyncedItemFileClassificationEntity>();
     public DbSet<FileClassificationCategoryEntity> FileClassificationCategories => Set<FileClassificationCategoryEntity>();
+    public DbSet<FileDetailEntity> Files => Set<FileDetailEntity>();
+    public DbSet<FileAccessDetailEntity> FileAccessDetails => Set<FileAccessDetailEntity>();
+    public DbSet<FileNamePartEntity> FileNameParts => Set<FileNamePartEntity>();
+    public DbSet<TagToIgnoreEntity> TagsToIgnore => Set<TagToIgnoreEntity>();
+    public DbSet<ModelToIgnoreEntity> ModelsToIgnore => Set<ModelToIgnoreEntity>();
+    public DbSet<ScrapeConfigurationEntity> ScrapeConfiguration => Set<ScrapeConfigurationEntity>();
+    public DbSet<SearchConfigurationEntity> SearchConfigurations => Set<SearchConfigurationEntity>();
+    public DbSet<ScrapedTagEntity> ScrapedTags => Set<ScrapedTagEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseSqliteFriendlyConversions();
-
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.UseSqliteFriendlyConversions();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
