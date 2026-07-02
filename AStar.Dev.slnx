@@ -64,5 +64,9 @@
         <File Path="package.json" />
         <File Path="README.md" />
     </Folder>
+    <Folder Name="/spikes/">
+        <Project Path="spikes/AStar.Dev.Database.Compare/AStar.Dev.Database.Compare.csproj" />
+        <Project Path="spikes/AStar.Dev.Database.Compare.Tests.Unit/AStar.Dev.Database.Compare.Tests.Unit.csproj" />
+    </Folder>
     <Folder Name="/tests/" />
   </Solution>
