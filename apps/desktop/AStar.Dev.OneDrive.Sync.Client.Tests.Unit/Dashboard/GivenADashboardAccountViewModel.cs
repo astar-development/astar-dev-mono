@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -5,21 +6,23 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 
 public sealed class GivenADashboardAccountViewModel
 {
-    private static DashboardAccountViewModel CreateSut(ISyncScheduler scheduler, ILocalizationService? localization = null)
+    private static DashboardAccountViewModel CreateSut(ISyncScheduler scheduler, ILocalizationService? localization = null, IAccountRepository? repository = null, IActivityItemViewModelFactory? activityItemViewModelFactory = null)
         => new(
             new OneDriveAccount { Id = new AccountId("test-account") },
             scheduler,
-            Substitute.For<IAccountRepository>(),
+            repository ?? Substitute.For<IAccountRepository>(),
             localization ?? Substitute.For<ILocalizationService>(),
-            Substitute.For<IActivityItemViewModelFactory>());
+            activityItemViewModelFactory ?? Substitute.For<IActivityItemViewModelFactory>(),
+            Substitute.For<ILogger<DashboardAccountViewModel>>());
 
     private static DashboardAccountViewModel CreateSutWithAccount(OneDriveAccount account, ILocalizationService localization)
-        => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, new ActivityItemViewModelFactory(localization));
+        => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, new ActivityItemViewModelFactory(localization), Substitute.For<ILogger<DashboardAccountViewModel>>());
 
     [Fact]
     public async Task when_cancel_sync_command_invoked_then_scheduler_cancel_account_called_with_correct_id()
@@ -227,5 +230,55 @@ public sealed class GivenADashboardAccountViewModel
         sut.RefreshTimeDisplays();
 
         localization.Received(1).GetLocal("Common.JustNow");
+    }
+
+    [Fact]
+    public async Task when_sync_now_command_invoked_and_account_found_then_scheduler_trigger_account_async_is_called()
+    {
+        var scheduler = Substitute.For<ISyncScheduler>();
+        var repository = Substitute.For<IAccountRepository>();
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.Some(new AccountEntity { Id = new AccountId("test-account") }));
+        var sut = CreateSut(scheduler, repository: repository);
+
+        await ((IAsyncRelayCommand)sut.SyncNowCommand).ExecuteAsync(null);
+
+        await scheduler.Received(1).TriggerAccountAsync(Arg.Is<OneDriveAccount>(a => a.Id.Id == "test-account"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_sync_now_command_invoked_and_account_not_found_then_error_activity_is_added()
+    {
+        var scheduler = Substitute.For<ISyncScheduler>();
+        var repository = Substitute.For<IAccountRepository>();
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<AccountEntity>());
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        var activityItemViewModelFactory = new ActivityItemViewModelFactory(localization);
+        var sut = CreateSut(scheduler, localization, repository, activityItemViewModelFactory);
+
+        await ((IAsyncRelayCommand)sut.SyncNowCommand).ExecuteAsync(null);
+
+        await scheduler.DidNotReceive().TriggerAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>());
+        sut.RecentActivity.ShouldContain(item => item.Type == ActivityItemType.Error && item.FileName == "Activity.SyncError");
+    }
+
+    [Fact]
+    public async Task when_sync_now_command_invoked_and_scheduler_throws_then_error_activity_is_added()
+    {
+        var scheduler = Substitute.For<ISyncScheduler>();
+        var repository = Substitute.For<IAccountRepository>();
+        repository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.Some(new AccountEntity { Id = new AccountId("test-account") }));
+        scheduler.TriggerAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>()).Returns(Task.FromException(new InvalidOperationException("boom")));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
+        var activityItemViewModelFactory = new ActivityItemViewModelFactory(localization);
+        var sut = CreateSut(scheduler, localization, repository, activityItemViewModelFactory);
+
+        await ((IAsyncRelayCommand)sut.SyncNowCommand).ExecuteAsync(null);
+
+        sut.RecentActivity.ShouldContain(item => item.Type == ActivityItemType.Error && item.ErrorMessage == "boom");
     }
 }

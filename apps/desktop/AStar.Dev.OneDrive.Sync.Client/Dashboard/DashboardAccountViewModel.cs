@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -6,9 +7,11 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
 
@@ -50,6 +53,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     private readonly ILocalizationService localizationService;
     private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
+    private readonly ILogger<DashboardAccountViewModel> logger;
 
     [ObservableProperty]
     public partial bool IsSyncing { get; set; }
@@ -99,7 +103,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     /// <summary>Localised "Cancel" button label.</summary>
     public string CancelButtonText => localizationService.GetLocal("Common.Cancel");
 
-    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory)
+    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory, ILogger<DashboardAccountViewModel> logger)
     {
         this.account = account;
         this.scheduler = scheduler;
@@ -107,6 +111,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         this.localizationService = localizationService;
         this.activityItemViewModelFactory = activityItemViewModelFactory;
         this.repository = repository;
+        this.logger = logger;
         UpdateLastSyncText(SyncState.Idle);
     }
 
@@ -121,18 +126,37 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     {
         AddRecentActivity(activityItemViewModelFactory.Create(localizationService.GetLocal("Sync.Starting")));
 
-        await repository.GetByIdAsync(account.Id, CancellationToken.None)
-            .TapAsync(async entity =>
-            {
-                var fullAccount = new OneDriveAccount
+        try
+        {
+            var accountEntityOption = await repository.GetByIdAsync(account.Id, CancellationToken.None);
+
+            await accountEntityOption.MatchAsync(
+                async entity =>
                 {
-                    Id = entity.Id,
-                    Profile = entity.Profile,
-                    SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
-                    LastSyncedAt = entity.LastSyncedAt
-                };
-                await scheduler.TriggerAccountAsync(fullAccount);
-            });
+                    var fullAccount = new OneDriveAccount
+                    {
+                        Id = entity.Id,
+                        Profile = entity.Profile,
+                        SyncConfig = entity.SyncConfig.LocalSyncPath.Value.Length > 0 ? Option.Some(entity.SyncConfig) : Option.None<AccountSyncConfig>(),
+                        LastSyncedAt = entity.LastSyncedAt
+                    };
+                    await scheduler.TriggerAccountAsync(fullAccount);
+
+                    return Unit.Default;
+                },
+                () =>
+                {
+                    OneDriveSyncClientMessages.SyncNowAccountNotFound(logger, account.Id.Id);
+                    AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Id, account.Profile.Email, localizationService.GetLocal("Dashboard.SyncAccountNotFound")));
+
+                    return Unit.Default;
+                });
+        }
+        catch (Exception ex)
+        {
+            OneDriveSyncClientMessages.SyncNowFailed(logger, account.Id.Id, ex.Message, ex);
+            AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Id, account.Profile.Email, ex.Message));
+        }
     }
 
     public void UpdateSyncState(SyncState state, int conflicts)

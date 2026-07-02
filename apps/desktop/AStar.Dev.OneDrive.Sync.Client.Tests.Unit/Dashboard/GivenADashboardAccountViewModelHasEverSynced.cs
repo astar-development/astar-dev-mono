@@ -6,12 +6,13 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
 using AStar.Dev.Functional.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 
 public sealed class GivenADashboardAccountViewModelHasEverSynced
 {
-    private static DashboardAccountViewModel CreateSut(OneDriveAccount account) => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), Substitute.For<ILocalizationService>(), Substitute.For<IActivityItemViewModelFactory>());
+    private static DashboardAccountViewModel CreateSut(OneDriveAccount account) => new(account, Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), Substitute.For<ILocalizationService>(), Substitute.For<IActivityItemViewModelFactory>(), Substitute.For<ILogger<DashboardAccountViewModel>>());
 
     [Fact]
     public void when_account_has_no_last_synced_at_then_has_ever_synced_is_false()

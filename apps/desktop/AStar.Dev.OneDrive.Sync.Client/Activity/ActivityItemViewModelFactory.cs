@@ -14,4 +14,7 @@ public sealed class ActivityItemViewModelFactory(ILocalizationService localizati
 
     /// <inheritdoc />
     public ActivityItemViewModel CreateFromJob(SyncJob job, string accountEmail) => ActivityItemViewModel.FromJob(job, localizationService, accountEmail);
+
+    /// <inheritdoc />
+    public ActivityItemViewModel CreateError(string accountId, string accountEmail, string message) => ActivityItemViewModel.Error(accountId, localizationService, accountEmail, message);
 }

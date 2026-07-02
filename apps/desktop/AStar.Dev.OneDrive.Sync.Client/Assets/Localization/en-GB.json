@@ -203,6 +203,7 @@
   "Sync.CompletedWithErrors": "Sync completed with {0:N0} error(s) — check the log for details",
   "Sync.UnexpectedError": "An unexpected error occurred. Please try again.",
   "Dashboard.NoSyncPath": "No local sync path configured",
+  "Dashboard.SyncAccountNotFound": "Account no longer exists — sync not triggered",
   "Dashboard.Pending": "Pending",
   "Dashboard.AllSynced": "All synced",
   "Search.Title": "Search files",

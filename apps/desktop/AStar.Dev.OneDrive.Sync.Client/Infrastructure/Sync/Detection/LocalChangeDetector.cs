@@ -22,9 +22,9 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
 
         foreach (var rule in rules.Where(r => r.RuleType == RuleType.Include))
         {
-            string localFolderPath = BuildLocalPath(localBasePath, rule.RemotePath);
+            string? localFolderPath = ResolveLocalFolderPath(localBasePath, rule.RemotePath);
 
-            if (!fileSystem.Directory.Exists(localFolderPath))
+            if (localFolderPath is null)
                 continue;
 
             ScanDirectory(accountId, localBasePath, localFolderPath, rules, syncedItemsByLocalPath, jobs);
@@ -92,8 +92,38 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
         }
     }
 
-    private static string BuildLocalPath(string localBasePath, string remotePath)
-        => localBasePath.CombinePath(remotePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+    /// <summary>
+    /// Resolves a remote path to its local directory, matching each path segment case-insensitively.
+    /// OneDrive remote paths are case-insensitive, but local filesystems (e.g. Linux) may be case-sensitive,
+    /// so a literal case-sensitive combine can miss a folder that exists under different casing.
+    /// </summary>
+    private string? ResolveLocalFolderPath(string localBasePath, string remotePath)
+    {
+        string currentPath = localBasePath;
+
+        foreach (string segment in remotePath.TrimStart('/').Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            string exactMatch = currentPath.CombinePath(segment);
+
+            if (fileSystem.Directory.Exists(exactMatch))
+            {
+                currentPath = exactMatch;
+
+                continue;
+            }
+
+            string? caseInsensitiveMatch = fileSystem.Directory.Exists(currentPath)
+                ? fileSystem.Directory.EnumerateDirectories(currentPath).FirstOrDefault(dir => string.Equals(fileSystem.Path.GetFileName(dir), segment, StringComparison.OrdinalIgnoreCase))
+                : null;
+
+            if (caseInsensitiveMatch is null)
+                return null;
+
+            currentPath = caseInsensitiveMatch;
+        }
+
+        return currentPath;
+    }
 
     private static bool IsFileToSkip(IFileInfo info)
         => info.Attributes.HasFlag(FileAttributes.Hidden) || info.Name.StartsWith('.') || IsTemporaryFile(info.Extension);
