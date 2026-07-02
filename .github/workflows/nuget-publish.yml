@@ -138,6 +138,7 @@ jobs:
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        continue-on-error: true
         with:
           files: TestResults/**/*.trx
           check_name: ${{ env.PACKAGE_NAME }} — test results
