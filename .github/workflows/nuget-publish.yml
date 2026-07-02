@@ -109,7 +109,7 @@ jobs:
           lookup-only: true
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore "${CSPROJ}"
 
       # ── Build — version stamped directly from the tag ─────────────────────
       - name: Build
