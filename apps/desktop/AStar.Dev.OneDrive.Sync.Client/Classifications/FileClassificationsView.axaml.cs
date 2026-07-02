@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 
@@ -58,5 +59,32 @@ public partial class FileClassificationsView : UserControl, IDisposable
             return;
 
         await vm.ImportAsync(topLevel.StorageProvider);
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.PageDown:
+                CategoriesScrollViewer.PageDown();
+                e.Handled = true;
+
+                break;
+            case Key.PageUp:
+                CategoriesScrollViewer.PageUp();
+                e.Handled = true;
+
+                break;
+            case Key.End:
+                CategoriesScrollViewer.ScrollToEnd();
+                e.Handled = true;
+
+                break;
+            case Key.Home:
+                CategoriesScrollViewer.ScrollToHome();
+                e.Handled = true;
+
+                break;
+        }
     }
 }

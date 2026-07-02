@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
@@ -359,7 +360,14 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3400, Level = LogLevel.Information, Message = "[ClassificationDataMigrationService] Migration complete — {Count} rows migrated")]
     public static partial void ClassificationDataMigrated(ILogger logger, int count);
 
-    // Application Lifecycle (use ApplicationMessages for these)
-    // - Starting/Stopping handled by ApplicationMessages.Starting/Stopping
-    // - Unhandled exception handled by MainWindowInitializeFatal, BootstrapFatal, etc.
+    /// <summary>
+    /// Logs failure to add a classification category row during migration, including the category name and error details.
+    /// The full exception detail is kept out of the UI-facing error message.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="name">The name of the classification category.</param>
+    /// <param name="err">The error details.</param>
+    /// <exception cref="NotImplementedException"></exception>
+    [LoggerMessage(EventId = 3401, Level = LogLevel.Information, Message = "[ClassificationDataMigrationService] Add failed for {Name} with error {Error}")]
+    public static partial void ClassificationRowAddFailed(ILogger<FileClassificationRepository> logger, string name, string error);
 }
