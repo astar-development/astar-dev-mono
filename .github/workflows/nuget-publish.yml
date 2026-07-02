@@ -108,6 +108,9 @@ jobs:
             nuget-${{ runner.os }}-
           lookup-only: true
 
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
       - name: Restore
         run: dotnet restore "${CSPROJ}"
 
