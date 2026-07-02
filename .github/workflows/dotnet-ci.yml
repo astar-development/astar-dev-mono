@@ -93,6 +93,9 @@ jobs:
       - name: Authenticate GitHub Packages source
         run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
+      - name: DEBUG - verbose isolated restore of Scrapper
+        run: dotnet restore apps/desktop/Scrapper/AStar.Dev.Wallpaper.Scrapper/AStar.Dev.Wallpaper.Scrapper.csproj -v diagnostic > /tmp/restore.log 2>&1; grep -iE "technical.debt|github|NU1101|CACHE|http " /tmp/restore.log | tail -150; echo "---exit code was $?---"
+
       - name: Restore
         run: dotnet restore --disable-parallel
 
