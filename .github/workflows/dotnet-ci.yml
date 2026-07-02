@@ -90,6 +90,15 @@ jobs:
       - name: Authenticate GitHub Packages source
         run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
+      - name: DEBUG - probe GitHub Packages feed
+        run: |
+          echo "index.json:"
+          curl -s -o /dev/null -w "%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          echo "package index.json:"
+          curl -s -w "\nHTTP:%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/download/AStar.Dev.Technical.Debt.Reporting/index.json"
+          echo "query api:"
+          curl -s -w "\nHTTP:%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/query?q=AStar.Dev.Technical.Debt.Reporting&prerelease=true"
+
       - name: Restore
         run: dotnet restore
 
