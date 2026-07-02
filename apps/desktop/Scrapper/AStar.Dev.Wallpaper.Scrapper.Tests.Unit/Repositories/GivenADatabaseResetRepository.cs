@@ -44,7 +44,7 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
     [Fact]
     public async Task when_multiple_directories_exist_then_returns_base_save_directory_from_record_with_highest_id()
     {
-        var result = await sut.GetBaseSaveDirectoryAsync(CancellationToken.None);
+        string? result = await sut.GetBaseSaveDirectoryAsync(CancellationToken.None);
 
         result.ShouldBe(LastBaseSaveDirectory);
     }

@@ -10,7 +10,7 @@ public class GivenMatchAsync
     {
         var result = Result.Success<int, string>(3);
 
-        var actual = await result.MatchAsync(
+        int actual = await result.MatchAsync(
             onSuccess: value => ValueTask.FromResult(value + 1),
             onFailure: _ => -1);
 
@@ -22,7 +22,7 @@ public class GivenMatchAsync
     {
         var result = Result.Failure<int, string>("error");
 
-        var actual = await result.MatchAsync(
+        int actual = await result.MatchAsync(
             onSuccess: _ => 1,
             onFailure: error => ValueTask.FromResult(error.Length));
 
@@ -35,11 +35,11 @@ public class GivenMatchAsync
         var success = Result.Success<int, string>(4);
         var failure = Result.Failure<int, string>("error");
 
-        var actualSuccess = await success.MatchAsync(
+        int actualSuccess = await success.MatchAsync(
             onSuccess: value => ValueTask.FromResult(value + 2),
             onFailure: error => ValueTask.FromResult(-1));
 
-        var actualFailure = await failure.MatchAsync(
+        int actualFailure = await failure.MatchAsync(
             onSuccess: value => ValueTask.FromResult(value + 2),
             onFailure: error => ValueTask.FromResult(error.Length));
 

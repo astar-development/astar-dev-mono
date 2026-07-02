@@ -483,7 +483,7 @@ public sealed class GivenASyncedItemRepository
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         var newItem = FileItem(remotePath: "/photo.jpg");
 
-        var syncedItemId = await repository.UpsertWithClassificationsAsync(newItem, [catA.Id, catB.Id], TestContext.Current.CancellationToken);
+        int syncedItemId = await repository.UpsertWithClassificationsAsync(newItem, [catA.Id, catB.Id], TestContext.Current.CancellationToken);
 
         var persistedItem = db.SyncedItems.FirstOrDefault(i => i.Id == syncedItemId);
         persistedItem.ShouldNotBeNull();
@@ -519,7 +519,7 @@ public sealed class GivenASyncedItemRepository
             SizeInBytes = existingItem.SizeInBytes
         };
 
-        var syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [catNew.Id], TestContext.Current.CancellationToken);
+        int syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [catNew.Id], TestContext.Current.CancellationToken);
 
         db.ChangeTracker.Clear();
         var persistedItem = db.SyncedItems.Find(syncedItemId);
@@ -554,7 +554,7 @@ public sealed class GivenASyncedItemRepository
             SizeInBytes = existingItem.SizeInBytes
         };
 
-        var syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [], TestContext.Current.CancellationToken);
+        int syncedItemId = await repository.UpsertWithClassificationsAsync(updatedItem, [], TestContext.Current.CancellationToken);
 
         var rows = db.SyncedItemFileClassifications.Where(r => r.SyncedItemId == syncedItemId).ToList();
         rows.ShouldBeEmpty();

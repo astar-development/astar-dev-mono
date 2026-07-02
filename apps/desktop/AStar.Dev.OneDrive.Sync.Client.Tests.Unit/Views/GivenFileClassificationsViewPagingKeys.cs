@@ -63,7 +63,7 @@ public sealed class GivenFileClassificationsViewPagingKeys
     {
         var (view, scrollViewer) = CreateOverflowingView();
         view.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Source = view, Key = Key.PageDown });
-        var offsetAfterPageDown = scrollViewer.Offset.Y;
+        double offsetAfterPageDown = scrollViewer.Offset.Y;
 
         view.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Source = view, Key = Key.PageUp });
 

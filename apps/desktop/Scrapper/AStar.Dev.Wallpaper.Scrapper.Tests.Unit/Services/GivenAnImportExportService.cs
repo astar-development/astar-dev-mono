@@ -328,7 +328,7 @@ public sealed class GivenAnImportExportService
 
         sut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData());
 
-        var json = mockFileSystem.File.ReadAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath);
+        string json = mockFileSystem.File.ReadAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath);
         using var doc = JsonDocument.Parse(json);
         doc.RootElement.GetProperty("userConfiguration").GetProperty("password").GetString()
            .ShouldBe(ApplicationMetadata.Redacted);

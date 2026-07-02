@@ -12,7 +12,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = KnownImageCount, TotalPages = KnownPageCount };
 
-        var result = sut.IsUpToDate(KnownImageCount, KnownPageCount);
+        bool result = sut.IsUpToDate(KnownImageCount, KnownPageCount);
 
         result.ShouldBeTrue();
     }
@@ -22,7 +22,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = KnownImageCount, TotalPages = KnownPageCount };
 
-        var result = sut.IsUpToDate(KnownImageCount + 1, KnownPageCount);
+        bool result = sut.IsUpToDate(KnownImageCount + 1, KnownPageCount);
 
         result.ShouldBeFalse();
     }
@@ -32,7 +32,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = KnownImageCount, TotalPages = KnownPageCount };
 
-        var result = sut.IsUpToDate(KnownImageCount, KnownPageCount + 1);
+        bool result = sut.IsUpToDate(KnownImageCount, KnownPageCount + 1);
 
         result.ShouldBeFalse();
     }
@@ -42,7 +42,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = KnownImageCount, TotalPages = KnownPageCount };
 
-        var result = sut.IsUpToDate(KnownImageCount + 24, KnownPageCount + 1);
+        bool result = sut.IsUpToDate(KnownImageCount + 24, KnownPageCount + 1);
 
         result.ShouldBeFalse();
     }
@@ -52,7 +52,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = 0, TotalPages = 0 };
 
-        var result = sut.IsUpToDate(0, 0);
+        bool result = sut.IsUpToDate(0, 0);
 
         result.ShouldBeTrue();
     }
@@ -62,7 +62,7 @@ public sealed class GivenACategory
     {
         var sut = new Category { LastKnownImageCount = 0, TotalPages = 0 };
 
-        var result = sut.IsUpToDate(24, 1);
+        bool result = sut.IsUpToDate(24, 1);
 
         result.ShouldBeFalse();
     }
