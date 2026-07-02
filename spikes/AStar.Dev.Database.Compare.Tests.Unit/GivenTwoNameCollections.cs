@@ -16,7 +16,7 @@ public class GivenTwoNameCollections
     [Fact]
     public void when_name_does_not_exist_in_reference_then_included_in_result()
     {
-        var namesToCheck = new List<(string, bool)> { ("Cosplay", false) };
+        var namesToCheck = new List<(string, bool)> { ("Cosplay", true) };
         var referenceNames = new List<(string, bool)> { ("Action", true) };
 
         var missingNames = MissingCategoryFinder.FindMissing(namesToCheck, referenceNames);
