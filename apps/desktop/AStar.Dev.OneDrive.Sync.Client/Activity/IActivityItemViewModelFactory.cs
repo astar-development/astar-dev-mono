@@ -13,4 +13,7 @@ public interface IActivityItemViewModelFactory
 
     /// <summary>Creates an activity item describing a completed sync job.</summary>
     ActivityItemViewModel CreateFromJob(SyncJob job, string accountEmail);
+
+    /// <summary>Creates an error activity item, e.g. when a manually triggered sync fails before it can start.</summary>
+    ActivityItemViewModel CreateError(string accountId, string accountEmail, string message);
 }

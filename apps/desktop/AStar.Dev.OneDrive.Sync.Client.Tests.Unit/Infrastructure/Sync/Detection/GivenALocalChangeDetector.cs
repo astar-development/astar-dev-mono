@@ -56,6 +56,33 @@ public sealed class GivenALocalChangeDetector
     }
 
     [Fact]
+    public void when_local_folder_casing_differs_from_rule_remote_path_then_files_inside_are_still_detected()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Pictures/WallHaven/photo.jpg").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Pictures/Wallhaven", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_local_folder_casing_differs_from_rule_remote_path_then_job_local_path_reflects_actual_casing_on_disk()
+    {
+        const string filePath = $"{BasePath}/Pictures/WallHaven/photo.jpg";
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Pictures/Wallhaven", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs[0].Target.LocalPath.ShouldBe(filePath);
+    }
+
+    [Fact]
     public void when_include_rule_directory_exists_but_is_empty_then_returns_empty_list()
     {
         var mockFileSystem = new MockFileSystem();

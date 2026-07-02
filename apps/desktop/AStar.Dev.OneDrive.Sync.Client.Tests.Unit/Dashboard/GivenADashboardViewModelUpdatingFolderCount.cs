@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 
@@ -17,7 +18,7 @@ public sealed class GivenADashboardViewModelUpdatingFolderCount
     private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
-    private DashboardViewModel CreateSut() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService)), new ActivityItemViewModelFactory(_localizationService), Substitute.For<IUiTimer>());
+    private DashboardViewModel CreateSut() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(_localizationService), Substitute.For<IUiTimer>());
 
     private static OneDriveAccount CreateAccount(string id) => new() { Id = new AccountId(id) };
 

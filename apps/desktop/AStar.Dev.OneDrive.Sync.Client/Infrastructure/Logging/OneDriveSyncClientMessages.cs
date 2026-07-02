@@ -300,6 +300,14 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3007, Level = LogLevel.Error, Message = "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}")]
     public static partial void MainWindowInitializeFatal(ILogger logger, string error, Exception ex);
 
+    /// <summary>Logs a manual "Sync Now" request for an account no longer present in the repository.</summary>
+    [LoggerMessage(EventId = 3008, Level = LogLevel.Warning, Message = "[DashboardAccountViewModel.SyncNowAsync] Account {AccountId} not found — sync not triggered")]
+    public static partial void SyncNowAccountNotFound(ILogger logger, string accountId);
+
+    /// <summary>Logs an unhandled exception while manually triggering sync for an account.</summary>
+    [LoggerMessage(EventId = 3009, Level = LogLevel.Error, Message = "[DashboardAccountViewModel.SyncNowAsync] Unhandled exception triggering sync for {AccountId}: {Error}")]
+    public static partial void SyncNowFailed(ILogger logger, string accountId, string error, Exception ex);
+
     // Bootstrap & Initialization (3100-3199)
 
     /// <summary>Logs fatal error during bootstrap.</summary>

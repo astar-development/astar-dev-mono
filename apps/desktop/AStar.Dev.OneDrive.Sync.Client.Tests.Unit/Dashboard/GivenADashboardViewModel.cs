@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 
@@ -18,7 +19,7 @@ public sealed class GivenADashboardViewModel
     private readonly ILocalizationService localizationService = Substitute.For<ILocalizationService>();
     private readonly ManualUiTimer timer = new();
 
-    private DashboardViewModel CreateSut() => new(localizationService, syncEventAggregator, new DashboardAccountViewModelFactory(scheduler, accountRepository, localizationService, new ActivityItemViewModelFactory(localizationService)), new ActivityItemViewModelFactory(localizationService), timer);
+    private DashboardViewModel CreateSut() => new(localizationService, syncEventAggregator, new DashboardAccountViewModelFactory(scheduler, accountRepository, localizationService, new ActivityItemViewModelFactory(localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(localizationService), timer);
 
     private static OneDriveAccount NeverSyncedAccount(string id) => new() { Id = new AccountId(id) };
 
