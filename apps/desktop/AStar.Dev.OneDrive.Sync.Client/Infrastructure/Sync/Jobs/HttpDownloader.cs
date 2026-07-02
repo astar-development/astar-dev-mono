@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 /// A new HttpClient is obtained from IHttpClientFactory per download call so the
 /// factory can rotate and dispose handlers freely without this class holding stale references.
 /// </summary>
-public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<HttpDownloader> logger) : IHttpDownloader
+public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<HttpDownloader> logger, TimeProvider timeProvider) : IHttpDownloader
 {
     private const string UserAgent = "AStar.Dev.OneDrive.Sync/1.0";
     private const int MaxMoveRetries = 3;
@@ -51,7 +51,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                     OneDriveSyncClientMessages.DownloadThrottled(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
                     response.Dispose();
-                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                    await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -72,7 +72,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 TryDeleteTemp(tempPath);
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
-                await Task.Delay(delay, ct).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -83,7 +83,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             {
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
-                await Task.Delay(delay, ct).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -117,7 +117,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 if (attempt < MaxMoveRetries)
                 {
                     OneDriveSyncClientMessages.DownloadMoveRetrying(logger, localPath, attempt, MaxMoveRetries);
-                    await Task.Delay(MoveRetryDelay, ct).ConfigureAwait(false);
+                    await Task.Delay(MoveRetryDelay, timeProvider, ct).ConfigureAwait(false);
                 }
             }
         }

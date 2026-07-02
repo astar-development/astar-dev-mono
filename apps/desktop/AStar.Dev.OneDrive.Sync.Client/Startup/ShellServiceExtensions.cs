@@ -33,6 +33,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton(inMemoryLogSink);
         _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
         _ = services.AddSingleton<IFileSystem, RealFileSystem>();
+        _ = services.AddSingleton(TimeProvider.System);
         _ = services.AddSingleton<ITokenCacheService, TokenCacheService>();
         _ = services.AddSingleton<IAccountOnboardingService, AccountOnboardingService>();
         _ = services.AddSingleton<IAuthService, AuthService>();

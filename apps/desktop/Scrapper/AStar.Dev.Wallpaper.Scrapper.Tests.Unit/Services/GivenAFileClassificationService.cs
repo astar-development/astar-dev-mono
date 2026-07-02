@@ -218,14 +218,20 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
     };
 
-    private static ScrapeConfigurationEntity CreateScrapeConfigEntityWithCategory(string categoryId, string categoryName, bool includeInSearch) => new()
+    private static ScrapeConfigurationEntity CreateScrapeConfigEntityWithCategory(string categoryId, string categoryName, bool includeInSearch)
     {
-        ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=test.db" },
-        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
-        SearchConfiguration = new SearchConfiguration
+        var entity = new ScrapeConfigurationEntity
         {
-            BaseUrl = new Uri("https://example.com")
-        },
-        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
-    };
+            ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=test.db" },
+            UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
+            SearchConfiguration = new SearchConfiguration
+            {
+                BaseUrl = new Uri("https://example.com")
+            },
+            ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
+        };
+        entity.SearchConfiguration.SearchCategories.Add(new SearchCategories { Id = categoryId, Name = categoryName, IncludeInSearch = includeInSearch });
+
+        return entity;
+    }
 }

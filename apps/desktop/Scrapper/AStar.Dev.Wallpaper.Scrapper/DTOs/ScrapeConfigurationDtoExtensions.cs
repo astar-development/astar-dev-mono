@@ -72,7 +72,7 @@ public static class ScrapeConfigurationDtoExtensions
             },
             SearchConfiguration = new SearchConfigurationDomain
             {
-                BaseUrl = new Uri(dto.SearchConfiguration.BaseUrl),
+                BaseUrl = ParseUri(dto.SearchConfiguration.BaseUrl, "https://example.com"),
                 ApiKey = dto.SearchConfiguration.ApiKey,
                 SearchString = dto.SearchConfiguration.SearchString,
                 TopWallpapers = dto.SearchConfiguration.TopWallpapers,
@@ -86,7 +86,7 @@ public static class ScrapeConfigurationDtoExtensions
                 SubscriptionsTotalPages = dto.SearchConfiguration.SubscriptionsTotalPages,
                 TopWallpapersTotalPages = dto.SearchConfiguration.TopWallpapersTotalPages,
                 TopWallpapersStartingPageNumber = dto.SearchConfiguration.TopWallpapersStartingPageNumber,
-                LoginUrl = new Uri(dto.SearchConfiguration.LoginUrl),
+                LoginUrl = ParseUri(dto.SearchConfiguration.LoginUrl, "https://example.com/login"),
                 UseHeadless = dto.SearchConfiguration.UseHeadless,
                 SlowMotionDelay = dto.SearchConfiguration.SlowMotionDelay
             },
@@ -115,4 +115,6 @@ public static class ScrapeConfigurationDtoExtensions
 
         return entity;
     }
+
+    private static Uri ParseUri(string? value, string fallback) => Uri.TryCreate(string.IsNullOrWhiteSpace(value) ? fallback : value, UriKind.Absolute, out var uri) ? uri : new Uri(fallback);
 }

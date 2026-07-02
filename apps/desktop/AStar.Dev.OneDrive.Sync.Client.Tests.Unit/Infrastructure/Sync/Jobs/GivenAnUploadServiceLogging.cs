@@ -48,7 +48,7 @@ public sealed class GivenAnUploadServiceLogging
               .RespondWith(Response.Create().WithCallback(_ => Created201Response()));
 
         var logger = new TestLogger<UploadService>();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger, System.TimeProvider.System);
 
         await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -69,7 +69,7 @@ public sealed class GivenAnUploadServiceLogging
               .RespondWith(Response.Create().WithStatusCode(201).WithHeader("Content-Type", "application/json").WithBody("{}"));
 
         var logger = new TestLogger<UploadService>();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger, System.TimeProvider.System);
 
         await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 

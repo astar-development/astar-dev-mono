@@ -39,7 +39,7 @@ public sealed class GivenAnUploadService
 
     [Fact]
     public void when_constructed_then_service_implements_IUploadService() =>
-        new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem(), Substitute.For<ILogger<UploadService>>()).ShouldBeAssignableTo<IUploadService>();
+        new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem(), Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System).ShouldBeAssignableTo<IUploadService>();
 
     [Fact]
     public async Task when_upload_async_is_called_with_pre_cancelled_token_then_operation_is_cancelled()
@@ -49,7 +49,7 @@ public sealed class GivenAnUploadService
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         await Should.ThrowAsync<OperationCanceledException>(() =>
             sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: cts.Token));
@@ -68,7 +68,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithCallback(_ => Created201Response()));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
         string itemId = uploadResult.Match(id => id, _ => string.Empty);
@@ -89,7 +89,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithCallback(_ => Ok200Response()));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
         string itemId = uploadResult.Match(id => id, _ => string.Empty);
@@ -118,7 +118,7 @@ public sealed class GivenAnUploadService
                       return callIndex == 0 ? Accepted202Response() : Created201Response();
                   }));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var uploadResult = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
         string itemId = uploadResult.Match(id => id, _ => string.Empty);
@@ -143,7 +143,7 @@ public sealed class GivenAnUploadService
 
         var reportedValues = new List<long>();
         var progress = new Progress<long>(reportedValues.Add);
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, progress, TestContext.Current.CancellationToken);
 
@@ -156,7 +156,7 @@ public sealed class GivenAnUploadService
     [Fact]
     public async Task when_upload_async_is_called_with_nonexistent_local_path_then_result_is_error()
     {
-        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem(), Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(Substitute.For<IHttpClientFactory>(), new MockFileSystem(), Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var result = await sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, "/nonexistent/path/file.bin", RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -174,7 +174,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPost())
               .RespondWith(Response.Create().WithStatusCode(200).WithBody("{\"uploadUrl\":null}").WithHeader("Content-Type", "application/json"));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -195,7 +195,7 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithStatusCode(201).WithHeader("Content-Type", "application/json").WithBody("{}"));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), System.TimeProvider.System);
 
         var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 

@@ -30,7 +30,7 @@ public sealed class GivenAnHttpDownloader
         return CreateFactoryReturning(response);
     }
 
-    private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>());
+    private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
     [Fact]
     public void when_constructed_then_service_implements_ihttp_downloader() =>

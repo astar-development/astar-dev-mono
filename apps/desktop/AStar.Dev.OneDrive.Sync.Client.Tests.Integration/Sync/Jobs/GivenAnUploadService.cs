@@ -12,6 +12,7 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.Functional.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Sync.Jobs;
 
@@ -56,9 +57,18 @@ public sealed class GivenAnUploadService
         server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
               .RespondWith(Response.Create().WithStatusCode(429));
 
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var timeProvider = new FakeTimeProvider();
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), timeProvider);
 
-        var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+        var uploadTask = sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+
+        while (!uploadTask.IsCompleted)
+        {
+            await Task.Delay(1, TestContext.Current.CancellationToken);
+            timeProvider.Advance(TimeSpan.FromMinutes(5));
+        }
+
+        var result = await uploadTask;
 
         result.ShouldBeAssignableTo<Result<string, string>.Error>();
     }

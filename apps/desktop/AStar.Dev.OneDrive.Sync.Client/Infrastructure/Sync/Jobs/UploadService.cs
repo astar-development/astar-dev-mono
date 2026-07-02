@@ -23,7 +23,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger) : IUploadService
+public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger, TimeProvider timeProvider) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
     private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
@@ -159,7 +159,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                    await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -178,7 +178,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                await Task.Delay(delay, ct).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
             }
         }
     }

@@ -188,30 +188,38 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
         result.UserConfiguration.Password.ShouldBe(ExistingPassword);
     }
 
-    private static ScrapeConfigurationEntity CreateInitialScrapeConfigurationEntity() => new()
+    private static ScrapeConfigurationEntity CreateInitialScrapeConfigurationEntity()
     {
-        ConnectionStrings = new ConnectionStrings { Sqlite = ExistingSqlite },
-        UserConfiguration = new UserConfiguration
+        var entity = new ScrapeConfigurationEntity
         {
-            LoginEmailAddress = "user@example.com",
-            Username = "testuser",
-            Password = ExistingPassword,
-            SessionCookie = ExistingSessionCookie
-        },
-        SearchConfiguration = new SearchConfiguration
-        {
-            BaseUrl = new Uri("https://example.com"),
-            ApiKey = ExistingApiKey
-        },
-        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
-    };
+            ConnectionStrings = new ConnectionStrings { Sqlite = ExistingSqlite },
+            UserConfiguration = new UserConfiguration
+            {
+                LoginEmailAddress = "user@example.com",
+                Username = "testuser",
+                Password = ExistingPassword,
+                SessionCookie = ExistingSessionCookie
+            },
+            SearchConfiguration = new SearchConfiguration
+            {
+                BaseUrl = new Uri("https://example.com"),
+                ApiKey = ExistingApiKey
+            },
+            ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
+        };
+        entity.SearchConfiguration.SearchCategories.Add(new SearchCategories { Id = ExistingCategoryId, Name = "Existing Category", TotalPages = 1, IncludeInSearch = true });
+
+        return entity;
+    }
 
     private static ScrapeConfigurationEntity CreateImportEntity(
         string sqlite = "Data Source=updated.db",
         string password = "new-password",
         string sessionCookie = "new-session-cookie",
         string apiKey = "new-api-key",
-        List<SearchCategories>? categories = null) => new()
+        List<SearchCategories>? categories = null)
+    {
+        var entity = new ScrapeConfigurationEntity
         {
             ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
             UserConfiguration = new UserConfiguration
@@ -228,4 +236,10 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
             },
             ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/updated" }
         };
+
+        foreach (var category in categories ?? [])
+            entity.SearchConfiguration.SearchCategories.Add(category);
+
+        return entity;
+    }
 }
