@@ -92,12 +92,8 @@ jobs:
 
       - name: DEBUG - probe GitHub Packages feed
         run: |
-          echo "index.json:"
-          curl -s -o /dev/null -w "%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-          echo "package index.json:"
-          curl -s -w "\nHTTP:%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/download/AStar.Dev.Technical.Debt.Reporting/index.json"
-          echo "query api:"
-          curl -s -w "\nHTTP:%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/query?q=AStar.Dev.Technical.Debt.Reporting&prerelease=true"
+          echo "registration index (lowercase id):"
+          curl -s -w "\nHTTP:%{http_code}\n" -u "${{ github.repository_owner }}:${{ secrets.GITHUB_TOKEN }}" "https://nuget.pkg.github.com/${{ github.repository_owner }}/astar.dev.technical.debt.reporting/index.json"
 
       - name: Restore
         run: dotnet restore
