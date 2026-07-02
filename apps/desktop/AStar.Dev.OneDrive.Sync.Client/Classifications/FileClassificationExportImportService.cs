@@ -25,16 +25,6 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         foreach (var category in allCategories)
             nodesByCategoryId[category.Id] = new ClassificationCategoryNode { Name = category.Name, IsFamous = category.IsFamous, IsInternet = category.IsInternet, Children = [], Keywords = [] };
 
-        // foreach (var category in allCategories)
-        // {
-        //     bool isLeaf = !parentIds.Contains(category.Id);
-        //     if (!isLeaf)
-        //         continue;
-
-        //     //var keywords = await repository.GetKeywordsForCategoryAsync(category.Id, cancellationToken).ConfigureAwait(false);
-        //     // nodesByCategoryId[category.Id].Keywords.AddRange(keywords.Select(k => new ClassificationKeywordNode(k.Keyword.Value, k.Keyword.IsFamous is Option<bool>.Some f ? f.Value : null, k.Keyword.IsInternet is Option<bool>.Some i ? i.Value : null)));
-        // }
-
         var rootNodes = new List<ClassificationCategoryNode>();
         foreach (var category in allCategories)
         {

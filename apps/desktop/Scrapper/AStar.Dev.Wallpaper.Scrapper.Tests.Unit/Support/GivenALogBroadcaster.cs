@@ -22,7 +22,7 @@ public sealed class GivenALogBroadcaster
     public void when_broadcast_is_called_with_multiple_subscribers_then_all_subscribers_are_notified()
     {
         var sut = new LogBroadcaster();
-        var callCount = 0;
+        int callCount = 0;
         sut.MessageLogged += _ => callCount++;
         sut.MessageLogged += _ => callCount++;
 

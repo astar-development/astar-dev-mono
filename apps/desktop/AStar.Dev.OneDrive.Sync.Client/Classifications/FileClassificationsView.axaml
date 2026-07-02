@@ -4,7 +4,9 @@
              x:Class="AStar.Dev.OneDrive.Sync.Client.Classifications.FileClassificationsView"
              x:DataType="classifications:FileClassificationRulesViewModel"
              VerticalContentAlignment="Stretch"
-             HorizontalContentAlignment="Stretch">
+             HorizontalContentAlignment="Stretch"
+             Focusable="True"
+             KeyDown="OnKeyDown">
 
     <Grid RowDefinitions="Auto,*">
         <Grid Grid.Row="0"
@@ -41,7 +43,8 @@
             </StackPanel>
         </Grid>
 
-        <ScrollViewer Grid.Row="1"
+        <ScrollViewer x:Name="CategoriesScrollViewer"
+                      Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       MinHeight="0"

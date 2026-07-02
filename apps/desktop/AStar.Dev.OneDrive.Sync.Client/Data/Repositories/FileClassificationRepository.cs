@@ -38,24 +38,25 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     }
 
     /// <inheritdoc />
-    public async Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+    public Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default)
+        => Try.RunAsync(async () =>
+            {
+                await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entity = new FileClassificationCategoryEntity
-        {
-            Name = category.Name.ToTitleCase(),
-            Level = category.Level,
-            IsFamous = category.IsFamous,
-            IsInternet = category.IsInternet,
-            ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
-        };
+                var entity = new FileClassificationCategoryEntity
+                    {
+                        Name = category.Name.ToTitleCase(),
+                        Level = category.Level,
+                        IsFamous = category.IsFamous,
+                        IsInternet = category.IsInternet,
+                        ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
+                    };
 
-        db.FileClassificationCategories.Add(entity);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                db.FileClassificationCategories.Add(entity);
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(entity.Id));
-    }
+                return new FileClassificationCategoryId(entity.Id);
+            }).MapFailureAsync(ex => ex.GetBaseException().Message);
 
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default)
@@ -83,6 +84,10 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         int rawId = id.Id;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var subCategory = await db.FileClassificationCategories.FirstOrDefaultAsync(c => c.ParentId == rawId, cancellationToken).ConfigureAwait(false);
+        if (subCategory is not null)
+            db.FileClassificationCategories.Remove(subCategory);
 
         var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
         if (entity is null)

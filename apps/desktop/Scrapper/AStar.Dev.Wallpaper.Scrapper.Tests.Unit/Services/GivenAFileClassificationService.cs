@@ -160,7 +160,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new FilesContext(options);
-        var count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
     }
 
@@ -177,7 +177,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new FilesContext(options);
-        var count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(0);
     }
 
@@ -206,7 +206,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new FilesContext(options);
-        var count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
     }
 
