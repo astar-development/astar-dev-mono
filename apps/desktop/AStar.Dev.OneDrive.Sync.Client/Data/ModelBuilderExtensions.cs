@@ -16,6 +16,19 @@ public static class ModelBuilderExtensions
             typeof(AccountEntity),
     typeof(SyncConflictEntity),
     typeof(SyncJobEntity),
+    typeof(FileAccessDetailEntity),
+    typeof(DeletionStatusEntity),
+    typeof(EventEntity),
+    typeof(FileNamePartEntity),
+    typeof(TagToIgnoreEntity),
+    typeof(ModelToIgnoreEntity),
+    typeof(ScrapedTagEntity),
+    typeof(ScrapeConfigurationEntity),
+    typeof(ConnectionStringsEntity),
+    typeof(UserConfigurationEntity),
+    typeof(SearchConfigurationEntity),
+    typeof(SearchCategoryEntity),
+    typeof(ScrapeDirectoriesEntity),
         ];
 
         foreach(var et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))
