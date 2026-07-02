@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using System.Net;
 using System.Text;
 using AStar.Dev.Functional.Extensions;
@@ -44,7 +43,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     public async Task when_download_succeeds_then_no_temp_file_remains()
     {
         var mockFileSystem = new MockFileSystem();
-        var sut = new HttpDownloader(CreateOkFactory(), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(CreateOkFactory(), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -57,7 +56,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     {
         const string content = "expected file content";
         var mockFileSystem = new MockFileSystem();
-        var sut = new HttpDownloader(CreateOkFactory(content), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(CreateOkFactory(content), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -92,7 +91,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
             new HttpClient(new FakeHttpMessageHandler(_ =>
                 new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("content", Encoding.UTF8) })));
 
-        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await Task.WhenAll(
             sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken),
@@ -104,7 +103,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     [Fact]
     public async Task when_file_move_fails_all_retries_then_result_is_error()
     {
-        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -115,7 +114,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     public async Task when_file_move_fails_all_retries_then_temp_file_is_deleted()
     {
         var fakeFs = CreateAlwaysFailMoveFileSystem();
-        var sut = new HttpDownloader(CreateOkFactory(), fakeFs, Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(CreateOkFactory(), fakeFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -126,7 +125,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     public async Task when_file_move_fails_then_warning_is_logged_per_failed_retry_attempt()
     {
         var logger = new TestLogger<HttpDownloader>();
-        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger);
+        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -137,7 +136,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     public async Task when_all_move_retries_exhausted_then_error_is_logged_with_event_2708()
     {
         var logger = new TestLogger<HttpDownloader>();
-        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger);
+        var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 

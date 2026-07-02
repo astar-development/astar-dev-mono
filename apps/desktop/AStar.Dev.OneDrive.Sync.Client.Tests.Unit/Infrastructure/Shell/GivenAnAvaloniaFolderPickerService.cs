@@ -1,5 +1,5 @@
-using Avalonia.Platform.Storage;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
+using Avalonia.Platform.Storage;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Shell;
 

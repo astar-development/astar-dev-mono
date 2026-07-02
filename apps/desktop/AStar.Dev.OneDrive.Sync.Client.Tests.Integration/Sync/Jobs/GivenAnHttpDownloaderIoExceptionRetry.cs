@@ -2,6 +2,7 @@ using System.Net;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Sync.Jobs;
 
@@ -19,9 +20,18 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
             new HttpClient(new FakeHttpMessageHandler(_ =>
                 new HttpResponseMessage(HttpStatusCode.OK) { Content = new IoThrowingContent() })));
 
-        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
+        var timeProvider = new FakeTimeProvider();
+        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), timeProvider);
 
-        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        while (!downloadTask.IsCompleted)
+        {
+            await Task.Delay(1, TestContext.Current.CancellationToken);
+            timeProvider.Advance(TimeSpan.FromMinutes(5));
+        }
+
+        var result = await downloadTask;
 
         result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
     }

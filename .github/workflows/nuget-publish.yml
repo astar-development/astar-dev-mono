@@ -108,8 +108,11 @@ jobs:
             nuget-${{ runner.os }}-
           lookup-only: true
 
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore "${CSPROJ}"
 
       # ── Build — version stamped directly from the tag ─────────────────────
       - name: Build
@@ -138,6 +141,7 @@ jobs:
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
+        continue-on-error: true
         with:
           files: TestResults/**/*.trx
           check_name: ${{ env.PACKAGE_NAME }} — test results

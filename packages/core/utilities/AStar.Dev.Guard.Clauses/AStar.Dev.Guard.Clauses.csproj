@@ -13,21 +13,21 @@
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <PackageTags>AStar</PackageTags>
+        <NoWarn>$(NoWarn);NU5050</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-
-
+        <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <NoWarn>1701;1702;</NoWarn>
+        <NoWarn>1701;1702;NU5050</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <NoWarn>1701;1702;</NoWarn>
+        <NoWarn>1701;1702;NU5050</NoWarn>
     </PropertyGroup>
 
 </Project>

@@ -140,6 +140,13 @@
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="basePath" /> or <paramref name="segments" /> is null.</exception>
             <exception cref="T:System.ArgumentException">Thrown when any segment is rooted.</exception>
         </member>
+        <member name="M:AStar.Dev.Utilities.PathOperationExtensions.CleanPath(System.String)">
+            <summary>
+                Normalizes path separators while preserving the path content.
+            </summary>
+            <param name="path">The path to normalize.</param>
+            <returns>The normalized path.</returns>
+        </member>
         <member name="T:AStar.Dev.Utilities.RegexExtensions">
             <summary>
             </summary>

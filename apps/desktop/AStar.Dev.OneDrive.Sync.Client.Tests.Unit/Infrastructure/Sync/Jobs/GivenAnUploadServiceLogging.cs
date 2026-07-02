@@ -1,16 +1,11 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.Graph;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
-using WireMock.Util;
-using WireMock.Types;
 using WireMockBodyType = WireMock.Types.BodyType;
 using WireMockRequest = WireMock.RequestBuilders.Request;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
+using WireMock.Util;
+using Microsoft.Extensions.Logging;
+using Microsoft.Kiota.Http.HttpClientLibrary;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 
@@ -53,7 +48,7 @@ public sealed class GivenAnUploadServiceLogging
               .RespondWith(Response.Create().WithCallback(_ => Created201Response()));
 
         var logger = new TestLogger<UploadService>();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger, System.TimeProvider.System);
 
         await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 
@@ -74,7 +69,7 @@ public sealed class GivenAnUploadServiceLogging
               .RespondWith(Response.Create().WithStatusCode(201).WithHeader("Content-Type", "application/json").WithBody("{}"));
 
         var logger = new TestLogger<UploadService>();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, logger, System.TimeProvider.System);
 
         await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
 

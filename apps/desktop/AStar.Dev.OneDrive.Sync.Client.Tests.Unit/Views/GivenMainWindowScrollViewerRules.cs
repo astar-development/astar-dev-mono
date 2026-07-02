@@ -1,8 +1,7 @@
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 

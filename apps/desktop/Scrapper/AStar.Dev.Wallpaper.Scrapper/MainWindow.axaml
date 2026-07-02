@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AStar.Dev.Wallpaper.Scrapper.MainWindow"
+        Title="AStar Wallpaper Scrapper"
+        Width="1200"
+        Height="800">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Edit Configuration" Click="OnEditConfigurationClicked" />
+                <MenuItem Header="Edit Classifications" Click="OnEditClassificationsClicked" />
+                <MenuItem Header="Edit Tags" Click="OnEditTagsClicked" />
+                <MenuItem Header="Reset Database" Click="OnResetDatabaseClicked" />
+            </MenuItem>
+        </Menu>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,4,12,0" Spacing="8">
+            <Button x:Name="ScrapeSiteNewButton" Content="Scrape Wallhaven" Click="OnScrapeSiteFunctionalClicked" />
+            <Button x:Name="CancelButton" Content="Cancel" Click="OnCancelClicked" IsEnabled="False" />
+        </StackPanel>
+        <Border DockPanel.Dock="Right" Width="524" Margin="0,8,12,8" VerticalAlignment="Top" CornerRadius="10" ClipToBounds="True">
+            <Image x:Name="ThumbnailImage" Width="500" Height="500" Stretch="Uniform" />
+        </Border>
+        <ScrollViewer x:Name="StatusScroller" Margin="12,8">
+            <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+        </ScrollViewer>
+    </DockPanel>
+</Window>

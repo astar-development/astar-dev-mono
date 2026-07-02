@@ -26,7 +26,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
                     : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("hello", Encoding.UTF8) };
             })));
 
-        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 
@@ -42,7 +42,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         factory.CreateClient(Arg.Any<string>()).Returns(_ =>
             new HttpClient(new CancellingIoHandler(cts)));
 
-        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await Should.ThrowAsync<OperationCanceledException>(
             () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
@@ -80,7 +80,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
                     : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("data", Encoding.UTF8) };
             })));
 
-        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>());
+        var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
 

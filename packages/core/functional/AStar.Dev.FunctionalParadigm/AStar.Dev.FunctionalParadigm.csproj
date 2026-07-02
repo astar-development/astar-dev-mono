@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      CA1716: 'Option' and 'Option<T>' conflict with Visual Basic's reserved keyword 'Option'.
+      These names are intentional — 'Option' is the canonical functional-programming monad name,
+      and this library targets C# consumers exclusively. VB.NET compatibility is not a goal.
+    -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CA1716;CA1062;CA2007;CA1034;CA2225;CA1802;CA2008;CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

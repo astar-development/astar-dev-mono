@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AStar.Dev.Wallpaper.Scrapper.Classifications.ClassificationsView"
+        Title="Edit Classifications"
+        Width="800"
+        Height="400"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,12,12,0" Spacing="8">
+            <Button x:Name="ExportButton" Content="Export Classifications" Click="OnExportClicked" />
+            <Button x:Name="ImportButton" Content="Import Classifications" Click="OnImportClicked" />
+        </StackPanel>
+        <ScrollViewer x:Name="StatusScroller" Margin="12,8">
+            <TextBlock x:Name="StatusLabel" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+        </ScrollViewer>
+    </DockPanel>
+</Window>

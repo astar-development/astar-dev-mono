@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ApplicationIcon>astar.ico</ApplicationIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>AStar Development, Jason Barden</Authors>
+        <Copyright>AStar Development, 2025</Copyright>
+        <PackageProjectUrl>https://github.com/astar-development/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/astar-development/</RepositoryUrl>
+        <Description>EF Core persistence models and configuration for scraper and file metadata.</Description>
+        <PackageTags>AStar;Infrastructure;FilesDb;EFCore;SQLite</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+        <!--
+          CA1062/CA1812 are emitted across generated EF Core migrations and configuration
+          classes that are part of the package surface. They do not indicate runtime issues
+          here and are intentionally suppressed so the package can build under the repo's
+          warning-as-error policy.
+        -->
+        <NoWarn>$(NoWarn);CA1062;CA1812;CA1861</NoWarn>
+    </PropertyGroup>
+
+    <!--
+      SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+      Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.8.
+      Suppressed intentionally; revisit when EF Core ships with a safe SQLitePCLRaw version.
+    -->
+    <ItemGroup>
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Testably.Abstractions" />
+        <PackageReference Include="AStar.Dev.Technical.Debt.Reporting" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"  />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" >
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore"  />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="../core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Mappings.csv">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

@@ -3,6 +3,7 @@ using System.Text;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Sync.Jobs;
 
@@ -31,15 +32,24 @@ public sealed class GivenAnHttpDownloader
         return CreateFactoryReturning(response);
     }
 
-    private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>());
+    private static HttpDownloader CreateSut(IHttpClientFactory factory, MockFileSystem fileSystem, System.TimeProvider? timeProvider = null) => new(factory, fileSystem, Substitute.For<ILogger<HttpDownloader>>(), timeProvider ?? System.TimeProvider.System);
 
     [Fact]
     public async Task when_download_is_rate_limited_beyond_max_retries_then_result_is_error()
     {
         var factory = CreateAlways429Factory();
-        var sut = CreateSut(factory, new MockFileSystem());
+        var timeProvider = new FakeTimeProvider();
+        var sut = CreateSut(factory, new MockFileSystem(), timeProvider);
 
-        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+
+        while (!downloadTask.IsCompleted)
+        {
+            await Task.Delay(1, TestContext.Current.CancellationToken);
+            timeProvider.Advance(TimeSpan.FromMinutes(5));
+        }
+
+        var result = await downloadTask;
 
         var error = result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
         error!.Reason.ShouldNotBeNullOrWhiteSpace();

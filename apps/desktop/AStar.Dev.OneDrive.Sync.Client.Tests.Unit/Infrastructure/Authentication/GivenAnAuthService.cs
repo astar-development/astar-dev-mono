@@ -2,7 +2,6 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
@@ -28,7 +27,8 @@ public sealed class GivenAnAuthService
             AuthorityForMicrosoftAccountsOnly = Authority
         });
 
-    private static IAccount BuildMockAccount(string homeAccountIdentifier, string username)
+    private static
+    IAccount BuildMockAccount(string homeAccountIdentifier, string username)
     {
         var mockAccount = Substitute.For<IAccount>();
         var msalAccountId = new Microsoft.Identity.Client.AccountId(homeAccountIdentifier, ObjectId, TenantId);

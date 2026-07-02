@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\AStar.Dev.Wallpaper.Scrapper\AStar.Dev.Wallpaper.Scrapper.csproj" />
+  </ItemGroup>
+
+  <!--
+    SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q
+    and flows into this project via the ProjectReference above.
+    The suppression here mirrors the decision made in AStar.Dev.Infrastructure.FilesDb
+    and AStar.Dev.Wallpaper.Scrapper.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Testably.Abstractions.Testing" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+    <Using Include="NSubstitute" />
+    <Using Include="Testably.Abstractions.Testing" />
+    <Using Include="Testably.Abstractions.Testing.Initializer" />
+  </ItemGroup>
+
+</Project>

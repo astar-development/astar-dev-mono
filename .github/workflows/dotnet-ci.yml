@@ -47,6 +47,7 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
+  packages: read
 
 concurrency:
   group: dotnet-ci-${{ github.ref }}
@@ -59,6 +60,9 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NUGET_ENABLE_ENHANCED_HTTP_RETRY: true
+  NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT: 6
+  NUGET_ENHANCED_NETWORK_TRY_TIMEOUT_MILLISECONDS: 30000
 
 jobs:
   build-and-test:
@@ -85,6 +89,9 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
           lookup-only: true
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
       - name: Restore
         run: dotnet restore

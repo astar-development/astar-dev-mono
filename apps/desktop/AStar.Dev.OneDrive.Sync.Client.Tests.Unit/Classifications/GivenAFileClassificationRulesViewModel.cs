@@ -5,7 +5,6 @@ using AStar.Dev.OneDrive.Sync.Client.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Platform.Storage;
-using System.IO.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Classifications;
 

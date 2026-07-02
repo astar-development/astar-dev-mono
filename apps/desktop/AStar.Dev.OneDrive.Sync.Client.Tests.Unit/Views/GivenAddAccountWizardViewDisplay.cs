@@ -1,11 +1,10 @@
-using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
-using Avalonia.Headless.XUnit;
-using Avalonia.LogicalTree;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Avalonia.LogicalTree;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 

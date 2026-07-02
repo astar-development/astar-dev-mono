@@ -1,7 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Headless.XUnit;
-using Avalonia.LogicalTree;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
@@ -20,8 +16,10 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
 using Microsoft.Extensions.Logging;
-using System.IO.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 

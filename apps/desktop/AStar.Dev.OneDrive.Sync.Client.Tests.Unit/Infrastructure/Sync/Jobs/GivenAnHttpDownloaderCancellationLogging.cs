@@ -18,7 +18,7 @@ public sealed class GivenAnHttpDownloaderCancellationLogging
         var logger = new TestLogger<HttpDownloader>();
         var factory = Substitute.For<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(new HttpClient(new CancellingOn429Handler(cts)));
-        var sut = new HttpDownloader(factory, new MockFileSystem(), logger);
+        var sut = new HttpDownloader(factory, new MockFileSystem(), logger, System.TimeProvider.System);
 
         await Should.ThrowAsync<OperationCanceledException>(
             () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));

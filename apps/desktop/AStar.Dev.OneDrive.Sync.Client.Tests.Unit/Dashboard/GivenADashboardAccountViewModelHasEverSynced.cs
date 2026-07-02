@@ -1,11 +1,11 @@
 using AStar.Dev.OneDrive.Sync.Client.Activity;
-using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 

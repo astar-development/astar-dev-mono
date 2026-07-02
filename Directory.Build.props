@@ -110,16 +110,25 @@
     <AppendRuntimeIdentifierToOutputPath>true</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <!-- ── Test projects — suppress package metadata noise ───────────────── -->
+  <!-- ── Test projects ──────────────────────────────────────────────────── -->
   <!--
-    Projects whose names end in .Tests or .IntegrationTests are not published
-    as NuGet packages. Suppress the warnings that fire when package metadata
-    (Authors, RepositoryUrl etc.) is set on non-packable projects.
+    Projects whose names contain .Tests (covering *.Tests, *.Tests.Unit,
+    *.Tests.Integration etc.) or end in .IntegrationTests are not published
+    as NuGet packages.
+
+    CA1707 (identifier contains underscores) is suppressed because the repo
+    mandates the when_[action]_then_[outcome] snake_case naming convention
+    for all test methods; underscores are intentional and required by style.
   -->
-  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) Or
-                             $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('.Tests'))
+                          Or $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
+    <!--
+      CA1859: Use concrete types for fields — suppressed in tests because the
+      sut field must be typed to the interface to exercise the public contract.
+    -->
+    <NoWarn>$(NoWarn);CA1707;CA1859</NoWarn>
   </PropertyGroup>
 
 </Project>

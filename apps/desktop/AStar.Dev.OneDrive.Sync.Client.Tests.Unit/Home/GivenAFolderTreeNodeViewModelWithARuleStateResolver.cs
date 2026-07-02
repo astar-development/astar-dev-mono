@@ -91,7 +91,7 @@ public sealed class GivenAFolderTreeNodeViewModelWithARuleStateResolver
         var node = new FolderTreeNode(
             Id:          RootFolderId,
             Name:        RootFolderName,
-            ParentId:    Option.None<string>(),
+            ParentId: Option.None<string>(),
             AccountId:   "account-1",
             RemotePath:  $"/{RootFolderName}",
             SyncState:   syncState,
