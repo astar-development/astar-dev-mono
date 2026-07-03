@@ -25,8 +25,8 @@ public sealed class GivenTheAppDbContext
         typeof(AppDbContext).GetProperty("FileClassificationKeywords").ShouldNotBeNull();
 
     [Fact]
-    public void when_inspected_then_downloaded_file_classifications_db_set_exists() =>
-        typeof(AppDbContext).GetProperty("DownloadedFileClassifications").ShouldNotBeNull();
+    public void when_inspected_then_downloaded_file_classifications_db_set_does_not_exist() =>
+        typeof(AppDbContext).GetProperty("DownloadedFileClassifications").ShouldBeNull();
 
     [Fact]
     public void when_inspected_then_tags_to_ignore_db_set_exists() =>
