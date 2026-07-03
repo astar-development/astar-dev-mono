@@ -7,18 +7,6 @@ namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 public sealed class FileClassification
 {
     /// <summary>
-    ///     Gets or sets the date and time when the entity was created.
-    ///     This property is automatically set when a new instance of the entity is added to the database.
-    /// </summary>
-    public DateTimeOffset CreatedAt { get; set; }
-
-    /// <summary>
-    ///     Gets or sets the date and time when the entity was last modified.
-    ///     This property is automatically updated whenever changes are made to the entity and saved to the database.
-    /// </summary>
-    public DateTimeOffset UpdatedAt { get; set; }
-
-    /// <summary>
     ///     Gets or sets the unique identifier for the file classification.
     ///     This property serves as the primary key for the <see cref="FileClassification" /> entity.
     /// </summary>

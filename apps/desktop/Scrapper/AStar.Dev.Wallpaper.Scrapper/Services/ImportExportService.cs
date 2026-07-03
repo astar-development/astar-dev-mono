@@ -6,6 +6,7 @@ using AStar.Dev.Wallpaper.Scrapper.DTOs;
 using Serilog;
 using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
+using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity;
 using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
@@ -13,7 +14,7 @@ namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
 public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider timeProvider, ILogger logger) : IImportExportService
 {
-    public void ExportFileClassificationsToFile(List<FileClassificationDomain> classifications)
+    public void ExportFileClassificationsToFile((List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords) classifications)
     {
         try
         {
@@ -28,7 +29,7 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         }
     }
 
-    public Result<List<FileClassificationDomain>, string> ImportFileClassificationsFromFile()
+    public Result<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string> ImportFileClassificationsFromFile()
     {
         if (!fileSystem.File.Exists(ApplicationMetadata.FileClassificationsExportFilePath))
         {
