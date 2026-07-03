@@ -190,7 +190,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             Name = "Animals",
             IncludeInSearch = true
         };
-        classification.FileNameParts.Add(new FileNamePart { Text = "animals" });
+        classification.Keywords.Add(new FileClassificationKeyword { Keyword = "animals" });
         seedCtx.FileClassifications.Add(classification);
         var fileDetail = new FileDetail
         {
