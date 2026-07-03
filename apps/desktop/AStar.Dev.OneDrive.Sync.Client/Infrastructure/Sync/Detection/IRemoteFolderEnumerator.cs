@@ -1,5 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 

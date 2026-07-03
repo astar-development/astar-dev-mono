@@ -26,7 +26,8 @@
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />
     <Using Include="Testably.Abstractions.Testing" />
-    <Using Include="AStar.Dev.OneDrive.Sync.Client.Data.Entities" />
+    <Using Include="AStar.Dev.Infrastructure.AppDb.Entities" />
+    <Using Include="AStar.Dev.Infrastructure.AppDb.Domain" />
   </ItemGroup>
 
   <ItemGroup>
