@@ -32,7 +32,7 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, Logger l
         context ??= await browser.NewContextAsync(new BrowserNewContextOptions
         {
             BaseURL = scrapeConfiguration.SearchConfiguration.BaseUrl,
-            ViewportSize = new ViewportSize { Width = 2440, Height = 1200 },
+            ViewportSize = new ViewportSize { Width = 3000, Height = 1200 },
             Locale = "en-GB",
             TimezoneId = "Europe/London",
         });

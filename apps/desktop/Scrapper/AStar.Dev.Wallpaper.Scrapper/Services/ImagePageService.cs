@@ -59,7 +59,7 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
 
         string imageNameWithPath = directoryName.Value.CombinePath(fileNameCombined.ToLowerInvariant());
         byte[] image = await ImageRetrieverHelper.GetTheImageAsync(result.ImageUrl).ConfigureAwait(false);
-        logger.Information("About to save {filename} as {imageNameWithPath} as we don't appear to have it.", filename, imageNameWithPath);
+        logger.Information("About to save {filename} to ...{imageNameWithPath} as we don't appear to have it.", filename, imageNameWithPath[^50..]);
         await ImageSaveHelper.SaveImage(image, imageNameWithPath).ConfigureAwait(false);
         imageBroadcaster.Broadcast(imageNameWithPath);
 
