@@ -1,5 +1,5 @@
 using AStar.Dev.Wallpaper.Scrapper.ViewModels;
-using DbSearchCategories = AStar.Dev.Infrastructure.FilesDb.Models.SearchCategories;
+using DbSearchCategories = AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity;
 
 namespace AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
 

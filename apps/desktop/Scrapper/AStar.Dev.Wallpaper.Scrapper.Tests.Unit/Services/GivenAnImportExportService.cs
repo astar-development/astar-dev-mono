@@ -1,12 +1,12 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Extensions.Time.Testing;
 using Serilog;
 using System.IO.Abstractions;
 using System.Text.Json;
-using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
-using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
+using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Services;
 
@@ -568,20 +568,20 @@ public sealed class GivenAnImportExportService
 
     private static ScrapeConfigurationEntity CreateScrapeConfigurationEntityWithSensitiveData() => new()
     {
-        ConnectionStrings = new ConnectionStrings { Sqlite = "Data Source=production.db" },
-        UserConfiguration = new UserConfiguration
+        ConnectionStrings = new ConnectionStringsEntity { Sqlite = "Data Source=production.db" },
+        UserConfiguration = new UserConfigurationEntity
         {
             LoginEmailAddress = "user@example.com",
             Username = "testuser",
             Password = ValidPassword,
             SessionCookie = "actual-session-cookie"
         },
-        SearchConfiguration = new SearchConfiguration
+        SearchConfiguration = new SearchConfigurationEntity
         {
             BaseUrl = new Uri("https://example.com"),
             ApiKey = "actual-api-key"
         },
-        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
+        ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp/scrape" }
     };
 
     private static List<ScrapedTagDomain> CreateDomainTags() =>

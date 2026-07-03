@@ -1,38 +1,22 @@
-using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
+using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
-using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 
+// TODO(#697): FileClassificationCategoryEntity has no Keywords navigation (keywords now live in a
+// separate FileClassificationKeywordEntity table keyed by CategoryId), so keywords aren't round-tripped
+// here yet. Revisit once FileClassificationService is rewritten against the category hierarchy.
 public static class FileClassificationExtensions
 {
     public static List<FileClassificationDomain> ToDomain(this List<FileClassificationDto> fileClassificationDtos)
-        => [.. fileClassificationDtos.Select(dto =>
+        => [.. fileClassificationDtos.Select(dto => new FileClassificationDomain
         {
-            var domain = new FileClassificationDomain
-            {
-                Id = dto.Id,
-                Name = dto.Name,
-                Level = dto.Level,
-                ParentId = dto.ParentId,
-                IsFamous = dto.IsFamous,
-                IncludeInSearch = dto.IncludeInSearch,
-                CreatedAt = dto.CreatedAt,
-                UpdatedAt = dto.UpdatedAt
-            };
-
-            foreach (var keywordDto in dto.Keywords)
-            {
-                domain.Keywords.Add(new FileClassificationKeywordDomain
-                {
-                    Id = keywordDto.Id,
-                    Keyword = keywordDto.Keyword,
-                    CreatedAt = keywordDto.CreatedAt,
-                    UpdatedAt = keywordDto.UpdatedAt
-                });
-            }
-
-            return domain;
+            Id = dto.Id,
+            Name = dto.Name,
+            Level = dto.Level,
+            ParentId = dto.ParentId,
+            IsFamous = dto.IsFamous,
+            IncludeInSearch = dto.IncludeInSearch
         })];
 
     public static List<FileClassificationDto> ToDtos(this List<FileClassificationDomain> fileClassificationDomains)
@@ -44,14 +28,6 @@ public static class FileClassificationExtensions
             ParentId = domain.ParentId,
             IsFamous = domain.IsFamous,
             IncludeInSearch = domain.IncludeInSearch,
-            CreatedAt = domain.CreatedAt,
-            UpdatedAt = domain.UpdatedAt,
-            Keywords = [.. domain.Keywords.Select(keywordDomain => new DTOs.FileClassificationKeyword
-            {
-                Id = keywordDomain.Id,
-                Keyword = keywordDomain.Keyword,
-                CreatedAt = keywordDomain.CreatedAt,
-                UpdatedAt = keywordDomain.UpdatedAt
-            })]
+            Keywords = []
         })];
 }

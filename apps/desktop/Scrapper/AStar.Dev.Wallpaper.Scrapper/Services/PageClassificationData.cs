@@ -1,5 +1,5 @@
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
-public record PageClassificationData(IReadOnlyList<FileClassification> SearchableClassifications, FileClassification? CategoryClassification, IReadOnlyList<ScrapedTag> IncludedTags);
+public record PageClassificationData(IReadOnlyList<FileClassificationCategoryEntity> SearchableClassifications, FileClassificationCategoryEntity? CategoryClassification, IReadOnlyList<ScrapedTagEntity> IncludedTags);

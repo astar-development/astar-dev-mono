@@ -1,6 +1,7 @@
 
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Data;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
@@ -12,7 +13,7 @@ public interface IImagePageResultFunctional
     Task<Result<Unit, string>> GetImagePagesAsync(Logger logger);
 }
 
-public class ImagePageResultFunctional(IDbContextFactory<FilesContext> dbContextFactory) : IImagePageResultFunctional
+public class ImagePageResultFunctional(IDbContextFactory<AppDbContext> dbContextFactory) : IImagePageResultFunctional
 {
     /// <inheritdoc />
     public async Task<Result<Unit, string>> GetImagePagesAsync(Logger logger)

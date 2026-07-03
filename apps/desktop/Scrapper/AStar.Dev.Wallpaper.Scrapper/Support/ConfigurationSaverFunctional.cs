@@ -1,12 +1,12 @@
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Support;
 
-public sealed class ConfigurationSaverFunctional(ScrapeConfiguration scrapeConfiguration, Logger logger, IDbContextFactory<FilesContext> contextFactory)
+public sealed class ConfigurationSaverFunctional(ScrapeConfiguration scrapeConfiguration, Logger logger, IDbContextFactory<AppDbContext> contextFactory)
 {
     public async Task SaveUpdatedConfigurationAsync()
     {
@@ -45,7 +45,7 @@ public sealed class ConfigurationSaverFunctional(ScrapeConfiguration scrapeConfi
             }
             else
             {
-                entity.SearchConfiguration.SearchCategories.Add(new SearchCategories
+                entity.SearchConfiguration.SearchCategories.Add(new SearchCategoryEntity
                 {
                     SearchConfigurationId = entity.SearchConfiguration.Id,
                     Id = cat.Id,

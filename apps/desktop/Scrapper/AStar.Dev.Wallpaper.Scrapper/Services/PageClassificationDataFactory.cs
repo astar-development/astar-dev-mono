@@ -1,12 +1,12 @@
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
 public static class PageClassificationDataFactory
 {
     public static PageClassificationData Create(
-        IReadOnlyList<FileClassification> searchableClassifications,
-        FileClassification? categoryClassification,
-        IReadOnlyList<ScrapedTag> includedTags)
+        IReadOnlyList<FileClassificationCategoryEntity> searchableClassifications,
+        FileClassificationCategoryEntity? categoryClassification,
+        IReadOnlyList<ScrapedTagEntity> includedTags)
         => new(searchableClassifications, categoryClassification, includedTags);
 }

@@ -1,5 +1,5 @@
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -13,8 +13,8 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
     private const string ImportedSqlite = "Data Source=imported.db";
 
     private SqliteConnection connection = null!;
-    private DbContextOptions<FilesContext> options = null!;
-    private IDbContextFactory<FilesContext> factory = null!;
+    private DbContextOptions<AppDbContext> options = null!;
+    private IDbContextFactory<AppDbContext> factory = null!;
     private ScrapeConfigurationService sut = null!;
 
     public async ValueTask InitializeAsync()
@@ -22,11 +22,11 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
         connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
 
-        options = new DbContextOptionsBuilder<FilesContext>()
+        options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(connection)
             .Options;
 
-        await using var seedContext = new FilesContext(options);
+        await using var seedContext = new AppDbContext(options);
         await seedContext.Database.MigrateAsync();
 
         seedContext.ScrapeConfiguration.Add(CreateScrapeConfigEntity(OlderSqlite));
@@ -35,9 +35,9 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
         seedContext.ScrapeConfiguration.Add(CreateScrapeConfigEntity(NewerSqlite));
         await seedContext.SaveChangesAsync();
 
-        factory = Substitute.For<IDbContextFactory<FilesContext>>();
+        factory = Substitute.For<IDbContextFactory<AppDbContext>>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
-               .Returns(_ => Task.FromResult(new FilesContext(options)));
+               .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
         sut = new ScrapeConfigurationService(factory);
     }
@@ -59,7 +59,7 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
 
         await sut.ImportScrapeConfigurationAsync(incoming, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var newestEntity = await verifyCtx.ScrapeConfiguration
             .Include(x => x.ConnectionStrings)
             .OrderByDescending(e => e.Id)
@@ -77,9 +77,9 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntity(string sqlite) => new()
     {
-        ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
-        UserConfiguration = new UserConfiguration { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
-        SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://example.com") },
-        ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp" }
+        ConnectionStrings = new ConnectionStringsEntity { Sqlite = sqlite },
+        UserConfiguration = new UserConfigurationEntity { LoginEmailAddress = "user@example.com", Username = "user", Password = "password", SessionCookie = "cookie" },
+        SearchConfiguration = new SearchConfigurationEntity { BaseUrl = new Uri("https://example.com") },
+        ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp" }
     };
 }

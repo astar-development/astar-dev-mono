@@ -1,4 +1,4 @@
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Pages;
@@ -64,7 +64,7 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
         imageBroadcaster.Broadcast(imageNameWithPath);
 
         var fileInfo = new FileInfo(imageNameWithPath);
-        var fileDetail = new FileDetail
+        var fileDetail = new FileDetailEntity
         {
             DirectoryName = directoryName,
             FileName = new FileName(filename),
@@ -79,7 +79,7 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
             {
                 fileDetail.Height = imageDetail.Height;
                 fileDetail.Width = imageDetail.Width;
-                fileDetail.ImageDetail = new ImageDetail { Width = imageDetail.Width, Height = imageDetail.Height };
+                fileDetail.ImageDetail = new ImageDetailEntity { Width = imageDetail.Width, Height = imageDetail.Height };
             }
         }
 

@@ -1,5 +1,6 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Data;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Workflows;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ public interface IImagePageServiceFunctional
     Task<Result<Unit, string>> GetTheImagePagesAsync(Logger logger, CancellationToken token);
 }
 
-public sealed class ImagePageServiceFunctional(IDbContextFactory<FilesContext> dbContextFactory, SearchWorkflowFunctional searchWorkflowFunctional) : IImagePageServiceFunctional
+public sealed class ImagePageServiceFunctional(IDbContextFactory<AppDbContext> dbContextFactory, SearchWorkflowFunctional searchWorkflowFunctional) : IImagePageServiceFunctional
 {
     public async Task<Result<Unit, string>> GetTheImagePagesAsync(Logger logger, CancellationToken token)
     {

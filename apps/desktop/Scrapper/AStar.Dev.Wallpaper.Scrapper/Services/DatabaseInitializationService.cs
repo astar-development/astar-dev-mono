@@ -1,10 +1,10 @@
-using AStar.Dev.Infrastructure.FilesDb.Data;
+using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
-public class DatabaseInitializationService(IDbContextFactory<FilesContext> contextFactory, Logger logger)
+public class DatabaseInitializationService(IDbContextFactory<AppDbContext> contextFactory, Logger logger)
 {
     public async Task InitialiseAsync()
     {
@@ -14,6 +14,7 @@ public class DatabaseInitializationService(IDbContextFactory<FilesContext> conte
 
         await DataSeed.SeedTagsToIgnoreAsync(logger, context);
 
+        // TODO(#697): SeedFileClassificationsAsync is a stub pending the FileClassificationCategoryEntity hierarchy rewrite.
         string csvPath = Path.Combine(ApplicationMetadata.ApplicationFolder, "Mappings.csv");
         await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
     }
