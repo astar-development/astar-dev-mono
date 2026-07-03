@@ -14,7 +14,6 @@ public class DatabaseInitializationService(IDbContextFactory<AppDbContext> conte
 
         await DataSeed.SeedTagsToIgnoreAsync(logger, context);
 
-        // TODO(#697): SeedFileClassificationsAsync is a stub pending the FileClassificationCategoryEntity hierarchy rewrite.
         string csvPath = Path.Combine(ApplicationMetadata.ApplicationFolder, "Mappings.csv");
         await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
     }
