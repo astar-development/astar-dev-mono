@@ -1,5 +1,5 @@
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using Serilog.Core;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
@@ -15,58 +15,20 @@ public static class DataSeed
         "Sarah Jay", "Sara Jay", "fan art"
     ];
 
-    public static async Task SeedTagsToIgnoreAsync(Logger logger, FilesContext dbContext)
+    public static async Task SeedTagsToIgnoreAsync(Logger logger, AppDbContext dbContext)
     {
         if (!dbContext.TagsToIgnore.Any(t => t.IgnoreImage))
         {
             logger.Information("Seeding tags to ignore completely...");
             dbContext.TagsToIgnore.AddRange(
-                TagsToIgnoreCompletelyValues.Distinct().Select(tag => new TagToIgnore { Value = tag, IgnoreImage = true }));
+                TagsToIgnoreCompletelyValues.Distinct().Select(tag => new TagToIgnoreEntity { Value = tag, IgnoreImage = true }));
             await dbContext.SaveChangesAsync();
         }
     }
 
-    public static async Task SeedFileClassificationsAsync(string csvPath, Logger logger, FilesContext dbContext)
-    {
-        if (!File.Exists(csvPath)) return;
-
-        if (dbContext.FileClassifications.Any()) return;
-
-        logger.Information("Seeding file classifications from {CsvPath}...", csvPath);
-
-        string[] lines = await File.ReadAllLinesAsync(csvPath);
-        var rows = lines.Skip(1)
-            .Where(line => !string.IsNullOrWhiteSpace(line))
-            .Select(line => line.Split(','))
-            .Where(parts => parts.Length >= 4)
-            .Select(parts => new
-            {
-                FileNameContains = parts[0],
-                DatabaseMapping = parts[1].Trim(),
-                Celebrity = parts[2].Trim().Equals("TRUE", StringComparison.OrdinalIgnoreCase),
-                Searchable = parts[3].Trim().Equals("TRUE", StringComparison.OrdinalIgnoreCase)
-            })
-            .ToList();
-
-        foreach (var group in rows.GroupBy(r => r.DatabaseMapping))
-        {
-            var first = group.First();
-            var classification = new FileClassification
-            {
-                Name = group.Key,
-                Level = 3,
-                IsFamous = first.Celebrity,
-                IncludeInSearch = first.Searchable
-            };
-
-            foreach (var keyword in group.Select(r => new FileClassificationKeyword { Keyword = r.FileNameContains }))
-            {
-                classification.Keywords.Add(keyword);
-            }
-
-            dbContext.FileClassifications.Add(classification);
-        }
-
-        await dbContext.SaveChangesAsync();
-    }
+    // TODO(#697): rewrite against the FileClassificationCategoryEntity/FileClassificationKeywordEntity
+    // hierarchy - the CSV's flat "DatabaseMapping"/"Celebrity" columns need real hierarchy placement
+    // decisions this phase doesn't make. Stubbed as a no-op during #696's mechanical AppDbContext migration.
+    public static Task SeedFileClassificationsAsync(string csvPath, Logger logger, AppDbContext dbContext)
+        => Task.CompletedTask;
 }

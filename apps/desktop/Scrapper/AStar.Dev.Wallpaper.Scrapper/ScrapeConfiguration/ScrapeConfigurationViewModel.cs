@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +9,7 @@ namespace AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
 
 public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
 {
-    private readonly FilesContext _context;
+    private readonly AppDbContext _context;
     private ScrapeConfigurationEntity? _entity;
 
     private bool _isLoading;
@@ -86,7 +86,7 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
 
     public ICommand SaveCommand { get; }
 
-    public ScrapeConfigurationViewModel(IDbContextFactory<FilesContext> contextFactory)
+    public ScrapeConfigurationViewModel(IDbContextFactory<AppDbContext> contextFactory)
     {
         _context = contextFactory.CreateDbContext();
         SaveCommand = new AsyncRelayCommand(SaveAsync);

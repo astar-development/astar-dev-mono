@@ -1,5 +1,5 @@
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +15,8 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     private const string ExistingCategoryId = "existing-cat";
 
     private SqliteConnection connection = null!;
-    private DbContextOptions<FilesContext> options = null!;
-    private IDbContextFactory<FilesContext> factory = null!;
+    private DbContextOptions<AppDbContext> options = null!;
+    private IDbContextFactory<AppDbContext> factory = null!;
     private ScrapeConfigurationService sut = null!;
 
     public async ValueTask InitializeAsync()
@@ -24,18 +24,18 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
         connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
 
-        options = new DbContextOptionsBuilder<FilesContext>()
+        options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(connection)
             .Options;
 
-        await using var seedContext = new FilesContext(options);
+        await using var seedContext = new AppDbContext(options);
         await seedContext.Database.MigrateAsync();
         seedContext.ScrapeConfiguration.Add(CreateInitialScrapeConfigurationEntity());
         await seedContext.SaveChangesAsync();
 
-        factory = Substitute.For<IDbContextFactory<FilesContext>>();
+        factory = Substitute.For<IDbContextFactory<AppDbContext>>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
-               .Returns(_ => Task.FromResult(new FilesContext(options)));
+               .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
         sut = new ScrapeConfigurationService(factory);
     }
@@ -65,7 +65,7 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.ConnectionStrings)
             .FirstAsync(TestContext.Current.CancellationToken);
@@ -79,7 +79,7 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.UserConfiguration)
             .FirstAsync(TestContext.Current.CancellationToken);
@@ -93,7 +93,7 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.UserConfiguration)
             .FirstAsync(TestContext.Current.CancellationToken);
@@ -107,7 +107,7 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.SearchConfiguration)
             .FirstAsync(TestContext.Current.CancellationToken);
@@ -119,13 +119,13 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     {
         var importEntity = CreateImportEntity(categories:
         [
-            new SearchCategories { Id = ExistingCategoryId, Name = "Updated Name",       TotalPages = 10, IncludeInSearch = true },
-            new SearchCategories { Id = "new-cat",          Name = "Brand New Category", TotalPages = 5,  IncludeInSearch = true }
+            new SearchCategoryEntity { Id = ExistingCategoryId, Name = "Updated Name",       TotalPages = 10, IncludeInSearch = true },
+            new SearchCategoryEntity { Id = "new-cat",          Name = "Brand New Category", TotalPages = 5,  IncludeInSearch = true }
         ]);
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.SearchConfiguration)
                 .ThenInclude(x => x.SearchCategories)
@@ -138,12 +138,12 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     {
         var importEntity = CreateImportEntity(categories:
         [
-            new SearchCategories { Id = "new-cat", Name = "New Category", TotalPages = 5, IncludeInSearch = true }
+            new SearchCategoryEntity { Id = "new-cat", Name = "New Category", TotalPages = 5, IncludeInSearch = true }
         ]);
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.SearchConfiguration)
                 .ThenInclude(x => x.SearchCategories)
@@ -156,18 +156,18 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     {
         var importEntity = CreateImportEntity(categories:
         [
-            new SearchCategories { Id = ExistingCategoryId, Name = "Updated Category Name", TotalPages = 20, IncludeInSearch = true }
+            new SearchCategoryEntity { Id = ExistingCategoryId, Name = "Updated Category Name", TotalPages = 20, IncludeInSearch = true }
         ]);
 
         await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
 
-        await using var verifyCtx = new FilesContext(options);
+        await using var verifyCtx = new AppDbContext(options);
         var result = await verifyCtx.ScrapeConfiguration
             .Include(x => x.SearchConfiguration)
                 .ThenInclude(x => x.SearchCategories)
             .FirstAsync(TestContext.Current.CancellationToken);
         result.SearchConfiguration.SearchCategories.Count.ShouldBe(1);
-        result.SearchConfiguration.SearchCategories[0].Name.ShouldBe("Updated Category Name");
+        result.SearchConfiguration.SearchCategories.Single().Name.ShouldBe("Updated Category Name");
     }
 
     [Fact]
@@ -192,22 +192,22 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     {
         var entity = new ScrapeConfigurationEntity
         {
-            ConnectionStrings = new ConnectionStrings { Sqlite = ExistingSqlite },
-            UserConfiguration = new UserConfiguration
+            ConnectionStrings = new ConnectionStringsEntity { Sqlite = ExistingSqlite },
+            UserConfiguration = new UserConfigurationEntity
             {
                 LoginEmailAddress = "user@example.com",
                 Username = "testuser",
                 Password = ExistingPassword,
                 SessionCookie = ExistingSessionCookie
             },
-            SearchConfiguration = new SearchConfiguration
+            SearchConfiguration = new SearchConfigurationEntity
             {
                 BaseUrl = new Uri("https://example.com"),
                 ApiKey = ExistingApiKey
             },
-            ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/scrape" }
+            ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp/scrape" }
         };
-        entity.SearchConfiguration.SearchCategories.Add(new SearchCategories { Id = ExistingCategoryId, Name = "Existing Category", TotalPages = 1, IncludeInSearch = true });
+        entity.SearchConfiguration.SearchCategories.Add(new SearchCategoryEntity { Id = ExistingCategoryId, Name = "Existing Category", TotalPages = 1, IncludeInSearch = true });
 
         return entity;
     }
@@ -217,24 +217,24 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
         string password = "new-password",
         string sessionCookie = "new-session-cookie",
         string apiKey = "new-api-key",
-        List<SearchCategories>? categories = null)
+        List<SearchCategoryEntity>? categories = null)
     {
         var entity = new ScrapeConfigurationEntity
         {
-            ConnectionStrings = new ConnectionStrings { Sqlite = sqlite },
-            UserConfiguration = new UserConfiguration
+            ConnectionStrings = new ConnectionStringsEntity { Sqlite = sqlite },
+            UserConfiguration = new UserConfigurationEntity
             {
                 LoginEmailAddress = "updated@example.com",
                 Username = "updateduser",
                 Password = password,
                 SessionCookie = sessionCookie
             },
-            SearchConfiguration = new SearchConfiguration
+            SearchConfiguration = new SearchConfigurationEntity
             {
                 BaseUrl = new Uri("https://updated.com"),
                 ApiKey = apiKey
             },
-            ScrapeDirectories = new ScrapeDirectories { RootDirectory = "/tmp/updated" }
+            ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp/updated" }
         };
 
         foreach (var category in categories ?? [])

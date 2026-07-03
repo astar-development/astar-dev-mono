@@ -985,6 +985,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle.Value">
             <summary>The handle value.</summary>
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandleFactory">
+            <summary>Creates <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle" /> instances, normalizing invalid input instead of throwing.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileHandleFactory.Create(System.String)">
+            <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle" /> from <paramref name="value" />, falling back to a new unique value when it is null or whitespace.</summary>
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileId">
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.
@@ -1069,6 +1075,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationEntity.ScrapeDirectories">
             <summary>The directories the scraper reads from and writes to.</summary>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationQueries">
+            <summary>Provides methods for querying the scrape configuration.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationQueries.GetScrapeConfigurations(Microsoft.EntityFrameworkCore.DbSet{AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationEntity})">
+            <summary>Retrieves the most recent scrape configuration, including its connection strings, user configuration, search configuration with categories, and scrape directories.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity">
             <summary>The directories the scraper reads from and writes scraped data to.</summary>

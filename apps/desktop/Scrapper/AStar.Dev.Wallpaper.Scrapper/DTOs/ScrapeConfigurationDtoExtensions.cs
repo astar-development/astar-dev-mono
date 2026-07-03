@@ -1,9 +1,9 @@
-using ConnectionStringsDomain = AStar.Dev.Infrastructure.FilesDb.Models.ConnectionStrings;
-using ScrapeConfigurationEntityDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapeConfigurationEntity;
-using ScrapeDirectoriesDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapeDirectories;
-using SearchCategoriesDomain = AStar.Dev.Infrastructure.FilesDb.Models.SearchCategories;
-using SearchConfigurationDomain = AStar.Dev.Infrastructure.FilesDb.Models.SearchConfiguration;
-using UserConfigurationDomain = AStar.Dev.Infrastructure.FilesDb.Models.UserConfiguration;
+using ConnectionStringsDomain = AStar.Dev.Infrastructure.AppDb.Entities.ConnectionStringsEntity;
+using ScrapeConfigurationEntityDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationEntity;
+using ScrapeDirectoriesDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity;
+using SearchCategoriesDomain = AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity;
+using SearchConfigurationDomain = AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity;
+using UserConfigurationDomain = AStar.Dev.Infrastructure.AppDb.Entities.UserConfigurationEntity;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 

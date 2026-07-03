@@ -1,7 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Models;
-using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
-using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 

@@ -1,12 +1,12 @@
 using System.IO.Abstractions;
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.DTOs;
 using Serilog;
-using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
+using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
-using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;

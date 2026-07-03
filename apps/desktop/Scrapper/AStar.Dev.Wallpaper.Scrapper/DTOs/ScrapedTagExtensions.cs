@@ -1,5 +1,5 @@
-using ScrapedTagDomain = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag;
-using ScrapedTagDomainId = AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTagId;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
+using ScrapedTagDomainId = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagId;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
@@ -20,7 +20,7 @@ public static class ScrapedTagExtensions
     public static ScrapedTagDto ToDto(this ScrapedTagDomain domain)
         => new()
         {
-            Id = new ScrapedTagId(domain.Id.Value),
+            Id = new ScrapedTagId(domain.Id.Id),
             Value = domain.Value,
             Category = domain.Category,
             IncludeInSearch = domain.IncludeInSearch,

@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.IO.Abstractions;
-using AStar.Dev.Infrastructure.FilesDb.Data;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.Classifications;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Pages;
@@ -44,16 +46,9 @@ public partial class App : Application
         builder.Services
             .AddSingleton(sp =>
             {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<FilesContext>>().CreateDbContext();
+                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
-                return ctx.ScrapeConfiguration
-                    .Include(e => e.ConnectionStrings)
-                    .Include(e => e.UserConfiguration)
-                    .Include(e => e.SearchConfiguration).ThenInclude(s => s.SearchCategories)
-                    .Include(e => e.ScrapeDirectories)
-                    .OrderByDescending(e => e.Id)
-                    .First()
-                    .ToAppModel();
+                return ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
             })
             .AddSingleton<LogBroadcaster>()
             .AddSingleton<ImageBroadcaster>()
@@ -71,16 +66,19 @@ public partial class App : Application
                     .CreateLogger();
             })
             .AddSingleton<Serilog.ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
-            .AddDbContextFactory<FilesContext>(options =>
-                options.UseSqlite(builder.Configuration["scrapeConfiguration:connectionStrings:sqlite"]))
+            .AddDbContextFactory<AppDbContext>(options =>
+            {
+                string dbPath = "astar-dev-onedrive-sync".ApplicationDirectory().CombinePath("astar-dev-onedrive-sync.db");
+                options.UseSqlite($"Data Source={dbPath}");
+            })
             .AddSingleton(sp =>
             {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<FilesContext>>().CreateDbContext();
+                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsToIgnoreCompletely(ctx);
             })
             .AddSingleton(sp =>
             {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<FilesContext>>().CreateDbContext();
+                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsTextToIgnore(ctx);
             })
             .AddTransient<IScrapedTagRepository, ScrapedTagRepository>()

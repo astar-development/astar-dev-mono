@@ -1,12 +1,12 @@
 using System.Globalization;
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scrapper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Repositories;
 
-public sealed class ScrapedTagRepository(IDbContextFactory<FilesContext> contextFactory) : IScrapedTagRepository
+public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> contextFactory) : IScrapedTagRepository
 {
     public async Task SaveAsync(IReadOnlyList<TagData> tags)
     {
@@ -27,14 +27,14 @@ public sealed class ScrapedTagRepository(IDbContextFactory<FilesContext> context
         _ = await context.SaveChangesAsync();
     }
 
-    public async Task<List<ScrapedTag>> GetAllAsync(CancellationToken ct)
+    public async Task<List<ScrapedTagEntity>> GetAllAsync(CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
         return await context.ScrapedTags.AsNoTracking().ToListAsync(ct);
     }
 
-    public async Task UpsertAsync(IReadOnlyList<ScrapedTag> tags, CancellationToken ct)
+    public async Task UpsertAsync(IReadOnlyList<ScrapedTagEntity> tags, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 

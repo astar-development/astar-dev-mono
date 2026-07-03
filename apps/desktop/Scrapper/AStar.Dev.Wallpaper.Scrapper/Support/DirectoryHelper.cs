@@ -1,4 +1,4 @@
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Support;

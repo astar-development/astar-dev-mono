@@ -1,11 +1,11 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.FilesDb.Data;
-using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
-public sealed class ScrapeConfigurationService(IDbContextFactory<FilesContext> contextFactory)
+public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> contextFactory)
 {
     public async Task<ScrapeConfigurationEntity> ExportScrapeConfigurationAsync(CancellationToken token)
     {
@@ -78,7 +78,7 @@ public sealed class ScrapeConfigurationService(IDbContextFactory<FilesContext> c
         return Unit.Value;
     }
 
-    private static void UpsertSearchCategories(SearchConfiguration existing, ICollection<SearchCategories> incoming)
+    private static void UpsertSearchCategories(SearchConfigurationEntity existing, ICollection<SearchCategoryEntity> incoming)
     {
         foreach (var category in incoming)
         {
@@ -86,7 +86,7 @@ public sealed class ScrapeConfigurationService(IDbContextFactory<FilesContext> c
 
             if (existingCategory is null)
             {
-                existing.SearchCategories.Add(new SearchCategories
+                existing.SearchCategories.Add(new SearchCategoryEntity
                 {
                     Id = category.Id,
                     Name = category.Name,
