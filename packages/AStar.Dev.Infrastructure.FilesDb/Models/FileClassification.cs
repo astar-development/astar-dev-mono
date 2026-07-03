@@ -3,8 +3,8 @@
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
-///     Represents a classification of files, providing metadata about the type of files
-///     and associated entities such as file details and file name parts.
+///     Represents a node in the file classification hierarchy, providing metadata about the type of files
+///     and associated entities such as file details and classification keywords.
 /// </summary>
 public sealed class FileClassification : AuditableEntity
 {
@@ -22,6 +22,22 @@ public sealed class FileClassification : AuditableEntity
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    ///     Gets or sets the hierarchy level: 1 = top, 2 = sub, 3 = leaf.
+    ///     Classifications created by the scraper are leaf nodes.
+    /// </summary>
+    public int Level { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the FK to the parent classification; null for root nodes.
+    /// </summary>
+    public int? ParentId { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the navigation to the parent classification.
+    /// </summary>
+    public FileClassification? Parent { get; set; }
+
+    /// <summary>
     ///     Gets or sets the collection of file details associated with a specific file classification.
     ///     This property establishes the relationship between the <see cref="FileClassification" /> entity
     ///     and multiple <see cref="FileDetail" /> entities.
@@ -29,10 +45,10 @@ public sealed class FileClassification : AuditableEntity
     public ICollection<FileDetail> FileDetails { get; } = [];
 
     /// <summary>
-    ///     Gets or sets a value indicating whether the file classification is considered a "Celebrity."
+    ///     Gets or sets a value indicating whether the file classification is considered "famous."
     ///     This property is used to mark specific classifications with special significance.
     /// </summary>
-    public bool Celebrity { get; set; }
+    public bool IsFamous { get; set; }
 
     /// <summary>
     ///     Gets or sets a value indicating whether this classification should be included in search results.
@@ -41,9 +57,9 @@ public sealed class FileClassification : AuditableEntity
     public bool IncludeInSearch { get; set; }
 
     /// <summary>
-    ///     Gets or sets the collection of file name parts associated with the file classification.
+    ///     Gets or sets the collection of keywords associated with the file classification.
     ///     This property represents the one-to-many relationship between a file classification
-    ///     and its constituent parts that define or describe its naming structure.
+    ///     and the keywords matched against file names to apply it.
     /// </summary>
-    public Collection<FileNamePart> FileNameParts { get; } = [];
+    public Collection<FileClassificationKeyword> Keywords { get; } = [];
 }

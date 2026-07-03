@@ -96,4 +96,37 @@ public sealed class GivenADownloadedFileClassificationEntity : IDisposable
 
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync(TestContext.Current.CancellationToken));
     }
+
+    [Fact]
+    public async Task when_a_category_referenced_by_a_downloaded_file_classification_is_deleted_then_save_fails()
+    {
+        var category = new FileClassificationCategoryEntity { Name = "Animals", Level = 3 };
+        var fileDetail = CreateFileDetail();
+        context.FileClassificationCategories.Add(category);
+        context.Files.Add(fileDetail);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.DownloadedFileClassifications.Add(new DownloadedFileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = category.Id });
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        Should.Throw<InvalidOperationException>(() => context.FileClassificationCategories.Remove(category));
+    }
+
+    [Fact]
+    public async Task when_the_classified_file_is_deleted_then_its_downloaded_file_classification_is_also_deleted()
+    {
+        var category = new FileClassificationCategoryEntity { Name = "Animals", Level = 3 };
+        var fileDetail = CreateFileDetail();
+        context.FileClassificationCategories.Add(category);
+        context.Files.Add(fileDetail);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.DownloadedFileClassifications.Add(new DownloadedFileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = category.Id });
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.Files.Remove(fileDetail);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.DownloadedFileClassifications.Any().ShouldBeFalse();
+    }
 }

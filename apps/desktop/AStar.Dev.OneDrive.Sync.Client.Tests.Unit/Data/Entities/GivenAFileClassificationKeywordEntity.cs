@@ -41,6 +41,37 @@ public sealed class GivenAFileClassificationKeywordEntity : IDisposable
     }
 
     [Fact]
+    public async Task when_the_owning_category_is_deleted_then_its_keywords_are_also_deleted()
+    {
+        var category = new FileClassificationCategoryEntity { Name = "Animals", Level = 3 };
+        context.FileClassificationCategories.Add(category);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = "cat", CategoryId = category.Id });
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.FileClassificationCategories.Remove(category);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.FileClassificationKeywords.Any().ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_the_same_keyword_and_category_pair_is_added_twice_then_save_fails()
+    {
+        var category = new FileClassificationCategoryEntity { Name = "Animals", Level = 3 };
+        context.FileClassificationCategories.Add(category);
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = "cat", CategoryId = category.Id });
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = "cat", CategoryId = category.Id });
+
+        await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public void when_instantiated_then_keyword_defaults_to_empty_string() =>
         new FileClassificationKeywordEntity().Keyword.ShouldBe(string.Empty);
 

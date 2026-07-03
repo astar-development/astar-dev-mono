@@ -14,7 +14,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
 
         var searchable = await context.FileClassifications
-            .Include(fc => fc.FileNameParts)
+            .Include(fc => fc.Keywords)
             .Where(fc => fc.IncludeInSearch)
             .ToListAsync(token)
             .ConfigureAwait(false);
@@ -48,7 +48,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
             context.DownloadedFileClassifications.Add(new DownloadedFileClassification
             {
                 FileDetailId = fileDetail.Id,
-                FileClassificationId = classification.Id
+                CategoryId = classification.Id
             });
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
@@ -59,7 +59,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
 
         return await context.FileClassifications
-            .Include(fc => fc.FileNameParts)
+            .Include(fc => fc.Keywords)
             .ToListAsync(token)
             .ConfigureAwait(false);
     }
@@ -71,7 +71,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
         foreach (var classification in classifications)
         {
             var existing = await context.FileClassifications
-                .Include(fc => fc.FileNameParts)
+                .Include(fc => fc.Keywords)
                 .FirstOrDefaultAsync(fc => fc.Name == classification.Name, token)
                 .ConfigureAwait(false);
 
@@ -86,12 +86,12 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
                 existing.IncludeInSearch = classification.IncludeInSearch;
                 existing.UpdatedAt = timeProvider.GetUtcNow();
 
-                var existingParts = existing.FileNameParts.ToList();
-                foreach (var part in classification.FileNameParts)
+                var existingKeywords = existing.Keywords.ToList();
+                foreach (var keyword in classification.Keywords)
                 {
-                    if (!existingParts.Any(ep => ep.Text.Equals(part.Text, StringComparison.OrdinalIgnoreCase)))
+                    if (!existingKeywords.Any(ek => ek.Keyword.Equals(keyword.Keyword, StringComparison.OrdinalIgnoreCase)))
                     {
-                        existing.FileNameParts.Add(new FileNamePart { Text = part.Text });
+                        existing.Keywords.Add(new FileClassificationKeyword { Keyword = keyword.Keyword });
                         existing.UpdatedAt = timeProvider.GetUtcNow();
                     }
                 }
@@ -126,7 +126,7 @@ public sealed class FileClassificationService(IDbContextFactory<FilesContext> co
 
     private static void CollectFileNameMatches(IReadOnlyList<FileClassification> searchable, FileDetail fileDetail, List<FileClassification> matched)
         => matched.AddRange(searchable.Where(fc =>
-            fc.FileNameParts.Any(fnp => fileDetail.FullNameWithPath.Contains(fnp.Text, StringComparison.OrdinalIgnoreCase))));
+            fc.Keywords.Any(keyword => fileDetail.FullNameWithPath.Contains(keyword.Keyword, StringComparison.OrdinalIgnoreCase))));
 
     private async Task CollectTagMatchesAsync(FilesContext context, IReadOnlyList<ScrapedTag> includedTags, IReadOnlyList<string> imageTags, List<FileClassification> matched, CancellationToken token)
     {

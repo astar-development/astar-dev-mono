@@ -24,12 +24,12 @@ public sealed class DownloadedFileClassificationConfiguration : IEntityTypeConfi
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Cascade);
 
-        _ = builder.HasOne(d => d.FileClassification)
+        _ = builder.HasOne(d => d.Category)
                    .WithMany()
-                   .HasForeignKey(d => d.FileClassificationId)
+                   .HasForeignKey(d => d.CategoryId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.Restrict);
 
-        _ = builder.HasIndex(d => new { d.FileDetailId, d.FileClassificationId }).IsUnique();
+        _ = builder.HasIndex(d => new { d.FileDetailId, d.CategoryId }).IsUnique();
     }
 }

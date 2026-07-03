@@ -1,6 +1,6 @@
 using FileClassificationDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassification;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
-using FileNamePartDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart;
+using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword;
 
 namespace AStar.Dev.Wallpaper.Scrapper.DTOs;
 
@@ -13,20 +13,22 @@ public static class FileClassificationExtensions
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Celebrity = dto.Celebrity,
+                Level = dto.Level,
+                ParentId = dto.ParentId,
+                IsFamous = dto.IsFamous,
                 IncludeInSearch = dto.IncludeInSearch,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt
             };
 
-            foreach (var partDto in dto.FileNameParts)
+            foreach (var keywordDto in dto.Keywords)
             {
-                domain.FileNameParts.Add(new FileNamePartDomain
+                domain.Keywords.Add(new FileClassificationKeywordDomain
                 {
-                    Id = partDto.Id,
-                    Text = partDto.Text,
-                    CreatedAt = partDto.CreatedAt,
-                    UpdatedAt = partDto.UpdatedAt
+                    Id = keywordDto.Id,
+                    Keyword = keywordDto.Keyword,
+                    CreatedAt = keywordDto.CreatedAt,
+                    UpdatedAt = keywordDto.UpdatedAt
                 });
             }
 
@@ -38,16 +40,18 @@ public static class FileClassificationExtensions
         {
             Id = domain.Id,
             Name = domain.Name,
-            Celebrity = domain.Celebrity,
+            Level = domain.Level,
+            ParentId = domain.ParentId,
+            IsFamous = domain.IsFamous,
             IncludeInSearch = domain.IncludeInSearch,
             CreatedAt = domain.CreatedAt,
             UpdatedAt = domain.UpdatedAt,
-            FileNameParts = [.. domain.FileNameParts.Select(partDomain => new DTOs.FileNamePart
+            Keywords = [.. domain.Keywords.Select(keywordDomain => new DTOs.FileClassificationKeyword
             {
-                Id = partDomain.Id,
-                Text = partDomain.Text,
-                CreatedAt = partDomain.CreatedAt,
-                UpdatedAt = partDomain.UpdatedAt
+                Id = keywordDomain.Id,
+                Keyword = keywordDomain.Keyword,
+                CreatedAt = keywordDomain.CreatedAt,
+                UpdatedAt = keywordDomain.UpdatedAt
             })]
         })];
 }

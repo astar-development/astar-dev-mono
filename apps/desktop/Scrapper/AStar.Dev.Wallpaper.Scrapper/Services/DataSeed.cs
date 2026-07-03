@@ -54,13 +54,14 @@ public static class DataSeed
             var classification = new FileClassification
             {
                 Name = group.Key,
-                Celebrity = first.Celebrity,
+                Level = 3,
+                IsFamous = first.Celebrity,
                 IncludeInSearch = first.Searchable
             };
 
-            foreach (var part in group.Select(r => new FileNamePart { Text = r.FileNameContains, IncludeInSearch = r.Searchable }))
+            foreach (var keyword in group.Select(r => new FileClassificationKeyword { Keyword = r.FileNameContains }))
             {
-                classification.FileNameParts.Add(part);
+                classification.Keywords.Add(keyword);
             }
 
             dbContext.FileClassifications.Add(classification);
