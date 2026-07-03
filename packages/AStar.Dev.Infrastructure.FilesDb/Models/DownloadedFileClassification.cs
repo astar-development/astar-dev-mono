@@ -15,8 +15,8 @@ public class DownloadedFileClassification : AuditableEntity
     public FileDetail FileDetail { get; set; } = null!;
 
     /// <summary>Gets or sets the id of the applied classification.</summary>
-    public int FileClassificationId { get; set; }
+    public int CategoryId { get; set; }
 
     /// <summary>Gets or sets the applied classification.</summary>
-    public FileClassification FileClassification { get; set; } = null!;
+    public FileClassification Category { get; set; } = null!;
 }

@@ -22,7 +22,7 @@ public static class ModelBuilderExtensions
         [
             typeof(FileClassification),
             typeof(FileDetail),
-            typeof(FileNamePart),
+            typeof(FileClassificationKeyword),
         ];
 
         foreach(var et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))

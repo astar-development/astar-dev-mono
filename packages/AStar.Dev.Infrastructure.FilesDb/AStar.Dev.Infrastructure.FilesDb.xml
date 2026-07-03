@@ -43,18 +43,18 @@
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Configurations.FileClassificationConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.FilesDb.Models.FileClassification})">
             <inheritdoc />
         </member>
+        <member name="T:AStar.Dev.Infrastructure.FilesDb.Configurations.FileClassificationKeywordConfiguration">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.FilesDb.Configurations.FileClassificationKeywordConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword})">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Configurations.FileDetailConfiguration">
             <summary>
             </summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Configurations.FileDetailConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.FilesDb.Models.FileDetail})">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.FilesDb.Configurations.FileNamePartConfiguration">
-            <summary>
-            </summary>
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.FilesDb.Configurations.FileNamePartConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Configurations.IComplexPropertyConfiguration`1">
@@ -143,8 +143,9 @@
                 The list of file access details in the dB
             </summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Data.FilesContext.FileNameParts">
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Data.FilesContext.FileClassificationKeywords">
             <summary>
+                Gets or sets the keywords matched against file names to apply a classification
             </summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Data.FilesContext.TagsToIgnore">
@@ -521,6 +522,18 @@
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.AddAuditableToAllConfigTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:AStar.Dev.Infrastructure.FilesDb.Migrations.UnifyFileClassificationHierarchy">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.UnifyFileClassificationHierarchy.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.UnifyFileClassificationHierarchy.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.UnifyFileClassificationHierarchy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.AuditableEntity">
             <summary>
                The <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.AuditableEntity"></see> class provides common properties for tracking the creation and modification of entities.
@@ -614,10 +627,10 @@
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.DownloadedFileClassification.FileDetail">
             <summary>Gets or sets the classified file.</summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.DownloadedFileClassification.FileClassificationId">
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.DownloadedFileClassification.CategoryId">
             <summary>Gets or sets the id of the applied classification.</summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.DownloadedFileClassification.FileClassification">
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.DownloadedFileClassification.Category">
             <summary>Gets or sets the applied classification.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.DuplicatesDetails">
@@ -890,8 +903,8 @@
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification">
             <summary>
-                Represents a classification of files, providing metadata about the type of files
-                and associated entities such as file details and file name parts.
+                Represents a node in the file classification hierarchy, providing metadata about the type of files
+                and associated entities such as file details and classification keywords.
             </summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.Id">
@@ -907,6 +920,22 @@
                 and is often used to identify or categorize files within the database.
             </summary>
         </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.Level">
+            <summary>
+                Gets or sets the hierarchy level: 1 = top, 2 = sub, 3 = leaf.
+                Classifications created by the scraper are leaf nodes.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.ParentId">
+            <summary>
+                Gets or sets the FK to the parent classification; null for root nodes.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.Parent">
+            <summary>
+                Gets or sets the navigation to the parent classification.
+            </summary>
+        </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.FileDetails">
             <summary>
                 Gets or sets the collection of file details associated with a specific file classification.
@@ -914,9 +943,9 @@
                 and multiple <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.FileDetail" /> entities.
             </summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.Celebrity">
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.IsFamous">
             <summary>
-                Gets or sets a value indicating whether the file classification is considered a "Celebrity."
+                Gets or sets a value indicating whether the file classification is considered "famous."
                 This property is used to mark specific classifications with special significance.
             </summary>
         </member>
@@ -926,11 +955,38 @@
                 This property determines if files associated with this classification are considered searchable.
             </summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.FileNameParts">
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification.Keywords">
             <summary>
-                Gets or sets the collection of file name parts associated with the file classification.
+                Gets or sets the collection of keywords associated with the file classification.
                 This property represents the one-to-many relationship between a file classification
-                and its constituent parts that define or describe its naming structure.
+                and the keywords matched against file names to apply it.
+            </summary>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword">
+            <summary>
+                Represents a keyword matched against file names to apply a <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.FileClassification" />.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword.Id">
+            <summary>
+                Gets or sets the unique identifier for the <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword" /> entity.
+                This property serves as the primary key in the database to distinguish
+                each record of classification keywords.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword.Keyword">
+            <summary>
+                Gets or sets the text of the keyword matched against file names.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword.CategoryId">
+            <summary>
+                Gets or sets the FK to the owning classification.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileClassificationKeyword.Category">
+            <summary>
+                Gets or sets the navigation to the owning classification.
             </summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.FileDetail">
@@ -1085,31 +1141,6 @@
             <summary>
             </summary>
             <returns></returns>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart">
-            <summary>
-                Represents a segment or part of a file name, which can be stored in the database.
-                Provides properties to define the text of the file name part,
-                whether it should be included in searches, and the associated classifications.
-            </summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart.Id">
-            <summary>
-                Gets or sets the unique identifier for the <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart" /> entity.
-                This property serves as the primary key in the database to distinguish
-                each record of file name parts.
-            </summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart.Text">
-            <summary>
-                Gets or sets the text content of the file name part.
-            </summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.FileNamePart.IncludeInSearch">
-            <summary>
-                Gets or sets a value indicating whether this filename part should be included in search results.
-                This property determines if files associated with this filename part are considered searchable.
-            </summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.FileSize">
             <summary>

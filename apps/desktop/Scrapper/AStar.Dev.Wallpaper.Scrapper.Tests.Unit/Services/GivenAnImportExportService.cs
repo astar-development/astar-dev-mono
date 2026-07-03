@@ -31,15 +31,16 @@ public sealed class GivenAnImportExportService
             "updatedAt": "2026-06-20T13:14:15",
             "id": 1,
             "name": "Test Celebrity",
-            "celebrity": true,
+            "level": 3,
+            "parentId": null,
+            "isFamous": true,
             "includeInSearch": true,
-            "fileNameParts": [
+            "keywords": [
               {
                 "createdAt": "0001-01-01T00:00:00",
                 "updatedAt": "0001-01-01T00:00:00",
                 "id": 1,
-                "text": "Test Celebrity",
-                "includeInSearch": true
+                "keyword": "Test Celebrity"
               }
             ]
           },
@@ -48,15 +49,14 @@ public sealed class GivenAnImportExportService
             "updatedAt": "2026-06-20T13:14:15",
             "id": 2,
             "name": "Test Normal",
-            "celebrity": false,
+            "isFamous": false,
             "includeInSearch": true,
-            "fileNameParts": [
+            "keywords": [
               {
                 "createdAt": "0001-01-01T00:00:00",
                 "updatedAt": "0001-01-01T00:00:00",
                 "id": 2,
-                "text": "Test Normal",
-                "includeInSearch": true
+                "keyword": "Test Normal"
               }
             ]
           }
@@ -190,6 +190,29 @@ public sealed class GivenAnImportExportService
         sut.ImportFileClassificationsFromFile()
            .ShouldBeOfType<Ok<List<FileClassificationDomain>, string>>()
            .Value[1].Name.ShouldBe(NormalClassificationName);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_level_is_mapped()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<List<FileClassificationDomain>, string>>()
+           .Value[0].Level.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_exporting_and_reimporting_a_classification_then_level_survives_the_round_trip()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        var classifications = CreateDomainClassifications();
+
+        sut.ExportFileClassificationsToFile(classifications);
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<List<FileClassificationDomain>, string>>()
+           .Value[0].Level.ShouldBe(3);
     }
 
     [Fact]
@@ -539,8 +562,8 @@ public sealed class GivenAnImportExportService
 
     private static List<FileClassificationDomain> CreateDomainClassifications() =>
     [
-        new() { Id = 1, Name = CelebrityClassificationName, Celebrity = true,  IncludeInSearch = true },
-        new() { Id = 2, Name = NormalClassificationName,    Celebrity = false, IncludeInSearch = true }
+        new() { Id = 1, Name = CelebrityClassificationName, Level = 3, IsFamous = true,  IncludeInSearch = true },
+        new() { Id = 2, Name = NormalClassificationName,    Level = 3, IsFamous = false, IncludeInSearch = true }
     ];
 
     private static ScrapeConfigurationEntity CreateScrapeConfigurationEntityWithSensitiveData() => new()

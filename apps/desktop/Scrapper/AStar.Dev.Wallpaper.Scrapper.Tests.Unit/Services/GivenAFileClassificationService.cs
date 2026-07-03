@@ -190,7 +190,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             Name = "Animals",
             IncludeInSearch = true
         };
-        classification.FileNameParts.Add(new FileNamePart { Text = "animals" });
+        classification.Keywords.Add(new FileClassificationKeyword { Keyword = "animals" });
         seedCtx.FileClassifications.Add(classification);
         var fileDetail = new FileDetail
         {
@@ -208,6 +208,25 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await using var verifyCtx = new FilesContext(options);
         int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_importing_a_classification_whose_keyword_already_exists_with_different_casing_then_no_duplicate_keyword_is_added()
+    {
+        await using var seedCtx = new FilesContext(options);
+        var existing = new FileClassification { Name = "Animals", IncludeInSearch = true };
+        existing.Keywords.Add(new FileClassificationKeyword { Keyword = "ANIMALS" });
+        seedCtx.FileClassifications.Add(existing);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var incoming = new FileClassification { Name = "Animals", IncludeInSearch = true };
+        incoming.Keywords.Add(new FileClassificationKeyword { Keyword = "animals" });
+
+        await sut.ImportClassificationsAsync([incoming], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new FilesContext(options);
+        var stored = await verifyCtx.FileClassifications.Include(fc => fc.Keywords).SingleAsync(TestContext.Current.CancellationToken);
+        stored.Keywords.Count.ShouldBe(1);
     }
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntity() => new()

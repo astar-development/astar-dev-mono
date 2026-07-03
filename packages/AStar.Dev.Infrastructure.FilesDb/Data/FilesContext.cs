@@ -37,8 +37,9 @@ public sealed class FilesContext : DbContext
     public DbSet<FileAccessDetail> FileAccessDetails { get; set; } = null!;
 
     /// <summary>
+    ///     Gets or sets the keywords matched against file names to apply a classification
     /// </summary>
-    public DbSet<FileNamePart> FileNameParts { get; set; } = null!;
+    public DbSet<FileClassificationKeyword> FileClassificationKeywords { get; set; } = null!;
 
     /// <summary>
     ///     The list of tags to ignore

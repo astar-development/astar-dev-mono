@@ -15,7 +15,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<FileClassificationCategoryEntity> FileClassificationCategories => Set<FileClassificationCategoryEntity>();
     public DbSet<FileDetailEntity> Files => Set<FileDetailEntity>();
     public DbSet<FileAccessDetailEntity> FileAccessDetails => Set<FileAccessDetailEntity>();
-    public DbSet<FileNamePartEntity> FileNameParts => Set<FileNamePartEntity>();
+    public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
+    public DbSet<DownloadedFileClassificationEntity> DownloadedFileClassifications => Set<DownloadedFileClassificationEntity>();
     public DbSet<TagToIgnoreEntity> TagsToIgnore => Set<TagToIgnoreEntity>();
     public DbSet<ModelToIgnoreEntity> ModelsToIgnore => Set<ModelToIgnoreEntity>();
     public DbSet<ScrapeConfigurationEntity> ScrapeConfiguration => Set<ScrapeConfigurationEntity>();

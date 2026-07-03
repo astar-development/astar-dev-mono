@@ -17,7 +17,10 @@ public sealed class FileClassificationConfiguration : IEntityTypeConfiguration<F
 
         builder.HasIndex(fileClassification => fileClassification.Name).IsUnique();
 
-        //_ = builder.HasMany<FileNamePart>();
         _ = builder.Property(fileClassification => fileClassification.Name).HasMaxLength(150);
+
+        _ = builder.HasOne(fileClassification => fileClassification.Parent)
+                   .WithMany()
+                   .HasForeignKey(fileClassification => fileClassification.ParentId);
     }
 }

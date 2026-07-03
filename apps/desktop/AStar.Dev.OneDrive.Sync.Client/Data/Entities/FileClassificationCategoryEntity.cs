@@ -21,6 +21,9 @@ public sealed class FileClassificationCategoryEntity
     /// <summary>Whether this keyword defines the internet classification.</summary>
     public bool IsInternet { get; set; }
 
+    /// <summary>Whether files matching this category should be included in search results.</summary>
+    public bool IncludeInSearch { get; set; }
+
     /// <summary>Navigation to parent category.</summary>
     public FileClassificationCategoryEntity? Parent { get; set; }
 }

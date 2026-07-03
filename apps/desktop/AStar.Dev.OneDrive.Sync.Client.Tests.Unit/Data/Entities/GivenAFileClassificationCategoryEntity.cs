@@ -73,4 +73,19 @@ public sealed class GivenAFileClassificationCategoryEntity
 
         entity.IsInternet.ShouldBe(true);
     }
+
+    [Fact]
+    public void when_instantiated_then_include_in_search_defaults_to_false() =>
+        new FileClassificationCategoryEntity().IncludeInSearch.ShouldBeFalse();
+
+    [Fact]
+    public void when_include_in_search_is_set_then_it_reflects_in_the_property()
+    {
+        var entity = new FileClassificationCategoryEntity
+        {
+            IncludeInSearch = true
+        };
+
+        entity.IncludeInSearch.ShouldBeTrue();
+    }
 }

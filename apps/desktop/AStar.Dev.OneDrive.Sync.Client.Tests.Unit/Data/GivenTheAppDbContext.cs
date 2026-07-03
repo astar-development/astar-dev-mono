@@ -21,8 +21,12 @@ public sealed class GivenTheAppDbContext
         typeof(AppDbContext).GetProperty("FileAccessDetails").ShouldNotBeNull();
 
     [Fact]
-    public void when_inspected_then_file_name_parts_db_set_exists() =>
-        typeof(AppDbContext).GetProperty("FileNameParts").ShouldNotBeNull();
+    public void when_inspected_then_file_classification_keywords_db_set_exists() =>
+        typeof(AppDbContext).GetProperty("FileClassificationKeywords").ShouldNotBeNull();
+
+    [Fact]
+    public void when_inspected_then_downloaded_file_classifications_db_set_exists() =>
+        typeof(AppDbContext).GetProperty("DownloadedFileClassifications").ShouldNotBeNull();
 
     [Fact]
     public void when_inspected_then_tags_to_ignore_db_set_exists() =>

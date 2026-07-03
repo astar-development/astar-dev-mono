@@ -19,7 +19,6 @@ public static class ModelBuilderExtensions
     typeof(FileAccessDetailEntity),
     typeof(DeletionStatusEntity),
     typeof(EventEntity),
-    typeof(FileNamePartEntity),
     typeof(TagToIgnoreEntity),
     typeof(ModelToIgnoreEntity),
     typeof(ScrapedTagEntity),
