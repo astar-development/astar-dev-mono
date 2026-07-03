@@ -28,6 +28,75 @@ public sealed class GivenAFileClassificationRepository
         return logger;
     }
 
+    private static async Task<FileDetailEntity> SeedFileDetailAsync(AppDbContext db)
+    {
+        var fileDetail = new FileDetailEntity { FileName = new FileName("photo.jpg"), DirectoryName = new DirectoryName("/local"), FileHandle = new FileHandle("handle-classification-repo") };
+        db.Files.Add(fileDetail);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        return fileDetail;
+    }
+
+    [Fact]
+    public async Task when_has_classifications_is_called_for_an_unclassified_file_then_false_is_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var fileDetail = await SeedFileDetailAsync(db);
+
+        bool hasClassifications = await repository.HasClassificationsAsync(fileDetail.Id, TestContext.Current.CancellationToken);
+
+        hasClassifications.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_has_classifications_is_called_for_a_classified_file_then_true_is_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var fileDetail = await SeedFileDetailAsync(db);
+        var category = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+        db.FileClassificationCategories.Add(category);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.FileClassifications.Add(new FileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = category.Id });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        bool hasClassifications = await repository.HasClassificationsAsync(fileDetail.Id, TestContext.Current.CancellationToken);
+
+        hasClassifications.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_add_classifications_is_called_then_one_row_per_category_is_persisted()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var fileDetail = await SeedFileDetailAsync(db);
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.AddRange(photos, media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.AddClassificationsAsync(fileDetail.Id, [photos.Id, media.Id], TestContext.Current.CancellationToken);
+
+        var rows = db.FileClassifications.Where(c => c.FileDetailId == fileDetail.Id).ToList();
+        rows.Count.ShouldBe(2);
+        rows.ShouldContain(r => r.CategoryId == photos.Id);
+        rows.ShouldContain(r => r.CategoryId == media.Id);
+    }
+
+    [Fact]
+    public async Task when_add_classifications_is_called_with_an_empty_list_then_no_rows_are_persisted()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var fileDetail = await SeedFileDetailAsync(db);
+
+        await repository.AddClassificationsAsync(fileDetail.Id, [], TestContext.Current.CancellationToken);
+
+        db.FileClassifications.Any().ShouldBeFalse();
+    }
+
     [Fact]
     public async Task when_get_all_categories_contains_one_valid_and_one_invalid_row_then_only_valid_row_is_returned()
     {
