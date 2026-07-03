@@ -44,53 +44,10 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         existing.IsFolder = item.IsFolder;
         existing.RemoteModifiedAt = item.RemoteModifiedAt;
         existing.Tags = item.Tags;
+        existing.FileDetailId = item.FileDetailId;
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return existing.Id;
-    }
-
-    public async Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-
-        _ = await db.SyncedItemFileClassifications
-                   .Where(c => c.SyncedItemId == syncedItemId)
-                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-
-        var entities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
-        {
-            SyncedItemId = syncedItemId,
-            CategoryId = categoryId
-        });
-
-        db.SyncedItemFileClassifications.AddRange(entities);
-        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task<int> UpsertWithClassificationsAsync(SyncedItemEntity item, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken)
-    {
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-
-        int syncedItemId = await UpsertInContextAsync(db, item, cancellationToken).ConfigureAwait(false);
-
-        _ = await db.SyncedItemFileClassifications
-                   .Where(c => c.SyncedItemId == syncedItemId)
-                   .ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-
-        var classificationEntities = categoryIds.Select(categoryId => new SyncedItemFileClassificationEntity
-        {
-            SyncedItemId = syncedItemId,
-            CategoryId = categoryId
-        });
-
-        db.SyncedItemFileClassifications.AddRange(classificationEntities);
-        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-
-        return syncedItemId;
     }
 
     public async Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken)
@@ -152,8 +109,8 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
                 .Where(c => tagList.Contains(c.Name))
                 .Select(c => c.Id)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
-            query = query.Where(i => db.SyncedItemFileClassifications
-                .Any(jt => jt.SyncedItemId == i.Id && tagCategoryIds.Contains(jt.CategoryId)));
+            query = query.Where(i => i.FileDetailId != null && db.FileClassifications
+                .Any(jt => jt.FileDetailId == i.FileDetailId && tagCategoryIds.Contains(jt.CategoryId)));
         }
 
         if (criteria.DuplicatesOnly)
@@ -184,8 +141,8 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
                 syncedItem.LocalPath,
                 syncedItem.RemoteModifiedAt,
                 syncedItem.SizeInBytes,
-                TagNames = db.SyncedItemFileClassifications
-                    .Where(jt => jt.SyncedItemId == syncedItem.Id)
+                TagNames = db.FileClassifications
+                    .Where(jt => syncedItem.FileDetailId != null && jt.FileDetailId == syncedItem.FileDetailId)
                     .Select(jt => jt.Category!.Name)
                     .ToList()
             })
@@ -199,8 +156,8 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
-        var categories = await db.SyncedItemFileClassifications
-            .Where(jt => jt.SyncedItem!.AccountId == accountId)
+        var categories = await db.FileClassifications
+            .Where(jt => db.SyncedItems.Any(i => i.AccountId == accountId && i.FileDetailId != null && i.FileDetailId == jt.FileDetailId))
             .Select(jt => jt.Category!.Name)
             .Distinct()
             .OrderBy(name => name)
@@ -230,29 +187,5 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             .GroupBy(i => new { i.SizeInBytes, FileName = i.RemotePath[(i.RemotePath.LastIndexOf('/') + 1)..] })
             .Where(g => g.Count() > 1)
             .SelectMany(g => g.Select(i => i.Id))];
-    }
-
-    private static async Task<int> UpsertInContextAsync(AppDbContext db, SyncedItemEntity item, CancellationToken cancellationToken)
-    {
-        var existing = await db.SyncedItems
-            .FirstOrDefaultAsync(i => i.AccountId == item.AccountId && i.RemoteItemId == item.RemoteItemId, cancellationToken).ConfigureAwait(false);
-
-        if (existing is null)
-        {
-            _ = db.SyncedItems.Add(item);
-            _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-            return item.Id;
-        }
-
-        existing.RemoteParentId = item.RemoteParentId;
-        existing.RemotePath = item.RemotePath;
-        existing.LocalPath = item.LocalPath;
-        existing.IsFolder = item.IsFolder;
-        existing.RemoteModifiedAt = item.RemoteModifiedAt;
-        existing.Tags = item.Tags;
-        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        return existing.Id;
     }
 }

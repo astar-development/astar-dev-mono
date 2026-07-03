@@ -59,6 +59,16 @@ public sealed class SyncedItemEntity
     public long? SizeInBytes { get; set; }
 
     /// <summary>
+    /// Foreign key to the canonical <see cref="FileDetailEntity"/> representing the physical file on disk. Null for folders and for items registered before file-level classification unification. Classifications hang off the file detail, so linking here lets every application share one set of classifications per file.
+    /// </summary>
+    public FileId? FileDetailId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the canonical file detail for this synced item, when linked.
+    /// </summary>
+    public FileDetailEntity? FileDetail { get; set; }
+
+    /// <summary>
     /// Navigation property to the associated AccountEntity, allowing for access to the account's profile information, sync configuration, and other related data. This relationship is established through the AccountId foreign key, enabling the sync client to easily retrieve and manage the synchronized item in the context of the corresponding account. The navigation property is marked as nullable to indicate that there may be cases where the account information is not available or has been deleted, allowing for graceful handling of such scenarios within the application.
     /// </summary>
     [ForeignKey(nameof(AccountId))]

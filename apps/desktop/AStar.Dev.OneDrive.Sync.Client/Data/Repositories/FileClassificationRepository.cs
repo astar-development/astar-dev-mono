@@ -99,6 +99,26 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> HasClassificationsAsync(FileId fileDetailId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await db.FileClassifications.AnyAsync(c => c.FileDetailId == fileDetailId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task AddClassificationsAsync(FileId fileDetailId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken = default)
+    {
+        if (categoryIds.Count == 0)
+            return;
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        db.FileClassifications.AddRange(categoryIds.Select(categoryId => new FileClassificationEntity { FileDetailId = fileDetailId, CategoryId = categoryId }));
+        _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private static KeywordMapping BuildKeywordMapping(FileClassificationKeywordEntity keyword, Dictionary<int, FileClassificationCategoryEntity> categoryById)
     {
         var ancestorNames = new Dictionary<int, string>();

@@ -81,9 +81,9 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
         await using var context = await factory.CreateDbContextAsync();
 
-        return await context.SyncedItemFileClassifications
+        return await context.FileClassifications
             .Include(c => c.Category)
-            .Where(c => c.SyncedItemId == syncedItemId)
+            .Where(c => context.SyncedItems.Any(i => i.Id == syncedItemId && i.FileDetailId == c.FileDetailId))
             .AsNoTracking()
             .Select(c => c.Category!.Name)
             .ToListAsync();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.Infrastructure.AppDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260703184100_MergeDownloadedFileClassifications")]
+    partial class MergeDownloadedFileClassifications
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -265,28 +268,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsUnique();
 
                     b.ToTable("FileClassificationCategories");
-                });
-
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("FileDetailId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("FileDetailId", "CategoryId")
-                        .IsUnique();
-
-                    b.ToTable("FileClassifications", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity", b =>
@@ -815,9 +796,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("FileDetailId")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsFolder")
                         .HasColumnType("INTEGER");
 
@@ -845,8 +823,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileDetailId");
-
                     b.HasIndex("LocalPath");
 
                     b.HasIndex("RemotePath");
@@ -865,6 +841,39 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.HasIndex("AccountId", "IsFolder", "SizeInBytes");
 
                     b.ToTable("SyncedItems");
+                });
+
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("FileDetailId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SyncedItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("FileDetailId", "CategoryId")
+                        .IsUnique()
+                        .HasFilter("\"FileDetailId\" IS NOT NULL");
+
+                    b.HasIndex("SyncedItemId", "CategoryId")
+                        .IsUnique()
+                        .HasFilter("\"SyncedItemId\" IS NOT NULL");
+
+                    b.ToTable("SyncedItemFileClassifications", t =>
+                        {
+                            t.HasCheckConstraint("CK_SyncedItemFileClassifications_ExactlyOneParent", "(\"SyncedItemId\" IS NULL AND \"FileDetailId\" IS NOT NULL) OR (\"SyncedItemId\" IS NOT NULL AND \"FileDetailId\" IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity", b =>
@@ -967,25 +976,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasForeignKey("ParentId");
 
                     b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
-                        .WithMany()
-                        .HasForeignKey("FileDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("FileDetail");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity", b =>
@@ -1100,11 +1090,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
-                        .WithMany()
-                        .HasForeignKey("FileDetailId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.OwnsOne("AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo", "Tags", b1 =>
                         {
                             b1.Property<int>("SyncedItemEntityId")
@@ -1128,10 +1113,33 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
 
                     b.Navigation("Account");
 
-                    b.Navigation("FileDetail");
-
                     b.Navigation("Tags")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity", b =>
+                {
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
+                        .WithMany()
+                        .HasForeignKey("FileDetailId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity", "SyncedItem")
+                        .WithMany()
+                        .HasForeignKey("SyncedItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("FileDetail");
+
+                    b.Navigation("SyncedItem");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.UserConfigurationEntity", b =>

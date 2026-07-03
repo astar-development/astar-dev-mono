@@ -31,6 +31,11 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
                    .WithMany()
                    .HasForeignKey(e => e.AccountId)
                    .OnDelete(DeleteBehavior.Cascade);
+        _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId!.Value.Id, guid => new FileId(guid));
+        _ = builder.HasOne(e => e.FileDetail)
+                   .WithMany()
+                   .HasForeignKey(e => e.FileDetailId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
         _ = builder.HasIndex(i => i.RemotePath);
         _ = builder.HasIndex(i => i.LocalPath);

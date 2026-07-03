@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
-public sealed class DownloadedFileClassificationEntityConfiguration : IEntityTypeConfiguration<DownloadedFileClassificationEntity>
+public sealed class FileClassificationEntityConfiguration : IEntityTypeConfiguration<FileClassificationEntity>
 {
-    public void Configure(EntityTypeBuilder<DownloadedFileClassificationEntity> builder)
+    public void Configure(EntityTypeBuilder<FileClassificationEntity> builder)
     {
+        _ = builder.ToTable("FileClassifications");
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId.Id, guid => new FileId(guid));
         _ = builder.HasIndex(e => new { e.FileDetailId, e.CategoryId }).IsUnique();

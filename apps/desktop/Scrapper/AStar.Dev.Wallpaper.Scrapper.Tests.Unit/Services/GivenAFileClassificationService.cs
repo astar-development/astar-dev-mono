@@ -173,7 +173,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
     }
 
@@ -190,7 +190,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(0);
     }
 
@@ -214,7 +214,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
     }
 
@@ -237,7 +237,34 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, ["outdoors"], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int count = await verifyCtx.DownloadedFileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
+        count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_classifying_a_file_that_already_has_classifications_then_no_additional_rows_are_added()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var existingCategory = new FileClassificationCategoryEntity { Name = "Existing", Level = 3, IncludeInSearch = true };
+        var newCategory = new FileClassificationCategoryEntity { Name = "Animals", Level = 3, IncludeInSearch = true };
+        seedCtx.FileClassificationCategories.AddRange(existingCategory, newCategory);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-already-classified")
+        };
+        seedCtx.Files.Add(fileDetail);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        seedCtx.FileClassifications.Add(new FileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = existingCategory.Id });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = new PageClassificationData([], newCategory, []);
+
+        await sut.ClassifyAsync(fileDetail, pageData, [], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
         count.ShouldBe(1);
     }
 
