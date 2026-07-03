@@ -769,24 +769,6 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DirectoryName.Value">
             <summary>The directory path.</summary>
         </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity">
-            <summary>Junction row linking a downloaded file to a category in the normalised classification taxonomy.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity.Id">
-            <summary>Primary key.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity.FileDetailId">
-            <summary>Foreign key to the owning <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity.CategoryId">
-            <summary>Foreign key to the <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity"/> that classifies this file.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity.FileDetail">
-            <summary>Navigation property to the owning file.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DownloadedFileClassificationEntity.Category">
-            <summary>Navigation property to the classification category.</summary>
-        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity">
             <summary>
             Represents the synchronization state of a OneDrive account, including the latest delta link and last sync timestamp.
@@ -1380,19 +1362,25 @@
             <returns>A new instance of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity"/>.</returns>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity">
-            <summary>Junction row linking a synced file item to a category in the normalised classification taxonomy.</summary>
+            <summary>Junction row linking a classified file to a category in the normalised classification taxonomy. Exactly one parent is set: <see cref="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.SyncedItemId"/> for OneDrive-synced items, <see cref="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.FileDetailId"/> for scraper-downloaded files.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.Id">
             <summary>Primary key.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.SyncedItemId">
-            <summary>Foreign key to the owning <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity"/>.</summary>
+            <summary>Foreign key to the owning <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity"/>; null when the row classifies a downloaded file.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.FileDetailId">
+            <summary>Foreign key to the owning <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>; null when the row classifies a synced item.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.CategoryId">
             <summary>Foreign key to the <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity"/> that classifies this item.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.SyncedItem">
             <summary>Navigation property to the owning synced item.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.FileDetail">
+            <summary>Navigation property to the owning downloaded file.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemFileClassificationEntity.Category">
             <summary>Navigation property to the classification category.</summary>
@@ -1683,6 +1671,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">

@@ -21,7 +21,7 @@ public sealed class ClassificationDataMigrationService(IDbContextFactory<AppDbCo
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        if (await db.SyncedItemFileClassifications.AnyAsync(cancellationToken).ConfigureAwait(false))
+        if (await db.SyncedItemFileClassifications.AnyAsync(classification => classification.SyncedItemId != null, cancellationToken).ConfigureAwait(false))
             return;
 
         if (!await OldTableExistsAsync(db, cancellationToken).ConfigureAwait(false))

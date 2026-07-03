@@ -54,7 +54,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
         foreach (var classification in distinct)
-            context.DownloadedFileClassifications.Add(new DownloadedFileClassificationEntity
+            context.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity
             {
                 FileDetailId = fileDetail.Id,
                 CategoryId = classification.Id
