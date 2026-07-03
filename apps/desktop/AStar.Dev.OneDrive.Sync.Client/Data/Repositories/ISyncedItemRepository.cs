@@ -13,12 +13,6 @@ public interface ISyncedItemRepository
     /// <summary>Inserts or updates the synced item record. Returns the database Id of the entity after the operation.</summary>
     Task<int> UpsertAsync(SyncedItemEntity item, CancellationToken cancellationToken);
 
-    /// <summary>Replaces all junction rows for the specified synced item with rows pointing to the provided category IDs.</summary>
-    Task UpsertFileClassificationsAsync(int syncedItemId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken);
-
-    /// <summary>Inserts or updates the synced item record and replaces its file classification junction rows atomically in a single <see cref="Microsoft.EntityFrameworkCore.DbContext"/> and transaction.</summary>
-    Task<int> UpsertWithClassificationsAsync(SyncedItemEntity item, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken);
-
     /// <summary>Removes the synced item record with the specified remote item ID.</summary>
     Task DeleteByRemoteIdAsync(AccountId accountId, OneDriveItemId remoteItemId, CancellationToken cancellationToken);
 

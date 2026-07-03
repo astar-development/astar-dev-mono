@@ -1,5 +1,6 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -8,6 +9,12 @@ public interface IFileClassificationRepository
 {
     /// <summary>Returns all category nodes in the hierarchy.</summary>
     Task<IReadOnlyList<FileClassificationCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Returns whether the specified file already has any classification rows, from any application.</summary>
+    Task<bool> HasClassificationsAsync(FileId fileDetailId, CancellationToken cancellationToken = default);
+
+    /// <summary>Adds one classification row per category for the specified file.</summary>
+    Task AddClassificationsAsync(FileId fileDetailId, IReadOnlyList<int> categoryIds, CancellationToken cancellationToken = default);
 
     /// <summary>Returns all keywords belonging to the specified category, including their database identifiers.</summary>
     // Task<IReadOnlyList<FileClassificationKeywordEntry>> GetKeywordsForCategoryAsync(FileClassificationCategoryId categoryId, CancellationToken cancellationToken = default);

@@ -27,6 +27,7 @@ internal static class PersistenceServiceExtensions
         _ = services.AddSingleton<ISyncRuleRepository, SyncRuleRepository>();
         _ = services.AddSingleton<ISyncedItemRepository, SyncedItemRepository>();
         _ = services.AddSingleton<IFileClassificationRepository, FileClassificationRepository>();
+        _ = services.AddSingleton<IFileDetailResolver, FileDetailResolver>();
         _ = services.AddTransient<ICategoryResolutionService, CategoryResolutionService>();
         _ = services.AddTransient<IClassificationDataMigrationService, ClassificationDataMigrationService>();
 

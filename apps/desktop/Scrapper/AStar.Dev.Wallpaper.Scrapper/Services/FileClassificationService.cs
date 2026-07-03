@@ -42,6 +42,9 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
     {
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
 
+        if (await context.FileClassifications.AnyAsync(classification => classification.FileDetailId == fileDetail.Id, token).ConfigureAwait(false))
+            return;
+
         var matched = new List<FileClassificationCategoryEntity>();
 
         CollectFileNameMatches(pageData.SearchableClassifications, fileDetail, matched);
@@ -54,7 +57,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
         foreach (var classification in distinct)
-            context.SyncedItemFileClassifications.Add(new SyncedItemFileClassificationEntity
+            context.FileClassifications.Add(new FileClassificationEntity
             {
                 FileDetailId = fileDetail.Id,
                 CategoryId = classification.Id
