@@ -9,6 +9,12 @@
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj"
+    },
+    {
+      "name": "C#: Scrapper Debug",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/apps/desktop/Scrapper/AStar.Dev.Wallpaper.Scrapper/AStar.Dev.Wallpaper.Scrapper.csproj"
     }
   ]
 }

@@ -68,6 +68,40 @@ public sealed class GivenDataSeed : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_seeding_scrape_configuration_and_none_exists_then_a_default_configuration_is_created()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+
+        int configurationCount = await context.ScrapeConfiguration.CountAsync(TestContext.Current.CancellationToken);
+        configurationCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_seeding_scrape_configuration_twice_then_the_second_run_does_not_duplicate_rows()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+
+        int configurationCount = await context.ScrapeConfiguration.CountAsync(TestContext.Current.CancellationToken);
+        configurationCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_seeding_scrape_configuration_then_it_can_be_retrieved_via_get_scrape_configurations()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+
+        var configuration = context.ScrapeConfiguration.GetScrapeConfigurations();
+        configuration.ShouldNotBeNull();
+    }
+
+    [Fact]
     public async Task when_seeding_file_classifications_twice_then_the_second_run_does_not_duplicate_rows()
     {
         var logger = new LoggerConfiguration().CreateLogger();

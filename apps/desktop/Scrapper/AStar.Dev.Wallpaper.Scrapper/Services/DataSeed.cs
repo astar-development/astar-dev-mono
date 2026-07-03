@@ -26,6 +26,15 @@ public static class DataSeed
         }
     }
 
+    public static async Task SeedScrapeConfigurationAsync(Logger logger, AppDbContext dbContext)
+    {
+        if (dbContext.ScrapeConfiguration.Any()) return;
+
+        logger.Information("Seeding default scrape configuration...");
+        dbContext.ScrapeConfiguration.Add(new ScrapeConfigurationEntity());
+        await dbContext.SaveChangesAsync();
+    }
+
     public static async Task SeedFileClassificationsAsync(string csvPath, Logger logger, AppDbContext dbContext)
     {
         if (!File.Exists(csvPath)) return;

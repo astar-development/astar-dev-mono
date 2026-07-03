@@ -13,6 +13,7 @@ public class DatabaseInitializationService(IDbContextFactory<AppDbContext> conte
         await context.Database.MigrateAsync();
 
         await DataSeed.SeedTagsToIgnoreAsync(logger, context);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
 
         string csvPath = Path.Combine(ApplicationMetadata.ApplicationFolder, "Mappings.csv");
         await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
