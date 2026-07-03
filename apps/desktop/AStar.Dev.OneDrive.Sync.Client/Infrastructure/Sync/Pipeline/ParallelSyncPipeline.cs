@@ -1,12 +1,12 @@
 using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 

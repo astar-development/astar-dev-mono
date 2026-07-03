@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;

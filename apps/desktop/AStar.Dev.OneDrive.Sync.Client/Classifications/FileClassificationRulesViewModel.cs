@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Platform.Storage;

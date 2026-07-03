@@ -10,6 +10,8 @@ using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
 
+using AStar.Dev.Infrastructure.AppDb.Domain;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
 /// <summary>

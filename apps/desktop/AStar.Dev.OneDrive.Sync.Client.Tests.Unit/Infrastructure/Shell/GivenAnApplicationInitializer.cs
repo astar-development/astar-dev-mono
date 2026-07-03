@@ -18,7 +18,7 @@ using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using AStar.Dev.Functional.Extensions;
 using Microsoft.Extensions.Logging;
 

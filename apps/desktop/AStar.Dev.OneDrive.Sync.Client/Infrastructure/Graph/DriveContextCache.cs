@@ -3,6 +3,8 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using Microsoft.Graph;
 
+using AStar.Dev.Infrastructure.AppDb.Domain;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
 /// <summary>Resolves and caches the <see cref="DriveContext"/> (drive ID + root item ID) for each OneDrive account, so that the Graph API is called at most once per account per session.</summary>

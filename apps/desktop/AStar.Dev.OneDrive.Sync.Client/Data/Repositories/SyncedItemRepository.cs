@@ -1,8 +1,10 @@
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using Microsoft.EntityFrameworkCore;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
-using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
+
+using AStar.Dev.Infrastructure.AppDb;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 

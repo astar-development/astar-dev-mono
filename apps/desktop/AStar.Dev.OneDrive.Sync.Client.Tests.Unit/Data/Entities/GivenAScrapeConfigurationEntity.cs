@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

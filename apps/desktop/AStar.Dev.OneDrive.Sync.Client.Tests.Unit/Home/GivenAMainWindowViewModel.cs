@@ -15,11 +15,11 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Search;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;

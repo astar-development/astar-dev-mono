@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using System.Reactive;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using Microsoft.Extensions.Logging;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;

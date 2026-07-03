@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.Data;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.DataMigration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;

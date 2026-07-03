@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;

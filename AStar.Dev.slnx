@@ -17,6 +17,7 @@
     <Folder Name="/apps/web/" />
     <Folder Name="/infra/" />
     <Folder Name="/packages/">
+        <Project Path="packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
         <Project Path="packages/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
     </Folder>
     <Folder Name="/packages/aspnet/" />

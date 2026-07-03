@@ -2,7 +2,7 @@ using System.IO.Abstractions;
 using System.Text.Json;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 

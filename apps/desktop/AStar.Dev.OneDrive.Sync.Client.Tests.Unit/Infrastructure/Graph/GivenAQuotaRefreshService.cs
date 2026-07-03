@@ -4,7 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using Microsoft.Extensions.Logging;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
 

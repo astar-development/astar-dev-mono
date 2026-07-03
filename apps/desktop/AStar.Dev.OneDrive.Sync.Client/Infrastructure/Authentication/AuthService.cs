@@ -1,5 +1,5 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;

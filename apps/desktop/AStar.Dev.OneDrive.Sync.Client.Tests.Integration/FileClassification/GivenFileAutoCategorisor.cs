@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 

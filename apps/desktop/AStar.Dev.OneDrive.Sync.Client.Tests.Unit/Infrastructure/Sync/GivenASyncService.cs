@@ -1,14 +1,14 @@
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
-using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 using AStar.Dev.Functional.Extensions;
 using Microsoft.Extensions.Logging;
 

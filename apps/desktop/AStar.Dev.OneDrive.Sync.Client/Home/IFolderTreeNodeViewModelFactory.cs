@@ -1,3 +1,5 @@
+using AStar.Dev.Infrastructure.AppDb.Domain;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>Creates root <see cref="FolderTreeNodeViewModel"/> instances with their service dependencies resolved from the container.</summary>

@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;

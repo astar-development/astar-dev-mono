@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Domain;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

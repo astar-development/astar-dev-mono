@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using Microsoft.Extensions.Logging;
-using AccountId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.AccountId;
-using OneDriveItemId = AStar.Dev.OneDrive.Sync.Client.Data.Entities.OneDriveItemId;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Detection;
 

@@ -75,6 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\AStar.Dev.Infrastructure.AppDb\AStar.Dev.Infrastructure.AppDb.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\functional\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
