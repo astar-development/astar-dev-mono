@@ -354,7 +354,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     }
 
     [Fact]
-    public async Task when_classifying_with_a_tag_matching_no_existing_category_then_a_parentless_level_three_category_is_created()
+    public async Task when_classifying_with_a_tag_matching_no_existing_category_then_a_level_two_category_under_the_unclassified_root_is_created()
     {
         var fileDetail = new FileDetailEntity
         {
@@ -372,8 +372,63 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
 
         await using var verifyCtx = new AppDbContext(options);
         var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Brand New Tag", TestContext.Current.CancellationToken);
-        created.Level.ShouldBe(3);
-        created.ParentId.ShouldBeNull();
+        var root = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        created.Level.ShouldBe(2);
+        created.ParentId.ShouldBe(root.Id);
+        root.Level.ShouldBe(1);
+        root.ParentId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_new_tag_and_the_unclassified_root_already_exists_then_it_is_reused()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-existing-root")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        var root = new FileClassificationCategoryEntity { Name = "Unclassified", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(root);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "another new tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["another new tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Another New Tag", TestContext.Current.CancellationToken);
+        int rootCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        created.Level.ShouldBe(2);
+        created.ParentId.ShouldBe(root.Id);
+        rootCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_two_new_tags_then_both_share_a_single_unclassified_root()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-two-new-tags")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "first new tag", IncludeInSearch = true });
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "second new tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["first new tag", "second new tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        int rootCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        int childCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Level == 2 && c.Name != "Unclassified", TestContext.Current.CancellationToken);
+        rootCount.ShouldBe(1);
+        childCount.ShouldBe(2);
     }
 
     [Fact]
