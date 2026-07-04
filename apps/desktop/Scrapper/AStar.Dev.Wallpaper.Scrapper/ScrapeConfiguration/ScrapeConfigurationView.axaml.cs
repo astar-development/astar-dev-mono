@@ -41,7 +41,7 @@ public partial class ScrapeConfigurationView : Window, IDisposable
 
     private async void OnExportScrapeConfigClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {
@@ -58,7 +58,7 @@ public partial class ScrapeConfigurationView : Window, IDisposable
 
     private async void OnImportScrapeConfigClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {

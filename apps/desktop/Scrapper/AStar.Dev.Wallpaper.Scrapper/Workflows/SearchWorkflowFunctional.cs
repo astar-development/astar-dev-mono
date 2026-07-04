@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Abstractions;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Pages;
@@ -9,7 +10,7 @@ using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Workflows;
 
-public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchResultsPageFunctional, ScrapeConfiguration injectedScrapeConfiguration, ConfigurationSaver configurationSaver, ImagePageService imagePageService, ILogger logger)
+public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchResultsPageFunctional, ScrapeConfiguration injectedScrapeConfiguration, ConfigurationSaver configurationSaver, ImagePageService imagePageService, IDirectoryHelper directoryHelper, ILogger logger)
 {
     private ScrapeConfiguration scrapeConfiguration = null!;
     private SearchConfiguration searchConfiguration = null!;
@@ -23,7 +24,7 @@ public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchR
             searchConfiguration = scrapeConfiguration.SearchConfiguration;
             scrapeDirectories = scrapeConfiguration.ScrapeDirectories;
             var searchCategories = FilterSearchCategories([.. searchConfiguration.SearchCategories]);
-            await ProcessSearchCategories([.. searchConfiguration.SearchCategories], scrapeLogger, ct);
+            await ProcessSearchCategoriesAsync([.. searchConfiguration.SearchCategories], scrapeLogger, ct);
 
             return Unit.Value;
         }
@@ -34,7 +35,7 @@ public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchR
         }
     }
 
-    private async Task ProcessSearchCategories(List<Category> searchCategories, ILogger scrapeLogger, CancellationToken ct)
+    private async Task ProcessSearchCategoriesAsync(List<Category> searchCategories, ILogger scrapeLogger, CancellationToken ct)
     {
         foreach (var searchCategory in searchCategories)
         {
@@ -63,9 +64,9 @@ public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchR
             logger.Debug("Visiting {Category} from page {StartingPage} now...", searchCategory.Name, startingPage);
             scrapeDirectories = UpdateSubDirectoryIfRequired(subDirectoryName);
 
-            _ = DirectoryHelper.CreateDirectoryIfRequired([Path.Combine(scrapeDirectories.RootDirectory, scrapeDirectories.BaseDirectory, subDirectoryName)]);
+            _ = directoryHelper.CreateDirectoryIfRequired([Path.Combine(scrapeDirectories.RootDirectory, scrapeDirectories.BaseDirectory, subDirectoryName)]);
 
-            await ProcessAllCategoryPages(searchCategory, combinedSearchString, scrapeLogger, ct);
+            await ProcessAllCategoryPagesAsync(searchCategory, combinedSearchString, scrapeLogger, ct);
 
             searchCategory.LastKnownImageCount = imageCount;
             searchCategory.TotalPages = pageCount;
@@ -76,7 +77,7 @@ public sealed class SearchWorkflowFunctional(SearchResultsPageFunctional searchR
 
     private static int RandomDelay() => new Random().Next(1, 5);
 
-    private async Task ProcessAllCategoryPages(Category searchCategory, string combinedSearchString, ILogger scrapeLogger, CancellationToken ct)
+    private async Task ProcessAllCategoryPagesAsync(Category searchCategory, string combinedSearchString, ILogger scrapeLogger, CancellationToken ct)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();

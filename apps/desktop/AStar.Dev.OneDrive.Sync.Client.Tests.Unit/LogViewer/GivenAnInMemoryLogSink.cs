@@ -5,7 +5,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.LogViewer;
 public sealed class GivenAnInMemoryLogSink
 {
     private static LogEvent MakeEvent(LogEventLevel level = LogEventLevel.Information, string message = "test message", params LogEventProperty[] properties)
-        => new(DateTimeOffset.UtcNow, level, null, new Serilog.Events.MessageTemplate(message, []), properties);
+        => new(DateTimeOffset.UtcNow, level, null, new MessageTemplate(message, []), properties);
 
     private static LogEventProperty AccountIdProperty(string accountId)
         => new("AccountId", new ScalarValue(accountId));

@@ -76,9 +76,9 @@ public sealed class GivenAnUploadServiceLogging
         logger.Entries.ShouldNotContain(e => e.EventId.Id == 2802);
     }
 
-    private static WireMock.ResponseMessage Created201Response()
+    private static ResponseMessage Created201Response()
     {
-        var msg = new WireMock.ResponseMessage
+        var msg = new ResponseMessage
         {
             StatusCode = 201,
             Headers = new Dictionary<string, WireMockList<string>> { { "Content-Type", new WireMockList<string>("application/json") } },
