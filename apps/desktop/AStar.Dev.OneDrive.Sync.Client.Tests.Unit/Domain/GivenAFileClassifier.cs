@@ -8,6 +8,12 @@ public sealed class GivenAFileClassifier
     private static FileClassificationCategory Category(string name, int level, bool isFamous = false, bool isInternet = false)
         => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(1), name, level, isFamous, isInternet, Option.None<FileClassificationCategoryId>())).Value;
 
+    private static FileClassificationCategory ChildCategory(int id, string name, int level, int parentId, bool isFamous = false, bool isInternet = false)
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, level, isFamous, isInternet, Option.Some(new FileClassificationCategoryId(parentId)))).Value;
+
+    private static FileClassificationCategory RootCategory(int id, string name)
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, 1, false, false, Option.None<FileClassificationCategoryId>())).Value;
+
     [Fact]
     public void when_classifying_segment_based_path_then_path_segments_produce_tokens()
     {
@@ -175,6 +181,54 @@ public sealed class GivenAFileClassifier
 
         result.ShouldHaveSingleItem();
         result[0].Level1.ShouldBe("red car");
+    }
+
+    [Fact]
+    public void when_a_level_two_mapping_matches_then_its_level_one_parent_is_emitted()
+    {
+        IReadOnlyList<FileClassificationCategory> mappings = [RootCategory(1, "Color"), ChildCategory(2, "Red", 2, 1)];
+
+        var result = FileClassifier.Classify("/photos/red.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Color");
+        result[0].Level2.ShouldBe(Option.Some("Red"));
+        result[0].Level3.ShouldBe(Option.None<string>());
+    }
+
+    [Fact]
+    public void when_a_level_three_mapping_matches_then_its_full_ancestry_is_emitted()
+    {
+        IReadOnlyList<FileClassificationCategory> mappings = [RootCategory(1, "Color"), ChildCategory(2, "Red", 2, 1), ChildCategory(3, "Red Car", 3, 2)];
+
+        var result = FileClassifier.Classify("/photos/redcar.jpg", mappings);
+
+        result.ShouldHaveSingleItem();
+        result[0].Level1.ShouldBe("Color");
+        result[0].Level2.ShouldBe(Option.Some("Red"));
+        result[0].Level3.ShouldBe(Option.Some("Red Car"));
+    }
+
+    [Fact]
+    public void when_a_level_three_mapping_matches_alongside_its_level_two_parent_then_both_classifications_share_the_ancestry()
+    {
+        IReadOnlyList<FileClassificationCategory> mappings = [RootCategory(1, "Color"), ChildCategory(2, "Red", 2, 1), ChildCategory(3, "Red Car", 3, 2)];
+
+        var result = FileClassifier.Classify("/photos/red-car.jpg", mappings);
+
+        result.Count.ShouldBe(2);
+        result.ShouldContain(c => c.Level1 == "Color" && c.Level2 == Option.Some("Red") && c.Level3 == Option.None<string>());
+        result.ShouldContain(c => c.Level1 == "Color" && c.Level2 == Option.Some("Red") && c.Level3 == Option.Some("Red Car"));
+    }
+
+    [Fact]
+    public void when_a_matched_mapping_has_an_unresolvable_parent_then_that_mapping_is_skipped()
+    {
+        IReadOnlyList<FileClassificationCategory> mappings = [ChildCategory(3, "Red Car", 3, 99)];
+
+        var result = FileClassifier.Classify("/photos/redcar.jpg", mappings);
+
+        result.ShouldBeEmpty();
     }
 
     [Fact]
