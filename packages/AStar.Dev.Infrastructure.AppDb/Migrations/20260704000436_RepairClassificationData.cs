@@ -86,9 +86,75 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                               WHERE o."FileDetailId" = "FileClassifications"."FileDetailId"
                                 AND o."CategoryId" NOT IN (SELECT "Id" FROM "FileClassificationCategories" WHERE "Name" = 'Unclassified' AND "Level" = 1));
 
+                CREATE TEMP TABLE _orphan_self_dups AS
+                SELECT o."Id" AS DupId,
+                       (SELECT MIN(k."Id") FROM "FileClassificationCategories" k
+                        WHERE k."Level" = 3 AND k."ParentId" IS NULL AND k."Name" = o."Name" COLLATE NOCASE) AS KeeperId
+                FROM "FileClassificationCategories" o
+                WHERE o."Level" = 3 AND o."ParentId" IS NULL
+                  AND o."Id" <> (SELECT MIN(k."Id") FROM "FileClassificationCategories" k
+                                 WHERE k."Level" = 3 AND k."ParentId" IS NULL AND k."Name" = o."Name" COLLATE NOCASE);
+
+                INSERT OR IGNORE INTO "FileClassifications" ("FileDetailId", "CategoryId")
+                SELECT fc."FileDetailId", m.KeeperId
+                FROM "FileClassifications" fc
+                JOIN _orphan_self_dups m ON m.DupId = fc."CategoryId";
+
+                DELETE FROM "FileClassifications" WHERE "CategoryId" IN (SELECT DupId FROM _orphan_self_dups);
+
+                INSERT OR IGNORE INTO "FileClassificationKeywords" ("Keyword", "CategoryId")
+                SELECT k."Keyword", m.KeeperId
+                FROM "FileClassificationKeywords" k
+                JOIN _orphan_self_dups m ON m.DupId = k."CategoryId";
+
+                DELETE FROM "FileClassificationKeywords" WHERE "CategoryId" IN (SELECT DupId FROM _orphan_self_dups);
+
+                DELETE FROM "FileClassificationCategories" WHERE "Id" IN (SELECT DupId FROM _orphan_self_dups);
+
+                INSERT INTO "FileClassificationCategories" ("Name", "Level", "IsFamous", "IsInternet", "IncludeInSearch")
+                SELECT 'Unclassified', 1, 0, 0, 0
+                WHERE EXISTS (SELECT 1 FROM "FileClassificationCategories" WHERE "Level" = 3 AND "ParentId" IS NULL)
+                  AND NOT EXISTS (SELECT 1 FROM "FileClassificationCategories" WHERE "Level" = 1 AND "Name" = 'Unclassified' COLLATE NOCASE);
+
+                CREATE TEMP TABLE _root AS
+                SELECT "Id" FROM "FileClassificationCategories"
+                WHERE "Level" = 1 AND "Name" = 'Unclassified' COLLATE NOCASE
+                ORDER BY "Id" LIMIT 1;
+
+                CREATE TEMP TABLE _orphan_root_dups AS
+                SELECT o."Id" AS DupId, k."Id" AS KeeperId
+                FROM "FileClassificationCategories" o
+                JOIN "FileClassificationCategories" k ON k."ParentId" = (SELECT "Id" FROM _root)
+                   AND k."Id" <> o."Id"
+                   AND k."Name" = o."Name" COLLATE NOCASE
+                WHERE o."Level" = 3 AND o."ParentId" IS NULL;
+
+                INSERT OR IGNORE INTO "FileClassifications" ("FileDetailId", "CategoryId")
+                SELECT fc."FileDetailId", m.KeeperId
+                FROM "FileClassifications" fc
+                JOIN _orphan_root_dups m ON m.DupId = fc."CategoryId";
+
+                DELETE FROM "FileClassifications" WHERE "CategoryId" IN (SELECT DupId FROM _orphan_root_dups);
+
+                INSERT OR IGNORE INTO "FileClassificationKeywords" ("Keyword", "CategoryId")
+                SELECT k."Keyword", m.KeeperId
+                FROM "FileClassificationKeywords" k
+                JOIN _orphan_root_dups m ON m.DupId = k."CategoryId";
+
+                DELETE FROM "FileClassificationKeywords" WHERE "CategoryId" IN (SELECT DupId FROM _orphan_root_dups);
+
+                DELETE FROM "FileClassificationCategories" WHERE "Id" IN (SELECT DupId FROM _orphan_root_dups);
+
+                UPDATE "FileClassificationCategories"
+                SET "Level" = 2, "ParentId" = (SELECT "Id" FROM _root)
+                WHERE "Level" = 3 AND "ParentId" IS NULL;
+
                 DROP TABLE _dup_categories;
                 DROP TABLE _twin_files;
                 DROP TABLE _twin_owned;
+                DROP TABLE _orphan_self_dups;
+                DROP TABLE _root;
+                DROP TABLE _orphan_root_dups;
                 """);
         }
 

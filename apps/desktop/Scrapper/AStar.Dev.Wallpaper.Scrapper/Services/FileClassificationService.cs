@@ -176,7 +176,28 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
             .ConfigureAwait(false);
         if (existing is not null) return existing;
 
-        var created = new FileClassificationCategoryEntity { Name = normalizedName, Level = 3 };
+        var root = await FindOrCreateUnclassifiedRootAsync(context, token).ConfigureAwait(false);
+        var created = new FileClassificationCategoryEntity { Name = normalizedName, Level = 2, Parent = root };
+        context.FileClassificationCategories.Add(created);
+
+        return created;
+    }
+
+    private static async Task<FileClassificationCategoryEntity> FindOrCreateUnclassifiedRootAsync(AppDbContext context, CancellationToken token)
+    {
+        const string rootName = "Unclassified";
+
+        var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
+            .Select(e => e.Entity)
+            .FirstOrDefault(e => e.Level == 1 && e.Name.Equals(rootName, StringComparison.OrdinalIgnoreCase));
+        if (tracked is not null) return tracked;
+
+        var existing = await context.FileClassificationCategories
+            .FirstOrDefaultAsync(c => c.Level == 1 && EF.Functions.Collate(c.Name, "NOCASE") == rootName, token)
+            .ConfigureAwait(false);
+        if (existing is not null) return existing;
+
+        var created = new FileClassificationCategoryEntity { Name = rootName, Level = 1 };
         context.FileClassificationCategories.Add(created);
 
         return created;
