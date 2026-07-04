@@ -162,15 +162,42 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         string normalizedName = name.ToTitleCase();
 
         var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
-            .FirstOrDefault(e => e.Entity.Level == 3 && e.Entity.ParentId == null && e.Entity.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))?.Entity;
+            .Select(e => e.Entity)
+            .Where(e => e.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(e => e.Level)
+            .FirstOrDefault();
         if (tracked is not null) return tracked;
 
         var existing = await context.FileClassificationCategories
-            .FirstOrDefaultAsync(c => c.Level == 3 && c.ParentId == null && c.Name == normalizedName, token)
+            .Where(c => EF.Functions.Collate(c.Name, "NOCASE") == normalizedName)
+            .OrderByDescending(c => c.Level)
+            .ThenBy(c => c.Id)
+            .FirstOrDefaultAsync(token)
             .ConfigureAwait(false);
         if (existing is not null) return existing;
 
-        var created = new FileClassificationCategoryEntity { Name = normalizedName, Level = 3 };
+        var root = await FindOrCreateUnclassifiedRootAsync(context, token).ConfigureAwait(false);
+        var created = new FileClassificationCategoryEntity { Name = normalizedName, Level = 2, Parent = root };
+        context.FileClassificationCategories.Add(created);
+
+        return created;
+    }
+
+    private static async Task<FileClassificationCategoryEntity> FindOrCreateUnclassifiedRootAsync(AppDbContext context, CancellationToken token)
+    {
+        const string rootName = "Unclassified";
+
+        var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
+            .Select(e => e.Entity)
+            .FirstOrDefault(e => e.Level == 1 && e.Name.Equals(rootName, StringComparison.OrdinalIgnoreCase));
+        if (tracked is not null) return tracked;
+
+        var existing = await context.FileClassificationCategories
+            .FirstOrDefaultAsync(c => c.Level == 1 && EF.Functions.Collate(c.Name, "NOCASE") == rootName, token)
+            .ConfigureAwait(false);
+        if (existing is not null) return existing;
+
+        var created = new FileClassificationCategoryEntity { Name = rootName, Level = 1 };
         context.FileClassificationCategories.Add(created);
 
         return created;

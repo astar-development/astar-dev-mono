@@ -269,6 +269,187 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_classifying_with_a_tag_matching_an_existing_hierarchy_category_then_the_existing_category_is_reused()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var parent = new FileClassificationCategoryEntity { Name = "Bum", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(parent);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var existing = new FileClassificationCategoryEntity { Name = "Ass", Level = 2, ParentId = parent.Id };
+        seedCtx.FileClassificationCategories.Add(existing);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-hierarchy-reuse")
+        };
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "ass", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["ass"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Ass", TestContext.Current.CancellationToken);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        categoryCount.ShouldBe(1);
+        junction.CategoryId.ShouldBe(existing.Id);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_tag_matching_multiple_existing_categories_then_the_deepest_level_category_is_reused()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var levelOne = new FileClassificationCategoryEntity { Name = "Boobs", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(levelOne);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var levelTwo = new FileClassificationCategoryEntity { Name = "Boobs", Level = 2, ParentId = levelOne.Id };
+        seedCtx.FileClassificationCategories.Add(levelTwo);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-deepest-reuse")
+        };
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "boobs", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["boobs"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        junction.CategoryId.ShouldBe(levelTwo.Id);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_tag_matching_an_existing_category_with_different_casing_then_no_duplicate_category_is_created()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var parent = new FileClassificationCategoryEntity { Name = "Clothes", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(parent);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var existing = new FileClassificationCategoryEntity { Name = "BATHROBES", Level = 2, ParentId = parent.Id };
+        seedCtx.FileClassificationCategories.Add(existing);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-casing-reuse")
+        };
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "bathrobes", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["bathrobes"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => EF.Functions.Collate(c.Name, "NOCASE") == "Bathrobes", TestContext.Current.CancellationToken);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        categoryCount.ShouldBe(1);
+        junction.CategoryId.ShouldBe(existing.Id);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_tag_matching_no_existing_category_then_a_level_two_category_under_the_unclassified_root_is_created()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-new-tag")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "brand new tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["brand new tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Brand New Tag", TestContext.Current.CancellationToken);
+        var root = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        created.Level.ShouldBe(2);
+        created.ParentId.ShouldBe(root.Id);
+        root.Level.ShouldBe(1);
+        root.ParentId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_new_tag_and_the_unclassified_root_already_exists_then_it_is_reused()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-existing-root")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        var root = new FileClassificationCategoryEntity { Name = "Unclassified", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(root);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "another new tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["another new tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Another New Tag", TestContext.Current.CancellationToken);
+        int rootCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        created.Level.ShouldBe(2);
+        created.ParentId.ShouldBe(root.Id);
+        rootCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_two_new_tags_then_both_share_a_single_unclassified_root()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-two-new-tags")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "first new tag", IncludeInSearch = true });
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "second new tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["first new tag", "second new tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        int rootCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
+        int childCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Level == 2 && c.Name != "Unclassified", TestContext.Current.CancellationToken);
+        rootCount.ShouldBe(1);
+        childCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_resolving_the_category_classification_matching_an_existing_hierarchy_category_then_the_existing_category_is_reused()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var parent = new FileClassificationCategoryEntity { Name = "Person", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(parent);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var existing = new FileClassificationCategoryEntity { Name = "Animals", Level = 2, ParentId = parent.Id };
+        seedCtx.FileClassificationCategories.Add(existing);
+        seedCtx.ScrapeConfiguration.Add(CreateScrapeConfigEntityWithCategory("cat1", "animals", true));
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await sut.LoadPageClassificationDataAsync("cat1", TestContext.Current.CancellationToken);
+
+        result.CategoryClassification.ShouldNotBeNull();
+        result.CategoryClassification.Id.ShouldBe(existing.Id);
+    }
+
+    [Fact]
     public async Task when_exporting_classifications_then_categories_and_keywords_are_returned()
     {
         await using var seedCtx = new AppDbContext(options);

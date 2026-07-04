@@ -16,6 +16,9 @@ public static class FileClassifier
     public static IReadOnlyList<FileClassification> Classify(string remotePath, IReadOnlyList<FileClassificationCategory> mappings)
     {
         var tokens = Tokenise(remotePath);
+        var mappingsById = new Dictionary<FileClassificationCategoryId, FileClassificationCategory>();
+        foreach (var mapping in mappings)
+            _ = mappingsById.TryAdd(mapping.Id, mapping);
         var matches = mappings
             .Where(mapping =>
             {
@@ -28,10 +31,38 @@ public static class FileClassifier
                        tokens.Contains(kw.Replace(" ", string.Empty)) ||
                        words.All(tokens.Contains);
             })
-            .Select(mapping => FileClassificationFactory.Create(mapping.Level == 1 ? mapping.Name : string.Empty, mapping.Level == 2 ? Option.Some(mapping.Name) : Option.None<string>(), mapping.Level == 3 ? Option.Some(mapping.Name) : Option.None<string>(), mapping.IsFamous, mapping.IsInternet))
+            .Select(mapping => BuildWithAncestry(mapping, mappingsById))
+            .OfType<Option<FileClassification>.Some>()
+            .Select(some => some.Value)
             .ToList();
 
         return matches.AsReadOnly();
+    }
+
+    private static Option<FileClassification> BuildWithAncestry(FileClassificationCategory mapping, Dictionary<FileClassificationCategoryId, FileClassificationCategory> mappingsById)
+    {
+        var namesByLevel = new Dictionary<int, string>();
+        var current = mapping;
+
+        while (true)
+        {
+            if (!namesByLevel.TryAdd(current.Level, current.Name))
+                return Option.None<FileClassification>();
+
+            if (current.ParentId is not Option<FileClassificationCategoryId>.Some { Value: var parentId })
+                break;
+
+            if (!mappingsById.TryGetValue(parentId, out current))
+                return Option.None<FileClassification>();
+        }
+
+        if (!namesByLevel.TryGetValue(1, out string? level1) || namesByLevel.Count != mapping.Level)
+            return Option.None<FileClassification>();
+
+        var level2 = namesByLevel.TryGetValue(2, out string? level2Name) ? Option.Some(level2Name) : Option.None<string>();
+        var level3 = namesByLevel.TryGetValue(3, out string? level3Name) ? Option.Some(level3Name) : Option.None<string>();
+
+        return Option.Some(FileClassificationFactory.Create(level1, level2, level3, mapping.IsFamous, mapping.IsInternet));
     }
 
     private static HashSet<string> Tokenise(string remotePath)
