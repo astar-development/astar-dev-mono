@@ -7,7 +7,7 @@ namespace AStar.Dev.Wallpaper.Scrapper.Pages;
 
 public interface ITopWallpapersPageFunctional
 {
-    Task<IReadOnlyCollection<string>> GetImagePageLinks();
+    Task<IReadOnlyCollection<string>> GetImagePageLinksAsync();
     Task<IResponse?> LoadTopWallpapersPageAsync(int pageNumber);
     Task<int> PageInfoAsync();
 }
@@ -35,7 +35,7 @@ public sealed class TopWallpapersPageFunctional(SearchConfiguration searchConfig
         return int.Parse(pages, CultureInfo.InvariantCulture);
     }
 
-    public async Task<IReadOnlyCollection<string>> GetImagePageLinks()
+    public async Task<IReadOnlyCollection<string>> GetImagePageLinksAsync()
     {
         page ??= await playwrightService.ConfigurePlaywrightAsync();
         List<string> wantedLinks = [];

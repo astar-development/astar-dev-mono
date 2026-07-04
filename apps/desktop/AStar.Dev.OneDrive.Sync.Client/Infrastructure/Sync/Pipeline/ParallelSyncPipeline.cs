@@ -31,7 +31,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
         var channel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
 
         var workers = Enumerable.Range(1, workerCount)
-            .Select(workerId => workerFactory.Create(workerId).RunAsync(channel.Reader, accountId, tokenFactory, async (job, success, error) => await tracker.RecordCompletion(job, success, error, onProgress, onJobCompleted).ConfigureAwait(false), ct))
+            .Select(workerId => workerFactory.Create(workerId).RunAsync(channel.Reader, accountId, tokenFactory, async (job, success, error) => await tracker.RecordCompletionAsync(job, success, error, onProgress, onJobCompleted).ConfigureAwait(false), ct))
             .ToList();
 
         int enqueued = 0;

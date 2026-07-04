@@ -28,7 +28,7 @@ public sealed class TopWallpapersPage(IPlaywrightService playwrightService, Sear
         return int.Parse(pages, CultureInfo.InvariantCulture);
     }
 
-    public async Task<IReadOnlyCollection<string>> GetImagePageLinks()
+    public async Task<IReadOnlyCollection<string>> GetImagePageLinksAsync()
     {
         page ??= await playwrightService.ConfigurePlaywrightAsync();
         List<string> wantedLinks = [];

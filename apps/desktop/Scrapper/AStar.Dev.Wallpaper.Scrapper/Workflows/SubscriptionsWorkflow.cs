@@ -57,7 +57,7 @@ public sealed class SubscriptionsWorkflow(
             await configurationSaver.SaveUpdatedConfigurationAsync();
             logger.Information("Getting page {subscriptionPage} (of {totalPagesForSubscriptions}) now.", currentPageNumber, _searchConfiguration.SubscriptionsTotalPages);
             _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(currentPageNumber);
-            var imagePageLinks = await subscriptionsImagesListPage.GetImagePageLinks();
+            var imagePageLinks = await subscriptionsImagesListPage.GetImagePageLinksAsync();
 
             await imagePageService.GetTheImagePagesAsync(imagePageLinks, "", subDirectoryName, ct: ct);
         }
@@ -65,7 +65,7 @@ public sealed class SubscriptionsWorkflow(
         if (pageCount > 0)
         {
             _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(1);
-            await subscriptionsImagesListPage.Clear();
+            await subscriptionsImagesListPage.ClearAsync();
         }
     }
 

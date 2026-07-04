@@ -9,7 +9,7 @@ using SkiaSharp;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Services;
 
-public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository fileDetailRepository, FileClassificationService fileClassificationService, ScrapeConfiguration scrapeConfiguration, TimeProvider timeProvider, Logger logger, ImageBroadcaster imageBroadcaster)
+public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository fileDetailRepository, FileClassificationService fileClassificationService, ScrapeConfiguration scrapeConfiguration, TimeProvider timeProvider, Logger logger, IDirectoryHelper directoryHelper, ImageBroadcaster imageBroadcaster)
 {
     public async Task GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken ct = default)
     {
@@ -47,21 +47,21 @@ public sealed class ImagePageService(ImagePage imagePage, IFileDetailRepository 
             int delay = Random.Shared.Next(scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds, scrapeConfiguration.SearchConfiguration.ImagePauseInSeconds + 4);
             await Task.Delay(TimeSpan.FromSeconds(delay), ct).ConfigureAwait(false);
 
-            var result = await imagePage.GetImageFromPage(pageLink, name).ConfigureAwait(false);
+            var result = await imagePage.GetImageFromPageAsync(pageLink, name).ConfigureAwait(false);
             if (result.Skip || result.ImageUrl is null)
             {
                 logger.Information("Skipping {Name} with Tags: {Tags}", name, string.Join(", ", result.Tags));
                 return;
             }
 
-            var directoryName = DirectoryHelper.CreateDirectoryIfRequired(result.DirectoryName);
+            var directoryName = directoryHelper.CreateDirectoryIfRequired(result.DirectoryName);
 
             string filename = ScrapedFileNameFactory.Create(result.FilePrefix, result.ImageUrl);
 
             string imageNameWithPath = directoryName.Value.CombinePath(filename);
             byte[] image = await ImageRetrieverHelper.GetTheImageAsync(result.ImageUrl).ConfigureAwait(false);
             logger.Information("About to save {filename} to ...{imageNameWithPath} as we don't appear to have it.", filename, imageNameWithPath[^50..]);
-            await ImageSaveHelper.SaveImage(image, imageNameWithPath).ConfigureAwait(false);
+            await ImageSaveHelper.SaveImageAsync(image, imageNameWithPath).ConfigureAwait(false);
             imageBroadcaster.Broadcast(imageNameWithPath);
 
             var fileInfo = new FileInfo(imageNameWithPath);

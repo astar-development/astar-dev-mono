@@ -86,7 +86,7 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
 
     private async Task<(int pageCount, int imageCount, string subDirectoryName)> GetPageInfoAsync()
     {
-        string? text = await GetPageHeader();
+        string? text = await GetPageHeaderAsync();
 
         if (text is null) return (0, 0, string.Empty);
 
@@ -105,7 +105,7 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
     private async Task<IResponse?> GotoPageAsync(string searchString, int pageNumber)
         => await page.GotoAsync($"{searchString}{pageNumber}", new PageGotoOptions { Timeout = 60000, });
 
-    private async Task<string?> GetPageHeader()
+    private async Task<string?> GetPageHeaderAsync()
     {
         string? text;
 
