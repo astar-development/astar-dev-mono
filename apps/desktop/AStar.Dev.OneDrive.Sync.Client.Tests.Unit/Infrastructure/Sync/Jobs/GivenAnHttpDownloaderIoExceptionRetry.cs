@@ -55,7 +55,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         var mockFileSystem = new MockFileSystem();
         var deletedPaths = new List<string>();
 
-        var spyFile = Substitute.For<System.IO.Abstractions.IFile>();
+        var spyFile = Substitute.For<IFile>();
         spyFile.Exists(Arg.Any<string>()).Returns(false);
         spyFile.When(f => f.Delete(Arg.Any<string>()))
             .Do(callInfo => deletedPaths.Add(callInfo.ArgAt<string>(0)));
@@ -64,7 +64,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         spyFile.When(f => f.SetLastWriteTimeUtc(Arg.Any<string>(), Arg.Any<DateTime>()))
             .Do(x => mockFileSystem.File.SetLastWriteTimeUtc(x.ArgAt<string>(0), x.ArgAt<DateTime>(1)));
 
-        var spyFs = Substitute.For<System.IO.Abstractions.IFileSystem>();
+        var spyFs = Substitute.For<IFileSystem>();
         spyFs.File.Returns(spyFile);
         spyFs.FileStream.Returns(mockFileSystem.FileStream);
         spyFs.Directory.Returns(mockFileSystem.Directory);

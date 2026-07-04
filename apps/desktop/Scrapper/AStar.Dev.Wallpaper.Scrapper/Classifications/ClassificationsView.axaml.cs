@@ -29,7 +29,7 @@ public partial class ClassificationsView : Window, IDisposable
 
     private async void OnExportClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {
@@ -46,7 +46,7 @@ public partial class ClassificationsView : Window, IDisposable
 
     private async void OnImportClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {

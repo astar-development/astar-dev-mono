@@ -45,6 +45,6 @@ public static class FileClassificationExtensions
             IncludeInSearch = category.IncludeInSearch,
             Keywords = [.. fileClassifications.Keywords
                 .Where(keyword => keyword.CategoryId == category.Id)
-                .Select(keyword => new DTOs.FileClassificationKeyword { Id = keyword.Id, Keyword = keyword.Keyword })]
+                .Select(keyword => new FileClassificationKeyword { Id = keyword.Id, Keyword = keyword.Keyword })]
         })];
 }

@@ -29,7 +29,7 @@ public partial class TagsView : Window, IDisposable
 
     private async void OnExportTagsClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {
@@ -46,7 +46,7 @@ public partial class TagsView : Window, IDisposable
 
     private async void OnImportTagsClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {

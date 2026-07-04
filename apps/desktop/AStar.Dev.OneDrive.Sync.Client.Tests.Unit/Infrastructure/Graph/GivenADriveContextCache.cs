@@ -45,7 +45,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var ok = result.ShouldBeAssignableTo<Result<(Microsoft.Graph.GraphServiceClient Client, DriveContext Ctx), string>.Ok>()!;
+        var ok = result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok>()!;
         ok.Value.Ctx.DriveId.Value.ShouldBe(AnyDriveId);
         ok.Value.Ctx.RootId.ShouldBe(AnyRootId);
     }
@@ -98,7 +98,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<(Microsoft.Graph.GraphServiceClient Client, DriveContext Ctx), string>.Error>();
+        result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error>();
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<(Microsoft.Graph.GraphServiceClient Client, DriveContext Ctx), string>.Error>();
+        result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error>();
     }
 
     [Fact]

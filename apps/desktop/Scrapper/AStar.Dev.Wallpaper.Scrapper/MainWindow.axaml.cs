@@ -44,6 +44,7 @@ public partial class MainWindow : Window, IDisposable
         Closed += (_, _) => cts?.Dispose();
     }
 
+#pragma warning disable IDE1006 // Naming Styles - event-handler conventions require this non-async naming style
     private async void OnEditConfigurationClicked(object? sender, RoutedEventArgs e)
         => await scrapeConfigViewFactory().ShowDialog(this);
 
@@ -101,7 +102,7 @@ public partial class MainWindow : Window, IDisposable
 
     private async void OnScrapeSiteFunctionalClicked(object? sender, RoutedEventArgs e)
         => _ = await ResetCancellationTokenSource()
-            .Match<CancellationToken, Exception, Result<CancellationToken, string>>(
+            .Match(
                 onSuccess: DisableControlsAndClearStatus,
                 onFailure: ex =>
                 {
@@ -115,6 +116,7 @@ public partial class MainWindow : Window, IDisposable
             .BindAsync(page => searchWorkflowFunctional.RunAsync(logger, cts!.Token))
             .TapAsync(_ => logger.Information("Scrape completed..."))
             .EnsureAsync(() => ResetUI());
+#pragma warning restore IDE1006 // Naming Styles
 
     private Result<CancellationToken, Exception> ResetCancellationTokenSource()
     {

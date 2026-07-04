@@ -72,7 +72,7 @@ public sealed class ImagePageServiceFunctional(IDbContextFactory<AppDbContext> d
     //     var imageNameWithPath = directoryName.Value.CombinePath(fileNameCombined.Replace(' ', '-')).ToLowerInvariant();
     //     var image = await ImageRetrieverHelper.GetTheImageAsync(result.ImageUrl);
     //     logger.Information("About to save {filename} as {imageNameWithPath} as we don't appear to have it.", filename, imageNameWithPath);
-    //     await ImageSaveHelper.SaveImage(image, imageNameWithPath);
+    //     await ImageSaveHelper.SaveImageAsync(image, imageNameWithPath);
 
     //     var fileInfo = new FileInfo(imageNameWithPath);
     //     var fileDetail = new FileDetail

@@ -11,14 +11,14 @@ public sealed class ImagePage(IPlaywrightService playwrightService, ScrapeConfig
 {
     private IPage page = null!;
 
-    public async Task<ImagePageResult> GetImageFromPage(string link, string categoryName)
+    public async Task<ImagePageResult> GetImageFromPageAsync(string link, string categoryName)
     {
         page ??= await playwrightService.ConfigurePlaywrightAsync();
         _ = await page.GotoAsync(link);
 
         var tagLocators = await page.Locator(".tagname").AllAsync();
         string directoryName = scrapeConfiguration.ScrapeDirectories.BaseSaveDirectory.CombinePath(categoryName.Replace(' ', '-'));
-        var (directoryNameUpdated, filePrefix, skip, imageTags) = await ProcessTheImageTags(tagLocators, [directoryName]);
+        var (directoryNameUpdated, filePrefix, skip, imageTags) = await ProcessTheImageTagsAsync(tagLocators, [directoryName]);
 
         if (skip) return new ImagePageResult(null, directoryNameUpdated, filePrefix, skip, imageTags);
 
@@ -28,12 +28,12 @@ public sealed class ImagePage(IPlaywrightService playwrightService, ScrapeConfig
         return new ImagePageResult(sourcePath, directoryNameUpdated, filePrefix, skip, imageTags);
     }
 
-    private async Task<(List<string> directoryName, string filePrefix, bool skip, IReadOnlyList<string> tags)> ProcessTheImageTags(IEnumerable<ILocator> tags, List<string> directoryName)
+    private async Task<(List<string> directoryName, string filePrefix, bool skip, IReadOnlyList<string> tags)> ProcessTheImageTagsAsync(IEnumerable<ILocator> tags, List<string> directoryName)
     {
         bool skip = false;
         string filePrefix = string.Empty;
 
-        var tagData = await Task.WhenAll(tags.Select(GetTags));
+        var tagData = await Task.WhenAll(tags.Select(GetTagsAsync));
         var imageTags = tagData.Select(t => t.Tag).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
 
         await scrapedTagRepository.SaveAsync([.. tagData.Where(t => !string.IsNullOrWhiteSpace(t.Category))]);
@@ -76,7 +76,7 @@ public sealed class ImagePage(IPlaywrightService playwrightService, ScrapeConfig
     private bool UpdateToTagIsNotRequired(string tagToUse, string tagText, string filePrefix)
         => TagIsNotCelebEtc(tagToUse) || FilePrefixDoesNotNeedUpdating(tagText, filePrefix);
 
-    private static async Task<TagData> GetTags(ILocator tag)
+    private static async Task<TagData> GetTagsAsync(ILocator tag)
     {
         string textTask = await tag.InnerTextAsync();
         string? attrTask = await tag.GetAttributeAsync("original-title");

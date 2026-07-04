@@ -169,7 +169,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     return new Result<string?, string>.Ok(null);
 
                 if (response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
-                    return await GetUploadedDocumentId(response, ct).ConfigureAwait(false);
+                    return await GetUploadedDocumentIdAsync(response, ct).ConfigureAwait(false);
 
                 _ = response.EnsureSuccessStatusCode();
 
@@ -185,7 +185,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         }
     }
 
-    private static async Task<Result<string?, string>> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<Result<string?, string>> GetUploadedDocumentIdAsync(HttpResponseMessage response, CancellationToken ct)
     {
         string json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         using var doc = System.Text.Json.JsonDocument.Parse(json);

@@ -38,7 +38,7 @@ public sealed class SubscriptionsImagesListPage(IPlaywrightService playwrightSer
         return (Convert.ToInt32(Math.Ceiling(imageCount)), subDirectoryName);
     }
 
-    public async Task<IReadOnlyCollection<string>> GetImagePageLinks()
+    public async Task<IReadOnlyCollection<string>> GetImagePageLinksAsync()
     {
         page ??= await playwrightService.ConfigurePlaywrightAsync();
         List<string> wantedLinks = [];
@@ -54,7 +54,7 @@ public sealed class SubscriptionsImagesListPage(IPlaywrightService playwrightSer
         return [.. wantedLinks.Take(24)];
     }
 
-    public async Task Clear()
+    public async Task ClearAsync()
         => await page.Locator("div")
                      .Filter(new LocatorFilterOptions { HasText = " Clear All Subscriptions", })
                      .GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = " Clear All Subscriptions", })

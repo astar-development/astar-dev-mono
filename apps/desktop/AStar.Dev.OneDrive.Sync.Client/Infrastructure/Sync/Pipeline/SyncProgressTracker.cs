@@ -33,7 +33,7 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
         }
     }
 
-    internal async Task RecordCompletion(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted)
+    internal async Task RecordCompletionAsync(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted)
     {
         int completedSoFar;
         bool shouldReportProgress;

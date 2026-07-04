@@ -4,7 +4,7 @@ namespace AStar.Dev.Wallpaper.Scrapper.Support;
 
 internal sealed class ImageSaveHelper
 {
-    public static async Task SaveImage(byte[] image, string imageNameWithPath)
+    public static async Task SaveImageAsync(byte[] image, string imageNameWithPath)
     {
         imageNameWithPath = imageNameWithPath.CleanPath();
 

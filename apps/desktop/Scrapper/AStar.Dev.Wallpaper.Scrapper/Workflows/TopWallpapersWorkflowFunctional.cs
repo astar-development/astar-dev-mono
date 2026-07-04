@@ -51,7 +51,7 @@ public sealed class TopWallpapersWorkflowFunctional(
             _searchConfiguration = _searchConfiguration with { TopWallpapersStartingPageNumber = currentPageNumber };
             await configurationSaver.SaveUpdatedConfigurationAsync();
             _ = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
-            var imagePageLinks = await topWallpapersPage.GetImagePageLinks();
+            var imagePageLinks = await topWallpapersPage.GetImagePageLinksAsync();
 
             await imagePageService.GetTheImagePagesAsync(imagePageLinks, "", "", ct: ct);
         }

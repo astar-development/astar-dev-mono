@@ -24,7 +24,7 @@ public sealed class SearchWorkflow(
         try
         {
             var searchCategories = FilterSearchCategories([.. _searchConfiguration.SearchCategories]);
-            await ProcessSearchCategories([.. _searchConfiguration.SearchCategories], ct);
+            await ProcessSearchCategoriesAsync([.. _searchConfiguration.SearchCategories], ct);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -33,7 +33,7 @@ public sealed class SearchWorkflow(
         }
     }
 
-    private async Task ProcessSearchCategories(List<Category> searchCategories, CancellationToken ct)
+    private async Task ProcessSearchCategoriesAsync(List<Category> searchCategories, CancellationToken ct)
     {
         foreach (var searchCategory in searchCategories)
         {
@@ -61,7 +61,7 @@ public sealed class SearchWorkflow(
             logger.Debug("Visiting {Category} from page {StartingPage} now...", searchCategory.Name, startingPage);
             _scrapeDirectories = UpdateSubDirectoryIfRequired(subDirectoryName);
 
-            await ProcessAllCategoryPages(searchCategory, combinedSearchString, ct);
+            await ProcessAllCategoryPagesAsync(searchCategory, combinedSearchString, ct);
 
             searchCategory.LastKnownImageCount = imageCount;
             searchCategory.LastPageVisited = 0;
@@ -69,7 +69,7 @@ public sealed class SearchWorkflow(
         }
     }
 
-    private async Task ProcessAllCategoryPages(Category searchCategory, string combinedSearchString, CancellationToken ct)
+    private async Task ProcessAllCategoryPagesAsync(Category searchCategory, string combinedSearchString, CancellationToken ct)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();

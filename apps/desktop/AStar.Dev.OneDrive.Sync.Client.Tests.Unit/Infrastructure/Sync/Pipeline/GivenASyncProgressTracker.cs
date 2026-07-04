@@ -33,7 +33,7 @@ public sealed class GivenASyncProgressTracker
     private static async Task CompleteJobs(SyncProgressTracker sut, int count, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task>? onJobCompleted = null)
     {
         for (int i = 0; i < count; i++)
-            await sut.RecordCompletion(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => Task.CompletedTask));
+            await sut.RecordCompletionAsync(MakeDownloadJob($"folder/file{i}.txt"), true, null, onProgress, onJobCompleted ?? (_ => Task.CompletedTask));
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public sealed class GivenASyncProgressTracker
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
     }
@@ -53,7 +53,7 @@ public sealed class GivenASyncProgressTracker
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
+        await sut.RecordCompletionAsync(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Completed);
     }
@@ -64,7 +64,7 @@ public sealed class GivenASyncProgressTracker
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), false, "download error", _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
+        await sut.RecordCompletionAsync(MakeDownloadJob(), false, "download error", _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Failed);
     }
@@ -75,7 +75,7 @@ public sealed class GivenASyncProgressTracker
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob(), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents.Count.ShouldBe(1);
     }
@@ -86,7 +86,7 @@ public sealed class GivenASyncProgressTracker
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
+        await sut.RecordCompletionAsync(MakeDownloadJob(), true, null, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; });
 
         completedEvents.Count.ShouldBe(1);
     }
@@ -97,8 +97,8 @@ public sealed class GivenASyncProgressTracker
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateTracker(2);
 
-        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
-        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/1.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/2.txt"), true, null, progressEvents.Add, _ => Task.CompletedTask);
 
         progressEvents.Last().SyncState.ShouldBe(SyncState.Syncing);
     }
@@ -185,8 +185,8 @@ public sealed class GivenASyncProgressTracker
     {
         var sut = CreateTracker(2);
 
-        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), true, null, _ => { }, _ => Task.CompletedTask);
-        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), true, null, _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/1.txt"), true, null, _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/2.txt"), true, null, _ => { }, _ => Task.CompletedTask);
 
         sut.FailedCount.ShouldBe(0);
     }
@@ -196,7 +196,7 @@ public sealed class GivenASyncProgressTracker
     {
         var sut = CreateTracker(1);
 
-        await sut.RecordCompletion(MakeDownloadJob(), false, "upload error", _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob(), false, "upload error", _ => { }, _ => Task.CompletedTask);
 
         sut.FailedCount.ShouldBe(1);
     }
@@ -206,8 +206,8 @@ public sealed class GivenASyncProgressTracker
     {
         var sut = CreateTracker(2);
 
-        await sut.RecordCompletion(MakeDownloadJob("a/1.txt"), false, "error-1", _ => { }, _ => Task.CompletedTask);
-        await sut.RecordCompletion(MakeDownloadJob("a/2.txt"), false, "error-2", _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/1.txt"), false, "error-1", _ => { }, _ => Task.CompletedTask);
+        await sut.RecordCompletionAsync(MakeDownloadJob("a/2.txt"), false, "error-2", _ => { }, _ => Task.CompletedTask);
 
         sut.FailedCount.ShouldBe(2);
     }
@@ -218,6 +218,6 @@ public sealed class GivenASyncProgressTracker
         var sut = CreateTracker(1);
 
         await Should.ThrowAsync<ArgumentNullException>(() =>
-            sut.RecordCompletion(MakeDownloadJob(), false, null, _ => { }, _ => Task.CompletedTask));
+            sut.RecordCompletionAsync(MakeDownloadJob(), false, null, _ => { }, _ => Task.CompletedTask));
     }
 }

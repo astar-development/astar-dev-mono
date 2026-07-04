@@ -65,7 +65,7 @@ public partial class App : Application
                     .ReadFrom.Configuration(sp.GetRequiredService<IConfiguration>())
                     .CreateLogger();
             })
-            .AddSingleton<Serilog.ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
+            .AddSingleton<ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
             .AddDbContextFactory<AppDbContext>(options =>
             {
                 string dbPath = "astar-dev-onedrive-sync".ApplicationDirectory().CombinePath("astar-dev-onedrive-sync.db");
@@ -105,7 +105,8 @@ public partial class App : Application
             .AddTransient<ScrapeConfigurationService>()
             .AddTransient<ImagePageService>()
             .AddTransient<ImagePage>()
-            .AddTransient<TimeProvider>(_ => TimeProvider.System)
+            .AddSingleton<IDirectoryHelper, DirectoryHelper>()
+            .AddTransient(_ => TimeProvider.System)
             .AddTransient<Func<ScrapeConfigurationView>>(sp => () => sp.GetRequiredService<ScrapeConfigurationView>())
             .AddTransient<Func<ClassificationsView>>(sp => () => sp.GetRequiredService<ClassificationsView>())
             .AddTransient<Func<TagsView>>(sp => () => sp.GetRequiredService<TagsView>())
