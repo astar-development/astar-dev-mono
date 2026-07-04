@@ -162,11 +162,17 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         string normalizedName = name.ToTitleCase();
 
         var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
-            .FirstOrDefault(e => e.Entity.Level == 3 && e.Entity.ParentId == null && e.Entity.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))?.Entity;
+            .Select(e => e.Entity)
+            .Where(e => e.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(e => e.Level)
+            .FirstOrDefault();
         if (tracked is not null) return tracked;
 
         var existing = await context.FileClassificationCategories
-            .FirstOrDefaultAsync(c => c.Level == 3 && c.ParentId == null && c.Name == normalizedName, token)
+            .Where(c => EF.Functions.Collate(c.Name, "NOCASE") == normalizedName)
+            .OrderByDescending(c => c.Level)
+            .ThenBy(c => c.Id)
+            .FirstOrDefaultAsync(token)
             .ConfigureAwait(false);
         if (existing is not null) return existing;
 

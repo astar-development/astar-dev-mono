@@ -291,9 +291,9 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, ["ass"], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(TestContext.Current.CancellationToken);
+        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Ass", TestContext.Current.CancellationToken);
         var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
-        categoryCount.ShouldBe(2);
+        categoryCount.ShouldBe(1);
         junction.CategoryId.ShouldBe(existing.Id);
     }
 
@@ -347,9 +347,9 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await sut.ClassifyAsync(fileDetail, pageData, ["bathrobes"], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
-        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(TestContext.Current.CancellationToken);
+        int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => EF.Functions.Collate(c.Name, "NOCASE") == "Bathrobes", TestContext.Current.CancellationToken);
         var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
-        categoryCount.ShouldBe(2);
+        categoryCount.ShouldBe(1);
         junction.CategoryId.ShouldBe(existing.Id);
     }
 
