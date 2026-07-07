@@ -22,4 +22,24 @@ public class GivenImplicitConversions
         result.ShouldBeOfType<Fail<int, string>>();
         result.ShouldBe(new Fail<int, string>("bad"));
     }
+
+    [Fact]
+    public void when_assigning_exceptional_value_then_creates_success()
+    {
+        Exceptional<int> exceptional = 42;
+
+        exceptional.ShouldBeOfType<Success<int>>();
+        exceptional.ShouldBe(new Success<int>(42));
+    }
+
+    [Fact]
+    public void when_assigning_exceptional_exception_then_creates_failure()
+    {
+        var exception = new InvalidOperationException("bad");
+
+        Exceptional<int> exceptional = exception;
+
+        exceptional.ShouldBeOfType<Failure<int>>();
+        exceptional.ShouldBe(new Failure<int>(exception));
+    }
 }

@@ -1,6 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Wallpaper.Scrapper.Classifications;
 using AStar.Dev.Wallpaper.Scrapper.Dialogs;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.ScrapeConfigurationEditor;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using AStar.Dev.Wallpaper.Scrapper.Support;
@@ -21,19 +22,19 @@ public partial class MainWindow : Window, IDisposable
     private readonly Func<ClassificationsView> classificationsViewFactory;
     private readonly Func<TagsView> tagsViewFactory;
     private readonly ILogger logger;
-    private readonly SearchWorkflowFunctional searchWorkflowFunctional;
+    private readonly SearchWorkflow searchWorkflow;
     private readonly LogBroadcaster logBroadcaster;
     private readonly ImageBroadcaster imageBroadcaster;
     private readonly IDatabaseResetService databaseResetService;
     private CancellationTokenSource? cts;
 
-    public MainWindow(Func<ScrapeConfigurationView> scrapeConfigViewFactory, Func<ClassificationsView> classificationsViewFactory, Func<TagsView> tagsViewFactory, SearchWorkflowFunctional searchWorkflowFunctional, ILogger logger, LogBroadcaster logBroadcaster, ImageBroadcaster imageBroadcaster, IDatabaseResetService databaseResetService)
+    public MainWindow(Func<ScrapeConfigurationView> scrapeConfigViewFactory, Func<ClassificationsView> classificationsViewFactory, Func<TagsView> tagsViewFactory, SearchWorkflow searchWorkflow, ILogger logger, LogBroadcaster logBroadcaster, ImageBroadcaster imageBroadcaster, IDatabaseResetService databaseResetService)
     {
         this.scrapeConfigViewFactory = scrapeConfigViewFactory;
         this.classificationsViewFactory = classificationsViewFactory;
         this.tagsViewFactory = tagsViewFactory;
         this.logger = logger;
-        this.searchWorkflowFunctional = searchWorkflowFunctional;
+        this.searchWorkflow = searchWorkflow;
         this.logBroadcaster = logBroadcaster;
         this.imageBroadcaster = imageBroadcaster;
         this.databaseResetService = databaseResetService;
@@ -101,21 +102,23 @@ public partial class MainWindow : Window, IDisposable
     }
 
     private async void OnScrapeSiteFunctionalClicked(object? sender, RoutedEventArgs e)
-        => _ = await ResetCancellationTokenSource()
-            .Match(
-                onSuccess: DisableControlsAndClearStatus,
-                onFailure: ex =>
-                {
-                    logger.Error(ex, "Failed to reset cancellation token source");
-                    UpdateStatus($"Error: {ex.Message}");
-                    return ex.Message;
-                }
-            )
-            .Tap(_ => logger.Information("Configuring Playwright..."))
-            .Tap(_ => logger.Information("Starting scrape..."))
-            .BindAsync(page => searchWorkflowFunctional.RunAsync(logger, cts!.Token))
-            .TapAsync(_ => logger.Information("Scrape completed..."))
-            .EnsureAsync(() => ResetUI());
+    {
+        try
+        {
+            _ = await ScrapeSiteWorkflowDecision.DecideAsync(
+                ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
+                RunScrapeWorkflowAsync
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            UpdateStatus("Scrape cancelled.");
+        }
+        finally
+        {
+            ResetUI();
+        }
+    }
 #pragma warning restore IDE1006 // Naming Styles
 
     private Result<CancellationToken, Exception> ResetCancellationTokenSource()
@@ -125,13 +128,27 @@ public partial class MainWindow : Window, IDisposable
         return cts.Token;
     }
 
-    private Result<CancellationToken, string> DisableControlsAndClearStatus(CancellationToken ct = default)
+    private void LogSetupFailure(Exception exception)
+    {
+        logger.Error(exception, "Failed to reset cancellation token source");
+        UpdateStatus($"Error: {exception.Message}");
+    }
+
+    private void DisableControlsAndClearStatus(CancellationToken ct)
     {
         ScrapeSiteNewButton.IsEnabled = false;
         CancelButton.IsEnabled = true;
         StatusLabel.Text = string.Empty;
+    }
 
-        return ct;
+    private Task<Result<Unit, string>> RunScrapeWorkflowAsync(CancellationToken ct)
+    {
+        logger.Information("Configuring Playwright...");
+        logger.Information("Starting scrape...");
+
+        return searchWorkflow.RunAsync(ct)
+            .TapAsync(_ => logger.Information("Scrape completed..."))
+            .ToStringError();
     }
 
     private void ResetUI()
@@ -168,19 +185,19 @@ public partial class MainWindow : Window, IDisposable
     private static Bitmap CreateRoundedBitmap(string imagePath)
     {
         using var original = SKBitmap.Decode(imagePath);
-        using var surface = SKSurface.Create(new SKImageInfo(500, 500, SKColorType.Rgba8888, SKAlphaType.Premul));
+        using var surface = SKSurface.Create(new SKImageInfo(ScrapperConstants.ThumbnailSize, ScrapperConstants.ThumbnailSize, SKColorType.Rgba8888, SKAlphaType.Premul));
         var canvas = surface.Canvas;
         canvas.Clear(SKColors.Transparent);
 
-        float scale = Math.Min(500f / original.Width, 500f / original.Height);
+        float scale = Math.Min((float)ScrapperConstants.ThumbnailSize / original.Width, (float)ScrapperConstants.ThumbnailSize / original.Height);
         float drawWidth = original.Width * scale;
         float drawHeight = original.Height * scale;
-        float offsetX = (500f - drawWidth) / 2f;
-        float offsetY = (500f - drawHeight) / 2f;
+        float offsetX = (ScrapperConstants.ThumbnailSize - drawWidth) / 2f;
+        float offsetY = (ScrapperConstants.ThumbnailSize - drawHeight) / 2f;
         var destRect = new SKRect(offsetX, offsetY, offsetX + drawWidth, offsetY + drawHeight);
 
         using var clipPath = new SKPath();
-        clipPath.AddRoundRect(destRect, 20, 20);
+        clipPath.AddRoundRect(destRect, ScrapperConstants.ThumbnailCornerRadius, ScrapperConstants.ThumbnailCornerRadius);
         canvas.ClipPath(clipPath, antialias: true);
 
         var srcRect = new SKRect(0, 0, original.Width, original.Height);
@@ -195,12 +212,12 @@ public partial class MainWindow : Window, IDisposable
 
     private static Bitmap CreatePlaceholderBitmap()
     {
-        using var surface = SKSurface.Create(new SKImageInfo(500, 500, SKColorType.Rgba8888, SKAlphaType.Premul));
+        using var surface = SKSurface.Create(new SKImageInfo(ScrapperConstants.ThumbnailSize, ScrapperConstants.ThumbnailSize, SKColorType.Rgba8888, SKAlphaType.Premul));
         var canvas = surface.Canvas;
         canvas.Clear(SKColors.Transparent);
 
         using var bgPaint = new SKPaint { Color = new SKColor(60, 60, 60), IsAntialias = true };
-        canvas.DrawRoundRect(new SKRoundRect(new SKRect(0, 0, 500, 500), 20), bgPaint);
+        canvas.DrawRoundRect(new SKRoundRect(new SKRect(0, 0, ScrapperConstants.ThumbnailSize, ScrapperConstants.ThumbnailSize), ScrapperConstants.ThumbnailCornerRadius), bgPaint);
 
         using var font = new SKFont(SKTypeface.Default, 28);
         using var textPaint = new SKPaint { Color = SKColors.LightGray, IsAntialias = true };

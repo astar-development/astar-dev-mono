@@ -19,6 +19,8 @@
   <ItemGroup>
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-24c8-4792-22hx" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-q6rr-fm2g-g5x8" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-6q7j-xr26-3h2c" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,6 +3,7 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.DTOs;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using Serilog;
 using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scrapper.DTOs.FileClassification;
@@ -29,13 +30,13 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         }
     }
 
-    public Result<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string> ImportFileClassificationsFromFile()
+    public Result<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError> ImportFileClassificationsFromFile()
     {
         if (!fileSystem.File.Exists(ApplicationMetadata.FileClassificationsExportFilePath))
         {
             logger.Error("File not found: {FilePath}", ApplicationMetadata.FileClassificationsExportFilePath);
 
-            return $"Error: File not found - {ApplicationMetadata.FileClassificationsExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.FileClassificationsExportFilePath, $"Error: File not found - {ApplicationMetadata.FileClassificationsExportFilePath}");
         }
 
         string classificationsJson = fileSystem.File.ReadAllText(ApplicationMetadata.FileClassificationsExportFilePath);
@@ -45,10 +46,12 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         {
             logger.Error("Failed to deserialize classifications from file: {FilePath}", ApplicationMetadata.FileClassificationsExportFilePath);
 
-            return $"Error: Failed to deserialize classifications from file - {ApplicationMetadata.FileClassificationsExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.FileClassificationsExportFilePath, $"Error: Failed to deserialize classifications from file - {ApplicationMetadata.FileClassificationsExportFilePath}");
         }
 
-        return classifications.ToDomain();
+        return FileClassificationDtoValidator.ValidateAll(classifications)
+            .ToResult<IReadOnlyList<FileClassificationDto>, ScrapeError>(errors => ScrapeErrorFactory.CreateValidationFailed(errors, "Classification import validation failed."))
+            .Map(validDtos => validDtos.ToList().ToDomain());
     }
 
     public void ExportScrapeConfigurationToFile(ScrapeConfigurationEntity entity)
@@ -81,13 +84,13 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         }
     }
 
-    public Result<ScrapeConfigurationEntity, string> ImportScrapeConfigurationFromFile()
+    public Result<ScrapeConfigurationEntity, ScrapeError> ImportScrapeConfigurationFromFile()
     {
         if (!fileSystem.File.Exists(ApplicationMetadata.ScrapeConfigurationExportFilePath))
         {
             logger.Error("File not found: {FilePath}", ApplicationMetadata.ScrapeConfigurationExportFilePath);
 
-            return $"Error: File not found - {ApplicationMetadata.ScrapeConfigurationExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.ScrapeConfigurationExportFilePath, $"Error: File not found - {ApplicationMetadata.ScrapeConfigurationExportFilePath}");
         }
 
         string json = fileSystem.File.ReadAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath);
@@ -97,19 +100,19 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         {
             logger.Error("Failed to deserialize scrape configuration from file: {FilePath}", ApplicationMetadata.ScrapeConfigurationExportFilePath);
 
-            return $"Error: Failed to deserialize scrape configuration from file - {ApplicationMetadata.ScrapeConfigurationExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.ScrapeConfigurationExportFilePath, $"Error: Failed to deserialize scrape configuration from file - {ApplicationMetadata.ScrapeConfigurationExportFilePath}");
         }
 
         return dto.ToDomain();
     }
 
-    public Result<List<ScrapedTagDomain>, string> ImportScrapedTagsFromFile()
+    public Result<List<ScrapedTagDomain>, ScrapeError> ImportScrapedTagsFromFile()
     {
         if (!fileSystem.File.Exists(ApplicationMetadata.ScrapedTagsExportFilePath))
         {
             logger.Error("File not found: {FilePath}", ApplicationMetadata.ScrapedTagsExportFilePath);
 
-            return $"Error: File not found - {ApplicationMetadata.ScrapedTagsExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.ScrapedTagsExportFilePath, $"Error: File not found - {ApplicationMetadata.ScrapedTagsExportFilePath}");
         }
 
         string tagsJson = fileSystem.File.ReadAllText(ApplicationMetadata.ScrapedTagsExportFilePath);
@@ -119,7 +122,7 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         {
             logger.Error("Failed to deserialize tags from file: {FilePath}", ApplicationMetadata.ScrapedTagsExportFilePath);
 
-            return $"Error: Failed to deserialize tags from file - {ApplicationMetadata.ScrapedTagsExportFilePath}";
+            return ScrapeErrorFactory.CreateImportFailed(ApplicationMetadata.ScrapedTagsExportFilePath, $"Error: Failed to deserialize tags from file - {ApplicationMetadata.ScrapedTagsExportFilePath}");
         }
 
         return tags.ToDomain(timeProvider);

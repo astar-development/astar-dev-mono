@@ -1,59 +1,68 @@
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Pages;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using AStar.Dev.Wallpaper.Scrapper.Support;
-using Microsoft.Playwright;
-using Serilog.Core;
+using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Workflows;
 
 public sealed class TopWallpapersWorkflow(
-    TopWallpapersPage topWallpapersPage,
+    ITopWallpapersPage topWallpapersPage,
     ImagePageService imagePageService,
-    SearchConfiguration searchConfiguration,
+    ScrapeConfiguration scrapeConfiguration,
     ConfigurationSaver configurationSaver,
-    Logger logger)
+    PagedScrapeRunner pagedScrapeRunner,
+    ILogger logger)
 {
-    private SearchConfiguration _searchConfiguration = searchConfiguration;
+    private const int FirstPageNumber = 1;
+    private const string NoCategory = "";
 
-    public async Task RunAsync(CancellationToken ct = default)
+    private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConfiguration;
+
+    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken ct = default)
+        => RunTopWallpapersAsync(ct).LogFailure(logger);
+
+    private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken ct)
     {
-        try
-        {
-            await GetTheNewTopWallpapersAsync(ct);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            logger.Error(exception.GetBaseException().Message);
-            throw;
-        }
+        await LoadStartingPageAsync().ConfigureAwait(false);
+
+        return await topWallpapersPage.PageInfoAsync()
+            .BindAsync(pageCount => ProcessTopWallpapersAsync(pageCount, ct))
+            .ConfigureAwait(false);
     }
 
-    private async Task GetTheNewTopWallpapersAsync(CancellationToken ct)
+    private async Task LoadStartingPageAsync()
     {
-        var pageDetails = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
+        var loadResult = await topWallpapersPage.LoadTopWallpapersPageAsync(searchConfiguration.TopWallpapersStartingPageNumber).ConfigureAwait(false);
+        var loadedSuccessfully = loadResult.Match(_ => true, _ => false);
 
-        if (pageDetails is { Ok: false, }) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(1);
+        if (!loadedSuccessfully) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber).ConfigureAwait(false);
+    }
 
-        int pageCount = await topWallpapersPage.PageInfoAsync();
+    private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(int pageCount, CancellationToken ct)
+    {
         logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", pageCount);
-        _searchConfiguration = _searchConfiguration with { TopWallpapersTotalPages = pageCount };
 
-        await configurationSaver.SaveUpdatedConfigurationAsync();
+        if (searchConfiguration.TopWallpapersTotalPages != pageCount) searchConfiguration = searchConfiguration with { TopWallpapersTotalPages = pageCount, };
 
-        for (int currentPageNumber = _searchConfiguration.TopWallpapersStartingPageNumber;
-            currentPageNumber <= _searchConfiguration.TopWallpapersTotalPages;
-            currentPageNumber++)
-        {
-            ct.ThrowIfCancellationRequested();
-            int delay = Random.Shared.Next(_searchConfiguration.ImagePauseInSeconds, _searchConfiguration.ImagePauseInSeconds + 4);
-            await Task.Delay(TimeSpan.FromSeconds(delay), ct);
-            _searchConfiguration = _searchConfiguration with { TopWallpapersStartingPageNumber = currentPageNumber };
-            await configurationSaver.SaveUpdatedConfigurationAsync();
-            _ = await topWallpapersPage.LoadTopWallpapersPageAsync(_searchConfiguration.TopWallpapersStartingPageNumber);
-            var imagePageLinks = await topWallpapersPage.GetImagePageLinksAsync();
+        await configurationSaver.SaveUpdatedConfigurationAsync().ConfigureAwait(false);
 
-            await imagePageService.GetTheImagePagesAsync(imagePageLinks, "", "", ct: ct);
-        }
+        var plan = PagedScrapePlanFactory.Create(
+            searchConfiguration.TopWallpapersStartingPageNumber,
+            searchConfiguration.TopWallpapersTotalPages,
+            _ => { },
+            LoadTopWallpapersPageAsync,
+            topWallpapersPage.GetImagePageLinksAsync,
+            (links, innerCt) => imagePageService.GetTheImagePagesAsync(links, NoCategory, NoCategory, innerCt));
+
+        return await pagedScrapeRunner.RunAsync(plan, ct).ConfigureAwait(false);
+    }
+
+    private async Task<Result<Unit, ScrapeError>> LoadTopWallpapersPageAsync(int pageNumber)
+    {
+        _ = await topWallpapersPage.LoadTopWallpapersPageAsync(pageNumber).ConfigureAwait(false);
+
+        return Unit.Value;
     }
 }

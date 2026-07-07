@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.IO.Abstractions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scrapper.Classifications;
 using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Pages;
@@ -34,7 +34,7 @@ public partial class App : Application
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
-    public override void OnFrameworkInitializationCompleted()
+    public override async void OnFrameworkInitializationCompleted()
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
         {
@@ -44,12 +44,13 @@ public partial class App : Application
         builder.Configuration.AddUserSecrets<App>(optional: true, reloadOnChange: true);
 
         builder.Services
-            .AddSingleton(sp =>
+            .AddTransient(sp =>
             {
                 using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
                 return ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
             })
+            .AddTransient(sp => sp.GetRequiredService<ScrapeConfiguration>().SearchConfiguration)
             .AddSingleton<LogBroadcaster>()
             .AddSingleton<ImageBroadcaster>()
             .AddSingleton(sp =>
@@ -66,17 +67,13 @@ public partial class App : Application
                     .CreateLogger();
             })
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
-            .AddDbContextFactory<AppDbContext>(options =>
-            {
-                string dbPath = "astar-dev-onedrive-sync".ApplicationDirectory().CombinePath("astar-dev-onedrive-sync.db");
-                options.UseSqlite($"Data Source={dbPath}");
-            })
-            .AddSingleton(sp =>
+            .AddDbContextFactory<AppDbContext>(options => options.UseSqlite(SqliteConnectionStringProvider.Get(builder.Configuration)))
+            .AddTransient(sp =>
             {
                 using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsToIgnoreCompletely(ctx);
             })
-            .AddSingleton(sp =>
+            .AddTransient(sp =>
             {
                 using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsTextToIgnore(ctx);
@@ -87,46 +84,60 @@ public partial class App : Application
             .AddTransient<FileClassificationService>()
             .AddTransient<IScrapedTagService, ScrapedTagService>()
             .AddTransient<IDatabaseResetService, DatabaseResetService>()
-            .AddTransient<IImagePageResultFunctional, ImagePageResultFunctional>()
-            .AddTransient<ConfigurationSaverFunctional>()
             .AddTransient<ConfigurationSaver>()
             .AddTransient<DatabaseInitializationService>()
             .AddTransient<ScrapeConfigurationViewModel>()
-            .AddTransient<TopWallpapersWorkflowFunctional>()
-            .AddTransient<ScrapeConfigurationView>()
-            .AddTransient<ClassificationsView>()
-            .AddTransient<TagsView>()
+            .AddViewFactory<ScrapeConfigurationView>()
+            .AddViewFactory<ClassificationsView>()
+            .AddViewFactory<TagsView>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
-            .AddTransient<IImagePageServiceFunctional, ImagePageServiceFunctional>()
-            .AddTransient<SearchWorkflowFunctional>()
-            .AddTransient<SearchResultsPageFunctional>()
+            .AddTransient<SearchWorkflow>()
+            .AddTransient<SearchResultsPage>()
+            .AddTransient<PagedScrapeRunner>()
+            .AddTransient<SubscriptionsImagesListPage>()
+            .AddTransient<SubscriptionsWorkflow>()
+            .AddTransient<ITopWallpapersPage, TopWallpapersPage>()
+            .AddTransient<TopWallpapersWorkflow>()
             .AddTransient<IImportExportService, ImportExportService>()
             .AddTransient<IFileSystem, RealFileSystem>()
             .AddTransient<ScrapeConfigurationService>()
             .AddTransient<ImagePageService>()
             .AddTransient<ImagePage>()
             .AddSingleton<IDirectoryHelper, DirectoryHelper>()
+            .AddSingleton<IDelayStrategy, RandomDelayStrategy>()
+            .AddTransient<MainWindow>()
             .AddTransient(_ => TimeProvider.System)
-            .AddTransient<Func<ScrapeConfigurationView>>(sp => () => sp.GetRequiredService<ScrapeConfigurationView>())
-            .AddTransient<Func<ClassificationsView>>(sp => () => sp.GetRequiredService<ClassificationsView>())
-            .AddTransient<Func<TagsView>>(sp => () => sp.GetRequiredService<TagsView>())
-            .AddTransient<MainWindow>();
+            .AddTransient<IImageSaver, ImageSaver>()
+            .AddTransient<IImageDimensionReader, ImageDimensionReader>()
+            .AddHttpClient<IImageRetriever, ImageRetriever>(client => client.Timeout = TimeSpan.FromMinutes(2));
 
         _host = builder.Build();
 
-        Task.Run(async () =>
-            await _host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync()
-        ).GetAwaiter().GetResult();
+        await _host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = _host.Services.GetRequiredService<MainWindow>();
             desktop.Exit += OnExit;
+            desktop.MainWindow.Show();
         }
 
         _host.Start();
+        SurfaceConfigurationErrors();
         base.OnFrameworkInitializationCompleted();
     }
+
+    private void SurfaceConfigurationErrors()
+        => ScrapeConfigurationValidator.Validate(_host.Services.GetRequiredService<ScrapeConfiguration>())
+            .Match(_ => Unit.Value, errors =>
+            {
+                var broadcaster = _host.Services.GetRequiredService<LogBroadcaster>();
+
+                foreach (var error in errors)
+                    broadcaster.Broadcast($"Configuration error - {error.Property}: {error.Message}");
+
+                return Unit.Value;
+            });
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         => _host.StopAsync().GetAwaiter().GetResult();

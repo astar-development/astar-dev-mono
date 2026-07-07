@@ -9,7 +9,7 @@ public class GivenUnit
     public void unit_value_is_singleton_like()
     {
         var a = global::AStar.Dev.FunctionalParadigm.Unit.Value;
-        var b = new FunctionalParadigm.Unit();
+        var b = new global::AStar.Dev.FunctionalParadigm.Unit();
 
         a.ShouldBe(b);
         global::AStar.Dev.FunctionalParadigm.Unit.Value.ShouldBe(a);

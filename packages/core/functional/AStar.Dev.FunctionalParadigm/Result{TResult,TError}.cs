@@ -10,6 +10,14 @@ namespace AStar.Dev.FunctionalParadigm;
 public abstract record Result<TResult, TError>
 {
     /// <summary>
+    ///     Restricts derivation of <see cref="Result{TResult,TError}" /> to <see cref="Ok{TResult,TError}" /> and
+    ///     <see cref="Fail{TResult,TError}" />, both declared in this assembly.
+    /// </summary>
+    private protected Result()
+    {
+    }
+
+    /// <summary>
     ///     Implicitly lifts a success value into a <see cref="Result{TResult,TError}" />.
     /// </summary>
     public static implicit operator Result<TResult, TError>(TResult value) => new Ok<TResult, TError>(value);
