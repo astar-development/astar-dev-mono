@@ -123,6 +123,14 @@
             <param name="obj">The object to convert to JSON</param>
             <returns>The JSON string of the object supplied</returns>
         </member>
+        <member name="M:AStar.Dev.Utilities.ObjectExtensions.ToJsonWithoutNulls``1(``0)">
+            <summary>
+                The ToJsonWithoutNulls method converts the supplied object to its JSON equivalent, excluding null values (using the
+                JsonSerializerDefaults.Web defaults with WriteIndented set to true and ignore nulls when writing)
+            </summary>
+            <param name="obj">The object to convert to JSON</param>
+            <returns>The JSON string of the object supplied</returns>
+        </member>
         <member name="T:AStar.Dev.Utilities.PathOperationExtensions">
             <summary>
                 Provides extension methods for common path operations.

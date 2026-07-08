@@ -15,9 +15,11 @@ public sealed class DirectoryHelper(IFileSystem fileSystem) : IDirectoryHelper
 
         if (fullDirectoryPath.Count == 0) return new(string.Empty);
 
-        string directory = fullDirectoryPath[0].CombinePath([.. fullDirectoryPath.Skip(1),]);
+        string directory = fullDirectoryPath[0].CombinePath([.. fullDirectoryPath.Skip(1),])
+                                               .Replace("\"", string.Empty)
+                                               .CleanPath();
 
-        _ = fileSystem.Directory.CreateDirectory(directory.CleanPath());
+        _ = fileSystem.Directory.CreateDirectory(directory);
 
         return new(directory);
     }

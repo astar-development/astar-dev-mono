@@ -188,7 +188,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
             var results = await repository.SearchAsync(criteria, cancellationToken);
 
             bool capped = results.Count > SearchResultCap;
-            var displayResults = capped ? (IReadOnlyList<SyncedItemSearchResult>)results.Take(SearchResultCap).ToList() : results;
+            var displayResults = capped ? (IReadOnlyList<SyncedItemSearchResult>)[.. results.Take(SearchResultCap)] : results;
 
             dispatcher.Post(() =>
             {

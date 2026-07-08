@@ -188,7 +188,7 @@ public sealed class GivenASyncJobExecutor
     {
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
+            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
         var job = MakeJob("item-1", SyncDirection.Download);
         SimulateJobCompleted(job.Complete());
@@ -248,7 +248,7 @@ public sealed class GivenASyncJobExecutor
     {
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
+            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(ColourUploadLocalPath).Which(m => m.HasStringContent("data"));

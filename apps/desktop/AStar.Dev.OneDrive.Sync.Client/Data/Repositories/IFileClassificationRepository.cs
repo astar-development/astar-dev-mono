@@ -10,6 +10,9 @@ public interface IFileClassificationRepository
     /// <summary>Returns all category nodes in the hierarchy.</summary>
     Task<IReadOnlyList<FileClassificationCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Returns a simple list of all category nodes in the hierarchy.</summary>
+    Task<IReadOnlyList<FileClassificationCategoryEntity>> GetAllCategoriesSimpleAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Returns whether the specified file already has any classification rows, from any application.</summary>
     Task<bool> HasClassificationsAsync(FileId fileDetailId, CancellationToken cancellationToken = default);
 
@@ -40,6 +43,6 @@ public interface IFileClassificationRepository
     /// <summary>Deletes a keyword. No-op if the keyword does not exist.</summary>
     // Task DeleteKeywordAsync(int keywordId, CancellationToken cancellationToken = default);
 
-    /// <summary>Deletes all keywords and all categories. Used before importing a new taxonomy.</summary>
-    // Task DeleteAllAsync(CancellationToken cancellationToken = default);
+    /// <summary>Deletes all keywords and all categories in the sequence. Used after importing a new taxonomy.</summary>
+    Task DeleteAsync(IEnumerable<FileClassificationCategoryId> fileClassificationCategoryIds, CancellationToken cancellationToken = default);
 }

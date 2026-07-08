@@ -30,7 +30,7 @@ public sealed class GivenTheDirectoryHelperWithAFileSystem
     {
         var directoryName = sut.CreateDirectoryIfRequired(["root", "sub\"directory",]);
 
-        fileSystem.Directory.Exists(Path.Combine("root", "sub'directory")).ShouldBeTrue();
-        directoryName.Value.ShouldBe(Path.Combine("root", "sub\"directory"));
+        fileSystem.Directory.Exists(Path.Combine("root", "subdirectory")).ShouldBeTrue();
+        directoryName.Value.ShouldBe(Path.Combine("root", "subdirectory"));
     }
 }

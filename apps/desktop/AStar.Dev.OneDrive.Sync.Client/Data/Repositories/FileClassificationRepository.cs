@@ -29,7 +29,9 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 e.Level,
                 e.IsFamous,
                 e.IsInternet,
-                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>());
+                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>(),
+                e.IncludeInSearch
+            );
 
             _ = result.Match<object?>(
                 ok => { categories.Add(ok); return null; },
@@ -37,6 +39,15 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         }
 
         return categories.AsReadOnly();
+    }
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<FileClassificationCategoryEntity>> GetAllCategoriesSimpleAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entities = await db.FileClassificationCategories.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return entities.AsReadOnly();
     }
 
     /// <inheritdoc />
@@ -46,13 +57,13 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
                 var entity = new FileClassificationCategoryEntity
-                    {
-                        Name = category.Name.ToTitleCase(),
-                        Level = category.Level,
-                        IsFamous = category.IsFamous,
-                        IsInternet = category.IsInternet,
-                        ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
-                    };
+                {
+                    Name = category.Name.ToTitleCase(),
+                    Level = category.Level,
+                    IsFamous = category.IsFamous,
+                    IsInternet = category.IsInternet,
+                    ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
+                };
 
                 db.FileClassificationCategories.Add(entity);
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -117,6 +128,16 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         db.FileClassifications.AddRange(categoryIds.Select(categoryId => new FileClassificationEntity { FileDetailId = fileDetailId, CategoryId = categoryId }));
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAsync(IEnumerable<FileClassificationCategoryId> fileClassificationCategoryIds, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        int[] categoryIds = [.. fileClassificationCategoryIds.Select(id => id.Id)];
+        db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories.Where(c => categoryIds.Contains(c.Id)));
+        //_ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false); // need to rethink this
     }
 
     private static KeywordMapping BuildKeywordMapping(FileClassificationKeywordEntity keyword, Dictionary<int, FileClassificationCategoryEntity> categoryById)

@@ -14,7 +14,7 @@ public sealed class ImageSaver(IFileSystem fileSystem) : IImageSaver
         ArgumentNullException.ThrowIfNull(image);
         ArgumentNullException.ThrowIfNull(path);
 
-        string cleanedPath = path.CleanPath();
+        string cleanedPath = path.CleanPath().Replace("\"", string.Empty);
 
         if (cleanedPath.LastIndexOf(':') > 2) cleanedPath = cleanedPath[..2] + cleanedPath[2..].Replace(":", "_");
 

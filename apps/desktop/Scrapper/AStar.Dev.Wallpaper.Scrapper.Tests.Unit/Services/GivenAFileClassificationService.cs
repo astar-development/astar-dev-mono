@@ -471,16 +471,17 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     public async Task when_importing_a_new_classification_then_it_is_added()
     {
         var incoming = (
-            Categories: new List<FileClassificationCategoryEntity> { new() { Id = 1, Name = "Animals", Level = 3, IncludeInSearch = true } },
-            Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = 1, Keyword = "animals" } });
+            Categories: new List<FileClassificationCategoryEntity> { new() { Id = 2, Name = "Animals", Level = 1, IncludeInSearch = true } },
+            Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = 2, Keyword = "animals" } });
 
         await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
+        var check = verifyCtx.FileClassificationCategories.ToList();
         var stored = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         stored.Name.ShouldBe("Animals");
     }
-
+    
     [Fact]
     public async Task when_importing_a_classification_whose_keyword_already_exists_with_different_casing_then_no_duplicate_keyword_is_added()
     {

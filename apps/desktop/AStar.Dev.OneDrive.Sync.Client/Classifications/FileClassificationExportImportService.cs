@@ -3,6 +3,9 @@ using System.Text.Json;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using Microsoft.Extensions.Logging;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 
@@ -14,64 +17,59 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
     /// <inheritdoc />
     public async Task ExportAsync(IFileInfo fileInfo, CancellationToken cancellationToken = default)
     {
-        var allCategories = await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
+        var allCategories = await repository.GetAllCategoriesSimpleAsync(cancellationToken).ConfigureAwait(false);
 
-        var parentIds = allCategories
-            .Where(c => c.ParentId is Option<FileClassificationCategoryId>.Some)
-            .Select(c => ((Option<FileClassificationCategoryId>.Some)c.ParentId).Value)
-            .ToHashSet();
-
-        var nodesByCategoryId = new Dictionary<FileClassificationCategoryId, ClassificationCategoryNode>();
-        foreach (var category in allCategories)
-            nodesByCategoryId[category.Id] = new ClassificationCategoryNode { Name = category.Name, IsFamous = category.IsFamous, IsInternet = category.IsInternet, Children = [], Keywords = [] };
-
-        var rootNodes = new List<ClassificationCategoryNode>();
-        foreach (var category in allCategories)
-        {
-            var node = nodesByCategoryId[category.Id];
-            if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodesByCategoryId.TryGetValue(someParent.Value, out var parentNode))
-                parentNode.Children.Add(node);
-            else
-                rootNodes.Add(node);
-        }
-
-        var exportRoot = new ClassificationExportRoot { Version = 1, Categories = rootNodes };
-        string json = JsonSerializer.Serialize(exportRoot, SerializerOptions);
-        fileSystem.File.WriteAllText(fileInfo.FullName, json);
+        await fileSystem.File.WriteAllTextAsync(fileInfo.FullName, allCategories.ToJsonWithoutNulls(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task ImportAsync(IFileInfo fileInfo, CancellationToken cancellationToken = default)
     {
         string json = fileSystem.File.ReadAllText(fileInfo.FullName);
-        var exportRoot = JsonSerializer.Deserialize<ClassificationExportRoot>(json, SerializerOptions);
-        if (exportRoot is null)
+        var importRoot = JsonSerializer.Deserialize<ClassificationExportRoot>(json, SerializerOptions);
+        if (importRoot is null)
             return;
 
-        // await repository.DeleteAllAsync(cancellationToken).ConfigureAwait(false);
+        var importedCategories = importRoot.Categories.OrderBy(c => c.Level).ThenBy(c => c.Name).ToList();
 
-        foreach (var node in exportRoot.Categories)
-            await InsertNodeAsync(node, 1, false, false, Option.None<FileClassificationCategoryId>(), cancellationToken).ConfigureAwait(false);
+        foreach (var node in importedCategories)
+            await InsertNodeAsync(node, Option.None<FileClassificationCategoryId>(), cancellationToken).ConfigureAwait(false);
+
+        var existingIds = (await repository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false)).Select(c => c.Id.Id).ToHashSet();
+        var importIds = importedCategories.Select(c => c.Id).ToHashSet();
+
+        var fileClassificationCategoryIds = existingIds
+            .Except(importIds)
+            .Select(id => new FileClassificationCategoryId(id))
+            .ToList();
+        await repository.DeleteAsync(fileClassificationCategoryIds, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task InsertNodeAsync(ClassificationCategoryNode node, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, CancellationToken cancellationToken)
+    private async Task InsertNodeAsync(ClassificationCategoryNode node, Option<FileClassificationCategoryId> parentId, CancellationToken cancellationToken)
     {
-        var placeholder = new FileClassificationCategoryId(0);
+        var fileClassificationCategoryId = FileClassificationCategoryIdFactory.Create(node.Id);
 
-        await FileClassificationCategoryFactory.Create(placeholder, node.Name, level, isFamous, isInternet, parentId)
+        await FileClassificationCategoryFactory.Create(fileClassificationCategoryId, node.Name, node.Level, node.IsFamous ?? false, node.IsInternet ?? false, parentId, node.IncludeInSearch)
             .BindAsync(category => repository.AddCategoryAsync(category, cancellationToken))
             .MatchAsync(
-                async newId =>
+                async newFileClassificationCategoryId =>
                 {
                     foreach (var child in node.Children)
-                        await InsertNodeAsync(child, level + 1, isFamous, isInternet, Option.Some(newId), cancellationToken).ConfigureAwait(false);
+                        await InsertNodeAsync(child, Option.Some(newFileClassificationCategoryId), cancellationToken).ConfigureAwait(false);
 
-                    // foreach (var keyword in node.Keywords)
+                    // foreach (var keyword in node.Keywords) - what did this do? Is it, as I think, legacy from when we used multiple tables?
                     //     await repository.AddKeywordAsync(newId, new FileClassificationKeyword(keyword.Value, keyword.IsFamous.HasValue ? Option.Some(keyword.IsFamous.Value) : Option.None<bool>(), keyword.IsInternet.HasValue ? Option.Some(keyword.IsInternet.Value) : Option.None<bool>()), cancellationToken).ConfigureAwait(false);
                 },
                 _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }
+}
+
+internal class ClassificationCategoryNodeComparer : IEqualityComparer<ClassificationCategoryNode>
+{
+    public bool Equals(ClassificationCategoryNode? x, ClassificationCategoryNode? y) => x?.Id == y?.Id;
+
+    public int GetHashCode(ClassificationCategoryNode obj) => obj.Id.GetHashCode();
 }
 
 internal sealed record ClassificationExportRoot
@@ -82,9 +80,13 @@ internal sealed record ClassificationExportRoot
 
 internal sealed record ClassificationCategoryNode
 {
+    public int Id { get; init; }
+    public int Level { get; init; }
+    public int? ParentId { get; init; }
     public string Name { get; init; } = string.Empty;
     public bool? IsFamous { get; init; }
     public bool? IsInternet { get; init; }
+    public bool IncludeInSearch { get; init; }
     public List<ClassificationCategoryNode> Children { get; set; } = [];
     public List<ClassificationKeywordNode> Keywords { get; set; } = [];
 }

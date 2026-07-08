@@ -37,6 +37,7 @@ public partial class FileClassificationsView : UserControl, IDisposable
         cts = null;
     }
 
+#pragma warning disable IDE1006 // Naming Styles - this does not apply to event handlers
     private async void OnExportClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not FileClassificationRulesViewModel vm)
@@ -60,6 +61,7 @@ public partial class FileClassificationsView : UserControl, IDisposable
 
         await vm.ImportAsync(topLevel.StorageProvider);
     }
+#pragma warning restore IDE1006 // Naming Styles
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {

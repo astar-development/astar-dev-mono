@@ -32,6 +32,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
+        optionsBuilder.EnableSensitiveDataLogging();
 
         optionsBuilder
             .UseAsyncSeeding(async (context, _, cancellationToken) =>

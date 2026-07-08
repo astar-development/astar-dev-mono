@@ -67,14 +67,14 @@ public sealed class GivenTheImageSaver
     }
 
     [Fact]
-    public async Task when_the_path_contains_a_quote_then_it_is_replaced_with_a_single_quote()
+    public async Task when_the_path_contains_a_quote_then_it_is_replaced_with_nothing()
     {
         fileSystem.Directory.CreateDirectory("/save/dir");
         byte[] image = [1,];
 
         await sut.SaveAsync(image, "/save/dir/file\"name.jpg");
 
-        fileSystem.File.Exists("/save/dir/file'name.jpg").ShouldBeTrue();
+        fileSystem.File.Exists("/save/dir/filename.jpg").ShouldBeTrue();
     }
 
     [Fact]
