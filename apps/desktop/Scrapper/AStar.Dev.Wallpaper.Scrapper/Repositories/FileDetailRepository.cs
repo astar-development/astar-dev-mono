@@ -23,6 +23,6 @@ public sealed class FileDetailRepository(IDbContextFactory<AppDbContext> context
         fileDetail.FileHandle = handle;
 
         _ = await context.Files.AddAsync(fileDetail);
-        _ = await context.SaveChangesAsync();
+        _ = await context.SaveChangesAsync(); // threw here or somewhere after...
     }
 }

@@ -31,7 +31,7 @@ public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> context
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        return await context.ScrapedTags.AsNoTracking().ToListAsync(ct);
+        return await context.ScrapedTags.ToListAsync(ct);
     }
 
     public async Task UpsertAsync(IReadOnlyList<ScrapedTagEntity> tags, CancellationToken ct)

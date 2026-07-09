@@ -25,7 +25,7 @@ public sealed class ImagePage(IPlaywrightService playwrightService, ScrapeConfig
         var tagLocators = await page.Locator(".tagname").AllAsync().ConfigureAwait(false);
         var tagData = await Task.WhenAll(tagLocators.Select(GetTagsAsync)).ConfigureAwait(false);
 
-        string initialDirectory = scrapeConfiguration.ScrapeDirectories.BaseSaveDirectory.CombinePath(categoryName.Replace(' ', '-'));
+        string initialDirectory = scrapeConfiguration.ScrapeDirectories.RootDirectory.CombinePath(scrapeConfiguration.ScrapeDirectories.BaseSaveDirectory, categoryName.ToLowerInvariant().Replace(' ', '-'));
         var context = TagRuleContextFactory.Create(initialDirectory, scrapeConfiguration.ScrapeDirectories.BaseDirectoryFamous, tagsToIgnoreCompletely, tagsTextToIgnore);
 
         var outcome = TagRules.Evaluate(tagData, context);

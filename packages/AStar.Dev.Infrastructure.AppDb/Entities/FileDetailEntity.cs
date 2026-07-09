@@ -21,12 +21,6 @@ public sealed class FileDetailEntity
     /// <summary>Whether the file is of a supported image type.</summary>
     public bool IsImage { get; set; }
 
-    /// <summary>The width of the file in pixels, if it is an image.</summary>
-    public int Width { get; set; }
-
-    /// <summary>The height of the file in pixels, if it is an image.</summary>
-    public int Height { get; set; }
-
     /// <summary>Foreign key to the owned <see cref="FileAccessDetailEntity"/>.</summary>
     public int FileAccessDetailId { get; set; }
 

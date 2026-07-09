@@ -36,6 +36,7 @@ public sealed class ImagePageService(
 
     public async Task<Result<Unit, ScrapeError>> GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken ct = default)
     {
+        // What tags are returned below????
         var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, ct).ConfigureAwait(false);
 
         foreach (string pageLink in imagePageLinks)
@@ -142,12 +143,7 @@ public sealed class ImagePageService(
     private void ApplyImageDimensions(FileDetailEntity fileDetail, byte[] image, string imageNameWithPath)
         => imageDimensionReader.Read(image, imageNameWithPath)
             .Tap(
-                dimensions =>
-                {
-                    fileDetail.Width = dimensions.Width;
-                    fileDetail.Height = dimensions.Height;
-                    fileDetail.ImageDetail = new ImageDetailEntity { Width = dimensions.Width, Height = dimensions.Height };
-                },
+                dimensions => fileDetail.ImageDetail = new ImageDetailEntity { Width = dimensions.Width, Height = dimensions.Height },
                 error => logger.Warning("Could not read image dimensions for {imageNameWithPath}: {Message}", TruncatedForLogging(imageNameWithPath), error.Message));
 
     private static string TruncatedForLogging(string imageNameWithPath)

@@ -358,7 +358,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await fileDetailRepository.Received(1).AddAsync(Arg.Is<FileDetailEntity>(detail => detail.Width == 40 && detail.Height == 20));
+        await fileDetailRepository.Received(1).AddAsync(Arg.Is<FileDetailEntity>(detail => detail.ImageDetail.Width == 40 && detail.ImageDetail.Height == 20));
     }
 
     [Fact]

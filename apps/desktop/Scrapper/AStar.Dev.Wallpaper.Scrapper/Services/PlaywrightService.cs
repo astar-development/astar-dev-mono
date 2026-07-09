@@ -36,7 +36,7 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, TimeProv
         await ApplyCookiesAsync(context, logger, scrapeConfiguration);
 
         page = await context.NewPageAsync();
-        page.SetDefaultTimeout(60_000);
+        page.SetDefaultTimeout(120_000);
 
         return page;
     }
