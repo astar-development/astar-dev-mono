@@ -2,7 +2,6 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Http;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;

@@ -13,7 +13,7 @@ public class GivenCompose
         Func<int, string> describe = value => $"value-{value}";
 
         var composed = addOne.Compose(describe);
-        var actual = composed(4);
+        string actual = composed(4);
 
         actual.ShouldBe("value-5");
     }

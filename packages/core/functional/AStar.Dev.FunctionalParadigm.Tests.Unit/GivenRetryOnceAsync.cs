@@ -18,7 +18,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_the_first_attempt_succeeds_then_the_operation_is_invoked_exactly_once()
     {
-        var attempts = 0;
+        int attempts = 0;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -35,7 +35,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_the_first_attempt_succeeds_then_the_retry_callback_is_never_invoked()
     {
-        var retryInvoked = false;
+        bool retryInvoked = false;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () => Task.FromResult(Result.Success<int, string>(1)),
@@ -52,7 +52,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_the_first_attempt_fails_and_the_second_succeeds_then_the_result_is_the_second_attempts_success()
     {
-        var attempts = 0;
+        int attempts = 0;
 
         var actual = await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -69,7 +69,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_the_first_attempt_fails_and_the_second_succeeds_then_the_operation_is_invoked_exactly_twice()
     {
-        var attempts = 0;
+        int attempts = 0;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -86,8 +86,8 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_the_first_attempt_fails_and_the_second_succeeds_then_the_retry_callback_is_invoked_exactly_once()
     {
-        var retryInvocations = 0;
-        var attempts = 0;
+        int retryInvocations = 0;
+        int attempts = 0;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -109,7 +109,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_both_attempts_fail_then_the_result_is_the_second_attempts_failure()
     {
-        var attempts = 0;
+        int attempts = 0;
 
         var actual = await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -126,7 +126,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_both_attempts_fail_then_the_operation_is_invoked_exactly_twice()
     {
-        var attempts = 0;
+        int attempts = 0;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () =>
@@ -143,7 +143,7 @@ public sealed class GivenRetryOnceAsync
     [Fact]
     public async Task when_both_attempts_fail_then_the_retry_callback_is_invoked_exactly_once()
     {
-        var retryInvocations = 0;
+        int retryInvocations = 0;
 
         await RetryExtensions.RetryOnceAsync<int, string>(
             () => Task.FromResult(Result.Failure<int, string>("failed")),

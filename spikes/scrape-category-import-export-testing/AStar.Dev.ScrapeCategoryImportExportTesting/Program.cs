@@ -1,13 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-using System.Runtime.CompilerServices;
-using System.Text.Json;
+﻿using System.Text.Json;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.ScrapeCategoryImportExportTesting;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
-
-Console.WriteLine("Hello, World!");
 
 var options = new DbContextOptionsBuilder<AppDbContext>()
     .UseSqlite("Data Source=/home/jasonbarden/.config/astar-dev-onedrive-sync/astar-dev-onedrive-sync.db")

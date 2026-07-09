@@ -1,5 +1,6 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scraper.Repositories;
@@ -30,9 +31,9 @@ public sealed class DatabaseResetRepository(IDbContextFactory<AppDbContext> cont
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var dirs = await context.Set<ScrapeDirectoriesEntity>()
             .OrderByDescending(d => d.Id)
-            .FirstOrDefaultAsync(cancellationToken)
+            .FirstAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return dirs?.BaseSaveDirectory;
+        return dirs.RootDirectory.CombinePath(dirs.BaseSaveDirectory);
     }
 }

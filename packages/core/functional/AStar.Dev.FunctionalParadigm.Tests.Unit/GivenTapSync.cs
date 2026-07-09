@@ -9,7 +9,7 @@ public class GivenTapSync
     public void when_called_on_result_success_then_executes_success_handler_and_returns_same()
     {
         var result = Result.Success<int, string>(7);
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = result.Tap(value => sideEffect = value == 7);
 
@@ -22,7 +22,7 @@ public class GivenTapSync
     public void when_called_on_result_failure_then_executes_failure_handler_and_returns_failure()
     {
         var result = Result.Failure<int, string>("oops");
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = result.Tap(_ => { }, error => sideEffect = error == "oops");
 

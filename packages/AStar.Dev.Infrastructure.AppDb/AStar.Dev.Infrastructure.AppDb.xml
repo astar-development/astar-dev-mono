@@ -70,12 +70,6 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.ScrapeDirectoriesEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity})">
             <inheritdoc />
         </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.ScrapedTagEntityConfiguration">
-            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity"/>.</summary>
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.ScrapedTagEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity})">
-            <inheritdoc />
-        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SearchCategoryEntityConfiguration">
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity"/>.</summary>
         </member>
@@ -1120,26 +1114,6 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity.SubDirectoryName">
             <summary>A subdirectory name generated from the search criteria or category.</summary>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity">
-            <summary>A unique tag observed during a scrape run.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity.Id">
-            <summary>Primary key.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity.Value">
-            <summary>The tag text value (unique).</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity.Category">
-            <summary>The category for the tag.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity.IncludeInSearch">
-            <summary>Whether files with this tag should be included in search results.</summary>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagId">
-            <summary>
-            A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity"/>.
-            </summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity">
             <summary>Tracks scraping progress for a single search category.</summary>

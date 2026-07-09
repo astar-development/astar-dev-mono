@@ -179,7 +179,7 @@ public sealed class GivenAPagedScrapeRunner : IAsyncLifetime
     public async Task when_the_get_links_step_fails_then_process_links_is_not_called()
     {
         var linksFailure = ScrapeErrorFactory.CreatePageParseFailed(null, "could not parse links");
-        var processLinksCalled = false;
+        bool processLinksCalled = false;
         var plan = PagedScrapePlanFactory.Create(
             1,
             2,
@@ -228,7 +228,7 @@ public sealed class GivenAPagedScrapeRunner : IAsyncLifetime
     [Fact]
     public async Task when_the_total_page_is_before_the_starting_page_then_the_result_is_a_success_without_any_page_work()
     {
-        var pageWorkHappened = false;
+        bool pageWorkHappened = false;
         var plan = PagedScrapePlanFactory.Create(
             5,
             1,
@@ -266,7 +266,7 @@ public sealed class GivenAPagedScrapeRunner : IAsyncLifetime
     [Fact]
     public async Task when_the_cancellation_token_is_already_cancelled_then_run_async_throws_and_no_page_work_happens()
     {
-        var pageWorkHappened = false;
+        bool pageWorkHappened = false;
         var plan = PagedScrapePlanFactory.Create(
             1,
             1,

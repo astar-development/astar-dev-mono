@@ -15,8 +15,8 @@ public static class TopWallpapersHeaderParser
 
         try
         {
-            var firstSlashIndex = headerText.IndexOf('/') + 1;
-            var pages = headerText[firstSlashIndex..].Trim();
+            int firstSlashIndex = headerText.IndexOf('/') + 1;
+            string pages = headerText[firstSlashIndex..].Trim();
 
             return int.Parse(pages, CultureInfo.InvariantCulture);
         }

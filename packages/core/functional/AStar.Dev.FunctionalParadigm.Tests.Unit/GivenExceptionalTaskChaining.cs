@@ -9,7 +9,7 @@ public class GivenExceptionalTaskChaining
     [Fact]
     public async Task when_run_async_succeeds_then_tap_chained_directly_executes_success_handler()
     {
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await Try.RunAsync(() => Task.FromResult(7))
             .Tap(value => sideEffect = value == 7);
@@ -23,7 +23,7 @@ public class GivenExceptionalTaskChaining
     public async Task when_run_async_throws_then_tap_chained_directly_executes_failure_handler()
     {
         var exception = new InvalidOperationException("boom");
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await Try.RunAsync<int>(() => throw exception)
             .Tap(_ => { }, ex => sideEffect = ex == exception);
@@ -36,7 +36,7 @@ public class GivenExceptionalTaskChaining
     [Fact]
     public async Task when_run_async_then_bind_async_then_match_async_chained_directly_on_success_then_returns_expected_value()
     {
-        var actual = await Try.RunAsync(() => Task.FromResult(2))
+        string actual = await Try.RunAsync(() => Task.FromResult(2))
             .BindAsync(value => Task.FromResult(Exceptional.Success(value * 3)))
             .MatchAsync(onSuccess: value => value.ToString(CultureInfo.InvariantCulture), onFailure: ex => ex.Message);
 
@@ -47,9 +47,9 @@ public class GivenExceptionalTaskChaining
     public async Task when_run_async_then_bind_async_then_match_async_chained_directly_on_failure_then_returns_expected_value()
     {
         var exception = new InvalidOperationException("chain failed");
-        var invoked = false;
+        bool invoked = false;
 
-        var actual = await Try.RunAsync<int>(() => throw exception)
+        string actual = await Try.RunAsync<int>(() => throw exception)
             .BindAsync(value =>
             {
                 invoked = true;

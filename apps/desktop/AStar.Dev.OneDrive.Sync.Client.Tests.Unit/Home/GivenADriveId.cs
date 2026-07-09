@@ -1,5 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client.Home;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public sealed class GivenADriveId

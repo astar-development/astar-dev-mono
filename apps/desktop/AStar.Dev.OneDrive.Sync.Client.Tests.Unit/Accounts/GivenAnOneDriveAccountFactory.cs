@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;

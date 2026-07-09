@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;

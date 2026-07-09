@@ -35,7 +35,7 @@ public sealed class TopWallpapersWorkflow(
     private async Task LoadStartingPageAsync()
     {
         var loadResult = await topWallpapersPage.LoadTopWallpapersPageAsync(searchConfiguration.TopWallpapersStartingPageNumber).ConfigureAwait(false);
-        var loadedSuccessfully = loadResult.Match(_ => true, _ => false);
+        bool loadedSuccessfully = loadResult.Match(_ => true, _ => false);
 
         if (!loadedSuccessfully) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber).ConfigureAwait(false);
     }
