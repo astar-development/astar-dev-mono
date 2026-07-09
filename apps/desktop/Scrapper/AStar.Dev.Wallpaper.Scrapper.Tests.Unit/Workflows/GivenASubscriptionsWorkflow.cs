@@ -83,7 +83,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         => new(
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
             Substitute.For<IFileDetailRepository>(),
-            new FileClassificationService(BuildWorkingContextFactory(),new LoggerConfiguration().CreateLogger()),
+            new FileClassificationService(BuildWorkingContextFactory(), new LoggerConfiguration().CreateLogger()),
             scrapeConfiguration,
             System.TimeProvider.System,
             new LoggerConfiguration().CreateLogger(),
@@ -181,7 +181,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
     [Fact]
     public async Task when_the_header_reports_a_sub_directory_name_then_the_processed_links_use_it_as_the_category_name()
     {
-        const string ExpectedSubDirectoryFragment = "New-Subscription-Wallpapers";
+        const string ExpectedSubDirectoryFragment = "new-subscription-wallpapers";
         var linkLocator = Substitute.For<ILocator>();
         linkLocator.GetAttributeAsync("href").Returns(Task.FromResult<string?>("https://example.test/w/12345"));
         var (_, playwrightService, _) = BuildPlaywright("1 New Subscription Wallpapers", [linkLocator,]);
