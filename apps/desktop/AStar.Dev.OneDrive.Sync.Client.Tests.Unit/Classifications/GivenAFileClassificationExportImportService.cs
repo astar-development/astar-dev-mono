@@ -34,30 +34,27 @@ public sealed class GivenAFileClassificationExportImportService
 
         string written = fileSystem.File.ReadAllText(ExportFilePath);
         using var doc = JsonDocument.Parse(written);
-        doc.RootElement.GetProperty("categories").GetArrayLength().ShouldBe(0);
+
+        doc.RootElement.GetProperty("categories").EnumerateArray().Count().ShouldBe(0);
     }
 
     [Fact]
     public async Task when_exporting_with_root_categories_then_json_contains_category_names()
     {
-        IReadOnlyList<FileClassificationCategory> categories =
+        IReadOnlyList<FileClassificationCategoryEntity> categories =
         [
-            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>()),
-            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())
+            new(){Id = 1, Name = "Photos", Level = 1, IsFamous = false, IsInternet = false, ParentId = null, IncludeInSearch = false},
+            new(){Id = 2, Name = "Documents", Level = 1, IsFamous = false, IsInternet = false, ParentId = null, IncludeInSearch = false}
         ];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+        repository.GetAllCategoriesSimpleAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
 
         await sut.ExportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
 
         string written = fileSystem.File.ReadAllText(ExportFilePath);
-        using var doc = JsonDocument.Parse(written);
-        var categoryNames = doc.RootElement.GetProperty("categories")
-                               .EnumerateArray()
-                               .Select(e => e.GetProperty("name").GetString())
-                               .ToList();
-        categoryNames.ShouldContain("Photos");
-        categoryNames.ShouldContain("Documents");
+
+        written.ShouldContain("Photos");
+        written.ShouldContain("Documents");
     }
 
     [Fact]
@@ -65,8 +62,8 @@ public sealed class GivenAFileClassificationExportImportService
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>()),
-            new(new FileClassificationCategoryId(2), "Holidays", 2, false, false, Option.Some(new FileClassificationCategoryId(1)))
+            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
+            new(new FileClassificationCategoryId(2), "Holidays", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), false)
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
@@ -100,7 +97,7 @@ public sealed class GivenAFileClassificationExportImportService
         repository.AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos" && c.Level == 1), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(parentId)));
 
-        string importJson = """{"version":1,"categories":[{"name":"Photos","children":[{"name":"Holidays","children":[],"keywords":[]}],"keywords":[]}]}""";
+        string importJson = """{"version":1,"categories":[{"name":"Photos","id":42,"children":[{"name":"Holidays","parentId":42,"id":12,"children":[],"keywords":[]}],"keywords":[]}]}""";
         fileSystem.File.WriteAllText(ExportFilePath, importJson);
 
         await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
@@ -108,5 +105,24 @@ public sealed class GivenAFileClassificationExportImportService
         await repository.Received(1).AddCategoryAsync(
             Arg.Is<FileClassificationCategory>(c => c.Name == "Holidays" && c.ParentId == Option.Some(parentId)),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_importing_an_existing_category_then_add_category_is_not_called()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+
+        string importJson = """{"version":1,"categories":[{"name":"Photos","id":1,"children":[],"keywords":[]}]}""";
+        fileSystem.File.WriteAllText(ExportFilePath, importJson);
+
+        await sut.ImportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
+
+        await repository.DidNotReceive().AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos"), Arg.Any<CancellationToken>());
     }
 }

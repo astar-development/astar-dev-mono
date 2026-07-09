@@ -177,7 +177,7 @@ public sealed class GivenADownloadJobBuilder
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>())).Value
+            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
 
         await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, mappings, TestContext.Current.CancellationToken);

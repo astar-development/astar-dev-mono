@@ -1,5 +1,6 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Extensions.Time.Testing;
 using Serilog;
@@ -44,6 +45,7 @@ public sealed class GivenAnImportExportService
           {
             "id": 2,
             "name": "Test Normal",
+            "level": 2,
             "isFamous": false,
             "includeInSearch": true,
             "keywords": [
@@ -53,6 +55,14 @@ public sealed class GivenAnImportExportService
               }
             ]
           }
+        ]
+        """;
+
+    private const string ThreeInvalidRowsClassificationsJson = """
+        [
+          { "id": 1, "name": "", "level": 3, "isFamous": false, "includeInSearch": true, "keywords": [] },
+          { "id": 2, "name": "Valid Name", "level": 0, "isFamous": false, "includeInSearch": true, "keywords": [] },
+          { "id": 3, "name": "Another Valid", "level": 9, "isFamous": false, "includeInSearch": true, "keywords": [] }
         ]
         """;
 
@@ -115,7 +125,13 @@ public sealed class GivenAnImportExportService
     [Fact]
     public void when_importing_and_file_does_not_exist_then_failure_result_is_returned() =>
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>();
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
+
+    [Fact]
+    public void when_importing_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
 
     [Fact]
     public void when_importing_and_file_does_not_exist_then_logger_receives_error_call()
@@ -132,7 +148,7 @@ public sealed class GivenAnImportExportService
         mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, "null");
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>();
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
     }
 
     [Fact]
@@ -152,7 +168,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>();
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
     }
 
     [Fact]
@@ -161,7 +177,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Categories.Count.ShouldBe(2);
     }
 
@@ -171,7 +187,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Keywords.Count.ShouldBe(2);
     }
 
@@ -181,7 +197,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Categories[0].Name.ShouldBe(CelebrityClassificationName);
     }
 
@@ -191,7 +207,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Categories[1].Name.ShouldBe(NormalClassificationName);
     }
 
@@ -201,7 +217,7 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Categories[0].Level.ShouldBe(3);
     }
 
@@ -211,8 +227,47 @@ public sealed class GivenAnImportExportService
         SetupValidImportFile();
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Keywords[0].CategoryId.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_the_result_is_a_validation_failed_error()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>();
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_all_three_validation_errors_are_reported()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        var errors = sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>().Errors;
+
+        errors.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_the_errors_are_reported_in_row_order()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        var errors = sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>().Errors;
+
+        errors[0].Property.ShouldBe("Categories[0].Name");
+        errors[1].Property.ShouldBe("Categories[1].Level");
+        errors[2].Property.ShouldBe("Categories[2].Level");
     }
 
     [Fact]
@@ -224,7 +279,7 @@ public sealed class GivenAnImportExportService
         sut.ExportFileClassificationsToFile(classifications);
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Categories[0].Level.ShouldBe(3);
     }
 
@@ -237,7 +292,7 @@ public sealed class GivenAnImportExportService
         sut.ExportFileClassificationsToFile(classifications);
 
         sut.ImportFileClassificationsFromFile()
-           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), string>>()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
            .Value.Keywords.ShouldContain(k => k.Keyword == "celebrity-keyword");
     }
 
@@ -290,7 +345,13 @@ public sealed class GivenAnImportExportService
     [Fact]
     public void when_importing_scrape_config_and_file_does_not_exist_then_failure_result_is_returned() =>
         sut.ImportScrapeConfigurationFromFile()
-           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, string>>();
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>();
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
 
     [Fact]
     public void when_importing_scrape_config_and_file_does_not_exist_then_logger_receives_error_call()
@@ -307,7 +368,7 @@ public sealed class GivenAnImportExportService
         mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath, "null");
 
         sut.ImportScrapeConfigurationFromFile()
-           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, string>>();
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>();
     }
 
     [Fact]
@@ -327,7 +388,7 @@ public sealed class GivenAnImportExportService
         SetupValidScrapeConfigImportFile();
 
         sut.ImportScrapeConfigurationFromFile()
-           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, string>>();
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>();
     }
 
     [Fact]
@@ -336,7 +397,7 @@ public sealed class GivenAnImportExportService
         SetupValidScrapeConfigImportFile();
 
         sut.ImportScrapeConfigurationFromFile()
-           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, string>>()
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>()
            .Value.ConnectionStrings.Sqlite.ShouldBe("Data Source=test.db");
     }
 
@@ -346,7 +407,7 @@ public sealed class GivenAnImportExportService
         SetupValidScrapeConfigImportFile();
 
         sut.ImportScrapeConfigurationFromFile()
-           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, string>>()
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>()
            .Value.UserConfiguration.Password.ShouldBe(ApplicationMetadata.Redacted);
     }
 
@@ -412,7 +473,13 @@ public sealed class GivenAnImportExportService
     [Fact]
     public void when_importing_tags_and_file_does_not_exist_then_failure_result_is_returned() =>
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, string>>();
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
+
+    [Fact]
+    public void when_importing_tags_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
 
     [Fact]
     public void when_importing_tags_and_file_does_not_exist_then_logger_receives_error_call()
@@ -429,7 +496,7 @@ public sealed class GivenAnImportExportService
         mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, "null");
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, string>>();
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
     }
 
     [Fact]
@@ -449,7 +516,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>();
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>();
     }
 
     [Fact]
@@ -458,7 +525,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value.Count.ShouldBe(2);
     }
 
@@ -468,7 +535,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[0].Value.ShouldBe(ActionTagValue);
     }
 
@@ -478,7 +545,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[0].Category.ShouldBe(GenreCategory);
     }
 
@@ -488,7 +555,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[0].IncludeInSearch.ShouldBeTrue();
     }
 
@@ -498,7 +565,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[1].Value.ShouldBe(ComedyTagValue);
     }
 
@@ -508,7 +575,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[1].Category.ShouldBe(GenreCategory);
     }
 
@@ -518,7 +585,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, string>>()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
            .Value[1].IncludeInSearch.ShouldBeFalse();
     }
 

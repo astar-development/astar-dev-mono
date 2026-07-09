@@ -1,5 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
+using AStar.Dev.Wallpaper.Scrapper.Workflows;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -40,38 +42,40 @@ public partial class ScrapeConfigurationView : Window, IDisposable
     private void OnCloseClicked(object? sender, RoutedEventArgs e) => Close();
 
     private async void OnExportScrapeConfigClicked(object? sender, RoutedEventArgs e)
-        => _ = await ResetCancellationTokenSource()
-            .Match(
-                onSuccess: DisableControlsAndClearStatus,
-                onFailure: ex =>
-                {
-                    logger.Error(ex, "Failed to reset cancellation token source");
-                    ViewModel.UpdateStatus($"Error: {ex.Message}");
-                    return ex.Message;
-                }
-            )
-            .Tap(_ => { logger.Information("Exporting scrape configuration..."); ViewModel.UpdateStatus("Exporting scrape configuration..."); })
-            .MapAsync(_ => scrapeConfigurationService.ExportScrapeConfigurationAsync(cts!.Token))
-            .Tap(importExportService.ExportScrapeConfigurationToFile)
-            .TapAsync(_ => { logger.Information("Scrape configuration export completed..."); ViewModel.UpdateStatus("Export completed."); })
-            .EnsureAsync(() => ResetUI());
+    {
+        try
+        {
+            _ = await ScrapeSiteWorkflowDecision.DecideAsync(
+                ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
+                ct => Result.Success<CancellationToken, string>(ct)
+                    .Tap(_ => { logger.Information("Exporting scrape configuration..."); ViewModel.UpdateStatus("Exporting scrape configuration..."); })
+                    .MapAsync(_ => scrapeConfigurationService.ExportScrapeConfigurationAsync(ct))
+                    .Tap(importExportService.ExportScrapeConfigurationToFile)
+                    .TapAsync(_ => { logger.Information("Scrape configuration export completed..."); ViewModel.UpdateStatus("Export completed."); }));
+        }
+        finally
+        {
+            ResetUI();
+        }
+    }
 
     private async void OnImportScrapeConfigClicked(object? sender, RoutedEventArgs e)
-        => _ = await ResetCancellationTokenSource()
-            .Match(
-                onSuccess: DisableControlsAndClearStatus,
-                onFailure: ex =>
-                {
-                    logger.Error(ex, "Failed to reset cancellation token source");
-                    ViewModel.UpdateStatus($"Error: {ex.Message}");
-                    return ex.Message;
-                }
-            )
-            .Tap(_ => { logger.Information("Importing scrape configuration..."); ViewModel.UpdateStatus("Importing scrape configuration..."); })
-            .Bind(_ => importExportService.ImportScrapeConfigurationFromFile())
-            .MapAsync(entity => scrapeConfigurationService.ImportScrapeConfigurationAsync(entity, cts!.Token))
-            .TapAsync(_ => { logger.Information("Scrape configuration import completed..."); ViewModel.UpdateStatus("Import completed."); })
-            .EnsureAsync(() => ResetUI());
+    {
+        try
+        {
+            _ = await ScrapeSiteWorkflowDecision.DecideAsync(
+                ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
+                ct => Result.Success<CancellationToken, string>(ct)
+                    .Tap(_ => { logger.Information("Importing scrape configuration..."); ViewModel.UpdateStatus("Importing scrape configuration..."); })
+                    .Bind(_ => importExportService.ImportScrapeConfigurationFromFile().ToStringError())
+                    .MapAsync(entity => scrapeConfigurationService.ImportScrapeConfigurationAsync(entity, ct))
+                    .TapAsync(_ => { logger.Information("Scrape configuration import completed..."); ViewModel.UpdateStatus("Import completed."); }));
+        }
+        finally
+        {
+            ResetUI();
+        }
+    }
 
     private Result<CancellationToken, Exception> ResetCancellationTokenSource()
     {
@@ -80,13 +84,17 @@ public partial class ScrapeConfigurationView : Window, IDisposable
         return cts.Token;
     }
 
-    private Result<CancellationToken, string> DisableControlsAndClearStatus(CancellationToken ct = default)
+    private void LogSetupFailure(Exception exception)
+    {
+        logger.Error(exception, "Failed to reset cancellation token source");
+        ViewModel.UpdateStatus($"Error: {exception.Message}");
+    }
+
+    private void DisableControlsAndClearStatus(CancellationToken ct)
     {
         ExportScrapeConfigButton.IsEnabled = false;
         ImportScrapeConfigButton.IsEnabled = false;
         ViewModel.UpdateStatus(string.Empty);
-
-        return ct;
     }
 
     private void ResetUI()

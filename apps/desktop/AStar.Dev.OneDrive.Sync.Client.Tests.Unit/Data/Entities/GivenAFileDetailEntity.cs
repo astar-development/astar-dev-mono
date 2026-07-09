@@ -32,8 +32,6 @@ public sealed class GivenAFileDetailEntity : IDisposable
             FileHandle = new FileHandle(handle),
             FileSize = 1024,
             IsImage = true,
-            Width = 1920,
-            Height = 1080,
             FileAccessDetail = new FileAccessDetailEntity { MoveRequired = true },
             ImageDetail = new ImageDetailEntity { Width = 1920, Height = 1080 },
             DeletionStatus = new DeletionStatusEntity()

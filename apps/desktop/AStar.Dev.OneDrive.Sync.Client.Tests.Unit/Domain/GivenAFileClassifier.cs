@@ -6,13 +6,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 public sealed class GivenAFileClassifier
 {
     private static FileClassificationCategory Category(string name, int level, bool isFamous = false, bool isInternet = false)
-        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(1), name, level, isFamous, isInternet, Option.None<FileClassificationCategoryId>())).Value;
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(1), name, level, isFamous, isInternet, Option.None<FileClassificationCategoryId>(), false)).Value;
 
     private static FileClassificationCategory ChildCategory(int id, string name, int level, int parentId, bool isFamous = false, bool isInternet = false)
-        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, level, isFamous, isInternet, Option.Some(new FileClassificationCategoryId(parentId)))).Value;
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, level, isFamous, isInternet, Option.Some(new FileClassificationCategoryId(parentId)), false)).Value;
 
     private static FileClassificationCategory RootCategory(int id, string name)
-        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, 1, false, false, Option.None<FileClassificationCategoryId>())).Value;
+        => ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new(id), name, 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value;
 
     [Fact]
     public void when_classifying_segment_based_path_then_path_segments_produce_tokens()

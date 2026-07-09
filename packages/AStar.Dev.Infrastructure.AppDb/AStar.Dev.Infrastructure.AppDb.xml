@@ -186,17 +186,22 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory">
             <summary>A named category node in the file classification hierarchy (Level 1–3).</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.Functional.Extensions.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.Functional.Extensions.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
             <summary>A named category node in the file classification hierarchy (Level 1–3).</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory.Create(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.Functional.Extensions.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory.Create(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.Functional.Extensions.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory"/> with validation.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId">
             <summary>Strongly-typed identifier for a file classification category.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryIdFactory.Create(System.Int32)">
+            <summary>Converts an integer to a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId"/>.</summary>
+            <param name="id">The integer identifier.</param>
+            <returns>A <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId"/> instance.</returns>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/>.</summary>
@@ -874,13 +879,26 @@
             <summary>FK to parent category; null for root nodes.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.IsFamous">
-            <summary>Whether this keyword defines a famous person.</summary>
+            <summary>Whether this category defines a famous person.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.IsInternet">
-            <summary>Whether this keyword defines the internet classification.</summary>
+            <summary>Whether this category defines the internet classification.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.IncludeInSearch">
             <summary>Whether files matching this category should be included in search results.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.CreatedAt">
+            <summary>
+             The date and time when this category was created. This is set automatically when the entity is first persisted to the database and should not be modified thereafter.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.UpdatedAt">
+            <summary>
+            The date and time when this category was last updated. This is set automatically whenever the entity is modified and persisted to the database. It can be null if the entity has never been updated since creation.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.IsActive">
+            <summary>Whether this category is active and should be considered in operations.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.Parent">
             <summary>Navigation to parent category.</summary>
@@ -944,12 +962,6 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.IsImage">
             <summary>Whether the file is of a supported image type.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.Width">
-            <summary>The width of the file in pixels, if it is an image.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.Height">
-            <summary>The height of the file in pixels, if it is an image.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.FileAccessDetailId">
             <summary>Foreign key to the owned <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity"/>.</summary>
@@ -1726,6 +1738,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RepairClassificationData.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">

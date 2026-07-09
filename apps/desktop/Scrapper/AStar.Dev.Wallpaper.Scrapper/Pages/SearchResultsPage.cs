@@ -1,12 +1,15 @@
-using System.Globalization;
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Playwright;
-using Serilog.Core;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Pages;
 
-public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logger logger)
+public sealed class SearchResultsPage(IPlaywrightService playwrightService)
 {
+    private const string PageHeaderErrorSource = "search-results-page-header";
+    private const string ImagePageLinksErrorSource = "search-results-image-page-links";
+
     private IPage page = null!;
 
     private ILocator NewSubscriptionWallpapersHeader => page.GetByText("New Subscription Wallpapers", new PageGetByTextOptions { Exact = false, });
@@ -17,109 +20,73 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService, Logg
 
     private ILocator ImagePreviews => page.GetByRole(AriaRole.Link);
 
-    public async Task<IResponse?> LoadSearchPageAsync(string searchString, int pageNumber)
-    {
-        try
-        {
-            page ??= await playwrightService.ConfigurePlaywrightAsync();
-            return await GotoSearchPageAsync(searchString, pageNumber);
-        }
-        catch (Exception exception)
-        {
-            logger.Error(exception.GetBaseException().Message);
+    public async Task<Result<Unit, ScrapeError>> LoadSearchPageAsync(string searchString, int pageNumber)
+        => (await Try.RunAsync(() => AttemptGotoSearchPageAsync(searchString, pageNumber)).ConfigureAwait(false))
+            .ToResult<bool, ScrapeError>(exception => ScrapeErrorFactory.CreatePageLoadFailed($"{searchString}{pageNumber}", exception.Message))
+            .Bind(succeeded => ToSearchPageResult(succeeded, searchString, pageNumber));
 
-            throw;
-        }
+    public async Task<Result<PageInfo, ScrapeError>> PageInfoAsync()
+        => (await Try.RunAsync(GetPageHeaderAsync).ConfigureAwait(false))
+            .ToResult<string?, ScrapeError>(exception => ScrapeErrorFactory.CreatePageLoadFailed(PageHeaderErrorSource, exception.Message))
+            .Bind(PageHeaderParser.Parse);
+
+    public async Task<Result<IReadOnlyCollection<string>, ScrapeError>> ImagePageLinksAsync()
+        => (await Try.RunAsync(GetTheImagePageLinksAsync).ConfigureAwait(false))
+            .ToResult<IReadOnlyCollection<string>, ScrapeError>(exception => ScrapeErrorFactory.CreatePageLoadFailed(ImagePageLinksErrorSource, exception.Message));
+
+    private static Result<Unit, ScrapeError> ToSearchPageResult(bool succeeded, string searchString, int pageNumber)
+    {
+        if (succeeded) return Unit.Value;
+
+        return ScrapeErrorFactory.CreatePageLoadFailed($"{searchString}{pageNumber}", $"Could not load the search results page for {searchString}{pageNumber} after retry.");
     }
 
-    public async Task<(int pageCount, int imageCount, string subDirectoryName)> PageInfoAsync()
+    private async Task<bool> AttemptGotoSearchPageAsync(string searchString, int pageNumber)
     {
-        try
-        {
-            page ??= await playwrightService.ConfigurePlaywrightAsync();
-            return await GetPageInfoAsync();
-        }
-        catch (Exception exception)
-        {
-            logger.Error(exception.GetBaseException().Message);
+        await EnsurePageAsync().ConfigureAwait(false);
 
-            throw;
-        }
-    }
+        var firstAttempt = await GotoPageAsync(searchString, pageNumber).ConfigureAwait(false);
 
-    public async Task<IReadOnlyCollection<string>> ImagePageLinksAsync()
-    {
-        try
-        {
-            page ??= await playwrightService.ConfigurePlaywrightAsync();
-            return await GetTheImagePageLinksAsync();
-        }
-        catch (Exception exception)
-        {
-            logger.Error(exception.GetBaseException().Message);
+        if (firstAttempt is { Ok: true, }) return true;
 
-            throw;
-        }
-    }
+        var secondAttempt = await GotoPageAsync(searchString, pageNumber).ConfigureAwait(false);
 
-    private async Task<IResponse?> GotoSearchPageAsync(string searchString, int pageNumber)
-    {
-        var searchPage = await GotoPageAsync(searchString, pageNumber);
-
-        return searchPage is { Ok: true, } ? searchPage : await GotoPageAsync(searchString, pageNumber);
+        return secondAttempt is { Ok: true, };
     }
 
     private async Task<IReadOnlyCollection<string>> GetTheImagePageLinksAsync()
     {
-        List<string> wantedLinks = [];
-        var imagePreviews = await ImagePreviews.AllAsync();
+        await EnsurePageAsync().ConfigureAwait(false);
 
-        foreach (var imagePreview in imagePreviews)
-        {
-            string? hrefString = await imagePreview.GetAttributeAsync("href");
+        var imagePreviews = await ImagePreviews.AllAsync().ConfigureAwait(false);
+        List<string?> hrefs = [];
+        foreach (var imagePreview in imagePreviews) hrefs.Add(await imagePreview.GetAttributeAsync("href").ConfigureAwait(false));
 
-            if (hrefString != null && hrefString.Contains("/w/")) wantedLinks.Add(hrefString);
-        }
-
-        return [.. wantedLinks.Take(24)];
-    }
-
-    private async Task<(int pageCount, int imageCount, string subDirectoryName)> GetPageInfoAsync()
-    {
-        string? text = await GetPageHeaderAsync();
-
-        if (text is null) return (0, 0, string.Empty);
-
-        int firstSpaceIndex = text.IndexOf(' ');
-        int hashIndex = text.IndexOf("for ", StringComparison.Ordinal) + 3;
-        string subDirectoryName = string.Empty;
-
-        if (hashIndex > 0) subDirectoryName = text[(hashIndex + 1)..].Replace(" ", "-").Replace("#", string.Empty);
-
-        string searchResults = text.Replace(",", string.Empty)[..firstSpaceIndex];
-        decimal imageCount = decimal.Parse(searchResults, CultureInfo.InvariantCulture);
-
-        return (Convert.ToInt32(Math.Ceiling(imageCount / 24)), (int)imageCount, subDirectoryName);
+        return ImageLinkSelector.SelectWanted(hrefs);
     }
 
     private async Task<IResponse?> GotoPageAsync(string searchString, int pageNumber)
-        => await page.GotoAsync($"{searchString}{pageNumber}", new PageGotoOptions { Timeout = 60000, });
+        => await page.GotoAsync($"{searchString}{pageNumber}", new PageGotoOptions { Timeout = 60000, }).ConfigureAwait(false);
 
     private async Task<string?> GetPageHeaderAsync()
     {
+        await EnsurePageAsync().ConfigureAwait(false);
+
         string? text;
 
         try
         {
-            text = await WallpaperSearchHeader.TextContentAsync();
+            text = await WallpaperSearchHeader.TextContentAsync().ConfigureAwait(false);
         }
         catch
         {
-            text = await WallpaperSearchHeaderGeneral.TextContentAsync();
+            text = await WallpaperSearchHeaderGeneral.TextContentAsync().ConfigureAwait(false);
         }
 
-        if (text?.Length == 0) text = await NewSubscriptionWallpapersHeader.TextContentAsync();
+        if (text?.Length == 0) text = await NewSubscriptionWallpapersHeader.TextContentAsync().ConfigureAwait(false);
 
         return text;
     }
+
+    private async Task EnsurePageAsync() => page ??= await playwrightService.ConfigurePlaywrightAsync().ConfigureAwait(false);
 }

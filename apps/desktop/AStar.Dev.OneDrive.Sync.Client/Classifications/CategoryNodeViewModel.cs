@@ -48,6 +48,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     public partial bool IsEditing { get; set; }
 
     [ObservableProperty]
+    public partial bool IncludeInSearch { get; set; }
+
+    [ObservableProperty]
     public partial string EditedName { get; set; } = string.Empty;
 
     /// <summary>Child categories nested under this node.</summary>
@@ -93,7 +96,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             return;
         }
 
-        await FileClassificationCategoryFactory.Create(CategoryId, trimmedName, Level, IsFamous, IsInternet, parentId)
+        await FileClassificationCategoryFactory.Create(CategoryId, trimmedName, Level, IsFamous, IsInternet, parentId, IncludeInSearch)
             .Match(category => PersistUpdateAsync(category, trimmedName), _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }
@@ -130,7 +133,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         var placeholder = new FileClassificationCategoryId(0);
         string trimmedName = NewChildCategoryName.Trim().ToTitleCase();
 
-        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId))
+        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch)
             .Match(category => AddValidatedChildCategoryAsync(category, trimmedName, childLevel), _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }

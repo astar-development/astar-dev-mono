@@ -1,8 +1,11 @@
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scrapper.Tests.Unit.Services;
 
@@ -35,7 +38,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
                .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
-        sut = new FileClassificationService(factory);
+        sut = new FileClassificationService(factory, new LoggerConfiguration().CreateLogger());
     }
 
     public async ValueTask DisposeAsync() => await connection.DisposeAsync();
@@ -354,6 +357,46 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_classifying_with_a_detached_category_matching_an_already_tracked_category_then_the_classification_is_saved_without_a_tracking_conflict()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var existingCategory = new FileClassificationCategoryEntity { Name = "Animals", Level = 3, IncludeInSearch = true };
+        seedCtx.FileClassificationCategories.Add(existingCategory);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-detached-category")
+        };
+        seedCtx.Files.Add(fileDetail);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var preloadedContext = new AppDbContext(options);
+        var trackedCategory = await preloadedContext.FileClassificationCategories.SingleAsync(c => c.Id == existingCategory.Id, TestContext.Current.CancellationToken);
+        var detachedCategory = new FileClassificationCategoryEntity
+        {
+            Id = trackedCategory.Id,
+            Name = trackedCategory.Name,
+            Level = trackedCategory.Level,
+            IncludeInSearch = trackedCategory.IncludeInSearch
+        };
+
+        var localFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        localFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult(preloadedContext));
+
+        var localService = new FileClassificationService(localFactory, new LoggerConfiguration().CreateLogger());
+
+        var result = await localService.ClassifyAsync(fileDetail, new PageClassificationData([], detachedCategory, []), [], TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
+
+        await using var verifyCtx = new AppDbContext(options);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        junction.CategoryId.ShouldBe(existingCategory.Id);
+    }
+
+    [Fact]
     public async Task when_classifying_with_a_tag_matching_no_existing_category_then_a_level_two_category_under_the_unclassified_root_is_created()
     {
         var fileDetail = new FileDetailEntity
@@ -468,12 +511,13 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     public async Task when_importing_a_new_classification_then_it_is_added()
     {
         var incoming = (
-            Categories: new List<FileClassificationCategoryEntity> { new() { Id = 1, Name = "Animals", Level = 3, IncludeInSearch = true } },
-            Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = 1, Keyword = "animals" } });
+            Categories: new List<FileClassificationCategoryEntity> { new() { Id = 2, Name = "Animals", Level = 1, IncludeInSearch = true } },
+            Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = 2, Keyword = "animals" } });
 
         await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
+        var check = verifyCtx.FileClassificationCategories.ToList();
         var stored = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         stored.Name.ShouldBe("Animals");
     }
@@ -496,6 +540,50 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await using var verifyCtx = new AppDbContext(options);
         int count = await verifyCtx.FileClassificationKeywords.CountAsync(k => k.CategoryId == existing.Id, TestContext.Current.CancellationToken);
         count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_matching_image_tag_then_the_result_is_ok()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-result-ok")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "outdoors", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+
+        var result = await sut.ClassifyAsync(fileDetail, pageData, ["outdoors"], TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
+    }
+
+    [Fact]
+    public async Task when_classifying_with_a_tag_matching_no_existing_category_then_the_junction_row_links_to_the_newly_created_category()
+    {
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-junction-links-new-category")
+        };
+        await using var seedCtx = new AppDbContext(options);
+        seedCtx.Files.Add(fileDetail);
+        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "brand new junction tag", IncludeInSearch = true });
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, ["brand new junction tag"], TestContext.Current.CancellationToken);
+
+        await using var verifyCtx = new AppDbContext(options);
+        var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Brand New Junction Tag", TestContext.Current.CancellationToken);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        junction.CategoryId.ShouldBe(created.Id);
     }
 
     private static ScrapeConfigurationEntity CreateScrapeConfigEntity() => new()

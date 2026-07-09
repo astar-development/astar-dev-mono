@@ -67,6 +67,10 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
     public partial bool IsInternet { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCategoryCommand))]
+    public partial bool IncludeInSearch { get; set; }
     partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(HasNoCategories));
 
     /// <summary>Loads all categories from the repository and builds the tree, then populates keywords for each leaf node.</summary>
@@ -123,8 +127,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         if (path is null)
             return;
 
-        bool confirmed = await confirmationDialogService.ConfirmAsync("Import classifications", "This will delete ALL classifications. Continue?", ct).ConfigureAwait(false);
-        if (!confirmed)
+        if (!await confirmationDialogService.ConfirmAsync("Import classifications", "This will update ALL existing classifications and add new ones. Continue?", ct).ConfigureAwait(false))
             return;
 
         await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), ct).ConfigureAwait(false);
@@ -139,7 +142,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         var placeholder = new FileClassificationCategoryId(0);
         string trimmedName = NewCategoryName.Trim();
 
-        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>())
+        await FileClassificationCategoryFactory.Create(placeholder, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), IncludeInSearch)
             .Match(category => AddValidatedCategoryAsync(category, trimmedName), _ => Task.CompletedTask)
             .ConfigureAwait(false);
     }

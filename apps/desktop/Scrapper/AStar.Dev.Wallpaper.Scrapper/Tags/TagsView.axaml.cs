@@ -1,6 +1,8 @@
 using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scrapper.Models;
 using AStar.Dev.Wallpaper.Scrapper.Services;
 using AStar.Dev.Wallpaper.Scrapper.Support;
+using AStar.Dev.Wallpaper.Scrapper.Workflows;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -28,37 +30,40 @@ public partial class TagsView : Window, IDisposable
     }
 
     private async void OnExportTagsClicked(object? sender, RoutedEventArgs e)
-        => _ = await ResetCancellationTokenSource()
-            .Match(
-                onSuccess: DisableControlsAndClearStatus,
-                onFailure: ex =>
-                {
-                    logger.Error(ex, "Failed to reset cancellation token source");
-                    UpdateStatus($"Error: {ex.Message}");
-                    return ex.Message;
-                }
-            )
-            .Tap(_ => logger.Information("Exporting tags..."))
-            .MapAsync(_ => scrapedTagService.ExportScrapedTagsAsync(cts!.Token))
-            .Tap(importExportService.ExportScrapedTagsToFile)
-            .TapAsync(_ => logger.Information("Tag export completed..."))
-            .EnsureAsync(() => ResetUI());
+    {
+        try
+        {
+            _ = await ScrapeSiteWorkflowDecision.DecideAsync(
+                ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
+                ct => Result.Success<CancellationToken, string>(ct)
+                    .Tap(_ => logger.Information("Exporting tags..."))
+                    .MapAsync(_ => scrapedTagService.ExportScrapedTagsAsync(ct))
+                    .Tap(importExportService.ExportScrapedTagsToFile)
+                    .TapAsync(_ => logger.Information("Tag export completed...")));
+        }
+        finally
+        {
+            ResetUI();
+        }
+    }
 
     private async void OnImportTagsClicked(object? sender, RoutedEventArgs e)
-        => _ = await ResetCancellationTokenSource()
-            .Match(
-                onSuccess: DisableControlsAndClearStatus,
-                onFailure: ex =>
-                {
-                    logger.Error(ex, "Failed to reset cancellation token source");
-                    return ex.Message;
-                }
-            )
-            .Tap(_ => logger.Information("Importing tags..."))
-            .Bind(_ => importExportService.ImportScrapedTagsFromFile())
-            .MapAsync(tags => scrapedTagService.ImportScrapedTagsAsync(tags, cts!.Token))
-            .TapAsync(_ => logger.Information("Tag import completed..."))
-            .EnsureAsync(() => ResetUI());
+    {
+        try
+        {
+            _ = await ScrapeSiteWorkflowDecision.DecideAsync(
+                ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
+                ct => Result.Success<CancellationToken, string>(ct)
+                    .Tap(_ => logger.Information("Importing tags..."))
+                    .Bind(_ => importExportService.ImportScrapedTagsFromFile().ToStringError())
+                    .MapAsync(tags => scrapedTagService.ImportScrapedTagsAsync(tags, ct))
+                    .TapAsync(_ => logger.Information("Tag import completed...")));
+        }
+        finally
+        {
+            ResetUI();
+        }
+    }
 
     private Result<CancellationToken, Exception> ResetCancellationTokenSource()
     {
@@ -67,13 +72,17 @@ public partial class TagsView : Window, IDisposable
         return cts.Token;
     }
 
-    private Result<CancellationToken, string> DisableControlsAndClearStatus(CancellationToken ct = default)
+    private void LogSetupFailure(Exception exception)
+    {
+        logger.Error(exception, "Failed to reset cancellation token source");
+        UpdateStatus($"Error: {exception.Message}");
+    }
+
+    private void DisableControlsAndClearStatus(CancellationToken ct)
     {
         ExportTagsButton.IsEnabled = false;
         ImportTagsButton.IsEnabled = false;
         StatusLabel.Text = string.Empty;
-
-        return ct;
     }
 
     private void ResetUI()

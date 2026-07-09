@@ -238,7 +238,13 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IncludeInSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsFamous")
@@ -256,6 +262,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -335,16 +344,10 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<long>("FileSize")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Height")
-                        .HasColumnType("INTEGER");
-
                     b.Property<Guid>("ImageDetailId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsImage")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Width")
                         .HasColumnType("INTEGER");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "DirectoryName", "AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.DirectoryName#DirectoryName", b1 =>
