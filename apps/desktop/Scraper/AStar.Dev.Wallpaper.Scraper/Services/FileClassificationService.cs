@@ -3,7 +3,6 @@ using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Models;
-using AStar.Dev.Wallpaper.Scraper.Support;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
 

@@ -1,6 +1,4 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveFolderId = AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;

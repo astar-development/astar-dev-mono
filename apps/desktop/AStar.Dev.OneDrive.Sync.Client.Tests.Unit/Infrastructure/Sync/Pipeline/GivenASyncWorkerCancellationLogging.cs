@@ -1,7 +1,6 @@
 using System.Threading.Channels;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;

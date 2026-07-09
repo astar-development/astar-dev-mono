@@ -1,5 +1,3 @@
-using AStar.Dev.Infrastructure.AppDb.Domain;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Entities;
 
 public sealed class GivenAnAccountSyncConfig

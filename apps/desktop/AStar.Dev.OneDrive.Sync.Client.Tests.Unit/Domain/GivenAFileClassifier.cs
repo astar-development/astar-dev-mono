@@ -1,5 +1,4 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 

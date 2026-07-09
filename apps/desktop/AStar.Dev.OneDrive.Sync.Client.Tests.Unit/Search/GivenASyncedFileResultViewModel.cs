@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;

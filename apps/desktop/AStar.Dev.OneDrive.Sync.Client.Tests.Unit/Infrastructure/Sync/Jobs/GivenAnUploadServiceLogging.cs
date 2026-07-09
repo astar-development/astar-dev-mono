@@ -1,6 +1,5 @@
 using WireMockBodyType = WireMock.Types.BodyType;
 using WireMockRequest = WireMock.RequestBuilders.Request;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
 using WireMock.Util;

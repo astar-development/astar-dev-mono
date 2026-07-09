@@ -1,5 +1,3 @@
-using AStar.Dev.Infrastructure.AppDb.Domain;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
 public sealed class GivenASyncedItemSearchCriteriaFactory

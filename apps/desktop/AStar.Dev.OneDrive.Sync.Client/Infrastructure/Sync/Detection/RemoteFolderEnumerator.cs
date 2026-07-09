@@ -5,7 +5,6 @@ using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;

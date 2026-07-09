@@ -1,6 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

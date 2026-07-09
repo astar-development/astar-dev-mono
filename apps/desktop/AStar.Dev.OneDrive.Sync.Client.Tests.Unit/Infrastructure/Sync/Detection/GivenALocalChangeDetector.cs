@@ -1,4 +1,3 @@
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using Microsoft.Extensions.Logging;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
