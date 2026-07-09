@@ -1680,16 +1680,16 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.SearchQueryIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddScrapperTables">
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScrapperTables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScrapperTables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScrapperTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy">

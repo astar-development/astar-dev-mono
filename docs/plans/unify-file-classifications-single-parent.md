@@ -2,7 +2,7 @@
 
 ## Requirement
 
-Scrapper and OneDrive Sync must share one set of classifications per physical file. If the Scrapper has classified a downloaded file, OneDrive Sync (upload, download, or phantom registration) must reuse those classifications. Any app only classifies a file that has never been classified. No duplication of classification rows per file.
+Scraper and OneDrive Sync must share one set of classifications per physical file. If the Scraper has classified a downloaded file, OneDrive Sync (upload, download, or phantom registration) must reuse those classifications. Any app only classifies a file that has never been classified. No duplication of classification rows per file.
 
 ## Decisions (agreed 2026-07-03)
 
@@ -20,13 +20,13 @@ Scrapper and OneDrive Sync must share one set of classifications per physical fi
 - Migration data motion (SQL, separator-agnostic path split):
   1. Map each SyncedItem-parented row's `SyncedItems.LocalPath` to an existing `FileDetail` by `DirectoryName`/`FileName`.
   2. Create missing `FileDetail` rows (plus required `FileAccessDetail`, `ImageDetail`, `DeletionStatus` rows).
-  3. `INSERT OR IGNORE` converted rows (union with Scrapper rows), delete legacy SyncedItem-parented rows.
+  3. `INSERT OR IGNORE` converted rows (union with Scraper rows), delete legacy SyncedItem-parented rows.
   4. Backfill `SyncedItems.FileDetailId` from the same mapping.
 
 ## Phase 2 — Shared FileDetail resolver (issue #706)
 
 - `IFileDetailResolver` in `AStar.Dev.Infrastructure.AppDb`: `FindOrCreateAsync(fullPath, fileSize, ct)` — find by `DirectoryName` + `FileName`, else create with owned rows.
-- Used by OneDrive registrar (and available to Scrapper).
+- Used by OneDrive registrar (and available to Scraper).
 
 ## Phase 3 — OneDrive sync (issue #707)
 
@@ -34,7 +34,7 @@ Scrapper and OneDrive Sync must share one set of classifications per physical fi
 - `SyncedItemRepository`: remove delete-and-rewrite classification upserts; search tags and `GetDistinctTagNamesAsync` join `SyncedItems.FileDetailId` → `FileClassifications`.
 - `ClassificationDataMigrationService` (legacy `SyncedItemClassifications` import) writes FileDetail-keyed rows via the resolver.
 
-## Phase 4 — Scrapper skip rule (issue #708)
+## Phase 4 — Scraper skip rule (issue #708)
 
 - `FileClassificationService.ClassifyAsync`: skip when the `FileDetail` already has classification rows; otherwise unchanged.
 

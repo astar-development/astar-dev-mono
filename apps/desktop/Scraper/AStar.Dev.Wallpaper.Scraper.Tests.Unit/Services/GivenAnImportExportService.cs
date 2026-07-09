@@ -1,0 +1,693 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Models;
+using AStar.Dev.Wallpaper.Scraper.Services;
+using Microsoft.Extensions.Time.Testing;
+using Serilog;
+using System.IO.Abstractions;
+using System.Text.Json;
+using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
+using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity;
+using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
+
+namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Services;
+
+public sealed class GivenAnImportExportService
+{
+    private static readonly string scrapperDirectory = Path.GetDirectoryName(ApplicationMetadata.FileClassificationsExportFilePath)!;
+    private static readonly string scrapeConfigScraperDirectory = Path.GetDirectoryName(ApplicationMetadata.ScrapeConfigurationExportFilePath)!;
+    private static readonly string scrapperTagsDirectory = Path.GetDirectoryName(ApplicationMetadata.ScrapedTagsExportFilePath)!;
+
+    private const string CelebrityClassificationName = "Test Celebrity";
+    private const string NormalClassificationName = "Test Normal";
+    private const string ValidPassword = "super-secret-password";
+
+    private const string ActionTagValue = "Action";
+    private const string GenreCategory = "Genre";
+    private const string ComedyTagValue = "Comedy";
+
+    private const string ValidClassificationsJson = """
+        [
+          {
+            "id": 1,
+            "name": "Test Celebrity",
+            "level": 3,
+            "parentId": null,
+            "isFamous": true,
+            "includeInSearch": true,
+            "keywords": [
+              {
+                "id": 1,
+                "keyword": "Test Celebrity"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "Test Normal",
+            "level": 2,
+            "isFamous": false,
+            "includeInSearch": true,
+            "keywords": [
+              {
+                "id": 2,
+                "keyword": "Test Normal"
+              }
+            ]
+          }
+        ]
+        """;
+
+    private const string ThreeInvalidRowsClassificationsJson = """
+        [
+          { "id": 1, "name": "", "level": 3, "isFamous": false, "includeInSearch": true, "keywords": [] },
+          { "id": 2, "name": "Valid Name", "level": 0, "isFamous": false, "includeInSearch": true, "keywords": [] },
+          { "id": 3, "name": "Another Valid", "level": 9, "isFamous": false, "includeInSearch": true, "keywords": [] }
+        ]
+        """;
+
+    private const string ValidScrapeConfigJson = """
+        {
+          "connectionStrings": { "sqlite": "Data Source=test.db" },
+          "userConfiguration": { "loginEmailAddress": "test@example.com", "username": "testuser", "password": "REDACTED", "sessionCookie": "REDACTED" },
+          "searchConfiguration": {
+            "baseUrl": "https://example.com",
+            "apiKey": "REDACTED",
+            "searchCategories": [{ "id": "cat1", "name": "Category 1", "lastKnownImageCount": 0, "lastPageVisited": 0, "totalPages": 10, "includeInSearch": true }],
+            "searchString": "test",
+            "topWallpapers": "",
+            "searchStringPrefix": "",
+            "searchStringSuffix": "",
+            "subscriptions": "",
+            "imagePauseInSeconds": 1,
+            "startingPageNumber": 1,
+            "totalPages": 10,
+            "subscriptionsStartingPageNumber": 0,
+            "subscriptionsTotalPages": 0,
+            "topWallpapersTotalPages": 0,
+            "topWallpapersStartingPageNumber": 0,
+            "loginUrl": "",
+            "useHeadless": true,
+            "slowMotionDelay": null
+          },
+          "scrapeDirectories": { "rootDirectory": "/tmp/scrape", "baseSaveDirectory": "saves", "baseDirectory": "base", "baseDirectoryFamous": "famous", "subDirectoryName": "sub" }
+        }
+        """;
+
+    private const string ValidTagsJson = """
+        [
+          {
+            "value": "Action",
+            "category": "Genre",
+            "includeInSearch": true
+          },
+          {
+            "value": "Comedy",
+            "category": "Genre",
+            "includeInSearch": false
+          }
+        ]
+        """;
+
+    private readonly MockFileSystem mockFileSystem;
+    private readonly ILogger mockLogger;
+    private readonly IImportExportService sut;
+    private System.TimeProvider timeProvider;
+
+    public GivenAnImportExportService()
+    {
+        timeProvider = new FakeTimeProvider();
+        mockFileSystem = new MockFileSystem();
+        mockLogger = Substitute.For<ILogger>();
+        sut = new ImportExportService(mockFileSystem, timeProvider, mockLogger);
+    }
+
+    [Fact]
+    public void when_importing_and_file_does_not_exist_then_failure_result_is_returned() =>
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
+
+    [Fact]
+    public void when_importing_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
+
+    [Fact]
+    public void when_importing_and_file_does_not_exist_then_logger_receives_error_call()
+    {
+        sut.ImportFileClassificationsFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_and_file_contains_null_json_then_failure_result_is_returned()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, "null");
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_and_file_contains_null_json_then_logger_receives_error_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, "null");
+
+        sut.ImportFileClassificationsFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_result_is_ok()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_correct_category_count_is_returned()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Categories.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_correct_keyword_count_is_returned()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Keywords.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_celebrity_classification_name_is_mapped()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Categories[0].Name.ShouldBe(CelebrityClassificationName);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_normal_classification_name_is_mapped()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Categories[1].Name.ShouldBe(NormalClassificationName);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_level_is_mapped()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Categories[0].Level.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_importing_valid_classifications_then_keyword_is_linked_to_its_category()
+    {
+        SetupValidImportFile();
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Keywords[0].CategoryId.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_the_result_is_a_validation_failed_error()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>();
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_all_three_validation_errors_are_reported()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        var errors = sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>().Errors;
+
+        errors.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_importing_classifications_with_three_invalid_rows_then_the_errors_are_reported_in_row_order()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ThreeInvalidRowsClassificationsJson);
+
+        var errors = sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Fail<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Error.ShouldBeOfType<ValidationFailed>().Errors;
+
+        errors[0].Property.ShouldBe("Categories[0].Name");
+        errors[1].Property.ShouldBe("Categories[1].Level");
+        errors[2].Property.ShouldBe("Categories[2].Level");
+    }
+
+    [Fact]
+    public void when_exporting_and_reimporting_a_classification_then_level_survives_the_round_trip()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        var classifications = CreateDomainClassifications();
+
+        sut.ExportFileClassificationsToFile(classifications);
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Categories[0].Level.ShouldBe(3);
+    }
+
+    [Fact]
+    public void when_exporting_and_reimporting_a_classification_then_keyword_survives_the_round_trip()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        var classifications = CreateDomainClassifications();
+
+        sut.ExportFileClassificationsToFile(classifications);
+
+        sut.ImportFileClassificationsFromFile()
+           .ShouldBeOfType<Ok<(List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords), ScrapeError>>()
+           .Value.Keywords.ShouldContain(k => k.Keyword == "celebrity-keyword");
+    }
+
+    [Fact]
+    public void when_exporting_classifications_then_file_is_written_to_expected_path()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+
+        sut.ExportFileClassificationsToFile(CreateDomainClassifications());
+
+        mockFileSystem.File.Exists(ApplicationMetadata.FileClassificationsExportFilePath).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_exporting_classifications_then_logger_receives_information_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+
+        sut.ExportFileClassificationsToFile(CreateDomainClassifications());
+
+        mockLogger.Received(1).Information(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_export_then_exception_is_rethrown()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        var act = () => throwingSut.ExportFileClassificationsToFile(([], []));
+
+        act.ShouldThrow<IOException>();
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_export_then_logger_receives_error_call()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        Should.Throw<IOException>(() => throwingSut.ExportFileClassificationsToFile(([], [])));
+
+        mockLogger.Received(1).Error(Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_does_not_exist_then_failure_result_is_returned() =>
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>();
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_does_not_exist_then_logger_receives_error_call()
+    {
+        sut.ImportScrapeConfigurationFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_contains_null_json_then_failure_result_is_returned()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath, "null");
+
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Fail<ScrapeConfigurationEntity, ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_scrape_config_and_file_contains_null_json_then_logger_receives_error_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath, "null");
+
+        sut.ImportScrapeConfigurationFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_valid_scrape_config_then_result_is_ok()
+    {
+        SetupValidScrapeConfigImportFile();
+
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_valid_scrape_config_then_correct_connection_string_is_mapped()
+    {
+        SetupValidScrapeConfigImportFile();
+
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>()
+           .Value.ConnectionStrings.Sqlite.ShouldBe("Data Source=test.db");
+    }
+
+    [Fact]
+    public void when_importing_valid_scrape_config_then_password_field_is_preserved_from_db()
+    {
+        SetupValidScrapeConfigImportFile();
+
+        sut.ImportScrapeConfigurationFromFile()
+           .ShouldBeOfType<Ok<ScrapeConfigurationEntity, ScrapeError>>()
+           .Value.UserConfiguration.Password.ShouldBe(ApplicationMetadata.Redacted);
+    }
+
+    [Fact]
+    public void when_exporting_scrape_config_then_file_is_written_to_expected_path()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+
+        sut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData());
+
+        mockFileSystem.File.Exists(ApplicationMetadata.ScrapeConfigurationExportFilePath).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_exporting_scrape_config_then_logger_receives_information_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+
+        sut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData());
+
+        mockLogger.Received(1).Information(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_exporting_scrape_config_then_password_is_redacted_in_exported_file()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+
+        sut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData());
+
+        string json = mockFileSystem.File.ReadAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath);
+        using var doc = JsonDocument.Parse(json);
+        doc.RootElement.GetProperty("userConfiguration").GetProperty("password").GetString()
+           .ShouldBe(ApplicationMetadata.Redacted);
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_scrape_config_export_then_exception_is_rethrown()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        var act = () => throwingSut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData());
+
+        act.ShouldThrow<IOException>();
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_scrape_config_export_then_logger_receives_error_call()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        Should.Throw<IOException>(() => throwingSut.ExportScrapeConfigurationToFile(CreateScrapeConfigurationEntityWithSensitiveData()));
+
+        mockLogger.Received(1).Error(Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_tags_and_file_does_not_exist_then_failure_result_is_returned() =>
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
+
+    [Fact]
+    public void when_importing_tags_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>()
+           .Error.ShouldBeOfType<ImportFailed>();
+
+    [Fact]
+    public void when_importing_tags_and_file_does_not_exist_then_logger_receives_error_call()
+    {
+        sut.ImportScrapedTagsFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_tags_and_file_contains_null_json_then_failure_result_is_returned()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperTagsDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, "null");
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_tags_and_file_contains_null_json_then_logger_receives_error_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperTagsDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, "null");
+
+        sut.ImportScrapedTagsFromFile();
+
+        mockLogger.Received(1).Error(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_result_is_ok()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>();
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_correct_count_is_returned()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_first_tag_value_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[0].Value.ShouldBe(ActionTagValue);
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_first_tag_category_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[0].Category.ShouldBe(GenreCategory);
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_first_tag_include_in_search_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[0].IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_second_tag_value_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[1].Value.ShouldBe(ComedyTagValue);
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_second_tag_category_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[1].Category.ShouldBe(GenreCategory);
+    }
+
+    [Fact]
+    public void when_importing_valid_tags_then_second_tag_include_in_search_is_mapped()
+    {
+        SetupValidTagsImportFile();
+
+        sut.ImportScrapedTagsFromFile()
+           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .Value[1].IncludeInSearch.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_exporting_tags_then_file_is_written_to_expected_path()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperTagsDirectory);
+
+        sut.ExportScrapedTagsToFile(CreateDomainTags());
+
+        mockFileSystem.File.Exists(ApplicationMetadata.ScrapedTagsExportFilePath).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_exporting_tags_then_logger_receives_information_call()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperTagsDirectory);
+
+        sut.ExportScrapedTagsToFile(CreateDomainTags());
+
+        mockLogger.Received(1).Information(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_tag_export_then_exception_is_rethrown()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        var act = () => throwingSut.ExportScrapedTagsToFile([]);
+
+        act.ShouldThrow<IOException>();
+    }
+
+    [Fact]
+    public void when_file_system_throws_during_tag_export_then_logger_receives_error_call()
+    {
+        var throwingFileSystem = Substitute.For<IFileSystem>();
+        throwingFileSystem.File.When(f => f.WriteAllText(Arg.Any<string>(), Arg.Any<string?>()))
+                               .Throw(new IOException("Disk full"));
+        var throwingSut = new ImportExportService(throwingFileSystem, timeProvider, mockLogger);
+
+        Should.Throw<IOException>(() => throwingSut.ExportScrapedTagsToFile([]));
+
+        mockLogger.Received(1).Error(Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    private void SetupValidImportFile()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.FileClassificationsExportFilePath, ValidClassificationsJson);
+    }
+
+    private void SetupValidScrapeConfigImportFile()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapeConfigScraperDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapeConfigurationExportFilePath, ValidScrapeConfigJson);
+    }
+
+    private void SetupValidTagsImportFile()
+    {
+        mockFileSystem.Directory.CreateDirectory(scrapperTagsDirectory);
+        mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, ValidTagsJson);
+    }
+
+    private static (List<FileClassificationDomain> Categories, List<FileClassificationKeywordDomain> Keywords) CreateDomainClassifications() =>
+    (
+        Categories:
+        [
+            new() { Id = 1, Name = CelebrityClassificationName, Level = 3, IsFamous = true,  IncludeInSearch = true },
+            new() { Id = 2, Name = NormalClassificationName,    Level = 3, IsFamous = false, IncludeInSearch = true }
+        ],
+        Keywords:
+        [
+            new() { Id = 1, CategoryId = 1, Keyword = "celebrity-keyword" },
+            new() { Id = 2, CategoryId = 2, Keyword = "normal-keyword" }
+        ]
+    );
+
+    private static ScrapeConfigurationEntity CreateScrapeConfigurationEntityWithSensitiveData() => new()
+    {
+        ConnectionStrings = new ConnectionStringsEntity { Sqlite = "Data Source=production.db" },
+        UserConfiguration = new UserConfigurationEntity
+        {
+            LoginEmailAddress = "user@example.com",
+            Username = "testuser",
+            Password = ValidPassword,
+            SessionCookie = "actual-session-cookie"
+        },
+        SearchConfiguration = new SearchConfigurationEntity
+        {
+            BaseUrl = new Uri("https://example.com"),
+            ApiKey = "actual-api-key"
+        },
+        ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp/scrape" }
+    };
+
+    private static List<ScrapedTagDomain> CreateDomainTags() =>
+    [
+        new() { Value = ActionTagValue, Category = GenreCategory, IncludeInSearch = true  },
+        new() { Value = ComedyTagValue, Category = GenreCategory, IncludeInSearch = false }
+    ];
+}

@@ -7,7 +7,7 @@
         <Copyright>AStar Development, 2026</Copyright>
         <PackageProjectUrl>https://github.com/astar-development/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/astar-development/</RepositoryUrl>
-        <Description>Shared EF Core AppDbContext, entities, configuration and migrations for the AStar OneDrive Sync / Wallpaper Scrapper desktop apps.</Description>
+        <Description>Shared EF Core AppDbContext, entities, configuration and migrations for the AStar OneDrive Sync / Wallpaper Scraper desktop apps.</Description>
         <PackageTags>AStar;Infrastructure;AppDb;EFCore;SQLite</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>

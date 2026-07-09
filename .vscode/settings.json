@@ -137,6 +137,8 @@
     "dotnet build": true,
     "dotnet test": true,
     "git -C /home/jbarden/repos/astar-dev-mono": true,
-    "gh": true
+    "gh": true,
+    "git checkout": true,
+    "git mv": true
   }
 }
