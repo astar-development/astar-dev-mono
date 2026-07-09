@@ -8,8 +8,11 @@ public sealed class GivenChromeCookieExtractor
     public void when_home_directory_contains_supported_profiles_then_returns_candidate_paths_in_preferred_order()
     {
         string homeDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        string? originalConfigHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
         try
         {
+            Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", null);
+
             string googleChromeProfile = Path.Combine(homeDirectory, ".config", "google-chrome", "Default");
             string chromiumProfile = Path.Combine(homeDirectory, ".config", "chromium", "Profile 1");
             Directory.CreateDirectory(googleChromeProfile);
@@ -29,6 +32,8 @@ public sealed class GivenChromeCookieExtractor
             {
                 Directory.Delete(homeDirectory, recursive: true);
             }
+
+            Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", originalConfigHome);
         }
     }
 }
