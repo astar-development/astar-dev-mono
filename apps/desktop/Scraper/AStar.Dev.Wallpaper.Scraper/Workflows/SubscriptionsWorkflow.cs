@@ -37,7 +37,7 @@ public sealed class SubscriptionsWorkflow(
     private async Task LoadStartingPageAsync()
     {
         var loadResult = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
-        var loadedSuccessfully = loadResult.Match(_ => true, _ => false);
+        bool loadedSuccessfully = loadResult.Match(_ => true, _ => false);
 
         if (!loadedSuccessfully) _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
     }

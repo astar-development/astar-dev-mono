@@ -10,7 +10,7 @@ public class GivenExceptionalMatch
     {
         var exceptional = Exceptional.Success(4);
 
-        var actual = exceptional.Match(onSuccess: value => value + 1, onFailure: _ => -1);
+        int actual = exceptional.Match(onSuccess: value => value + 1, onFailure: _ => -1);
 
         actual.ShouldBe(5);
     }
@@ -20,7 +20,7 @@ public class GivenExceptionalMatch
     {
         var exceptional = Exceptional.Failure<int>(new InvalidOperationException("bad"));
 
-        var actual = exceptional.Match(onSuccess: value => value + 1, onFailure: ex => ex.Message.Length);
+        int actual = exceptional.Match(onSuccess: value => value + 1, onFailure: ex => ex.Message.Length);
 
         actual.ShouldBe(3);
     }

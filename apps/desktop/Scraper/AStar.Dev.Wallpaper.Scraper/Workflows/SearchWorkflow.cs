@@ -27,7 +27,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
             ct.ThrowIfCancellationRequested();
 
             var categoryResult = await ProcessSearchCategoryAsync(searchCategory, ct).ConfigureAwait(false);
-            var categoryFailed = categoryResult.Match(_ => false, _ => true);
+            bool categoryFailed = categoryResult.Match(_ => false, _ => true);
 
             if (categoryFailed) return categoryResult;
         }

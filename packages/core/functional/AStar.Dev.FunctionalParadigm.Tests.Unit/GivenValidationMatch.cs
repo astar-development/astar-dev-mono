@@ -10,7 +10,7 @@ public class GivenValidationMatch
     {
         var validation = Validation.Valid(9);
 
-        var actual = validation.Match(value => value * 2, _ => -1);
+        int actual = validation.Match(value => value * 2, _ => -1);
 
         actual.ShouldBe(18);
     }
@@ -25,7 +25,7 @@ public class GivenValidationMatch
         };
         var validation = Validation.Invalid<int>(errors);
 
-        var actual = validation.Match(_ => "valid", invalidErrors => string.Join(",", invalidErrors.Select(error => error.Message)));
+        string actual = validation.Match(_ => "valid", invalidErrors => string.Join(",", invalidErrors.Select(error => error.Message)));
 
         actual.ShouldBe("required,must be positive");
     }

@@ -25,7 +25,7 @@ public sealed class PagedScrapeRunner(ConfigurationSaver configurationSaver, IDe
                 .BindAsync(links => plan.ProcessLinksAsync(links, ct))
                 .ConfigureAwait(false);
 
-            var pageFailed = pageResult.Match(_ => false, _ => true);
+            bool pageFailed = pageResult.Match(_ => false, _ => true);
 
             if (pageFailed) return pageResult;
         }

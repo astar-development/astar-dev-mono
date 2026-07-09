@@ -57,7 +57,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         if (effectiveParentId is Option<FileClassificationCategoryId>.None && node.ParentId.HasValue)
             effectiveParentId = Option.Some(FileClassificationCategoryIdFactory.Create(node.ParentId.Value));
 
-        var level = node.Level > 0 ? node.Level : (effectiveParentId is Option<FileClassificationCategoryId>.Some ? parentLevel + 1 : 1);
+        int level = node.Level > 0 ? node.Level : (effectiveParentId is Option<FileClassificationCategoryId>.Some ? parentLevel + 1 : 1);
         var fileClassificationCategoryId = FileClassificationCategoryIdFactory.Create(node.Id);
 
         var createResult = FileClassificationCategoryFactory.Create(fileClassificationCategoryId, node.Name, level, node.IsFamous ?? false, node.IsInternet ?? false, effectiveParentId, node.IncludeInSearch);

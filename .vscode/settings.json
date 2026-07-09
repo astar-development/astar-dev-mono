@@ -139,6 +139,7 @@
     "git -C /home/jbarden/repos/astar-dev-mono": true,
     "gh": true,
     "git checkout": true,
-    "git mv": true
+    "git mv": true,
+    "dotnet clean": true
   }
 }

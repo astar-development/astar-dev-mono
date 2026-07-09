@@ -55,7 +55,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("fail");
         var exceptional = Exceptional.Failure<int>(exception);
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await exceptional.BindAsync(value =>
         {
@@ -72,7 +72,7 @@ public class GivenExceptionalAsync
     public async Task when_tap_async_on_task_of_success_then_executes_handler_and_returns_same()
     {
         var exceptionalTask = Task.FromResult(Exceptional.Success(9));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.TapAsync(value => sideEffect = value == 9);
 
@@ -86,7 +86,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("boom");
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.TapAsync(_ => { }, ex => sideEffect = ex == exception);
 
@@ -99,7 +99,7 @@ public class GivenExceptionalAsync
     {
         var exceptional = Exceptional.Success(3);
 
-        var actual = await exceptional.MatchAsync(onSuccess: value => Task.FromResult(value + 1), onFailure: _ => -1);
+        int actual = await exceptional.MatchAsync(onSuccess: value => Task.FromResult(value + 1), onFailure: _ => -1);
 
         actual.ShouldBe(4);
     }
@@ -110,7 +110,7 @@ public class GivenExceptionalAsync
         var exception = new InvalidOperationException("err");
         var exceptional = Exceptional.Failure<int>(exception);
 
-        var actual = await exceptional.MatchAsync(onSuccess: value => Task.FromResult(value + 1), onFailure: ex => ex.Message.Length);
+        int actual = await exceptional.MatchAsync(onSuccess: value => Task.FromResult(value + 1), onFailure: ex => ex.Message.Length);
 
         actual.ShouldBe(3);
     }
@@ -154,7 +154,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("fail");
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await exceptionalTask.BindAsync(value =>
         {
@@ -184,7 +184,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("fail");
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await exceptionalTask.BindAsync(value =>
         {
@@ -214,7 +214,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("fail");
         var exceptionalTask = ValueTask.FromResult(Exceptional.Failure<int>(exception));
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await exceptionalTask.BindAsync(value =>
         {
@@ -244,7 +244,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("fail");
         var exceptionalTask = ValueTask.FromResult(Exceptional.Failure<int>(exception));
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await exceptionalTask.BindAsync(value =>
         {
@@ -262,7 +262,7 @@ public class GivenExceptionalAsync
     public async Task when_tap_on_task_of_success_then_executes_handler_and_returns_same()
     {
         var exceptionalTask = Task.FromResult(Exceptional.Success(9));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.Tap(value => sideEffect = value == 9);
 
@@ -276,7 +276,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("boom");
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.Tap(_ => { }, ex => sideEffect = ex == exception);
 
@@ -288,7 +288,7 @@ public class GivenExceptionalAsync
     public async Task when_tap_on_value_task_of_success_then_executes_handler_and_returns_same()
     {
         var exceptionalTask = ValueTask.FromResult(Exceptional.Success(11));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.Tap(value => sideEffect = value == 11);
 
@@ -302,7 +302,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("boom");
         var exceptionalTask = ValueTask.FromResult(Exceptional.Failure<int>(exception));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.Tap(_ => { }, ex => sideEffect = ex == exception);
 
@@ -314,7 +314,7 @@ public class GivenExceptionalAsync
     public async Task when_tap_async_on_value_task_of_success_then_executes_handler_and_returns_same()
     {
         var exceptionalTask = ValueTask.FromResult(Exceptional.Success(13));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.TapAsync(value => sideEffect = value == 13);
 
@@ -328,7 +328,7 @@ public class GivenExceptionalAsync
     {
         var exception = new InvalidOperationException("boom");
         var exceptionalTask = ValueTask.FromResult(Exceptional.Failure<int>(exception));
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = await exceptionalTask.TapAsync(_ => { }, ex => sideEffect = ex == exception);
 
@@ -341,7 +341,7 @@ public class GivenExceptionalAsync
     {
         var exceptionalTask = Task.FromResult(Exceptional.Success(3));
 
-        var actual = await exceptionalTask.MatchAsync(onSuccess: value => value + 1, onFailure: _ => -1);
+        int actual = await exceptionalTask.MatchAsync(onSuccess: value => value + 1, onFailure: _ => -1);
 
         actual.ShouldBe(4);
     }
@@ -352,7 +352,7 @@ public class GivenExceptionalAsync
         var exception = new InvalidOperationException("err");
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
 
-        var actual = await exceptionalTask.MatchAsync(onSuccess: value => value + 1, onFailure: ex => ex.Message.Length);
+        int actual = await exceptionalTask.MatchAsync(onSuccess: value => value + 1, onFailure: ex => ex.Message.Length);
 
         actual.ShouldBe(3);
     }

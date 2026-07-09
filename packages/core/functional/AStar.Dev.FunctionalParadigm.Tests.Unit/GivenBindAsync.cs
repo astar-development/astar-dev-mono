@@ -20,7 +20,7 @@ public class GivenBindAsync
     public async Task when_result_is_failure_then_returns_failure_without_invoking_binder()
     {
         var result = Result.Failure<int, string>("fail");
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await result.BindAsync(value =>
         {
@@ -70,7 +70,7 @@ public class GivenBindAsync
     public async Task when_task_result_failure_then_binder_not_invoked()
     {
         var resultTask = Task.FromResult<Result<int, string>>(Result.Failure<int, string>("err"));
-        var invoked = false;
+        bool invoked = false;
 
         var actual = await resultTask.BindAsync(value =>
         {

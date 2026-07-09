@@ -16,7 +16,7 @@ public sealed class GivenTheImageRetriever
         var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(expectedBytes), });
         var sut = new ImageRetriever(new HttpClient(handler));
 
-        var bytes = (await sut.GetImageAsync(ImageUrl, TestContext.Current.CancellationToken)).ShouldBeOfType<Ok<byte[], ScrapeError>>().Value;
+        byte[] bytes = (await sut.GetImageAsync(ImageUrl, TestContext.Current.CancellationToken)).ShouldBeOfType<Ok<byte[], ScrapeError>>().Value;
 
         bytes.ShouldBe(expectedBytes);
     }

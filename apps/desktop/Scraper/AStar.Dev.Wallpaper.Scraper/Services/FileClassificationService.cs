@@ -58,7 +58,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
         int[] levels = [1, 2, 3];
 
-        foreach (var level in levels)
+        foreach (int level in levels)
         {
             foreach (var category in classifications.Categories.Where(c => c.Level == level).OrderBy(c => c.ParentId).ThenBy(c => c.Name))
             {
@@ -107,7 +107,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                         .FirstOrDefaultAsync(c => c.Name == category.Name && c.Level == category.Level && c.ParentId == category.ParentId, token)
                         .ConfigureAwait(false);
                     logger.Information("Importing classification category: {CategoryName} (Level {Level})", category.Name, category.Level);
-                    var unclassifiedId = await context.FileClassificationCategories
+                    int unclassifiedId = await context.FileClassificationCategories
                         .Where(c => c.Level == 1 && c.Name == "Unclassified")
                         .Select(c => c.Id)
                         .FirstOrDefaultAsync(token)

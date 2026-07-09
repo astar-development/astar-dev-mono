@@ -33,7 +33,7 @@ public class GivenExceptionalBind
     {
         var exception = new InvalidOperationException("err");
         var exceptional = Exceptional.Failure<int>(exception);
-        var invoked = false;
+        bool invoked = false;
 
         var actual = exceptional.Bind(value =>
         {

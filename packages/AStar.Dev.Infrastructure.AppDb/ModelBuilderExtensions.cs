@@ -21,7 +21,7 @@ public static class ModelBuilderExtensions
     typeof(EventEntity),
     typeof(TagToIgnoreEntity),
     typeof(ModelToIgnoreEntity),
-    typeof(ScrapedTagEntity),
+    typeof(FileClassificationCategoryEntity),
     typeof(ScrapeConfigurationEntity),
     typeof(ConnectionStringsEntity),
     typeof(UserConfigurationEntity),

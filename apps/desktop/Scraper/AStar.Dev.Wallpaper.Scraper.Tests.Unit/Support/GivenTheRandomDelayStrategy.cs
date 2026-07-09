@@ -26,7 +26,7 @@ public sealed class GivenTheRandomDelayStrategy
     public async Task when_page_navigation_is_requested_with_a_zero_second_pause_configured_then_it_can_complete_in_under_two_seconds()
     {
         var zeroPauseStrategy = new RandomDelayStrategy(new ScrapeConfigurationBuilder { SearchConfiguration = new SearchConfigurationBuilder { ImagePauseInSeconds = 0, }.Build(), }.Build());
-        var completedUnderTwoSeconds = false;
+        bool completedUnderTwoSeconds = false;
 
         for (int attempt = 0; attempt < 10 && !completedUnderTwoSeconds; attempt++)
         {

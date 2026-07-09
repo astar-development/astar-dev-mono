@@ -15,15 +15,15 @@ public static class PageHeaderParser
 
         try
         {
-            var firstSpaceIndex = headerText.IndexOf(' ');
-            var hashIndex = headerText.IndexOf("for ", StringComparison.Ordinal) + 3;
-            var subDirectoryName = string.Empty;
+            int firstSpaceIndex = headerText.IndexOf(' ');
+            int hashIndex = headerText.IndexOf("for ", StringComparison.Ordinal) + 3;
+            string subDirectoryName = string.Empty;
 
             if (hashIndex > 0) subDirectoryName = headerText[(hashIndex + 1)..].Replace(" ", "-").Replace("#", string.Empty);
 
-            var searchResults = headerText.Replace(",", string.Empty)[..firstSpaceIndex];
-            var imageCount = decimal.Parse(searchResults, CultureInfo.InvariantCulture);
-            var pageCount = Convert.ToInt32(Math.Ceiling(imageCount / ScraperConstants.ImagesPerPage));
+            string searchResults = headerText.Replace(",", string.Empty)[..firstSpaceIndex];
+            decimal imageCount = decimal.Parse(searchResults, CultureInfo.InvariantCulture);
+            int pageCount = Convert.ToInt32(Math.Ceiling(imageCount / ScraperConstants.ImagesPerPage));
 
             return PageInfoFactory.Create(pageCount, (int)imageCount, subDirectoryName);
         }

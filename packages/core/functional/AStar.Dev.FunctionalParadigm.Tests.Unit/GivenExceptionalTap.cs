@@ -9,7 +9,7 @@ public class GivenExceptionalTap
     public void when_exceptional_is_success_then_executes_success_handler_and_returns_same()
     {
         var exceptional = Exceptional.Success(7);
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = exceptional.Tap(value => sideEffect = value == 7);
 
@@ -23,7 +23,7 @@ public class GivenExceptionalTap
     {
         var exception = new InvalidOperationException("oops");
         var exceptional = Exceptional.Failure<int>(exception);
-        var sideEffect = false;
+        bool sideEffect = false;
 
         var actual = exceptional.Tap(_ => { }, ex => sideEffect = ex == exception);
 

@@ -22,7 +22,7 @@ public sealed class GivenTheImageDimensionReader
     [Fact]
     public void when_the_bytes_are_a_valid_image_then_the_width_is_returned()
     {
-        var bytes = CreateValidPngBytes(40, 20);
+        byte[] bytes = CreateValidPngBytes(40, 20);
 
         sut.Read(bytes, Path).ShouldBeOfType<Ok<ImageDimensions, ScrapeError>>().Value.Width.ShouldBe(40);
     }
@@ -30,7 +30,7 @@ public sealed class GivenTheImageDimensionReader
     [Fact]
     public void when_the_bytes_are_a_valid_image_then_the_height_is_returned()
     {
-        var bytes = CreateValidPngBytes(40, 20);
+        byte[] bytes = CreateValidPngBytes(40, 20);
 
         sut.Read(bytes, Path).ShouldBeOfType<Ok<ImageDimensions, ScrapeError>>().Value.Height.ShouldBe(20);
     }
