@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.Infrastructure.AppDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260709125800_NaturalCascadeImageDetailFromFile")]
+    partial class NaturalCascadeImageDetailFromFile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -115,9 +118,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("FileDetailId")
-                        .HasColumnType("TEXT");
-
                     b.Property<long?>("HardDeletePending")
                         .HasColumnType("INTEGER")
                         .HasColumnName("HardDeletePending_Ticks");
@@ -131,9 +131,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnName("SoftDeleted_Ticks");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FileDetailId")
-                        .IsUnique();
 
                     b.ToTable("DeletionStatus", (string)null);
                 });
@@ -226,9 +223,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("DetailsLastUpdated_Ticks");
 
-                    b.Property<Guid>("FileDetailId")
-                        .HasColumnType("TEXT");
-
                     b.Property<long?>("LastViewed")
                         .HasColumnType("INTEGER")
                         .HasColumnName("LastViewed_Ticks");
@@ -237,9 +231,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("FileDetailId")
-                        .IsUnique();
 
                     b.ToTable("FileAccessDetail", (string)null);
                 });
@@ -345,6 +336,12 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("DeletionStatusId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FileAccessDetailId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("FileHandle")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -376,6 +373,10 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         });
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeletionStatusId");
+
+                    b.HasIndex("FileAccessDetailId");
 
                     b.HasIndex("FileHandle")
                         .IsUnique();
@@ -924,17 +925,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Navigation("ScrapeConfigurationEntity");
                 });
 
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
-                        .WithOne("DeletionStatus")
-                        .HasForeignKey("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", "FileDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FileDetail");
-                });
-
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity", b =>
                 {
                     b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.AccountEntity", "Account")
@@ -944,17 +934,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
-                });
-
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
-                        .WithOne("FileAccessDetail")
-                        .HasForeignKey("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", "FileDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FileDetail");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity", b =>
@@ -994,6 +973,25 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", b =>
+                {
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", "DeletionStatus")
+                        .WithMany()
+                        .HasForeignKey("DeletionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", "FileAccessDetail")
+                        .WithMany()
+                        .HasForeignKey("FileAccessDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("DeletionStatus");
+
+                    b.Navigation("FileAccessDetail");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity", b =>
@@ -1128,12 +1126,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", b =>
                 {
-                    b.Navigation("DeletionStatus")
-                        .IsRequired();
-
-                    b.Navigation("FileAccessDetail")
-                        .IsRequired();
-
                     b.Navigation("ImageDetail")
                         .IsRequired();
                 });

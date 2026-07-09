@@ -93,7 +93,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
             imageRetriever,
             Substitute.For<IImageSaver>(),
             new MockFileSystem(),
-            Substitute.For<IScrapedTagRepository>(),
+            Substitute.For<IFileClassificationCategoriesRepository>(),
             Substitute.For<IImageDimensionReader>());
 
     [Fact]

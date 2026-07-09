@@ -7,6 +7,6 @@ public static class PageClassificationDataFactory
     public static PageClassificationData Create(
         IReadOnlyList<(FileClassificationCategoryEntity Category, IReadOnlyList<string> Keywords)> searchableClassifications,
         FileClassificationCategoryEntity? categoryClassification,
-        IReadOnlyList<ScrapedTagEntity> includedTags)
+        IReadOnlyList<FileClassificationCategoryEntity> includedTags)
         => new(searchableClassifications, categoryClassification, includedTags);
 }

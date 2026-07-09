@@ -147,13 +147,13 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     public async Task when_loading_page_classification_data_then_only_included_scraped_tags_are_returned()
     {
         await using var seedCtx = new AppDbContext(options);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "included-tag", IncludeInSearch = true });
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "excluded-tag", IncludeInSearch = false });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "included-tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "excluded-tag", IncludeInSearch = false });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
 
-        result.IncludedTags.ShouldHaveSingleItem().Value.ShouldBe("included-tag");
+        result.IncludedTags.ShouldHaveSingleItem().Name.ShouldBe("included-tag");
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         };
         await using var seedCtx = new AppDbContext(options);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "outdoors", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "outdoors", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -287,7 +287,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             FileHandle = FileHandleFactory.Create("test-handle-hierarchy-reuse")
         };
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "ass", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "ass", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -316,7 +316,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             FileHandle = FileHandleFactory.Create("test-handle-deepest-reuse")
         };
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "boobs", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "boobs", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -343,7 +343,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             FileHandle = FileHandleFactory.Create("test-handle-casing-reuse")
         };
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "bathrobes", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "bathrobes", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -407,7 +407,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         };
         await using var seedCtx = new AppDbContext(options);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "brand new tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "brand new tag", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -435,7 +435,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         var root = new FileClassificationCategoryEntity { Name = "Unclassified", Level = 1 };
         seedCtx.FileClassificationCategories.Add(root);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "another new tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "another new tag", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -460,8 +460,8 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         };
         await using var seedCtx = new AppDbContext(options);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "first new tag", IncludeInSearch = true });
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "second new tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "first new tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "second new tag", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -553,7 +553,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         };
         await using var seedCtx = new AppDbContext(options);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "outdoors", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "outdoors", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
@@ -574,7 +574,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         };
         await using var seedCtx = new AppDbContext(options);
         seedCtx.Files.Add(fileDetail);
-        seedCtx.ScrapedTags.Add(new ScrapedTagEntity { Value = "brand new junction tag", IncludeInSearch = true });
+        seedCtx.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "brand new junction tag", IncludeInSearch = true });
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);

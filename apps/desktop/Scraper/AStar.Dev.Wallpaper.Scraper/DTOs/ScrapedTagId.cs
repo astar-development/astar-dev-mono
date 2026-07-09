@@ -4,11 +4,11 @@ namespace AStar.Dev.Wallpaper.Scraper.DTOs;
 ///     Defines the ScrapedTagId
 /// </summary>
 /// <param name="Value">The value of the Scraped Tag Id</param>
-public readonly record struct ScrapedTagId(Guid Value)
+public readonly record struct ScrapedTagId(int Value)
 {
     /// <summary>
-    ///     Creates a new instance of <see cref="ScrapedTagId" /> with a new Guid value
+    ///     Creates a new instance of <see cref="ScrapedTagId" /> with a new int value
     /// </summary>
     /// <returns>A new <see cref="ScrapedTagId" /> instance</returns>
-    public static ScrapedTagId CreateNew() => new(Guid.CreateVersion7());
+    public static ScrapedTagId CreateNew() => new(0);
 }

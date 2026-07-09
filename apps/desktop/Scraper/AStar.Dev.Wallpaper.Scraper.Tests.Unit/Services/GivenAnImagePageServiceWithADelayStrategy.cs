@@ -89,7 +89,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         IImageSaver imageSaver,
         MockFileSystem fileSystem,
         IDirectoryHelper directoryHelper,
-        IScrapedTagRepository? scrapedTagRepository = null,
+        IFileClassificationCategoriesRepository? scrapedTagRepository = null,
         IImageDimensionReader? imageDimensionReader = null)
     {
         var contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
@@ -110,7 +110,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
             imageRetriever,
             imageSaver,
             fileSystem,
-            scrapedTagRepository ?? Substitute.For<IScrapedTagRepository>(),
+            scrapedTagRepository ?? Substitute.For<IFileClassificationCategoriesRepository>(),
             imageDimensionReader ?? BuildDefaultImageDimensionReader());
     }
 
@@ -274,7 +274,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/save/dir");
-        var scrapedTagRepository = Substitute.For<IScrapedTagRepository>();
+        var scrapedTagRepository = Substitute.For<IFileClassificationCategoriesRepository>();
 
         var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper, scrapedTagRepository);
 
@@ -287,7 +287,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     public async Task when_processing_a_skipped_image_then_the_scraped_tag_repository_is_saved_to_exactly_once()
     {
         var imagePage = BuildImagePageReturningSkippedImage();
-        var scrapedTagRepository = Substitute.For<IScrapedTagRepository>();
+        var scrapedTagRepository = Substitute.For<IFileClassificationCategoriesRepository>();
 
         var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>(), scrapedTagRepository);
 

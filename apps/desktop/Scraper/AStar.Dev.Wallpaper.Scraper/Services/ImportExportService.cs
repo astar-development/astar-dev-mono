@@ -8,7 +8,6 @@ using Serilog;
 using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationDto = AStar.Dev.Wallpaper.Scraper.DTOs.FileClassification;
 using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity;
-using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scraper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
@@ -69,11 +68,11 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         }
     }
 
-    public void ExportScrapedTagsToFile(List<ScrapedTagDomain> tags)
+    public void ExportScrapedTagsToFile(List<FileClassificationCategoryEntity> tags)
     {
         try
         {
-            string json = tags.ToDtos().ToJson();
+            string json = tags.ToJson();
             fileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, json);
             logger.Information("Tags exported to {FilePath}", ApplicationMetadata.ScrapedTagsExportFilePath);
         }
@@ -106,7 +105,7 @@ public sealed class ImportExportService(IFileSystem fileSystem, TimeProvider tim
         return dto.ToDomain();
     }
 
-    public Result<List<ScrapedTagDomain>, ScrapeError> ImportScrapedTagsFromFile()
+    public Result<List<FileClassificationCategoryEntity>, ScrapeError> ImportScrapedTagsFromFile()
     {
         if (!fileSystem.File.Exists(ApplicationMetadata.ScrapedTagsExportFilePath))
         {

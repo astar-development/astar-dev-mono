@@ -13,5 +13,12 @@ public sealed class ImageDetailEntityConfiguration : IEntityTypeConfiguration<Im
         _ = builder.ToTable("ImageDetail");
         _ = builder.HasKey(image => image.Id);
         _ = builder.Property(image => image.Id).HasConversion(imageId => imageId.Id, guid => new ImageId(guid));
+        _ = builder.Property(image => image.FileDetailId).HasConversion(fileId => fileId.Id, guid => new FileId(guid));
+
+        _ = builder.HasOne(image => image.FileDetail)
+            .WithOne(file => file.ImageDetail)
+            .HasForeignKey<ImageDetailEntity>(image => image.FileDetailId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

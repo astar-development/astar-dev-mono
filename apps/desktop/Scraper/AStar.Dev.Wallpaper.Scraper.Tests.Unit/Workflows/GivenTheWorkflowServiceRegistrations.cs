@@ -30,7 +30,7 @@ public sealed class GivenTheWorkflowServiceRegistrations
             .AddSingleton(_ => Substitute.For<IDbContextFactory<AppDbContext>>())
             .AddSingleton(_ => Substitute.For<IPlaywrightService>())
             .AddSingleton(_ => Substitute.For<IFileDetailRepository>())
-            .AddSingleton(_ => Substitute.For<IScrapedTagRepository>())
+            .AddSingleton(_ => Substitute.For<IFileClassificationCategoriesRepository>())
             .AddSingleton(_ => Substitute.For<IDirectoryHelper>())
             .AddSingleton(_ => Substitute.For<IImageRetriever>())
             .AddSingleton(_ => Substitute.For<IImageSaver>())

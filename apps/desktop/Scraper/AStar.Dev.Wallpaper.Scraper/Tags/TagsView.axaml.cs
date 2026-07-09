@@ -12,13 +12,13 @@ namespace AStar.Dev.Wallpaper.Scraper.Tags;
 
 public partial class TagsView : Window, IDisposable
 {
-    private readonly IScrapedTagService scrapedTagService;
+    private readonly IFileClassificationCategoryService scrapedTagService;
     private readonly IImportExportService importExportService;
     private readonly ILogger logger;
     private readonly LogBroadcaster logBroadcaster;
     private CancellationTokenSource? cts;
 
-    public TagsView(IScrapedTagService scrapedTagService, IImportExportService importExportService, ILogger logger, LogBroadcaster logBroadcaster)
+    public TagsView(IFileClassificationCategoryService scrapedTagService, IImportExportService importExportService, ILogger logger, LogBroadcaster logBroadcaster)
     {
         this.scrapedTagService = scrapedTagService;
         this.importExportService = importExportService;
@@ -29,6 +29,7 @@ public partial class TagsView : Window, IDisposable
         Closed += (_, _) => cts?.Dispose();
     }
 
+#pragma warning disable IDE1006 // Naming Styles does not apply to event handlers
     private async void OnExportTagsClicked(object? sender, RoutedEventArgs e)
     {
         try
@@ -64,6 +65,7 @@ public partial class TagsView : Window, IDisposable
             ResetUI();
         }
     }
+#pragma warning restore IDE1006 // Naming Styles
 
     private Result<CancellationToken, Exception> ResetCancellationTokenSource()
     {

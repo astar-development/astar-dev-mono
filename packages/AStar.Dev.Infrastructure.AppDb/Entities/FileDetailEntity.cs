@@ -21,20 +21,11 @@ public sealed class FileDetailEntity
     /// <summary>Whether the file is of a supported image type.</summary>
     public bool IsImage { get; set; }
 
-    /// <summary>Foreign key to the owned <see cref="FileAccessDetailEntity"/>.</summary>
-    public int FileAccessDetailId { get; set; }
-
     /// <summary>Navigation property to the owned file access detail.</summary>
     public FileAccessDetailEntity FileAccessDetail { get; set; } = new();
 
-    /// <summary>Foreign key to the owned <see cref="ImageDetailEntity"/>.</summary>
-    public ImageId ImageDetailId { get; set; }
-
     /// <summary>Navigation property to the owned image detail.</summary>
     public ImageDetailEntity ImageDetail { get; set; } = new();
-
-    /// <summary>Foreign key to the owned <see cref="DeletionStatusEntity"/>.</summary>
-    public int DeletionStatusId { get; set; }
 
     /// <summary>Navigation property to the owned deletion status.</summary>
     public DeletionStatusEntity DeletionStatus { get; set; } = new();

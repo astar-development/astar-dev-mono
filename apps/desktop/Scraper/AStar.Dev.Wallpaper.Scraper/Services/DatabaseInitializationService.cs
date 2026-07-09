@@ -71,11 +71,14 @@ public class DatabaseInitializationService(IDbContextFactory<AppDbContext> conte
         if (await MigrationExistsAsync(connection, "20260702234641_AddScraperTables"))
             return false;
 
+        bool hasLegacyShape = await ColumnExistsAsync(connection, "FileDetail", "DeletionStatusId");
+        bool hasNaturalCascadeShape = await ColumnExistsAsync(connection, "DeletionStatus", "FileDetailId");
+
         return await TableExistsAsync(connection, "DeletionStatus")
             && await TableExistsAsync(connection, "FileAccessDetail")
             && await TableExistsAsync(connection, "ImageDetail")
             && await TableExistsAsync(connection, "FileDetail")
-            && await ColumnExistsAsync(connection, "FileDetail", "DeletionStatusId");
+            && (hasLegacyShape || hasNaturalCascadeShape);
     }
 
     private static async Task<bool> ShouldBackfillUnifySingleParentMigrationAsync(DbConnection connection)
