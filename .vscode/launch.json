@@ -11,10 +11,10 @@
       "projectPath": "${workspaceFolder}/apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj"
     },
     {
-      "name": "C#: Scrapper Debug",
+      "name": "C#: Scraper Debug",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/Scrapper/AStar.Dev.Wallpaper.Scrapper/AStar.Dev.Wallpaper.Scrapper.csproj"
+      "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj"
     },
     {
       "name": "C#: Scrape Import/Export Testing",
