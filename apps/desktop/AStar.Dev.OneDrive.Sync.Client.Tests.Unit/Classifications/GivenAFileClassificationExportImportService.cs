@@ -33,8 +33,9 @@ public sealed class GivenAFileClassificationExportImportService
         await sut.ExportAsync(fileSystem.FileInfo.New(ExportFilePath), CancellationToken.None);
 
         string written = fileSystem.File.ReadAllText(ExportFilePath);
+        using var doc = JsonDocument.Parse(written);
 
-        written.ShouldBe("[]");
+        doc.RootElement.GetProperty("categories").EnumerateArray().Count().ShouldBe(0);
     }
 
     [Fact]
