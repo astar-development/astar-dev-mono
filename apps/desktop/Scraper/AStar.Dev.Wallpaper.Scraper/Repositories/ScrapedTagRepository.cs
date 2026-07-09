@@ -6,7 +6,7 @@ using ScrapedTagDto = AStar.Dev.Wallpaper.Scraper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scraper.Repositories;
 
-public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> contextFactory) : IScrapedTagRepository
+public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> contextFactory) :  IScrapedTagRepository
 {
     public async Task SaveAsync(IReadOnlyList<TagData> tags)
     {
@@ -20,39 +20,41 @@ public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> context
 
         foreach (var tag in titleCasedTags)
         {
-            if (!await context.ScrapedTags.AnyAsync(t => t.Value == tag.Value && tag.Category == t.Category))
-                _ = await context.ScrapedTags.AddAsync(tag.ToDomain());
+            var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == tag.Category);
+            if (!await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id))
+                _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());
         }
 
         _ = await context.SaveChangesAsync();
     }
 
-    public async Task<List<ScrapedTagEntity>> GetAllAsync(CancellationToken ct)
+    public async Task<List<FileClassificationCategoryEntity>> GetAllAsync(CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        return await context.ScrapedTags.ToListAsync(ct);
+        return await context.FileClassificationCategories.ToListAsync(ct);
     }
 
-    public async Task UpsertAsync(IReadOnlyList<ScrapedTagEntity> tags, CancellationToken ct)
+    public async Task UpsertAsync(IReadOnlyList<FileClassificationCategoryEntity> tags, CancellationToken ct)
     {
         await using var context = await contextFactory.CreateDbContextAsync(ct);
 
-        var values = tags.Select(t => t.Value).ToList();
-        var existingMap = await context.ScrapedTags
-            .Where(t => values.Contains(t.Value))
+        var values = tags.Select(t => t.Name).ToList();
+        var existingMap = await context.FileClassificationCategories
+            .Where(t => values.Contains(t.Name))
             .ToListAsync(ct);
 
         foreach (var tag in tags)
         {
-            var existing = existingMap.FirstOrDefault(t => t.Value == tag.Value && t.Category == tag.Category);
+            var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Id == tag.ParentId, ct);
+            var existing = existingMap.FirstOrDefault(t => t.Name == tag.Name && t.ParentId == parentCategory?.Id);
             if (existing is not null)
             {
                 existing.IncludeInSearch = tag.IncludeInSearch;
                 existing.UpdatedAt = DateTimeOffset.UtcNow;
             }
             else
-                context.ScrapedTags.Add(tag);
+                context.FileClassificationCategories.Add(tag);
         }
 
         _ = await context.SaveChangesAsync(ct);

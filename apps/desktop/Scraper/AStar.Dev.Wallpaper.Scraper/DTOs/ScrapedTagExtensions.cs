@@ -1,36 +1,21 @@
-using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
-using ScrapedTagDomainId = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagId;
+using FileClassificationCategoryServiceDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scraper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scraper.DTOs;
 
 public static class ScrapedTagExtensions
 {
-    public static ScrapedTagDomain ToDomain(this ScrapedTagDto dto, TimeProvider timeProvider)
+    public static FileClassificationCategoryServiceDomain ToDomain(this ScrapedTagDto dto, TimeProvider timeProvider)
         => new()
         {
-            Id = new ScrapedTagDomainId(dto.Id.Value),
-            Value = dto.Value,
-            Category = dto.Category,
+            Id = dto.Id.Value,
+            Name = dto.Value,
+            ParentId = 1, // need to extract the parent category from the tag's category property
             IncludeInSearch = dto.IncludeInSearch,
             CreatedAt = dto.CreatedAt,
             UpdatedAt = timeProvider.GetUtcNow()
         };
 
-    public static ScrapedTagDto ToDto(this ScrapedTagDomain domain)
-        => new()
-        {
-            Id = new ScrapedTagId(domain.Id.Id),
-            Value = domain.Value,
-            Category = domain.Category,
-            IncludeInSearch = domain.IncludeInSearch,
-            CreatedAt = domain.CreatedAt,
-            UpdatedAt = domain.UpdatedAt
-        };
-
-    public static List<ScrapedTagDomain> ToDomain(this List<ScrapedTagDto> dtos, TimeProvider timeProvider)
+    public static List<FileClassificationCategoryServiceDomain> ToDomain(this List<ScrapedTagDto> dtos, TimeProvider timeProvider)
         => [.. dtos.Select(dto => dto.ToDomain(timeProvider))];
-
-    public static List<ScrapedTagDto> ToDtos(this List<ScrapedTagDomain> domains)
-        => [.. domains.Select(domain => domain.ToDto())];
 }

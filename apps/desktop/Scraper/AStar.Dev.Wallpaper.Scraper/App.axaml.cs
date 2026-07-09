@@ -82,7 +82,7 @@ public partial class App : Application
             .AddTransient<IFileDetailRepository, FileDetailRepository>()
             .AddTransient<IDatabaseResetRepository, DatabaseResetRepository>()
             .AddTransient<FileClassificationService>()
-            .AddTransient<IScrapedTagService, ScrapedTagService>()
+            .AddTransient<IFileClassificationCategoryService, FileClassificationCategoryService>()
             .AddTransient<IDatabaseResetService, DatabaseResetService>()
             .AddTransient<ConfigurationSaver>()
             .AddTransient<DatabaseInitializationService>()

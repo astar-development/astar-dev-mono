@@ -27,22 +27,22 @@ public sealed class GivenAScrapedTagEntity : IDisposable
     [Fact]
     public async Task when_a_scraped_tag_is_added_then_it_can_be_retrieved()
     {
-        context.ScrapedTags.Add(new ScrapedTagEntity { Value = "sunset", Category = "nature", IncludeInSearch = true });
+        context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "sunset", ParentId = 1, IncludeInSearch = true });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var retrieved = context.ScrapedTags.First();
+        var retrieved = context.FileClassificationCategories.First();
 
-        retrieved.Value.ShouldBe("sunset");
-        retrieved.Category.ShouldBe("nature");
+        retrieved.Name.ShouldBe("sunset");
+        retrieved.ParentId.ShouldBe(1);
     }
 
     [Fact]
     public async Task when_two_scraped_tags_share_a_value_then_save_fails()
     {
-        context.ScrapedTags.Add(new ScrapedTagEntity { Value = "duplicate" });
+        context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "duplicate" });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        context.ScrapedTags.Add(new ScrapedTagEntity { Value = "duplicate" });
+        context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "duplicate" });
 
         await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync(TestContext.Current.CancellationToken));
     }

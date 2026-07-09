@@ -23,7 +23,7 @@ public sealed class ScrapedTag
     public string Category { get; set; } = string.Empty;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public bool IncludeInSearch { get; set; }
 

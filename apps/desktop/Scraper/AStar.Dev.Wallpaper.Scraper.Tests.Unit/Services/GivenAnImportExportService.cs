@@ -8,7 +8,7 @@ using System.IO.Abstractions;
 using System.Text.Json;
 using FileClassificationDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 using FileClassificationKeywordDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity;
-using ScrapedTagDomain = AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity;
+using FileClassificationCategoryDomain = AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity;
 
 namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Services;
 
@@ -23,7 +23,7 @@ public sealed class GivenAnImportExportService
     private const string ValidPassword = "super-secret-password";
 
     private const string ActionTagValue = "Action";
-    private const string GenreCategory = "Genre";
+    private const int GenreCategory = 1;
     private const string ComedyTagValue = "Comedy";
 
     private const string ValidClassificationsJson = """
@@ -98,12 +98,12 @@ public sealed class GivenAnImportExportService
         [
           {
             "value": "Action",
-            "category": "Genre",
+            "category": 1,
             "includeInSearch": true
           },
           {
             "value": "Comedy",
-            "category": "Genre",
+            "category": 1,
             "includeInSearch": false
           }
         ]
@@ -473,12 +473,12 @@ public sealed class GivenAnImportExportService
     [Fact]
     public void when_importing_tags_and_file_does_not_exist_then_failure_result_is_returned() =>
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
+           .ShouldBeOfType<Fail<List<FileClassificationCategoryDomain>, ScrapeError>>();
 
     [Fact]
     public void when_importing_tags_and_file_does_not_exist_then_the_error_is_an_import_failed_error() =>
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>()
+           .ShouldBeOfType<Fail<List<FileClassificationCategoryDomain>, ScrapeError>>()
            .Error.ShouldBeOfType<ImportFailed>();
 
     [Fact]
@@ -496,7 +496,7 @@ public sealed class GivenAnImportExportService
         mockFileSystem.File.WriteAllText(ApplicationMetadata.ScrapedTagsExportFilePath, "null");
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Fail<List<ScrapedTagDomain>, ScrapeError>>();
+           .ShouldBeOfType<Fail<List<FileClassificationCategoryDomain>, ScrapeError>>();
     }
 
     [Fact]
@@ -516,7 +516,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>();
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>();
     }
 
     [Fact]
@@ -525,7 +525,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
            .Value.Count.ShouldBe(2);
     }
 
@@ -535,8 +535,8 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
-           .Value[0].Value.ShouldBe(ActionTagValue);
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
+           .Value[0].Name.ShouldBe(ActionTagValue);
     }
 
     [Fact]
@@ -545,8 +545,8 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
-           .Value[0].Category.ShouldBe(GenreCategory);
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
+           .Value[0].ParentId.ShouldBe(GenreCategory);
     }
 
     [Fact]
@@ -555,7 +555,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
            .Value[0].IncludeInSearch.ShouldBeTrue();
     }
 
@@ -565,8 +565,8 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
-           .Value[1].Value.ShouldBe(ComedyTagValue);
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
+           .Value[1].Name.ShouldBe(ComedyTagValue);
     }
 
     [Fact]
@@ -575,8 +575,8 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
-           .Value[1].Category.ShouldBe(GenreCategory);
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
+           .Value[1].ParentId.ShouldBe(GenreCategory);
     }
 
     [Fact]
@@ -585,7 +585,7 @@ public sealed class GivenAnImportExportService
         SetupValidTagsImportFile();
 
         sut.ImportScrapedTagsFromFile()
-           .ShouldBeOfType<Ok<List<ScrapedTagDomain>, ScrapeError>>()
+           .ShouldBeOfType<Ok<List<FileClassificationCategoryDomain>, ScrapeError>>()
            .Value[1].IncludeInSearch.ShouldBeFalse();
     }
 
@@ -685,9 +685,9 @@ public sealed class GivenAnImportExportService
         ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/tmp/scrape" }
     };
 
-    private static List<ScrapedTagDomain> CreateDomainTags() =>
+    private static List<FileClassificationCategoryDomain> CreateDomainTags() =>
     [
-        new() { Value = ActionTagValue, Category = GenreCategory, IncludeInSearch = true  },
-        new() { Value = ComedyTagValue, Category = GenreCategory, IncludeInSearch = false }
+        new() { Name = ActionTagValue, ParentId = GenreCategory, IncludeInSearch = true  },
+        new() { Name = ComedyTagValue, ParentId = GenreCategory, IncludeInSearch = false }
     ];
 }
