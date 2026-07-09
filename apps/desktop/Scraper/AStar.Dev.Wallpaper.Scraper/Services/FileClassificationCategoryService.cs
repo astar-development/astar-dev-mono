@@ -3,7 +3,7 @@ using FileClassificationCategoryDomain = AStar.Dev.Infrastructure.AppDb.Entities
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
-public sealed class FileClassificationCategoryService(IScrapedTagRepository repository) : IFileClassificationCategoryService
+public sealed class FileClassificationCategoryService(IFileClassificationCategoriesRepository repository) : IFileClassificationCategoryService
 {
     public Task<List<FileClassificationCategoryDomain>> ExportScrapedTagsAsync(CancellationToken ct)
         => repository.GetAllAsync(ct);

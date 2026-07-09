@@ -23,7 +23,7 @@ public sealed class ImagePageService(
     IImageRetriever imageRetriever,
     IImageSaver imageSaver,
     IFileSystem fileSystem,
-    IScrapedTagRepository scrapedTagRepository,
+    IFileClassificationCategoriesRepository scrapedTagRepository,
     IImageDimensionReader imageDimensionReader)
 {
     private const int LoggedPathTailLength = 50;
@@ -36,7 +36,6 @@ public sealed class ImagePageService(
 
     public async Task<Result<Unit, ScrapeError>> GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken ct = default)
     {
-        // What tags are returned below????
         var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, ct).ConfigureAwait(false);
 
         foreach (string pageLink in imagePageLinks)

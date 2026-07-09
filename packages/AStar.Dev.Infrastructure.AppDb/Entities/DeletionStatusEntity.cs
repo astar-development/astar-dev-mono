@@ -6,6 +6,12 @@ public sealed class DeletionStatusEntity
     /// <summary>Primary key.</summary>
     public int Id { get; set; }
 
+    /// <summary>Foreign key to the parent <see cref="FileDetailEntity"/>.</summary>
+    public FileId FileDetailId { get; set; }
+
+    /// <summary>Navigation property to the parent file detail.</summary>
+    public FileDetailEntity FileDetail { get; set; } = null!;
+
     /// <summary>The date the file was soft-deleted, or null if not soft-deleted.</summary>
     public DateTimeOffset? SoftDeleted { get; set; }
 

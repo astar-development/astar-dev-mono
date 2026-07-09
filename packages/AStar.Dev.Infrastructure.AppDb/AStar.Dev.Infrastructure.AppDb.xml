@@ -748,6 +748,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity.Id">
             <summary>Primary key.</summary>
         </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity.FileDetailId">
+            <summary>Foreign key to the parent <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity.FileDetail">
+            <summary>Navigation property to the parent file detail.</summary>
+        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity.SoftDeleted">
             <summary>The date the file was soft-deleted, or null if not soft-deleted.</summary>
         </member>
@@ -847,6 +853,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity.Id">
             <summary>Primary key.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity.FileDetailId">
+            <summary>Foreign key to the parent <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity.FileDetail">
+            <summary>Navigation property to the parent file detail.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity.DetailsLastUpdated">
             <summary>The date the file's details were last updated, or null if never updated.</summary>
@@ -957,20 +969,11 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.IsImage">
             <summary>Whether the file is of a supported image type.</summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.FileAccessDetailId">
-            <summary>Foreign key to the owned <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity"/>.</summary>
-        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.FileAccessDetail">
             <summary>Navigation property to the owned file access detail.</summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.ImageDetailId">
-            <summary>Foreign key to the owned <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity"/>.</summary>
-        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.ImageDetail">
             <summary>Navigation property to the owned image detail.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.DeletionStatusId">
-            <summary>Foreign key to the owned <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity"/>.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity.DeletionStatus">
             <summary>Navigation property to the owned deletion status.</summary>
@@ -1018,6 +1021,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity.Id">
             <summary>Primary key.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity.FileDetailId">
+            <summary>Foreign key to the parent <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity.FileDetail">
+            <summary>Navigation property to the parent file detail.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity.Width">
             <summary>The width of the image in pixels, or null if not an image.</summary>
@@ -1724,6 +1733,42 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">

@@ -78,7 +78,7 @@ public partial class App : Application
                 using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
                 return TagsFactory.LoadTagsTextToIgnore(ctx);
             })
-            .AddTransient<IScrapedTagRepository, ScrapedTagRepository>()
+            .AddTransient<IFileClassificationCategoriesRepository, FileClassificationCategoriesRepository>()
             .AddTransient<IFileDetailRepository, FileDetailRepository>()
             .AddTransient<IDatabaseResetRepository, DatabaseResetRepository>()
             .AddTransient<FileClassificationService>()

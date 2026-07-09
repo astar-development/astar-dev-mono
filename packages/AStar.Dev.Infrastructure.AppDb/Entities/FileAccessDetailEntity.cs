@@ -6,6 +6,12 @@ public sealed class FileAccessDetailEntity
     /// <summary>Primary key.</summary>
     public int Id { get; set; }
 
+    /// <summary>Foreign key to the parent <see cref="FileDetailEntity"/>.</summary>
+    public FileId FileDetailId { get; set; }
+
+    /// <summary>Navigation property to the parent file detail.</summary>
+    public FileDetailEntity FileDetail { get; set; } = null!;
+
     /// <summary>The date the file's details were last updated, or null if never updated.</summary>
     public DateTimeOffset? DetailsLastUpdated { get; set; }
 

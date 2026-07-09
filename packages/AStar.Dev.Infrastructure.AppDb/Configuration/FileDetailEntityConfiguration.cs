@@ -18,14 +18,9 @@ public sealed class FileDetailEntityConfiguration : IEntityTypeConfiguration<Fil
         _ = builder.ComplexProperty(file => file.DirectoryName, directoryName => directoryName.Property(name => name.Value).HasColumnName("DirectoryName"));
 
         _ = builder.Property(file => file.FileHandle).HasConversion(fileHandle => fileHandle.Value, value => new FileHandle(value));
-        _ = builder.Property(file => file.ImageDetailId).HasConversion(imageId => imageId.Id, guid => new ImageId(guid));
-
         _ = builder.HasIndex(file => file.FileHandle).IsUnique();
         _ = builder.HasIndex(file => file.FileSize);
         _ = builder.HasIndex(file => new { file.IsImage, file.FileSize }).HasDatabaseName("IX_FileDetail_DuplicateImages");
 
-        _ = builder.HasOne(file => file.FileAccessDetail).WithMany().HasForeignKey(file => file.FileAccessDetailId).IsRequired().OnDelete(DeleteBehavior.Cascade);
-        _ = builder.HasOne(file => file.ImageDetail).WithMany().HasForeignKey(file => file.ImageDetailId).IsRequired().OnDelete(DeleteBehavior.Cascade);
-        _ = builder.HasOne(file => file.DeletionStatus).WithMany().HasForeignKey(file => file.DeletionStatusId).IsRequired().OnDelete(DeleteBehavior.Cascade);
     }
 }

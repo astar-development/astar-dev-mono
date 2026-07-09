@@ -49,6 +49,43 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
         result.ShouldBe(LastBaseSaveDirectory);
     }
 
+    [Fact]
+    public async Task when_deleting_all_files_then_file_and_linked_detail_tables_are_cleared()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        await using (var arrangeContext = new AppDbContext(options))
+        {
+            var fileAccessDetail = new FileAccessDetailEntity();
+            var deletionStatus = new DeletionStatusEntity();
+
+            _ = await arrangeContext.FileAccessDetails.AddAsync(fileAccessDetail, cancellationToken);
+            _ = await arrangeContext.Set<DeletionStatusEntity>().AddAsync(deletionStatus, cancellationToken);
+
+            _ = await arrangeContext.Files.AddAsync(new FileDetailEntity
+            {
+                DirectoryName = new DirectoryName("/tmp"),
+                FileName = new FileName("image.jpg"),
+                FileHandle = FileHandleFactory.Create("image.jpg"),
+                FileSize = 100,
+                IsImage = true,
+                ImageDetail = new ImageDetailEntity { Width = 1920, Height = 1080 },
+                FileAccessDetail = fileAccessDetail,
+                DeletionStatus = deletionStatus
+            }, cancellationToken);
+
+            _ = await arrangeContext.SaveChangesAsync(cancellationToken);
+        }
+
+        await sut.DeleteAllFilesAsync(cancellationToken);
+
+        await using var assertContext = new AppDbContext(options);
+        (await assertContext.Files.CountAsync(cancellationToken)).ShouldBe(0);
+        (await assertContext.Set<ImageDetailEntity>().CountAsync(cancellationToken)).ShouldBe(0);
+        (await assertContext.FileAccessDetails.CountAsync(cancellationToken)).ShouldBe(0);
+        (await assertContext.Set<DeletionStatusEntity>().CountAsync(cancellationToken)).ShouldBe(0);
+    }
+
     private static ScrapeConfigurationEntity CreateScrapeConfigurationEntity(string baseSaveDirectory) => new()
     {
         ConnectionStrings = new ConnectionStringsEntity { Sqlite = "Data Source=test.db" },

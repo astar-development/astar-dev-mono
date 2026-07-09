@@ -65,7 +65,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
             Substitute.For<IImageRetriever>(),
             Substitute.For<IImageSaver>(),
             new MockFileSystem(),
-            Substitute.For<IScrapedTagRepository>(),
+            Substitute.For<IFileClassificationCategoriesRepository>(),
             Substitute.For<IImageDimensionReader>());
 
     [Fact]

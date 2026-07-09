@@ -11,6 +11,7 @@ public static class ScrapedTagExtensions
         {
             Id = tag.Id.Value,
             Name = tag.Value,
+            Level = tag.Level,
             // need to extract the parent category from the tag's category property
             IsFamous = tag.Category == "Famous",
             IsInternet = tag.Category == "Internet",

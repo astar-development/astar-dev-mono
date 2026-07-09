@@ -6,7 +6,7 @@ using ScrapedTagDto = AStar.Dev.Wallpaper.Scraper.DTOs.ScrapedTag;
 
 namespace AStar.Dev.Wallpaper.Scraper.Repositories;
 
-public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> contextFactory) :  IScrapedTagRepository
+public sealed class FileClassificationCategoriesRepository(IDbContextFactory<AppDbContext> contextFactory) : IFileClassificationCategoriesRepository
 {
     public async Task SaveAsync(IReadOnlyList<TagData> tags)
     {
@@ -22,7 +22,10 @@ public sealed class ScrapedTagRepository(IDbContextFactory<AppDbContext> context
         {
             var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == tag.Category);
             if (!await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id))
-                _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());
+                {
+                    tag.Level = parentCategory?.Level ?? 1;
+                    tag.Category = parentCategory?.Name ?? tag.Category;
+                    _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());}
         }
 
         _ = await context.SaveChangesAsync();
