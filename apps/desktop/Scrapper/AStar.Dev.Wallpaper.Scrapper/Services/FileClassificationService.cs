@@ -189,8 +189,8 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
 
         foreach (var classification in distinct)
         {
-            EnsureTracked(context, classification);
-            context.FileClassifications.Add(new FileClassificationEntity { FileDetailId = fileDetail.Id, Category = classification });
+            var trackedClassification = EnsureTracked(context, classification);
+            context.FileClassifications.Add(new FileClassificationEntity { FileDetailId = fileDetail.Id, Category = trackedClassification });
         }
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
@@ -198,12 +198,23 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         return Unit.Value;
     }
 
-    private static void EnsureTracked(AppDbContext context, FileClassificationCategoryEntity classification)
+    private static FileClassificationCategoryEntity EnsureTracked(AppDbContext context, FileClassificationCategoryEntity classification)
     {
-        var entry = context.Entry(classification);
+        if (classification.Id != 0)
+        {
+            var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
+                .Select(entry => entry.Entity)
+                .FirstOrDefault(existing => existing.Id == classification.Id);
 
+            if (tracked is not null)
+                return tracked;
+        }
+
+        var entry = context.Entry(classification);
         if (entry.State == EntityState.Detached && classification.Id != 0)
             entry.State = EntityState.Unchanged;
+
+        return classification;
     }
 
     private static async Task<FileClassificationCategoryEntity?> ResolveCategoryClassificationAsync(AppDbContext context, string categoryId, CancellationToken token)

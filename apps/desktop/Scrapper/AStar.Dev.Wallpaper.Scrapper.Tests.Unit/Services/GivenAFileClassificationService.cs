@@ -38,7 +38,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
                .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
-        sut = new FileClassificationService(factory,new LoggerConfiguration().CreateLogger());
+        sut = new FileClassificationService(factory, new LoggerConfiguration().CreateLogger());
     }
 
     public async ValueTask DisposeAsync() => await connection.DisposeAsync();
@@ -357,6 +357,46 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_classifying_with_a_detached_category_matching_an_already_tracked_category_then_the_classification_is_saved_without_a_tracking_conflict()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var existingCategory = new FileClassificationCategoryEntity { Name = "Animals", Level = 3, IncludeInSearch = true };
+        seedCtx.FileClassificationCategories.Add(existingCategory);
+        var fileDetail = new FileDetailEntity
+        {
+            FileName = new FileName("test.jpg"),
+            DirectoryName = new DirectoryName("/tmp"),
+            FileHandle = FileHandleFactory.Create("test-handle-detached-category")
+        };
+        seedCtx.Files.Add(fileDetail);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var preloadedContext = new AppDbContext(options);
+        var trackedCategory = await preloadedContext.FileClassificationCategories.SingleAsync(c => c.Id == existingCategory.Id, TestContext.Current.CancellationToken);
+        var detachedCategory = new FileClassificationCategoryEntity
+        {
+            Id = trackedCategory.Id,
+            Name = trackedCategory.Name,
+            Level = trackedCategory.Level,
+            IncludeInSearch = trackedCategory.IncludeInSearch
+        };
+
+        var localFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        localFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult(preloadedContext));
+
+        var localService = new FileClassificationService(localFactory, new LoggerConfiguration().CreateLogger());
+
+        var result = await localService.ClassifyAsync(fileDetail, new PageClassificationData([], detachedCategory, []), [], TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
+
+        await using var verifyCtx = new AppDbContext(options);
+        var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
+        junction.CategoryId.ShouldBe(existingCategory.Id);
+    }
+
+    [Fact]
     public async Task when_classifying_with_a_tag_matching_no_existing_category_then_a_level_two_category_under_the_unclassified_root_is_created()
     {
         var fileDetail = new FileDetailEntity
@@ -481,7 +521,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         var stored = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         stored.Name.ShouldBe("Animals");
     }
-    
+
     [Fact]
     public async Task when_importing_a_classification_whose_keyword_already_exists_with_different_casing_then_no_duplicate_keyword_is_added()
     {
