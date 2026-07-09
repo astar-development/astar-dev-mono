@@ -19,6 +19,7 @@ ExportPlaying(context);
 
 static void ExportPlaying(AppDbContext context)
 {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
     var categories = context.FileClassificationCategories
     .Include(c => c.Parent)
     .OrderBy(c => c.ParentId).ThenBy(c => c.Level).ThenBy(c => c.Name)
@@ -32,6 +33,7 @@ static void ExportPlaying(AppDbContext context)
         // c.ParentId,
         c.Parent.Name ?? null, c.CreatedAt, c.UpdatedAt
     )).ToHashSet();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
     // categories.ForEach(category => Console.WriteLine($"Category: {category.Name}, Level: {category.Level}, Id: {category.Id}, ParentId: {category.ParentId}"));
 
