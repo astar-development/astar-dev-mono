@@ -14,7 +14,7 @@ public static class SqliteConnectionStringProvider
     ///     The connection string used when configuration does not supply <c>ScrapeConfiguration:ConnectionStrings:Sqlite</c>.
     /// </summary>
     public static readonly string DefaultConnectionString =
-        $"Data Source={Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Documents", "Scraper", "scrapper.db")}";
+        $"Data Source={Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Documents", "Scraper", "scraper.db")}";
 
     /// <summary>
     ///     Resolves the Sqlite connection string from <paramref name="configuration" />, falling back to

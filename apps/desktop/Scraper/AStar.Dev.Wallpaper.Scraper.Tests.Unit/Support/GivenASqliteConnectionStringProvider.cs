@@ -9,10 +9,10 @@ public sealed class GivenASqliteConnectionStringProvider
     public void when_the_configuration_has_a_sqlite_connection_string_then_the_configured_value_is_used()
     {
         var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ScrapeConfiguration:ConnectionStrings:Sqlite"] = "Data Source=/configured/path/scrapper.db", })
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ScrapeConfiguration:ConnectionStrings:Sqlite"] = "Data Source=/configured/path/scraper.db", })
             .Build();
 
-        SqliteConnectionStringProvider.Get(configuration).ShouldBe("Data Source=/configured/path/scrapper.db");
+        SqliteConnectionStringProvider.Get(configuration).ShouldBe("Data Source=/configured/path/scraper.db");
     }
 
     [Fact]

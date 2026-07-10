@@ -1,4 +1,3 @@
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using ScrapedTagDto = AStar.Dev.Wallpaper.Scraper.DTOs.ScrapedTag;
 
