@@ -12,21 +12,21 @@ public static class TagRules
         List<string> directorySegments = [context.InitialDirectory,];
         string filePrefix = string.Empty;
 
-        foreach (var (tagText, tagToUse) in tagData)
+        foreach (var tag in tagData)
         {
-            if (tagToUse is null) continue;
+            if (tag.Category is null) continue;
 
-            string trimmedTagToUse = tagToUse.Trim();
+            string trimmedTagToUse = tag.Category.Trim();
 
-            if (IsOneOfTheImageTagsToExcludeCompletely(trimmedTagToUse, context) || IsOneOfTheImageTagsToExcludeCompletely(tagText, context))
+            if (IsOneOfTheImageTagsToExcludeCompletely(trimmedTagToUse, context) || IsOneOfTheImageTagsToExcludeCompletely(tag.Tag, context))
                 return TagOutcomeFactory.CreateSkipImage(tags);
 
-            (filePrefix, directorySegments) = UpdateFilePrefixForModels(trimmedTagToUse, tagText, filePrefix, directorySegments, context);
+            (filePrefix, directorySegments) = UpdateFilePrefixForModels(trimmedTagToUse, tag.Tag, filePrefix, directorySegments, context);
             filePrefix = UpdateFilePrefixForVehicles(trimmedTagToUse, filePrefix, context);
 
-            if (UpdateToTagIsNotRequired(trimmedTagToUse, tagText, filePrefix, context)) continue;
+            if (UpdateToTagIsNotRequired(trimmedTagToUse, tag.Tag, filePrefix, context)) continue;
 
-            filePrefix = string.Join("-", filePrefix, tagText.Replace(' ', '-')).ToLowerInvariant();
+            filePrefix = string.Join("-", filePrefix, tag.Tag.Replace(' ', '-')).ToLowerInvariant();
             directorySegments = [.. directorySegments, context.BaseDirectoryFamous,];
         }
 
@@ -35,8 +35,8 @@ public static class TagRules
         return TagOutcomeFactory.CreateAccept(filePrefix, directorySegments, tags);
     }
 
-    private static IReadOnlyList<string> ExtractTagText(IReadOnlyList<TagData> tagData)
-        => [.. tagData.Select(tag => tag.Tag).Where(tag => !string.IsNullOrWhiteSpace(tag)),];
+    private static IReadOnlyList<TagData> ExtractTagText(IReadOnlyList<TagData> tagData)
+        => [.. tagData.Select(tag => tag).Where(tag => !string.IsNullOrWhiteSpace(tag.Tag) && !string.IsNullOrWhiteSpace(tag.Category)),];
 
     private static string StripLeadingDash(string filePrefix)
         => filePrefix.StartsWith('-') ? filePrefix[1..] : filePrefix;
@@ -58,15 +58,10 @@ public static class TagRules
            || TagContains(tagToUse, "people > singer");
 
     private static (string FilePrefix, List<string> DirectorySegments) UpdateFilePrefixForModels(string tagToUse, string tagText, string filePrefix, List<string> directorySegments, TagRuleContext context)
-    {
-        if (!IsPeopleTag(tagToUse)) return (filePrefix, directorySegments);
-
-        if (!IsWantedText(tagText, context) || filePrefix.Contains(tagText)) return (filePrefix, directorySegments);
-
-        if (directorySegments.Contains(tagText) || filePrefix.Contains(tagText, StringComparison.OrdinalIgnoreCase)) return (filePrefix, directorySegments);
-
-        return (string.Join("-", filePrefix, tagText), directorySegments);
-    }
+        => !IsPeopleTag(tagToUse) || !IsWantedText(tagText, context) || filePrefix.Contains(tagText) || directorySegments.Contains(tagText) ||
+        filePrefix.Contains(tagText, StringComparison.OrdinalIgnoreCase)
+            ? (filePrefix, directorySegments)
+            : (string.Join("-", filePrefix, tagText), directorySegments);
 
     private static string UpdateFilePrefixForVehicles(string tagToUse, string filePrefix, TagRuleContext context)
     {

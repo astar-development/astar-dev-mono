@@ -33,7 +33,7 @@ public sealed class GivenTheTagRules
 
         var outcome = TagRules.Evaluate(tags, Context(ignoreCompletely: ["ExcludedCategory",])).ShouldBeOfType<SkipImage>();
 
-        outcome.Tags.ShouldBe(["Sports Car", "BadCategory",]);
+        outcome.Tags.ShouldBe([new TagData("Sports Car", "Vehicles > Cars & Motorcycles"), new TagData("BadCategory", "ExcludedCategory"),]);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class GivenTheTagRules
 
         var outcome = TagRules.Evaluate(tags, Context(ignoreCompletely: ["BadTagText",])).ShouldBeOfType<SkipImage>();
 
-        outcome.Tags.ShouldBe(["BadTagText",]);
+        outcome.Tags.ShouldBe([new TagData("BadTagText", "SomeCategory"),]);
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class GivenTheTagRules
 
         var outcome = TagRules.Evaluate(tags, Context(ignoreCompletely: ["ExcludedCategory",])).ShouldBeOfType<SkipImage>();
 
-        outcome.Tags.ShouldBe(["Sports Car", "BadCategory", "LaterTag",]);
+        outcome.Tags.ShouldBe([new TagData("Sports Car", "Vehicles > Cars & Motorcycles"), new TagData("BadCategory", "ExcludedCategory"), new TagData("LaterTag", "Vehicles > Cars & Motorcycles"),]);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public sealed class GivenTheTagRules
         var outcome = TagRules.Evaluate(tags, Context()).ShouldBeOfType<Accept>();
 
         outcome.FilePrefix.ShouldBe(string.Empty);
-        outcome.Tags.ShouldBe(["JustAText",]);
+        outcome.Tags.ShouldBe([new TagData("JustAText", null),]);
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public sealed class GivenTheTagRules
 
         var outcome = TagRules.Evaluate(tags, Context()).ShouldBeOfType<Accept>();
 
-        outcome.Tags.ShouldBe(["Nature", "Britney Spears", "Some Tag",]);
+        outcome.Tags.ShouldBe([new TagData("Nature", "Landscape"), new TagData("Britney Spears", "People > Model"), new TagData("Some Tag", null),]);
         outcome.FilePrefix.ShouldBe("Britney Spears");
     }
 }

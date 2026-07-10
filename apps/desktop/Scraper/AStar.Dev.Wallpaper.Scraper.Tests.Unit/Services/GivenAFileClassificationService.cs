@@ -237,7 +237,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
 
-        await sut.ClassifyAsync(fileDetail, pageData, ["outdoors"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("outdoors","outdoors")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         int count = await verifyCtx.FileClassifications.CountAsync(TestContext.Current.CancellationToken);
@@ -291,7 +291,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["ass"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("ass","ass")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Ass", TestContext.Current.CancellationToken);
@@ -320,7 +320,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["boobs"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("boobs","boobs")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         var junction = await verifyCtx.FileClassifications.SingleAsync(TestContext.Current.CancellationToken);
@@ -347,7 +347,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["bathrobes"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("bathrobes","bathrobes")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         int categoryCount = await verifyCtx.FileClassificationCategories.CountAsync(c => EF.Functions.Collate(c.Name, "NOCASE") == "Bathrobes", TestContext.Current.CancellationToken);
@@ -411,7 +411,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["brand new tag"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("brand new tag","brand new tag")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Brand New Tag", TestContext.Current.CancellationToken);
@@ -439,7 +439,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["another new tag"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("another new tag","another new tag")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Another New Tag", TestContext.Current.CancellationToken);
@@ -465,7 +465,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["first new tag", "second new tag"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("first new tag","first new tag"), new Scraper.Repositories.TagData("second new tag","second new tag")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         int rootCount = await verifyCtx.FileClassificationCategories.CountAsync(c => c.Name == "Unclassified", TestContext.Current.CancellationToken);
@@ -558,7 +558,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
 
-        var result = await sut.ClassifyAsync(fileDetail, pageData, ["outdoors"], TestContext.Current.CancellationToken);
+        var result = await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("outdoors","outdoors")], TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
     }
@@ -578,7 +578,7 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
         await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var pageData = await sut.LoadPageClassificationDataAsync("any-category", TestContext.Current.CancellationToken);
-        await sut.ClassifyAsync(fileDetail, pageData, ["brand new junction tag"], TestContext.Current.CancellationToken);
+        await sut.ClassifyAsync(fileDetail, pageData, [new Scraper.Repositories.TagData("brand new junction tag","brand new junction tag")], TestContext.Current.CancellationToken);
 
         await using var verifyCtx = new AppDbContext(options);
         var created = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Brand New Junction Tag", TestContext.Current.CancellationToken);

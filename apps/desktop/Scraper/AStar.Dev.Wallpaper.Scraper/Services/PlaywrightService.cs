@@ -22,7 +22,7 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, TimeProv
         playwright ??= await Playwright.CreateAsync();
 
         context = await playwright.Chromium.LaunchPersistentContextAsync(
-            "/home/jasonbarden/.config/google-chrome/Default",
+            "/home/jbarden/.config/google-chrome/Default",
             new BrowserTypeLaunchPersistentContextOptions
             {
                 Channel = "chrome",
@@ -72,7 +72,7 @@ public class PlaywrightService(ScrapeConfiguration scrapeConfiguration, TimeProv
 
     private static string ExtractDomain(string baseUrl)
     {
-        if (Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri? uri))
+        if (Uri.TryCreate(baseUrl, UriKind.Absolute, out var uri))
         {
             return uri.Host;
         }

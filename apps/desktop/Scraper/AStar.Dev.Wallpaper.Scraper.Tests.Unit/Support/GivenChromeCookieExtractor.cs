@@ -20,7 +20,7 @@ public sealed class GivenChromeCookieExtractor
             File.WriteAllText(Path.Combine(googleChromeProfile, "Cookies"), "dummy");
             File.WriteAllText(Path.Combine(chromiumProfile, "Cookies"), "dummy");
 
-            IReadOnlyList<string> candidates = ChromeCookieExtractor.FindCookieDatabasePaths(homeDirectory);
+            var candidates = ChromeCookieExtractor.FindCookieDatabasePaths(homeDirectory);
 
             candidates.ShouldContain(Path.Combine(googleChromeProfile, "Cookies"));
             candidates.ShouldContain(Path.Combine(chromiumProfile, "Cookies"));

@@ -3,6 +3,7 @@ using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Models;
+using AStar.Dev.Wallpaper.Scraper.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Serilog.Core;
 
@@ -39,7 +40,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         return PageClassificationDataFactory.Create(searchable, categoryClassification, includedTags);
     }
 
-    public async Task<Result<Unit, ScrapeError>> ClassifyAsync(FileDetailEntity fileDetail, PageClassificationData pageData, IReadOnlyList<string> imageTags, CancellationToken token)
+    public async Task<Result<Unit, ScrapeError>> ClassifyAsync(FileDetailEntity fileDetail, PageClassificationData pageData, IReadOnlyList<TagData> imageTags, CancellationToken token)
         => (await Try.RunAsync(() => ClassifyInternalAsync(fileDetail, pageData, imageTags, token)).ConfigureAwait(false))
             .ToResult<Unit, ScrapeError>(exception => ScrapeErrorFactory.CreateClassificationFailed(fileDetail.FileName.Value, exception.Message));
 
@@ -78,6 +79,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                             Level = category.Level,
                             ParentId = category.ParentId,
                             IsFamous = category.IsFamous,
+                            IsInternet = category.IsInternet,
                             IncludeInSearch = category.IncludeInSearch
                         };
                         context.FileClassificationCategories.Add(target);
@@ -86,6 +88,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                     else
                     {
                         target.IsFamous = category.IsFamous;
+                        target.IsInternet = category.IsInternet;
                         target.IncludeInSearch = category.IncludeInSearch;
                     }
 
@@ -174,7 +177,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         return Unit.Value;
     }
 
-    private async Task<Unit> ClassifyInternalAsync(FileDetailEntity fileDetail, PageClassificationData pageData, IReadOnlyList<string> imageTags, CancellationToken token)
+    private async Task<Unit> ClassifyInternalAsync(FileDetailEntity fileDetail, PageClassificationData pageData, IReadOnlyList<TagData> imageTags, CancellationToken token)
     {
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
 
@@ -231,25 +234,25 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         var category = searchConfig.SearchCategories.FirstOrDefault(c => c.Id == categoryId && c.IncludeInSearch);
         if (category is null) return null;
 
-        var classification = await FindOrCreateClassificationAsync(context, category.Name, token).ConfigureAwait(false);
+        var classification = await FindOrCreateClassificationAsync(context, new TagData(category.Name, category.Name), token).ConfigureAwait(false);
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
         return classification;
     }
 
-    private static async Task CollectTagMatchesAsync(AppDbContext context, IReadOnlyList<FileClassificationCategoryEntity> includedTags, IReadOnlyList<string> imageTags, List<FileClassificationCategoryEntity> matched, CancellationToken token)
+    private static async Task CollectTagMatchesAsync(AppDbContext context, IReadOnlyList<FileClassificationCategoryEntity> includedTags, IReadOnlyList<TagData> imageTags, List<FileClassificationCategoryEntity> matched, CancellationToken token)
     {
         if (imageTags.Count == 0) return;
 
-        var tagSet = new HashSet<string>(imageTags, StringComparer.OrdinalIgnoreCase);
+        var tagSet = new HashSet<string>(imageTags.Select(t => t.Tag), StringComparer.OrdinalIgnoreCase);
 
         foreach (var tag in includedTags.Where(t => tagSet.Contains(t.Name)))
-            matched.Add(await FindOrCreateClassificationAsync(context, tag.Name, token).ConfigureAwait(false));
+            matched.Add(await FindOrCreateClassificationAsync(context, new TagData(tag.Name, tag.Name), token).ConfigureAwait(false));
     }
 
-    private static async Task<FileClassificationCategoryEntity> FindOrCreateClassificationAsync(AppDbContext context, string name, CancellationToken token)
+    private static async Task<FileClassificationCategoryEntity> FindOrCreateClassificationAsync(AppDbContext context, TagData name, CancellationToken token)
     {
-        string normalizedName = name.ToTitleCase();
+        string normalizedName = name.Tag.ToTitleCase();
 
         var tracked = context.ChangeTracker.Entries<FileClassificationCategoryEntity>()
             .Select(e => e.Entity)

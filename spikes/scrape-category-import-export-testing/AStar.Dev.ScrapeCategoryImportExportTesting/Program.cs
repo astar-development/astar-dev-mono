@@ -6,12 +6,16 @@ using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 var options = new DbContextOptionsBuilder<AppDbContext>()
-    .UseSqlite("Data Source=/home/jasonbarden/.config/astar-dev-onedrive-sync/astar-dev-onedrive-sync.db")
+    .UseSqlite("Data Source=/home/jbarden/.config/astar-dev-onedrive-sync/astar-dev-onedrive-sync.db")
     .Options;
 var context = new AppDbContext(options);
 await context.Database.MigrateAsync();
 
-ExportPlaying(context);
+//ExportPlaying(context);
+
+await ImportPlaying(context);
+
+return;
 
 static void ExportPlaying(AppDbContext context)
 {
@@ -21,36 +25,29 @@ static void ExportPlaying(AppDbContext context)
     .OrderBy(c => c.ParentId).ThenBy(c => c.Level).ThenBy(c => c.Name)
     .Select(c => new CategoryNodeRecord
     (
-        // c.Id,
         c.Name,
         c.Level,
         c.IsFamous,
         c.IsInternet,
-        // c.ParentId,
         c.Parent.Name ?? null, c.CreatedAt, c.UpdatedAt
     )).ToHashSet();
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
+    if (categories.Count <= 1) return;
 
-    // categories.ForEach(category => Console.WriteLine($"Category: {category.Name}, Level: {category.Level}, Id: {category.Id}, ParentId: {category.ParentId}"));
-
-    if (categories.Count > 1)
-    {
-        string categoriesJson = categories.ToJson();
-        File.WriteAllText("/home/jasonbarden/Desktop/classifications-only2.json", categoriesJson);
-    }
+    string categoriesJson = categories.ToJson();
+    File.WriteAllText("/home/jbarden/Documents/Scraper/FileClassifications.json", categoriesJson);
 }
-
-await ImportPlaying(context);
 
 static async Task ImportPlaying(AppDbContext context)
 {
-    string categoriesFromFile = File.ReadAllText("/home/jasonbarden/Desktop/classifications-only2.json");
-    var categoriesFromJson = categoriesFromFile.FromJson<IList<CategoryNodeRecord>>(new(JsonSerializerDefaults.Web));
+    string categoriesFromFile = File.ReadAllText("/home/jbarden/Documents/Scraper/FileClassifications.json");
+    var categoriesFromJson = categoriesFromFile.FromJson<IList<CategoryNodeRecord>>(new(JsonSerializerDefaults.Web)).ToHashSet();
     categoriesFromJson.ForEach(Console.WriteLine);
+    var existingCategories = await context.FileClassificationCategories.ToListAsync();
 
     foreach (var category in categoriesFromJson.Where(c => c.ParentName is null))
     {
-        var existing = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == category.Name && c.Level == category.Level);
+        var existing = existingCategories.FirstOrDefault(c => c.Name == category.Name && c.Level == category.Level);
         if (existing is null)
         {
             var newCategory = new FileClassificationCategoryEntity
@@ -69,15 +66,21 @@ static async Task ImportPlaying(AppDbContext context)
             existing.IsFamous = category.IsFamous;
             existing.IsInternet = category.IsInternet;
             existing.UpdatedAt = DateTimeOffset.UtcNow;
-            existing.ParentId = (await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == category.ParentName))?.Id;
+            existing.ParentId = (existingCategories.FirstOrDefault(c => c.Name == category.ParentName))?.Id;
         }
     }
+    try
+    {
+        await context.SaveChangesAsync();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
 
-    await context.SaveChangesAsync();
     foreach (var category in categoriesFromJson.Where(c => c.ParentName is not null))
     {
-        var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == category.ParentName);
-        var existing = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == category.Name && c.Level == category.Level);
+        var existing = existingCategories.FirstOrDefault(c => c.Name == category.Name && c.Level == category.Level);
         if (existing is null)
         {
             var newCategory = new FileClassificationCategoryEntity
@@ -86,7 +89,7 @@ static async Task ImportPlaying(AppDbContext context)
                 Level = category.Level,
                 IsFamous = category.IsFamous,
                 IsInternet = category.IsInternet,
-                ParentId = parentCategory?.Id,
+                ParentId = existing?.Id,
                 IncludeInSearch = true,
             };
             context.FileClassificationCategories.Add(newCategory);
@@ -96,9 +99,14 @@ static async Task ImportPlaying(AppDbContext context)
             existing.IsFamous = category.IsFamous;
             existing.IsInternet = category.IsInternet;
             existing.UpdatedAt = DateTimeOffset.UtcNow;
-            existing.ParentId = parentCategory?.Id;
         }
     }
-
-    await context.SaveChangesAsync();
+    try
+    {
+        await context.SaveChangesAsync();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
 }

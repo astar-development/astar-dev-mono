@@ -1,4 +1,5 @@
 using AStar.Dev.Guard.Clauses;
+using AStar.Dev.Wallpaper.Scraper.Repositories;
 
 namespace AStar.Dev.Wallpaper.Scraper.Support;
 
@@ -6,7 +7,7 @@ namespace AStar.Dev.Wallpaper.Scraper.Support;
 public static class TagOutcomeFactory
 {
     /// <summary>Creates a <see cref="SkipImage" /> outcome.</summary>
-    public static SkipImage CreateSkipImage(IReadOnlyList<string> tags)
+    public static SkipImage CreateSkipImage(IReadOnlyList<TagData> tags)
     {
         GuardAgainst.Null(tags);
 
@@ -14,7 +15,7 @@ public static class TagOutcomeFactory
     }
 
     /// <summary>Creates an <see cref="Accept" /> outcome.</summary>
-    public static Accept CreateAccept(string filePrefix, IReadOnlyList<string> directorySegments, IReadOnlyList<string> tags)
+    public static Accept CreateAccept(string filePrefix, IReadOnlyList<string> directorySegments, IReadOnlyList<TagData> tags)
     {
         GuardAgainst.Null(filePrefix);
         GuardAgainst.Null(directorySegments);

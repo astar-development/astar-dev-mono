@@ -17,15 +17,16 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
             Category = textInfo.ToTitleCase(t.Category ?? ""),
             Value = textInfo.ToTitleCase(t.Tag)
         }).ToList();
+        var parentCategories = await context.FileClassificationCategories.ToListAsync();
 
         foreach (var tag in titleCasedTags)
         {
-            var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Name == tag.Category);
-            if (!await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id))
-                {
-                    tag.Level = parentCategory?.Level ?? 1;
-                    tag.Category = parentCategory?.Name ?? tag.Category;
-                    _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());}
+            var parentCategory = parentCategories.FirstOrDefault(c => c.Name == tag.Category);
+            if (await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id)) continue;
+
+            tag.Level = parentCategory?.Level+1 ?? 1;
+            tag.Category = parentCategory?.Name ?? tag.Value;
+            _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());
         }
 
         _ = await context.SaveChangesAsync();
@@ -46,10 +47,11 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
         var existingMap = await context.FileClassificationCategories
             .Where(t => values.Contains(t.Name))
             .ToListAsync(ct);
+        var parentCategories = await context.FileClassificationCategories.ToListAsync(ct);
 
         foreach (var tag in tags)
         {
-            var parentCategory = await context.FileClassificationCategories.FirstOrDefaultAsync(c => c.Id == tag.ParentId, ct);
+            var parentCategory = parentCategories.FirstOrDefault(c => c.Id == tag.Id);
             var existing = existingMap.FirstOrDefault(t => t.Name == tag.Name && t.ParentId == parentCategory?.Id);
             if (existing is not null)
             {

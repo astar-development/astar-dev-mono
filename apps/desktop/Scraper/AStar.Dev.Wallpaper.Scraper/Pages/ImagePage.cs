@@ -22,12 +22,13 @@ public sealed class ImagePage(IPlaywrightService playwrightService, ScrapeConfig
         await EnsurePageAsync().ConfigureAwait(false);
         _ = await page.GotoAsync(link).ConfigureAwait(false);
 
-        var tagLocators = await page.Locator(".tagname").AllAsync().ConfigureAwait(false);
-        var tagData = await Task.WhenAll(tagLocators.Select(GetTagsAsync)).ConfigureAwait(false);
-
         string initialDirectory = scrapeConfiguration.ScrapeDirectories.RootDirectory.CombinePath(scrapeConfiguration.ScrapeDirectories.BaseSaveDirectory, categoryName.ToLowerInvariant().Replace(' ', '-'));
         var context = TagRuleContextFactory.Create(initialDirectory, scrapeConfiguration.ScrapeDirectories.BaseDirectoryFamous, tagsToIgnoreCompletely, tagsTextToIgnore);
 
+        var tagLocators = await page.Locator(".tagname").AllAsync().ConfigureAwait(false);
+        var tagData = await Task.WhenAll(tagLocators.Select(GetTagsAsync)).ConfigureAwait(false);
+
+        // When we reach here with "People > Models" in tag data, IsInternet shows as false????
         var outcome = TagRules.Evaluate(tagData, context);
 
         return await MapOutcomeAsync(outcome, tagData).ConfigureAwait(false);
