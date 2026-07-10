@@ -16,7 +16,7 @@ public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(Integra
         var accountId = new AccountId("dup-search-no-dups");
         await SeedAccountAsync(accountId, ct);
         await SeedFileAsync(accountId, "/folder/alpha.pdf", 100L, ct);
-        await SeedFileAsync(accountId, "/folder/beta.pdf",  200L, ct);
+        await SeedFileAsync(accountId, "/folder/beta.pdf", 200L, ct);
 
         var repository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
         var criteria = SyncedItemSearchCriteriaFactory.Create(accountId, duplicatesOnly: true);
@@ -51,7 +51,7 @@ public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(Integra
         var accountId = new AccountId("dup-search-same-size-diff-name");
         await SeedAccountAsync(accountId, ct);
         await SeedFileAsync(accountId, "/folder/alpha.jpg", 1024L, ct);
-        await SeedFileAsync(accountId, "/folder/beta.jpg",  1024L, ct);
+        await SeedFileAsync(accountId, "/folder/beta.jpg", 1024L, ct);
 
         var repository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
         var criteria = SyncedItemSearchCriteriaFactory.Create(accountId, duplicatesOnly: true);
@@ -104,8 +104,8 @@ public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(Integra
         var accountWithoutDuplicates = new AccountId("dup-search-isolation-b");
         await SeedAccountAsync(accountWithDuplicates, ct);
         await SeedAccountAsync(accountWithoutDuplicates, ct);
-        await SeedFileAsync(accountWithDuplicates, "/x/file.pdf",    999L, ct);
-        await SeedFileAsync(accountWithDuplicates, "/y/file.pdf",    999L, ct);
+        await SeedFileAsync(accountWithDuplicates, "/x/file.pdf", 999L, ct);
+        await SeedFileAsync(accountWithDuplicates, "/y/file.pdf", 999L, ct);
         await SeedFileAsync(accountWithoutDuplicates, "/z/other.pdf", 999L, ct);
 
         var repository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
@@ -150,49 +150,49 @@ public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(Integra
         results.ShouldBeEmpty();
     }
 
-    private async Task SeedAccountAsync(AccountId accountId, CancellationToken ct)
+    private async Task SeedAccountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
-        await using var context = await factory.CreateDbContextAsync(ct);
+        await using var context = await factory.CreateDbContextAsync(cancellationToken);
         context.Set<AccountEntity>().Add(new AccountEntity { Id = accountId });
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task SeedFileAsync(AccountId accountId, string remotePath, long? sizeInBytes, CancellationToken ct)
+    private async Task SeedFileAsync(AccountId accountId, string remotePath, long? sizeInBytes, CancellationToken cancellationToken)
     {
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
-        await using var context = await factory.CreateDbContextAsync(ct);
+        await using var context = await factory.CreateDbContextAsync(cancellationToken);
         context.Set<SyncedItemEntity>().Add(new SyncedItemEntity
         {
-            AccountId       = accountId,
-            RemoteItemId    = new OneDriveItemId(Guid.NewGuid().ToString()),
-            RemoteParentId  = string.Empty,
-            RemotePath      = remotePath,
-            LocalPath       = string.Empty,
-            IsFolder        = false,
-            SizeInBytes     = sizeInBytes,
+            AccountId = accountId,
+            RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()),
+            RemoteParentId = string.Empty,
+            RemotePath = remotePath,
+            LocalPath = string.Empty,
+            IsFolder = false,
+            SizeInBytes = sizeInBytes,
             RemoteModifiedAt = DateTimeOffset.UtcNow,
-            Tags            = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
+            Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         });
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task SeedFolderAsync(AccountId accountId, string remotePath, CancellationToken ct)
+    private async Task SeedFolderAsync(AccountId accountId, string remotePath, CancellationToken cancellationToken)
     {
         var factory = fixture.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
-        await using var context = await factory.CreateDbContextAsync(ct);
+        await using var context = await factory.CreateDbContextAsync(cancellationToken);
         context.Set<SyncedItemEntity>().Add(new SyncedItemEntity
         {
-            AccountId        = accountId,
-            RemoteItemId     = new OneDriveItemId(Guid.NewGuid().ToString()),
-            RemoteParentId   = string.Empty,
-            RemotePath       = remotePath,
-            LocalPath        = string.Empty,
-            IsFolder         = true,
-            SizeInBytes      = null,
+            AccountId = accountId,
+            RemoteItemId = new OneDriveItemId(Guid.NewGuid().ToString()),
+            RemoteParentId = string.Empty,
+            RemotePath = remotePath,
+            LocalPath = string.Empty,
+            IsFolder = true,
+            SizeInBytes = null,
             RemoteModifiedAt = DateTimeOffset.UtcNow,
-            Tags             = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
+            Tags = VersionInfoFactory.Create(Option.None<string>(), Option.None<string>())
         });
-        await context.SaveChangesAsync(ct);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

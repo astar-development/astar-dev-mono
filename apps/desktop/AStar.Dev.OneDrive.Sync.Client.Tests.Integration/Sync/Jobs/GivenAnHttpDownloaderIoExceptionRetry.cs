@@ -23,7 +23,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         var timeProvider = new FakeTimeProvider();
         var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), timeProvider);
 
-        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         while (!downloadTask.IsCompleted)
         {
@@ -69,7 +69,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken ct) => Task.FromException<int>(new IOException("Connection reset by peer"));
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default) => ValueTask.FromException<int>(new IOException("Connection reset by peer"));
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => Task.FromException<int>(new IOException("Connection reset by peer"));
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => ValueTask.FromException<int>(new IOException("Connection reset by peer"));
     }
 }

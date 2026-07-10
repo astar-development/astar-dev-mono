@@ -4,6 +4,6 @@ namespace AStar.Dev.Wallpaper.Scraper.Services;
 
 public interface IFileClassificationCategoryService
 {
-    Task<List<FileClassificationCategoryDomain>> ExportScrapedTagsAsync(CancellationToken ct);
-    Task<int> ImportScrapedTagsAsync(IReadOnlyList<FileClassificationCategoryDomain> tags, CancellationToken ct);
+    Task<List<FileClassificationCategoryDomain>> ExportScrapedTagsAsync(CancellationToken cancellationToken);
+    Task<int> ImportScrapedTagsAsync(IReadOnlyList<FileClassificationCategoryDomain> tags, CancellationToken cancellationToken);
 }

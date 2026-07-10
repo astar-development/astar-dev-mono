@@ -18,5 +18,5 @@ public interface IRemoteFolderEnumerator
     /// <see cref="RemoteEnumerationContext.SeenRemoteIds"/> is updated for each yielded item.
     /// </para>
     /// </summary>
-    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, CancellationToken ct = default);
+    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, CancellationToken cancellationToken = default);
 }

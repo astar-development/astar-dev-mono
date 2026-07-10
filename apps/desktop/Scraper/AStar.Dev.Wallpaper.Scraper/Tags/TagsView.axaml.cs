@@ -80,7 +80,7 @@ public partial class TagsView : Window, IDisposable
         UpdateStatus($"Error: {exception.Message}");
     }
 
-    private void DisableControlsAndClearStatus(CancellationToken ct)
+    private void DisableControlsAndClearStatus(CancellationToken cancellationToken)
     {
         ExportTagsButton.IsEnabled = false;
         ImportTagsButton.IsEnabled = false;

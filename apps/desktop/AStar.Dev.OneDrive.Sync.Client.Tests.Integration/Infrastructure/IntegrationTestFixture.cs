@@ -101,8 +101,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
         private sealed class TokenFactoryProvider(Func<CancellationToken, Task<string>> tokenFactory) : IAccessTokenProvider
         {
-            public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default)
-                => tokenFactory(ct);
+            public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+                => tokenFactory(cancellationToken);
 
             public AllowedHostsValidator AllowedHostsValidator { get; } = new();
         }

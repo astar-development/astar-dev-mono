@@ -28,7 +28,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
 
         var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Ok>();
         callCount.ShouldBe(2);
@@ -45,7 +45,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         var sut = new HttpDownloader(factory, new MockFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
+            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
 
         var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         deletedPaths.ShouldContain(path => path.StartsWith(LocalPath + ".") && path.EndsWith(".download"));
     }
@@ -129,7 +129,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken ct) => Task.FromException<int>(new IOException("Connection reset by peer"));
-        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default) => ValueTask.FromException<int>(new IOException("Connection reset by peer"));
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => Task.FromException<int>(new IOException("Connection reset by peer"));
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => ValueTask.FromException<int>(new IOException("Connection reset by peer"));
     }
 }

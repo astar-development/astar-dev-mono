@@ -13,17 +13,17 @@ public class FileScannerService(
 
     private sealed class Counter { public int Value; }
 
-    public async Task ScanAsync(string rootPath, IProgress<ScanProgressUpdate> progress, CancellationToken ct)
+    public async Task ScanAsync(string rootPath, IProgress<ScanProgressUpdate> progress, CancellationToken cancellationToken)
     {
         var scanStartedAt = DateTime.UtcNow;
         var counter = new Counter();
 
-        await RecurseDirectoryAsync(rootPath, rootPath, progress, counter, ct);
+        await RecurseDirectoryAsync(rootPath, rootPath, progress, counter, cancellationToken);
 
-        await using var db = await dbContextFactory.CreateDbContextAsync(ct);
+        await using var db = await dbContextFactory.CreateDbContextAsync(cancellationToken);
         await db.ScannedFiles
             .Where(f => f.RootPath == rootPath && f.LastScannedAt < scanStartedAt)
-            .ExecuteUpdateAsync(s => s.SetProperty(f => f.PendingDelete, true), ct);
+            .ExecuteUpdateAsync(s => s.SetProperty(f => f.PendingDelete, true), cancellationToken);
 
         string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(
@@ -38,22 +38,22 @@ public class FileScannerService(
         string directory,
         IProgress<ScanProgressUpdate> progress,
         Counter counter,
-        CancellationToken ct)
+        CancellationToken cancellationToken)
     {
         string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(CurrentFolder: directory, TotalFilesProcessed: counter.Value, CurrentFileName: null, StatusMessage: $"[{time}] Scanning: {directory}"));
 
-        await using var db = await dbContextFactory.CreateDbContextAsync(ct);
+        await using var db = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         try
         {
             foreach (string filePath in Directory.EnumerateFiles(directory))
             {
-                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 var fi = new FileInfo(filePath);
                 var existing = await db.ScannedFiles
-                    .FirstOrDefaultAsync(f => f.FullPath == fi.FullName, ct);
+                    .FirstOrDefaultAsync(f => f.FullPath == fi.FullName, cancellationToken);
 
                 var now = DateTime.UtcNow;
 
@@ -95,7 +95,7 @@ public class FileScannerService(
                 }
             }
 
-            await db.SaveChangesAsync(ct);
+            await db.SaveChangesAsync(cancellationToken);
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -109,8 +109,8 @@ public class FileScannerService(
 
         foreach (string subDir in Directory.EnumerateDirectories(directory))
         {
-            ct.ThrowIfCancellationRequested();
-            await RecurseDirectoryAsync(rootPath, subDir, progress, counter, ct);
+            cancellationToken.ThrowIfCancellationRequested();
+            await RecurseDirectoryAsync(rootPath, subDir, progress, counter, cancellationToken);
         }
     }
 }

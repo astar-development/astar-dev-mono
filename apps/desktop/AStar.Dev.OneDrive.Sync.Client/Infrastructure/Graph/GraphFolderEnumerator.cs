@@ -20,13 +20,13 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
     ];
 
     /// <summary>Streams all descendants of the specified folder, yielding each item as it arrives from the Graph API. Cycles in the folder graph are detected and broken.</summary>
-    internal async IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered, [EnumeratorCancellation] CancellationToken ct)
+    internal async IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var client = graphClientFactory.CreateClient(tokenFactory);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         int count = 0;
 
-        await foreach (var item in EnumerateSubFolderAsync(client, driveId, folderId, remotePath, visited, ct))
+        await foreach (var item in EnumerateSubFolderAsync(client, driveId, folderId, remotePath, visited, cancellationToken))
         {
             count++;
             onItemDiscovered?.Invoke(count);
@@ -34,37 +34,37 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
         }
     }
 
-    private static async IAsyncEnumerable<DeltaItem> EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, HashSet<string> visited, [EnumeratorCancellation] CancellationToken ct)
+    private static async IAsyncEnumerable<DeltaItem> EnumerateSubFolderAsync(GraphServiceClient client, DriveId driveId, string parentId, string relativePath, HashSet<string> visited, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if(!visited.Add(parentId))
+        if (!visited.Add(parentId))
             yield break;
 
         var firstPage = await client.Drives[driveId.Value].Items[parentId].Children
-            .GetAsync(req => req.QueryParameters.Select = childrenSelect, ct).ConfigureAwait(false);
+            .GetAsync(req => req.QueryParameters.Select = childrenSelect, cancellationToken).ConfigureAwait(false);
 
-        await foreach (var item in EnumeratePageItemsAsync(firstPage, nextLink => client.Drives[driveId.Value].Items[parentId].Children.WithUrl(nextLink).GetAsync(cancellationToken: ct), ct))
+        await foreach (var item in EnumeratePageItemsAsync(firstPage, nextLink => client.Drives[driveId.Value].Items[parentId].Children.WithUrl(nextLink).GetAsync(cancellationToken: cancellationToken), cancellationToken))
         {
             string itemPath = BuildRelativePath(relativePath, item);
             yield return MapToDeltaItem(item, itemPath);
 
-            if(item.Folder is not null && item.Id is not null)
-                await foreach(var child in EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, visited, ct))
+            if (item.Folder is not null && item.Id is not null)
+                await foreach (var child in EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, visited, cancellationToken))
                     yield return child;
         }
     }
 
-    private static async IAsyncEnumerable<DriveItem> EnumeratePageItemsAsync(DriveItemCollectionResponse? firstPage, Func<string, Task<DriveItemCollectionResponse?>> fetchNext, [EnumeratorCancellation] CancellationToken ct)
+    private static async IAsyncEnumerable<DriveItem> EnumeratePageItemsAsync(DriveItemCollectionResponse? firstPage, Func<string, Task<DriveItemCollectionResponse?>> fetchNext, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var page = firstPage;
-        while(page?.Value is not null)
+        while (page?.Value is not null)
         {
-            foreach(var item in page.Value)
+            foreach (var item in page.Value)
                 yield return item;
 
-            if(!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
+            if (!OdataNextLinkGuard.IsSafe(page.OdataNextLink))
                 yield break;
 
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             page = await fetchNext(page.OdataNextLink!).ConfigureAwait(false);
         }
     }
@@ -81,7 +81,7 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
         var path = ItemPathFactory.Create(item.Name ?? string.Empty, itemPath);
         var versionInfo = VersionInfoFactory.Create(ToOptionString(item.ETag), ToOptionString(item.CTag));
 
-        if(item.Folder is not null)
+        if (item.Folder is not null)
             return DeltaItemFactory.CreateFolder(id, driveId, parentId, path, versionInfo);
 
         return DeltaItemFactory.CreateFile(id, driveId, parentId, path, item.Size ?? 0L, item.LastModifiedDateTime.ToOption(), ExtractDownloadUrl(item), versionInfo);
@@ -89,7 +89,7 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
 
     private static Option<string> ExtractDownloadUrl(DriveItem item)
     {
-        if(item.AdditionalData?.TryGetValue(DownloadUrlKey, out object? url) is not true || url is null)
+        if (item.AdditionalData?.TryGetValue(DownloadUrlKey, out object? url) is not true || url is null)
             return Option.None<string>();
 
         return Option.Some(url.ToString()!);

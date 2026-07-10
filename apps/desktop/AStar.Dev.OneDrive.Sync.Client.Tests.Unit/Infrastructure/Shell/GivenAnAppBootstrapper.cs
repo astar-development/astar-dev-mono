@@ -98,7 +98,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
         await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
 
-        await settingsService.Received(1).LoadAsync();
+        await settingsService.Received(1).LoadAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
         await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
 
-        await localizationService.Received(1).SetCultureAsync(Arg.Is<CultureInfo>(c => c.Name == "en-US"));
+        await localizationService.Received(1).SetCultureAsync(Arg.Is<CultureInfo>(c => c.Name == "en-US"), TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -136,12 +136,12 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     public async Task when_bootstrap_async_is_called_then_startup_calls_are_made_in_correct_order()
     {
         var callOrder = new List<string>();
-        settingsService.LoadAsync().Returns(_ =>
+        settingsService.LoadAsync(TestContext.Current.CancellationToken).Returns(_ =>
         {
             callOrder.Add("LoadAsync");
             return Task.CompletedTask;
         });
-        localizationService.SetCultureAsync(Arg.Any<CultureInfo>()).Returns(_ =>
+        localizationService.SetCultureAsync(Arg.Any<CultureInfo>(), TestContext.Current.CancellationToken).Returns(_ =>
         {
             callOrder.Add("SetCultureAsync");
             return Task.CompletedTask;
@@ -194,7 +194,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     [Fact]
     public async Task when_bootstrap_async_throws_then_exception_is_rethrown()
     {
-        settingsService.LoadAsync().Returns(Task.FromException(new InvalidOperationException("Settings failure")));
+        settingsService.LoadAsync(TestContext.Current.CancellationToken).Returns(Task.FromException(new InvalidOperationException("Settings failure")));
         var sut = CreateSut();
 
         var exception = await Record.ExceptionAsync(() => sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken));

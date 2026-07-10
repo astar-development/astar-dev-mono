@@ -133,7 +133,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     /// On subsequent activations the collection is only rebuilt when the tag count has grown,
     /// avoiding redundant UI mutations when nothing has changed.
     /// </summary>
-    public async Task OnViewActivatedAsync(CancellationToken ct)
+    public async Task OnViewActivatedAsync(CancellationToken cancellationToken)
     {
         if (activeAccountId is null)
             return;
@@ -141,7 +141,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
         IsLoadingTags = true;
         ShowNoClassificationsHint = false;
 
-        var tags = await repository.GetDistinctTagNamesAsync(activeAccountId.Value, ct).ConfigureAwait(false);
+        var tags = await repository.GetDistinctTagNamesAsync(activeAccountId.Value, cancellationToken).ConfigureAwait(false);
 
         if (tags.Count <= cachedTagCount)
         {
@@ -185,7 +185,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
                 DuplicatesOnly,
                 IndexToSortOrder(SelectedSortOrderIndex));
 
-            var results = await repository.SearchAsync(criteria, cancellationToken);
+            var results = await repository.SearchAsync(criteria, cancellationToken).ConfigureAwait(false);
 
             bool capped = results.Count > SearchResultCap;
             var displayResults = capped ? (IReadOnlyList<SyncedItemSearchResult>)[.. results.Take(SearchResultCap)] : results;

@@ -30,7 +30,7 @@ public interface ILocalizationService
     /// Switches the active culture and reloads strings.
     /// Raises <see cref="CultureChanged"/>.
     /// </summary>
-    Task SetCultureAsync(CultureInfo culture);
+    Task SetCultureAsync(CultureInfo culture, CancellationToken cancellationToken = default);
 
     /// <summary>Raised after a successful culture switch.</summary>
     event EventHandler<CultureInfo>? CultureChanged;

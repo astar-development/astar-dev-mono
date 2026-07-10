@@ -11,11 +11,11 @@ public sealed class DeleteJobHandler(IFileSystem fileSystem) : IJobHandler
     public bool CanHandle(SyncJob job) => job is DeleteSyncJob;
 
     /// <inheritdoc />
-    public Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    public Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         var deleteJob = (DeleteSyncJob)job;
 
-        if(fileSystem.File.Exists(deleteJob.Target.LocalPath))
+        if (fileSystem.File.Exists(deleteJob.Target.LocalPath))
             fileSystem.File.Delete(deleteJob.Target.LocalPath);
 
         return Task.FromResult<Result<SyncJob, string>>(new Result<SyncJob, string>.Ok(deleteJob));

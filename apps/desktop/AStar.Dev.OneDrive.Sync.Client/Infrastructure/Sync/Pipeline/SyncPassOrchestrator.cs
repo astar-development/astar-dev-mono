@@ -15,16 +15,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, IFileClassificationRepository classificationRepository) : ISyncPassOrchestrator
 {
-    public async Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default)
+    public async Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken cancellationToken = default)
     {
-        var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false))
+        var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
 
         driveState.LastSyncStartedAt = Option.Some(DateTimeOffset.UtcNow);
         driveState.DeltaLink = Option.None<string>();
-        await driveStateRepository.UpsertAsync(driveState, ct).ConfigureAwait(false);
+        await driveStateRepository.UpsertAsync(driveState, cancellationToken).ConfigureAwait(false);
 
-        var mappings = await classificationRepository.GetAllCategoriesAsync(ct).ConfigureAwait(false);
+        var mappings = await classificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
         int progressReportInterval = syncSettings.Value.ProgressReportInterval;
         int workerCount = settingsService.Current.ConcurrentWorkerCount;
@@ -39,7 +39,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, ct);
+        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken);
 
         bool hasJobs;
         try
@@ -55,7 +55,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
 
         int failedJobCount = 0;
         if (hasJobs)
-            failedJobCount = await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(ct), context.SyncedItems, mappings, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), ct).ConfigureAwait(false);
+            failedJobCount = await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(cancellationToken), context.SyncedItems, mappings, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), cancellationToken).ConfigureAwait(false);
 
         await producerTask.ConfigureAwait(false);
 
@@ -65,11 +65,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         if (!hasJobs)
             onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Id, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
 
-        await accountRepository.GetByIdAsync(account.Id, ct)
+        await accountRepository.GetByIdAsync(account.Id, cancellationToken)
             .TapAsync(async entity =>
             {
                 entity.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
-                await accountRepository.UpsertAsync(entity, ct).ConfigureAwait(false);
+                await accountRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
         account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
@@ -77,17 +77,17 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
 
-    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         bool signaled = false;
         try
         {
-            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, ct).ConfigureAwait(false))
+            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, cancellationToken).ConfigureAwait(false))
             {
-                var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, ct).ConfigureAwait(false);
+                var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, cancellationToken).ConfigureAwait(false);
                 if (job is not null)
                 {
-                    await writer.WriteAsync(job, ct).ConfigureAwait(false);
+                    await writer.WriteAsync(job, cancellationToken).ConfigureAwait(false);
                     if (!signaled)
                     {
                         firstJobSignal.TrySetResult(true);
@@ -100,17 +100,17 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
                 return;
 
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
-            await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, ct).ConfigureAwait(false);
+            await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
 
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
-            await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, ct).ConfigureAwait(false);
+            await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
 
             var syncedItemsByLocalPath = context.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
             var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, syncConfig.LocalSyncPath.Value, context.Rules, syncedItemsByLocalPath);
 
             foreach (var job in uploadJobs)
             {
-                await writer.WriteAsync(job, ct).ConfigureAwait(false);
+                await writer.WriteAsync(job, cancellationToken).ConfigureAwait(false);
                 if (!signaled)
                 {
                     firstJobSignal.TrySetResult(true);
@@ -120,7 +120,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         }
         catch (OperationCanceledException) when (!signaled)
         {
-            firstJobSignal.TrySetCanceled(ct);
+            firstJobSignal.TrySetCanceled(cancellationToken);
             throw;
         }
         catch (Exception ex) when (!signaled)

@@ -41,7 +41,7 @@ public sealed class GivenAnHttpDownloader
         var timeProvider = new FakeTimeProvider();
         var sut = CreateSut(factory, new MockFileSystem(), timeProvider);
 
-        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var downloadTask = sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         while (!downloadTask.IsCompleted)
         {

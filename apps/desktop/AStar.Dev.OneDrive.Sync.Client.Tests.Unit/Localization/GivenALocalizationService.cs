@@ -110,7 +110,7 @@ public sealed class GivenALocalizationService
             string result = service.GetLocal(null!);
             _ = result.ShouldNotBeNull();
         }
-        catch(ArgumentNullException)
+        catch (ArgumentNullException)
         {
             // Expected behavior - null key should throw
         }
@@ -122,7 +122,7 @@ public sealed class GivenALocalizationService
         var service = new LocalizationService();
         var targetCulture = new CultureInfo("en-GB");
 
-        await service.SetCultureAsync(targetCulture);
+        await service.SetCultureAsync(targetCulture, TestContext.Current.CancellationToken);
 
         service.CurrentCulture.Name.ShouldBe("en-GB");
     }
@@ -136,7 +136,7 @@ public sealed class GivenALocalizationService
 
         var currentCulture = service.CurrentCulture;
 
-        await service.SetCultureAsync(currentCulture);
+        await service.SetCultureAsync(currentCulture, TestContext.Current.CancellationToken);
 
         eventRaised.ShouldBeFalse();
     }

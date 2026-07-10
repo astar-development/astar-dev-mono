@@ -64,7 +64,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
     [RelayCommand]
-    public async Task LoadAsync(CancellationToken ct)
+    public async Task LoadAsync(CancellationToken cancellationToken)
     {
         if (IsLoading)
             return;
@@ -76,7 +76,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, ct)
+            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken)
                 .MatchAsync<AuthResult, AuthError, string?>(
                     ok => ok.AccessToken,
                     error =>
@@ -89,7 +89,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if (accessToken is null)
                 return;
 
-            var driveId = await graphService.GetDriveIdAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty), ct)
+            var driveId = await graphService.GetDriveIdAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -104,7 +104,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             driveIdOption = new Option<DriveId>.Some(driveId.Value);
 
-            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, ct);
+            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, cancellationToken);
             ruleStates.Clear();
             foreach (var (path, ruleType) in loadedRuleStates)
                 ruleStates[path] = ruleType;
@@ -178,7 +178,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private static FolderSyncState ToFolderSyncState(RuleType ruleType) => ruleType switch
     {
         RuleType.Include => FolderSyncState.Included,
-        _                => FolderSyncState.Excluded
+        _ => FolderSyncState.Excluded
     };
 
     private void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)

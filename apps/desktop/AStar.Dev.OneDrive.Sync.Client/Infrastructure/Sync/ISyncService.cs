@@ -17,13 +17,13 @@ public interface ISyncService
     /// Progress is reported via <see cref="SyncProgressChanged"/>.
     /// Conflicts are queued — not blocked on.
     /// </summary>
-    Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default);
+    Task SyncAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Applies a conflict resolution to a pending conflict and
     /// re-queues the appropriate file operation.
     /// </summary>
-    Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default);
+    Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken cancellationToken = default);
 
     /// <summary>Raised when sync progress updates are available for an account. This includes overall sync progress as well as granular progress for individual file jobs.</summary>
     event EventHandler<SyncProgressEventArgs> SyncProgressChanged;

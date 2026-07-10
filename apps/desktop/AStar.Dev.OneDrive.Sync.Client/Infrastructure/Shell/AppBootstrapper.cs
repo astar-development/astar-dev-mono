@@ -15,22 +15,22 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, IClassificationDataMigrationService classificationDataMigrationService, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
 {
     /// <inheritdoc />
-    public async Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default)
+    public async Task BootstrapAsync(IProgress<string> progress, CancellationToken cancellationToken = default)
     {
         try
         {
             progress.Report("Migrating database…");
-            await using var context = await dbContextFactory.CreateDbContextAsync(ct).ConfigureAwait(false);
-            await context.Database.MigrateAsync(ct).ConfigureAwait(false);
+            await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await context.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
 
             progress.Report("Migrating classification data…");
-            await classificationDataMigrationService.MigrateAsync(ct).ConfigureAwait(false);
+            await classificationDataMigrationService.MigrateAsync(cancellationToken).ConfigureAwait(false);
 
             progress.Report("Loading settings…");
-            await settingsService.LoadAsync().ConfigureAwait(false);
+            await settingsService.LoadAsync(cancellationToken).ConfigureAwait(false);
 
             progress.Report("Applying locale…");
-            await loc.SetCultureAsync(new CultureInfo(settingsService.Current.Locale)).ConfigureAwait(false);
+            await loc.SetCultureAsync(new CultureInfo(settingsService.Current.Locale), cancellationToken).ConfigureAwait(false);
 
             progress.Report("Applying theme…");
             themeService.Apply(settingsService.Current.Theme);

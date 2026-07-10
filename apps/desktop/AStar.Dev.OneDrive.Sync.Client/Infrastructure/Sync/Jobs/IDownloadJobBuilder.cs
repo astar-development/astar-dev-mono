@@ -18,5 +18,5 @@ public interface IDownloadJobBuilder
     /// The caller must supply preloaded <paramref name="mappings"/> so phantom-file classification
     /// does not reload the full category table on every item.
     /// </summary>
-    Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct);
+    Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken);
 }

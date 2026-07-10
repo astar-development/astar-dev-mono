@@ -13,15 +13,15 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
     public bool CanHandle(SyncJob job) => job is DownloadSyncJob;
 
     /// <inheritdoc />
-    public async Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    public async Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         var downloadJob = (DownloadSyncJob)job;
-        var urlResult = await ResolveDownloadUrlAsync(downloadJob, accountId, tokenFactory, ct).ConfigureAwait(false);
+        var urlResult = await ResolveDownloadUrlAsync(downloadJob, accountId, tokenFactory, cancellationToken   ).ConfigureAwait(false);
 
         return await urlResult.MatchAsync(
             async url =>
             {
-                var downloadResult = await downloader.DownloadAsync(url, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified, ct: ct).ConfigureAwait(false);
+                var downloadResult = await downloader.DownloadAsync(url, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified   ).ConfigureAwait(false);
 
                 return downloadResult.Match<Result<SyncJob, string>>(
                     _ => new Result<SyncJob, string>.Ok(downloadJob),
@@ -40,13 +40,13 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
             }).ConfigureAwait(false);
     }
 
-    private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         if (job.DownloadUrl is Option<string>.Some downloadUrl)
             return new Result<string, string>.Ok(downloadUrl.Value);
 
         OneDriveSyncClientMessages.DownloadUrlAbsent(logger, job.Target.RelativePath);
 
-        return await graphService.GetDownloadUrlAsync(accountId, tokenFactory, job.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        return await graphService.GetDownloadUrlAsync(accountId, tokenFactory, job.Remote.RemoteItemId.Id, cancellationToken).ConfigureAwait(false);
     }
 }

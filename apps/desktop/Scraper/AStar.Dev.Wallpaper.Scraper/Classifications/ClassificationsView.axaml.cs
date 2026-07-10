@@ -59,7 +59,7 @@ public partial class ClassificationsView : Window, IDisposable
 
     private void LogSetupFailure(Exception exception) => UpdateStatus($"Error: {exception.Message}");
 
-    private void DisableControlsAndClearStatus(CancellationToken ct)
+    private void DisableControlsAndClearStatus(CancellationToken cancellationToken)
     {
         ExportButton.IsEnabled = false;
         ImportButton.IsEnabled = false;

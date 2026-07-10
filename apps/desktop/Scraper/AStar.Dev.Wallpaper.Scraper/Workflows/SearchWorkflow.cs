@@ -12,21 +12,21 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
 {
     private SearchProgress progress = null!;
 
-    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken ct = default)
+    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken cancellationToken = default)
     {
         progress = SearchProgressFactory.Create(injectedScrapeConfiguration.SearchConfiguration, injectedScrapeConfiguration.ScrapeDirectories);
         var searchCategories = SearchProgressFunctions.FilterSearchCategories(progress.SearchConfiguration, progress.SearchConfiguration.SearchCategories);
 
-        return ProcessSearchCategoriesAsync(searchCategories, ct).LogFailure(logger);
+        return ProcessSearchCategoriesAsync(searchCategories, cancellationToken).LogFailure(logger);
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessSearchCategoriesAsync(IReadOnlyList<Category> searchCategories, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> ProcessSearchCategoriesAsync(IReadOnlyList<Category> searchCategories, CancellationToken cancellationToken)
     {
         foreach (var searchCategory in searchCategories)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var categoryResult = await ProcessSearchCategoryAsync(searchCategory, ct).ConfigureAwait(false);
+            var categoryResult = await ProcessSearchCategoryAsync(searchCategory, cancellationToken).ConfigureAwait(false);
             bool categoryFailed = categoryResult.Match(_ => false, _ => true);
 
             if (categoryFailed) return categoryResult;
@@ -35,24 +35,24 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
         return Unit.Value;
     }
 
-    private Task<Result<Unit, ScrapeError>> ProcessSearchCategoryAsync(Category searchCategory, CancellationToken ct)
+    private Task<Result<Unit, ScrapeError>> ProcessSearchCategoryAsync(Category searchCategory, CancellationToken cancellationToken)
     {
         string combinedSearchString = $"{progress.SearchConfiguration.SearchStringPrefix}{searchCategory.Id}{progress.SearchConfiguration.SearchStringSuffix}";
         progress = SearchProgressFunctions.UpdateSearchDetails(progress, combinedSearchString);
 
         return searchResultsPage.LoadSearchPageAsync(combinedSearchString, progress.SearchConfiguration.StartingPageNumber)
             .BindAsync(_ => searchResultsPage.PageInfoAsync())
-            .BindAsync(pageInfo => ProcessCategoryPageInfoAsync(searchCategory, combinedSearchString, pageInfo, ct));
+            .BindAsync(pageInfo => ProcessCategoryPageInfoAsync(searchCategory, combinedSearchString, pageInfo, cancellationToken));
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessCategoryPageInfoAsync(Category searchCategory, string combinedSearchString, PageInfo pageInfo, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> ProcessCategoryPageInfoAsync(Category searchCategory, string combinedSearchString, PageInfo pageInfo, CancellationToken cancellationToken)
     {
         progress = SearchProgressFunctions.UpdateTotalPages(progress, pageInfo.PageCount);
 
         if (searchCategory.IsUpToDate(pageInfo.ImageCount, pageInfo.PageCount))
         {
             logger.Information("{Category} is up to date (same image/page count), skipping...", searchCategory.Name);
-            await delayStrategy.DelayAsync(DelayKind.CategoryUpToDate, ct).ConfigureAwait(false);
+            await delayStrategy.DelayAsync(DelayKind.CategoryUpToDate, cancellationToken).ConfigureAwait(false);
 
             return Unit.Value;
         }
@@ -65,7 +65,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
 
         _ = directoryHelper.CreateDirectoryIfRequired([progress.ScrapeDirectories.RootDirectory.CombinePath(progress.ScrapeDirectories.BaseDirectory, pageInfo.SubDirectoryName),]);
 
-        return await ProcessAllCategoryPagesAsync(searchCategory, combinedSearchString, ct)
+        return await ProcessAllCategoryPagesAsync(searchCategory, combinedSearchString, cancellationToken)
             .BindAsync(_ => SaveCategoryProgressAsync(searchCategory, pageInfo))
             .ConfigureAwait(false);
     }
@@ -79,7 +79,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
         return configurationSaver.SaveUpdatedConfigurationAsync();
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessAllCategoryPagesAsync(Category searchCategory, string combinedSearchString, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> ProcessAllCategoryPagesAsync(Category searchCategory, string combinedSearchString, CancellationToken cancellationToken)
     {
         long startTimestamp = timeProvider.GetTimestamp();
         logger.Debug("About to visit the specific {Category} pages now...", searchCategory.Name);
@@ -92,7 +92,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
             () => searchResultsPage.ImagePageLinksAsync(),
             (links, innerCt) => imagePageService.GetTheImagePagesAsync(links, searchCategory.Id, searchCategory.Name, innerCt));
 
-        return (await pagedScrapeRunner.RunAsync(plan, ct).ConfigureAwait(false))
+        return (await pagedScrapeRunner.RunAsync(plan, cancellationToken).ConfigureAwait(false))
             .Tap(_ => logger.Information("Completed visiting the {Category}. Total time: {CategoryVisitDuration}", searchCategory.Name, timeProvider.GetElapsedTime(startTimestamp)));
     }
 

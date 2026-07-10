@@ -16,9 +16,9 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
     private const int EnqueueBatchSize = 100;
 
     /// <inheritdoc />
-    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct)
+    public async Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken cancellationToken)
     {
-        var enumerator = jobs.GetAsyncEnumerator(ct);
+        var enumerator = jobs.GetAsyncEnumerator(cancellationToken);
         bool hasFirst;
         try
         {
@@ -39,7 +39,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
         var firstJob = enumerator.Current;
 
         return await syncPipeline.RunAsync(
-            EnqueueAndYield(firstJob, enumerator, ct),
+            EnqueueAndYieldAsync(firstJob, enumerator, cancellationToken),
             tokenFactory,
             onProgress,
             async args =>
@@ -50,11 +50,11 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
 
                     if (args.Job is DownloadSyncJob)
                     {
-                        await syncedItemRegistrar.RegisterDownloadAsync(account.Id, args.Job, remotePath, mappings, syncedItems, ct).ConfigureAwait(false);
+                        await syncedItemRegistrar.RegisterDownloadAsync(account.Id, args.Job, remotePath, mappings, syncedItems, cancellationToken).ConfigureAwait(false);
                     }
                     else if (args.Job is UploadSyncJob uploadJob && uploadJob.UploadedRemoteItemId is Option<string>.Some uploadedId)
                     {
-                        await syncedItemRegistrar.RegisterUploadAsync(account.Id, uploadJob, uploadedId.Value, remotePath, mappings, syncedItems, ct).ConfigureAwait(false);
+                        await syncedItemRegistrar.RegisterUploadAsync(account.Id, uploadJob, uploadedId.Value, remotePath, mappings, syncedItems, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -63,10 +63,10 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
             account.Id.Id,
             string.Empty,
             settingsService.Current.ConcurrentWorkerCount,
-            ct).ConfigureAwait(false);
+            cancellationToken).ConfigureAwait(false);
     }
 
-    private async IAsyncEnumerable<SyncJob> EnqueueAndYield(SyncJob first, IAsyncEnumerator<SyncJob> rest, [EnumeratorCancellation] CancellationToken ct = default)
+    private async IAsyncEnumerable<SyncJob> EnqueueAndYieldAsync(SyncJob first, IAsyncEnumerator<SyncJob> rest, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var batch = new List<SyncJob>(EnqueueBatchSize) { first };
 
@@ -78,7 +78,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
 
                 if (batch.Count >= EnqueueBatchSize)
                 {
-                    await syncRepository.EnqueueJobsAsync(batch, ct).ConfigureAwait(false);
+                    await syncRepository.EnqueueJobsAsync(batch,    cancellationToken).ConfigureAwait(false);
                     foreach (var job in batch)
                         yield return job;
                     batch.Clear();
@@ -87,7 +87,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
 
             if (batch.Count > 0)
             {
-                await syncRepository.EnqueueJobsAsync(batch, ct).ConfigureAwait(false);
+                await syncRepository.EnqueueJobsAsync(batch, cancellationToken).ConfigureAwait(false);
                 foreach (var job in batch)
                     yield return job;
             }

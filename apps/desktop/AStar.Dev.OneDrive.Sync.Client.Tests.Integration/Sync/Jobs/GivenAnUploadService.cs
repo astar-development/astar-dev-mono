@@ -57,9 +57,9 @@ public sealed class GivenAnUploadService
               .RespondWith(Response.Create().WithStatusCode(429));
 
         var timeProvider = new FakeTimeProvider();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), timeProvider);
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
 
-        var uploadTask = sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, ct: TestContext.Current.CancellationToken);
+        var uploadTask = sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
         while (!uploadTask.IsCompleted)
         {

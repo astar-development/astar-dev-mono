@@ -29,7 +29,7 @@
 - [x] 4.2 Create `FileClassificationRulesViewModel(IFileClassificationRuleRepository repository)` inheriting `ObservableObject`
 - [x] 4.3 Add `ObservableCollection<FileClassificationRuleRowViewModel> Rules`
 - [x] 4.4 Add `[ObservableProperty]` for `NewKeywords`, `NewLevel1`, `NewLevel2`, `NewLevel3`, `NewIsSpecial`
-- [x] 4.5 Add `LoadAsync(CancellationToken ct)` — loads `GetAllAsync`, clears and repopulates `Rules`
+- [x] 4.5 Add `LoadAsync(CancellationToken cancellationToken)` — loads `GetAllAsync`, clears and repopulates `Rules`
 - [x] 4.6 Add `[RelayCommand(CanExecute = nameof(CanAdd))]` `AddAsync` — split/trim Keywords, call `AddAsync`, append row, clear form
 - [x] 4.7 Implement `CanAdd` — returns `true` when `NewKeywords` and `NewLevel1` are non-empty/non-whitespace
 - [x] 4.8 Wire `NotifyCanExecuteChangedFor` on `NewKeywords` and `NewLevel1` properties

@@ -24,7 +24,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 ///
 /// Chunk size: 10 MB (must be a multiple of 320 KB per Graph API requirement).
 /// </summary>
-public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger, TimeProvider timeProvider) : IUploadService
+public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
     private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
@@ -33,7 +33,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     /// Uploads a local file to OneDrive using a resumable upload session.
     /// Returns the uploaded DriveItem ID on success.
     /// </summary>
-    public async Task<Result<string, string>> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
+    public async Task<Result<string, string>> UploadAsync(GraphServiceClient client, DriveId driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
         if (!fileInfo.Exists)
@@ -41,19 +41,19 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        var sessionResult = await CreateUploadSessionAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct).ConfigureAwait(false);
+        var sessionResult = await CreateUploadSessionAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, cancellationToken).ConfigureAwait(false);
 
         return await sessionResult.MatchAsync(
             async sessionUrl =>
             {
-                var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct).ConfigureAwait(false);
+                var result = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, cancellationToken).ConfigureAwait(false);
 
                 return result.Tap(_ => OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath));
             },
             error => new Result<string, string>.Error(error)).ConfigureAwait(false);
     }
 
-    private static async Task<Result<string, string>> CreateUploadSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
+    private static async Task<Result<string, string>> CreateUploadSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken cancellationToken)
     {
         string fileName = remotePath.Contains('/')
             ? remotePath[(remotePath.LastIndexOf('/') + 1)..]
@@ -81,7 +81,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             .Items[parentFolderId]
             .ItemWithPath(remotePath)
             .CreateUploadSession
-            .PostAsync(requestBody, cancellationToken: ct).ConfigureAwait(false);
+            .PostAsync(requestBody, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (session?.UploadUrl is null)
             return new Result<string, string>.Error("Graph API did not return an upload session URL.");
@@ -89,7 +89,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         return new Result<string, string>.Ok(session.UploadUrl);
     }
 
-    private async Task<Result<string, string>> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
+    private async Task<Result<string, string>> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken cancellationToken)
     {
         using var http = httpClientFactory.CreateClient();
         await using var file = fileSystem.File.OpenRead(localPath);
@@ -102,16 +102,16 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             if (uploaded >= totalBytes)
                 return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
 
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
-            int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, ct).ConfigureAwait(false);
+            int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, cancellationToken).ConfigureAwait(false);
 
             if (bytesRead == 0)
                 return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
 
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
 
-            return await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, ct)
+            return await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, cancellationToken)
                 .BindAsync(async itemId =>
                 {
                     long newUploaded = uploaded + bytesRead;
@@ -125,23 +125,23 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         }
     }
 
-    private static async Task<int> ReadChunkAsync(Stream file, byte[] buffer, long totalBytes, long uploaded, CancellationToken ct)
+    private static async Task<int> ReadChunkAsync(Stream file, byte[] buffer, long totalBytes, long uploaded, CancellationToken cancellationToken)
     {
         int bytesToRead = (int)Math.Min(ChunkSize10Mb, totalBytes - uploaded);
 
-        return await file.ReadAsync(buffer.AsMemory(0, bytesToRead), ct).ConfigureAwait(false);
+        return await file.ReadAsync(buffer.AsMemory(0, bytesToRead), cancellationToken).ConfigureAwait(false);
     }
 
     private static long ComputeRangeEnd(long uploaded, int bytesRead) => uploaded + bytesRead - 1;
 
-    private async Task<Result<string?, string>> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
+    private async Task<Result<string?, string>> UploadChunkWithRetryAsync(HttpClient http, string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken cancellationToken)
     {
         int attempt = 0;
 
         while (true)
         {
             attempt++;
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -150,7 +150,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 content.Headers.Add("Content-Range", FormattableString.Invariant($"bytes {rangeStart}-{rangeEnd}/{totalBytes}"));
                 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.InvariantCulture));
 
-                using var response = await http.PutAsync(sessionUrl, content, ct).ConfigureAwait(false);
+                using var response = await http.PutAsync(sessionUrl, content, cancellationToken).ConfigureAwait(false);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
@@ -160,7 +160,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                    await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
+                    await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -168,7 +168,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                     return new Result<string?, string>.Ok(null);
 
                 if (response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
-                    return await GetUploadedDocumentIdAsync(response, ct).ConfigureAwait(false);
+                    return await GetUploadedDocumentIdAsync(response, cancellationToken).ConfigureAwait(false);
 
                 _ = response.EnsureSuccessStatusCode();
 
@@ -179,14 +179,14 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.UploadChunkNetworkError(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
-                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
             }
         }
     }
 
-    private static async Task<Result<string?, string>> GetUploadedDocumentIdAsync(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<Result<string?, string>> GetUploadedDocumentIdAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        string json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        string json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         using var doc = System.Text.Json.JsonDocument.Parse(json);
 
         if (!doc.RootElement.TryGetProperty("id", out var idElement))

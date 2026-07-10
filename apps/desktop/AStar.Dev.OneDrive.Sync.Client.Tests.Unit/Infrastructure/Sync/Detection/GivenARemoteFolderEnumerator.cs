@@ -59,7 +59,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         context.HadNoRules.ShouldBeTrue();
     }
@@ -72,7 +72,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         await _graphService.DidNotReceive().GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>());
     }
@@ -86,7 +86,7 @@ public sealed class GivenARemoteFolderEnumerator
         var context = new RemoteEnumerationContext();
         var items = new List<DeltaItem>();
 
-        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken))
+        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken))
             items.Add(item);
 
         items.ShouldBeEmpty();
@@ -102,7 +102,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         _graphService.DidNotReceive().EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
     }
@@ -119,7 +119,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         await _syncRuleRepository.Received(1).UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Is(RuleType.Include), Arg.Is("folder-resolved"), Arg.Any<CancellationToken>());
     }
@@ -134,7 +134,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         await _syncRuleRepository.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
     }
@@ -149,7 +149,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         context.SeenRemoteIds.ShouldContain("item-a");
         context.SeenRemoteIds.ShouldContain("item-b");
@@ -166,7 +166,7 @@ public sealed class GivenARemoteFolderEnumerator
         var context = new RemoteEnumerationContext();
         var items = new List<DeltaItem>();
 
-        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken))
+        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken))
             items.Add(item);
 
         items.Count.ShouldBe(2);
@@ -184,7 +184,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         context.Rules.ShouldHaveSingleItem();
         context.Rules[0].RemotePath.ShouldBe("/Documents");
@@ -206,7 +206,7 @@ public sealed class GivenARemoteFolderEnumerator
         var context = new RemoteEnumerationContext();
         var items = new List<DeltaItem>();
 
-        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: cts.Token))
+        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: cts.Token))
             items.Add(item);
 
         items.ShouldHaveSingleItem();
@@ -223,7 +223,7 @@ public sealed class GivenARemoteFolderEnumerator
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
-        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, ct: TestContext.Current.CancellationToken)) { }
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken)) { }
 
         context.HadNoRules.ShouldBeFalse();
     }

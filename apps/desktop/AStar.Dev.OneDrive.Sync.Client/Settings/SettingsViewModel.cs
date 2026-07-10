@@ -154,13 +154,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>Opens a folder picker for the given account and updates <see cref="AccountSyncSettingsViewModel.LocalSyncPath"/> if the user selects a folder.</summary>
-    public async Task BrowseForAccountFolderAsync(string accountId, IStorageProvider storageProvider, CancellationToken ct = default)
+    public async Task BrowseForAccountFolderAsync(string accountId, IStorageProvider storageProvider, CancellationToken cancellationToken = default)
     {
         var account = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
         if (account is null)
             return;
 
-        string? path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", ct).ConfigureAwait(false);
+        string? path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", cancellationToken).ConfigureAwait(false);
         if (path is not null)
             account.LocalSyncPath = path;
     }

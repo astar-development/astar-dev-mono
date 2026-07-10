@@ -1,8 +1,8 @@
 # Code Review — `AStar.Dev.OneDrive.Sync.Client`
 
-**Date:** 2026-05-18  
-**Reviewer:** Claude Code (c-sharp-reviewer)  
-**Scope:** SRP / SOC violations + functional-paradigm misuse  
+**Date:** 2026-05-18
+**Reviewer:** Claude Code (c-sharp-reviewer)
+**Scope:** SRP / SOC violations + functional-paradigm misuse
 **Branch at review:** `doc/improve-claude-md-subagent-verification` (HEAD `5ea6b00`)
 
 ---
@@ -48,10 +48,12 @@ await urlResult.Match(           // ← should be MatchAsync
 ```
 
 Two problems:
+
 1. `Match` is called on a `Result<string,string>` where the success branch is `async` — should be `MatchAsync`.
 2. The inner `downloadResult.Match<Unit>(...)` return value is discarded — a download failure only calls `RaiseProgress` but execution falls through without signalling the caller. No error is propagated out of `ApplyConflictOutcomeAsync`.
 
 **Fix:**
+
 ```csharp
 await urlResult.MatchAsync(
     async url =>
@@ -87,6 +89,7 @@ switch(result)
 Repo rule (`.claude/rules/c-sharp-code-style.md`): _"Never use `is Result<T,E>.Ok` / `is not Result<T,E>.Ok` pattern matching in production code — use `Match` or `MatchAsync`."_ The switch also has no `default` arm — a new `AuthError` subtype silently does nothing.
 
 **Fix:**
+
 ```csharp
 result.Match(
     ok => UpdateSuccessfulLoginState(ok),
@@ -136,6 +139,7 @@ var vm = new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveId
 Repo rule violation — same as E3 but for `Option<T>`. Should use `Match` or `Bind` from `AStar.Dev.Functional.Extensions`.
 
 **Fix:**
+
 ```csharp
 _driveId.Match(
     driveIdSome => RootFolders.Add(new FolderTreeNodeViewModel(node, _graphService, _accessToken!, driveIdSome)),
@@ -147,7 +151,7 @@ _driveId.Match(
 #### W2 — `SyncScheduler.cs:69-74` — `TapAsync` silently ignores "account not found"
 
 ```csharp
-public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
+public async Task TriggerAccountAsync(string accountId, CancellationToken cancellationToken = default)
     => await accountRepository.GetByIdAsync(new AccountId(accountId), ct)
         .TapAsync(async entity => { ... });
 ```
@@ -170,6 +174,7 @@ if(uploadResult.Match(_ => true, _ => false))
 Using `Match` to extract a bool for a conditional is a pattern smell. The success-only side-effect should be expressed with `Tap`/`TapAsync`.
 
 **Fix:**
+
 ```csharp
 return await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct)
     .TapAsync(itemId => Serilog.Log.Information("[UploadService] Upload complete: {Path}", remotePath));
@@ -191,6 +196,7 @@ if(earlyReturn is not null)
 The inner `Result<string?, string>` is unwrapped into a nullable `Result<string, string>?` and then null-checked. This loses the railway-oriented structure. `Bind` or `Map` keeps the chain clean.
 
 **Fix:**
+
 ```csharp
 var earlyReturn = chunkResult.Bind<string>(
     itemId => itemId is not null
@@ -199,6 +205,7 @@ var earlyReturn = chunkResult.Bind<string>(
 
 if (earlyReturn is Result<string, string>.Ok or Result<string, string>.Error { } err when err.Reason is not null ... )
 ```
+
 Or restructure `UploadChunksAsync` to return `Result<string, string>` directly by collecting partial IDs.
 
 ---
@@ -206,6 +213,7 @@ Or restructure `UploadChunksAsync` to return `Result<string, string>` directly b
 #### W5 — `SyncService.cs` — SRP violation: auth + conflict application + file ops + progress in one class
 
 `SyncService` is responsible for:
+
 - Acquiring access tokens (`IAuthService.AcquireTokenSilentAsync`)
 - Orchestrating sync passes (delegates to `SyncPassOrchestrator`)
 - Applying conflict outcomes including file system moves (`fileSystem.File.Move`, `IHttpDownloader.DownloadAsync`, `IGraphService.GetDownloadUrlAsync`)
@@ -222,6 +230,7 @@ The `IHttpDownloader`, `IGraphService`, and `IFileSystem` injected into `SyncSer
 #### W6 — `RemoteFolderEnumerator.cs` — SRP/SOC violation: enumeration + conflict resolution + DB backfill + job creation
 
 `RemoteFolderEnumerator` performs:
+
 1. Sync rule loading (`syncRuleRepository.GetByAccountIdAsync`)
 2. Drive ID resolution (`graphService.GetDriveIdAsync`)
 3. Folder ID resolution and **database backfill** (`syncRuleRepository.UpsertAsync` in `ResolveAndBackFillFolderIdAsync`)
@@ -265,6 +274,7 @@ The class is named `ParallelDownloadPipeline` but it processes downloads, upload
 #### W9 — `AccountsViewModel.cs` — SRP: domain logic and persistence inside VM
 
 `AccountsViewModel` is responsible for:
+
 - Displaying account cards (correct VM concern)
 - Persisting new accounts to the DB (`repository.UpsertAsync`)
 - Setting the active account in the DB (`repository.SetActiveAccountAsync`)
@@ -296,6 +306,7 @@ private async void OnIncludeToggledAsync(object? sender, FolderTreeNodeViewModel
 Outer catch is dead code — the inner catch swallows everything. `async void` is necessary for the event subscription pattern in Avalonia, but the nested try/catch structure is redundant and misleading.
 
 Additionally at line 199:
+
 ```csharp
 string opener = OperatingSystem.IsWindows() ? "explorer" : ...;
 _ = System.Diagnostics.Process.Start(opener, path);
@@ -319,6 +330,7 @@ _cache[accessToken] = driveContext;
 ```
 
 The cache is keyed by raw access token strings. Problems:
+
 1. **Memory leak** — tokens accumulate over the lifetime of the singleton; the dict grows without bound as tokens rotate (every hour with MSAL refresh).
 2. **Security** — [OWASP Sensitive Data Exposure](https://owasp.org/www-project-top-ten/2017/A3_2017-Sensitive_Data_Exposure): raw token strings should not be stored in plain memory as dictionary keys. Use a non-reversible key (e.g., `SHA256` of the token, or the account ID which is stable across token rotations).
 
@@ -384,12 +396,12 @@ Inline `switch(j)` inside a LINQ `Select` mixes data mapping with control flow. 
 
 ## Summary
 
-| Severity | Count |
-|----------|-------|
-| 🔴 Error | 4 |
-| 🟡 Warning | 12 |
-| 🔵 Nit | 5 |
-| **Total** | **21** |
+| Severity   | Count  |
+| ---------- | ------ |
+| 🔴 Error   | 4      |
+| 🟡 Warning | 12     |
+| 🔵 Nit     | 5      |
+| **Total**  | **21** |
 
 ## Verdict: **Request Changes**
 

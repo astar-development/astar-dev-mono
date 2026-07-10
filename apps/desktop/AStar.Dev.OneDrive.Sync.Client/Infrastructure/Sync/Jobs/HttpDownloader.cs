@@ -23,7 +23,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
     private static readonly TimeSpan MoveRetryDelay = TimeSpan.FromSeconds(1);
 
     /// <inheritdoc />
-    public async Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
+    public async Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
         using var http = httpClientFactory.CreateClient();
         http.DefaultRequestHeaders.Add("User-Agent", UserAgent);
@@ -33,14 +33,14 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
         while (true)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             attempt++;
             HttpResponseMessage? response = null;
 
             try
             {
-                response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
+                response = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
@@ -51,7 +51,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                     OneDriveSyncClientMessages.DownloadThrottled(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
 
                     response.Dispose();
-                    await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
+                    await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -59,10 +59,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
                 EnsureDirectoryExists(localPath);
 
-                await using var stream = await response.Content.ReadAsStreamAsync(ct);
-                await WriteToFileAsync(stream, tempPath, progress, ct).ConfigureAwait(false);
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                await WriteToFileAsync(stream, tempPath, progress, cancellationToken).ConfigureAwait(false);
 
-                return await MoveWithRetryAsync(tempPath, localPath, ct)
+                return await MoveWithRetryAsync(tempPath, localPath, cancellationToken)
                     .MatchAsync<Unit, string, Result<Unit, string>>(
                         _ => { PreserveRemoteTimestamp(localPath, remoteModified); return new Result<Unit, string>.Ok(Unit.Default); },
                         error => { TryDeleteTemp(tempPath); return new Result<Unit, string>.Error(error); }).ConfigureAwait(false);
@@ -72,7 +72,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 TryDeleteTemp(tempPath);
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
-                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
             }
             catch (IOException ex)
             {
@@ -83,7 +83,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             {
                 var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
                 OneDriveSyncClientMessages.DownloadNetworkError(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
-                await Task.Delay(delay, timeProvider, ct).ConfigureAwait(false);
+                await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -97,13 +97,13 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         }
     }
 
-    private async Task<Result<Unit, string>> MoveWithRetryAsync(string tempPath, string localPath, CancellationToken ct)
+    private async Task<Result<Unit, string>> MoveWithRetryAsync(string tempPath, string localPath, CancellationToken cancellationToken)
     {
         IOException? lastError = null;
 
         for (int attempt = 1; attempt <= MaxMoveRetries; attempt++)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -117,7 +117,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 if (attempt < MaxMoveRetries)
                 {
                     OneDriveSyncClientMessages.DownloadMoveRetrying(logger, localPath, attempt, MaxMoveRetries);
-                    await Task.Delay(MoveRetryDelay, timeProvider, ct).ConfigureAwait(false);
+                    await Task.Delay(MoveRetryDelay, timeProvider, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
@@ -138,7 +138,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         }
     }
 
-    private async Task WriteToFileAsync(Stream source, string localPath, IProgress<long>? progress, CancellationToken ct)
+    private async Task WriteToFileAsync(Stream source, string localPath, IProgress<long>? progress, CancellationToken cancellationToken)
     {
         await using var file = fileSystem.FileStream.New(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
 
@@ -146,9 +146,9 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         long written = 0;
         int read;
 
-        while ((read = await source.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
+        while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
-            await file.WriteAsync(buffer.AsMemory(0, read), ct).ConfigureAwait(false);
+            await file.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
             written += read;
             progress?.Report(written);
         }

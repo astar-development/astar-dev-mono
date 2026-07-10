@@ -192,7 +192,7 @@ private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConf
 **Fix:** Pass configuration state through the functional pipeline instead of maintaining mutable fields:
 
 ```csharp
-private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken ct)
+private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken cancellationToken)
 {
     await LoadStartingPageAsync().ConfigureAwait(false);
 
@@ -226,8 +226,8 @@ private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(Cancellation
 **Fix:** Update signatures to return `Result<T>`:
 
 ```csharp
-Task<Result<bool, DataError>> ExistsAsync(string fileName, CancellationToken ct);
-Task<Result<Unit, DataError>> AddAsync(FileDetailEntity fileDetail, CancellationToken ct);
+Task<Result<bool, DataError>> ExistsAsync(string fileName, CancellationToken cancellationToken);
+Task<Result<Unit, DataError>> AddAsync(FileDetailEntity fileDetail, CancellationToken cancellationToken);
 ```
 
 ---
@@ -535,8 +535,8 @@ public sealed class ScrapeConfigurationValidator
 
 public sealed class ScrapeConfigurationRepository
 {
-    public Task<ScrapeConfigurationEntity> GetAsync(CancellationToken ct) { ... }
-    public Task SaveAsync(ScrapeConfigurationEntity entity, CancellationToken ct) { ... }
+    public Task<ScrapeConfigurationEntity> GetAsync(CancellationToken cancellationToken) { ... }
+    public Task SaveAsync(ScrapeConfigurationEntity entity, CancellationToken cancellationToken) { ... }
 }
 
 public sealed class ScrapeConfigurationService(

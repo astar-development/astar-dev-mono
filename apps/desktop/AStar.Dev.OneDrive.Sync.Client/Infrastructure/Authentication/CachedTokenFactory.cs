@@ -27,21 +27,21 @@ internal sealed class CachedTokenFactory : IDisposable
         tokenExpiresOn = initialExpiresOn;
     }
 
-    internal async Task<string> GetTokenAsync(CancellationToken ct)
+    internal async Task<string> GetTokenAsync(CancellationToken cancellationToken)
     {
         if (!IsNearExpiry())
             return cachedToken;
 
-        await refreshLock.WaitAsync(ct).ConfigureAwait(false);
+        await refreshLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             if (!IsNearExpiry())
                 return cachedToken;
 
-            var refreshResult = await authService.AcquireTokenSilentAsync(accountId, ct).ConfigureAwait(false);
-            (cachedToken, tokenExpiresOn) = refreshResult.Match(
-                ok => (ok.AccessToken, ok.ExpiresOn),
-                _ => (cachedToken, tokenExpiresOn));
+            var refreshResult = await authService.AcquireTokenSilentAsync(accountId, cancellationToken).ConfigureAwait(false);
+                (cachedToken, tokenExpiresOn) = refreshResult.Match(
+                    ok => (ok.AccessToken, ok.ExpiresOn),
+                    _ => (cachedToken, tokenExpiresOn));
 
             return cachedToken;
         }

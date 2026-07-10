@@ -69,7 +69,7 @@ public sealed class LocalizationService : ILocalizationService
         }
     }
 
-    public async Task SetCultureAsync(CultureInfo culture)
+    public async Task SetCultureAsync(CultureInfo culture, CancellationToken cancellationToken = default)
     {
         if(culture.Name == CurrentCulture.Name)
             return;
@@ -103,7 +103,7 @@ public sealed class LocalizationService : ILocalizationService
             CurrentCulture = name == target.Name
                 ? target
                 : (name == fallbackCulture.Name ? fallbackCulture : new CultureInfo(name));
-                
+
             return;
         }
 

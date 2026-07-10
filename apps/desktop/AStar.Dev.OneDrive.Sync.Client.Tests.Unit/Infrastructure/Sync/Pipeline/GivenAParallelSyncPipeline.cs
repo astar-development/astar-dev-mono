@@ -14,7 +14,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline
 public sealed class GivenAParallelSyncPipeline
 {
     private const string AccountIdValue = "account-1";
-    private const string FolderIdValue  = "folder-1";
+    private const string FolderIdValue = "folder-1";
 
     private readonly ISyncWorkerFactory _workerFactory = Substitute.For<ISyncWorkerFactory>();
     private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
@@ -58,7 +58,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(EmptyJobStream(), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         progressEvents.ShouldBeEmpty();
     }
@@ -69,7 +69,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         completedEvents.ShouldBeEmpty();
     }
@@ -79,7 +79,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(EmptyJobStream(), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
@@ -90,7 +90,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(1);
     }
@@ -101,7 +101,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new ConcurrentBag<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt")), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt"), MakeDownloadJob("a/3.txt")), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         completedEvents.Count.ShouldBe(3);
     }
@@ -111,7 +111,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
@@ -121,7 +121,7 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         await _syncRepository.Received(1).ClearCompletedJobsAsync(new AccountId(AccountIdValue), TestContext.Current.CancellationToken);
     }
@@ -132,7 +132,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         progressEvents[^1].SyncState.ShouldBe(SyncState.Idle);
     }
@@ -143,7 +143,7 @@ public sealed class GivenAParallelSyncPipeline
         var progressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, progressEvents.Add, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         progressEvents[^1].CurrentFile.ShouldBe(string.Empty);
     }
@@ -154,7 +154,7 @@ public sealed class GivenAParallelSyncPipeline
         var completedEvents = new List<JobCompletedEventArgs>();
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, args => { completedEvents.Add(args); return Task.CompletedTask; }, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         completedEvents[0].Job.Status.State.ShouldBe(SyncJobState.Completed);
     }
@@ -167,9 +167,9 @@ public sealed class GivenAParallelSyncPipeline
 
         await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, args =>
         {
-            if(args.CurrentFile != string.Empty)
+            if (args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
-        }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: TestContext.Current.CancellationToken);
+        }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: TestContext.Current.CancellationToken);
 
         perJobProgressEvents.Count.ShouldBe(1);
         perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
@@ -183,9 +183,9 @@ public sealed class GivenAParallelSyncPipeline
 
         await sut.RunAsync(JobStream(MakeDownloadJob("a/1.txt"), MakeDownloadJob("a/2.txt")), TokenFactory, args =>
         {
-            if(args.CurrentFile != string.Empty)
+            if (args.CurrentFile != string.Empty)
                 perJobProgressEvents.Add(args);
-        }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, workerCount: 1, ct: TestContext.Current.CancellationToken);
+        }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, workerCount: 1, cancellationToken: TestContext.Current.CancellationToken);
 
         perJobProgressEvents.Count.ShouldBe(1);
         perJobProgressEvents[0].SyncState.ShouldBe(SyncState.Syncing);
@@ -200,9 +200,9 @@ public sealed class GivenAParallelSyncPipeline
 
         try
         {
-            await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, ct: cts.Token);
+            await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, cancellationToken: cts.Token);
         }
-        catch(OperationCanceledException) { }
+        catch (OperationCanceledException) { }
 
         await _syncRepository.DidNotReceive().ClearCompletedJobsAsync(Arg.Any<AccountId>(), TestContext.Current.CancellationToken);
     }
@@ -212,16 +212,16 @@ public sealed class GivenAParallelSyncPipeline
     {
         var sut = CreateSut();
 
-        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, workerCount: 3, ct: TestContext.Current.CancellationToken);
+        await sut.RunAsync(JobStream(MakeDownloadJob()), TokenFactory, _ => { }, _ => Task.CompletedTask, AccountIdValue, FolderIdValue, workerCount: 3, cancellationToken: TestContext.Current.CancellationToken);
 
         _workerFactory.Received(3).Create(Arg.Any<int>());
     }
 
     private sealed class SucceedingDownloadWorker : ISyncWorker
     {
-        public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncJob, bool, string?, Task> onJobComplete, CancellationToken ct)
+        public async Task RunAsync(ChannelReader<SyncJob> reader, string accountId, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncJob, bool, string?, Task> onJobComplete, CancellationToken cancellationToken)
         {
-            await foreach(var job in reader.ReadAllAsync(ct))
+            await foreach (var job in reader.ReadAllAsync(cancellationToken))
                 await onJobComplete(job, true, null);
         }
     }

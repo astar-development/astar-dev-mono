@@ -24,7 +24,7 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
     public event EventHandler<AppSettings>? SettingsChanged;
 
     /// <inheritdoc />
-    public async Task LoadAsync()
+    public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         if (!fileSystem.File.Exists(path))
             return;
@@ -32,7 +32,7 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
         try
         {
             await using var stream = fileSystem.File.OpenRead(path);
-            Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts).ConfigureAwait(false) ?? new AppSettings();
+            Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts, cancellationToken).ConfigureAwait(false) ?? new AppSettings();
         }
         catch (Exception ex)
         {
@@ -44,10 +44,10 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
     }
 
     /// <inheritdoc />
-    public async Task SaveAsync()
+    public async Task SaveAsync(CancellationToken cancellationToken = default)
     {
         await using var stream = fileSystem.File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, Current, JsonOpts).ConfigureAwait(false);
+        await JsonSerializer.SerializeAsync(stream, Current, JsonOpts, cancellationToken).ConfigureAwait(false);
         SettingsChanged?.Invoke(this, Current);
     }
 }

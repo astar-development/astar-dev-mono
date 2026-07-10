@@ -11,10 +11,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogService
 {
     /// <inheritdoc />
-    public async Task<bool> ConfirmAsync(string title, string message, CancellationToken ct = default)
-        => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(title, message, ct));
+    public async Task<bool> ConfirmAsync(string title, string message, CancellationToken cancellationToken = default)
+        => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(title, message, cancellationToken));
 
-    private static async Task<bool> ShowDialogAsync(string title, string message, CancellationToken ct)
+    private static async Task<bool> ShowDialogAsync(string title, string message, CancellationToken cancellationToken)
     {
         var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow is null)
@@ -59,7 +59,7 @@ public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogServi
         yesButton.Click += (_, _) => { tcs.SetResult(true); dialog.Close(); };
         dialog.Closed += (_, _) => tcs.TrySetResult(false);
 
-        ct.Register(() => { tcs.TrySetResult(false); dialog.Close(); });
+        cancellationToken.Register(() => { tcs.TrySetResult(false); dialog.Close(); });
 
         await dialog.ShowDialog(mainWindow).ConfigureAwait(false);
 

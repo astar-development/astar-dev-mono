@@ -24,7 +24,7 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
             var parentCategory = parentCategories.FirstOrDefault(c => c.Name == tag.Category);
             if (await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id)) continue;
 
-            tag.Level = parentCategory?.Level+1 ?? 1;
+            tag.Level = parentCategory?.Level + 1 ?? 1;
             tag.Category = parentCategory?.Name ?? tag.Value;
             _ = await context.FileClassificationCategories.AddAsync(tag.ToDomain());
         }
@@ -32,22 +32,22 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
         _ = await context.SaveChangesAsync();
     }
 
-    public async Task<List<FileClassificationCategoryEntity>> GetAllAsync(CancellationToken ct)
+    public async Task<List<FileClassificationCategoryEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.FileClassificationCategories.ToListAsync(ct);
+        return await context.FileClassificationCategories.ToListAsync(cancellationToken);
     }
 
-    public async Task UpsertAsync(IReadOnlyList<FileClassificationCategoryEntity> tags, CancellationToken ct)
+    public async Task UpsertAsync(IReadOnlyList<FileClassificationCategoryEntity> tags, CancellationToken cancellationToken)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var values = tags.Select(t => t.Name).ToList();
         var existingMap = await context.FileClassificationCategories
             .Where(t => values.Contains(t.Name))
-            .ToListAsync(ct);
-        var parentCategories = await context.FileClassificationCategories.ToListAsync(ct);
+            .ToListAsync(cancellationToken);
+        var parentCategories = await context.FileClassificationCategories.ToListAsync(cancellationToken);
 
         foreach (var tag in tags)
         {
@@ -62,6 +62,6 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
                 context.FileClassificationCategories.Add(tag);
         }
 
-        _ = await context.SaveChangesAsync(ct);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 }

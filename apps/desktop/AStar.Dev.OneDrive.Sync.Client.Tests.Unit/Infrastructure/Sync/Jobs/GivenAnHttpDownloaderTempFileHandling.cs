@@ -45,7 +45,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var mockFileSystem = new MockFileSystem();
         var sut = new HttpDownloader(CreateOkFactory(), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         mockFileSystem.Directory.GetFiles(mockFileSystem.Path.GetDirectoryName(LocalPath)!)
             .ShouldNotContain(f => f.EndsWith(".download"));
@@ -58,7 +58,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var mockFileSystem = new MockFileSystem();
         var sut = new HttpDownloader(CreateOkFactory(content), mockFileSystem, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         mockFileSystem.File.Exists(LocalPath).ShouldBeTrue();
         mockFileSystem.File.ReadAllText(LocalPath).ShouldBe(content);
@@ -94,8 +94,8 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var sut = new HttpDownloader(factory, spyFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
         await Task.WhenAll(
-            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken),
-            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken));
+            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken),
+            sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken));
 
         writtenPaths.Distinct().Count().ShouldBe(2);
     }
@@ -105,7 +105,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     {
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
     }
@@ -116,7 +116,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var fakeFs = CreateAlwaysFailMoveFileSystem();
         var sut = new HttpDownloader(CreateOkFactory(), fakeFs, Substitute.For<ILogger<HttpDownloader>>(), System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         fakeFs.File.Received(1).Delete(Arg.Is<string>(p => p.StartsWith(LocalPath + ".") && p.EndsWith(".download")));
     }
@@ -127,7 +127,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var logger = new TestLogger<HttpDownloader>();
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         logger.Entries.Count(e => e.Level == LogLevel.Warning && e.EventId.Id == 2707).ShouldBe(2);
     }
@@ -138,7 +138,7 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
         var logger = new TestLogger<HttpDownloader>();
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         logger.Entries.ShouldContain(e => e.Level == LogLevel.Error && e.EventId.Id == 2708);
     }

@@ -4,5 +4,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public interface IAppBootstrapper
 {
     /// <summary>Runs the full startup sequence, reporting progress via <paramref name="progress"/>.</summary>
-    Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default);
+    Task BootstrapAsync(IProgress<string> progress, CancellationToken cancellationToken = default);
 }

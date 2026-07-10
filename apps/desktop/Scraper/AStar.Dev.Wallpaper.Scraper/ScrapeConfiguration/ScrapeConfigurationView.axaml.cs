@@ -90,7 +90,7 @@ public partial class ScrapeConfigurationView : Window, IDisposable
         ViewModel.UpdateStatus($"Error: {exception.Message}");
     }
 
-    private void DisableControlsAndClearStatus(CancellationToken ct)
+    private void DisableControlsAndClearStatus(CancellationToken cancellationToken)
     {
         ExportScrapeConfigButton.IsEnabled = false;
         ImportScrapeConfigButton.IsEnabled = false;

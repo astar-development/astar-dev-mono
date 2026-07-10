@@ -96,7 +96,7 @@ public sealed class GivenASettingsServiceWithDefaults
         };
 
         service.Current.Theme = AppTheme.Light;
-        await service.SaveAsync();
+        await service.SaveAsync(TestContext.Current.CancellationToken);
 
         eventRaised.ShouldBeTrue();
         _ = changedSettings.ShouldNotBeNull();
@@ -110,7 +110,7 @@ public sealed class GivenASettingsServiceWithDefaults
         service.Current.Locale = "de-DE";
         service.Current.SyncIntervalMinutes = 45;
 
-        await service.SaveAsync();
+        await service.SaveAsync(TestContext.Current.CancellationToken);
 
         service.Current.Locale.ShouldBe("de-DE");
         service.Current.SyncIntervalMinutes.ShouldBe(45);
@@ -121,7 +121,7 @@ public sealed class GivenASettingsServiceWithDefaults
     {
         var service = CreateService();
 
-        await Should.NotThrowAsync(() => service.LoadAsync());
+        await Should.NotThrowAsync(() => service.LoadAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public sealed class GivenASettingsServiceWithDefaults
     {
         var service = CreateService();
 
-        await service.LoadAsync();
+        await service.LoadAsync(TestContext.Current.CancellationToken);
 
         _ = service.Current.ShouldNotBeNull();
     }
@@ -220,7 +220,7 @@ public sealed class GivenASettingsServiceWithDefaults
         service.Current.Theme = AppTheme.Dark;
         service.Current.Locale = "es-ES";
         service.Current.SyncIntervalMinutes = 30;
-        await service.SaveAsync();
+        await service.SaveAsync(TestContext.Current.CancellationToken);
 
         eventRaised.ShouldBeTrue();
         _ = changedSettings.ShouldNotBeNull();

@@ -11,18 +11,18 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 public sealed class AccountOnboardingService(IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository) : IAccountOnboardingService
 {
     /// <inheritdoc />
-    public async Task<OneDriveAccount> CompleteOnboardingAsync(OneDriveAccount account, CancellationToken ct)
+    public async Task<OneDriveAccount> CompleteOnboardingAsync(OneDriveAccount account, CancellationToken cancellationToken)
     {
         if (account.SyncConfig is Option<AccountSyncConfig>.None)
             account.SyncConfig = ResolveDefaultSyncConfig(account.Profile.Email);
 
-        await accountRepository.UpsertAsync(ToEntity(account), ct).ConfigureAwait(false);
+        await accountRepository.UpsertAsync(ToEntity(account), cancellationToken).ConfigureAwait(false);
 
         foreach (var (folderId, folderName) in account.FolderNames)
-            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, ct).ConfigureAwait(false);
+            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, cancellationToken).ConfigureAwait(false);
 
         if (account.IsActive)
-            await accountRepository.SetActiveAccountAsync(account.Id, ct).ConfigureAwait(false);
+            await accountRepository.SetActiveAccountAsync(account.Id, cancellationToken).ConfigureAwait(false);
 
         return account;
     }
@@ -30,7 +30,7 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
     private static Option<AccountSyncConfig> ResolveDefaultSyncConfig(string email)
     {
         string defaultPath = string.Empty;
-        if(email is "jason.barden@outlook.com" or "jason.barden1@outlook.com")
+        if (email is "jason.barden@outlook.com" or "jason.barden1@outlook.com")
             defaultPath = "/run/media/jbarden/Tbdrive/sync/".CombinePath(email);
         else
             defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);

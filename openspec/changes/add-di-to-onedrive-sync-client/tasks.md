@@ -26,7 +26,7 @@
 
 ## 5. Introduce IAppBootstrapper
 
-- [x] 5.1 Create `IAppBootstrapper` interface in `apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Shell/IAppBootstrapper.cs` with method `Task BootstrapAsync(IProgress<string> progress, CancellationToken ct = default)`
+- [x] 5.1 Create `IAppBootstrapper` interface in `apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Shell/IAppBootstrapper.cs` with method `Task BootstrapAsync(IProgress<string> progress, CancellationToken cancellationToken = default)`
 - [x] 5.2 Create `AppBootstrapper` class in `apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Shell/AppBootstrapper.cs` implementing `IAppBootstrapper`. Constructor parameters: `IDbContextFactory<AppDbContext>`, `ISettingsService`, `IThemeService`, `ISyncScheduler`, `MainWindowViewModel` (and any other required services). Extract the full body of `App.BootstrapAsync` into this class.
 - [x] 5.3 Register `IAppBootstrapper` as `Transient<IAppBootstrapper, AppBootstrapper>` in `ShellServiceExtensions.AddShell` (or a new extension method)
 - [x] 5.4 Build and verify zero errors/warnings

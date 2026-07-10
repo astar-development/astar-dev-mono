@@ -38,14 +38,14 @@ Tags and configuration **CAN and WILL be updated** throughout the application ru
 ```csharp
 public sealed class TagsManager // Singleton
 {
-    private TagsToIgnoreCompletely _tagsToIgnore;
-    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private TagsToIgnoreCompletely tagsToIgnore;
+    private readonly IDbContextFactory<AppDbContext> contextFactory;
 
-    public TagsToIgnoreCompletely Current => _tagsToIgnore; // Always current
+    public TagsToIgnoreCompletely Current => tagsToIgnore; // Always current
 
-    public async Task<Result<Unit, DataError>> UpdateAsync(TagsToIgnoreCompletely updated, CancellationToken ct)
+    public async Task<Result<Unit, DataError>> UpdateAsync(TagsToIgnoreCompletely updated, CancellationToken cancellationToken)
     {
-        _tagsToIgnore = updated;
+        tagsToIgnore = updated;
         return await PersistAsync(ct); // Immediate persistence
     }
 }
@@ -99,21 +99,21 @@ Focus implementation efforts in this order:
 // Manager implementation
 public sealed class ScrapeConfigurationManager
 {
-    private ScrapeConfiguration _current;
-    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private ScrapeConfiguration current;
+    private readonly IDbContextFactory<AppDbContext> contextFactory;
 
     public ScrapeConfigurationManager(IDbContextFactory<AppDbContext> contextFactory)
     {
-        _contextFactory = contextFactory;
+        contextFactory = contextFactory;
         using var ctx = contextFactory.CreateDbContext();
-        _current = ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
+        current = ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
     }
 
-    public ScrapeConfiguration Current => _current;
+    public ScrapeConfiguration Current => current;
 
-    public async Task<Result<Unit, ScrapeError>> UpdateAsync(ScrapeConfiguration updated, CancellationToken ct)
+    public async Task<Result<Unit, ScrapeError>> UpdateAsync(ScrapeConfiguration updated, CancellationToken cancellationToken)
     {
-        _current = updated;
+        current = updated;
         // Persist to database immediately
         return await PersistAsync(updated, ct);
     }
@@ -153,27 +153,27 @@ public sealed class ScrapeConfigurationManager
 
 public sealed class TagsManager
 {
-    private TagsToIgnoreCompletely _toIgnoreCompletely;
-    private TagsTextToIgnore _textToIgnore;
-    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private TagsToIgnoreCompletely toIgnoreCompletely;
+    private TagsTextToIgnore textToIgnore;
+    private readonly IDbContextFactory<AppDbContext> contextFactory;
 
     public TagsManager(IDbContextFactory<AppDbContext> contextFactory)
     {
-        _contextFactory = contextFactory;
+        contextFactory = contextFactory;
         using var ctx = contextFactory.CreateDbContext();
         var allTags = ctx.TagsToIgnore.ToList();
-        _toIgnoreCompletely = new() { Tags = allTags.Where(t => t.IgnoreImage).Select(t => t.Value).ToList() };
-        _textToIgnore = new() { Tags = allTags.Where(t => !t.IgnoreImage).Select(t => t.Value).ToList() };
+        toIgnoreCompletely = new() { Tags = allTags.Where(t => t.IgnoreImage).Select(t => t.Value).ToList() };
+        textToIgnore = new() { Tags = allTags.Where(t => !t.IgnoreImage).Select(t => t.Value).ToList() };
     }
 
-    public TagsToIgnoreCompletely TagsToIgnoreCompletely => _toIgnoreCompletely;
-    public TagsTextToIgnore TagsTextToIgnore => _textToIgnore;
+    public TagsToIgnoreCompletely TagsToIgnoreCompletely => toIgnoreCompletely;
+    public TagsTextToIgnore TagsTextToIgnore => textToIgnore;
 
-    public async Task<Result<Unit, DataError>> UpdateTagsAsync(IReadOnlyList<TagEntity> tags, CancellationToken ct)
+    public async Task<Result<Unit, DataError>> UpdateTagsAsync(IReadOnlyList<TagEntity> tags, CancellationToken cancellationToken)
     {
         // Update in-memory collections
-        _toIgnoreCompletely = new() { Tags = tags.Where(t => t.IgnoreImage).Select(t => t.Value).ToList() };
-        _textToIgnore = new() { Tags = tags.Where(t => !t.IgnoreImage).Select(t => t.Value).ToList() };
+        toIgnoreCompletely = new() { Tags = tags.Where(t => t.IgnoreImage).Select(t => t.Value).ToList() };
+        textToIgnore = new() { Tags = tags.Where(t => !t.IgnoreImage).Select(t => t.Value).ToList() };
         // Persist immediately
         return await PersistAsync(tags, ct);
     }
@@ -287,8 +287,8 @@ return await ValidateClassifications(classifications)
 **Fix:** Update ALL repository signatures to return `Result<T>`:
 
 ```csharp
-Task<Result<bool, DataError>> ExistsAsync(string fileName, CancellationToken ct);
-Task<Result<Unit, DataError>> AddAsync(FileDetailEntity fileDetail, CancellationToken ct);
+Task<Result<bool, DataError>> ExistsAsync(string fileName, CancellationToken cancellationToken);
+Task<Result<Unit, DataError>> AddAsync(FileDetailEntity fileDetail, CancellationToken cancellationToken);
 ```
 
 **Breaking Change:** Yes. **Required** for functional paradigm compliance.
@@ -309,7 +309,7 @@ private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConf
 **Fix:** Pass configuration state through the functional pipeline instead of maintaining mutable fields:
 
 ```csharp
-private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken ct)
+private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken cancellationToken)
 {
     await LoadStartingPageAsync().ConfigureAwait(false);
 
@@ -442,10 +442,10 @@ private static Result<Unit, ValidationError> UpdateSearchConfiguration(SearchCon
 ```csharp
 public override async void OnFrameworkInitializationCompleted()
 {
-    _host = CreateHost();
+    host = CreateHost();
     await InitializeDatabaseAsync().ConfigureAwait(false);
     ConfigureLifetime();
-    _host.Start();
+    host.Start();
     SurfaceConfigurationErrors();
     base.OnFrameworkInitializationCompleted();
 }
@@ -591,9 +591,9 @@ public partial class App : Application
 {
     public override async void OnFrameworkInitializationCompleted()
     {
-        _host = await AppCompositionRoot.CreateHostAsync().ConfigureAwait(false);
+        host = await AppCompositionRoot.CreateHostAsync().ConfigureAwait(false);
         ConfigureLifetime();
-        _host.Start();
+        host.Start();
         base.OnFrameworkInitializationCompleted();
     }
 }
@@ -636,8 +636,8 @@ public sealed class ScrapeConfigurationValidator
 
 public sealed class ScrapeConfigurationRepository
 {
-    public Task<Result<ScrapeConfigurationEntity, DataError>> GetAsync(CancellationToken ct) { ... }
-    public Task<Result<Unit, DataError>> SaveAsync(ScrapeConfigurationEntity entity, CancellationToken ct) { ... }
+    public Task<Result<ScrapeConfigurationEntity, DataError>> GetAsync(CancellationToken cancellationToken) { ... }
+    public Task<Result<Unit, DataError>> SaveAsync(ScrapeConfigurationEntity entity, CancellationToken cancellationToken) { ... }
 }
 
 public sealed class ScrapeConfigurationService(
@@ -802,7 +802,7 @@ Several methods create DbContexts without passing `CancellationToken`:
 - [Microsoft: EF Core Performance Best Practices](https://learn.microsoft.com/en-us/ef/core/performance/)
 - [C# Functional Programming with Language-Ext](https://github.com/louthy/language-ext/wiki)
 - [SOLID Principles in C#](https://learn.microsoft.com/en-us/archive/msdn-magazine/2014/may/csharp-best-practices-dangers-of-violating-solid-principles-in-csharp)
-- [AStar.Dev Functional Extensions Documentation](../../packages/AStar.Dev.Functional.Extensions/README.md) _(if exists)_
+- [AStar.Dev Functional Extensions Documentation](../../packages/AStar.Dev.Functional.Extensions/README.md) (if exists)
 - [Repository Pattern Best Practices](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design)
 
 ---
