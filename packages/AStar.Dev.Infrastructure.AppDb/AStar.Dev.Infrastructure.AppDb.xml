@@ -1627,148 +1627,16 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.IFileDetailResolver.FindOrCreateAsync(System.String,System.Nullable{System.Int64},System.Threading.CancellationToken)">
             <summary>Finds the <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/> whose directory and file name match <paramref name="fullPath"/>, creating and persisting one when no match exists.</summary>
         </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.RecreateDatabase">
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.InitialCreation">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RecreateDatabase.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.InitialCreation.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RecreateDatabase.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.InitialCreation.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RecreateDatabase.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.Indexes">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.Indexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.Indexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.Indexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.SearchQueryIndexes">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.SearchQueryIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.SearchQueryIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.SearchQueryIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddScraperTables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationHierarchy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MergeDownloadedFileClassifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationsSingleParent">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationsSingleParent.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationsSingleParent.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.UnifyFileClassificationsSingleParent.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.RepairClassificationData">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RepairClassificationData.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RepairClassificationData.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RepairClassificationData.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDatesToFileClassificationCategories.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveScrapedTags.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeImageDetailFromFile.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.NaturalCascadeFileDetailChildren.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.InitialCreation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">

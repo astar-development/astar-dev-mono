@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.Infrastructure.AppDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260708161216_AddDatesToFileClassificationCategories")]
-    partial class AddDatesToFileClassificationCategories
+    [Migration("20260710022235_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,6 +118,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("FileDetailId")
+                        .HasColumnType("TEXT");
+
                     b.Property<long?>("HardDeletePending")
                         .HasColumnType("INTEGER")
                         .HasColumnName("HardDeletePending_Ticks");
@@ -131,6 +134,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnName("SoftDeleted_Ticks");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FileDetailId")
+                        .IsUnique();
 
                     b.ToTable("DeletionStatus", (string)null);
                 });
@@ -223,6 +229,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnType("INTEGER")
                         .HasColumnName("DetailsLastUpdated_Ticks");
 
+                    b.Property<Guid>("FileDetailId")
+                        .HasColumnType("TEXT");
+
                     b.Property<long?>("LastViewed")
                         .HasColumnType("INTEGER")
                         .HasColumnName("LastViewed_Ticks");
@@ -231,6 +240,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FileDetailId")
+                        .IsUnique();
 
                     b.ToTable("FileAccessDetail", (string)null);
                 });
@@ -241,8 +253,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("CreatedAt_Ticks");
 
                     b.Property<bool>("IncludeInSearch")
                         .HasColumnType("INTEGER");
@@ -266,8 +279,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                    b.Property<long?>("UpdatedAt")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("UpdatedAt_Ticks");
 
                     b.HasKey("Id");
 
@@ -334,21 +348,12 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("DeletionStatusId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("FileAccessDetailId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("FileHandle")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<long>("FileSize")
                         .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ImageDetailId")
-                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsImage")
                         .HasColumnType("INTEGER");
@@ -375,16 +380,10 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeletionStatusId");
-
-                    b.HasIndex("FileAccessDetailId");
-
                     b.HasIndex("FileHandle")
                         .IsUnique();
 
                     b.HasIndex("FileSize");
-
-                    b.HasIndex("ImageDetailId");
 
                     b.HasIndex("IsImage", "FileSize")
                         .HasDatabaseName("IX_FileDetail_DuplicateImages");
@@ -397,6 +396,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("FileDetailId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("Height")
                         .HasColumnType("INTEGER");
 
@@ -404,6 +406,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FileDetailId")
+                        .IsUnique();
 
                     b.ToTable("ImageDetail", (string)null);
                 });
@@ -498,39 +503,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsUnique();
 
                     b.ToTable("ScrapeDirectories", (string)null);
-                });
-
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ScrapedTagEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("CreatedAt")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("CreatedAt_Ticks");
-
-                    b.Property<bool>("IncludeInSearch")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("UpdatedAt")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("UpdatedAt_Ticks");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Value")
-                        .IsUnique();
-
-                    b.ToTable("ScrapedTag", (string)null);
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity", b =>
@@ -955,6 +927,17 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Navigation("ScrapeConfigurationEntity");
                 });
 
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", b =>
+                {
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
+                        .WithOne("DeletionStatus")
+                        .HasForeignKey("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", "FileDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileDetail");
+                });
+
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity", b =>
                 {
                     b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.AccountEntity", "Account")
@@ -964,6 +947,17 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", b =>
+                {
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
+                        .WithOne("FileAccessDetail")
+                        .HasForeignKey("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", "FileDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileDetail");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity", b =>
@@ -1005,31 +999,15 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", b =>
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity", b =>
                 {
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity", "DeletionStatus")
-                        .WithMany()
-                        .HasForeignKey("DeletionStatusId")
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", "FileDetail")
+                        .WithOne("ImageDetail")
+                        .HasForeignKey("AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity", "FileDetailId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.FileAccessDetailEntity", "FileAccessDetail")
-                        .WithMany()
-                        .HasForeignKey("FileAccessDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity", "ImageDetail")
-                        .WithMany()
-                        .HasForeignKey("ImageDetailId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DeletionStatus");
-
-                    b.Navigation("FileAccessDetail");
-
-                    b.Navigation("ImageDetail");
+                    b.Navigation("FileDetail");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity", b =>
@@ -1149,6 +1127,18 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("ScrapeConfigurationEntity");
+                });
+
+            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", b =>
+                {
+                    b.Navigation("DeletionStatus")
+                        .IsRequired();
+
+                    b.Navigation("FileAccessDetail")
+                        .IsRequired();
+
+                    b.Navigation("ImageDetail")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationEntity", b =>
