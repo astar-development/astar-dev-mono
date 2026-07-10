@@ -16,9 +16,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
-    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, [EnumeratorCancellation] CancellationToken ct = default)
+    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, ct).ConfigureAwait(false);
+        var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false);
 
         if (rules.Count == 0)
         {
@@ -28,9 +28,9 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         context.Rules = rules;
-        context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, ct).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
+        context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, cancellationToken).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
 
-        var driveId = await graphService.GetDriveIdAsync(account.Id.Id, tokenFactory, ct)
+        var driveId = await graphService.GetDriveIdAsync(account.Id.Id, tokenFactory, cancellationToken)
             .MatchAsync<DriveId, string, DriveId?>(
                 driveIdValue => driveIdValue,
                 error =>
@@ -49,10 +49,10 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         foreach (var rule in rootIncludeRules)
         {
-            if (ct.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested)
                 yield break;
 
-            string? folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, context.SyncedItems, tokenFactory, driveId.Value, ct).ConfigureAwait(false);
+            string? folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, context.SyncedItems, tokenFactory, driveId.Value, cancellationToken).ConfigureAwait(false);
 
             if (folderId is null)
             {
@@ -61,7 +61,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Id);
-            var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, ct).GetAsyncEnumerator(ct);
+            var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, cancellationToken).GetAsyncEnumerator(cancellationToken);
             int itemCount = 0;
 
             try
@@ -95,17 +95,17 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
     }
 
-    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken ct)
+    private async Task<string?> ResolveAndBackFillFolderIdAsync(AccountId accountId, SyncRuleEntity rule, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken)
     {
         string? folderId = rule.RemoteItemId is Option<string>.Some existingId
             ? existingId.Value
             : TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-                ?? await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, rule.RemotePath, ct).ConfigureAwait(false);
+                ?? await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, rule.RemotePath, cancellationToken).ConfigureAwait(false);
 
         if (folderId is not null && rule.RemoteItemId.Match(resolvedId => resolvedId != folderId, () => true))
         {
             OneDriveSyncClientMessages.RemoteFolderEnumeratorBackfilling(logger, rule.RemotePath);
-            await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, ct).ConfigureAwait(false);
+            await syncRuleRepository.UpsertAsync(accountId, rule.RemotePath, RuleType.Include, folderId, cancellationToken).ConfigureAwait(false);
         }
 
         return folderId;

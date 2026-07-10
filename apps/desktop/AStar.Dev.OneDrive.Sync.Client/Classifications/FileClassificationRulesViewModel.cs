@@ -111,27 +111,27 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     }
 
     /// <summary>Exports the current taxonomy to a user-selected JSON file.</summary>
-    public async Task ExportAsync(IStorageProvider storageProvider, CancellationToken ct = default)
+    public async Task ExportAsync(IStorageProvider storageProvider, CancellationToken cancellationToken = default)
     {
-        string? path = await filePickerService.PickSaveFileAsync(storageProvider, "Export classifications", "classifications.json", "json", ct).ConfigureAwait(false);
+        string? path = await filePickerService.PickSaveFileAsync(storageProvider, "Export classifications", "classifications.json", "json", cancellationToken).ConfigureAwait(false);
         if (path is null)
             return;
 
-        await exportImportService.ExportAsync(fileSystem.FileInfo.New(path), ct).ConfigureAwait(false);
+        await exportImportService.ExportAsync(fileSystem.FileInfo.New(path), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>Imports a taxonomy from a user-selected JSON file, replacing all existing data after confirmation.</summary>
-    public async Task ImportAsync(IStorageProvider storageProvider, CancellationToken ct = default)
+    public async Task ImportAsync(IStorageProvider storageProvider, CancellationToken cancellationToken = default)
     {
-        string? path = await filePickerService.PickOpenFileAsync(storageProvider, "Import classifications", "json", ct).ConfigureAwait(false);
+        string? path = await filePickerService.PickOpenFileAsync(storageProvider, "Import classifications", "json", cancellationToken).ConfigureAwait(false);
         if (path is null)
             return;
 
-        if (!await confirmationDialogService.ConfirmAsync("Import classifications", "This will update ALL existing classifications and add new ones. Continue?", ct).ConfigureAwait(false))
+        if (!await confirmationDialogService.ConfirmAsync("Import classifications", "This will update ALL existing classifications and add new ones. Continue?", cancellationToken).ConfigureAwait(false))
             return;
 
-        await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), ct).ConfigureAwait(false);
-        await LoadAsync(ct).ConfigureAwait(false);
+        await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), cancellationToken).ConfigureAwait(false);
+        await LoadAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewCategoryName);

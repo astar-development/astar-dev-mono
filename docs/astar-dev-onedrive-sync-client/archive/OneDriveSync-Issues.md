@@ -203,7 +203,7 @@ void Stop();
 ```csharp
 private int _runningFlag; // replace the bool _running field
 
-private async Task RunSyncPassAsync(CancellationToken ct)
+private async Task RunSyncPassAsync(CancellationToken cancellationToken)
 {
     if(Interlocked.Exchange(ref _runningFlag, 1) == 1)
         return;

@@ -10,5 +10,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public interface IQuotaRefreshService
 {
     /// <summary>Refreshes the quota for <paramref name="account"/>. Updates <see cref="OneDriveAccount.Quota"/> and persists on success. No-op on failure.</summary>
-    Task TryRefreshAsync(OneDriveAccount account, CancellationToken ct = default);
+    Task TryRefreshAsync(OneDriveAccount account, CancellationToken cancellationToken = default);
 }

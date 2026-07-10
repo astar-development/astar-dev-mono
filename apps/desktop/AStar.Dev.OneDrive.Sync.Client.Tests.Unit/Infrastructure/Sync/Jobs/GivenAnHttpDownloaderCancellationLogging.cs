@@ -21,7 +21,7 @@ public sealed class GivenAnHttpDownloaderCancellationLogging
         var sut = new HttpDownloader(factory, new MockFileSystem(), logger, System.TimeProvider.System);
 
         await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
+            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: cts.Token));
 
         logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == 2706);
     }

@@ -65,24 +65,24 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     }
 
     /// <inheritdoc />
-    public async Task TriggerNowAsync(CancellationToken ct = default)
+    public async Task TriggerNowAsync(CancellationToken cancellationToken = default)
     {
         if (!activeSyncs.IsEmpty)
             return;
 
-        await RunSyncPassAsync(ct).ConfigureAwait(false);
+        await RunSyncPassAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task TriggerAccountAsync(string accountId, CancellationToken ct = default)
+    public async Task TriggerAccountAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        var accountOption = await accountRepository.GetByIdAsync(new AccountId(accountId), ct).ConfigureAwait(false);
+        var accountOption = await accountRepository.GetByIdAsync(new AccountId(accountId), cancellationToken).ConfigureAwait(false);
 
         await accountOption.Match(
             async entity =>
             {
-                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
-                await TriggerAccountAsync(MapEntityToAccount(entity, rules), ct).ConfigureAwait(false);
+                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, cancellationToken).ConfigureAwait(false);
+                await TriggerAccountAsync(MapEntityToAccount(entity, rules), cancellationToken).ConfigureAwait(false);
             },
             () =>
             {
@@ -92,9 +92,9 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     }
 
     /// <inheritdoc />
-    public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
+    public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         if (!activeSyncs.TryAdd(account.Id.Id, cts))
         {
             OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
@@ -152,20 +152,20 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         SelectedFolderIds = [.. rules.Where(r => r.RuleType == RuleType.Include).Choose(r => r.RemoteItemId).Select(id => new OneDriveFolderId(id))]
     };
 
-    private async Task RunSyncPassAsync(CancellationToken ct)
+    private async Task RunSyncPassAsync(CancellationToken cancellationToken)
     {
         if (!fullPassSemaphore.Wait(0, CancellationToken.None))
             return;
 
         try
         {
-            var entities = await accountRepository.GetAllAsync(CancellationToken.None).ConfigureAwait(false);
-            foreach (var entity in entities.TakeWhile(_ => !ct.IsCancellationRequested))
+            var entities = await accountRepository.GetAllAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var entity in entities.TakeWhile(_ => !cancellationToken.IsCancellationRequested))
             {
-                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, ct).ConfigureAwait(false);
+                var rules = await syncRuleRepository.GetByAccountIdAsync(entity.Id, cancellationToken).ConfigureAwait(false);
                 var account = MapEntityToAccount(entity, rules);
 
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 if (!activeSyncs.TryAdd(account.Id.Id, cts))
                 {
                     OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);

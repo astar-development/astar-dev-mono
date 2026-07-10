@@ -20,15 +20,15 @@ public sealed class TopWallpapersWorkflow(
 
     private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConfiguration;
 
-    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken ct = default)
-        => RunTopWallpapersAsync(ct).LogFailure(logger);
+    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken cancellationToken = default)
+        => RunTopWallpapersAsync(cancellationToken).LogFailure(logger);
 
-    private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken cancellationToken)
     {
         await LoadStartingPageAsync().ConfigureAwait(false);
 
         return await topWallpapersPage.PageInfoAsync()
-            .BindAsync(pageCount => ProcessTopWallpapersAsync(pageCount, ct))
+            .BindAsync(pageCount => ProcessTopWallpapersAsync(pageCount, cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -40,7 +40,7 @@ public sealed class TopWallpapersWorkflow(
         if (!loadedSuccessfully) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber).ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(int pageCount, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(int pageCount, CancellationToken cancellationToken)
     {
         logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", pageCount);
 
@@ -56,7 +56,7 @@ public sealed class TopWallpapersWorkflow(
             topWallpapersPage.GetImagePageLinksAsync,
             (links, innerCt) => imagePageService.GetTheImagePagesAsync(links, NoCategory, NoCategory, innerCt));
 
-        return await pagedScrapeRunner.RunAsync(plan, ct).ConfigureAwait(false);
+        return await pagedScrapeRunner.RunAsync(plan, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Result<Unit, ScrapeError>> LoadTopWallpapersPageAsync(int pageNumber)

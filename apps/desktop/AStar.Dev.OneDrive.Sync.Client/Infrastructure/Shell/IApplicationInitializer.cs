@@ -7,5 +7,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public interface IApplicationInitializer
 {
     /// <summary>Runs all startup steps required before the main window is usable.</summary>
-    Task InitializeAsync(CancellationToken ct = default);
+    Task InitializeAsync(CancellationToken cancellationToken = default);
 }

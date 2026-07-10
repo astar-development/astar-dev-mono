@@ -27,10 +27,10 @@ namespace AStar.Dev.Wallpaper.Scraper;
 
 public partial class App : Application
 {
-    private IHost _host = null!;
+    private IHost host = null!;
 
     public static new App Current => (App)Application.Current!;
-    public IServiceProvider Services => _host.Services;
+    public IServiceProvider Services => host.Services;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -111,27 +111,27 @@ public partial class App : Application
             .AddTransient<IImageDimensionReader, ImageDimensionReader>()
             .AddHttpClient<IImageRetriever, ImageRetriever>(client => client.Timeout = TimeSpan.FromMinutes(2));
 
-        _host = builder.Build();
+        host = builder.Build();
 
-        await _host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync();
+        await host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = _host.Services.GetRequiredService<MainWindow>();
+            desktop.MainWindow = host.Services.GetRequiredService<MainWindow>();
             desktop.Exit += OnExit;
             desktop.MainWindow.Show();
         }
 
-        _host.Start();
+        host.Start();
         SurfaceConfigurationErrors();
         base.OnFrameworkInitializationCompleted();
     }
 
     private void SurfaceConfigurationErrors()
-        => ScrapeConfigurationValidator.Validate(_host.Services.GetRequiredService<ScrapeConfiguration>())
+        => ScrapeConfigurationValidator.Validate(host.Services.GetRequiredService<ScrapeConfiguration>())
             .Match(_ => Unit.Value, errors =>
             {
-                var broadcaster = _host.Services.GetRequiredService<LogBroadcaster>();
+                var broadcaster = host.Services.GetRequiredService<LogBroadcaster>();
 
                 foreach (var error in errors)
                     broadcaster.Broadcast($"Configuration error - {error.Property}: {error.Message}");
@@ -140,5 +140,5 @@ public partial class App : Application
             });
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
-        => _host.StopAsync().GetAwaiter().GetResult();
+        => host.StopAsync().GetAwaiter().GetResult();
 }

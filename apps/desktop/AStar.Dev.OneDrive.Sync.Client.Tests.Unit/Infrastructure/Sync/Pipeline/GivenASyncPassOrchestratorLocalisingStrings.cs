@@ -112,7 +112,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.DetectingRemoteDeletions");
     }
@@ -124,7 +124,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.DetectingLocalChanges");
     }
@@ -136,7 +136,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: _ => { }, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: _ => { }, cancellationToken: TestContext.Current.CancellationToken);
 
         _localizationService.Received().GetLocal("Sync.NoChanges");
     }
@@ -148,7 +148,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         _localizationService.DidNotReceive().GetLocal("Sync.SyncingFiles", Arg.Any<object[]>());
     }
@@ -161,7 +161,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
     }
@@ -174,7 +174,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.DetectingLocalChanges");
     }
@@ -187,7 +187,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         var progressMessages = new List<string>();
         var sut = CreateSut();
 
-        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.NoChanges");
     }

@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public sealed class AvaloniaFolderPickerService : IFolderPickerService
 {
     /// <inheritdoc />
-    public async Task<string?> PickFolderAsync(IStorageProvider storageProvider, string title, CancellationToken ct = default)
+    public async Task<string?> PickFolderAsync(IStorageProvider storageProvider, string title, CancellationToken cancellationToken = default)
     {
         var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false }).ConfigureAwait(false);
 

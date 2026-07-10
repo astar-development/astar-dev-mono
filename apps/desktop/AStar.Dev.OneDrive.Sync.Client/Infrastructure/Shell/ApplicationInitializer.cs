@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, SyncedFileSearchViewModel search, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
 {
     /// <inheritdoc />
-    public async Task InitializeAsync(CancellationToken ct = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -51,7 +51,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
 
             try
             {
-                await RefreshQuotasAsync(restored, ct).ConfigureAwait(false);
+                await RefreshQuotasAsync(restored, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -65,11 +65,11 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
         }
     }
 
-    private async Task RefreshQuotasAsync(IReadOnlyList<OneDriveAccount> restored, CancellationToken ct)
+    private async Task RefreshQuotasAsync(IReadOnlyList<OneDriveAccount> restored, CancellationToken cancellationToken)
     {
         foreach (var account in restored)
         {
-            await quotaRefreshService.TryRefreshAsync(account, ct).ConfigureAwait(false);
+            await quotaRefreshService.TryRefreshAsync(account, cancellationToken).ConfigureAwait(false);
             dashboard.UpdateQuota(account.Id.Id, account.Quota);
         }
     }

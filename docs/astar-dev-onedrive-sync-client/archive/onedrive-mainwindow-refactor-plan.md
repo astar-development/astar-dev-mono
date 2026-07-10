@@ -8,13 +8,13 @@
 
 ## Responsibilities to Extract
 
-| # | Responsibility | Current evidence | Target |
-|---|---|---|---|
-| 1 | **Sync event fan-out** | `OnSyncProgressChanged`, `OnJobCompleted`, `OnSyncCompleted`, `OnConflictDetected` (lines 236–290) | `ISyncEventAggregator` |
-| 2 | **App initialization** | `InitialiseAsync` (lines 127–171) | `IApplicationInitializer` |
-| 3 | **Child VM construction** | Inline `new(...)` for all 6 child VMs using deps that belong to the child | Inject child VMs from DI |
-| 4 | **Manual sync trigger** | `SyncNowAsync` reconstructs `OneDriveAccount` from repo (lines 180–195) | Push account entity lookup into `ISyncScheduler` overload |
-| 5 | **StatusBar sync** | `SyncStatusBarToActiveAccount()` called from 6 callsites | Subscribe inside `StatusBarViewModel` to `AccountsViewModel` |
+| #   | Responsibility            | Current evidence                                                                                   | Target                                                       |
+| --- | ------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1   | **Sync event fan-out**    | `OnSyncProgressChanged`, `OnJobCompleted`, `OnSyncCompleted`, `OnConflictDetected` (lines 236–290) | `ISyncEventAggregator`                                       |
+| 2   | **App initialization**    | `InitialiseAsync` (lines 127–171)                                                                  | `IApplicationInitializer`                                    |
+| 3   | **Child VM construction** | Inline `new(...)` for all 6 child VMs using deps that belong to the child                          | Inject child VMs from DI                                     |
+| 4   | **Manual sync trigger**   | `SyncNowAsync` reconstructs `OneDriveAccount` from repo (lines 180–195)                            | Push account entity lookup into `ISyncScheduler` overload    |
+| 5   | **StatusBar sync**        | `SyncStatusBarToActiveAccount()` called from 6 callsites                                           | Subscribe inside `StatusBarViewModel` to `AccountsViewModel` |
 
 ---
 
@@ -25,6 +25,7 @@
 ### New files
 
 **`Infrastructure/Sync/ISyncEventAggregator.cs`**
+
 ```csharp
 public interface ISyncEventAggregator
 {
@@ -36,18 +37,19 @@ public interface ISyncEventAggregator
 ```
 
 **`Infrastructure/Sync/SyncEventAggregator.cs`**
+
 - Constructor deps: `ISyncService`, `ISyncScheduler`
 - Subscribes to both services in constructor, re-raises on UIThread via `Dispatcher.UIThread.Post`
 - Registered as **Singleton** in DI
 
 ### Modified files
 
-| File | Change |
-|---|---|
-| `Accounts/AccountsViewModel.cs` | Subscribe to `ISyncEventAggregator` — update card `SyncState` and `ConflictCount` |
+| File                              | Change                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------- |
+| `Accounts/AccountsViewModel.cs`   | Subscribe to `ISyncEventAggregator` — update card `SyncState` and `ConflictCount` |
 | `Dashboard/DashboardViewModel.cs` | Subscribe — call `UpdateAccountSyncState`, `AddActivityItem`, `MarkSyncCompleted` |
-| `Activity/ActivityViewModel.cs` | Subscribe — call `AddActivityItem`, `AddConflictItem` |
-| `Home/MainWindowViewModel.cs` | Remove 4 handler methods + 2 deps; keep only `scheduler` for `SyncNowAsync` |
+| `Activity/ActivityViewModel.cs`   | Subscribe — call `AddActivityItem`, `AddConflictItem`                             |
+| `Home/MainWindowViewModel.cs`     | Remove 4 handler methods + 2 deps; keep only `scheduler` for `SyncNowAsync`       |
 
 ### Tests
 
@@ -69,23 +71,25 @@ when_scheduler_raises_sync_completed_then_aggregator_raises_sync_completed
 ### New files
 
 **`Infrastructure/Shell/IApplicationInitializer.cs`**
+
 ```csharp
 public interface IApplicationInitializer
 {
-    Task InitializeAsync(CancellationToken ct = default);
+    Task InitializeAsync(CancellationToken cancellationToken = default);
 }
 ```
 
 **`Infrastructure/Shell/ApplicationInitializer.cs`**
+
 - Constructor deps: `IStartupService`, `AccountsViewModel`, `FilesViewModel`, `DashboardViewModel`, `ActivityViewModel`, `SettingsViewModel`
 - Contains the body of the current `InitialiseAsync()`, minus event wiring (now done by `SyncEventAggregator`)
 - Registered as **Scoped** (one per app session)
 
 ### Modified files
 
-| File | Change |
-|---|---|
-| `Home/MainWindowViewModel.cs` | `InitialiseAsync` becomes `await _initializer.InitializeAsync()` |
+| File                          | Change                                                            |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `Home/MainWindowViewModel.cs` | `InitialiseAsync` becomes `await _initializer.InitializeAsync()`  |
 | `Home/MainWindowViewModel.cs` | Remove deps: `IStartupService`, `ISyncService`, `ISyncRepository` |
 
 `Accounts.PropertyChanged` wiring that triggers `SyncStatusBarToActiveAccount` moves to Phase 4.
@@ -113,6 +117,7 @@ when_startup_service_throws_then_error_is_logged_and_not_rethrown
 ### Changes
 
 Register child VMs in DI (`App.axaml.cs` or the DI setup file):
+
 ```csharp
 services.AddSingleton<AccountsViewModel>();
 services.AddSingleton<FilesViewModel>();
@@ -123,6 +128,7 @@ services.AddSingleton<StatusBarViewModel>();
 ```
 
 **`Home/MainWindowViewModel.cs`** — replace inline `new(...)` properties with injected parameters:
+
 ```csharp
 // Before
 public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository);
@@ -143,16 +149,17 @@ Removed deps from MainWindowViewModel: `IAuthService`, `IGraphService`, `ISettin
 ### Options (pick one)
 
 **Subscribe in StatusBarViewModel** (recommended):
+
 - `StatusBarViewModel` takes `AccountsViewModel` as a constructor dep
 - Subscribes to `AccountsViewModel.PropertyChanged` for `nameof(ActiveAccount)`
 - Self-updates its own properties
 
 ### Modified files
 
-| File | Change |
-|---|---|
-| `Home/StatusBarViewModel.cs` | Add `AccountsViewModel` dep (Option A) or keep as-is (Option B) |
-| `Home/MainWindowViewModel.cs` | Delete `SyncStatusBarToActiveAccount()` and all 6 callsites |
+| File                          | Change                                                          |
+| ----------------------------- | --------------------------------------------------------------- |
+| `Home/StatusBarViewModel.cs`  | Add `AccountsViewModel` dep (Option A) or keep as-is (Option B) |
+| `Home/MainWindowViewModel.cs` | Delete `SyncStatusBarToActiveAccount()` and all 6 callsites     |
 
 ### Tests (Option A)
 
@@ -174,11 +181,13 @@ when_active_account_conflict_count_changes_then_status_bar_reflects_change
 ### Change
 
 Add overload to `ISyncScheduler`:
+
 ```csharp
-Task TriggerAccountAsync(string accountId, CancellationToken ct = default);
+Task TriggerAccountAsync(string accountId, CancellationToken cancellationToken = default);
 ```
 
 `SyncNowAsync` becomes:
+
 ```csharp
 [RelayCommand]
 private async Task SyncNowAsync()
@@ -261,6 +270,7 @@ Branch: `feature/onedrive-mainwindow-decompose`
 ## Files Created / Modified (full list)
 
 ### New files
+
 - `Infrastructure/Sync/ISyncEventAggregator.cs`
 - `Infrastructure/Sync/SyncEventAggregator.cs`
 - `Infrastructure/Shell/IApplicationInitializer.cs`
@@ -271,6 +281,7 @@ Branch: `feature/onedrive-mainwindow-decompose`
 - `Tests.Unit/Home/GivenAStatusBarViewModel.cs` (if Option A)
 
 ### Modified files
+
 - `Home/MainWindowViewModel.cs` (primary target — shrinks from 310 → ~120 lines)
 - `Accounts/AccountsViewModel.cs` (subscribe to ISyncEventAggregator)
 - `Dashboard/DashboardViewModel.cs` (subscribe to ISyncEventAggregator)

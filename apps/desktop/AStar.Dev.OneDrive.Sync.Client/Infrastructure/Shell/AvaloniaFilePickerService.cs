@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public sealed class AvaloniaFilePickerService : IFilePickerService
 {
     /// <inheritdoc />
-    public async Task<string?> PickSaveFileAsync(IStorageProvider storageProvider, string title, string suggestedName, string extensionFilter, CancellationToken ct = default)
+    public async Task<string?> PickSaveFileAsync(IStorageProvider storageProvider, string title, string suggestedName, string extensionFilter, CancellationToken cancellationToken = default)
     {
         var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
@@ -19,7 +19,7 @@ public sealed class AvaloniaFilePickerService : IFilePickerService
     }
 
     /// <inheritdoc />
-    public async Task<string?> PickOpenFileAsync(IStorageProvider storageProvider, string title, string extensionFilter, CancellationToken ct = default)
+    public async Task<string?> PickOpenFileAsync(IStorageProvider storageProvider, string title, string extensionFilter, CancellationToken cancellationToken = default)
     {
         var files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {

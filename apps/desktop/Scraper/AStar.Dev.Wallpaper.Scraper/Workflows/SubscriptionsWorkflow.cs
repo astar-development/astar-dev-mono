@@ -20,17 +20,17 @@ public sealed class SubscriptionsWorkflow(
     private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConfiguration;
     private ScrapeDirectories scrapeDirectories = scrapeConfiguration.ScrapeDirectories;
 
-    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken ct = default)
-        => RunSubscriptionsAsync(ct).LogFailure(logger);
+    public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken cancellationToken = default)
+        => RunSubscriptionsAsync(cancellationToken).LogFailure(logger);
 
-    private async Task<Result<Unit, ScrapeError>> RunSubscriptionsAsync(CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> RunSubscriptionsAsync(CancellationToken cancellationToken)
     {
         searchConfiguration = searchConfiguration with { SubscriptionsStartingPageNumber = FirstPageNumber, };
 
         await LoadStartingPageAsync().ConfigureAwait(false);
 
         return await subscriptionsImagesListPage.PageInfoAsync()
-            .BindAsync(pageInfo => ProcessSubscriptionsAsync(pageInfo, ct))
+            .BindAsync(pageInfo => ProcessSubscriptionsAsync(pageInfo, cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -42,7 +42,7 @@ public sealed class SubscriptionsWorkflow(
         if (!loadedSuccessfully) _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessSubscriptionsAsync(PageInfo pageInfo, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> ProcessSubscriptionsAsync(PageInfo pageInfo, CancellationToken cancellationToken)
     {
         if (pageInfo.SubDirectoryName.Length > 0) scrapeDirectories = scrapeDirectories with { SubDirectoryName = pageInfo.SubDirectoryName, };
 
@@ -58,7 +58,7 @@ public sealed class SubscriptionsWorkflow(
             subscriptionsImagesListPage.GetImagePageLinksAsync,
             (links, innerCt) => imagePageService.GetTheImagePagesAsync(links, string.Empty, pageInfo.SubDirectoryName, innerCt));
 
-        return await pagedScrapeRunner.RunAsync(plan, ct)
+        return await pagedScrapeRunner.RunAsync(plan, cancellationToken)
             .BindAsync(_ => ClearSubscriptionsIfCompleteAsync(pageInfo))
             .ConfigureAwait(false);
     }

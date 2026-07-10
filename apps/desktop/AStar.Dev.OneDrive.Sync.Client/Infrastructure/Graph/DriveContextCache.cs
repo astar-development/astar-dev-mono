@@ -12,22 +12,22 @@ internal sealed class DriveContextCache(IGraphClientFactory graphClientFactory)
     private readonly ConcurrentDictionary<string, DriveContext> cache = [];
 
     /// <summary>Returns the <see cref="GraphServiceClient"/> together with the resolved <see cref="DriveContext"/> for the given account. The drive context is fetched from the Graph API on the first call and cached for subsequent calls.</summary>
-    internal async Task<Result<(GraphServiceClient Client, DriveContext Ctx), string>> ResolveAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    internal async Task<Result<(GraphServiceClient Client, DriveContext Ctx), string>> ResolveAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         var client = graphClientFactory.CreateClient(tokenFactory);
 
-        if(cache.TryGetValue(accountId, out var cached))
+        if (cache.TryGetValue(accountId, out var cached))
             return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, cached));
 
-        var drive = await client.Me.Drive.GetAsync(cancellationToken: ct).ConfigureAwait(false);
+        var drive = await client.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if(drive?.Id is null)
+        if (drive?.Id is null)
             return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve drive ID.");
 
         var driveId = new DriveId(drive.Id);
-        var root = await client.Drives[driveId.Value].Root.GetAsync(cancellationToken: ct).ConfigureAwait(false);
+        var root = await client.Drives[driveId.Value].Root.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if(root?.Id is null)
+        if (root?.Id is null)
             return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve root item ID.");
 
         var driveContext = new DriveContext(driveId, root.Id);

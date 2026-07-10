@@ -29,7 +29,7 @@ public sealed class GivenASettingsService
     {
         var service = CreateService();
 
-        await service.LoadAsync();
+        await service.LoadAsync(TestContext.Current.CancellationToken);
 
         service.ShouldBeAssignableTo<ISettingsService>();
     }
@@ -39,7 +39,7 @@ public sealed class GivenASettingsService
     {
         var service = CreateService();
 
-        await Should.NotThrowAsync(() => service.SaveAsync());
+        await Should.NotThrowAsync(() => service.SaveAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public sealed class GivenASettingsService
         int raiseCount = 0;
         service.SettingsChanged += (_, _) => raiseCount++;
 
-        await service.SaveAsync();
-        await service.SaveAsync();
+        await service.SaveAsync(TestContext.Current.CancellationToken);
+        await service.SaveAsync(TestContext.Current.CancellationToken);
 
         raiseCount.ShouldBe(2);
     }
@@ -62,7 +62,7 @@ public sealed class GivenASettingsService
         object? capturedSender = null;
         service.SettingsChanged += (sender, _) => capturedSender = sender;
 
-        await service.SaveAsync();
+        await service.SaveAsync(TestContext.Current.CancellationToken);
 
         capturedSender.ShouldBeSameAs(service);
     }
@@ -74,10 +74,10 @@ public sealed class GivenASettingsService
         var writeService = new SettingsService(fileSystem, Substitute.For<ILogger<SettingsService>>(), SettingsPath);
         writeService.Current.Theme = AppTheme.Hacker;
 
-        await writeService.SaveAsync();
+        await writeService.SaveAsync(TestContext.Current.CancellationToken);
 
         var readService = new SettingsService(fileSystem, Substitute.For<ILogger<SettingsService>>(), SettingsPath);
-        await readService.LoadAsync();
+        await readService.LoadAsync(TestContext.Current.CancellationToken);
 
         readService.Current.Theme.ShouldBe(AppTheme.Hacker);
     }

@@ -112,7 +112,7 @@ public sealed class GivenASyncPassOrchestrator
         var account = CreateAccount();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), tokenFactory, _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), tokenFactory, _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         _remoteFolderEnumerator.Received(1).StreamAsync(
             Arg.Is(account),
@@ -130,7 +130,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _classificationRepository.Received(1).GetAllCategoriesAsync(Arg.Any<CancellationToken>());
     }
@@ -146,7 +146,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         result.DidRun.ShouldBeFalse();
     }
@@ -162,7 +162,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _remoteDeletionDetector.DidNotReceive().DetectAndApplyAsync(
             Arg.Any<AccountId>(),
@@ -180,7 +180,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         result.DidRun.ShouldBeTrue();
     }
@@ -193,7 +193,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _remoteDeletionDetector.Received(1).DetectAndApplyAsync(
             Arg.Any<AccountId>(),
@@ -211,7 +211,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _localDeletionDetector.Received(1).DetectAndApplyAsync(
             Arg.Any<AccountId>(),
@@ -228,7 +228,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _syncJobExecutor.DidNotReceive().ExecuteAsync(
             Arg.Any<OneDriveAccount>(),
@@ -250,7 +250,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut              = CreateSut();
         var account          = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.NoChanges");
     }
@@ -264,7 +264,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut              = CreateSut();
         var account          = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
         progressMessages.ShouldContain("Sync.DetectingLocalChanges");
@@ -281,7 +281,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _accountRepository.Received(1).UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
     }
@@ -294,7 +294,7 @@ public sealed class GivenASyncPassOrchestrator
         var sut     = CreateSut();
         var account = CreateAccount();
 
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         await _accountRepository.DidNotReceive().UpsertAsync(Arg.Any<AccountEntity>(), Arg.Any<CancellationToken>());
     }
@@ -335,7 +335,7 @@ public sealed class GivenASyncPassOrchestrator
             if(detectedConflict.Id == conflict.Id)
                 callbackInvoked = true;
             await Task.CompletedTask;
-        }, ct: TestContext.Current.CancellationToken);
+        }, cancellationToken: TestContext.Current.CancellationToken);
 
         callbackInvoked.ShouldBeTrue();
     }
@@ -353,7 +353,7 @@ public sealed class GivenASyncPassOrchestrator
         var account    = CreateAccount("/my/local/path");
         var syncConfig = CreateSyncConfig("/my/local/path");
 
-        await sut.OrchestrateAsync(account, syncConfig, _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: TestContext.Current.CancellationToken);
+        await sut.OrchestrateAsync(account, syncConfig, _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
         capturedPath.ShouldBe("/my/local/path");
     }
@@ -373,7 +373,7 @@ public sealed class GivenASyncPassOrchestrator
                 if (IsEnumerationProgressEvent(args))
                     enumerationProgressEvents.Add(args);
             },
-            ct: TestContext.Current.CancellationToken);
+            cancellationToken: TestContext.Current.CancellationToken);
 
         enumerationProgressEvents.ShouldBeEmpty();
     }
@@ -393,7 +393,7 @@ public sealed class GivenASyncPassOrchestrator
                 if (IsEnumerationProgressEvent(args))
                     enumerationProgressEvents.Add(args);
             },
-            ct: TestContext.Current.CancellationToken);
+            cancellationToken: TestContext.Current.CancellationToken);
 
         enumerationProgressEvents.Count.ShouldBe(1);
     }
@@ -413,7 +413,7 @@ public sealed class GivenASyncPassOrchestrator
                 if (IsEnumerationProgressEvent(args))
                     enumerationProgressEvents.Add(args);
             },
-            ct: TestContext.Current.CancellationToken);
+            cancellationToken: TestContext.Current.CancellationToken);
 
         enumerationProgressEvents.Count.ShouldBe(2);
     }
@@ -433,7 +433,7 @@ public sealed class GivenASyncPassOrchestrator
         var account = CreateAccount();
 
         await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: cts.Token));
+            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -450,7 +450,7 @@ public sealed class GivenASyncPassOrchestrator
         var account = CreateAccount();
 
         await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, ct: cts.Token));
+            () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: cts.Token));
     }
 }
 

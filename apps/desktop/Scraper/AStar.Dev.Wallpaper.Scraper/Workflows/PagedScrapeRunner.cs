@@ -9,20 +9,20 @@ namespace AStar.Dev.Wallpaper.Scraper.Workflows;
 public sealed class PagedScrapeRunner(ConfigurationSaver configurationSaver, IDelayStrategy delayStrategy)
 {
     /// <summary>Runs <paramref name="plan" /> from its starting page to its total page, inclusive, stopping at the first failing step.</summary>
-    public async Task<Result<Unit, ScrapeError>> RunAsync(PagedScrapePlan plan, CancellationToken ct = default)
+    public async Task<Result<Unit, ScrapeError>> RunAsync(PagedScrapePlan plan, CancellationToken cancellationToken = default)
     {
         GuardAgainst.Null(plan);
 
         for (int pageNumber = plan.StartingPage; pageNumber <= plan.TotalPages; pageNumber++)
         {
-            ct.ThrowIfCancellationRequested();
-            await delayStrategy.DelayAsync(DelayKind.PageNavigation, ct).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            await delayStrategy.DelayAsync(DelayKind.PageNavigation, cancellationToken).ConfigureAwait(false);
             plan.RecordProgress(pageNumber);
 
             var pageResult = await configurationSaver.SaveUpdatedConfigurationAsync()
                 .BindAsync(_ => plan.LoadPageAsync(pageNumber))
                 .BindAsync(_ => plan.GetLinksAsync())
-                .BindAsync(links => plan.ProcessLinksAsync(links, ct))
+                .BindAsync(links => plan.ProcessLinksAsync(links, cancellationToken))
                 .ConfigureAwait(false);
 
             bool pageFailed = pageResult.Match(_ => false, _ => true);

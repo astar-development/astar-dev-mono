@@ -11,12 +11,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphService graphService, IFileSystem fileSystem, ILogger<ConflictApplier> logger) : IConflictApplier
 {
     /// <inheritdoc />
-    public async Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    public async Task<bool> ApplyAsync(SyncConflict conflict, ConflictOutcome outcome, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         switch (outcome)
         {
             case ConflictOutcome.UseRemote:
-                return await ApplyUseRemoteAsync(conflict, accountId, tokenFactory, ct).ConfigureAwait(false);
+                return await ApplyUseRemoteAsync(conflict, accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
             case ConflictOutcome.KeepBoth:
                 ApplyKeepBoth(conflict);
@@ -27,14 +27,14 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
         }
     }
 
-    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken ct)
+    private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
-        var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Id, ct).ConfigureAwait(false);
+        var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Id, cancellationToken).ConfigureAwait(false);
 
         return await urlResult.MatchAsync(
             async url =>
             {
-                var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, ct: ct).ConfigureAwait(false);
+                var downloadResult = await httpDownloader.DownloadAsync(url, conflict.Target.LocalPath, conflict.Snapshot.RemoteModified, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 return downloadResult.Match(
                     _ => true,

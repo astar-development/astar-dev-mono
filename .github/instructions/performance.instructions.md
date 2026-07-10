@@ -93,7 +93,7 @@ await using var stream = File.OpenRead(filePath);
 
 ```csharp
 public async IAsyncEnumerable<DriveItem> GetAllItemsAsync(
-    [EnumeratorCancellation] CancellationToken ct = default)
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
 {
     var request = _client.Me.Drive.Root.Children.Request();
 
@@ -203,7 +203,7 @@ var items = await _context.SyncItems
 ```csharp
 private async Task<T> ExecuteWithRetryAsync<T>(
     Func<Task<T>> operation,
-    CancellationToken ct)
+    CancellationToken cancellationToken)
 {
     var retryCount = 0;
     var maxRetries = 5;

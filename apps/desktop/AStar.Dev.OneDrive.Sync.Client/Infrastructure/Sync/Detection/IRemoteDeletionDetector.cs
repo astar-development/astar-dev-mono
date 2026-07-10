@@ -15,5 +15,5 @@ public interface IRemoteDeletionDetector
     /// the current enumeration pass. For each absent remote ID, deletes the local file or directory
     /// and removes the tracking record from the repository.
     /// </summary>
-    Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken ct);
+    Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken);
 }

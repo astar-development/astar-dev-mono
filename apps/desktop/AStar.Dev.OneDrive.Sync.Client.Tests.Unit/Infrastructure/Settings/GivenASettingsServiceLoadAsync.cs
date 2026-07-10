@@ -35,7 +35,7 @@ public sealed class GivenASettingsServiceLoadAsync
     {
         var sut = CreateService(CreateEmptyMockileSystem());
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         sut.Current.ShouldNotBeNull();
         sut.Current.Theme.ShouldBe(AppTheme.System);
@@ -47,7 +47,7 @@ public sealed class GivenASettingsServiceLoadAsync
         var expected = new AppSettings { Theme = AppTheme.Dark, SyncIntervalMinutes = 15, Locale = "fr-FR" };
         var sut = CreateService(CreateMockFileSystemWithSettings(expected));
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         sut.Current.Theme.ShouldBe(AppTheme.Dark);
         sut.Current.SyncIntervalMinutes.ShouldBe(15);
@@ -61,7 +61,7 @@ public sealed class GivenASettingsServiceLoadAsync
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("{ this is not valid json }}}"));
         var sut = CreateService(mockFileSystem);
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         sut.Current.ShouldNotBeNull();
         sut.Current.Theme.ShouldBe(AppTheme.System);
@@ -74,7 +74,7 @@ public sealed class GivenASettingsServiceLoadAsync
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("not json at all"));
         var sut = CreateService(mockFileSystem);
 
-        await Should.NotThrowAsync(() => sut.LoadAsync());
+        await Should.NotThrowAsync(() => sut.LoadAsync(TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed class GivenASettingsServiceLoadAsync
         mockFileSystem.Initialize().WithFile(SettingsPath).Which(m => m.HasStringContent("null"));
         var sut = CreateService(mockFileSystem);
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         sut.Current.ShouldNotBeNull();
     }
@@ -94,11 +94,11 @@ public sealed class GivenASettingsServiceLoadAsync
     {
         var mockFileSystem = CreateMockFileSystemWithSettings(new AppSettings { Theme = AppTheme.Light });
         var sut = CreateService(mockFileSystem);
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
         sut.Current.Theme.ShouldBe(AppTheme.Light);
 
         mockFileSystem.File.WriteAllText(SettingsPath, JsonSerializer.Serialize(new AppSettings { Theme = AppTheme.Dark }, JsonOpts));
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         sut.Current.Theme.ShouldBe(AppTheme.Dark);
     }
@@ -110,7 +110,7 @@ public sealed class GivenASettingsServiceLoadAsync
         bool raised = false;
         sut.SettingsChanged += (_, _) => raised = true;
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         raised.ShouldBeTrue();
     }
@@ -122,7 +122,7 @@ public sealed class GivenASettingsServiceLoadAsync
         bool raised = false;
         sut.SettingsChanged += (_, _) => raised = true;
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         raised.ShouldBeFalse();
     }
@@ -135,7 +135,7 @@ public sealed class GivenASettingsServiceLoadAsync
         AppSettings? received = null;
         sut.SettingsChanged += (_, settings) => received = settings;
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         received.ShouldNotBeNull();
         received.Theme.ShouldBe(AppTheme.Hacker);
@@ -150,7 +150,7 @@ public sealed class GivenASettingsServiceLoadAsync
         AppSettings? received = null;
         sut.SettingsChanged += (_, settings) => received = settings;
 
-        await sut.LoadAsync();
+        await sut.LoadAsync(TestContext.Current.CancellationToken);
 
         received.ShouldNotBeNull();
         received.Theme.ShouldBe(AppTheme.System);

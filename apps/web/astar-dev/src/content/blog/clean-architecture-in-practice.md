@@ -1,8 +1,8 @@
 ---
-title: 'Clean Architecture in Practice: Lessons From Real .NET Projects'
+title: "Clean Architecture in Practice: Lessons From Real .NET Projects"
 date: 2026-02-18
-summary: 'Clean Architecture looks elegant on diagrams. Here is what it actually looks like after a year on a production .NET system — the wins, the friction, and what I would do differently.'
-tags: ['Architecture', '.NET', 'Clean Architecture', 'Design Patterns']
+summary: "Clean Architecture looks elegant on diagrams. Here is what it actually looks like after a year on a production .NET system — the wins, the friction, and what I would do differently."
+tags: ["Architecture", ".NET", "Clean Architecture", "Design Patterns"]
 draft: false
 ---
 
@@ -33,7 +33,7 @@ public sealed class ProcessOrderUseCase
         _events = events;
     }
 
-    public async Task<Result<OrderConfirmation>> ExecuteAsync(ProcessOrderCommand command, CancellationToken ct = default)
+    public async Task<Result<OrderConfirmation>> ExecuteAsync(ProcessOrderCommand command, CancellationToken cancellationToken = default)
     {
         var order = await _orders.GetByIdAsync(command.OrderId, ct);
         if (order is null) return Result.Failure<OrderConfirmation>("Order not found.");

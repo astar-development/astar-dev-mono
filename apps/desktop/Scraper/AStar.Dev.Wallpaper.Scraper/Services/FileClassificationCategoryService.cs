@@ -5,12 +5,12 @@ namespace AStar.Dev.Wallpaper.Scraper.Services;
 
 public sealed class FileClassificationCategoryService(IFileClassificationCategoriesRepository repository) : IFileClassificationCategoryService
 {
-    public Task<List<FileClassificationCategoryDomain>> ExportScrapedTagsAsync(CancellationToken ct)
-        => repository.GetAllAsync(ct);
+    public Task<List<FileClassificationCategoryDomain>> ExportScrapedTagsAsync(CancellationToken cancellationToken)
+        => repository.GetAllAsync(cancellationToken);
 
-    public async Task<int> ImportScrapedTagsAsync(IReadOnlyList<FileClassificationCategoryDomain> tags, CancellationToken ct)
+    public async Task<int> ImportScrapedTagsAsync(IReadOnlyList<FileClassificationCategoryDomain> tags, CancellationToken cancellationToken)
     {
-        await repository.UpsertAsync(tags, ct);
+        await repository.UpsertAsync(tags, cancellationToken);
 
         return tags.Count;
     }

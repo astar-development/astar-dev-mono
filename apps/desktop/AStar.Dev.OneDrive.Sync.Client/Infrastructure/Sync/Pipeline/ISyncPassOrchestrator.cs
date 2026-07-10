@@ -15,5 +15,5 @@ public interface ISyncPassOrchestrator
     /// <paramref name="syncConfig"/> is the unwrapped sync configuration, resolved by the caller before invoking this method.
     /// Returns a <see cref="SyncPassResult"/> indicating whether the pass ran and how many jobs failed.
     /// </summary>
-    Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken ct = default);
+    Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken cancellationToken = default);
 }

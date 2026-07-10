@@ -9,7 +9,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
     {
         int workflowInvocationCount = 0;
 
-        Task<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>> Workflow(CancellationToken ct)
+        Task<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>> Workflow(CancellationToken cancellationToken)
         {
             workflowInvocationCount++;
 
@@ -27,7 +27,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
         using var cts = new CancellationTokenSource();
         int workflowInvocationCount = 0;
 
-        Task<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>> Workflow(CancellationToken ct)
+        Task<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>> Workflow(CancellationToken cancellationToken)
         {
             workflowInvocationCount++;
 
@@ -42,7 +42,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
     [Fact]
     public async Task when_the_setup_step_fails_then_the_result_is_a_failure_carrying_the_setup_error_message()
     {
-        static Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken ct)
+        static Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken cancellationToken)
             => Task.FromResult(global::AStar.Dev.FunctionalParadigm.Result.Success<string, string>("exported"));
 
         var actual = await ScrapeSiteWorkflowDecision.DecideAsync(new InvalidOperationException("setup failed"), Workflow);
@@ -55,7 +55,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
     {
         int workflowInvocationCount = 0;
 
-        Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken ct)
+        Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken cancellationToken)
         {
             workflowInvocationCount++;
 
@@ -73,9 +73,9 @@ public sealed class GivenAScrapeSiteWorkflowDecision
         using var cts = new CancellationTokenSource();
         CancellationToken forwardedToken = default;
 
-        Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken ct)
+        Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken cancellationToken)
         {
-            forwardedToken = ct;
+            forwardedToken = cancellationToken;
 
             return Task.FromResult(global::AStar.Dev.FunctionalParadigm.Result.Success<string, string>("exported"));
         }
@@ -90,7 +90,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
     {
         using var cts = new CancellationTokenSource();
 
-        static Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken ct)
+        static Task<global::AStar.Dev.FunctionalParadigm.Result<string, string>> Workflow(CancellationToken cancellationToken)
             => Task.FromResult(global::AStar.Dev.FunctionalParadigm.Result.Success<string, string>("exported"));
 
         var actual = await ScrapeSiteWorkflowDecision.DecideAsync(cts.Token, Workflow);

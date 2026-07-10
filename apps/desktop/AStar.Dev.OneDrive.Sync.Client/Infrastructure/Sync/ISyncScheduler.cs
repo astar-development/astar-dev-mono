@@ -37,17 +37,17 @@ public interface ISyncScheduler
     /// <summary>
     /// Triggers an immediate sync for all accounts outside the normal schedule.
     /// </summary>
-    Task TriggerNowAsync(CancellationToken ct = default);
+    Task TriggerNowAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Triggers an immediate sync for a single account identified by its ID.
     /// </summary>
-    Task TriggerAccountAsync(string accountId, CancellationToken ct = default);
+    Task TriggerAccountAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Triggers an immediate sync for a single account.
     /// </summary>
-    Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default);
+    Task TriggerAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Cancels any in-progress sync for the specified account. No-op if no sync is currently running for that account.

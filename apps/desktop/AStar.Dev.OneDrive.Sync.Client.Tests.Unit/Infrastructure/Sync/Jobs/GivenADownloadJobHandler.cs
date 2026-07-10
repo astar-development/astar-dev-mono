@@ -79,7 +79,7 @@ public sealed class GivenADownloadJobHandler
 
         await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
-        await _downloader.Received(1).DownloadAsync(url, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
+        await _downloader.Received(1).DownloadAsync(url, job.Target.LocalPath, job.Metadata.RemoteModified, cancellationToken: Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class GivenADownloadJobHandler
         await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         await _graphService.Received(1).GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>());
-        await _downloader.Received(1).DownloadAsync(fetchedUrl, job.Target.LocalPath, job.Metadata.RemoteModified, ct: Arg.Any<CancellationToken>());
+        await _downloader.Received(1).DownloadAsync(fetchedUrl, job.Target.LocalPath, job.Metadata.RemoteModified, cancellationToken: Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -6,5 +6,5 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 public interface IFolderPickerService
 {
     /// <summary>Opens a folder picker dialog and returns the selected folder's local path, or <c>null</c> if the user cancelled.</summary>
-    Task<string?> PickFolderAsync(IStorageProvider storageProvider, string title, CancellationToken ct = default);
+    Task<string?> PickFolderAsync(IStorageProvider storageProvider, string title, CancellationToken cancellationToken = default);
 }

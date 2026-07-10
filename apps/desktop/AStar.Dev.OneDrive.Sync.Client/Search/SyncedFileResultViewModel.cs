@@ -62,7 +62,7 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     private void OpenFile() => fileOpenerService.OpenFile(LocalPath);
 
     [RelayCommand]
-    private Task DeleteFileAsync(CancellationToken ct) => onDeleteAsync(ct);
+    private Task DeleteFileAsync(CancellationToken cancellationToken) => onDeleteAsync(cancellationToken);
 
     /// <summary>
     /// Cancels any in-progress thumbnail load and clears any thumbnail already set by a racing load.

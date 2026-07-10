@@ -35,7 +35,7 @@
 
 ## 6. Repository
 
-- [x] 6.1 Add `UpsertClassificationsAsync(int syncedItemId, IReadOnlyList<FileClassification> classifications, CancellationToken ct)` to `ISyncedItemRepository`
+- [x] 6.1 Add `UpsertClassificationsAsync(int syncedItemId, IReadOnlyList<FileClassification> classifications, CancellationToken cancellationToken)` to `ISyncedItemRepository`
 - [x] 6.2 Implement: delete existing rows for `syncedItemId`, insert new rows
 
 ## 7. Registrar Integration

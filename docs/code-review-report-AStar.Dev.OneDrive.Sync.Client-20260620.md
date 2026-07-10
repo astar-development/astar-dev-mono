@@ -31,6 +31,7 @@
 `SyncPassOrchestrator.OrchestrateAsync` starts `producerTask` (which runs deletion detectors that read/write `context.SyncedItems`) concurrently with `SyncJobExecutor.ExecuteAsync` (whose `onJobCompleted` callback writes `syncedItems[id] = entity` from worker threads). `Dictionary<K,V>` is not thread-safe; concurrent reads and writes can throw `InvalidOperationException` at runtime or silently corrupt state.
 
 **Sequence:**
+
 1. `producerTask` runs `RemoteDeletionDetector.DetectAndApplyAsync` → reads/removes from `syncedItems`
 2. Simultaneously, pipeline workers complete download/upload jobs and call `onJobCompleted` → writes `syncedItems[id] = entity`
 3. Both run on different threads with no synchronisation primitive on the dictionary
@@ -90,7 +91,7 @@ private async Task HandleIncludeToggledAsync(FolderTreeNodeViewModel node)
 
 ```csharp
 // ISyncJobExecutor.cs — add mappings parameter
-Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken ct);
+Task<int> ExecuteAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, IAsyncEnumerable<SyncJob> jobs, Dictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted, CancellationToken cancellationToken);
 
 // SyncJobExecutor.cs — remove internal GetAllCategoriesAsync call, use the passed mappings
 ```
@@ -130,6 +131,7 @@ content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.CurrentC
 HTTP headers must use invariant formatting. `CultureInfo.CurrentCulture` is correct for `int` (no decimal or thousands separator), but it diverges from the invariant rule and is inconsistent with `Content-Range` on line 149 which also lacks explicit culture. TreatWarningsAsErrors will not catch this but it's a latent correctness risk.
 
 **Fix:**
+
 ```csharp
 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.InvariantCulture));
 ```
@@ -139,6 +141,7 @@ content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.Invarian
 #### W3 — `Infrastructure/Sync/Pipeline/SyncJobExecutor.cs` — SRP violation: mixes orchestration, entity persistence, and classification
 
 `SyncJobExecutor` is responsible for:
+
 1. Enqueuing jobs in batches to the repository
 2. Routing jobs through the `ISyncPipeline`
 3. Creating `SyncedItemEntity` from completed jobs (`SyncedItemEntityFactory.Create*`)
@@ -182,7 +185,7 @@ private static async Task<List<T>> PaginateAsync<T>(
     Task<DriveItemCollectionResponse?> firstPage,
     Func<DriveItem, T?> selector,
     Func<string, Task<DriveItemCollectionResponse?>> nextPage,
-    CancellationToken ct)
+    CancellationToken cancellationToken)
 ```
 
 ---
@@ -238,6 +241,7 @@ await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Op
 The explicit cast plus null-forgiving operator obscures intent. `error` is `string?` and `null` was assigned at line 29. At the point of this call `error` will be non-null (set by the error branch), but the pattern is confusing and hides the assumption.
 
 **Fix:**
+
 ```csharp
 await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, Option.Some(error!), ct);
 ```
@@ -277,12 +281,12 @@ RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
 
 ## Summary
 
-| Severity | Count |
-|----------|-------|
-| 🔴 Error | 4 |
-| 🟡 Warning | 8 |
-| 🔵 Suggestion | 5 |
-| **Total** | **17** |
+| Severity      | Count  |
+| ------------- | ------ |
+| 🔴 Error      | 4      |
+| 🟡 Warning    | 8      |
+| 🔵 Suggestion | 5      |
+| **Total**     | **17** |
 
 ---
 

@@ -64,7 +64,7 @@ public sealed class GivenASettingsViewModel
 
         _ = BuildSut(settingsService: settingsService);
 
-        settingsService.DidNotReceive().SaveAsync();
+        settingsService.DidNotReceive().SaveAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -535,7 +535,7 @@ public sealed class GivenASettingsViewModel
 
         await sut.SelectCultureAsync(culture);
 
-        await loc.Received(1).SetCultureAsync(culture);
+        await loc.Received(1).SetCultureAsync(culture, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -558,7 +558,7 @@ public sealed class GivenASettingsViewModel
 
         await sut.SelectCultureAsync(CultureInfo.GetCultureInfo("en-US"));
 
-        await settingsService.Received().SaveAsync();
+        await settingsService.Received().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -600,7 +600,7 @@ public sealed class GivenASettingsViewModel
 
         sut.Theme = AppTheme.Dark;
 
-        settingsService.Received().SaveAsync();
+        settingsService.Received().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -623,7 +623,7 @@ public sealed class GivenASettingsViewModel
 
         sut.DefaultConflictPolicy = ConflictPolicy.LocalWins;
 
-        settingsService.Received().SaveAsync();
+        settingsService.Received().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -657,7 +657,7 @@ public sealed class GivenASettingsViewModel
 
         sut.SyncIntervalMinutes = NewSyncIntervalMinutes;
 
-        settingsService.Received().SaveAsync();
+        settingsService.Received().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -680,7 +680,7 @@ public sealed class GivenASettingsViewModel
 
         sut.ConcurrentWorkerCount = 6;
 
-        settingsService.Received().SaveAsync();
+        settingsService.Received().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -793,7 +793,7 @@ public sealed class GivenASettingsViewModel
 
         settingsService.SettingsChanged += Raise.Event<EventHandler<AppSettings>>(new object(), new AppSettings { Theme = AppTheme.Hacker });
 
-        settingsService.DidNotReceive().SaveAsync();
+        settingsService.DidNotReceive().SaveAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]

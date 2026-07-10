@@ -28,12 +28,12 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     public event EventHandler<SyncConflict>? ConflictResolved;
 
     /// <inheritdoc />
-    public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
+    public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Id);
         RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
-        var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
+        var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).ConfigureAwait(false);
         bool authOk = initialAuth.Match(_ => true, _ => false);
 
         if (!authOk)
@@ -65,12 +65,12 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 tokenFactory.GetTokenAsync,
                 async conflict =>
                 {
-                    await syncRepository.AddConflictAsync(conflict, ct).ConfigureAwait(false);
+                    await syncRepository.AddConflictAsync(conflict, cancellationToken).ConfigureAwait(false);
                     ConflictDetected?.Invoke(this, conflict);
                 },
                 args => SyncProgressChanged?.Invoke(this, args),
                 args => { JobCompleted?.Invoke(this, args); return Task.CompletedTask; },
-                ct).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
 
             if (!syncResult.DidRun)
             {
@@ -104,9 +104,9 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     }
 
     /// <inheritdoc />
-    public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
+    public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken cancellationToken = default)
     {
-        var initialAuth = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, ct).ConfigureAwait(false);
+        var initialAuth = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, cancellationToken).ConfigureAwait(false);
         bool authOk = initialAuth.Match(_ => true, _ => false);
 
         if (!authOk)
@@ -116,7 +116,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, initialToken, initialExpiry);
 
         var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, ct).ConfigureAwait(false);
+        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, cancellationToken).ConfigureAwait(false);
 
         if (!applied)
         {
@@ -125,7 +125,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             return;
         }
 
-        await syncRepository.ResolveConflictAsync(conflict.Id, policy, ct).ConfigureAwait(false);
+        await syncRepository.ResolveConflictAsync(conflict.Id, policy, cancellationToken).ConfigureAwait(false);
         ConflictResolved?.Invoke(this, conflict);
     }
 

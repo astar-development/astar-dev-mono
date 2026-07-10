@@ -34,23 +34,23 @@ public sealed class ImagePageService(
     /// <summary>Retained for constructor-signature stability. File size is now computed from the downloaded bytes directly, so a saved image's <see cref="IFileSystem" /> entry no longer needs to be re-read.</summary>
     private readonly IFileSystem fileSystem = fileSystem;
 
-    public async Task<Result<Unit, ScrapeError>> GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken ct = default)
+    public async Task<Result<Unit, ScrapeError>> GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken cancellationToken = default)
     {
-        var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, ct).ConfigureAwait(false);
+        var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, cancellationToken).ConfigureAwait(false);
 
         foreach (string pageLink in imagePageLinks)
         {
-            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             string fileName = Path.GetFileName(pageLink);
 
             if (await fileDetailRepository.ExistsAsync(fileName).ConfigureAwait(false))
             {
                 logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
-                await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, ct).ConfigureAwait(false);
+                await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, cancellationToken).ConfigureAwait(false);
                 continue;
             }
 
-            var pageResult = await ProcessImagePageAsync(pageLink, name, pageData, ct).ConfigureAwait(false);
+            var pageResult = await ProcessImagePageAsync(pageLink, name, pageData, cancellationToken).ConfigureAwait(false);
             bool pageFailed = pageResult.Match(_ => false, _ => true);
 
             if (pageFailed) return pageResult;
@@ -59,31 +59,31 @@ public sealed class ImagePageService(
         return Unit.Value;
     }
 
-/// <summary>
-/// This appears to be public just to support unit testing, but it is not used anywhere else in the codebase. Consider making it private if possible.
-/// </summary>
-/// <param name="pageLink"></param>
-/// <param name="categoryName"></param>
-/// <param name="pageData"></param>
-/// <param name="ct"></param>
-/// <returns></returns>
-    public async Task<Result<Unit, ScrapeError>> ProcessImagePageAsync(string pageLink, string categoryName, PageClassificationData pageData, CancellationToken ct)
+    /// <summary>
+    /// This appears to be public just to support unit testing, but it is not used anywhere else in the codebase. Consider making it private if possible.
+    /// </summary>
+    /// <param name="pageLink"></param>
+    /// <param name="categoryName"></param>
+    /// <param name="pageData"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    public async Task<Result<Unit, ScrapeError>> ProcessImagePageAsync(string pageLink, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
     {
-        await delayStrategy.DelayAsync(DelayKind.BeforeImage, ct).ConfigureAwait(false);
+        await delayStrategy.DelayAsync(DelayKind.BeforeImage, cancellationToken).ConfigureAwait(false);
 
         return await imagePage.GetImageFromPageAsync(pageLink, categoryName)
-            .BindAsync(outcome => HandleOutcomeAsync(outcome, categoryName, pageData, ct))
+            .BindAsync(outcome => HandleOutcomeAsync(outcome, categoryName, pageData, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         await SaveScrapedTagsAsync(outcome).ConfigureAwait(false);
 
         return outcome switch
         {
             SkippedImage skipped => LogSkippedImage(categoryName, skipped),
-            ScrapedImage scraped => await DownloadAndPersistAsync(scraped, pageData, ct).ConfigureAwait(false),
+            ScrapedImage scraped => await DownloadAndPersistAsync(scraped, pageData, cancellationToken).ConfigureAwait(false),
             _ => throw new InvalidOperationException("Unexpected image page outcome."),
         };
     }
@@ -107,30 +107,30 @@ public sealed class ImagePageService(
         return Unit.Value;
     }
 
-    private async Task<Result<Unit, ScrapeError>> DownloadAndPersistAsync(ScrapedImage scraped, PageClassificationData pageData, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> DownloadAndPersistAsync(ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         var directoryName = directoryHelper.CreateDirectoryIfRequired([.. scraped.DirectorySegments,]);
         string filename = ScrapedFileNameFactory.Create(scraped.FilePrefix, scraped.ImageUrl);
         string imageNameWithPath = directoryName.Value.CombinePath(filename);
 
         return await RetryExtensions.RetryOnceAsync(
-                () => imageRetriever.GetImageAsync(scraped.ImageUrl, ct),
-                () => delayStrategy.DelayAsync(DelayKind.Retry, ct))
-            .BindAsync(image => SaveAndPersistAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, ct))
+                () => imageRetriever.GetImageAsync(scraped.ImageUrl, cancellationToken),
+                () => delayStrategy.DelayAsync(DelayKind.Retry, cancellationToken))
+            .BindAsync(image => SaveAndPersistAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> SaveAndPersistAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> SaveAndPersistAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         logger.Information("About to save {filename} to ...{imageNameWithPath} as we don't appear to have it.", filename, TruncatedForLogging(imageNameWithPath));
 
         return await imageSaver.SaveAsync(image, imageNameWithPath)
             .TapAsync(_ => imageBroadcaster.Broadcast(imageNameWithPath))
-            .BindAsync(_ => PersistFileDetailAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, ct))
+            .BindAsync(_ => PersistFileDetailAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> PersistFileDetailAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken ct)
+    private async Task<Result<Unit, ScrapeError>> PersistFileDetailAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         var fileDetail = new FileDetailEntity
         {
@@ -144,7 +144,7 @@ public sealed class ImagePageService(
 
         await fileDetailRepository.AddAsync(fileDetail).ConfigureAwait(false);
 
-        return await fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, ct).ConfigureAwait(false);
+        return await fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, cancellationToken).ConfigureAwait(false);
     }
 
     private void ApplyImageDimensions(FileDetailEntity fileDetail, byte[] image, string imageNameWithPath)

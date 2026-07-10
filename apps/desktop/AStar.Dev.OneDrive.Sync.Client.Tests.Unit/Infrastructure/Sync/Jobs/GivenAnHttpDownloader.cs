@@ -44,7 +44,7 @@ public sealed class GivenAnHttpDownloader
         var sut = CreateSut(CreateOkFactory(), new MockFileSystem());
 
         await Should.ThrowAsync<OperationCanceledException>(
-            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: cts.Token));
+            () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: cts.Token));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class GivenAnHttpDownloader
         var mockFileSystem = new MockFileSystem();
         var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         mockFileSystem.File.Exists(LocalPath).ShouldBeTrue();
         string writtenContent = mockFileSystem.File.ReadAllText(LocalPath);
@@ -66,7 +66,7 @@ public sealed class GivenAnHttpDownloader
         var mockFileSystem = new MockFileSystem();
         var sut = CreateSut(CreateOkFactory(), mockFileSystem);
 
-        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, ct: TestContext.Current.CancellationToken);
+        await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
         mockFileSystem.File.GetLastWriteTimeUtc(LocalPath).ShouldBe(RemoteModified.UtcDateTime);
     }

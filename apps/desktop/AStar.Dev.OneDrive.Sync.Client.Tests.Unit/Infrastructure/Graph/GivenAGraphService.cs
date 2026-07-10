@@ -90,7 +90,7 @@ public sealed class GivenAGraphService : IDisposable
 
         await Should.ThrowAsync<OperationCanceledException>(async () =>
         {
-            await foreach (var _ in sut.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: cts.Token)) { }
+            await foreach (var _ in sut.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: cts.Token)) { }
         });
     }
 
@@ -300,7 +300,7 @@ public sealed class GivenAGraphService : IDisposable
                 }));
 
         var items = new List<DeltaItem>();
-        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken))
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", cancellationToken: TestContext.Current.CancellationToken))
             items.Add(item);
 
         items.Count.ShouldBe(3);
@@ -336,7 +336,7 @@ public sealed class GivenAGraphService : IDisposable
                 }));
 
         var items = new List<DeltaItem>();
-        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", ct: TestContext.Current.CancellationToken))
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, "root", cancellationToken: TestContext.Current.CancellationToken))
             items.Add(item);
 
         items.Count.ShouldBe(2);
@@ -437,7 +437,7 @@ public sealed class GivenAGraphService : IDisposable
         var reportedCounts = new List<int>();
         var items = new List<DeltaItem>();
 
-        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), ct: TestContext.Current.CancellationToken))
+        await foreach (var item in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, onItemDiscovered: count => reportedCounts.Add(count), cancellationToken: TestContext.Current.CancellationToken))
             items.Add(item);
 
         items.Count.ShouldBe(1);
@@ -564,7 +564,7 @@ public sealed class GivenAGraphService : IDisposable
 
         await Should.ThrowAsync<Exception>(async () =>
         {
-            await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, ct: TestContext.Current.CancellationToken)) { }
+            await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
         });
     }
 

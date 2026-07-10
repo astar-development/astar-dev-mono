@@ -26,7 +26,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     private bool cacheRegistered;
 
     /// <inheritdoc />
-    public async Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken ct = default)
+    public async Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken cancellationToken = default)
     {
         await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
@@ -36,7 +36,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
                     .AcquireTokenInteractive(entraIdOptions.Value.Scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .WithUseEmbeddedWebView(false)
-                    .ExecuteAsync(ct).ConfigureAwait(false);
+                    .ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
             return BuildSuccess(result);
         }
@@ -63,7 +63,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     }
 
     /// <inheritdoc />
-    public async Task<Result<AuthResult, AuthError>> AcquireTokenSilentAsync(string accountId, CancellationToken ct = default)
+    public async Task<Result<AuthResult, AuthError>> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default)
     {
         await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
@@ -79,7 +79,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
 
             var result = await app
                 .AcquireTokenSilent(entraIdOptions.Value.Scopes, account)
-                .ExecuteAsync(ct).ConfigureAwait(false);
+                .ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
             return BuildSuccess(result);
         }
@@ -102,7 +102,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     }
 
     /// <inheritdoc />
-    public async Task SignOutAsync(string accountId, CancellationToken ct = default)
+    public async Task SignOutAsync(string accountId, CancellationToken cancellationToken = default)
     {
         await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 
@@ -114,7 +114,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<string>> GetCachedAccountIdsAsync()
+    public async Task<IReadOnlyList<string>> GetCachedAccountIdsAsync(CancellationToken cancellationToken = default)
     {
         await EnsureCacheRegisteredAsync().ConfigureAwait(false);
 

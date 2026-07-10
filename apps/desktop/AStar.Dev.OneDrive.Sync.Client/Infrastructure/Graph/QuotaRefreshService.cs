@@ -12,26 +12,26 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 public sealed class QuotaRefreshService(IGraphService graphService, IAuthService authService, IAccountRepository accountRepository, ILogger<QuotaRefreshService> logger) : IQuotaRefreshService
 {
     /// <inheritdoc />
-    public async Task TryRefreshAsync(OneDriveAccount account, CancellationToken ct = default)
+    public async Task TryRefreshAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
-        var tokenResult = await authService.AcquireTokenSilentAsync(account.Id.Id, ct).ConfigureAwait(false);
+        var tokenResult = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).ConfigureAwait(false);
 
         await tokenResult
             .TapError(_ => OneDriveSyncClientMessages.QuotaRefreshTokenFailed(logger, account.Id.Id))
-            .TapAsync(auth => ApplyQuotaAsync(account, auth, ct))
+            .TapAsync(auth => ApplyQuotaAsync(account, auth, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private async Task ApplyQuotaAsync(OneDriveAccount account, AuthResult auth, CancellationToken ct)
+    private async Task ApplyQuotaAsync(OneDriveAccount account, AuthResult auth, CancellationToken cancellationToken)
     {
-        var quotaResult = await graphService.GetQuotaAsync(account.Id.Id, _ => Task.FromResult(auth.AccessToken), ct).ConfigureAwait(false);
+        var quotaResult = await graphService.GetQuotaAsync(account.Id.Id, _ => Task.FromResult(auth.AccessToken), cancellationToken).ConfigureAwait(false);
 
         await quotaResult
             .TapError(error => OneDriveSyncClientMessages.QuotaRefreshFetchFailed(logger, account.Id.Id, error))
             .TapAsync(async quota =>
             {
                 account.Quota = StorageQuotaFactory.Create(quota.Total, quota.Used);
-                await accountRepository.UpdateQuotaAsync(account.Id, account.Quota, ct).ConfigureAwait(false);
+                await accountRepository.UpdateQuotaAsync(account.Id, account.Quota, cancellationToken).ConfigureAwait(false);
             })
             .ConfigureAwait(false);
     }

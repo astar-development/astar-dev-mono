@@ -14,21 +14,21 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<LocalDeletionDetector> logger) : ILocalDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken ct)
+    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
     {
         List<OneDriveItemId> successfullyDeletedIds = [];
 
         foreach (var (remoteId, knownItem) in syncedItems)
         {
             if (knownItem.IsFolder) continue;
-            if (ct.IsCancellationRequested) break;
+            if (cancellationToken.IsCancellationRequested) break;
             if (fileSystem.File.Exists(knownItem.LocalPath)) continue;
 
             OneDriveSyncClientMessages.LocalDeletionDetectorDeleted(logger, knownItem.RemotePath);
 
             try
             {
-                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, ct).ConfigureAwait(false);
+                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, cancellationToken).ConfigureAwait(false);
 
                 await deleteResult.MatchAsync(
                     _ =>
@@ -50,6 +50,6 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
         }
 
         if (successfullyDeletedIds.Count > 0)
-            await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, successfullyDeletedIds, ct).ConfigureAwait(false);
+            await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, successfullyDeletedIds, cancellationToken).ConfigureAwait(false);
     }
 }

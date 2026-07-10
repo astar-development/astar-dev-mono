@@ -134,19 +134,19 @@ public partial class MainWindow : Window, IDisposable
         UpdateStatus($"Error: {exception.Message}");
     }
 
-    private void DisableControlsAndClearStatus(CancellationToken ct)
+    private void DisableControlsAndClearStatus(CancellationToken cancellationToken)
     {
         ScrapeSiteNewButton.IsEnabled = false;
         CancelButton.IsEnabled = true;
         StatusLabel.Text = string.Empty;
     }
 
-    private Task<Result<Unit, string>> RunScrapeWorkflowAsync(CancellationToken ct)
+    private Task<Result<Unit, string>> RunScrapeWorkflowAsync(CancellationToken cancellationToken)
     {
         logger.Information("Configuring Playwright...");
         logger.Information("Starting scrape...");
 
-        return searchWorkflow.RunAsync(ct)
+        return searchWorkflow.RunAsync(cancellationToken)
             .TapAsync(_ => logger.Information("Scrape completed..."))
             .ToStringError();
     }

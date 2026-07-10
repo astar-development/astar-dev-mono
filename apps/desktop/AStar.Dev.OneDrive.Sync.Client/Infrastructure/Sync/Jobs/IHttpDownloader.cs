@@ -10,5 +10,5 @@ public interface IHttpDownloader
     /// Automatically retries on 429 with exponential backoff.
     /// Preserves the remote last-modified timestamp on the local file.
     /// </summary>
-    Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default);
+    Task<Result<Unit, string>> DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken cancellationToken = default);
 }

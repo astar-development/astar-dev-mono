@@ -28,14 +28,14 @@ public sealed class GivenASyncWorker
         return SyncJobFactory.CreateDownload(remote, target, metadata, "https://example.com/file");
     }
 
-    private static async Task<(List<SyncJob> Completed, List<string?> Errors)> RunWorkerWithJobsAsync(SyncWorker worker, IEnumerable<SyncJob> jobs, CancellationToken ct)
+    private static async Task<(List<SyncJob> Completed, List<string?> Errors)> RunWorkerWithJobsAsync(SyncWorker worker, IEnumerable<SyncJob> jobs, CancellationToken cancellationToken)
     {
         var channel = Channel.CreateUnbounded<SyncJob>();
         var completed = new List<SyncJob>();
         var errors = new List<string?>();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        foreach(var job in jobs)
+        foreach (var job in jobs)
             channel.Writer.TryWrite(job);
 
         channel.Writer.Complete();
@@ -46,7 +46,7 @@ public sealed class GivenASyncWorker
             errors.Add(error);
 
             return Task.CompletedTask;
-        }, ct);
+        }, cancellationToken);
 
         return (completed, errors);
     }
@@ -146,7 +146,7 @@ public sealed class GivenASyncWorker
         {
             await RunWorkerWithJobsAsync(CreateSut(), [job], cts.Token);
         }
-        catch(OperationCanceledException) { }
+        catch (OperationCanceledException) { }
 
         await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
     }
@@ -181,7 +181,7 @@ public sealed class GivenASyncWorker
         {
             await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
         }
-        catch(SyncReAuthRequiredException) { }
+        catch (SyncReAuthRequiredException) { }
 
         await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
     }

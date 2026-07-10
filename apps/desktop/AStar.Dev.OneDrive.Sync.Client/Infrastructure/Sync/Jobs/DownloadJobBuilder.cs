@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar, IFileSystem fileSystem, ILogger<DownloadJobBuilder> logger) : IDownloadJobBuilder
 {
     /// <inheritdoc />
-    public async Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    public async Task<SyncJob?> BuildOneAsync(OneDriveAccount account, AccountSyncConfig syncConfig, DeltaItem item, IReadOnlyList<SyncRuleEntity> rules, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         if (!SyncRuleEvaluator.IsIncluded(item.Path.EffectivePath, rules))
             return null;
@@ -24,7 +24,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         if (item is FolderDeltaItem folderItem)
         {
             string folderLocalPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, folderItem.Path.EffectivePath.TrimStart('/'));
-            await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, ct).ConfigureAwait(false);
+            await syncedItemRegistrar.RegisterFolderAsync(account.Id, folderItem, folderItem.Path.EffectivePath, folderLocalPath, syncedItems, cancellationToken).ConfigureAwait(false);
 
             return null;
         }
@@ -32,10 +32,10 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         if (item is not FileDeltaItem fileItem)
             return null;
 
-        return await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, mappings, ct).ConfigureAwait(false);
+        return await ProcessFileItemAsync(account, syncConfig, fileItem, syncedItems, onConflict, mappings, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken ct)
+    private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         string localPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
         syncedItems.TryGetValue(item.Id.Id, out var knownItem);
@@ -60,7 +60,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
         }
         else if (knownItem is null && fileSystem.File.Exists(localPath))
         {
-            await syncedItemRegistrar.RegisterPhantomAsync(account.Id, item, item.Path.EffectivePath, localPath, syncedItems, mappings, ct).ConfigureAwait(false);
+            await syncedItemRegistrar.RegisterPhantomAsync(account.Id, item, item.Path.EffectivePath, localPath, syncedItems, mappings, cancellationToken).ConfigureAwait(false);
             return null;
         }
 
