@@ -59,6 +59,14 @@ public sealed class ImagePageService(
         return Unit.Value;
     }
 
+/// <summary>
+/// This appears to be public just to support unit testing, but it is not used anywhere else in the codebase. Consider making it private if possible.
+/// </summary>
+/// <param name="pageLink"></param>
+/// <param name="categoryName"></param>
+/// <param name="pageData"></param>
+/// <param name="ct"></param>
+/// <returns></returns>
     public async Task<Result<Unit, ScrapeError>> ProcessImagePageAsync(string pageLink, string categoryName, PageClassificationData pageData, CancellationToken ct)
     {
         await delayStrategy.DelayAsync(DelayKind.BeforeImage, ct).ConfigureAwait(false);

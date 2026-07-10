@@ -21,7 +21,7 @@ public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
     public async Task when_load_is_called_with_a_cancellation_token_then_get_rule_states_receives_it()
     {
         using var cts = new CancellationTokenSource();
-        CancellationToken capturedToken = CancellationToken.None;
+        var capturedToken = CancellationToken.None;
 
         var syncRuleService = Substitute.For<ISyncRuleService>();
         syncRuleService.GetRuleStatesAsync(Arg.Any<AccountId>(), Arg.Do<CancellationToken>(t => capturedToken = t))

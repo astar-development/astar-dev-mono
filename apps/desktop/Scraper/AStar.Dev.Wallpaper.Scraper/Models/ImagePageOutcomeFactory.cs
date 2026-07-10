@@ -7,7 +7,7 @@ namespace AStar.Dev.Wallpaper.Scraper.Models;
 public static class ImagePageOutcomeFactory
 {
     /// <summary>Creates a <see cref="ScrapedImage" /> outcome.</summary>
-    public static ScrapedImage CreateScrapedImage(string imageUrl, IReadOnlyList<string> directorySegments, string filePrefix, IReadOnlyList<string> tags, IReadOnlyList<TagData> rawTags)
+    public static ScrapedImage CreateScrapedImage(string imageUrl, IReadOnlyList<string> directorySegments, string filePrefix, IReadOnlyList<TagData> tags, IReadOnlyList<TagData> rawTags)
     {
         GuardAgainst.Null(imageUrl);
         GuardAgainst.Null(directorySegments);
@@ -19,7 +19,7 @@ public static class ImagePageOutcomeFactory
     }
 
     /// <summary>Creates a <see cref="SkippedImage" /> outcome.</summary>
-    public static SkippedImage CreateSkippedImage(IReadOnlyList<string> tags, IReadOnlyList<TagData> rawTags)
+    public static SkippedImage CreateSkippedImage(IReadOnlyList<TagData> tags, IReadOnlyList<TagData> rawTags)
     {
         GuardAgainst.Null(tags);
         GuardAgainst.Null(rawTags);
