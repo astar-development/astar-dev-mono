@@ -514,10 +514,10 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             Categories: new List<FileClassificationCategoryEntity> { new() { Id = 2, Name = "Animals", Level = 1, IncludeInSearch = true } },
             Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = 2, Keyword = "animals" } });
 
-        await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
+        var result = await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
 
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
         await using var verifyCtx = new AppDbContext(options);
-        var check = verifyCtx.FileClassificationCategories.ToList();
         var stored = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         stored.Name.ShouldBe("Animals");
     }
@@ -535,11 +535,32 @@ public sealed class GivenAFileClassificationService : IAsyncLifetime
             Categories: new List<FileClassificationCategoryEntity> { new() { Id = existing.Id, Name = "Animals", Level = 3, IncludeInSearch = true } },
             Keywords: new List<FileClassificationKeywordEntity> { new() { CategoryId = existing.Id, Keyword = "animals" } });
 
-        await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
+        var result = await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
 
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
         await using var verifyCtx = new AppDbContext(options);
         int count = await verifyCtx.FileClassificationKeywords.CountAsync(k => k.CategoryId == existing.Id, TestContext.Current.CancellationToken);
         count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_importing_a_classification_whose_primary_upsert_fails_then_it_is_reparented_under_unclassified()
+    {
+        await using var seedCtx = new AppDbContext(options);
+        var unclassifiedRoot = new FileClassificationCategoryEntity { Name = "Unclassified", Level = 1 };
+        seedCtx.FileClassificationCategories.Add(unclassifiedRoot);
+        await seedCtx.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var incoming = (
+            Categories: new List<FileClassificationCategoryEntity> { new() { Id = 999, Name = "Animals", Level = 2, ParentId = 999999, IncludeInSearch = true } },
+            Keywords: new List<FileClassificationKeywordEntity>());
+
+        var result = await sut.ImportClassificationsAsync(incoming, TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
+        await using var verifyCtx = new AppDbContext(options);
+        var stored = await verifyCtx.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
+        stored.ParentId.ShouldBe(unclassifiedRoot.Id);
     }
 
     [Fact]

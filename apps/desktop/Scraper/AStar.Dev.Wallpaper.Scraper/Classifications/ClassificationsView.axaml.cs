@@ -46,7 +46,7 @@ public partial class ClassificationsView : Window, IDisposable
                 ct => Result.Success<CancellationToken, string>(ct)
                     .Tap(_ => logger.Information("Importing classifications..."))
                     .Bind(_ => importExportService.ImportFileClassificationsFromFile().ToStringError())
-                    .MapAsync(classifications => fileClassificationService.ImportClassificationsAsync(classifications, ct))
+                    .BindAsync(classifications => fileClassificationService.ImportClassificationsAsync(classifications, ct).ToStringError())
                     .TapAsync(_ => logger.Information("Import completed...")))
                     .EnsureAsync(ResetUI);
 
