@@ -35,49 +35,63 @@ public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> c
             .FirstAsync(token)
             .ConfigureAwait(false);
 
-        existing.ConnectionStrings.Sqlite = incoming.ConnectionStrings.Sqlite;
-
-        existing.UserConfiguration.LoginEmailAddress = incoming.UserConfiguration.LoginEmailAddress;
-        existing.UserConfiguration.Username = incoming.UserConfiguration.Username;
-
-        if (incoming.UserConfiguration.Password != ApplicationMetadata.Redacted)
-            existing.UserConfiguration.Password = incoming.UserConfiguration.Password;
-
-        if (incoming.UserConfiguration.SessionCookie != ApplicationMetadata.Redacted)
-            existing.UserConfiguration.SessionCookie = incoming.UserConfiguration.SessionCookie;
-
-        existing.SearchConfiguration.BaseUrl = incoming.SearchConfiguration.BaseUrl;
-        existing.SearchConfiguration.SearchString = incoming.SearchConfiguration.SearchString;
-        existing.SearchConfiguration.TopWallpapers = incoming.SearchConfiguration.TopWallpapers;
-        existing.SearchConfiguration.SearchStringPrefix = incoming.SearchConfiguration.SearchStringPrefix;
-        existing.SearchConfiguration.SearchStringSuffix = incoming.SearchConfiguration.SearchStringSuffix;
-        existing.SearchConfiguration.Subscriptions = incoming.SearchConfiguration.Subscriptions;
-        existing.SearchConfiguration.ImagePauseInSeconds = incoming.SearchConfiguration.ImagePauseInSeconds;
-        existing.SearchConfiguration.StartingPageNumber = incoming.SearchConfiguration.StartingPageNumber;
-        existing.SearchConfiguration.TotalPages = incoming.SearchConfiguration.TotalPages;
-        existing.SearchConfiguration.SubscriptionsStartingPageNumber = incoming.SearchConfiguration.SubscriptionsStartingPageNumber;
-        existing.SearchConfiguration.SubscriptionsTotalPages = incoming.SearchConfiguration.SubscriptionsTotalPages;
-        existing.SearchConfiguration.TopWallpapersTotalPages = incoming.SearchConfiguration.TopWallpapersTotalPages;
-        existing.SearchConfiguration.TopWallpapersStartingPageNumber = incoming.SearchConfiguration.TopWallpapersStartingPageNumber;
-        existing.SearchConfiguration.LoginUrl = incoming.SearchConfiguration.LoginUrl;
-        existing.SearchConfiguration.UseHeadless = incoming.SearchConfiguration.UseHeadless;
-        existing.SearchConfiguration.SlowMotionDelay = incoming.SearchConfiguration.SlowMotionDelay;
-
-        if (incoming.SearchConfiguration.ApiKey != ApplicationMetadata.Redacted)
-            existing.SearchConfiguration.ApiKey = incoming.SearchConfiguration.ApiKey;
-
+        UpdateConnectionStrings(existing.ConnectionStrings, incoming.ConnectionStrings);
+        UpdateUserConfiguration(existing.UserConfiguration, incoming.UserConfiguration);
+        UpdateSearchConfiguration(existing.SearchConfiguration, incoming.SearchConfiguration);
         UpsertSearchCategories(existing.SearchConfiguration, incoming.SearchConfiguration.SearchCategories);
-
-        existing.ScrapeDirectories.RootDirectory = incoming.ScrapeDirectories.RootDirectory;
-        existing.ScrapeDirectories.BaseSaveDirectory = incoming.ScrapeDirectories.BaseSaveDirectory;
-        existing.ScrapeDirectories.BaseDirectory = incoming.ScrapeDirectories.BaseDirectory;
-        existing.ScrapeDirectories.BaseDirectoryFamous = incoming.ScrapeDirectories.BaseDirectoryFamous;
-        existing.ScrapeDirectories.SubDirectoryName = incoming.ScrapeDirectories.SubDirectoryName;
+        UpdateScrapeDirectories(existing.ScrapeDirectories, incoming.ScrapeDirectories);
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
         await scrapeConfigurationManager.ReloadAsync(token).ConfigureAwait(false);
 
         return Unit.Value;
+    }
+
+    private static void UpdateConnectionStrings(ConnectionStringsEntity existing, ConnectionStringsEntity incoming)
+        => existing.Sqlite = incoming.Sqlite;
+
+    private static void UpdateUserConfiguration(UserConfigurationEntity existing, UserConfigurationEntity incoming)
+    {
+        existing.LoginEmailAddress = incoming.LoginEmailAddress;
+        existing.Username = incoming.Username;
+
+        if (incoming.Password != ApplicationMetadata.Redacted)
+            existing.Password = incoming.Password;
+
+        if (incoming.SessionCookie != ApplicationMetadata.Redacted)
+            existing.SessionCookie = incoming.SessionCookie;
+    }
+
+    private static void UpdateSearchConfiguration(SearchConfigurationEntity existing, SearchConfigurationEntity incoming)
+    {
+        existing.BaseUrl = incoming.BaseUrl;
+        existing.SearchString = incoming.SearchString;
+        existing.TopWallpapers = incoming.TopWallpapers;
+        existing.SearchStringPrefix = incoming.SearchStringPrefix;
+        existing.SearchStringSuffix = incoming.SearchStringSuffix;
+        existing.Subscriptions = incoming.Subscriptions;
+        existing.ImagePauseInSeconds = incoming.ImagePauseInSeconds;
+        existing.StartingPageNumber = incoming.StartingPageNumber;
+        existing.TotalPages = incoming.TotalPages;
+        existing.SubscriptionsStartingPageNumber = incoming.SubscriptionsStartingPageNumber;
+        existing.SubscriptionsTotalPages = incoming.SubscriptionsTotalPages;
+        existing.TopWallpapersTotalPages = incoming.TopWallpapersTotalPages;
+        existing.TopWallpapersStartingPageNumber = incoming.TopWallpapersStartingPageNumber;
+        existing.LoginUrl = incoming.LoginUrl;
+        existing.UseHeadless = incoming.UseHeadless;
+        existing.SlowMotionDelay = incoming.SlowMotionDelay;
+
+        if (incoming.ApiKey != ApplicationMetadata.Redacted)
+            existing.ApiKey = incoming.ApiKey;
+    }
+
+    private static void UpdateScrapeDirectories(ScrapeDirectoriesEntity existing, ScrapeDirectoriesEntity incoming)
+    {
+        existing.RootDirectory = incoming.RootDirectory;
+        existing.BaseSaveDirectory = incoming.BaseSaveDirectory;
+        existing.BaseDirectory = incoming.BaseDirectory;
+        existing.BaseDirectoryFamous = incoming.BaseDirectoryFamous;
+        existing.SubDirectoryName = incoming.SubDirectoryName;
     }
 
     private static void UpsertSearchCategories(SearchConfigurationEntity existing, ICollection<SearchCategoryEntity> incoming)

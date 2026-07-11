@@ -49,6 +49,6 @@ public sealed class GivenTheAppDbContext
         typeof(AppDbContext).GetProperty("SearchConfigurations").ShouldNotBeNull();
 
     [Fact]
-    public void when_inspected_then_scraped_tags_db_set_exists() =>
-        typeof(AppDbContext).GetProperty("ScrapedTags").ShouldNotBeNull();
+    public void when_inspected_then_scraped_tags_db_set_does_not_exist() =>
+        typeof(AppDbContext).GetProperty("ScrapedTags").ShouldBeNull();
 }

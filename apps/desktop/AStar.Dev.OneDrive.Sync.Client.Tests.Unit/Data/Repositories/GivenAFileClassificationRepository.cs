@@ -103,8 +103,8 @@ public sealed class GivenAFileClassificationRepository
         var (db, factory) = CreateInMemoryFactory();
         var repository = new FileClassificationRepository(factory, CreateLogger());
 
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1 });
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1, IncludeInSearch = true });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1, IncludeInSearch = true });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
@@ -119,8 +119,8 @@ public sealed class GivenAFileClassificationRepository
         var (db, factory) = CreateInMemoryFactory();
         var repository = new FileClassificationRepository(factory, CreateLogger());
 
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1 });
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Documents", Level = 1 });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Photos", Level = 1, IncludeInSearch = true });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Documents", Level = 1, IncludeInSearch = true });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
@@ -134,7 +134,7 @@ public sealed class GivenAFileClassificationRepository
         var (db, factory) = CreateInMemoryFactory();
         var repository = new FileClassificationRepository(factory, CreateLogger());
 
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1, IncludeInSearch = true });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
@@ -149,7 +149,7 @@ public sealed class GivenAFileClassificationRepository
         var logger = CreateLogger();
         var repository = new FileClassificationRepository(factory, logger);
 
-        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1 });
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "", Level = 1, IncludeInSearch = true });
         await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);

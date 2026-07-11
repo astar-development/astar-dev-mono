@@ -57,14 +57,14 @@ public sealed class GivenTheTagRules
     }
 
     [Fact]
-    public void when_a_tag_has_a_null_category_then_it_is_excluded_from_rule_processing_but_its_text_is_kept_in_tags()
+    public void when_a_tag_has_a_null_category_then_it_is_excluded_from_rule_processing_and_from_the_outcome_tags()
     {
         List<TagData> tags = [new("JustAText", null),];
 
         var outcome = TagRules.Evaluate(tags, Context()).ShouldBeOfType<Accept>();
 
         outcome.FilePrefix.ShouldBe(string.Empty);
-        outcome.Tags.ShouldBe([new TagData("JustAText", null),]);
+        outcome.Tags.ShouldBeEmpty();
     }
 
     [Fact]
@@ -160,13 +160,13 @@ public sealed class GivenTheTagRules
     }
 
     [Fact]
-    public void when_there_is_a_mix_of_wanted_null_and_empty_tags_then_only_non_whitespace_tag_text_is_kept_in_tags()
+    public void when_there_is_a_mix_of_wanted_null_and_empty_tags_then_only_tags_with_both_text_and_category_are_kept_in_tags()
     {
         List<TagData> tags = [new("Nature", "Landscape"), new("Britney Spears", "People > Model"), new(string.Empty, "EmptyTagText"), new("Some Tag", null),];
 
         var outcome = TagRules.Evaluate(tags, Context()).ShouldBeOfType<Accept>();
 
-        outcome.Tags.ShouldBe([new TagData("Nature", "Landscape"), new TagData("Britney Spears", "People > Model"), new TagData("Some Tag", null),]);
+        outcome.Tags.ShouldBe([new TagData("Nature", "Landscape"), new TagData("Britney Spears", "People > Model"),]);
         outcome.FilePrefix.ShouldBe("Britney Spears");
     }
 }

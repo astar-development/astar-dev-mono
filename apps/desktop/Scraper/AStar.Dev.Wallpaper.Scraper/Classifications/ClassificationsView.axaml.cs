@@ -12,16 +12,16 @@ namespace AStar.Dev.Wallpaper.Scraper.Classifications;
 
 public partial class ClassificationsView : Window, IDisposable
 {
-    private readonly FileClassificationService fileClassificationService;
+    private readonly FileClassificationImportExportService fileClassificationImportExportService;
     private readonly IImportExportService importExportService;
     private readonly ILogger logger;
     private readonly LogBroadcaster logBroadcaster;
     private CancellationTokenSource cts;
 
-    public ClassificationsView(FileClassificationService fileClassificationService, IImportExportService importExportService, ILogger logger, LogBroadcaster logBroadcaster)
+    public ClassificationsView(FileClassificationImportExportService fileClassificationImportExportService, IImportExportService importExportService, ILogger logger, LogBroadcaster logBroadcaster)
     {
         cts = new CancellationTokenSource();
-        this.fileClassificationService = fileClassificationService;
+        this.fileClassificationImportExportService = fileClassificationImportExportService;
         this.importExportService = importExportService;
         this.logger = logger;
         this.logBroadcaster = logBroadcaster;
@@ -35,7 +35,7 @@ public partial class ClassificationsView : Window, IDisposable
                 ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
                 ct => Result.Success<CancellationToken, string>(ct)
                     .Tap(_ => logger.Information("Exporting classifications..."))
-                    .MapAsync(_ => fileClassificationService.ExportClassificationsAsync(ct))
+                    .MapAsync(_ => fileClassificationImportExportService.ExportClassificationsAsync(ct))
                     .Tap(importExportService.ExportFileClassificationsToFile)
                     .TapAsync(_ => logger.Information("Export completed...")))
                     .EnsureAsync(ResetUI);
@@ -46,7 +46,7 @@ public partial class ClassificationsView : Window, IDisposable
                 ct => Result.Success<CancellationToken, string>(ct)
                     .Tap(_ => logger.Information("Importing classifications..."))
                     .Bind(_ => importExportService.ImportFileClassificationsFromFile().ToStringError())
-                    .BindAsync(classifications => fileClassificationService.ImportClassificationsAsync(classifications, ct).ToStringError())
+                    .BindAsync(classifications => fileClassificationImportExportService.ImportClassificationsAsync(classifications, ct).ToStringError())
                     .TapAsync(_ => logger.Information("Import completed...")))
                     .EnsureAsync(ResetUI);
 

@@ -30,7 +30,7 @@ public sealed class GivenAStartupService
     public async Task when_repository_returns_no_entities_then_ok_result_with_empty_list_returned()
     {
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["any-id"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["any-id"]);
 
         var result = await CreateSut().RestoreAccountsAsync();
 
@@ -41,7 +41,7 @@ public sealed class GivenAStartupService
     public async Task when_auth_service_has_no_cached_ids_then_ok_result_with_empty_list_returned()
     {
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([BuildEntity("user-1")]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns([]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns([]);
 
         var result = await CreateSut().RestoreAccountsAsync();
 
@@ -52,7 +52,7 @@ public sealed class GivenAStartupService
     public async Task when_entity_id_not_in_cache_then_entity_is_excluded()
     {
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([BuildEntity("not-cached")]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["different-id"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["different-id"]);
 
         var result = await CreateSut().RestoreAccountsAsync();
 
@@ -64,7 +64,7 @@ public sealed class GivenAStartupService
     {
         var entity = BuildEntity("user-1");
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1"]);
         syncRuleRepository.GetByAccountIdAsync(entity.Id, Arg.Any<CancellationToken>()).Returns([]);
 
         var result = await CreateSut().RestoreAccountsAsync();
@@ -80,7 +80,7 @@ public sealed class GivenAStartupService
         var entity1 = BuildEntity("user-1", isActive: true);
         var entity2 = BuildEntity("user-2", isActive: true);
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity1, entity2]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1", "user-2"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1", "user-2"]);
         syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
@@ -96,7 +96,7 @@ public sealed class GivenAStartupService
         var entity1 = BuildEntity("user-1", isActive: false);
         var entity2 = BuildEntity("user-2", isActive: false);
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity1, entity2]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1", "user-2"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1", "user-2"]);
         syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
@@ -111,7 +111,7 @@ public sealed class GivenAStartupService
         var entity1 = BuildEntity("user-1", isActive: true);
         var entity2 = BuildEntity("user-2", isActive: false);
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity1, entity2]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1", "user-2"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1", "user-2"]);
         syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
 
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
@@ -126,7 +126,7 @@ public sealed class GivenAStartupService
         var entity = BuildEntity("user-1");
         var rule = new SyncRuleEntity { AccountId = entity.Id, RuleType = RuleType.Include, RemoteItemId = Option.Some("folder-abc") };
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1"]);
         syncRuleRepository.GetByAccountIdAsync(entity.Id, Arg.Any<CancellationToken>()).Returns([rule]);
 
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
@@ -141,7 +141,7 @@ public sealed class GivenAStartupService
         var entity = BuildEntity("user-1");
         var rule = new SyncRuleEntity { AccountId = entity.Id, RuleType = RuleType.Exclude, RemoteItemId = Option.Some("folder-xyz") };
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([entity]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken).Returns(["user-1"]);
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>()).Returns(["user-1"]);
         syncRuleRepository.GetByAccountIdAsync(entity.Id, Arg.Any<CancellationToken>()).Returns([rule]);
 
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
@@ -176,7 +176,7 @@ public sealed class GivenAStartupService
     public async Task when_auth_service_throws_then_error_result_is_returned()
     {
         accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([BuildEntity("user-1")]);
-        authService.GetCachedAccountIdsAsync(TestContext.Current.CancellationToken)
+        authService.GetCachedAccountIdsAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<string>>(new InvalidOperationException("Auth cache unavailable")));
 
         var result = await CreateSut().RestoreAccountsAsync();

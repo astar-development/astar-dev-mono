@@ -41,6 +41,8 @@ public sealed class GivenTheWorkflowServiceRegistrations
             .AddTransient(_ => System.TimeProvider.System)
             .AddTransient<FileClassificationService>()
             .AddTransient<ImagePage>()
+            .AddTransient<ImageDownloader>()
+            .AddTransient<ImagePersistence>()
             .AddTransient<ImagePageService>()
             .AddTransient<ConfigurationSaver>()
             .AddTransient<PagedScrapeRunner>()

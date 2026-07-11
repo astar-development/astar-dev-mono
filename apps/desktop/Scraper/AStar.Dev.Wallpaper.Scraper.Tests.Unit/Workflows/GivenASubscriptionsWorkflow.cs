@@ -83,18 +83,14 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         => new(
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
             RepositoryTestDoubles.BuildFileDetailRepository(),
-            new FileClassificationService(BuildWorkingContextFactory(), new LoggerConfiguration().CreateLogger()),
-            scrapeConfiguration,
+            new FileClassificationService(BuildWorkingContextFactory()),
             System.TimeProvider.System,
             new LoggerConfiguration().CreateLogger(),
             directoryHelper,
-            new(),
             new NoOpDelayStrategy(),
-            imageRetriever,
-            Substitute.For<IImageSaver>(),
-            new MockFileSystem(),
-            RepositoryTestDoubles.BuildScrapedTagRepository(),
-            Substitute.For<IImageDimensionReader>());
+            new ImageDownloader(imageRetriever, new NoOpDelayStrategy()),
+            new ImagePersistence(Substitute.For<IImageSaver>(), Substitute.For<IImageDimensionReader>(), RepositoryTestDoubles.BuildFileDetailRepository(), new(), new LoggerConfiguration().CreateLogger()),
+            RepositoryTestDoubles.BuildScrapedTagRepository());
 
     [Fact]
     public async Task when_run_against_a_working_page_with_zero_total_pages_then_the_result_is_a_success()

@@ -1,6 +1,4 @@
-using System.IO.Abstractions;
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Pages;
@@ -14,64 +12,29 @@ public sealed class ImagePageService(
     ImagePage imagePage,
     IFileDetailRepository fileDetailRepository,
     FileClassificationService fileClassificationService,
-    ScrapeConfiguration scrapeConfiguration,
     TimeProvider timeProvider,
     Logger logger,
     IDirectoryHelper directoryHelper,
-    ImageBroadcaster imageBroadcaster,
     IDelayStrategy delayStrategy,
-    IImageRetriever imageRetriever,
-    IImageSaver imageSaver,
-    IFileSystem fileSystem,
-    IFileClassificationCategoriesRepository scrapedTagRepository,
-    IImageDimensionReader imageDimensionReader)
+    ImageDownloader imageDownloader,
+    ImagePersistence imagePersistence,
+    IFileClassificationCategoriesRepository scrapedTagRepository)
 {
-    private const int LoggedPathTailLength = 50;
-
-    /// <summary>Retained for constructor-signature stability. The image-pause delay it previously drove now lives in <see cref="RandomDelayStrategy" />, which is configured with its own <see cref="Models.ScrapeConfiguration" />.</summary>
-    private readonly ScrapeConfiguration scrapeConfiguration = scrapeConfiguration;
-
-    /// <summary>Retained for constructor-signature stability. File size is now computed from the downloaded bytes directly, so a saved image's <see cref="IFileSystem" /> entry no longer needs to be re-read.</summary>
-    private readonly IFileSystem fileSystem = fileSystem;
-
     public async Task<Result<Unit, ScrapeError>> GetTheImagePagesAsync(IReadOnlyCollection<string> imagePageLinks, string categoryId, string name, CancellationToken cancellationToken = default)
     {
         var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, cancellationToken).ConfigureAwait(false);
 
+        Result<Unit, ScrapeError> aggregate = Unit.Value;
+
         foreach (string pageLink in imagePageLinks)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string fileName = Path.GetFileName(pageLink);
-
-            var existsResult = await fileDetailRepository.ExistsAsync(fileName, cancellationToken).ConfigureAwait(false);
-            var (alreadyExists, existsError) = existsResult.Match(exists => (exists, (ScrapeError?)null), error => (false, error));
-
-            if (existsError is not null) return existsError;
-
-            if (alreadyExists)
-            {
-                logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
-                await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, cancellationToken).ConfigureAwait(false);
-                continue;
-            }
-
-            var pageResult = await ProcessImagePageAsync(pageLink, name, pageData, cancellationToken).ConfigureAwait(false);
-            bool pageFailed = pageResult.Match(_ => false, _ => true);
-
-            if (pageFailed) return pageResult;
+            aggregate = await aggregate.BindAsync(_ => ProcessLinkAsync(pageLink, name, pageData, cancellationToken)).ConfigureAwait(false);
         }
 
-        return Unit.Value;
+        return aggregate;
     }
 
-    /// <summary>
-    /// This appears to be public just to support unit testing, but it is not used anywhere else in the codebase. Consider making it private if possible.
-    /// </summary>
-    /// <param name="pageLink"></param>
-    /// <param name="categoryName"></param>
-    /// <param name="pageData"></param>
-    /// <param name="ct"></param>
-    /// <returns></returns>
     public async Task<Result<Unit, ScrapeError>> ProcessImagePageAsync(string pageLink, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         await delayStrategy.DelayAsync(DelayKind.BeforeImage, cancellationToken).ConfigureAwait(false);
@@ -79,6 +42,22 @@ public sealed class ImagePageService(
         return await imagePage.GetImageFromPageAsync(pageLink, categoryName)
             .BindAsync(outcome => HandleOutcomeAsync(outcome, categoryName, pageData, cancellationToken))
             .ConfigureAwait(false);
+    }
+
+    private Task<Result<Unit, ScrapeError>> ProcessLinkAsync(string pageLink, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
+    {
+        string fileName = Path.GetFileName(pageLink);
+
+        return fileDetailRepository.ExistsAsync(fileName, cancellationToken)
+            .BindAsync(alreadyExists => alreadyExists ? SkipExistingImageAsync(fileName, cancellationToken) : ProcessImagePageAsync(pageLink, categoryName, pageData, cancellationToken));
+    }
+
+    private async Task<Result<Unit, ScrapeError>> SkipExistingImageAsync(string fileName, CancellationToken cancellationToken)
+    {
+        logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
+        await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, cancellationToken).ConfigureAwait(false);
+
+        return Unit.Value;
     }
 
     private Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
@@ -115,45 +94,9 @@ public sealed class ImagePageService(
         string filename = ScrapedFileNameFactory.Create(scraped.FilePrefix, scraped.ImageUrl);
         string imageNameWithPath = directoryName.Value.CombinePath(filename);
 
-        return await RetryExtensions.RetryOnceAsync(
-                () => imageRetriever.GetImageAsync(scraped.ImageUrl, cancellationToken),
-                () => delayStrategy.DelayAsync(DelayKind.Retry, cancellationToken))
-            .BindAsync(image => SaveAndPersistAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, cancellationToken))
+        return await imageDownloader.DownloadAsync(scraped.ImageUrl, cancellationToken)
+            .BindAsync(image => imagePersistence.SaveAndPersistAsync(image, imageNameWithPath, filename, directoryName, cancellationToken))
+            .BindAsync(fileDetail => fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, cancellationToken))
             .ConfigureAwait(false);
     }
-
-    private async Task<Result<Unit, ScrapeError>> SaveAndPersistAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
-    {
-        logger.Information("About to save {filename} to ...{imageNameWithPath} as we don't appear to have it.", filename, TruncatedForLogging(imageNameWithPath));
-
-        return await imageSaver.SaveAsync(image, imageNameWithPath)
-            .TapAsync(_ => imageBroadcaster.Broadcast(imageNameWithPath))
-            .BindAsync(_ => PersistFileDetailAsync(image, imageNameWithPath, filename, directoryName, scraped, pageData, cancellationToken))
-            .ConfigureAwait(false);
-    }
-
-    private Task<Result<Unit, ScrapeError>> PersistFileDetailAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
-    {
-        var fileDetail = new FileDetailEntity
-        {
-            DirectoryName = directoryName,
-            FileName = new FileName(filename),
-            FileSize = image.Length,
-            IsImage = filename.IsImage()
-        };
-
-        ApplyImageDimensions(fileDetail, image, imageNameWithPath);
-
-        return fileDetailRepository.AddAsync(fileDetail, cancellationToken)
-            .BindAsync(_ => fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, cancellationToken));
-    }
-
-    private void ApplyImageDimensions(FileDetailEntity fileDetail, byte[] image, string imageNameWithPath)
-        => imageDimensionReader.Read(image, imageNameWithPath)
-            .Tap(
-                dimensions => fileDetail.ImageDetail = new ImageDetailEntity { Width = dimensions.Width, Height = dimensions.Height },
-                error => logger.Warning("Could not read image dimensions for {imageNameWithPath}: {Message}", TruncatedForLogging(imageNameWithPath), error.Message));
-
-    private static string TruncatedForLogging(string imageNameWithPath)
-        => imageNameWithPath.Length > LoggedPathTailLength ? imageNameWithPath[^LoggedPathTailLength..] : imageNameWithPath;
 }
