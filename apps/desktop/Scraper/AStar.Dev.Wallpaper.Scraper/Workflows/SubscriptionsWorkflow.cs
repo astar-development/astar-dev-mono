@@ -29,12 +29,9 @@ public sealed class SubscriptionsWorkflow(
     }
 
     private async Task LoadStartingPageAsync()
-    {
-        var loadResult = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
-        bool loadedSuccessfully = loadResult.Match(_ => true, _ => false);
-
-        if (!loadedSuccessfully) _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
-    }
+        => _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber)
+            .OrElseAsync(_ => subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber))
+            .ConfigureAwait(false);
 
     private async Task<Result<Unit, ScrapeError>> ProcessSubscriptionsAsync(PageInfo pageInfo, CancellationToken cancellationToken)
     {

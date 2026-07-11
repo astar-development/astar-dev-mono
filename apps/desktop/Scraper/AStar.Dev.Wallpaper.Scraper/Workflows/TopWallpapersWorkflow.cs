@@ -33,12 +33,9 @@ public sealed class TopWallpapersWorkflow(
     }
 
     private async Task LoadStartingPageAsync(int startingPageNumber)
-    {
-        var loadResult = await topWallpapersPage.LoadTopWallpapersPageAsync(startingPageNumber).ConfigureAwait(false);
-        bool loadedSuccessfully = loadResult.Match(_ => true, _ => false);
-
-        if (!loadedSuccessfully) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber).ConfigureAwait(false);
-    }
+        => _ = await topWallpapersPage.LoadTopWallpapersPageAsync(startingPageNumber)
+            .OrElseAsync(_ => topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber))
+            .ConfigureAwait(false);
 
     private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(SearchConfiguration searchConfiguration, CancellationToken cancellationToken)
     {
