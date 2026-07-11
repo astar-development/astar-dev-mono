@@ -95,23 +95,19 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         var contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
         var fileClassificationService = new FileClassificationService(contextFactory);
-        var scrapeConfiguration = new ScrapeConfigurationBuilder().Build();
+        var logger = new LoggerConfiguration().CreateLogger();
 
         return new ImagePageService(
             imagePage,
             fileDetailRepository,
             fileClassificationService,
-            scrapeConfiguration,
             System.TimeProvider.System,
-            new LoggerConfiguration().CreateLogger(),
+            logger,
             directoryHelper,
-            new(),
             delayStrategy,
-            imageRetriever,
-            imageSaver,
-            fileSystem,
-            scrapedTagRepository ?? RepositoryTestDoubles.BuildScrapedTagRepository(),
-            imageDimensionReader ?? BuildDefaultImageDimensionReader());
+            new ImageDownloader(imageRetriever, delayStrategy),
+            new ImagePersistence(imageSaver, imageDimensionReader ?? BuildDefaultImageDimensionReader(), fileDetailRepository, new(), logger),
+            scrapedTagRepository ?? RepositoryTestDoubles.BuildScrapedTagRepository());
     }
 
     private static IImageDimensionReader BuildDefaultImageDimensionReader()

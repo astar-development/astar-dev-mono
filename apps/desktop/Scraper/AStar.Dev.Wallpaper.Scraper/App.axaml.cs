@@ -91,6 +91,8 @@ public partial class App : Application
             .AddTransient<IImportExportService, ImportExportService>()
             .AddTransient<IFileSystem, RealFileSystem>()
             .AddTransient<ScrapeConfigurationService>()
+            .AddTransient<ImageDownloader>()
+            .AddTransient<ImagePersistence>()
             .AddTransient<ImagePageService>()
             .AddTransient<ImagePage>()
             .AddSingleton<IDirectoryHelper, DirectoryHelper>()

@@ -56,17 +56,13 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
             fileDetailRepository,
             new FileClassificationService(BuildWorkingContextFactory()),
-            scrapeConfiguration,
             System.TimeProvider.System,
             new LoggerConfiguration().CreateLogger(),
             Substitute.For<IDirectoryHelper>(),
-            new(),
             new NoOpDelayStrategy(),
-            Substitute.For<IImageRetriever>(),
-            Substitute.For<IImageSaver>(),
-            new MockFileSystem(),
-            RepositoryTestDoubles.BuildScrapedTagRepository(),
-            Substitute.For<IImageDimensionReader>());
+            new ImageDownloader(Substitute.For<IImageRetriever>(), new NoOpDelayStrategy()),
+            new ImagePersistence(Substitute.For<IImageSaver>(), Substitute.For<IImageDimensionReader>(), fileDetailRepository, new(), new LoggerConfiguration().CreateLogger()),
+            RepositoryTestDoubles.BuildScrapedTagRepository());
 
     [Fact]
     public async Task when_run_against_a_working_page_with_zero_total_pages_then_the_result_is_a_success()
