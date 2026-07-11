@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Support;
 using AStar.Dev.Wallpaper.Scraper.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace AStar.Dev.Wallpaper.Scraper.ScrapeConfigurationEditor;
 public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
 {
     private readonly AppDbContext _context;
+    private readonly ScrapeConfigurationManager _scrapeConfigurationManager;
     private ScrapeConfigurationEntity? _entity;
 
     private bool _isLoading;
@@ -86,9 +88,10 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
 
     public ICommand SaveCommand { get; }
 
-    public ScrapeConfigurationViewModel(IDbContextFactory<AppDbContext> contextFactory)
+    public ScrapeConfigurationViewModel(IDbContextFactory<AppDbContext> contextFactory, ScrapeConfigurationManager scrapeConfigurationManager)
     {
         _context = contextFactory.CreateDbContext();
+        _scrapeConfigurationManager = scrapeConfigurationManager;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
     }
 
@@ -175,6 +178,7 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         {
             MapToEntity(_entity);
             await _context.SaveChangesAsync();
+            await _scrapeConfigurationManager.ReloadAsync();
             StatusMessage = "Saved successfully.";
         }
         catch (Exception ex)

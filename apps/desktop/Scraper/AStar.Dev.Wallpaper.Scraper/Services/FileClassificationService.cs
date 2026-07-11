@@ -83,7 +83,6 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                             IncludeInSearch = category.IncludeInSearch
                         };
                         context.FileClassificationCategories.Add(target);
-                        await context.SaveChangesAsync(token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -126,15 +125,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                             IsFamous = category.IsFamous,
                             IncludeInSearch = category.IncludeInSearch
                         };
-                        try
-                        {
-                            context.FileClassificationCategories.Add(target);
-                            await context.SaveChangesAsync(token).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex, "Failed to import classification category: {CategoryName} (Level {Level}. Id {Id})", category.Name, category.Level, category.Id);
-                        }
+                        context.FileClassificationCategories.Add(target);
                     }
                     else
                     {
@@ -152,7 +143,6 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                         if (!existingKeywords.Any(ek => ek.Equals(keyword.Keyword, StringComparison.OrdinalIgnoreCase)))
                             context.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = keyword.Keyword, CategoryId = target.Id });
 
-
                     try
                     {
                         await context.SaveChangesAsync(token).ConfigureAwait(false);
@@ -163,15 +153,6 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
                     }
                 }
             }
-        }
-
-        try
-        {
-            await context.SaveChangesAsync(token).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            logger.Error(ex, "Failed to save changes after importing classifications.");
         }
 
         return Unit.Value;

@@ -44,13 +44,6 @@ public partial class App : Application
         builder.Configuration.AddUserSecrets<App>(optional: true, reloadOnChange: true);
 
         builder.Services
-            .AddTransient(sp =>
-            {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
-
-                return ctx.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
-            })
-            .AddTransient(sp => sp.GetRequiredService<ScrapeConfiguration>().SearchConfiguration)
             .AddSingleton<LogBroadcaster>()
             .AddSingleton<ImageBroadcaster>()
             .AddSingleton(sp =>
@@ -68,16 +61,12 @@ public partial class App : Application
             })
             .AddSingleton<ILogger>(sp => sp.GetRequiredService<Serilog.Core.Logger>())
             .AddDbContextFactory<AppDbContext>(options => options.UseSqlite(SqliteConnectionStringProvider.Get(builder.Configuration)))
-            .AddTransient(sp =>
-            {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
-                return TagsFactory.LoadTagsToIgnoreCompletely(ctx);
-            })
-            .AddTransient(sp =>
-            {
-                using var ctx = sp.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
-                return TagsFactory.LoadTagsTextToIgnore(ctx);
-            })
+            .AddSingleton<TagsManager>()
+            .AddSingleton(sp => sp.GetRequiredService<TagsManager>().TagsToIgnoreCompletely)
+            .AddSingleton(sp => sp.GetRequiredService<TagsManager>().TagsTextToIgnore)
+            .AddSingleton<ScrapeConfigurationManager>()
+            .AddTransient(sp => sp.GetRequiredService<ScrapeConfigurationManager>().Current)
+            .AddTransient(sp => sp.GetRequiredService<ScrapeConfigurationManager>().Current.SearchConfiguration)
             .AddTransient<IFileClassificationCategoriesRepository, FileClassificationCategoriesRepository>()
             .AddTransient<IFileDetailRepository, FileDetailRepository>()
             .AddTransient<IDatabaseResetRepository, DatabaseResetRepository>()

@@ -1,6 +1,7 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scraper.Services;
+using AStar.Dev.Wallpaper.Scraper.Support;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,7 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     private SqliteConnection connection = null!;
     private DbContextOptions<AppDbContext> options = null!;
     private IDbContextFactory<AppDbContext> factory = null!;
+    private ScrapeConfigurationManager manager = null!;
     private ScrapeConfigurationService sut = null!;
 
     public async ValueTask InitializeAsync()
@@ -34,10 +36,12 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
         await seedContext.SaveChangesAsync();
 
         factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContext().Returns(_ => new AppDbContext(options));
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
                .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
-        sut = new ScrapeConfigurationService(factory);
+        manager = new ScrapeConfigurationManager(factory);
+        sut = new ScrapeConfigurationService(factory, manager);
     }
 
     public async ValueTask DisposeAsync() => await connection.DisposeAsync();
@@ -51,11 +55,21 @@ public sealed class GivenAScrapeConfigurationService : IAsyncLifetime
     }
 
     [Fact]
-    public async Task when_importing_then_context_is_created()
+    public async Task when_importing_then_context_is_created_for_the_import_and_the_manager_reload()
     {
         await sut.ImportScrapeConfigurationAsync(CreateImportEntity(), TestContext.Current.CancellationToken);
 
-        await factory.Received(1).CreateDbContextAsync(Arg.Any<CancellationToken>());
+        await factory.Received(2).CreateDbContextAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_importing_then_the_scrape_configuration_manager_reflects_the_change()
+    {
+        var importEntity = CreateImportEntity(sqlite: "Data Source=updated.db");
+
+        await sut.ImportScrapeConfigurationAsync(importEntity, TestContext.Current.CancellationToken);
+
+        manager.Current.ConnectionStrings.Sqlite.ShouldBe("Data Source=updated.db");
     }
 
     [Fact]

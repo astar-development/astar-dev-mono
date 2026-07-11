@@ -9,7 +9,7 @@ public sealed class FileDetailRepository(IDbContextFactory<AppDbContext> context
     public async Task<bool> ExistsAsync(string fileName)
     {
         await using var context = await contextFactory.CreateDbContextAsync();
-        return await context.Files.FirstOrDefaultAsync(f => f.FileName.Value.Contains(fileName)) != null;
+        return await context.Files.AnyAsync(f => f.FileName.Value == fileName);
     }
 
     public async Task AddAsync(FileDetailEntity fileDetail)

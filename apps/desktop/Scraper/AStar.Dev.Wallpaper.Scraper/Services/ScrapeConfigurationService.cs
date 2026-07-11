@@ -1,11 +1,12 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
-public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> contextFactory)
+public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> contextFactory, ScrapeConfigurationManager scrapeConfigurationManager)
 {
     public async Task<ScrapeConfigurationEntity> ExportScrapeConfigurationAsync(CancellationToken token)
     {
@@ -74,6 +75,7 @@ public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> c
         existing.ScrapeDirectories.SubDirectoryName = incoming.ScrapeDirectories.SubDirectoryName;
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
+        await scrapeConfigurationManager.ReloadAsync(token).ConfigureAwait(false);
 
         return Unit.Value;
     }

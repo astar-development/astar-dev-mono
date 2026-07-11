@@ -11,7 +11,7 @@ var options = new DbContextOptionsBuilder<AppDbContext>()
 var context = new AppDbContext(options);
 await context.Database.MigrateAsync();
 
-//ExportPlaying(context);
+ExportPlaying(context);
 
 await ImportPlaying(context);
 

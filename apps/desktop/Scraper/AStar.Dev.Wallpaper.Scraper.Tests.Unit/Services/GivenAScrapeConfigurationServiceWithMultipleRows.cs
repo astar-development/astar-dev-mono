@@ -1,6 +1,7 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scraper.Services;
+using AStar.Dev.Wallpaper.Scraper.Support;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,10 +37,11 @@ public sealed class GivenAScrapeConfigurationServiceWithMultipleRows : IAsyncLif
         await seedContext.SaveChangesAsync();
 
         factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContext().Returns(_ => new AppDbContext(options));
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
                .Returns(_ => Task.FromResult(new AppDbContext(options)));
 
-        sut = new ScrapeConfigurationService(factory);
+        sut = new ScrapeConfigurationService(factory, new ScrapeConfigurationManager(factory));
     }
 
     public async ValueTask DisposeAsync() => await connection.DisposeAsync();
