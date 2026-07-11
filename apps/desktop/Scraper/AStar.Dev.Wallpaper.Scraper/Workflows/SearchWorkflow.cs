@@ -22,17 +22,16 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
 
     private async Task<Result<Unit, ScrapeError>> ProcessSearchCategoriesAsync(IReadOnlyList<Category> searchCategories, CancellationToken cancellationToken)
     {
+        Result<Unit, ScrapeError> outcome = Unit.Value;
+
         foreach (var searchCategory in searchCategories)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var categoryResult = await ProcessSearchCategoryAsync(searchCategory, cancellationToken).ConfigureAwait(false);
-            bool categoryFailed = categoryResult.Match(_ => false, _ => true);
-
-            if (categoryFailed) return categoryResult;
+            outcome = await outcome.BindAsync(_ => ProcessSearchCategoryAsync(searchCategory, cancellationToken)).ConfigureAwait(false);
         }
 
-        return Unit.Value;
+        return outcome;
     }
 
     private Task<Result<Unit, ScrapeError>> ProcessSearchCategoryAsync(Category searchCategory, CancellationToken cancellationToken)

@@ -107,6 +107,14 @@ public static class ResultExtensions
                 _ => throw new InvalidOperationException("Unexpected result type.")
             };
 
+    public static async Task<Result<TResult, TError>> OrElseAsync<TResult, TError>(this Task<Result<TResult, TError>> resultTask, Func<TError, Task<Result<TResult, TError>>> fallback)
+        => await resultTask.ConfigureAwait(false) switch
+            {
+                Ok<TResult, TError> ok => ok,
+                Fail<TResult, TError> fail => await fallback(fail.Error).ConfigureAwait(false),
+                _ => throw new InvalidOperationException("Unexpected result type.")
+            };
+
     public static Result<TResult, TError> Ensure<TResult, TError>(this Result<TResult, TError> result, Action finallyAction)
     {
         finallyAction();
