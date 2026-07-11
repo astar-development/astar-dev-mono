@@ -1,24 +1,28 @@
 using System.IO.Abstractions;
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Repositories;
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
 public sealed class DatabaseResetService(IDatabaseResetRepository repository, IFileSystem fileSystem) : IDatabaseResetService
 {
-    public async Task ResetAsync(CancellationToken cancellationToken = default)
-    {
-        await repository.ResetSearchCategoriesAsync(cancellationToken).ConfigureAwait(false);
-        await repository.DeleteAllFilesAsync(cancellationToken).ConfigureAwait(false);
-    }
+    public Task<Result<Unit, ScrapeError>> ResetAsync(CancellationToken cancellationToken = default)
+        => repository.ResetSearchCategoriesAsync(cancellationToken)
+            .BindAsync(_ => repository.DeleteAllFilesAsync(cancellationToken));
 
-    public async Task DeleteSaveDirectoryAsync(CancellationToken cancellationToken = default)
-    {
-        string? path = await repository.GetBaseSaveDirectoryAsync(cancellationToken).ConfigureAwait(false);
+    public Task<Result<Unit, ScrapeError>> DeleteSaveDirectoryAsync(CancellationToken cancellationToken = default)
+        => repository.GetBaseSaveDirectoryAsync(cancellationToken)
+            .BindAsync(baseSaveDirectory => Task.FromResult<Result<Unit, ScrapeError>>(DeleteIfExists(baseSaveDirectory)));
 
-        if (string.IsNullOrWhiteSpace(path))
-            return;
+    private Unit DeleteIfExists(Option<string> baseSaveDirectory)
+        => baseSaveDirectory.Match(
+            path =>
+            {
+                if (!string.IsNullOrWhiteSpace(path) && fileSystem.Directory.Exists(path))
+                    fileSystem.Directory.Delete(path, recursive: true);
 
-        if (fileSystem.Directory.Exists(path))
-            fileSystem.Directory.Delete(path, recursive: true);
-    }
+                return Unit.Value;
+            },
+            () => Unit.Value);
 }

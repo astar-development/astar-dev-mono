@@ -1,5 +1,7 @@
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -35,24 +37,24 @@ public sealed class GivenAFileDetailRepository : IAsyncLifetime
     [Fact]
     public async Task when_a_file_with_the_exact_name_exists_then_exists_returns_true()
     {
-        bool exists = await sut.ExistsAsync("image.png");
+        var result = await sut.ExistsAsync("image.png", TestContext.Current.CancellationToken);
 
-        exists.ShouldBeTrue();
+        result.ShouldBeOfType<Ok<bool, ScrapeError>>().Value.ShouldBeTrue();
     }
 
     [Fact]
     public async Task when_no_file_has_the_exact_name_but_a_substring_matches_then_exists_returns_false()
     {
-        bool exists = await sut.ExistsAsync("mage.pn");
+        var result = await sut.ExistsAsync("mage.pn", TestContext.Current.CancellationToken);
 
-        exists.ShouldBeFalse();
+        result.ShouldBeOfType<Ok<bool, ScrapeError>>().Value.ShouldBeFalse();
     }
 
     [Fact]
     public async Task when_no_file_matches_then_exists_returns_false()
     {
-        bool exists = await sut.ExistsAsync("missing.png");
+        var result = await sut.ExistsAsync("missing.png", TestContext.Current.CancellationToken);
 
-        exists.ShouldBeFalse();
+        result.ShouldBeOfType<Ok<bool, ScrapeError>>().Value.ShouldBeFalse();
     }
 }

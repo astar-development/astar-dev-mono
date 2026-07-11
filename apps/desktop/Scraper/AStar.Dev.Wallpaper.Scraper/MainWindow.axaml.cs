@@ -65,17 +65,22 @@ public partial class MainWindow : Window, IDisposable
             if (!dbConfirmed)
                 return;
 
-            try
-            {
-                await databaseResetService.ResetAsync(CancellationToken.None);
-                UpdateStatus("Database reset completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Database reset failed");
-                UpdateStatus($"Database reset failed: {ex.Message}");
+            var resetResult = await databaseResetService.ResetAsync(CancellationToken.None).ConfigureAwait(false);
+            bool resetSucceeded = resetResult.Match(
+                _ =>
+                {
+                    UpdateStatus("Database reset completed successfully.");
+                    return true;
+                },
+                error =>
+                {
+                    logger.Error("Database reset failed: {Message}", error.Message);
+                    UpdateStatus($"Database reset failed: {error.Message}");
+                    return false;
+                });
+
+            if (!resetSucceeded)
                 return;
-            }
 
             var fileDialog = new ConfirmationDialog("This will permanently delete all downloaded files from the save directory. Continue?");
             bool fileConfirmed = await fileDialog.ShowDialog<bool>(this);
@@ -83,16 +88,19 @@ public partial class MainWindow : Window, IDisposable
             if (!fileConfirmed)
                 return;
 
-            try
-            {
-                await databaseResetService.DeleteSaveDirectoryAsync(CancellationToken.None);
-                UpdateStatus("Save directory deleted successfully.");
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex, "Save directory deletion failed");
-                UpdateStatus($"Save directory deletion failed: {ex.Message}");
-            }
+            var deleteResult = await databaseResetService.DeleteSaveDirectoryAsync(CancellationToken.None).ConfigureAwait(false);
+            _ = deleteResult.Match(
+                _ =>
+                {
+                    UpdateStatus("Save directory deleted successfully.");
+                    return Unit.Value;
+                },
+                error =>
+                {
+                    logger.Error("Save directory deletion failed: {Message}", error.Message);
+                    UpdateStatus($"Save directory deletion failed: {error.Message}");
+                    return Unit.Value;
+                });
         }
         catch (Exception ex)
         {

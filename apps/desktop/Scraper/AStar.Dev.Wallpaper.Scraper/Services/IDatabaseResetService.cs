@@ -1,7 +1,10 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scraper.Models;
+
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
 public interface IDatabaseResetService
 {
-    Task ResetAsync(CancellationToken cancellationToken = default);
-    Task DeleteSaveDirectoryAsync(CancellationToken cancellationToken = default);
+    Task<Result<Unit, ScrapeError>> ResetAsync(CancellationToken cancellationToken = default);
+    Task<Result<Unit, ScrapeError>> DeleteSaveDirectoryAsync(CancellationToken cancellationToken = default);
 }

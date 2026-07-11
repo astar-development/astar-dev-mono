@@ -92,4 +92,13 @@ public static class ScrapeErrorFactory
 
         return new(errors, message);
     }
+
+    /// <summary>Creates a <see cref="RepositoryOperationFailed" /> error.</summary>
+    public static RepositoryOperationFailed CreateRepositoryOperationFailed(string operation, string message)
+    {
+        GuardAgainst.Null(operation);
+        GuardAgainst.Null(message);
+
+        return new(operation, message);
+    }
 }

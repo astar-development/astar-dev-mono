@@ -82,7 +82,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
     private ImagePageService BuildImagePageService(IPlaywrightService playwrightService, ScrapeConfiguration scrapeConfiguration, IDirectoryHelper directoryHelper, IImageRetriever imageRetriever)
         => new(
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
-            Substitute.For<IFileDetailRepository>(),
+            RepositoryTestDoubles.BuildFileDetailRepository(),
             new FileClassificationService(BuildWorkingContextFactory(), new LoggerConfiguration().CreateLogger()),
             scrapeConfiguration,
             System.TimeProvider.System,
@@ -93,7 +93,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
             imageRetriever,
             Substitute.For<IImageSaver>(),
             new MockFileSystem(),
-            Substitute.For<IFileClassificationCategoriesRepository>(),
+            RepositoryTestDoubles.BuildScrapedTagRepository(),
             Substitute.For<IImageDimensionReader>());
 
     [Fact]

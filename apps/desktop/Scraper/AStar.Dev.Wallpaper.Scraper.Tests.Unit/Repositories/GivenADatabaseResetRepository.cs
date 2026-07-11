@@ -1,5 +1,7 @@
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -44,9 +46,10 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
     [Fact]
     public async Task when_multiple_directories_exist_then_returns_base_save_directory_from_record_with_highest_id()
     {
-        string? result = await sut.GetBaseSaveDirectoryAsync(CancellationToken.None);
+        var result = await sut.GetBaseSaveDirectoryAsync(CancellationToken.None);
 
-        result.ShouldBe(LastBaseSaveDirectory);
+        string? baseSaveDirectory = result.ShouldBeOfType<Ok<Option<string>, ScrapeError>>().Value.Match<string?>(some => some, () => null);
+        baseSaveDirectory.ShouldBe(LastBaseSaveDirectory);
     }
 
     [Fact]

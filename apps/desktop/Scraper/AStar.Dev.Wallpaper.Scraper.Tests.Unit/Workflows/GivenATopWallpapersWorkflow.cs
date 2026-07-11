@@ -65,7 +65,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
             Substitute.For<IImageRetriever>(),
             Substitute.For<IImageSaver>(),
             new MockFileSystem(),
-            Substitute.For<IFileClassificationCategoriesRepository>(),
+            RepositoryTestDoubles.BuildScrapedTagRepository(),
             Substitute.For<IImageDimensionReader>());
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
         var scrapeConfiguration = new ScrapeConfigurationBuilder { SearchConfiguration = searchConfiguration, }.Build();
         var configurationSaver = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), Substitute.For<IDbContextFactory<AppDbContext>>());
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy());
-        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, Substitute.For<IFileDetailRepository>());
+        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, RepositoryTestDoubles.BuildFileDetailRepository());
 
         var sut = new TopWallpapersWorkflow(topWallpapersPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
@@ -105,8 +105,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
 
         var failingPlaywrightService = Substitute.For<IPlaywrightService>();
         failingPlaywrightService.ConfigurePlaywrightAsync().ThrowsAsync(new PlaywrightException("navigation failed"));
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var imagePageService = BuildImagePageService(failingPlaywrightService, scrapeConfiguration, fileDetailRepository);
 
         var sut = new TopWallpapersWorkflow(topWallpapersPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
@@ -131,7 +130,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, delayStrategy);
-        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, Substitute.For<IFileDetailRepository>());
+        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, RepositoryTestDoubles.BuildFileDetailRepository());
 
         var sut = new TopWallpapersWorkflow(topWallpapersPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
@@ -153,7 +152,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
         var scrapeConfiguration = new ScrapeConfigurationBuilder { SearchConfiguration = searchConfiguration, }.Build();
         var configurationSaver = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), Substitute.For<IDbContextFactory<AppDbContext>>());
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy());
-        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, Substitute.For<IFileDetailRepository>());
+        var imagePageService = BuildImagePageService(Substitute.For<IPlaywrightService>(), scrapeConfiguration, RepositoryTestDoubles.BuildFileDetailRepository());
 
         var sut = new TopWallpapersWorkflow(topWallpapersPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 

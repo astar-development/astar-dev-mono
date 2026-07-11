@@ -1,10 +1,12 @@
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Models;
 
 namespace AStar.Dev.Wallpaper.Scraper.Repositories;
 
 public interface IFileClassificationCategoriesRepository
 {
-    Task SaveAsync(IReadOnlyList<TagData> tags);
-    Task<List<FileClassificationCategoryEntity>> GetAllAsync(CancellationToken cancellationToken);
-    Task UpsertAsync(IReadOnlyList<FileClassificationCategoryEntity> tags, CancellationToken cancellationToken);
+    Task<Result<Unit, ScrapeError>> SaveAsync(IReadOnlyList<TagData> tags, CancellationToken cancellationToken);
+    Task<Result<List<FileClassificationCategoryEntity>, ScrapeError>> GetAllAsync(CancellationToken cancellationToken);
+    Task<Result<Unit, ScrapeError>> UpsertAsync(IReadOnlyList<FileClassificationCategoryEntity> tags, CancellationToken cancellationToken);
 }
