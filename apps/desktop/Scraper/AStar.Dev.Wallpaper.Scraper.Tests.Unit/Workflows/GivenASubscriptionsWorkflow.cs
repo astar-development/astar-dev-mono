@@ -107,7 +107,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy());
         var imagePageService = BuildImagePageService(playwrightService, scrapeConfiguration, Substitute.For<IDirectoryHelper>(), Substitute.For<IImageRetriever>());
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         var result = await sut.RunAsync(TestContext.Current.CancellationToken);
 
@@ -133,7 +133,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         failingPlaywrightService.ConfigurePlaywrightAsync().ThrowsAsync(new PlaywrightException("navigation failed"));
         var imagePageService = BuildImagePageService(failingPlaywrightService, scrapeConfiguration, Substitute.For<IDirectoryHelper>(), Substitute.For<IImageRetriever>());
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         var result = await sut.RunAsync(TestContext.Current.CancellationToken);
 
@@ -153,7 +153,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy());
         var imagePageService = BuildImagePageService(playwrightService, scrapeConfiguration, Substitute.For<IDirectoryHelper>(), Substitute.For<IImageRetriever>());
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         await sut.RunAsync(TestContext.Current.CancellationToken);
 
@@ -171,7 +171,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy());
         var imagePageService = BuildImagePageService(playwrightService, scrapeConfiguration, Substitute.For<IDirectoryHelper>(), Substitute.For<IImageRetriever>());
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         await sut.RunAsync(TestContext.Current.CancellationToken);
 
@@ -200,7 +200,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
             .Returns(Task.FromResult(Result.Failure<byte[], ScrapeError>(ScrapeErrorFactory.CreateImageDownloadFailed("url", "boom"))));
         var imagePageService = BuildImagePageService(playwrightService, scrapeConfiguration, directoryHelper, imageRetriever);
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         await sut.RunAsync(TestContext.Current.CancellationToken);
 
@@ -222,7 +222,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         var pagedScrapeRunner = new PagedScrapeRunner(configurationSaver, delayStrategy);
         var imagePageService = BuildImagePageService(playwrightService, scrapeConfiguration, Substitute.For<IDirectoryHelper>(), Substitute.For<IImageRetriever>());
 
-        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, scrapeConfiguration, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
+        var sut = new SubscriptionsWorkflow(subscriptionsImagesListPage, imagePageService, configurationSaver, pagedScrapeRunner, new LoggerConfiguration().CreateLogger());
 
         await sut.RunAsync(TestContext.Current.CancellationToken);
 

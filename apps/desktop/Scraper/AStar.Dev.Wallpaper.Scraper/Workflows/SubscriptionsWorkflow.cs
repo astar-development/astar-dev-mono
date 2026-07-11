@@ -10,23 +10,17 @@ namespace AStar.Dev.Wallpaper.Scraper.Workflows;
 public sealed class SubscriptionsWorkflow(
     SubscriptionsImagesListPage subscriptionsImagesListPage,
     ImagePageService imagePageService,
-    ScrapeConfiguration scrapeConfiguration,
     ConfigurationSaver configurationSaver,
     PagedScrapeRunner pagedScrapeRunner,
     ILogger logger)
 {
     private const int FirstPageNumber = 1;
 
-    private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConfiguration;
-    private ScrapeDirectories scrapeDirectories = scrapeConfiguration.ScrapeDirectories;
-
     public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken cancellationToken = default)
         => RunSubscriptionsAsync(cancellationToken).LogFailure(logger);
 
     private async Task<Result<Unit, ScrapeError>> RunSubscriptionsAsync(CancellationToken cancellationToken)
     {
-        searchConfiguration = searchConfiguration with { SubscriptionsStartingPageNumber = FirstPageNumber, };
-
         await LoadStartingPageAsync().ConfigureAwait(false);
 
         return await subscriptionsImagesListPage.PageInfoAsync()
@@ -44,17 +38,13 @@ public sealed class SubscriptionsWorkflow(
 
     private async Task<Result<Unit, ScrapeError>> ProcessSubscriptionsAsync(PageInfo pageInfo, CancellationToken cancellationToken)
     {
-        if (pageInfo.SubDirectoryName.Length > 0) scrapeDirectories = scrapeDirectories with { SubDirectoryName = pageInfo.SubDirectoryName, };
-
-        if (searchConfiguration.SubscriptionsTotalPages != pageInfo.PageCount) searchConfiguration = searchConfiguration with { SubscriptionsTotalPages = pageInfo.PageCount, };
-
         await configurationSaver.SaveUpdatedConfigurationAsync().ConfigureAwait(false);
 
         var plan = PagedScrapePlanFactory.Create(
-            searchConfiguration.SubscriptionsStartingPageNumber,
-            searchConfiguration.SubscriptionsTotalPages,
+            FirstPageNumber,
+            pageInfo.PageCount,
             _ => { },
-            pageNumber => LoadSubscriptionsPageAsync(pageNumber, searchConfiguration.SubscriptionsTotalPages),
+            pageNumber => LoadSubscriptionsPageAsync(pageNumber, pageInfo.PageCount),
             subscriptionsImagesListPage.GetImagePageLinksAsync,
             (links, innerCt) => imagePageService.GetTheImagePagesAsync(links, string.Empty, pageInfo.SubDirectoryName, innerCt));
 
