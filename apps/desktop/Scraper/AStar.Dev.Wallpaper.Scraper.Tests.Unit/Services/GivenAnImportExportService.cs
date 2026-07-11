@@ -98,12 +98,12 @@ public sealed class GivenAnImportExportService
         [
           {
             "value": "Action",
-            "category": 1,
+            "category": "Genre",
             "includeInSearch": true
           },
           {
             "value": "Comedy",
-            "category": 1,
+            "category": "Genre",
             "includeInSearch": false
           }
         ]

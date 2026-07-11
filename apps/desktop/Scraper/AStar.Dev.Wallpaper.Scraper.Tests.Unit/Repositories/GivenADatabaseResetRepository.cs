@@ -10,8 +10,9 @@ namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Repositories;
 
 public sealed class GivenADatabaseResetRepository : IAsyncLifetime
 {
-    private const string FirstBaseSaveDirectory = "/old/save/dir";
-    private const string LastBaseSaveDirectory = "/new/save/dir";
+    private const string RootDirectory = "/scrape/root";
+    private const string FirstBaseSaveDirectory = "old-save-dir";
+    private const string LastBaseSaveDirectory = "new-save-dir";
 
     private SqliteConnection connection = null!;
     private DbContextOptions<AppDbContext> options = null!;
@@ -49,7 +50,7 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
         var result = await sut.GetBaseSaveDirectoryAsync(CancellationToken.None);
 
         string? baseSaveDirectory = result.ShouldBeOfType<Ok<Option<string>, ScrapeError>>().Value.Match<string?>(some => some, () => null);
-        baseSaveDirectory.ShouldBe(LastBaseSaveDirectory);
+        baseSaveDirectory.ShouldBe($"{RootDirectory}/{LastBaseSaveDirectory}");
     }
 
     [Fact]
@@ -94,6 +95,6 @@ public sealed class GivenADatabaseResetRepository : IAsyncLifetime
         ConnectionStrings = new ConnectionStringsEntity { Sqlite = "Data Source=test.db" },
         UserConfiguration = new UserConfigurationEntity { LoginEmailAddress = "user@example.com", Username = "testuser", Password = "password", SessionCookie = "cookie" },
         SearchConfiguration = new SearchConfigurationEntity { BaseUrl = new Uri("https://example.com"), ApiKey = "key" },
-        ScrapeDirectories = new ScrapeDirectoriesEntity { BaseSaveDirectory = baseSaveDirectory }
+        ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = RootDirectory, BaseSaveDirectory = baseSaveDirectory }
     };
 }
