@@ -94,7 +94,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     {
         var contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
-        var fileClassificationService = new FileClassificationService(contextFactory, new LoggerConfiguration().CreateLogger());
+        var fileClassificationService = new FileClassificationService(contextFactory);
         var scrapeConfiguration = new ScrapeConfigurationBuilder().Build();
 
         return new ImagePageService(

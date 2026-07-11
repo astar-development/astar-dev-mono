@@ -55,7 +55,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
         => new(
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
             fileDetailRepository,
-            new FileClassificationService(BuildWorkingContextFactory(), new LoggerConfiguration().CreateLogger()),
+            new FileClassificationService(BuildWorkingContextFactory()),
             scrapeConfiguration,
             System.TimeProvider.System,
             new LoggerConfiguration().CreateLogger(),

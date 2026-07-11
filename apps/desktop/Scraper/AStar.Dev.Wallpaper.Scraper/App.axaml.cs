@@ -71,6 +71,7 @@ public partial class App : Application
             .AddTransient<IFileDetailRepository, FileDetailRepository>()
             .AddTransient<IDatabaseResetRepository, DatabaseResetRepository>()
             .AddTransient<FileClassificationService>()
+            .AddTransient<FileClassificationImportExportService>()
             .AddTransient<IFileClassificationCategoryService, FileClassificationCategoryService>()
             .AddTransient<IDatabaseResetService, DatabaseResetService>()
             .AddTransient<ConfigurationSaver>()

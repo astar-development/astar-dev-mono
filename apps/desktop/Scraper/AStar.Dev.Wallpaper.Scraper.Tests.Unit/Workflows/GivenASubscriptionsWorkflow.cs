@@ -83,7 +83,7 @@ public sealed class GivenASubscriptionsWorkflow : IAsyncLifetime
         => new(
             new ImagePage(playwrightService, scrapeConfiguration, new(), new()),
             RepositoryTestDoubles.BuildFileDetailRepository(),
-            new FileClassificationService(BuildWorkingContextFactory(), new LoggerConfiguration().CreateLogger()),
+            new FileClassificationService(BuildWorkingContextFactory()),
             scrapeConfiguration,
             System.TimeProvider.System,
             new LoggerConfiguration().CreateLogger(),

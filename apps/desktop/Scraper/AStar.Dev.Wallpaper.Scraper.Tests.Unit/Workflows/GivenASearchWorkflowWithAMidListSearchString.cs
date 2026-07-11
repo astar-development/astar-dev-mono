@@ -53,7 +53,7 @@ public sealed class GivenASearchWorkflowWithAMidListSearchString
         var searchResultsPage = new SearchResultsPage(playwrightService);
         var configurationSaver = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
         var imagePage = new ImagePage(playwrightService, scrapeConfiguration, new(), new());
-        var fileClassificationService = new FileClassificationService(contextFactory, new LoggerConfiguration().CreateLogger());
+        var fileClassificationService = new FileClassificationService(contextFactory);
         var imagePageService = new ImagePageService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), RepositoryTestDoubles.BuildScrapedTagRepository(), Substitute.For<IImageDimensionReader>());
 
         var sut = new SearchWorkflow(searchResultsPage, scrapeConfiguration, configurationSaver, imagePageService, Substitute.For<IDirectoryHelper>(), Substitute.For<ILogger>(), new NoOpDelayStrategy(), System.TimeProvider.System, new PagedScrapeRunner(configurationSaver, new NoOpDelayStrategy()));
