@@ -18,33 +18,31 @@ public sealed class TopWallpapersWorkflow(
     private const int FirstPageNumber = 1;
     private const string NoCategory = "";
 
-    private SearchConfiguration searchConfiguration = scrapeConfiguration.SearchConfiguration;
-
     public Task<Result<Unit, ScrapeError>> RunAsync(CancellationToken cancellationToken = default)
         => RunTopWallpapersAsync(cancellationToken).LogFailure(logger);
 
     private async Task<Result<Unit, ScrapeError>> RunTopWallpapersAsync(CancellationToken cancellationToken)
     {
-        await LoadStartingPageAsync().ConfigureAwait(false);
+        var searchConfiguration = scrapeConfiguration.SearchConfiguration;
+
+        await LoadStartingPageAsync(searchConfiguration.TopWallpapersStartingPageNumber).ConfigureAwait(false);
 
         return await topWallpapersPage.PageInfoAsync()
-            .BindAsync(pageCount => ProcessTopWallpapersAsync(pageCount, cancellationToken))
+            .BindAsync(pageCount => ProcessTopWallpapersAsync(searchConfiguration with { TopWallpapersTotalPages = pageCount, }, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private async Task LoadStartingPageAsync()
+    private async Task LoadStartingPageAsync(int startingPageNumber)
     {
-        var loadResult = await topWallpapersPage.LoadTopWallpapersPageAsync(searchConfiguration.TopWallpapersStartingPageNumber).ConfigureAwait(false);
+        var loadResult = await topWallpapersPage.LoadTopWallpapersPageAsync(startingPageNumber).ConfigureAwait(false);
         bool loadedSuccessfully = loadResult.Match(_ => true, _ => false);
 
         if (!loadedSuccessfully) _ = await topWallpapersPage.LoadTopWallpapersPageAsync(FirstPageNumber).ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(int pageCount, CancellationToken cancellationToken)
+    private async Task<Result<Unit, ScrapeError>> ProcessTopWallpapersAsync(SearchConfiguration searchConfiguration, CancellationToken cancellationToken)
     {
-        logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", pageCount);
-
-        if (searchConfiguration.TopWallpapersTotalPages != pageCount) searchConfiguration = searchConfiguration with { TopWallpapersTotalPages = pageCount, };
+        logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", searchConfiguration.TopWallpapersTotalPages);
 
         await configurationSaver.SaveUpdatedConfigurationAsync().ConfigureAwait(false);
 
