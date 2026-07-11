@@ -22,7 +22,7 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
         foreach (var tag in titleCasedTags)
         {
             var parentCategory = parentCategories.FirstOrDefault(c => c.Name == tag.Category);
-            if (await context.FileClassificationCategories.AnyAsync(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id)) continue;
+            if (parentCategories.Any(t => t.Name == tag.Value && parentCategory != null && t.ParentId == parentCategory.Id)) continue;
 
             tag.Level = parentCategory?.Level + 1 ?? 1;
             tag.Category = parentCategory?.Name ?? tag.Value;
@@ -43,16 +43,12 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var values = tags.Select(t => t.Name).ToList();
-        var existingMap = await context.FileClassificationCategories
-            .Where(t => values.Contains(t.Name))
-            .ToListAsync(cancellationToken);
         var parentCategories = await context.FileClassificationCategories.ToListAsync(cancellationToken);
 
         foreach (var tag in tags)
         {
             var parentCategory = parentCategories.FirstOrDefault(c => c.Id == tag.Id);
-            var existing = existingMap.FirstOrDefault(t => t.Name == tag.Name && t.ParentId == parentCategory?.Id);
+            var existing = parentCategories.FirstOrDefault(t => t.Name == tag.Name && t.ParentId == parentCategory?.Id);
             if (existing is not null)
             {
                 existing.IncludeInSearch = tag.IncludeInSearch;
