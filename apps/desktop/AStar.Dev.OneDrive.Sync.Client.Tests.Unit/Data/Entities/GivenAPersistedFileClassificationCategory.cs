@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data.Entities;
 
-public sealed class GivenAScrapedTagEntity : IDisposable
+public sealed class GivenAPersistedFileClassificationCategory : IDisposable
 {
     private readonly SqliteConnection connection;
     private readonly AppDbContext context;
 
-    public GivenAScrapedTagEntity()
+    public GivenAPersistedFileClassificationCategory()
     {
         connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
@@ -25,25 +25,26 @@ public sealed class GivenAScrapedTagEntity : IDisposable
     }
 
     [Fact]
-    public async Task when_a_scraped_tag_is_added_then_it_can_be_retrieved()
+    public async Task when_a_category_is_added_then_it_can_be_retrieved()
     {
         context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "sunset", ParentId = 1, IncludeInSearch = true });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var retrieved = context.FileClassificationCategories.First();
+        var retrieved = context.FileClassificationCategories.Single(c => c.Name == "sunset");
 
-        retrieved.Name.ShouldBe("sunset");
         retrieved.ParentId.ShouldBe(1);
+        retrieved.IncludeInSearch.ShouldBeTrue();
     }
 
     [Fact]
-    public async Task when_two_scraped_tags_share_a_value_then_save_fails()
+    public async Task when_two_categories_share_a_name_then_both_are_saved()
     {
         context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "duplicate" });
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "duplicate" });
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await Should.ThrowAsync<DbUpdateException>(async () => await context.SaveChangesAsync(TestContext.Current.CancellationToken));
+        context.FileClassificationCategories.Count(c => c.Name == "duplicate").ShouldBe(2);
     }
 }

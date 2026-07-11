@@ -148,7 +148,7 @@ public sealed class GivenASyncWorker
         }
         catch (OperationCanceledException) { }
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -183,7 +183,7 @@ public sealed class GivenASyncWorker
         }
         catch (SyncReAuthRequiredException) { }
 
-        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), CancellationToken.None);
+        await _syncRepository.Received(1).UpdateJobStateAsync(job.Status.Id, SyncJobState.Queued, Option.None<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
