@@ -1,3 +1,5 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Repositories;
 using AStar.Dev.Wallpaper.Scraper.Services;
 
@@ -17,6 +19,9 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_resetting_then_reset_search_categories_is_called()
     {
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+
         await sut.ResetAsync(CancellationToken.None);
 
         await repo.Received(1).ResetSearchCategoriesAsync(Arg.Any<CancellationToken>());
@@ -25,6 +30,9 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_resetting_then_delete_all_files_is_called()
     {
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+
         await sut.ResetAsync(CancellationToken.None);
 
         await repo.Received(1).DeleteAllFilesAsync(Arg.Any<CancellationToken>());
@@ -34,6 +42,8 @@ public sealed class GivenADatabaseResetService
     public async Task when_resetting_then_reset_search_categories_is_called_before_delete_all_files()
     {
         var callOrder = new List<string>();
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
         repo.When(r => r.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()))
             .Do(_ => callOrder.Add("categories"));
         repo.When(r => r.DeleteAllFilesAsync(Arg.Any<CancellationToken>()))
@@ -45,19 +55,22 @@ public sealed class GivenADatabaseResetService
     }
 
     [Fact]
-    public async Task when_reset_search_categories_throws_then_delete_all_files_is_not_called()
+    public async Task when_reset_search_categories_fails_then_delete_all_files_is_not_called()
     {
         repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>())
-            .Returns(_ => Task.FromException(new InvalidOperationException()));
+            .Returns(Result.Failure<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(ScrapeErrorFactory.CreateRepositoryOperationFailed("ResetSearchCategoriesAsync", "db error")));
 
-        await Should.ThrowAsync<InvalidOperationException>(() => sut.ResetAsync(CancellationToken.None));
+        var result = await sut.ResetAsync(CancellationToken.None);
 
+        result.ShouldBeOfType<Fail<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
         await repo.DidNotReceive().DeleteAllFilesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_deleting_save_directory_then_get_base_save_directory_is_called()
     {
+        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<Option<string>, ScrapeError>(SaveDirectory));
+
         await sut.DeleteSaveDirectoryAsync(CancellationToken.None);
 
         await repo.Received(1).GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>());
@@ -66,7 +79,7 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_deleting_save_directory_and_directory_exists_then_directory_is_deleted()
     {
-        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(SaveDirectory);
+        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<Option<string>, ScrapeError>(SaveDirectory));
         fileSystem.Directory.CreateDirectory(SaveDirectory);
 
         await sut.DeleteSaveDirectoryAsync(CancellationToken.None);
@@ -77,7 +90,7 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_deleting_save_directory_and_directory_does_not_exist_then_succeeds()
     {
-        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(NonExistentDirectory);
+        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<Option<string>, ScrapeError>(NonExistentDirectory));
 
         await Should.NotThrowAsync(() => sut.DeleteSaveDirectoryAsync(CancellationToken.None));
     }
@@ -85,7 +98,7 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_deleting_save_directory_and_path_is_empty_then_no_directory_operations_occur()
     {
-        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(string.Empty);
+        repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<Option<string>, ScrapeError>(string.Empty));
 
         await Should.NotThrowAsync(() => sut.DeleteSaveDirectoryAsync(CancellationToken.None));
 
@@ -94,11 +107,13 @@ public sealed class GivenADatabaseResetService
     }
 
     [Fact]
-    public async Task when_get_base_save_directory_throws_then_exception_propagates()
+    public async Task when_get_base_save_directory_fails_then_the_failure_is_returned()
     {
         repo.GetBaseSaveDirectoryAsync(Arg.Any<CancellationToken>())
-            .Returns(_ => Task.FromException<string?>(new InvalidOperationException("db error")));
+            .Returns(Result.Failure<Option<string>, ScrapeError>(ScrapeErrorFactory.CreateRepositoryOperationFailed("GetBaseSaveDirectoryAsync", "db error")));
 
-        await Should.ThrowAsync<InvalidOperationException>(() => sut.DeleteSaveDirectoryAsync(CancellationToken.None));
+        var result = await sut.DeleteSaveDirectoryAsync(CancellationToken.None);
+
+        result.ShouldBeOfType<Fail<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
     }
 }

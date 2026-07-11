@@ -43,7 +43,12 @@ public sealed class ImagePageService(
             cancellationToken.ThrowIfCancellationRequested();
             string fileName = Path.GetFileName(pageLink);
 
-            if (await fileDetailRepository.ExistsAsync(fileName).ConfigureAwait(false))
+            var existsResult = await fileDetailRepository.ExistsAsync(fileName, cancellationToken).ConfigureAwait(false);
+            var (alreadyExists, existsError) = existsResult.Match(exists => (exists, (ScrapeError?)null), error => (false, error));
+
+            if (existsError is not null) return existsError;
+
+            if (alreadyExists)
             {
                 logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
                 await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, cancellationToken).ConfigureAwait(false);
@@ -76,19 +81,16 @@ public sealed class ImagePageService(
             .ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
-    {
-        await SaveScrapedTagsAsync(outcome).ConfigureAwait(false);
+    private Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
+        => SaveScrapedTagsAsync(outcome, cancellationToken)
+            .BindAsync(_ => outcome switch
+            {
+                SkippedImage skipped => Task.FromResult(LogSkippedImage(categoryName, skipped)),
+                ScrapedImage scraped => DownloadAndPersistAsync(scraped, pageData, cancellationToken),
+                _ => throw new InvalidOperationException("Unexpected image page outcome."),
+            });
 
-        return outcome switch
-        {
-            SkippedImage skipped => LogSkippedImage(categoryName, skipped),
-            ScrapedImage scraped => await DownloadAndPersistAsync(scraped, pageData, cancellationToken).ConfigureAwait(false),
-            _ => throw new InvalidOperationException("Unexpected image page outcome."),
-        };
-    }
-
-    private Task SaveScrapedTagsAsync(ImagePageOutcome outcome)
+    private Task<Result<Unit, ScrapeError>> SaveScrapedTagsAsync(ImagePageOutcome outcome, CancellationToken cancellationToken)
     {
         var rawTags = outcome switch
         {
@@ -97,7 +99,7 @@ public sealed class ImagePageService(
             _ => throw new InvalidOperationException("Unexpected image page outcome."),
         };
 
-        return scrapedTagRepository.SaveAsync([.. rawTags.Where(tag => !string.IsNullOrWhiteSpace(tag.Category)),]);
+        return scrapedTagRepository.SaveAsync([.. rawTags.Where(tag => !string.IsNullOrWhiteSpace(tag.Category)),], cancellationToken);
     }
 
     private Result<Unit, ScrapeError> LogSkippedImage(string categoryName, SkippedImage skipped)
@@ -130,7 +132,7 @@ public sealed class ImagePageService(
             .ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, ScrapeError>> PersistFileDetailAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
+    private Task<Result<Unit, ScrapeError>> PersistFileDetailAsync(byte[] image, string imageNameWithPath, string filename, DirectoryName directoryName, ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)
     {
         var fileDetail = new FileDetailEntity
         {
@@ -142,9 +144,8 @@ public sealed class ImagePageService(
 
         ApplyImageDimensions(fileDetail, image, imageNameWithPath);
 
-        await fileDetailRepository.AddAsync(fileDetail).ConfigureAwait(false);
-
-        return await fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, cancellationToken).ConfigureAwait(false);
+        return fileDetailRepository.AddAsync(fileDetail, cancellationToken)
+            .BindAsync(_ => fileClassificationService.ClassifyAsync(fileDetail, pageData, scraped.Tags, cancellationToken));
     }
 
     private void ApplyImageDimensions(FileDetailEntity fileDetail, byte[] image, string imageNameWithPath)

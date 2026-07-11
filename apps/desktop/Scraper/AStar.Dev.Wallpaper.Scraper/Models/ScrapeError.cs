@@ -53,3 +53,8 @@ public sealed record ImportFailed(string FilePath, string Message) : ScrapeError
 /// <param name="Errors">The accumulated validation errors.</param>
 /// <param name="Message">A human-readable description of the failure.</param>
 public sealed record ValidationFailed(IReadOnlyList<ValidationError> Errors, string Message) : ScrapeError(Message);
+
+/// <summary>A repository operation failed while accessing the database.</summary>
+/// <param name="Operation">The name of the repository operation that failed.</param>
+/// <param name="Message">A human-readable description of the failure.</param>
+public sealed record RepositoryOperationFailed(string Operation, string Message) : ScrapeError(Message);

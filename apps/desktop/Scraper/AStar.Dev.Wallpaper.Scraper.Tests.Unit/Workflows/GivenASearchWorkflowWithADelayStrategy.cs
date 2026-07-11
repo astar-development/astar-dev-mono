@@ -91,7 +91,7 @@ public sealed class GivenASearchWorkflowWithADelayStrategy : IAsyncLifetime
         var fileClassificationService = new FileClassificationService(contextFactory, new LoggerConfiguration().CreateLogger());
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-        var imagePageService = new ImagePageService(imagePage, Substitute.For<IFileDetailRepository>(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IFileClassificationCategoriesRepository>(), Substitute.For<IImageDimensionReader>());
+        var imagePageService = new ImagePageService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), RepositoryTestDoubles.BuildScrapedTagRepository(), Substitute.For<IImageDimensionReader>());
 
         var sut = new SearchWorkflow(searchResultsPage, scrapeConfiguration, configurationSaver, imagePageService, Substitute.For<IDirectoryHelper>(), Substitute.For<ILogger>(), delayStrategy, System.TimeProvider.System, new PagedScrapeRunner(configurationSaver, delayStrategy));
 
@@ -125,7 +125,7 @@ public sealed class GivenASearchWorkflowWithADelayStrategy : IAsyncLifetime
         var fileClassificationService = new FileClassificationService(contextFactory, new LoggerConfiguration().CreateLogger());
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-        var imagePageService = new ImagePageService(imagePage, Substitute.For<IFileDetailRepository>(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IFileClassificationCategoriesRepository>(), Substitute.For<IImageDimensionReader>());
+        var imagePageService = new ImagePageService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), RepositoryTestDoubles.BuildScrapedTagRepository(), Substitute.For<IImageDimensionReader>());
 
         var sut = new SearchWorkflow(searchResultsPage, scrapeConfiguration, configurationSaver, imagePageService, Substitute.For<IDirectoryHelper>(), Substitute.For<ILogger>(), delayStrategy, System.TimeProvider.System, new PagedScrapeRunner(configurationSaver, delayStrategy));
 
@@ -158,7 +158,7 @@ public sealed class GivenASearchWorkflowWithADelayStrategy : IAsyncLifetime
         var imagePage = new ImagePage(playwrightService, scrapeConfiguration, new(), new());
         var fileClassificationService = new FileClassificationService(contextFactory, new LoggerConfiguration().CreateLogger());
         var delayStrategy = new NoOpDelayStrategy();
-        var imagePageService = new ImagePageService(imagePage, Substitute.For<IFileDetailRepository>(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IFileClassificationCategoriesRepository>(), Substitute.For<IImageDimensionReader>());
+        var imagePageService = new ImagePageService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), fileClassificationService, scrapeConfiguration, System.TimeProvider.System, new LoggerConfiguration().CreateLogger(), Substitute.For<IDirectoryHelper>(), new(), delayStrategy, Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), RepositoryTestDoubles.BuildScrapedTagRepository(), Substitute.For<IImageDimensionReader>());
 
         var sut = new SearchWorkflow(searchResultsPage, scrapeConfiguration, configurationSaver, imagePageService, Substitute.For<IDirectoryHelper>(), Substitute.For<ILogger>(), delayStrategy, System.TimeProvider.System, new PagedScrapeRunner(configurationSaver, delayStrategy));
 

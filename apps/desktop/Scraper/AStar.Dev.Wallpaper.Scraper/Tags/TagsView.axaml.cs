@@ -38,7 +38,7 @@ public partial class TagsView : Window, IDisposable
                 ResetCancellationTokenSource().Tap(onSuccess: DisableControlsAndClearStatus, onFailure: LogSetupFailure),
                 ct => Result.Success<CancellationToken, string>(ct)
                     .Tap(_ => logger.Information("Exporting tags..."))
-                    .MapAsync(_ => scrapedTagService.ExportScrapedTagsAsync(ct))
+                    .BindAsync(_ => scrapedTagService.ExportScrapedTagsAsync(ct).ToStringError())
                     .Tap(importExportService.ExportScrapedTagsToFile)
                     .TapAsync(_ => logger.Information("Tag export completed...")));
         }
@@ -57,7 +57,7 @@ public partial class TagsView : Window, IDisposable
                 ct => Result.Success<CancellationToken, string>(ct)
                     .Tap(_ => logger.Information("Importing tags..."))
                     .Bind(_ => importExportService.ImportScrapedTagsFromFile().ToStringError())
-                    .MapAsync(tags => scrapedTagService.ImportScrapedTagsAsync(tags, ct))
+                    .BindAsync(tags => scrapedTagService.ImportScrapedTagsAsync(tags, ct).ToStringError())
                     .TapAsync(_ => logger.Information("Tag import completed...")));
         }
         finally

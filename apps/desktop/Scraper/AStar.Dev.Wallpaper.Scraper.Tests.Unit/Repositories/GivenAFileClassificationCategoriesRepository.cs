@@ -42,7 +42,7 @@ public sealed class GivenAFileClassificationCategoriesRepository : IAsyncLifetim
     [Fact]
     public async Task when_saving_a_tag_that_already_exists_under_the_same_category_then_it_is_not_duplicated()
     {
-        await sut.SaveAsync([new TagData("Red", "Cars")]);
+        await sut.SaveAsync([new TagData("Red", "Cars")], TestContext.Current.CancellationToken);
 
         await using var verifyContext = new AppDbContext(options);
         int count = await verifyContext.FileClassificationCategories.CountAsync(c => c.Name == "Red" && c.ParentId == carsId, TestContext.Current.CancellationToken);
@@ -52,7 +52,7 @@ public sealed class GivenAFileClassificationCategoriesRepository : IAsyncLifetim
     [Fact]
     public async Task when_saving_a_new_tag_under_an_existing_category_then_it_is_added()
     {
-        await sut.SaveAsync([new TagData("Blue", "Cars")]);
+        await sut.SaveAsync([new TagData("Blue", "Cars")], TestContext.Current.CancellationToken);
 
         await using var verifyContext = new AppDbContext(options);
         bool exists = await verifyContext.FileClassificationCategories.AnyAsync(c => c.Name == "Blue", TestContext.Current.CancellationToken);

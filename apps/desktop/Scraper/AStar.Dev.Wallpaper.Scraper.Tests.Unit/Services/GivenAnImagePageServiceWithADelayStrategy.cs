@@ -110,7 +110,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
             imageRetriever,
             imageSaver,
             fileSystem,
-            scrapedTagRepository ?? Substitute.For<IFileClassificationCategoriesRepository>(),
+            scrapedTagRepository ?? RepositoryTestDoubles.BuildScrapedTagRepository(),
             imageDimensionReader ?? BuildDefaultImageDimensionReader());
     }
 
@@ -134,8 +134,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_file_already_exists_then_the_delay_strategy_receives_the_image_already_downloaded_delay()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(true);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: true);
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
@@ -150,8 +149,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_file_does_not_already_exist_then_the_delay_strategy_receives_the_before_image_delay()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
@@ -173,8 +171,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_image_retriever_always_fails_then_get_the_image_pages_async_retries_exactly_once_before_returning_a_failure()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
@@ -196,8 +193,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_image_retriever_always_fails_then_the_delay_strategy_receives_exactly_one_retry_delay()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var delayStrategy = Substitute.For<IDelayStrategy>();
         delayStrategy.DelayAsync(Arg.Any<DelayKind>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
@@ -218,8 +214,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_image_retriever_always_fails_then_the_final_result_is_an_image_download_failed_error()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
         var directoryHelper = Substitute.For<IDirectoryHelper>();
         directoryHelper.CreateDirectoryIfRequired(Arg.Any<List<string>>()).Returns(new DirectoryName("/save/dir"));
@@ -238,8 +233,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     [Fact]
     public async Task when_the_image_retriever_fails_once_then_succeeds_then_the_final_result_is_ok()
     {
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
-        fileDetailRepository.ExistsAsync(Arg.Any<string>()).Returns(false);
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository(exists: false);
         var imagePage = BuildImagePageReturningScrapedImage(ImageUrl);
         var directoryHelper = Substitute.For<IDirectoryHelper>();
         directoryHelper.CreateDirectoryIfRequired(Arg.Any<List<string>>()).Returns(new DirectoryName("/save/dir"));
@@ -274,26 +268,26 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/save/dir");
-        var scrapedTagRepository = Substitute.For<IFileClassificationCategoriesRepository>();
+        var scrapedTagRepository = RepositoryTestDoubles.BuildScrapedTagRepository();
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper, scrapedTagRepository);
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper, scrapedTagRepository);
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await scrapedTagRepository.Received(1).SaveAsync(Arg.Any<IReadOnlyList<TagData>>());
+        await scrapedTagRepository.Received(1).SaveAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task when_processing_a_skipped_image_then_the_scraped_tag_repository_is_saved_to_exactly_once()
     {
         var imagePage = BuildImagePageReturningSkippedImage();
-        var scrapedTagRepository = Substitute.For<IFileClassificationCategoriesRepository>();
+        var scrapedTagRepository = RepositoryTestDoubles.BuildScrapedTagRepository();
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>(), scrapedTagRepository);
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>(), scrapedTagRepository);
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await scrapedTagRepository.Received(1).SaveAsync(Arg.Any<IReadOnlyList<TagData>>());
+        await scrapedTagRepository.Received(1).SaveAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -302,7 +296,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         var imagePage = BuildImagePageReturningSkippedImage();
         var imageRetriever = Substitute.For<IImageRetriever>();
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), imageRetriever, Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>());
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), imageRetriever, Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>());
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
@@ -314,7 +308,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
     {
         var imagePage = BuildImagePageReturningSkippedImage();
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>());
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), Substitute.For<IImageRetriever>(), Substitute.For<IImageSaver>(), new MockFileSystem(), Substitute.For<IDirectoryHelper>());
 
         var result = await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
@@ -331,13 +325,13 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/save/dir");
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository();
 
         var sut = BuildService(imagePage, fileDetailRepository, new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper);
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await fileDetailRepository.Received(1).AddAsync(Arg.Any<FileDetailEntity>());
+        await fileDetailRepository.Received(1).AddAsync(Arg.Any<FileDetailEntity>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -350,7 +344,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/save/dir");
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository();
         var imageDimensionReader = Substitute.For<IImageDimensionReader>();
         imageDimensionReader.Read(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Result.Success<ImageDimensions, ScrapeError>(new ImageDimensions(40, 20)));
 
@@ -358,7 +352,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await fileDetailRepository.Received(1).AddAsync(Arg.Is<FileDetailEntity>(detail => detail.ImageDetail.Width == 40 && detail.ImageDetail.Height == 20));
+        await fileDetailRepository.Received(1).AddAsync(Arg.Is<FileDetailEntity>(detail => detail.ImageDetail.Width == 40 && detail.ImageDetail.Height == 20), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -371,7 +365,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/save/dir");
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository();
         var imageDimensionReader = Substitute.For<IImageDimensionReader>();
         imageDimensionReader.Read(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Result.Failure<ImageDimensions, ScrapeError>(ScrapeErrorFactory.CreateImageDimensionReadFailed("/save/dir/12345.data", "invalid image")));
 
@@ -380,7 +374,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         var result = await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
-        await fileDetailRepository.Received(1).AddAsync(Arg.Any<FileDetailEntity>());
+        await fileDetailRepository.Received(1).AddAsync(Arg.Any<FileDetailEntity>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -396,7 +390,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         var imageDimensionReader = Substitute.For<IImageDimensionReader>();
         imageDimensionReader.Read(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Result.Failure<ImageDimensions, ScrapeError>(ScrapeErrorFactory.CreateImageDimensionReadFailed("/save/dir/12345.data", "dimension reader not under test")));
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper, imageDimensionReader: imageDimensionReader);
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), imageRetriever, BuildSucceedingImageSaver(), fileSystem, directoryHelper, imageDimensionReader: imageDimensionReader);
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
@@ -414,7 +408,7 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         var imageSaver = Substitute.For<IImageSaver>();
         imageSaver.SaveAsync(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Task.FromResult(Result.Failure<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(ScrapeErrorFactory.CreateImageSaveFailed("/save/dir/12345.data", "disk full"))));
 
-        var sut = BuildService(imagePage, Substitute.For<IFileDetailRepository>(), new NoOpDelayStrategy(), imageRetriever, imageSaver, new MockFileSystem(), directoryHelper);
+        var sut = BuildService(imagePage, RepositoryTestDoubles.BuildFileDetailRepository(), new NoOpDelayStrategy(), imageRetriever, imageSaver, new MockFileSystem(), directoryHelper);
 
         var result = await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
@@ -431,12 +425,12 @@ public sealed class GivenAnImagePageServiceWithADelayStrategy : IAsyncLifetime
         imageRetriever.GetImageAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(Result.Success<byte[], ScrapeError>([1, 2, 3,])));
         var imageSaver = Substitute.For<IImageSaver>();
         imageSaver.SaveAsync(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Task.FromResult(Result.Failure<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(ScrapeErrorFactory.CreateImageSaveFailed("/save/dir/12345.data", "disk full"))));
-        var fileDetailRepository = Substitute.For<IFileDetailRepository>();
+        var fileDetailRepository = RepositoryTestDoubles.BuildFileDetailRepository();
 
         var sut = BuildService(imagePage, fileDetailRepository, new NoOpDelayStrategy(), imageRetriever, imageSaver, new MockFileSystem(), directoryHelper);
 
         await sut.ProcessImagePageAsync(Link, CategoryName, new PageClassificationData([], null, []), TestContext.Current.CancellationToken);
 
-        await fileDetailRepository.DidNotReceive().AddAsync(Arg.Any<FileDetailEntity>());
+        await fileDetailRepository.DidNotReceive().AddAsync(Arg.Any<FileDetailEntity>(), Arg.Any<CancellationToken>());
     }
 }
