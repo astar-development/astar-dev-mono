@@ -65,17 +65,17 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
         _ = directoryHelper.CreateDirectoryIfRequired([progress.ScrapeDirectories.RootDirectory.CombinePath(progress.ScrapeDirectories.BaseDirectory, pageInfo.SubDirectoryName),]);
 
         return await ProcessAllCategoryPagesAsync(searchCategory, combinedSearchString, cancellationToken)
-            .BindAsync(_ => SaveCategoryProgressAsync(searchCategory, pageInfo))
+            .BindAsync(_ => SaveCategoryProgressAsync(searchCategory, pageInfo, cancellationToken))
             .ConfigureAwait(false);
     }
 
-    private Task<Result<Unit, ScrapeError>> SaveCategoryProgressAsync(Category searchCategory, PageInfo pageInfo)
+    private Task<Result<Unit, ScrapeError>> SaveCategoryProgressAsync(Category searchCategory, PageInfo pageInfo, CancellationToken cancellationToken)
     {
         searchCategory.LastKnownImageCount = pageInfo.ImageCount;
         searchCategory.TotalPages = pageInfo.PageCount;
         searchCategory.LastPageVisited = 0;
 
-        return configurationSaver.SaveUpdatedConfigurationAsync();
+        return configurationSaver.SaveUpdatedConfigurationAsync(cancellationToken);
     }
 
     private async Task<Result<Unit, ScrapeError>> ProcessAllCategoryPagesAsync(Category searchCategory, string combinedSearchString, CancellationToken cancellationToken)

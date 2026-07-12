@@ -35,7 +35,7 @@ public sealed class SubscriptionsWorkflow(
 
     private async Task<Result<Unit, ScrapeError>> ProcessSubscriptionsAsync(PageInfo pageInfo, CancellationToken cancellationToken)
     {
-        await configurationSaver.SaveUpdatedConfigurationAsync().ConfigureAwait(false);
+        await configurationSaver.SaveUpdatedConfigurationAsync(cancellationToken).ConfigureAwait(false);
 
         var plan = PagedScrapePlanFactory.Create(
             FirstPageNumber,
