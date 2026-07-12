@@ -140,6 +140,8 @@
     "gh": true,
     "git checkout": true,
     "git mv": true,
-    "dotnet clean": true
+    "dotnet clean": true,
+    "git add": true,
+    "git commit": true
   }
 }

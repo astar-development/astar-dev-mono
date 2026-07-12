@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scraper.Support;
 
-public sealed class ScrapeConfigurationManager
+public class ScrapeConfigurationManager
 {
     private readonly IDbContextFactory<AppDbContext> contextFactory;
 
@@ -19,7 +19,7 @@ public sealed class ScrapeConfigurationManager
         Current = context.ScrapeConfiguration.GetScrapeConfigurations().ToAppModel();
     }
 
-    public async Task ReloadAsync(CancellationToken cancellationToken = default)
+    public virtual async Task ReloadAsync(CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 

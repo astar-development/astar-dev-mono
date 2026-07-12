@@ -28,15 +28,13 @@ public partial class ScrapeConfigurationView : Window, IDisposable
     protected override async void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        await ((ScrapeConfigurationViewModel)DataContext!).LoadAsync();
+        await ((ScrapeConfigurationViewModel)DataContext!).LoadAsync(CancellationToken.None);
     }
 
-    protected override async void OnClosed(EventArgs e)
+    protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
         cts?.Dispose();
-        if (DataContext is IAsyncDisposable disposable)
-            await disposable.DisposeAsync();
     }
 
     private void OnCloseClicked(object? sender, RoutedEventArgs e) => Close();
