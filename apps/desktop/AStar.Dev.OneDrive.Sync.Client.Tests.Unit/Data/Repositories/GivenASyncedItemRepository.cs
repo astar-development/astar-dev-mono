@@ -56,19 +56,6 @@ public sealed class GivenASyncedItemRepository
         return fileDetail;
     }
 
-    private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory) CreateInMemoryFactory()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        var seedingContext = new AppDbContext(options);
-        _ = seedingContext.Database.EnsureCreated();
-        var factory = Substitute.For<IDbContextFactory<AppDbContext>>();
-        factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
-
-        return (seedingContext, factory);
-    }
-
     private static (AppDbContext seedingContext, IDbContextFactory<AppDbContext> factory, SqliteConnection connection) CreateSqliteFactory()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
@@ -92,7 +79,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_name_fragment_then_only_matching_items_are_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/docs/report.pdf"));
         db.SyncedItems.Add(FileItem(remotePath: "/photos/holiday.jpg"));
@@ -108,7 +96,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_min_bytes_then_items_below_threshold_are_excluded()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/small.txt", sizeInBytes: 100));
         db.SyncedItems.Add(FileItem(remotePath: "/large.bin", sizeInBytes: 5000));
@@ -124,7 +113,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_max_bytes_then_items_above_threshold_are_excluded()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/small.txt", sizeInBytes: 100));
         db.SyncedItems.Add(FileItem(remotePath: "/large.bin", sizeInBytes: 5000));
@@ -140,7 +130,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_size_filter_and_item_has_null_size_then_item_is_excluded()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/unknown-size.bin", sizeInBytes: null));
         db.SyncedItems.Add(FileItem(remotePath: "/known.txt", sizeInBytes: 500));
@@ -178,7 +169,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_duplicates_only_then_only_duplicate_files_are_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/docs/file.pdf", sizeInBytes: 2048));
         db.SyncedItems.Add(FileItem(remotePath: "/backup/file.pdf", sizeInBytes: 2048));
@@ -195,7 +187,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_then_folders_are_always_excluded()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/docs", isFolder: true));
         db.SyncedItems.Add(FileItem(remotePath: "/docs/file.txt", isFolder: false));
@@ -211,7 +204,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_is_called_with_combined_name_and_size_criteria_then_both_filters_apply()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/docs/report.pdf", sizeInBytes: 5000));
         db.SyncedItems.Add(FileItem(remotePath: "/docs/summary.pdf", sizeInBytes: 100));
@@ -274,7 +268,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_get_distinct_tag_names_is_called_for_account_with_no_classifications_then_empty_list_is_returned()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.Add(FileItem(remotePath: "/file.txt"));
         _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -334,7 +329,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_sort_order_is_name_ascending_then_results_are_ordered_a_to_z()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.AddRange(
             FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
@@ -354,7 +350,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_sort_order_is_name_descending_then_results_are_ordered_z_to_a()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.AddRange(
             FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
@@ -374,7 +371,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_sort_order_is_size_ascending_then_results_are_ordered_smallest_first()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.AddRange(
             FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
@@ -394,7 +392,8 @@ public sealed class GivenASyncedItemRepository
     [Fact]
     public async Task when_search_sort_order_is_size_descending_then_results_are_ordered_largest_first()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
         var repository = new SyncedItemRepository(factory);
         db.SyncedItems.AddRange(
             FileItem(remotePath: "/files/bravo.txt", sizeInBytes: 2000),
