@@ -38,7 +38,7 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
+        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, TestContext.Current.CancellationToken);
 
         var classification = await context.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         classification.Level.ShouldBe(3);
@@ -49,7 +49,7 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
+        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, TestContext.Current.CancellationToken);
 
         var keyword = await context.FileClassificationKeywords.SingleAsync(TestContext.Current.CancellationToken);
         keyword.Keyword.ShouldBe("animals");
@@ -60,7 +60,7 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
+        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, TestContext.Current.CancellationToken);
 
         var category = await context.FileClassificationCategories.SingleAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         var keyword = await context.FileClassificationKeywords.SingleAsync(TestContext.Current.CancellationToken);
@@ -72,7 +72,7 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context, TestContext.Current.CancellationToken);
 
         int configurationCount = await context.ScrapeConfiguration.CountAsync(TestContext.Current.CancellationToken);
         configurationCount.ShouldBe(1);
@@ -83,8 +83,8 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
-        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context, TestContext.Current.CancellationToken);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context, TestContext.Current.CancellationToken);
 
         int configurationCount = await context.ScrapeConfiguration.CountAsync(TestContext.Current.CancellationToken);
         configurationCount.ShouldBe(1);
@@ -95,7 +95,7 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedScrapeConfigurationAsync(logger, context);
+        await DataSeed.SeedScrapeConfigurationAsync(logger, context, TestContext.Current.CancellationToken);
 
         var configuration = context.ScrapeConfiguration.GetScrapeConfigurations();
         configuration.ShouldNotBeNull();
@@ -106,12 +106,48 @@ public sealed class GivenDataSeed : IAsyncLifetime
     {
         var logger = new LoggerConfiguration().CreateLogger();
 
-        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
-        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context);
+        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, TestContext.Current.CancellationToken);
+        await DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, TestContext.Current.CancellationToken);
 
         int categoryCount = await context.FileClassificationCategories.CountAsync(c => c.Name == "Animals", TestContext.Current.CancellationToken);
         int keywordCount = await context.FileClassificationKeywords.CountAsync(TestContext.Current.CancellationToken);
         categoryCount.ShouldBe(1);
         keywordCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_seeding_tags_to_ignore_with_a_cancelled_token_then_an_operation_canceled_exception_is_thrown()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+        using var tokenSource = new CancellationTokenSource();
+        await tokenSource.CancelAsync();
+
+        var exception = await Record.ExceptionAsync(() => DataSeed.SeedTagsToIgnoreAsync(logger, context, tokenSource.Token));
+
+        exception.ShouldBeAssignableTo<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task when_seeding_scrape_configuration_with_a_cancelled_token_then_an_operation_canceled_exception_is_thrown()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+        using var tokenSource = new CancellationTokenSource();
+        await tokenSource.CancelAsync();
+
+        var exception = await Record.ExceptionAsync(() => DataSeed.SeedScrapeConfigurationAsync(logger, context, tokenSource.Token));
+
+        exception.ShouldBeAssignableTo<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task when_seeding_file_classifications_with_a_cancelled_token_then_an_operation_canceled_exception_is_thrown()
+    {
+        var logger = new LoggerConfiguration().CreateLogger();
+        using var tokenSource = new CancellationTokenSource();
+        await tokenSource.CancelAsync();
+
+        var exception = await Record.ExceptionAsync(() => DataSeed.SeedFileClassificationsAsync(csvPath, logger, context, tokenSource.Token));
+
+        exception.ShouldBeAssignableTo<OperationCanceledException>();
     }
 }

@@ -48,9 +48,38 @@ public sealed class GivenAConfigurationSaver : IAsyncLifetime
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
         var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
 
-        var result = await sut.SaveUpdatedConfigurationAsync();
+        var result = await sut.SaveUpdatedConfigurationAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Ok<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>();
+    }
+
+    [Fact]
+    public async Task when_saving_with_a_cancellation_token_then_the_token_is_passed_to_the_context_factory()
+    {
+        var scrapeConfiguration = new ScrapeConfigurationBuilder().Build();
+        var contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
+        var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
+        using var tokenSource = new CancellationTokenSource();
+
+        await sut.SaveUpdatedConfigurationAsync(tokenSource.Token);
+
+        await contextFactory.Received(1).CreateDbContextAsync(tokenSource.Token);
+    }
+
+    [Fact]
+    public async Task when_saving_with_a_cancelled_token_then_an_operation_canceled_exception_is_thrown()
+    {
+        var scrapeConfiguration = new ScrapeConfigurationBuilder().Build();
+        var contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
+        var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
+        using var tokenSource = new CancellationTokenSource();
+        await tokenSource.CancelAsync();
+
+        var exception = await Record.ExceptionAsync(() => sut.SaveUpdatedConfigurationAsync(tokenSource.Token));
+
+        exception.ShouldBeAssignableTo<OperationCanceledException>();
     }
 
     [Fact]
@@ -63,7 +92,7 @@ public sealed class GivenAConfigurationSaver : IAsyncLifetime
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
         var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
 
-        await sut.SaveUpdatedConfigurationAsync();
+        await sut.SaveUpdatedConfigurationAsync(TestContext.Current.CancellationToken);
 
         await using var verifyContext = new AppDbContext(options);
         var saved = await verifyContext.SearchConfigurations.SelectMany(sc => sc.SearchCategories).SingleAsync(c => c.Id == "cat-new", TestContext.Current.CancellationToken);
@@ -78,7 +107,7 @@ public sealed class GivenAConfigurationSaver : IAsyncLifetime
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("db unavailable"));
         var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
 
-        var result = await sut.SaveUpdatedConfigurationAsync();
+        var result = await sut.SaveUpdatedConfigurationAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Fail<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>>().Error.ShouldBeOfType<ConfigurationSaveFailed>();
     }
@@ -91,7 +120,7 @@ public sealed class GivenAConfigurationSaver : IAsyncLifetime
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("db unavailable"));
         var sut = new ConfigurationSaver(scrapeConfiguration, new LoggerConfiguration().CreateLogger(), contextFactory);
 
-        var exception = await Record.ExceptionAsync(() => sut.SaveUpdatedConfigurationAsync());
+        var exception = await Record.ExceptionAsync(() => sut.SaveUpdatedConfigurationAsync(TestContext.Current.CancellationToken));
 
         exception.ShouldBeNull();
     }
