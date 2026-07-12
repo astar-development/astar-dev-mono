@@ -157,7 +157,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var categories = await db.FileClassifications
-            .Where(jt => db.SyncedItems.Any(i => i.AccountId == accountId && i.FileDetailId != null && i.FileDetailId == jt.FileDetailId))
+            .Where(jt => db.SyncedItems.Any(i => (i.AccountId == accountId) && i.FileDetailId != null && i.FileDetailId == jt.FileDetailId))
             .Select(jt => jt.Category!.Name)
             .Distinct()
             .OrderBy(name => name)
