@@ -31,17 +31,75 @@ public sealed class FileClassificationImportExportService(IDbContextFactory<AppD
 
     private async Task<Result<Unit, ScrapeError>> ImportLevelAsync(AppDbContext context, int level, (List<FileClassificationCategoryEntity> Categories, List<FileClassificationKeywordEntity> Keywords) classifications, CancellationToken token)
     {
-        var categoriesInLevel = classifications.Categories.Where(c => c.Level == level).OrderBy(c => c.ParentId).ThenBy(c => c.Name);
+        var categoriesInLevel = classifications.Categories.Where(c => c.Level == level).OrderBy(c => c.ParentId).ThenBy(c => c.Name).ToList();
 
-        foreach (var category in categoriesInLevel)
-            await ImportCategoryAsync(context, category, classifications.Keywords, token)
-                .TapAsync(onSuccess: _ => { }, onFailure: error => logger.Error("Failed to import classification category: {CategoryName} (Level {Level}). {ErrorMessage}", category.Name, category.Level, error.Message))
+        logger.Information("Importing {Count} categories for level {Level}", categoriesInLevel.Count, level);
+
+        return await BatchImportLevelAsync(context, categoriesInLevel, classifications.Keywords, token)
+            .OrElseAsync(_ => FallbackImportLevelAsync(context, categoriesInLevel, classifications.Keywords, token));
+    }
+
+    private async Task<Result<Unit, ScrapeError>> BatchImportLevelAsync(AppDbContext context, List<FileClassificationCategoryEntity> categories, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
+        => (await Try.RunAsync(() => BatchImportLevelInternalAsync(context, categories, keywords, token)).ConfigureAwait(false))
+            .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(BatchImportLevelAsync), exception.Message))
+            .Tap(
+                onSuccess: _ => logger.Information("Successfully batch-imported {Count} categories", categories.Count),
+                onFailure: error =>
+                {
+                    logger.Warning("Batch import failed: {ErrorMessage}. Falling back to individual processing.", error.Message);
+                    DetachUnsavedEntries(context);
+                });
+
+    private static async Task<Unit> BatchImportLevelInternalAsync(AppDbContext context, List<FileClassificationCategoryEntity> categories, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
+    {
+        foreach (var category in categories)
+        {
+            var target = await FindExistingCategoryAsync(context, category, token).ConfigureAwait(false);
+
+            if (target is null)
+            {
+                target = new FileClassificationCategoryEntity
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Level = category.Level,
+                    ParentId = category.ParentId,
+                    IsFamous = category.IsFamous,
+                    IsInternet = category.IsInternet,
+                    IncludeInSearch = category.IncludeInSearch
+                };
+                context.FileClassificationCategories.Add(target);
+            }
+            else
+            {
+                target.IsFamous = category.IsFamous;
+                target.IsInternet = category.IsInternet;
+                target.IncludeInSearch = category.IncludeInSearch;
+            }
+
+            await AddMissingKeywordsAsync(context, target.Id, category.Id, keywords, token).ConfigureAwait(false);
+        }
+
+        await context.SaveChangesAsync(token).ConfigureAwait(false);
+
+        return Unit.Value;
+    }
+
+    private async Task<Result<Unit, ScrapeError>> FallbackImportLevelAsync(AppDbContext context, List<FileClassificationCategoryEntity> categories, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
+    {
+        logger.Information("Processing {Count} categories individually with fallback handling", categories.Count);
+
+        foreach (var category in categories)
+            await ImportCategoryWithFallbackAsync(context, category, keywords, token)
+                .TapAsync(
+                    onSuccess: _ => { },
+                    onFailure: error => logger.Error("Failed to import category: {CategoryName} (Level {Level}). {ErrorMessage}", category.Name, category.Level, error.Message))
                 .ConfigureAwait(false);
 
         return Result.Success<Unit, ScrapeError>(Unit.Value);
     }
 
-    private async Task<Result<Unit, ScrapeError>> ImportCategoryAsync(AppDbContext context, FileClassificationCategoryEntity category, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
+    private async Task<Result<Unit, ScrapeError>> ImportCategoryWithFallbackAsync(AppDbContext context, FileClassificationCategoryEntity category, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
     {
         logger.Information("Importing classification category: {CategoryName} (Level {Level})", category.Name, category.Level);
 
