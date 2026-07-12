@@ -15,27 +15,27 @@ public static class DataSeed
         "Sarah Jay", "Sara Jay", "fan art"
     ];
 
-    public static async Task SeedTagsToIgnoreAsync(Logger logger, AppDbContext dbContext)
+    public static async Task SeedTagsToIgnoreAsync(Logger logger, AppDbContext dbContext, CancellationToken cancellationToken)
     {
         if (!dbContext.TagsToIgnore.Any(t => t.IgnoreImage))
         {
             logger.Information("Seeding tags to ignore completely...");
             dbContext.TagsToIgnore.AddRange(
                 TagsToIgnoreCompletelyValues.Distinct().Select(tag => new TagToIgnoreEntity { Value = tag, IgnoreImage = true }));
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 
-    public static async Task SeedScrapeConfigurationAsync(Logger logger, AppDbContext dbContext)
+    public static async Task SeedScrapeConfigurationAsync(Logger logger, AppDbContext dbContext, CancellationToken cancellationToken)
     {
         if (dbContext.ScrapeConfiguration.Any()) return;
 
         logger.Information("Seeding default scrape configuration...");
         dbContext.ScrapeConfiguration.Add(new ScrapeConfigurationEntity());
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public static async Task SeedFileClassificationsAsync(string csvPath, Logger logger, AppDbContext dbContext)
+    public static async Task SeedFileClassificationsAsync(string csvPath, Logger logger, AppDbContext dbContext, CancellationToken cancellationToken)
     {
         if (!File.Exists(csvPath)) return;
 
@@ -43,7 +43,7 @@ public static class DataSeed
 
         logger.Information("Seeding file classifications from {CsvPath}...", csvPath);
 
-        string[] lines = await File.ReadAllLinesAsync(csvPath);
+        string[] lines = await File.ReadAllLinesAsync(csvPath, cancellationToken);
         var rows = lines.Skip(1)
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .Select(line => line.Split(','))
@@ -74,6 +74,6 @@ public static class DataSeed
                 dbContext.FileClassificationKeywords.Add(new FileClassificationKeywordEntity { Keyword = row.FileNameContains, Category = classification });
         }
 
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

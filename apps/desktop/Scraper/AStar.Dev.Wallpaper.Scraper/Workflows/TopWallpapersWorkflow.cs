@@ -41,7 +41,7 @@ public sealed class TopWallpapersWorkflow(
     {
         logger.Information("There are a total of {TopWallpapersPageCount} pages for the Top Wallpapers.", searchConfiguration.TopWallpapersTotalPages);
 
-        await configurationSaver.SaveUpdatedConfigurationAsync().ConfigureAwait(false);
+        await configurationSaver.SaveUpdatedConfigurationAsync(cancellationToken).ConfigureAwait(false);
 
         var plan = PagedScrapePlanFactory.Create(
             searchConfiguration.TopWallpapersStartingPageNumber,

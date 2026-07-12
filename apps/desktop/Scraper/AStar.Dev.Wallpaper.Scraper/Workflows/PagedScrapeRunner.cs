@@ -19,7 +19,7 @@ public sealed class PagedScrapeRunner(ConfigurationSaver configurationSaver, IDe
             await delayStrategy.DelayAsync(DelayKind.PageNavigation, cancellationToken).ConfigureAwait(false);
             plan.RecordProgress(pageNumber);
 
-            var pageResult = await configurationSaver.SaveUpdatedConfigurationAsync()
+            var pageResult = await configurationSaver.SaveUpdatedConfigurationAsync(cancellationToken)
                 .BindAsync(_ => plan.LoadPageAsync(pageNumber))
                 .BindAsync(_ => plan.GetLinksAsync())
                 .BindAsync(links => plan.ProcessLinksAsync(links, cancellationToken))

@@ -9,18 +9,18 @@ namespace AStar.Dev.Wallpaper.Scraper.Support;
 
 public sealed class ConfigurationSaver(ScrapeConfiguration scrapeConfiguration, Logger logger, IDbContextFactory<AppDbContext> contextFactory)
 {
-    public async Task<Result<Unit, ScrapeError>> SaveUpdatedConfigurationAsync()
-        => (await Try.RunAsync(UpdateAndSaveTheConfigurationAsync).ConfigureAwait(false))
+    public async Task<Result<Unit, ScrapeError>> SaveUpdatedConfigurationAsync(CancellationToken cancellationToken)
+        => (await Try.RunAsync(() => UpdateAndSaveTheConfigurationAsync(cancellationToken), cancellationToken).ConfigureAwait(false))
             .Tap(_ => { }, exception => logger.Error(exception.GetBaseException().Message))
             .ToResult<Unit, ScrapeError>(exception => ScrapeErrorFactory.CreateConfigurationSaveFailed(exception.Message));
 
-    private async Task<Unit> UpdateAndSaveTheConfigurationAsync()
+    private async Task<Unit> UpdateAndSaveTheConfigurationAsync(CancellationToken cancellationToken)
     {
-        await using var dbContext = await contextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        await using var dbContext = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var entity = await dbContext.ScrapeConfiguration
                                     .Include(e => e.SearchConfiguration)
                                     .ThenInclude(sc => sc.SearchCategories)
-                                    .SingleAsync().ConfigureAwait(false);
+                                    .SingleAsync(cancellationToken).ConfigureAwait(false);
 
         var existingCategories = entity.SearchConfiguration.SearchCategories
                                         .Select(existing => (existing.Id, existing.Name, existing.LastKnownImageCount, existing.LastPageVisited, existing.TotalPages));
@@ -30,7 +30,7 @@ public sealed class ConfigurationSaver(ScrapeConfiguration scrapeConfiguration, 
         ApplyUpdates(entity, toUpdate);
         ApplyAdditions(entity, toAdd);
 
-        await dbContext.SaveChangesAsync().ConfigureAwait(false);
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return Unit.Value;
     }
