@@ -1,88 +1,90 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Wallpaper.Scraper.Models;
 using AStar.Dev.Wallpaper.Scraper.Support;
 using AStar.Dev.Wallpaper.Scraper.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scraper.ScrapeConfigurationEditor;
 
-public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
+public class ScrapeConfigurationViewModel : ViewModelBase
 {
-    private readonly AppDbContext _context;
-    private readonly ScrapeConfigurationManager _scrapeConfigurationManager;
-    private ScrapeConfigurationEntity? _entity;
+    private readonly IDbContextFactory<AppDbContext> contextFactory;
+    private readonly ScrapeConfigurationManager scrapeConfigurationManager;
+    private ScrapeConfigurationEntity? entity;
 
-    private bool _isLoading;
-    private string _statusMessage = string.Empty;
+    private bool isLoading;
+    private string statusMessage = string.Empty;
 
-    private string _sqlite = string.Empty;
+    private string sqlite = string.Empty;
 
-    private string _loginEmailAddress = string.Empty;
-    private string _username = string.Empty;
-    private string _password = string.Empty;
-    private string _sessionCookie = string.Empty;
+    private string loginEmailAddress = string.Empty;
+    private string username = string.Empty;
+    private string password = string.Empty;
+    private string sessionCookie = string.Empty;
 
-    private string _baseUrl = string.Empty;
-    private string _apiKey = string.Empty;
-    private string _loginUrl = string.Empty;
-    private string _searchString = string.Empty;
-    private string _searchStringPrefix = string.Empty;
-    private string _searchStringSuffix = string.Empty;
-    private string _topWallpapers = string.Empty;
-    private string _subscriptions = string.Empty;
-    private int _imagePauseInSeconds;
-    private int _startingPageNumber;
-    private int _totalPages;
-    private bool _useHeadless;
-    private decimal? _slowMotionDelay;
-    private int _subscriptionsStartingPageNumber;
-    private int _subscriptionsTotalPages;
-    private int _topWallpapersTotalPages;
-    private int _topWallpapersStartingPageNumber;
+    private string baseUrl = string.Empty;
+    private string apiKey = string.Empty;
+    private string loginUrl = string.Empty;
+    private string searchString = string.Empty;
+    private string searchStringPrefix = string.Empty;
+    private string searchStringSuffix = string.Empty;
+    private string topWallpapers = string.Empty;
+    private string subscriptions = string.Empty;
+    private int imagePauseInSeconds;
+    private int startingPageNumber;
+    private int totalPages;
+    private bool useHeadless;
+    private decimal? slowMotionDelay;
+    private int subscriptionsStartingPageNumber;
+    private int subscriptionsTotalPages;
+    private int topWallpapersTotalPages;
+    private int topWallpapersStartingPageNumber;
 
-    private string _rootDirectory = string.Empty;
-    private string _baseSaveDirectory = string.Empty;
-    private string _baseDirectory = string.Empty;
-    private string _baseDirectoryFamous = string.Empty;
-    private string _subDirectoryName = string.Empty;
+    private string rootDirectory = string.Empty;
+    private string baseSaveDirectory = string.Empty;
+    private string baseDirectory = string.Empty;
+    private string baseDirectoryFamous = string.Empty;
+    private string subDirectoryName = string.Empty;
 
-    public bool IsLoading { get => _isLoading; private set => SetProperty(ref _isLoading, value); }
-    public string StatusMessage { get => _statusMessage; private set => SetProperty(ref _statusMessage, value); }
+    public bool IsLoading { get => isLoading; private set => SetProperty(ref isLoading, value); }
+    public string StatusMessage { get => statusMessage; private set => SetProperty(ref statusMessage, value); }
 
     internal void UpdateStatus(string message) => StatusMessage = message;
 
-    public string Sqlite { get => _sqlite; set => SetProperty(ref _sqlite, value); }
+    public string Sqlite { get => sqlite; set => SetProperty(ref sqlite, value); }
 
-    public string LoginEmailAddress { get => _loginEmailAddress; set => SetProperty(ref _loginEmailAddress, value); }
-    public string Username { get => _username; set => SetProperty(ref _username, value); }
-    public string Password { get => _password; set => SetProperty(ref _password, value); }
-    public string SessionCookie { get => _sessionCookie; set => SetProperty(ref _sessionCookie, value); }
+    public string LoginEmailAddress { get => loginEmailAddress; set => SetProperty(ref loginEmailAddress, value); }
+    public string Username { get => username; set => SetProperty(ref username, value); }
+    public string Password { get => password; set => SetProperty(ref password, value); }
+    public string SessionCookie { get => sessionCookie; set => SetProperty(ref sessionCookie, value); }
 
-    public string BaseUrl { get => _baseUrl; set => SetProperty(ref _baseUrl, value); }
-    public string ApiKey { get => _apiKey; set => SetProperty(ref _apiKey, value); }
-    public string LoginUrl { get => _loginUrl; set => SetProperty(ref _loginUrl, value); }
-    public string SearchString { get => _searchString; set => SetProperty(ref _searchString, value); }
-    public string SearchStringPrefix { get => _searchStringPrefix; set => SetProperty(ref _searchStringPrefix, value); }
-    public string SearchStringSuffix { get => _searchStringSuffix; set => SetProperty(ref _searchStringSuffix, value); }
-    public string TopWallpapers { get => _topWallpapers; set => SetProperty(ref _topWallpapers, value); }
-    public string Subscriptions { get => _subscriptions; set => SetProperty(ref _subscriptions, value); }
-    public int ImagePauseInSeconds { get => _imagePauseInSeconds; set => SetProperty(ref _imagePauseInSeconds, value); }
-    public int StartingPageNumber { get => _startingPageNumber; set => SetProperty(ref _startingPageNumber, value); }
-    public int TotalPages { get => _totalPages; set => SetProperty(ref _totalPages, value); }
-    public bool UseHeadless { get => _useHeadless; set => SetProperty(ref _useHeadless, value); }
-    public decimal? SlowMotionDelay { get => _slowMotionDelay; set => SetProperty(ref _slowMotionDelay, value); }
-    public int SubscriptionsStartingPageNumber { get => _subscriptionsStartingPageNumber; set => SetProperty(ref _subscriptionsStartingPageNumber, value); }
-    public int SubscriptionsTotalPages { get => _subscriptionsTotalPages; set => SetProperty(ref _subscriptionsTotalPages, value); }
-    public int TopWallpapersTotalPages { get => _topWallpapersTotalPages; set => SetProperty(ref _topWallpapersTotalPages, value); }
-    public int TopWallpapersStartingPageNumber { get => _topWallpapersStartingPageNumber; set => SetProperty(ref _topWallpapersStartingPageNumber, value); }
+    public string BaseUrl { get => baseUrl; set => SetProperty(ref baseUrl, value); }
+    public string ApiKey { get => apiKey; set => SetProperty(ref apiKey, value); }
+    public string LoginUrl { get => loginUrl; set => SetProperty(ref loginUrl, value); }
+    public string SearchString { get => searchString; set => SetProperty(ref searchString, value); }
+    public string SearchStringPrefix { get => searchStringPrefix; set => SetProperty(ref searchStringPrefix, value); }
+    public string SearchStringSuffix { get => searchStringSuffix; set => SetProperty(ref searchStringSuffix, value); }
+    public string TopWallpapers { get => topWallpapers; set => SetProperty(ref topWallpapers, value); }
+    public string Subscriptions { get => subscriptions; set => SetProperty(ref subscriptions, value); }
+    public int ImagePauseInSeconds { get => imagePauseInSeconds; set => SetProperty(ref imagePauseInSeconds, value); }
+    public int StartingPageNumber { get => startingPageNumber; set => SetProperty(ref startingPageNumber, value); }
+    public int TotalPages { get => totalPages; set => SetProperty(ref totalPages, value); }
+    public bool UseHeadless { get => useHeadless; set => SetProperty(ref useHeadless, value); }
+    public decimal? SlowMotionDelay { get => slowMotionDelay; set => SetProperty(ref slowMotionDelay, value); }
+    public int SubscriptionsStartingPageNumber { get => subscriptionsStartingPageNumber; set => SetProperty(ref subscriptionsStartingPageNumber, value); }
+    public int SubscriptionsTotalPages { get => subscriptionsTotalPages; set => SetProperty(ref subscriptionsTotalPages, value); }
+    public int TopWallpapersTotalPages { get => topWallpapersTotalPages; set => SetProperty(ref topWallpapersTotalPages, value); }
+    public int TopWallpapersStartingPageNumber { get => topWallpapersStartingPageNumber; set => SetProperty(ref topWallpapersStartingPageNumber, value); }
 
-    public string RootDirectory { get => _rootDirectory; set => SetProperty(ref _rootDirectory, value); }
-    public string BaseSaveDirectory { get => _baseSaveDirectory; set => SetProperty(ref _baseSaveDirectory, value); }
-    public string BaseDirectory { get => _baseDirectory; set => SetProperty(ref _baseDirectory, value); }
-    public string BaseDirectoryFamous { get => _baseDirectoryFamous; set => SetProperty(ref _baseDirectoryFamous, value); }
-    public string SubDirectoryName { get => _subDirectoryName; set => SetProperty(ref _subDirectoryName, value); }
+    public string RootDirectory { get => rootDirectory; set => SetProperty(ref rootDirectory, value); }
+    public string BaseSaveDirectory { get => baseSaveDirectory; set => SetProperty(ref baseSaveDirectory, value); }
+    public string BaseDirectory { get => baseDirectory; set => SetProperty(ref baseDirectory, value); }
+    public string BaseDirectoryFamous { get => baseDirectoryFamous; set => SetProperty(ref baseDirectoryFamous, value); }
+    public string SubDirectoryName { get => subDirectoryName; set => SetProperty(ref subDirectoryName, value); }
 
     public ObservableCollection<SearchCategoryViewModel> SearchCategories { get; } = [];
 
@@ -90,30 +92,37 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
 
     public ScrapeConfigurationViewModel(IDbContextFactory<AppDbContext> contextFactory, ScrapeConfigurationManager scrapeConfigurationManager)
     {
-        _context = contextFactory.CreateDbContext();
-        _scrapeConfigurationManager = scrapeConfigurationManager;
+        this.contextFactory = contextFactory;
+        this.scrapeConfigurationManager = scrapeConfigurationManager;
         SaveCommand = new AsyncRelayCommand(SaveAsync);
     }
 
-    public async Task LoadAsync()
+    public async Task<Result<FunctionalParadigm.Unit, ScrapeError>> LoadAsync(CancellationToken cancellationToken)
     {
         IsLoading = true;
         StatusMessage = string.Empty;
 
         try
         {
-            _entity = await _context.ScrapeConfiguration
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+            entity = await context.ScrapeConfiguration
                 .Include(e => e.ConnectionStrings)
                 .Include(e => e.UserConfiguration)
                 .Include(e => e.SearchConfiguration).ThenInclude(sc => sc.SearchCategories)
                 .Include(e => e.ScrapeDirectories).OrderByDescending(s => s.Id)
-                .FirstAsync();
+                .FirstAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-            MapFromEntity(_entity);
+            MapFromEntity(entity);
+
+            return FunctionalParadigm.Unit.Value;
         }
         catch (Exception ex)
         {
             StatusMessage = $"Failed to load: {ex.Message}";
+
+            return new RepositoryOperationFailed(nameof(LoadAsync), ex.Message);
         }
         finally
         {
@@ -121,10 +130,40 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         }
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task<Result<FunctionalParadigm.Unit, ScrapeError>> SaveAsync(CancellationToken cancellationToken)
     {
-        await _context.DisposeAsync();
-        GC.SuppressFinalize(this);
+        if (entity is null)
+            return new RepositoryOperationFailed(nameof(SaveAsync), "No configuration loaded");
+
+        StatusMessage = string.Empty;
+
+        try
+        {
+            await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+            var tracked = await context.ScrapeConfiguration
+                .Include(e => e.ConnectionStrings)
+                .Include(e => e.UserConfiguration)
+                .Include(e => e.SearchConfiguration).ThenInclude(sc => sc.SearchCategories)
+                .Include(e => e.ScrapeDirectories)
+                .FirstAsync(e => e.Id == entity.Id, cancellationToken)
+                .ConfigureAwait(false);
+
+            MapToEntity(tracked);
+
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await scrapeConfigurationManager.ReloadAsync(cancellationToken).ConfigureAwait(false);
+
+            StatusMessage = "Saved successfully.";
+
+            return FunctionalParadigm.Unit.Value;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Save failed: {ex.Message}";
+
+            return new RepositoryOperationFailed(nameof(SaveAsync), ex.Message);
+        }
     }
 
     private void MapFromEntity(ScrapeConfigurationEntity entity)
@@ -165,26 +204,6 @@ public class ScrapeConfigurationViewModel : ViewModelBase, IAsyncDisposable
         SearchCategories.Clear();
         foreach (var category in search.SearchCategories)
             SearchCategories.Add(SearchCategoryViewModel.FromEntity(category));
-    }
-
-    private async Task SaveAsync()
-    {
-        if (_entity is null)
-            return;
-
-        StatusMessage = string.Empty;
-
-        try
-        {
-            MapToEntity(_entity);
-            await _context.SaveChangesAsync();
-            await _scrapeConfigurationManager.ReloadAsync();
-            StatusMessage = "Saved successfully.";
-        }
-        catch (Exception ex)
-        {
-            StatusMessage = $"Save failed: {ex.Message}";
-        }
     }
 
     private void MapToEntity(ScrapeConfigurationEntity entity)

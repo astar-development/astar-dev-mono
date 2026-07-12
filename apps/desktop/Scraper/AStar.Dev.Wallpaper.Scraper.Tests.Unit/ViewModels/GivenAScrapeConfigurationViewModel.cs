@@ -65,15 +65,27 @@ public sealed class GivenAScrapeConfigurationViewModel : IAsyncLifetime
                 SubDirectoryName = "sub"
             }
         });
-        var category = new SearchCategoryEntity { Id = "cat1", Name = "Category 1", LastKnownImageCount = 10, LastPageVisited = 1, TotalPages = 5, IncludeInSearch = true };
+        await seedContext.SaveChangesAsync();
+        var config = await seedContext.SearchConfigurations.SingleAsync();
+        var category = new SearchCategoryEntity
+        {
+            SearchConfigurationId = config.Id,
+            Id = "cat1",
+            Name = "Category 1",
+            LastKnownImageCount = 10,
+            LastPageVisited = 1,
+            TotalPages = 5,
+            IncludeInSearch = true
+        };
         seedContext.Add(category);
         await seedContext.SaveChangesAsync();
 
         contextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
         contextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(new AppDbContext(options)));
+        contextFactory.CreateDbContext().Returns(new AppDbContext(options));
 
-        scrapeConfigurationManager = Substitute.For<ScrapeConfigurationManager>();
+        scrapeConfigurationManager = Substitute.ForPartsOf<ScrapeConfigurationManager>(contextFactory);
     }
 
     public async ValueTask DisposeAsync() => await connection.DisposeAsync();
@@ -129,7 +141,8 @@ public sealed class GivenAScrapeConfigurationViewModel : IAsyncLifetime
 
         var result = await sut.SaveAsync(CancellationToken.None);
 
-        await contextFactory.Received(2).CreateDbContextAsync(Arg.Any<CancellationToken>());
+        // LoadAsync calls CreateDbContextAsync once, SaveAsync calls it once, and SaveAsync -> ReloadAsync calls it once = 3 total
+        await contextFactory.Received(3).CreateDbContextAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -175,6 +188,6 @@ public sealed class GivenAScrapeConfigurationViewModel : IAsyncLifetime
 
         var result = await sut.LoadAsync(CancellationToken.None);
 
-        result.ShouldBeOfType<Err<FunctionalParadigm.Unit, ScrapeError>>();
+        result.ShouldBeOfType<Fail<FunctionalParadigm.Unit, ScrapeError>>();
     }
 }

@@ -2,33 +2,51 @@ using System.Windows.Input;
 
 namespace AStar.Dev.Wallpaper.Scraper.ViewModels;
 
-public sealed class AsyncRelayCommand(Func<Task> executeAsync, Func<bool>? canExecute = null) : ICommand
+public sealed class AsyncRelayCommand : ICommand
 {
-    private bool _isExecuting;
+    private readonly Func<Task>? executeAsync;
+    private readonly Func<CancellationToken, Task>? executeAsyncWithToken;
+    private readonly Func<bool>? canExecute;
+    private bool isExecuting;
+
+    public AsyncRelayCommand(Func<Task> executeAsync, Func<bool>? canExecute = null)
+    {
+        this.executeAsync = executeAsync;
+        this.canExecute = canExecute;
+    }
+
+    public AsyncRelayCommand(Func<CancellationToken, Task> executeAsync, Func<bool>? canExecute = null)
+    {
+        executeAsyncWithToken = executeAsync;
+        this.canExecute = canExecute;
+    }
 
     public event EventHandler? CanExecuteChanged;
 
-    public bool CanExecute(object? parameter) => !_isExecuting && (canExecute?.Invoke() ?? true);
+    public bool CanExecute(object? parameter) => !isExecuting && (canExecute?.Invoke() ?? true);
 
-    public void Execute(object? parameter) => _ = ExecuteAsync();
+    public void Execute(object? parameter) => _ = ExecuteAsync(CancellationToken.None);
 
     public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 
-    private async Task ExecuteAsync()
+    public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        if (_isExecuting)
+        if (isExecuting)
             return;
 
-        _isExecuting = true;
+        isExecuting = true;
         RaiseCanExecuteChanged();
 
         try
         {
-            await executeAsync();
+            if (executeAsyncWithToken is not null)
+                await executeAsyncWithToken(cancellationToken);
+            else if (executeAsync is not null)
+                await executeAsync();
         }
         finally
         {
-            _isExecuting = false;
+            isExecuting = false;
             RaiseCanExecuteChanged();
         }
     }
