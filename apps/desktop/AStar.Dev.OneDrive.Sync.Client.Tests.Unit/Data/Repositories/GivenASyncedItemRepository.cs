@@ -25,6 +25,26 @@ public sealed class GivenASyncedItemRepository
         FileHandle = new FileHandle(localPath)
     };
 
+    private static AccountEntity AccountWithLocalRoot(string accountId = "user-1", string localRoot = "/local") => new()
+    {
+        Id = new AccountId(accountId),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localRoot))
+    };
+
+    private static FileDetailEntity UnsyncedFileDetail(string directory, string fileName, long fileSize = 1024) => new()
+    {
+        FileName = new FileName(fileName),
+        DirectoryName = new DirectoryName(directory),
+        FileHandle = new FileHandle(directory + "/" + fileName),
+        FileSize = fileSize
+    };
+
+    private static void Classify(AppDbContext db, FileDetailEntity fileDetail, params FileClassificationCategoryEntity[] categories)
+    {
+        foreach (var category in categories)
+            db.FileClassifications.Add(new FileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = category.Id });
+    }
+
     private static FileDetailEntity AttachClassifiedFile(AppDbContext db, SyncedItemEntity item, params FileClassificationCategoryEntity[] categories)
     {
         var fileDetail = FileDetailFor(item.LocalPath);
@@ -487,6 +507,222 @@ public sealed class GivenASyncedItemRepository
         await repository.DeleteManyByRemoteIdAsync(new AccountId("user-1"), idsToDelete, TestContext.Current.CancellationToken);
 
         db.SyncedItems.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_then_tags_of_unsynced_files_under_account_root_are_included()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var landscapeCategory = new FileClassificationCategoryEntity { Name = "Landscape", Level = 1 };
+        var unsyncedFile = UnsyncedFileDetail("/local/pics", "photo.jpg");
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.FileClassificationCategories.Add(landscapeCategory);
+        db.Files.Add(unsyncedFile);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        Classify(db, unsyncedFile, landscapeCategory);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.ShouldContain("Landscape");
+    }
+
+    [Fact]
+    public async Task when_get_distinct_tag_names_is_called_then_tags_of_unsynced_files_outside_account_root_are_excluded()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var videoCategory = new FileClassificationCategoryEntity { Name = "Video", Level = 1 };
+        var fileOutsideRoot = UnsyncedFileDetail("/elsewhere", "clip.mp4");
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.FileClassificationCategories.Add(videoCategory);
+        db.Files.Add(fileOutsideRoot);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        Classify(db, fileOutsideRoot, videoCategory);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var tags = await repository.GetDistinctTagNamesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        tags.ShouldNotContain("Video");
+    }
+
+    [Fact]
+    public async Task when_search_is_called_then_unsynced_files_under_account_root_are_included()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.Files.Add(UnsyncedFileDetail("/local/pics", "photo.jpg", fileSize: 2048));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"));
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].IsSynced.ShouldBeFalse();
+        results[0].LocalPath.ShouldBe("/local/pics/photo.jpg");
+        results[0].SizeInBytes.ShouldBe(2048);
+        results[0].FileDetailId.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task when_search_is_called_then_unsynced_files_outside_account_root_are_excluded()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.Files.Add(UnsyncedFileDetail("/elsewhere", "photo.jpg"));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"));
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_search_is_called_then_file_details_linked_to_synced_items_appear_only_as_synced_results()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var syncedItem = FileItem(remotePath: "/photo.jpg");
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.SyncedItems.Add(syncedItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _ = AttachClassifiedFile(db, syncedItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"));
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].IsSynced.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_search_is_called_with_name_fragment_then_unsynced_files_are_filtered_by_name()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.Files.Add(UnsyncedFileDetail("/local/docs", "report.pdf"));
+        db.Files.Add(UnsyncedFileDetail("/local/pics", "holiday.jpg"));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), nameFragment: "report");
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].LocalPath.ShouldBe("/local/docs/report.pdf");
+    }
+
+    [Fact]
+    public async Task when_search_is_called_with_tag_filter_then_unsynced_files_with_matching_tag_are_included()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var taggedFile = UnsyncedFileDetail("/local/pics", "photo.jpg");
+        var untaggedFile = UnsyncedFileDetail("/local/docs", "notes.txt");
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.FileClassificationCategories.Add(imageCategory);
+        db.Files.AddRange(taggedFile, untaggedFile);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        Classify(db, taggedFile, imageCategory);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), tags: ["Image"]);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].IsSynced.ShouldBeFalse();
+        results[0].LocalPath.ShouldBe("/local/pics/photo.jpg");
+        results[0].TagNames.ShouldContain("Image");
+    }
+
+    [Fact]
+    public async Task when_search_is_called_with_duplicates_only_then_unsynced_duplicates_of_synced_files_are_included()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.Accounts.Add(AccountWithLocalRoot());
+        db.SyncedItems.Add(FileItem(remotePath: "/docs/file.pdf", sizeInBytes: 2048));
+        db.Files.Add(UnsyncedFileDetail("/local/backup", "file.pdf", fileSize: 2048));
+        db.Files.Add(UnsyncedFileDetail("/local/backup", "unique.txt", fileSize: 999));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"), duplicatesOnly: true);
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(2);
+        results.ShouldContain(r => r.IsSynced);
+        results.ShouldContain(r => !r.IsSynced);
+    }
+
+    [Fact]
+    public async Task when_search_is_called_and_account_has_no_local_root_then_only_synced_items_are_returned()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.Add(FileItem(remotePath: "/synced.txt"));
+        db.Files.Add(UnsyncedFileDetail("/local/pics", "photo.jpg"));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var criteria = SyncedItemSearchCriteriaFactory.Create(new AccountId("user-1"));
+
+        var results = await repository.SearchAsync(criteria, TestContext.Current.CancellationToken);
+
+        results.Count.ShouldBe(1);
+        results[0].RemotePath.ShouldBe("/synced.txt");
+    }
+
+    [Fact]
+    public async Task when_delete_file_detail_is_called_then_file_detail_and_classifications_are_removed()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var imageCategory = new FileClassificationCategoryEntity { Name = "Image", Level = 1 };
+        var unsyncedFile = UnsyncedFileDetail("/local/pics", "photo.jpg");
+        db.FileClassificationCategories.Add(imageCategory);
+        db.Files.Add(unsyncedFile);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        Classify(db, unsyncedFile, imageCategory);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteFileDetailAsync(unsyncedFile.Id, TestContext.Current.CancellationToken);
+
+        db.ChangeTracker.Clear();
+        db.Files.Count().ShouldBe(0);
+        db.FileClassifications.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_delete_file_detail_is_called_then_synced_item_references_are_cleared()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        var syncedItem = FileItem(remotePath: "/photo.jpg");
+        db.SyncedItems.Add(syncedItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var fileDetail = AttachClassifiedFile(db, syncedItem);
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteFileDetailAsync(fileDetail.Id, TestContext.Current.CancellationToken);
+
+        db.ChangeTracker.Clear();
+        db.Files.Count().ShouldBe(0);
+        db.SyncedItems.Single().FileDetailId.ShouldBeNull();
     }
 
     [Fact]

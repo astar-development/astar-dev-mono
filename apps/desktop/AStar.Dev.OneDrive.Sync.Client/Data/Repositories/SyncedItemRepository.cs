@@ -166,6 +166,9 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         return categories;
     }
 
+    /// <inheritdoc />
+    public Task DeleteFileDetailAsync(FileId fileDetailId, CancellationToken cancellationToken) => throw new NotImplementedException();
+
     private static async Task<HashSet<int>> ResolveDuplicateIdsAsync(AppDbContext db, AccountId accountId, CancellationToken cancellationToken)
     {
         var sizesWithDuplicates = await db.SyncedItems

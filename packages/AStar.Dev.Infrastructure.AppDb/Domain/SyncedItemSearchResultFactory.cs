@@ -6,5 +6,5 @@ namespace AStar.Dev.Infrastructure.AppDb.Domain;
 public static class SyncedItemSearchResultFactory
 {
     /// <summary>Creates a <see cref="SyncedItemSearchResult"/> from the provided field values.</summary>
-    public static SyncedItemSearchResult Create(int id, AccountId accountId, OneDriveItemId remoteItemId, string remotePath, string localPath, DateTimeOffset remoteModifiedAt, long? sizeInBytes, IReadOnlyList<string> tagNames) => new(id, accountId, remoteItemId, remotePath, localPath, remoteModifiedAt, sizeInBytes, tagNames);
+    public static SyncedItemSearchResult Create(int id, AccountId accountId, OneDriveItemId remoteItemId, string remotePath, string localPath, DateTimeOffset remoteModifiedAt, long? sizeInBytes, IReadOnlyList<string> tagNames, bool isSynced = true, FileId? fileDetailId = null) => new(id, accountId, remoteItemId, remotePath, localPath, remoteModifiedAt, sizeInBytes, tagNames, isSynced, fileDetailId);
 }
