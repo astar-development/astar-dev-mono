@@ -199,7 +199,7 @@ public sealed class GivenAFileClassificationRepository
         var updateResult = await repository.UpdateCategoryAsync(new FileClassificationCategoryId(existing.Id), category, TestContext.Current.CancellationToken);
 
         updateResult.ShouldBeOfType<Result<FileClassificationCategoryId, string>.Ok>();
-        var persisted = db.FileClassificationCategories.Single(c => c.Id == existing.Id);
+        var persisted = db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == existing.Id);
         persisted.IncludeInSearch.ShouldBeTrue();
     }
 }
