@@ -1,4 +1,6 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -166,5 +168,38 @@ public sealed class GivenAFileClassificationRepository
         var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_add_category_is_called_with_include_in_search_true_then_it_is_persisted()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var createResult = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(0), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), true);
+        var category = ((Result<FileClassificationCategory, string>.Ok)createResult).Value;
+
+        var addResult = await repository.AddCategoryAsync(category, TestContext.Current.CancellationToken);
+
+        addResult.ShouldBeOfType<Result<FileClassificationCategoryId, string>.Ok>();
+        var persisted = db.FileClassificationCategories.Single(c => c.Name == "Photos");
+        persisted.IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_update_category_is_called_with_include_in_search_true_then_it_is_persisted()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var existing = new FileClassificationCategoryEntity { Name = "Photos", Level = 1, IncludeInSearch = false };
+        db.FileClassificationCategories.Add(existing);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var createResult = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(existing.Id), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), true);
+        var category = ((Result<FileClassificationCategory, string>.Ok)createResult).Value;
+
+        var updateResult = await repository.UpdateCategoryAsync(new FileClassificationCategoryId(existing.Id), category, TestContext.Current.CancellationToken);
+
+        updateResult.ShouldBeOfType<Result<FileClassificationCategoryId, string>.Ok>();
+        var persisted = db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == existing.Id);
+        persisted.IncludeInSearch.ShouldBeTrue();
     }
 }

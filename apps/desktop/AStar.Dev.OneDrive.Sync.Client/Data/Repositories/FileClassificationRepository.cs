@@ -62,7 +62,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                     Level = category.Level,
                     IsFamous = category.IsFamous,
                     IsInternet = category.IsInternet,
-                    ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null)
+                    ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null),
+                    IncludeInSearch = category.IncludeInSearch
                 };
 
                 db.FileClassificationCategories.Add(entity);
@@ -86,6 +87,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         entity.IsFamous = category.IsFamous;
         entity.IsInternet = category.IsInternet;
         entity.ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null);
+        entity.IncludeInSearch = category.IncludeInSearch;
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
