@@ -1,5 +1,7 @@
+using System.Globalization;
 using AStar.Dev.Logging.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -8,17 +10,20 @@ using Velopack;
 namespace AStar.Dev.OneDrive.Sync.Client.Updates;
 
 /// <summary>Presents a discovered Velopack update, offering the user a choice to restart now or later.</summary>
-public sealed partial class UpdateAvailableViewModel : ObservableObject
+public sealed partial class UpdateAvailableViewModel : ObservableObject, IDisposable
 {
     private readonly UpdateInfo updateInfo;
     private readonly IUpdateCheckService updateCheckService;
+    private readonly ILocalizationService loc;
     private readonly ILogger<UpdateAvailableViewModel> logger;
 
-    public UpdateAvailableViewModel(UpdateInfo updateInfo, IUpdateCheckService updateCheckService, ILogger<UpdateAvailableViewModel> logger)
+    public UpdateAvailableViewModel(UpdateInfo updateInfo, IUpdateCheckService updateCheckService, ILocalizationService localizationService, ILogger<UpdateAvailableViewModel> logger)
     {
         this.updateInfo = updateInfo;
         this.updateCheckService = updateCheckService;
+        loc = localizationService;
         this.logger = logger;
+        loc.CultureChanged += OnCultureChanged;
         TargetVersion = updateInfo.TargetFullRelease.Version.ToString();
         ReleaseNotes = updateInfo.TargetFullRelease.NotesMarkdown ?? string.Empty;
     }
@@ -35,8 +40,25 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    public string Title => loc.GetLocal("Update.Title");
+    public string Message => loc.GetLocal("Update.Message", TargetVersion);
+    public string ReleaseNotesLabel => loc.GetLocal("Update.ReleaseNotesLabel");
+    public string RestartNowLabel => loc.GetLocal("Update.RestartNow");
+    public string LaterLabel => loc.GetLocal("Update.Later");
+
     /// <summary>Raised once the dialog should close, whether the user restarted or deferred.</summary>
     public event EventHandler? CloseRequested;
+
+    private void OnCultureChanged(object? sender, CultureInfo culture)
+    {
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(Message));
+        OnPropertyChanged(nameof(ReleaseNotesLabel));
+        OnPropertyChanged(nameof(RestartNowLabel));
+        OnPropertyChanged(nameof(LaterLabel));
+    }
+
+    public void Dispose() => loc.CultureChanged -= OnCultureChanged;
 
     [RelayCommand]
     private async Task RestartNowAsync()

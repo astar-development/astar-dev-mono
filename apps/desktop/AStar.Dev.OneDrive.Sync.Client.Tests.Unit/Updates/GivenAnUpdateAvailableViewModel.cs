@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Microsoft.Extensions.Logging;
 using NSubstitute.ExceptionExtensions;
@@ -18,10 +19,37 @@ public sealed class GivenAnUpdateAvailableViewModel
     private static (UpdateAvailableViewModel ViewModel, IUpdateCheckService UpdateCheckService) CreateSut(UpdateInfo? updateInfo = null)
     {
         var updateCheckService = Substitute.For<IUpdateCheckService>();
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
-        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, logger);
+        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, localization, logger);
 
         return (viewModel, updateCheckService);
+    }
+
+    [Fact]
+    public void when_constructed_then_title_is_the_echoed_localization_key()
+    {
+        var (viewModel, _) = CreateSut();
+
+        viewModel.Title.ShouldBe("Update.Title");
+    }
+
+    [Fact]
+    public void when_constructed_then_restart_now_label_is_the_echoed_localization_key()
+    {
+        var (viewModel, _) = CreateSut();
+
+        viewModel.RestartNowLabel.ShouldBe("Update.RestartNow");
+    }
+
+    [Fact]
+    public void when_constructed_then_later_label_is_the_echoed_localization_key()
+    {
+        var (viewModel, _) = CreateSut();
+
+        viewModel.LaterLabel.ShouldBe("Update.Later");
     }
 
     [Fact]
