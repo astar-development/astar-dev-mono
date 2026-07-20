@@ -1,6 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
@@ -205,7 +204,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             })
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return [.. files.Select(f => SyncedItemSearchResultFactory.Create(0, criteria.AccountId, new OneDriveItemId(string.Empty), string.Empty, f.DirectoryName.CombinePath(f.FileName), default, f.FileSize, f.TagNames, isSynced: false, f.Id))];
+        return [.. files.Select(f => SyncedItemSearchResultFactory.Create(0, criteria.AccountId, new OneDriveItemId(string.Empty), string.Empty, $"{f.DirectoryName}/{f.FileName}", default, f.FileSize, f.TagNames, isSynced: false, f.Id))];
     }
 
     private static IQueryable<FileDetailEntity> UnsyncedFilesUnderRoot(AppDbContext db, AccountId accountId, string localRoot) => db.Files.Where(f => f.DirectoryName.Value.StartsWith(localRoot) && !db.SyncedItems.Any(s => s.AccountId == accountId && s.FileDetailId == f.Id));

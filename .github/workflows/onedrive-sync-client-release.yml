@@ -13,7 +13,12 @@
 #
 # One job per OS (win-x64 / linux-x64 / osx-arm64) builds, publishes, packs
 # with vpk, and uploads into the SAME GitHub Release under its own Velopack
-# channel (--merge lets the three OS jobs land in one release safely).
+# channel. Jobs run SEQUENTIALLY (max-parallel: 1): `vpk upload github --merge`
+# only appends to an EXISTING release - two jobs racing to create the first
+# release for a brand-new tag both create their own draft and only one can
+# ever publish it, so the second 422s. Running one OS at a time means the
+# first job's publish always completes before the next job's upload starts,
+# so it always finds (and merges into) an already-published release.
 # ════════════════════════════════════════════════════════════════════════════
 
 name: OneDrive Sync Client Release
@@ -49,6 +54,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         include:
           - os: windows-latest

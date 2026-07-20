@@ -190,7 +190,7 @@ public sealed class GivenATokenCacheService
         string cacheDir = service.CacheDirectory;
         if (OperatingSystem.IsWindows())
         {
-            cacheDir.ShouldContain("AStar.Dev.OneDrive.Sync");
+            cacheDir.ShouldContain("astar-dev-onedrive-sync");
         }
         else if (OperatingSystem.IsMacOS())
         {
