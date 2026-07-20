@@ -87,10 +87,17 @@
   </ItemGroup>
 
   <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
-    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+    <!--
+      RuntimeIdentifier=; SelfContained=false override any RID inherited from an outer
+      `dotnet publish -r <rid>` invocation. Without this, AppendRuntimeIdentifierToOutputPath
+      (Directory.Build.props) makes GetTargetPath return a RID-suffixed path for these
+      netstandard2.0 analyzer projects, but nothing ever builds them into that path — CSC
+      then fails with CS0006 (metadata file not found).
+    -->
+    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
-    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
   </Target>
