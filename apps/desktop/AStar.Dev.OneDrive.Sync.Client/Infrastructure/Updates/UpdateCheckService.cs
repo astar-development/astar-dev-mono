@@ -25,11 +25,24 @@ public sealed class UpdateCheckService : IUpdateCheckService
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!updateManager.IsInstalled)
+        {
+            LogMessage.Information(logger, nameof(UpdateCheckService), "Skipping update check: app is not running as a Velopack-installed instance.");
+
             return null;
+        }
 
         try
         {
-            return await updateManager.CheckForUpdatesAsync();
+            var updateInfo = await updateManager.CheckForUpdatesAsync();
+
+            LogMessage.Information(
+                logger,
+                nameof(UpdateCheckService),
+                updateInfo is null
+                    ? $"Up to date. Current version: {updateManager.CurrentVersion}."
+                    : $"Update available: {updateManager.CurrentVersion} -> {updateInfo.TargetFullRelease.Version}.");
+
+            return updateInfo;
         }
         catch (Exception ex)
         {
