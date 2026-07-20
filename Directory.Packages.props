@@ -172,6 +172,9 @@
     <!-- Override Avalonia's transitive Tmds.DBus.Protocol to fix GHSA-xrw6-gwf8-vvr9; 0.92.0 is what Avalonia 12.0.5 ships with and is API-compatible -->
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.92.0" />
   </ItemGroup>
+  <ItemGroup Label="Packaging and update delivery">
+    <PackageVersion Include="Velopack" Version="1.2.0" />
+  </ItemGroup>
   <ItemGroup Label="Blazor and web">
     <PackageVersion Include="MudBlazor" Version="8.3.0" />
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />

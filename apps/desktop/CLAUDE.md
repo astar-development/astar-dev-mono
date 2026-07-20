@@ -1,12 +1,8 @@
 # Rules for Updates
 
-## BugFix
+## Versioning
 
-When a bug is fixed, the `appsettings.json` must be update so the `AStarDevOneDriveClient > ApplicationVersion` changes: old ApplicationVersion: 0.3.3, after bug fix: ApplicationVersion: 0.3.4
-
-## Feature
-
-When a feature is implemented, the `appsettings.json` must be update so the `AStarDevOneDriveClient > ApplicationVersion` changes: old ApplicationVersion: 0.3.3, after feature implementation: ApplicationVersion: 0.4.0
+Version is no longer tracked in `appsettings.json`. It is git-tag driven (`-p:Version=$(GitTag)`, tag format `v1.2.3`) and packaged/delivered via Velopack — see #744. Bump the tag per Conventional Commits semantics (patch for `fix`, minor for `feat`); do not add an `ApplicationVersion` setting back to `appsettings.json`.
 
 ## Text Blocks
 

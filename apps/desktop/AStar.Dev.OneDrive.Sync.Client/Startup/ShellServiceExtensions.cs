@@ -12,6 +12,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Versioning;
 using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
@@ -75,6 +76,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IConfirmationDialogService, AvaloniaConfirmationDialogService>();
         _ = services.AddSingleton<IFileClassificationExportImportService, FileClassificationExportImportService>();
         _ = services.AddSingleton<IFileTypeClassifier, SyncClientFileTypeClassifier>();
+        _ = services.AddSingleton<IApplicationVersionProvider, ApplicationVersionProvider>();
         _ = services.AddOneDriveClient();
 
         return services;

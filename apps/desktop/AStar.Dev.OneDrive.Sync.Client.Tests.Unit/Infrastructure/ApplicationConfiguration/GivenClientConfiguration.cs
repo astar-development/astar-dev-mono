@@ -6,13 +6,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.ApplicationCo
 
 public sealed class GivenClientConfiguration
 {
-    private static IOptions<ClientConfiguration> BuildOptions(string applicationName, string applicationVersion)
+    private static IOptions<ClientConfiguration> BuildOptions(string applicationName)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["AStarDevOneDriveClient:ApplicationName"] = applicationName,
-                ["AStarDevOneDriveClient:ApplicationVersion"] = applicationVersion
+                ["AStarDevOneDriveClient:ApplicationName"] = applicationName
             })
             .Build();
 
@@ -28,16 +27,8 @@ public sealed class GivenClientConfiguration
     [Fact]
     public void when_bound_then_application_name_is_populated()
     {
-        var options = BuildOptions("AStar Dev OneDrive Sync Client", "0.3.0");
+        var options = BuildOptions("AStar Dev OneDrive Sync Client");
 
         options.Value.ApplicationName.ShouldBe("AStar Dev OneDrive Sync Client");
-    }
-
-    [Fact]
-    public void when_bound_then_application_version_is_populated()
-    {
-        var options = BuildOptions("AStar Dev OneDrive Sync Client", "0.3.0");
-
-        options.Value.ApplicationVersion.ShouldBe("0.3.0");
     }
 }
