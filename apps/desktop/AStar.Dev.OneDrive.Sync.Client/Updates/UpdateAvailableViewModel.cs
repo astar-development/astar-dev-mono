@@ -45,6 +45,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     public string ReleaseNotesLabel => loc.GetLocal("Update.ReleaseNotesLabel");
     public string RestartNowLabel => loc.GetLocal("Update.RestartNow");
     public string LaterLabel => loc.GetLocal("Update.Later");
+    public string DownloadingLabel => loc.GetLocal("Update.Downloading");
 
     /// <summary>Raised once the dialog should close, whether the user restarted or deferred.</summary>
     public event EventHandler? CloseRequested;
@@ -56,6 +57,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
         OnPropertyChanged(nameof(ReleaseNotesLabel));
         OnPropertyChanged(nameof(RestartNowLabel));
         OnPropertyChanged(nameof(LaterLabel));
+        OnPropertyChanged(nameof(DownloadingLabel));
     }
 
     public void Dispose() => loc.CultureChanged -= OnCultureChanged;

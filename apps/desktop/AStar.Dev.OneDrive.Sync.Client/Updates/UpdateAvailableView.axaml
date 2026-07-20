@@ -1,0 +1,87 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:updates="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Updates"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.Updates.UpdateAvailableView"
+        x:DataType="updates:UpdateAvailableViewModel"
+        Title="{Binding Title}"
+        Width="480" Height="420"
+        MinWidth="400" MinHeight="320"
+        CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource BackgroundPrimaryBrush}">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Margin="24">
+
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+            <TextBlock Text="{Binding Title}"
+                       FontSize="{StaticResource FontSizeXl}"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+            <TextBlock Text="{Binding Message}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0">
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding ReleaseNotesLabel}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                <TextBlock Text="{Binding ReleaseNotes}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Spacing="12" Margin="0,16,0,0">
+
+            <TextBlock Text="{Binding ErrorMessage}"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Foreground="{DynamicResource StatusErrorBrush}"
+                       TextWrapping="Wrap"/>
+
+            <Rectangle Height="1" Fill="{DynamicResource BorderSubtleBrush}"/>
+
+            <Grid ColumnDefinitions="*,Auto,8,Auto">
+
+                <TextBlock Grid.Column="0"
+                           Text="{Binding DownloadingLabel}"
+                           IsVisible="{Binding IsBusy}"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+
+                <Button Grid.Column="1"
+                        Content="{Binding LaterLabel}"
+                        Padding="12,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        IsEnabled="{Binding !IsBusy}"
+                        Command="{Binding LaterCommand}"/>
+
+                <Button Grid.Column="3"
+                        Content="{Binding RestartNowLabel}"
+                        Padding="16,6"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        IsEnabled="{Binding !IsBusy}"
+                        Command="{Binding RestartNowCommand}"/>
+
+            </Grid>
+
+        </StackPanel>
+
+    </Grid>
+
+</Window>
