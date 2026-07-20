@@ -122,11 +122,12 @@ jobs:
         shell: bash
         run: |
           dotnet publish "${{ env.PROJECT_PATH }}" \
-            --no-restore \
             --configuration Release \
             --runtime ${{ matrix.rid }} \
             --self-contained true \
             -p:Version=${{ env.VERSION }} \
+            -p:PublishTrimmed=false \
+            -p:EnableTrimAnalyzer=false \
             --output ./publish/${{ matrix.rid }}
 
       - name: Write release notes
