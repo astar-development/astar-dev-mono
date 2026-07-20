@@ -93,6 +93,10 @@ public class App : Application, IDisposable
                 .Bind(configuration.GetSection(ClientConfiguration.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+        _ = services.AddOptions<UpdateSettings>()
+                .Bind(configuration.GetSection(UpdateSettings.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
         return configuration;
     }
