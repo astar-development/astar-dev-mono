@@ -398,15 +398,15 @@
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchCriteria"/> with the specified search parameters.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResult">
-            <summary>A single result from a synced-item search query.</summary>
+            <summary>A single result from a synced-item search query. Unsynced results represent classified files on disk that no synced item references yet; they carry no remote identity.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResult.#ctor(System.Int32,AStar.Dev.Infrastructure.AppDb.Entities.AccountId,AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64},System.Collections.Generic.IReadOnlyList{System.String})">
-            <summary>A single result from a synced-item search query.</summary>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResult.#ctor(System.Int32,AStar.Dev.Infrastructure.AppDb.Entities.AccountId,AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64},System.Collections.Generic.IReadOnlyList{System.String},System.Boolean,System.Nullable{AStar.Dev.Infrastructure.AppDb.Entities.FileId})">
+            <summary>A single result from a synced-item search query. Unsynced results represent classified files on disk that no synced item references yet; they carry no remote identity.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResultFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResult"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResultFactory.Create(System.Int32,AStar.Dev.Infrastructure.AppDb.Entities.AccountId,AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64},System.Collections.Generic.IReadOnlyList{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResultFactory.Create(System.Int32,AStar.Dev.Infrastructure.AppDb.Entities.AccountId,AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,System.String,System.String,System.DateTimeOffset,System.Nullable{System.Int64},System.Collections.Generic.IReadOnlyList{System.String},System.Boolean,System.Nullable{AStar.Dev.Infrastructure.AppDb.Entities.FileId})">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchResult"/> from the provided field values.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata">
@@ -1637,6 +1637,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.InitialCreation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddIndexOnFileClassifications">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddIndexOnFileClassifications.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddIndexOnFileClassifications.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddIndexOnFileClassifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">
