@@ -25,6 +25,9 @@ public interface ISyncedItemRepository
     /// <summary>Searches synced items for the specified account using the provided criteria.</summary>
     Task<IReadOnlyList<SyncedItemSearchResult>> SearchAsync(SyncedItemSearchCriteria criteria, CancellationToken cancellationToken);
 
-    /// <summary>Returns all distinct tag names for synced items belonging to the specified account.</summary>
+    /// <summary>Returns all distinct tag names for files belonging to the specified account, whether synced or merely classified under the account's local sync root.</summary>
     Task<IReadOnlyList<string>> GetDistinctTagNamesAsync(AccountId accountId, CancellationToken cancellationToken);
+
+    /// <summary>Removes the file detail row with the specified id together with its classification links, clearing any synced-item references to it first.</summary>
+    Task DeleteFileDetailAsync(FileId fileDetailId, CancellationToken cancellationToken);
 }

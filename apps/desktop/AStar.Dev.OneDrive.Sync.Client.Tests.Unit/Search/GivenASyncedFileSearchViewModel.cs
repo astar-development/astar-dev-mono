@@ -30,6 +30,8 @@ public sealed class GivenASyncedFileSearchViewModel
 
     private static SyncedItemSearchResult MakeResult(string localPath = "/tmp/nonexistent_file_astar.jpg", IReadOnlyList<string>? tags = null) => new(1, TestAccountId, TestItemId, "/remote/file.jpg", localPath, DateTimeOffset.UtcNow, 1024, tags ?? []);
 
+    private static SyncedItemSearchResult MakeUnsyncedResult(string localPath = "/tmp/nonexistent_unsynced_astar.jpg") => new(0, TestAccountId, new OneDriveItemId(string.Empty), string.Empty, localPath, default, 1024, [], IsSynced: false, FileDetailId: new FileId(Guid.CreateVersion7()));
+
     [Fact]
     public async Task when_search_executes_then_criteria_name_fragment_matches_view_model_property()
     {
@@ -325,6 +327,31 @@ public sealed class GivenASyncedFileSearchViewModel
         await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
 
         sut.ResultCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_for_unsynced_result_then_repository_delete_file_detail_is_called()
+    {
+        var unsyncedResult = MakeUnsyncedResult();
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([unsyncedResult]);
+        var sut = CreateSut();
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+        await repository.Received(1).DeleteFileDetailAsync(unsyncedResult.FileDetailId!.Value, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_delete_is_executed_for_unsynced_result_then_delete_by_remote_id_is_not_called()
+    {
+        repository.SearchAsync(Arg.Any<SyncedItemSearchCriteria>(), Arg.Any<CancellationToken>()).Returns([MakeUnsyncedResult()]);
+        var sut = CreateSut();
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        await sut.Results[0].DeleteFileCommand.ExecuteAsync(null);
+
+        await repository.DidNotReceive().DeleteByRemoteIdAsync(Arg.Any<AccountId>(), Arg.Any<OneDriveItemId>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

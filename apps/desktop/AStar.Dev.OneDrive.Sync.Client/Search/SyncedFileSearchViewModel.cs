@@ -201,7 +201,10 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
                     {
                         if (File.Exists(result.LocalPath))
                             File.Delete(result.LocalPath);
-                        await repository.DeleteByRemoteIdAsync(result.AccountId, result.RemoteItemId, ct).ConfigureAwait(false);
+                        if (result.IsSynced)
+                            await repository.DeleteByRemoteIdAsync(result.AccountId, result.RemoteItemId, ct).ConfigureAwait(false);
+                        else if (result.FileDetailId is { } fileDetailId)
+                            await repository.DeleteFileDetailAsync(fileDetailId, ct).ConfigureAwait(false);
                         dispatcher.Post(() =>
                         {
                             Results.Remove(vm);
