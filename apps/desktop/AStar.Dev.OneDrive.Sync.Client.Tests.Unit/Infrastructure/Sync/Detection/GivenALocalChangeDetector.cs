@@ -70,15 +70,16 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_local_folder_casing_differs_from_rule_remote_path_then_job_local_path_reflects_actual_casing_on_disk()
     {
-        const string filePath = $"{BasePath}/Pictures/WallHaven/photo.jpg";
+        const string relativePath = $"{BasePath}/Pictures/WallHaven/photo.jpg";
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        string expectedLocalPath = mockFileSystem.Path.GetFullPath(relativePath);
         var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Pictures/Wallhaven", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Target.LocalPath.ShouldBe(filePath);
+        jobs[0].Target.LocalPath.ShouldBe(expectedLocalPath);
     }
 
     [Fact]
@@ -123,15 +124,16 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_new_file_is_not_in_lookup_then_job_has_correct_local_path()
     {
-        const string filePath = $"{BasePath}/Documents/report.txt";
+        const string relativePath = $"{BasePath}/Documents/report.txt";
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        string expectedLocalPath = mockFileSystem.Path.GetFullPath(relativePath);
         var sut = CreateSut(mockFileSystem);
         var rules = new[] { Rule("/Documents", RuleType.Include) };
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Target.LocalPath.ShouldBe(filePath);
+        jobs[0].Target.LocalPath.ShouldBe(expectedLocalPath);
     }
 
     [Fact]
@@ -176,11 +178,12 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_known_file_is_modified_then_job_folder_id_is_root()
     {
-        const string filePath = $"{BasePath}/Documents/modified.txt";
+        const string relativePath = $"{BasePath}/Documents/modified.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
-        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(relativePath, lastWrite);
+        string filePath = mockFileSystem.Path.GetFullPath(relativePath);
         var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
@@ -197,11 +200,12 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_known_file_last_write_is_within_five_second_tolerance_then_file_is_skipped()
     {
-        const string filePath = $"{BasePath}/Documents/unchanged.txt";
+        const string relativePath = $"{BasePath}/Documents/unchanged.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
-        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(relativePath, lastWrite);
+        string filePath = mockFileSystem.Path.GetFullPath(relativePath);
         var remoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
@@ -218,11 +222,12 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_known_file_last_write_is_beyond_five_second_tolerance_then_upload_job_is_created()
     {
-        const string filePath = $"{BasePath}/Documents/modified.txt";
+        const string relativePath = $"{BasePath}/Documents/modified.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
-        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(relativePath, lastWrite);
+        string filePath = mockFileSystem.Path.GetFullPath(relativePath);
         var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
@@ -239,12 +244,13 @@ public sealed class GivenALocalChangeDetector
     [Fact]
     public void when_known_file_last_write_exactly_equals_remote_modified_plus_five_seconds_then_file_is_skipped()
     {
-        const string filePath = $"{BasePath}/Documents/boundary.txt";
+        const string relativePath = $"{BasePath}/Documents/boundary.txt";
         var remoteModifiedAt = new DateTimeOffset(2025, 3, 15, 9, 0, 0, TimeSpan.Zero);
         var lastWrite = remoteModifiedAt.AddSeconds(5).UtcDateTime;
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
-        mockFileSystem.File.SetLastWriteTimeUtc(filePath, lastWrite);
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTimeUtc(relativePath, lastWrite);
+        string filePath = mockFileSystem.Path.GetFullPath(relativePath);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
             [filePath] = new() { RemoteModifiedAt = remoteModifiedAt, RemoteItemId = new OneDriveItemId("remote-id-boundary") }
@@ -275,11 +281,12 @@ public sealed class GivenALocalChangeDetector
     public void when_known_file_is_modified_then_job_remote_item_id_matches_known_entity()
     {
         const string knownRemoteItemId = "remote-id-known";
-        const string filePath = $"{BasePath}/Documents/modified.txt";
+        const string relativePath = $"{BasePath}/Documents/modified.txt";
         var lastWrite = new DateTime(2025, 1, 10, 12, 0, 0, DateTimeKind.Utc);
         var mockFileSystem = new MockFileSystem();
-        mockFileSystem.Initialize().WithFile(filePath).Which(m => m.HasStringContent("data"));
-        mockFileSystem.File.SetLastWriteTime(filePath, lastWrite);
+        mockFileSystem.Initialize().WithFile(relativePath).Which(m => m.HasStringContent("data"));
+        mockFileSystem.File.SetLastWriteTime(relativePath, lastWrite);
+        string filePath = mockFileSystem.Path.GetFullPath(relativePath);
         var staleRemoteModified = new DateTimeOffset(lastWrite, TimeSpan.Zero).AddSeconds(-10);
         var lookup = new Dictionary<string, SyncedItemEntity>
         {
@@ -438,7 +445,7 @@ public sealed class GivenALocalChangeDetector
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
         jobs.Count.ShouldBe(1);
-        jobs[0].Target.LocalPath.ShouldStartWith(BasePath);
+        jobs[0].Target.LocalPath.ShouldStartWith(mockFileSystem.Path.GetFullPath(BasePath));
     }
 
     [Fact]
