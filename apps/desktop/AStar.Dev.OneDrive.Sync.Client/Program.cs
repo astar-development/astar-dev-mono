@@ -3,6 +3,7 @@ using AStar.Dev.Utilities;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Velopack;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -14,6 +15,8 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        VelopackApp.Build().Run();
+
         try
         {
             var configuration = new ConfigurationBuilder()
