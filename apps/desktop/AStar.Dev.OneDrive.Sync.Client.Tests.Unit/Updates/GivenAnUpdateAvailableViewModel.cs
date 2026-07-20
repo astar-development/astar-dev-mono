@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Microsoft.Extensions.Logging;
+using NSubstitute.ExceptionExtensions;
 using Velopack;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Updates;
