@@ -42,7 +42,7 @@ public sealed class GivenAnUpdateNotificationService
         var (sut, updateCheckService, _, dialogService) = CreateSut();
         updateCheckService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns((UpdateInfo?)null);
 
-        await sut.CheckAndNotifyAsync();
+        await sut.CheckAndNotifyAsync(TestContext.Current.CancellationToken);
 
         await dialogService.DidNotReceive().ShowAsync(Arg.Any<UpdateAvailableViewModel>(), Arg.Any<CancellationToken>());
     }
@@ -52,10 +52,11 @@ public sealed class GivenAnUpdateNotificationService
     {
         var (sut, updateCheckService, viewModelFactory, _) = CreateSut();
         var updateInfo = CreateUpdateInfo();
+        var viewModel = CreateViewModel(updateInfo);
         updateCheckService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns(updateInfo);
-        viewModelFactory.Create(updateInfo).Returns(CreateViewModel(updateInfo));
+        viewModelFactory.Create(updateInfo).Returns(viewModel);
 
-        await sut.CheckAndNotifyAsync();
+        await sut.CheckAndNotifyAsync(TestContext.Current.CancellationToken);
 
         viewModelFactory.Received(1).Create(updateInfo);
     }
@@ -69,7 +70,7 @@ public sealed class GivenAnUpdateNotificationService
         updateCheckService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns(updateInfo);
         viewModelFactory.Create(updateInfo).Returns(viewModel);
 
-        await sut.CheckAndNotifyAsync();
+        await sut.CheckAndNotifyAsync(TestContext.Current.CancellationToken);
 
         await dialogService.Received(1).ShowAsync(viewModel, Arg.Any<CancellationToken>());
     }

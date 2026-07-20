@@ -81,6 +81,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IApplicationVersionProvider, ApplicationVersionProvider>();
         _ = services.AddSingleton<IUpdateCheckService, UpdateCheckService>();
         _ = services.AddSingleton<IUpdateAvailableDialogService, AvaloniaUpdateAvailableDialogService>();
+        _ = services.AddSingleton<IUpdateNotificationService, UpdateNotificationService>();
         _ = services.AddOneDriveClient();
 
         return services;
