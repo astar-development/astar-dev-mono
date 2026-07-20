@@ -228,5 +228,11 @@
   "AccountSync.LocalSyncFolderLabel": "Local sync folder",
   "AccountSync.LocalSyncFolderPlaceholder": "e.g. /home/user/OneDrive/personal",
   "AccountSync.BrowseButton": "Browse ...",
-  "AccountSync.SaveButton": "Save"
+  "AccountSync.SaveButton": "Save",
+  "Update.Title": "Update available",
+  "Update.Message": "Version {0} is ready to install.",
+  "Update.ReleaseNotesLabel": "What's new",
+  "Update.RestartNow": "Restart now",
+  "Update.Later": "Later",
+  "Update.Downloading": "Downloading..."
 }
