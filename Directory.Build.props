@@ -88,6 +88,17 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
 
     <!--
+      Deterministic+PublishRepositoryUrl normally append "+{SourceRevisionId}" to
+      InformationalVersion. No project references Microsoft.SourceLink.GitHub (only
+      declared centrally, never wired via PackageReference), so the SDK can't resolve
+      a real git commit SHA and falls back to a randomly generated GUID instead -
+      producing versions like "0.34.1+3f2504e0-4f89-11d3-9a0c-0305e82c3301" wherever
+      InformationalVersion is read (e.g. the OneDrive Sync Client's title bar).
+      Disable the suffix entirely until SourceLink is actually wired up.
+    -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <!--
       Required for deterministic/source-linked builds.
       Set your actual GitHub repo URL here.
     -->
