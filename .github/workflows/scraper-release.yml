@@ -98,5 +98,5 @@ jobs:
           --channel ${{ matrix.channel }}
           --publish
           --merge
-          --releaseName "v$VERSION"
+          --releaseName "AStar Dev Wallpaper Scraper v$VERSION"
           --tag $GITHUB_REF_NAME
