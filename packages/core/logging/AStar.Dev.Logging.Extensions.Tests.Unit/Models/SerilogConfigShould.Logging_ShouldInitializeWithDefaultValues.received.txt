@@ -1,0 +1,21 @@
+{
+  "console": {
+    "formatterName": "",
+    "formatterOptions": {
+      "singleLine": false,
+      "includeScopes": false,
+      "timestampFormat": "HH:mm:ss ",
+      "useUtcTimestamp": true,
+      "jsonWriterOptions": {
+        "indented": false
+      }
+    }
+  },
+  "applicationInsights": {
+    "logLevel": {
+      "default": "",
+      "microsoftAspNetCore": "",
+      "aStar": ""
+    }
+  }
+}

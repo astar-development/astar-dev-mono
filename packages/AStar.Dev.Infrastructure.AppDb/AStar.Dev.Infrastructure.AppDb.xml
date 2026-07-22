@@ -881,6 +881,11 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.Level">
             <summary>Hierarchy level: 1 = top, 2 = sub, 3 = leaf.</summary>
         </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.Priority">
+            <summary>
+              Priority for ordering categories at the same level. Lower values are higher priority. Default is 1.
+            </summary>
+        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.ParentId">
             <summary>FK to parent category; null for root nodes.</summary>
         </member>
@@ -1150,6 +1155,16 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IncludeInSearch">
             <summary>Whether this category should be included in the scraping process.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IsFamous">
+            <summary>
+              Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IsInternet">
+            <summary>
+             Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
+            </summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity">
             <summary>The search parameters guiding the scraper's navigation of the target website.</summary>
@@ -1649,6 +1664,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddIndexOnFileClassifications.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.MigrateOfflineScraper">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MigrateOfflineScraper.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MigrateOfflineScraper.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MigrateOfflineScraper.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">

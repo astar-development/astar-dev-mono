@@ -5,7 +5,7 @@ namespace AStar.Dev.FunctionalParadigm.Composition;
 ///     intermediate locals.
 /// </summary>
 /// <remarks>
-///     Deliberately kept in a dedicated namespace rather than <see cref="AStar.Dev.FunctionalParadigm" />:
+///     Deliberately kept in a dedicated namespace rather than <see cref="FunctionalParadigm" />:
 ///     <see cref="Tap{T}" /> is generic over any <typeparamref name="T" />, which would otherwise collide with
 ///     (and win overload resolution against) the more specific <c>Tap</c> overloads on
 ///     <c>Result&lt;TResult,TError&gt;</c>, <c>Option&lt;T&gt;</c> and <c>Exceptional&lt;T&gt;</c> for any

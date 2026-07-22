@@ -1,0 +1,5 @@
+{
+  "default": "Debug",
+  "microsoftAspNetCore": "Information",
+  "aStar": "Error"
+}

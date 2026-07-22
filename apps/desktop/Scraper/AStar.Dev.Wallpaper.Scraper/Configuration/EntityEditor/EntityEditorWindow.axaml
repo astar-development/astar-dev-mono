@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:editor="using:AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="500"
+        x:Class="AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor.EntityEditorWindow"
+        x:DataType="editor:EntityEditorViewModelBase"
+        Title="{Binding Title}"
+        Width="900" Height="500"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="12">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <Button Content="Add" Command="{Binding AddCommand}" />
+            <Button Content="Delete" Command="{Binding DeleteCommand}" />
+            <Button Content="Save" Command="{Binding SaveCommand}" />
+            <Button Content="Import" Command="{Binding ImportCommand}" />
+            <Button Content="Export" Command="{Binding ExportCommand}" />
+            <Button Content="{Binding CustomActionLabel}" Command="{Binding CustomActionCommand}" IsVisible="{Binding HasCustomAction}" />
+        </StackPanel>
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        <DataGrid x:Name="Grid" AutoGenerateColumns="True" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" />
+    </DockPanel>
+</Window>

@@ -1,8 +1,1 @@
-﻿[
-  {
-    "name": "Seq",
-    "args": {
-      "serverUrl": "http://seq:5341"
-    }
-  }
-]
+﻿

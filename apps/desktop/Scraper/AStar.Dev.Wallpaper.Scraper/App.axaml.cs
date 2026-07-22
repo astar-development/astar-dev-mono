@@ -1,58 +1,95 @@
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Wallpaper.Scraper.Models;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Wallpaper.Scraper.Services;
-using AStar.Dev.Wallpaper.Scraper.Support;
+using AStar.Dev.Wallpaper.Scraper.Startup;
+using AStar.Dev.Wallpaper.Scraper.Theming;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using System.IO.Abstractions;
+using Testably.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.Wallpaper.Scraper;
 
-public partial class App : Application
+/// <summary>The Avalonia application entry point: bootstraps configuration, logging, dependency injection, and the main window.</summary>
+[ExcludeFromCodeCoverage]
+public partial class App : Application, IDisposable
 {
-    private IHost host = null!;
+    private bool disposedValue;
 
-    public static new App Current => (App)Application.Current!;
-    public IServiceProvider Services => host.Services;
+    private ServiceProvider? services;
 
+    /// <summary>Loads the application's XAML resources.</summary>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
-    public override async void OnFrameworkInitializationCompleted()
+    /// <summary>Builds configuration, logging, and the dependency injection container, migrates the database, and shows the main window.</summary>
+    public override void OnFrameworkInitializationCompleted()
     {
-        host = AppCompositionRoot.CreateHost();
+        services = BuildServices();
+        MigrateDatabase(services);
+        services.GetRequiredService<IThemeService>().Initialize();
+        ShowMainWindow(services);
 
-        await host.Services.GetRequiredService<DatabaseInitializationService>().InitialiseAsync();
-
-        ConfigureLifetime();
-        host.Start();
-        SurfaceConfigurationErrors();
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void ConfigureLifetime()
+    private static ServiceProvider BuildServices()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        IFileSystem fileSystem = new RealFileSystem();
+        var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
+
+        var collection = new ServiceCollection()
+            .AddApplicationServices(configuration);
+
+        ApplicationOptionsRegistrar.Register(collection, configuration);
+        Log.Logger = SerilogConfigurator.CreateLogger(fileSystem, configuration);
+
+        return collection
+            .AddLogging(logging => logging.AddSerilog(dispose: true))
+            .BuildServiceProvider();
+    }
+
+    private static void MigrateDatabase(ServiceProvider serviceProvider) =>
+        DatabaseMigrator.MigrateAsync(
+            serviceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+            serviceProvider.GetRequiredService<ILogger<App>>()).GetAwaiter().GetResult();
+
+    private void ShowMainWindow(ServiceProvider serviceProvider)
+    {
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = host.Services.GetRequiredService<MainWindow>();
-            desktop.Exit += OnExit;
-            desktop.MainWindow.Show();
+            return;
+        }
+
+        desktop.MainWindow = serviceProvider.GetRequiredService<Home.MainWindow>();
+
+        _ = serviceProvider.GetRequiredService<UpdateService>().CheckForUpdatesAsync(desktop.MainWindow);
+    }
+
+    /// <summary>Releases the resources held by the application's dependency injection container.</summary>
+    /// <param name="disposing">Whether managed resources should be released.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                services?.Dispose();
+            }
+
+            disposedValue = true;
         }
     }
 
-    private void SurfaceConfigurationErrors()
-        => ScrapeConfigurationValidator.Validate(host.Services.GetRequiredService<ScrapeConfiguration>())
-            .Match(_ => Unit.Instance, errors =>
-            {
-                var broadcaster = host.Services.GetRequiredService<LogBroadcaster>();
-
-                foreach (var error in errors)
-                    broadcaster.Broadcast($"Configuration error - {error.Property}: {error.Message}");
-
-                return Unit.Instance;
-            });
-
-    private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
-        => host.StopAsync().GetAwaiter().GetResult();
+    /// <summary>Releases the resources held by the application's dependency injection container.</summary>
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method - Do NOT remove this comment.
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

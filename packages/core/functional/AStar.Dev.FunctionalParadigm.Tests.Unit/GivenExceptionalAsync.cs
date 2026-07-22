@@ -136,6 +136,47 @@ public class GivenExceptionalAsync
     }
 
     [Fact]
+    public async Task when_map_async_on_task_receiver_with_task_selector_and_success_then_transforms_value()
+    {
+        var exceptionalTask = Task.FromResult(Exceptional.Success(5));
+
+        var actual = await exceptionalTask.MapAsync(value => Task.FromResult(value * 2));
+
+        actual.ShouldBeOfType<Success<int>>();
+        actual.ShouldBe(new Success<int>(10));
+    }
+
+    [Fact]
+    public async Task when_map_async_on_task_receiver_with_task_selector_and_failure_then_selector_not_invoked()
+    {
+        var exception = new InvalidOperationException("bad");
+        var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
+        bool invoked = false;
+
+        var actual = await exceptionalTask.MapAsync(value =>
+        {
+            invoked = true;
+
+            return Task.FromResult(value * 2);
+        });
+
+        actual.ShouldBeOfType<Failure<int>>();
+        actual.ShouldBe(new Failure<int>(exception));
+        invoked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_map_async_with_task_selector_chained_directly_onto_run_async_then_unwraps_awaited_value()
+    {
+        var actual = await Try.RunAsync(() => Task.FromResult(2))
+            .MapAsync(value => Task.FromResult(value * 3))
+            .MapAsync(value => value + 1);
+
+        actual.ShouldBeOfType<Success<int>>();
+        actual.ShouldBe(new Success<int>(7));
+    }
+
+    [Fact]
     public async Task when_bind_async_on_task_receiver_with_task_binder_and_success_then_returns_bound_result()
     {
         var exceptionalTask = Task.FromResult(Exceptional.Success(3));
@@ -163,17 +204,6 @@ public class GivenExceptionalAsync
         actual.ShouldBeOfType<Failure<int>>();
         actual.ShouldBe(new Failure<int>(exception));
         invoked.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task when_map_async_with_task_selector_chained_directly_onto_run_async_then_unwraps_awaited_value()
-    {
-        var actual = await Try.RunAsync(() => Task.FromResult(2))
-            .MapAsync(value => Task.FromResult(value * 3))
-            .MapAsync(value => value + 1);
-
-        actual.ShouldBeOfType<Success<int>>();
-        actual.ShouldBe(new Success<int>(7));
     }
 
     [Fact]

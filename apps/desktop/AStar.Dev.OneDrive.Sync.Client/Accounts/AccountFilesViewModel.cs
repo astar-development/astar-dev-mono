@@ -221,6 +221,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     {
         string oneDriveBase = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive"));
 
+        if (Path.IsPathRooted(node.Name))
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(logger, node.Name);
+            return;
+        }
+
         string candidatePath;
         try
         {

@@ -276,6 +276,9 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
                     b.Property<long?>("UpdatedAt")
                         .HasColumnType("INTEGER")
                         .HasColumnName("UpdatedAt_Ticks");
@@ -516,6 +519,12 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .HasColumnName("CreatedAt_Ticks");
 
                     b.Property<bool>("IncludeInSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFamous")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInternet")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("LastKnownImageCount")

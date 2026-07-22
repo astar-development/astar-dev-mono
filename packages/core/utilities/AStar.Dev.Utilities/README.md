@@ -20,7 +20,7 @@ Or via the NuGet Package Manager in Visual Studio / Rider.
 ## Available extensions
 
 | Class | Description | Reference |
-|-------|-------------|-----------|
+| ----- | ----------- | --------- |
 | [`Constants`](docs/Constants.md) | Shared `JsonSerializerOptions` instances | [docs](docs/Constants.md) |
 | [`EncryptionExtensions`](docs/EncryptionExtensions.md) | AES encrypt / decrypt strings | [docs](docs/EncryptionExtensions.md) |
 | [`EnumExtensions`](docs/EnumExtensions.md) | Parse a string to an enum value | [docs](docs/EnumExtensions.md) |
@@ -33,7 +33,7 @@ Or via the NuGet Package Manager in Visual Studio / Rider.
 
 ## Build
 
-This package lives inside the [astar-dev-mono](https://github.com/astar-development/astar-dev-mono) mono-repo and inherits all build configuration from the root `Directory.Build.props`.
+This package lives inside the [astar-dev-Scraper](https://github.com/astar-development/astar-dev-Scraper) mono-repo and inherits all build configuration from the root `Directory.Build.props`.
 
 ```bash
 # From the repo root — builds everything

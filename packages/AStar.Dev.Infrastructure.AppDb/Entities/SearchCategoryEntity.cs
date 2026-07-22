@@ -26,4 +26,14 @@ public sealed class SearchCategoryEntity : AuditableEntity
 
     /// <summary>Whether this category should be included in the scraping process.</summary>
     public bool IncludeInSearch { get; set; } = true;
+
+    /// <summary>
+    ///   Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
+    /// </summary>
+    public bool IsFamous { get; set; } = true;
+
+    /// <summary>
+    ///  Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
+    /// </summary>
+    public bool IsInternet { get; set; } = true;
 }

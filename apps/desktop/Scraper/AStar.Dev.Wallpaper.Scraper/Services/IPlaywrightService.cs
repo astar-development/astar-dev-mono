@@ -1,12 +1,18 @@
-using Microsoft.Playwright;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
+/// <summary>
+///     Defines a service for configuring and managing Playwright instances.
+/// </summary>
 public interface IPlaywrightService
 {
     /// <summary>
-    /// Configures and initializes a Playwright browser context and page for web scraping. This method sets up the browser with specified options, including headless mode, slow motion delay, and user agent settings. It also applies cookies extracted from the Chrome browser to maintain session state and authentication. The method returns an initialized IPage instance that can be used for navigating and interacting with web pages during the scraping process.
+    ///     Configures and returns a Playwright instance.
     /// </summary>
-    /// <returns>The initialized IPage instance.</returns>
-    Task<IPage> ConfigurePlaywrightAsync();
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>
+    ///     A task that represents the asynchronous operation. The task result contains the configured Playwright <see cref="Microsoft.Playwright.IPage"/> instance.
+    /// </returns>
+    Task<Exceptional<Microsoft.Playwright.IPage>> ConfigurePlaywrightAsync(CancellationToken cancellationToken);
 }

@@ -21,7 +21,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IAccountRepository repository;
     private readonly ILocalizationService loc;
     private readonly IFolderPickerService folderPickerService;
-    private bool isLoaded;
+    private readonly bool isLoaded;
     private bool isRefreshing;
 
     public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService)
