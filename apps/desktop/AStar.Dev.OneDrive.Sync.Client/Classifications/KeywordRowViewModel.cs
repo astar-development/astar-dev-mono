@@ -12,8 +12,8 @@ public sealed partial class KeywordRowViewModel : ObservableObject
     private readonly IFileClassificationRepository repository;
     private readonly Action<KeywordRowViewModel> onDeleteSelf;
 
-    private string originalValue;
-    private bool originalIsFamous;
+    private readonly string originalValue;
+    private readonly bool originalIsFamous;
 
     public KeywordRowViewModel(int keywordId, FileClassificationKeyword keyword, IFileClassificationRepository repository, Action<KeywordRowViewModel> onDeleteSelf)
     {

@@ -25,10 +25,7 @@ public sealed class GivenMainWindowViewModel
     private readonly IThemeService themeService = Substitute.For<IThemeService>();
     private readonly IDatabaseResetService databaseResetService = Substitute.For<IDatabaseResetService>();
 
-    static GivenMainWindowViewModel()
-    {
-        RxApp.MainThreadScheduler = ImmediateScheduler.Instance;
-    }
+    static GivenMainWindowViewModel() => RxApp.MainThreadScheduler = ImmediateScheduler.Instance;
 
     public GivenMainWindowViewModel() =>
         SynchronizationContext.SetSynchronizationContext(new ImmediateSynchronizationContext());

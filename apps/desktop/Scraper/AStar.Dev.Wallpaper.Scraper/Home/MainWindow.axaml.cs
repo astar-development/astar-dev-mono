@@ -13,14 +13,11 @@ namespace AStar.Dev.Wallpaper.Scraper.Home;
 [ExcludeFromCodeCoverage]
 public partial class MainWindow : Window
 {
-    private IDisposable? thumbnailSubscription;
-    private IDisposable? categorySkippedSubscription;
+    private readonly IDisposable? thumbnailSubscription;
+    private readonly IDisposable? categorySkippedSubscription;
 
     // Parameterless constructor is required by the XAML previewer only; the app resolves the DI constructor.
-    public MainWindow()
-    {
-        InitializeComponent();
-    }
+    public MainWindow() => InitializeComponent();
 
     public MainWindow(MainWindowViewModel viewModel, IWallpaperThumbnailFeed thumbnailFeed) : this()
     {
