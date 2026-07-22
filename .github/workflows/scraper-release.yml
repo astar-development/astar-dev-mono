@@ -59,6 +59,8 @@ jobs:
           --runtime ${{ matrix.rid }}
           --self-contained
           -p:Version=$VERSION
+          -p:PublishTrimmed=false
+          -p:EnableTrimAnalyzer=false
           --output publish
 
       - name: Install vpk
