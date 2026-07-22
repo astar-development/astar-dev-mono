@@ -24,7 +24,7 @@ public sealed class ImagePageService(
     {
         var pageData = await fileClassificationService.LoadPageClassificationDataAsync(categoryId, cancellationToken).ConfigureAwait(false);
 
-        Result<Unit, ScrapeError> aggregate = Unit.Value;
+        Result<Unit, ScrapeError> aggregate = Unit.Instance;
 
         foreach (string pageLink in imagePageLinks)
         {
@@ -57,7 +57,7 @@ public sealed class ImagePageService(
         logger.Information("Not downloading {fileName} as we already have it...{Timestamp:HH:mm:ss:fff} (UTC)", fileName, timeProvider.GetUtcNow());
         await delayStrategy.DelayAsync(DelayKind.ImageAlreadyDownloaded, cancellationToken).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private Task<Result<Unit, ScrapeError>> HandleOutcomeAsync(ImagePageOutcome outcome, string categoryName, PageClassificationData pageData, CancellationToken cancellationToken)
@@ -85,7 +85,7 @@ public sealed class ImagePageService(
     {
         logger.Information("Skipping {Name} with Tags: {Tags}", categoryName, string.Join(", ", skipped.Tags));
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task<Result<Unit, ScrapeError>> DownloadAndPersistAsync(ScrapedImage scraped, PageClassificationData pageData, CancellationToken cancellationToken)

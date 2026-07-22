@@ -68,7 +68,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
     public async Task when_run_against_a_working_page_with_zero_total_pages_then_the_result_is_a_success()
     {
         var topWallpapersPage = Substitute.For<ITopWallpapersPage>();
-        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value)));
+        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance)));
         topWallpapersPage.PageInfoAsync().Returns(Task.FromResult(Result.Success<int, ScrapeError>(0)));
         topWallpapersPage.GetImagePageLinksAsync().Returns(Task.FromResult(Result.Success<IReadOnlyCollection<string>, ScrapeError>([])));
 
@@ -89,7 +89,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
     public async Task when_the_image_page_service_reports_a_failure_then_run_async_returns_a_failure_result()
     {
         var topWallpapersPage = Substitute.For<ITopWallpapersPage>();
-        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value)));
+        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance)));
         topWallpapersPage.PageInfoAsync().Returns(Task.FromResult(Result.Success<int, ScrapeError>(1)));
         topWallpapersPage.GetImagePageLinksAsync().Returns(Task.FromResult(Result.Success<IReadOnlyCollection<string>, ScrapeError>(["https://example.test/w/12345",])));
 
@@ -115,7 +115,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
     public async Task when_run_then_the_delay_strategy_is_consulted_once_per_page_reported_by_the_header()
     {
         var topWallpapersPage = Substitute.For<ITopWallpapersPage>();
-        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value)));
+        topWallpapersPage.LoadTopWallpapersPageAsync(Arg.Any<int>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance)));
         topWallpapersPage.PageInfoAsync().Returns(Task.FromResult(Result.Success<int, ScrapeError>(3)));
         topWallpapersPage.GetImagePageLinksAsync().Returns(Task.FromResult(Result.Success<IReadOnlyCollection<string>, ScrapeError>([])));
 
@@ -140,7 +140,7 @@ public sealed class GivenATopWallpapersWorkflow : IAsyncLifetime
     {
         var topWallpapersPage = Substitute.For<ITopWallpapersPage>();
         topWallpapersPage.LoadTopWallpapersPageAsync(5).Returns(Task.FromResult(Result.Failure<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(ScrapeErrorFactory.CreatePageLoadFailed("url", "boom"))));
-        topWallpapersPage.LoadTopWallpapersPageAsync(1).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value)));
+        topWallpapersPage.LoadTopWallpapersPageAsync(1).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance)));
         topWallpapersPage.PageInfoAsync().Returns(Task.FromResult(Result.Success<int, ScrapeError>(0)));
         topWallpapersPage.GetImagePageLinksAsync().Returns(Task.FromResult(Result.Success<IReadOnlyCollection<string>, ScrapeError>([])));
 

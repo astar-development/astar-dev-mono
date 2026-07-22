@@ -22,7 +22,7 @@ public sealed class DatabaseResetRepository(IDbContextFactory<AppDbContext> cont
                         cancellationToken)
                     .ConfigureAwait(false);
 
-                return Unit.Value;
+                return Unit.Instance;
             }).ConfigureAwait(false))
             .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(ResetSearchCategoriesAsync), exception.Message));
 
@@ -32,7 +32,7 @@ public sealed class DatabaseResetRepository(IDbContextFactory<AppDbContext> cont
                 await using var context = await contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
                 _ = await context.Files.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
-                return Unit.Value;
+                return Unit.Instance;
             }).ConfigureAwait(false))
             .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(DeleteAllFilesAsync), exception.Message));
 

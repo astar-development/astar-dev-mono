@@ -55,16 +55,16 @@ public sealed class SubscriptionsWorkflow(
         logger.Information("Getting page {subscriptionPage} (of {totalPagesForSubscriptions}) now.", pageNumber, totalPages);
         _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(pageNumber).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task<Result<Unit, ScrapeError>> ClearSubscriptionsIfCompleteAsync(PageInfo pageInfo)
     {
-        if (pageInfo.PageCount <= 0) return Unit.Value;
+        if (pageInfo.PageCount <= 0) return Unit.Instance;
 
         _ = await subscriptionsImagesListPage.LoadSubscriptionResultsPageAsync(FirstPageNumber).ConfigureAwait(false);
         _ = await subscriptionsImagesListPage.ClearAsync().ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 }

@@ -11,7 +11,7 @@ namespace AStar.Dev.FunctionalParadigm.Composition;
 ///     <c>Result&lt;TResult,TError&gt;</c>, <c>Option&lt;T&gt;</c> and <c>Exceptional&lt;T&gt;</c> for any
 ///     single-argument call. Callers opt in explicitly with <c>using AStar.Dev.FunctionalParadigm.Composition;</c>.
 /// </remarks>
-public static class FunctionExtensions
+public static class PipeExtensions
 {
     /// <summary>
     ///     Pipes the value through the specified function, returning the function's result.

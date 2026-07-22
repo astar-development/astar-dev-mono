@@ -43,14 +43,14 @@ public partial class App : Application
 
     private void SurfaceConfigurationErrors()
         => ScrapeConfigurationValidator.Validate(host.Services.GetRequiredService<ScrapeConfiguration>())
-            .Match(_ => Unit.Value, errors =>
+            .Match(_ => Unit.Instance, errors =>
             {
                 var broadcaster = host.Services.GetRequiredService<LogBroadcaster>();
 
                 foreach (var error in errors)
                     broadcaster.Broadcast($"Configuration error - {error.Property}: {error.Message}");
 
-                return Unit.Value;
+                return Unit.Instance;
             });
 
     private void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)

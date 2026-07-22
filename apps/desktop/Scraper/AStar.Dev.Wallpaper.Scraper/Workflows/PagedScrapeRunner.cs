@@ -30,6 +30,6 @@ public sealed class PagedScrapeRunner(ConfigurationSaver configurationSaver, IDe
             if (pageFailed) return pageResult;
         }
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 }

@@ -40,7 +40,7 @@ public sealed class GivenAFileClassificationCategoryService
     public async Task when_importing_new_tag_then_it_is_added()
     {
         var repo = Substitute.For<IFileClassificationCategoriesRepository>();
-        repo.UpsertAsync(Arg.Any<IReadOnlyList<ScrapedTagDomain>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.UpsertAsync(Arg.Any<IReadOnlyList<ScrapedTagDomain>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
         var sut = new FileClassificationCategoryService(repo);
         var tags = new List<ScrapedTagDomain> { new() { Name = ActionTagValue, ParentId = ParentId, IncludeInSearch = true } };
 
@@ -53,7 +53,7 @@ public sealed class GivenAFileClassificationCategoryService
     public async Task when_importing_a_tag_with_include_in_search_false_then_upsert_is_called_with_false_value()
     {
         var repo = Substitute.For<IFileClassificationCategoriesRepository>();
-        repo.UpsertAsync(Arg.Any<IReadOnlyList<ScrapedTagDomain>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.UpsertAsync(Arg.Any<IReadOnlyList<ScrapedTagDomain>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
         var sut = new FileClassificationCategoryService(repo);
         var tags = new List<ScrapedTagDomain> { new() { Name = ActionTagValue, ParentId = ParentId, IncludeInSearch = false } };
 

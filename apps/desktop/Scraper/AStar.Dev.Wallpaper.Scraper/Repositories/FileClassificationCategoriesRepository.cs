@@ -34,7 +34,7 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
 
                 _ = await context.SaveChangesAsync(cancellationToken);
 
-                return Unit.Value;
+                return Unit.Instance;
             }).ConfigureAwait(false))
             .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(SaveAsync), exception.Message));
 
@@ -69,7 +69,7 @@ public sealed class FileClassificationCategoriesRepository(IDbContextFactory<App
 
                 _ = await context.SaveChangesAsync(cancellationToken);
 
-                return Unit.Value;
+                return Unit.Instance;
             }).ConfigureAwait(false))
             .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(UpsertAsync), exception.Message));
 }

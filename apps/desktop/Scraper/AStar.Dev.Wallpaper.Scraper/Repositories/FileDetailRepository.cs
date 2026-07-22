@@ -31,7 +31,7 @@ public sealed class FileDetailRepository(IDbContextFactory<AppDbContext> context
                 _ = await context.Files.AddAsync(fileDetail, cancellationToken);
                 _ = await context.SaveChangesAsync(cancellationToken); // threw here or somewhere after...
 
-                return Unit.Value;
+                return Unit.Instance;
             }).ConfigureAwait(false))
             .ToResult(exception => (ScrapeError)ScrapeErrorFactory.CreateRepositoryOperationFailed(nameof(AddAsync), exception.Message));
 }

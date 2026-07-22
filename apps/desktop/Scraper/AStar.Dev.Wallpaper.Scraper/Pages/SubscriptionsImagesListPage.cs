@@ -39,7 +39,7 @@ public sealed class SubscriptionsImagesListPage(IPlaywrightService playwrightSer
         await EnsurePageAsync().ConfigureAwait(false);
         _ = await page.GotoAsync($"{searchConfiguration.Subscriptions}{pageNumber}").ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task<string?> GetPageHeaderAsync()
@@ -69,7 +69,7 @@ public sealed class SubscriptionsImagesListPage(IPlaywrightService playwrightSer
                   .GetByRole(AriaRole.Link, new LocatorGetByRoleOptions { Name = " Clear All Subscriptions", })
                   .ClickAsync().ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task EnsurePageAsync() => page ??= await playwrightService.ConfigurePlaywrightAsync().ConfigureAwait(false);

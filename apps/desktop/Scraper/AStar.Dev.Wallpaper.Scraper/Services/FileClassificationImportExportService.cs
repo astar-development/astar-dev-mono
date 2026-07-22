@@ -82,7 +82,7 @@ public sealed class FileClassificationImportExportService(IDbContextFactory<AppD
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task<Result<Unit, ScrapeError>> FallbackImportLevelAsync(AppDbContext context, List<FileClassificationCategoryEntity> categories, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
@@ -96,7 +96,7 @@ public sealed class FileClassificationImportExportService(IDbContextFactory<AppD
                     onFailure: error => logger.Error("Failed to import category: {CategoryName} (Level {Level}). {ErrorMessage}", category.Name, category.Level, error.Message))
                 .ConfigureAwait(false);
 
-        return Result.Success<Unit, ScrapeError>(Unit.Value);
+        return Result.Success<Unit, ScrapeError>(Unit.Instance);
     }
 
     private async Task<Result<Unit, ScrapeError>> ImportCategoryWithFallbackAsync(AppDbContext context, FileClassificationCategoryEntity category, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
@@ -143,7 +143,7 @@ public sealed class FileClassificationImportExportService(IDbContextFactory<AppD
         await AddMissingKeywordsAsync(context, target.Id, category.Id, keywords, token).ConfigureAwait(false);
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private static async Task<Result<Unit, ScrapeError>> UpsertFallbackAsync(AppDbContext context, FileClassificationCategoryEntity category, List<FileClassificationKeywordEntity> keywords, CancellationToken token)
@@ -188,7 +188,7 @@ public sealed class FileClassificationImportExportService(IDbContextFactory<AppD
         await AddMissingKeywordsAsync(context, target.Id, category.Id, keywords, token).ConfigureAwait(false);
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private static Task<FileClassificationCategoryEntity?> FindExistingCategoryAsync(AppDbContext context, FileClassificationCategoryEntity category, CancellationToken token)

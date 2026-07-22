@@ -34,7 +34,7 @@ public sealed class TopWallpapersPage(IPlaywrightService playwrightService, Sear
         await EnsurePageAsync().ConfigureAwait(false);
         _ = await page.GotoAsync($"{searchConfiguration.TopWallpapers}{pageNumber}").ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private async Task<string?> GetPageHeaderAsync()

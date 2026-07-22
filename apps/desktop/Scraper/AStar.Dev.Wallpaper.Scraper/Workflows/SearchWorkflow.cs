@@ -20,7 +20,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
 
     private async Task<Result<Unit, ScrapeError>> ProcessSearchCategoriesAsync(SearchProgress progress, IReadOnlyList<Category> searchCategories, CancellationToken cancellationToken)
     {
-        Result<Unit, ScrapeError> outcome = Unit.Value;
+        Result<Unit, ScrapeError> outcome = Unit.Instance;
 
         foreach (var searchCategory in searchCategories)
         {
@@ -51,7 +51,7 @@ public sealed class SearchWorkflow(SearchResultsPage searchResultsPage, ScrapeCo
             logger.Information("{Category} is up to date (same image/page count), skipping...", searchCategory.Name);
             await delayStrategy.DelayAsync(DelayKind.CategoryUpToDate, cancellationToken).ConfigureAwait(false);
 
-            return Unit.Value;
+            return Unit.Instance;
         }
 
         int startingPage = searchCategory.LastPageVisited > 0 ? searchCategory.LastPageVisited : 1;

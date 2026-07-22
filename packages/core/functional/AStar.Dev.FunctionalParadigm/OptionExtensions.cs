@@ -5,7 +5,7 @@ namespace AStar.Dev.FunctionalParadigm;
 /// </summary>
 public static class OptionExtensions
 {
-    private static readonly string _unreachableMessage = "It should not be possible to reach this point.";
+    private static readonly string UnreachableMessage = "It should not be possible to reach this point.";
 
     /// <summary>
     ///     Attempts to extract the value from an <see cref="Option{T}" />.
@@ -88,7 +88,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => new Option<TResult>.Some(await mapAsync(some.Value)),
             Option<T>.None => Option.None<TResult>(),
-            _ => throw new InvalidOperationException(_unreachableMessage)
+            _ => throw new InvalidOperationException(UnreachableMessage)
         };
 
     /// <summary>
@@ -115,7 +115,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await bindAsync(some.Value),
             Option<T>.None => Option.None<TResult>(),
-            _ => throw new InvalidOperationException(_unreachableMessage)
+            _ => throw new InvalidOperationException(UnreachableMessage)
         };
 
     /// <summary>
@@ -182,7 +182,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await onSomeAsync(some.Value),
             Option<T>.None => onNone(),
-            _ => throw new InvalidOperationException(_unreachableMessage)
+            _ => throw new InvalidOperationException(UnreachableMessage)
         };
 
     /// <summary>
@@ -193,7 +193,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => onSome(some.Value),
             Option<T>.None => await onNoneAsync(),
-            _ => throw new InvalidOperationException(_unreachableMessage)
+            _ => throw new InvalidOperationException(UnreachableMessage)
         };
 
     /// <summary>
@@ -204,7 +204,7 @@ public static class OptionExtensions
         {
             Option<T>.Some some => await onSomeAsync(some.Value),
             Option<T>.None => await onNoneAsync(),
-            _ => throw new InvalidOperationException(_unreachableMessage)
+            _ => throw new InvalidOperationException(UnreachableMessage)
         };
 
     /// <summary>

@@ -26,6 +26,6 @@ public sealed class ImageSaver(IFileSystem fileSystem) : IImageSaver
     {
         if (image.Length > 0) await fileSystem.File.WriteAllBytesAsync(cleanedPath, image).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 }

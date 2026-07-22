@@ -57,7 +57,7 @@ public sealed class GivenAPagedScrapeRunner : IAsyncLifetime
         return new PagedScrapeRunner(configurationSaver, delayStrategy);
     }
 
-    private static Task<Result<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>> OkUnit() => Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+    private static Task<Result<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>> OkUnit() => Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
 
     private static Task<Result<IReadOnlyCollection<string>, ScrapeError>> OkLinks() => Task.FromResult(Result.Success<IReadOnlyCollection<string>, ScrapeError>([]));
 

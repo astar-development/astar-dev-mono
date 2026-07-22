@@ -5,7 +5,7 @@ namespace AStar.Dev.FunctionalParadigm;
 /// </summary>
 public static class ExceptionalExtensions
 {
-    private const string _unexpectedExceptionalTypeMessage = "Unexpected exceptional type.";
+    private const string UnexpectedExceptionalTypeMessage = "Unexpected exceptional type.";
 
     /// <summary>
     ///     Pattern matches on the <see cref="Exceptional{T}" />, invoking the handler for the case present.
@@ -15,7 +15,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => onSuccess(success.Value),
                 Failure<T> failure => onFailure(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -26,7 +26,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => await onSuccess(success.Value).ConfigureAwait(false),
                 Failure<T> failure => onFailure(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -47,7 +47,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => new Success<TResult>(selector(success.Value)),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -58,7 +58,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -69,7 +69,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -83,6 +83,17 @@ public static class ExceptionalExtensions
     }
 
     /// <summary>
+    ///     Asynchronously transforms the value inside a Task of <see cref="Exceptional{T}" /> if it is a <see cref="Success{T}" />,
+    ///     via an asynchronous selector.
+    /// </summary>
+    public static async Task<Exceptional<TResult>> MapAsync<T, TResult>(this Task<Exceptional<T>> exceptionalTask, Func<T, Task<TResult>> selector)
+    {
+        var exceptional = await exceptionalTask.ConfigureAwait(false);
+
+        return await exceptional.MapAsync(selector).ConfigureAwait(false);
+    }
+
+    /// <summary>
     ///     Chains another <see cref="Exceptional{T}" />-producing function, short-circuiting on <see cref="Failure{T}" />.
     /// </summary>
     public static Exceptional<TResult> Bind<T, TResult>(this Exceptional<T> exceptional, Func<T, Exceptional<TResult>> binder)
@@ -90,7 +101,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => binder(success.Value),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -101,7 +112,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => await binder(success.Value).ConfigureAwait(false),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 
     /// <summary>
@@ -125,7 +136,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => await binder(success.Value).ConfigureAwait(false),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
     }
 
@@ -140,7 +151,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => await binder(success.Value).ConfigureAwait(false),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
     }
 
@@ -155,7 +166,7 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => await binder(success.Value).ConfigureAwait(false),
                 Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
     }
 
@@ -177,7 +188,7 @@ public static class ExceptionalExtensions
                 return failure;
 
             default:
-                throw new InvalidOperationException(_unexpectedExceptionalTypeMessage);
+                throw new InvalidOperationException(UnexpectedExceptionalTypeMessage);
         }
     }
 
@@ -222,6 +233,19 @@ public static class ExceptionalExtensions
     }
 
     /// <summary>
+    ///     Asynchronously runs a finalizer against a Task of <see cref="Exceptional{T}" /> regardless of whether it
+    ///     resolves to a <see cref="Success{T}" /> or a <see cref="Failure{T}" />, and returns the original result.
+    /// </summary>
+    public static async Task<Exceptional<T>> Ensure<T>(this Task<Exceptional<T>> exceptionalTask, Action<T> finallyAction)
+    {
+        var exceptional = await exceptionalTask.ConfigureAwait(false);
+
+        finallyAction(exceptional is Success<T> success ? success.Value : default!);
+
+        return exceptional;
+    }
+
+    /// <summary>
     ///     Lifts an <see cref="Exceptional{T}" /> into a <see cref="Result{TResult,TError}" />, mapping a captured
     ///     exception to a domain error via <paramref name="mapError" />.
     /// </summary>
@@ -230,6 +254,6 @@ public static class ExceptionalExtensions
             {
                 Success<T> success => new Ok<T, TError>(success.Value),
                 Failure<T> failure => new Fail<T, TError>(mapError(failure.Exception)),
-                _ => throw new InvalidOperationException(_unexpectedExceptionalTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
             };
 }

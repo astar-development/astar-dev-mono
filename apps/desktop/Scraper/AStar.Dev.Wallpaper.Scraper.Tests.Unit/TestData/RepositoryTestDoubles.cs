@@ -11,7 +11,7 @@ internal static class RepositoryTestDoubles
     {
         var repository = Substitute.For<IFileDetailRepository>();
         repository.ExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Result.Success<bool, ScrapeError>(exists));
-        repository.AddAsync(Arg.Any<FileDetailEntity>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repository.AddAsync(Arg.Any<FileDetailEntity>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
 
         return repository;
     }
@@ -19,7 +19,7 @@ internal static class RepositoryTestDoubles
     internal static IFileClassificationCategoriesRepository BuildScrapedTagRepository()
     {
         var repository = Substitute.For<IFileClassificationCategoriesRepository>();
-        repository.SaveAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repository.SaveAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
 
         return repository;
     }

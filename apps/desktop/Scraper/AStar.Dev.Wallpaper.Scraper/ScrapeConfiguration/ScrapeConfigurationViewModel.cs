@@ -116,7 +116,7 @@ public class ScrapeConfigurationViewModel : ViewModelBase
 
             MapFromEntity(entity);
 
-            return FunctionalParadigm.Unit.Value;
+            return FunctionalParadigm.Unit.Instance;
         }
         catch (Exception ex)
         {
@@ -156,7 +156,7 @@ public class ScrapeConfigurationViewModel : ViewModelBase
 
             StatusMessage = "Saved successfully.";
 
-            return FunctionalParadigm.Unit.Value;
+            return FunctionalParadigm.Unit.Instance;
         }
         catch (Exception ex)
         {

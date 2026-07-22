@@ -13,7 +13,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
         {
             workflowInvocationCount++;
 
-            return Task.FromResult<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>>(global::AStar.Dev.FunctionalParadigm.Unit.Value);
+            return Task.FromResult<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>>(global::AStar.Dev.FunctionalParadigm.Unit.Instance);
         }
 
         await ScrapeSiteWorkflowDecision.DecideAsync(new InvalidOperationException("setup failed"), Workflow);
@@ -31,7 +31,7 @@ public sealed class GivenAScrapeSiteWorkflowDecision
         {
             workflowInvocationCount++;
 
-            return Task.FromResult<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>>(global::AStar.Dev.FunctionalParadigm.Unit.Value);
+            return Task.FromResult<global::AStar.Dev.FunctionalParadigm.Result<global::AStar.Dev.FunctionalParadigm.Unit, string>>(global::AStar.Dev.FunctionalParadigm.Unit.Instance);
         }
 
         await ScrapeSiteWorkflowDecision.DecideAsync(cts.Token, Workflow);
