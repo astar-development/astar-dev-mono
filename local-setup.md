@@ -12,4 +12,3 @@ dotnet nuget add source \
 ```
 
 The PAT needs only read:packages scope for restore. write:packages is only needed if you're pushing manually rather than via CI.
-
