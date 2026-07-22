@@ -18,20 +18,11 @@ const mockSetup = vi.fn().mockReturnValue({
   start: vi.fn().mockReturnThis(),
 });
 
-const mockKnownSeverityLevel = {
-  Verbose: 'Verbose',
-  Information: 'Information',
-  Warning: 'Warning',
-  Error: 'Error',
-  Critical: 'Critical',
-};
-
 vi.mock('applicationinsights', () => ({
   default: {
     setup: mockSetup,
     get defaultClient() { return mockClient; },
   },
-  KnownSeverityLevel: mockKnownSeverityLevel,
 }));
 
 describe('GivenTelemetryWithConnectionString', () => {
@@ -65,7 +56,7 @@ describe('GivenTelemetryWithConnectionString', () => {
     trackWarning('warn-message', { key: 'value' });
 
     expect(mockTrackTrace).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'warn-message', severity: 'Warning' }),
+      expect.objectContaining({ message: 'warn-message', severity: 2 }),
     );
   });
 
@@ -113,7 +104,6 @@ describe('GivenTelemetryWithoutConnectionString', () => {
         setup: mockSetup,
         defaultClient: null,
       },
-      KnownSeverityLevel: mockKnownSeverityLevel,
     }));
 
     const { trackTrace } = await import('@/lib/telemetry');
@@ -128,7 +118,6 @@ describe('GivenTelemetryWithoutConnectionString', () => {
         setup: mockSetup,
         defaultClient: null,
       },
-      KnownSeverityLevel: mockKnownSeverityLevel,
     }));
 
     const { trackException } = await import('@/lib/telemetry');
