@@ -19,8 +19,8 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_resetting_then_reset_search_categories_is_called()
     {
-        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
-        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
 
         await sut.ResetAsync(CancellationToken.None);
 
@@ -30,8 +30,8 @@ public sealed class GivenADatabaseResetService
     [Fact]
     public async Task when_resetting_then_delete_all_files_is_called()
     {
-        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
-        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
 
         await sut.ResetAsync(CancellationToken.None);
 
@@ -42,8 +42,8 @@ public sealed class GivenADatabaseResetService
     public async Task when_resetting_then_reset_search_categories_is_called_before_delete_all_files()
     {
         var callOrder = new List<string>();
-        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
-        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value));
+        repo.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
+        repo.DeleteAllFilesAsync(Arg.Any<CancellationToken>()).Returns(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance));
         repo.When(r => r.ResetSearchCategoriesAsync(Arg.Any<CancellationToken>()))
             .Do(_ => callOrder.Add("categories"));
         repo.When(r => r.DeleteAllFilesAsync(Arg.Any<CancellationToken>()))

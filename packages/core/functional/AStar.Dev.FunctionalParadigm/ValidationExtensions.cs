@@ -7,7 +7,7 @@ namespace AStar.Dev.FunctionalParadigm;
 /// </summary>
 public static class ValidationExtensions
 {
-    private const string _unexpectedValidationTypeMessage = "Unexpected validation type.";
+    private const string UnexpectedValidationTypeMessage = "Unexpected validation type.";
 
     /// <summary>
     ///     Applies a validated function to a validated value. When both sides are invalid, the errors from
@@ -20,7 +20,7 @@ public static class ValidationExtensions
                 (Invalid<Func<T, TResult>> invalidFunc, Valid<T>) => new Invalid<TResult>(invalidFunc.Errors),
                 (Valid<Func<T, TResult>>, Invalid<T> invalidValue) => new Invalid<TResult>(invalidValue.Errors),
                 (Invalid<Func<T, TResult>> invalidFunc, Invalid<T> invalidValue) => new Invalid<TResult>([..invalidFunc.Errors, ..invalidValue.Errors]),
-                _ => throw new InvalidOperationException(_unexpectedValidationTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
             };
 
     /// <summary>
@@ -46,7 +46,7 @@ public static class ValidationExtensions
                     break;
 
                 default:
-                    throw new InvalidOperationException(_unexpectedValidationTypeMessage);
+                    throw new InvalidOperationException(UnexpectedValidationTypeMessage);
             }
         }
 
@@ -64,7 +64,7 @@ public static class ValidationExtensions
             {
                 Valid<T> valid => onValid(valid.Value),
                 Invalid<T> invalid => onInvalid(invalid.Errors),
-                _ => throw new InvalidOperationException(_unexpectedValidationTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
             };
 
     /// <summary>
@@ -76,6 +76,6 @@ public static class ValidationExtensions
             {
                 Valid<T> valid => new Ok<T, TError>(valid.Value),
                 Invalid<T> invalid => new Fail<T, TError>(mapErrors(invalid.Errors)),
-                _ => throw new InvalidOperationException(_unexpectedValidationTypeMessage)
+                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
             };
 }

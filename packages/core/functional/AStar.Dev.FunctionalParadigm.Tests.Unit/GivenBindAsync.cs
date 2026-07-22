@@ -146,6 +146,6 @@ public class GivenBindAsync
         var actual = await intermediate.BindAsync(v => ValueTask.FromResult(Result.Success<int, string>(v + 1)));
 
         actual.ShouldBeOfType<Ok<int, string>>();
-        actual.ShouldBe(new Ok<int, string>(5)); // (2 * 2) + 1
+        actual.ShouldBe(new Ok<int, string>(5));
     }
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "converters": [],
   "typeInfoResolver": null,
   "typeInfoResolverChain": [],

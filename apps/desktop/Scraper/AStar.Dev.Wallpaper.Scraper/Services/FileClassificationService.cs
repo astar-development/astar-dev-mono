@@ -48,7 +48,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
         await using var context = await contextFactory.CreateDbContextAsync(token).ConfigureAwait(false);
 
         if (await context.FileClassifications.AnyAsync(classification => classification.FileDetailId == fileDetail.Id, token).ConfigureAwait(false))
-            return Unit.Value;
+            return Unit.Instance;
 
         var matched = new List<FileClassificationCategoryEntity>(ClassificationMatcher.Match(pageData, fileDetail));
         await CollectTagMatchesAsync(context, pageData.IncludedTags, imageTags, matched, token).ConfigureAwait(false);
@@ -63,7 +63,7 @@ public sealed class FileClassificationService(IDbContextFactory<AppDbContext> co
 
         await context.SaveChangesAsync(token).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private static FileClassificationCategoryEntity EnsureTracked(AppDbContext context, FileClassificationCategoryEntity classification)

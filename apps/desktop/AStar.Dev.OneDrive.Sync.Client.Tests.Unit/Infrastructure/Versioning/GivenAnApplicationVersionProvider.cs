@@ -10,7 +10,7 @@ public sealed class GivenAnApplicationVersionProvider
     public void when_assembly_has_informational_version_then_current_version_is_that_value()
     {
         var assembly = typeof(GivenAnApplicationVersionProvider).Assembly;
-        var expected = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+        string expected = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
         var provider = new ApplicationVersionProvider(assembly);
 

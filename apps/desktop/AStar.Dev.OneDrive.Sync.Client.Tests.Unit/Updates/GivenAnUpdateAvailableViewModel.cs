@@ -72,7 +72,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     public void when_later_command_executed_then_close_requested_is_raised()
     {
         var (viewModel, _) = CreateSut();
-        var closeRequested = false;
+        bool closeRequested = false;
         viewModel.CloseRequested += (_, _) => closeRequested = true;
 
         viewModel.LaterCommand.Execute(null);

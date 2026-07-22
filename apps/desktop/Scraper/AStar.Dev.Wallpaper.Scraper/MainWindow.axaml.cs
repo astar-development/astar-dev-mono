@@ -93,13 +93,13 @@ public partial class MainWindow : Window, IDisposable
                 _ =>
                 {
                     UpdateStatus("Save directory deleted successfully.");
-                    return Unit.Value;
+                    return Unit.Instance;
                 },
                 error =>
                 {
                     logger.Error("Save directory deletion failed: {Message}", error.Message);
                     UpdateStatus($"Save directory deletion failed: {error.Message}");
-                    return Unit.Value;
+                    return Unit.Instance;
                 });
         }
         catch (Exception ex)

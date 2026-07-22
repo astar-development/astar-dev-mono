@@ -23,7 +23,7 @@ public sealed class GivenAnAsyncRelayCommand
     [Fact]
     public async Task when_execute_is_called_with_cancelled_token_then_operation_is_cancelled()
     {
-        var executed = false;
+        bool executed = false;
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
         var command = new AsyncRelayCommand(async token =>
@@ -45,7 +45,7 @@ public sealed class GivenAnAsyncRelayCommand
         var command = new AsyncRelayCommand(async _ => await tcs.Task);
 
         _ = command.ExecuteAsync(CancellationToken.None);
-        var canExecute = command.CanExecute(null);
+        bool canExecute = command.CanExecute(null);
 
         canExecute.ShouldBeFalse();
         tcs.SetResult();

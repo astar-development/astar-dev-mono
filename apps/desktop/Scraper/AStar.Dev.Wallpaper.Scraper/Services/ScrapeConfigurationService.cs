@@ -44,7 +44,7 @@ public sealed class ScrapeConfigurationService(IDbContextFactory<AppDbContext> c
         await context.SaveChangesAsync(token).ConfigureAwait(false);
         await scrapeConfigurationManager.ReloadAsync(token).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private static void UpdateConnectionStrings(ConnectionStringsEntity existing, ConnectionStringsEntity incoming)

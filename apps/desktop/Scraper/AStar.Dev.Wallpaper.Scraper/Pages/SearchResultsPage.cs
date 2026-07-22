@@ -36,7 +36,7 @@ public sealed class SearchResultsPage(IPlaywrightService playwrightService)
 
     private static Result<Unit, ScrapeError> ToSearchPageResult(bool succeeded, string searchString, int pageNumber)
     {
-        if (succeeded) return Unit.Value;
+        if (succeeded) return Unit.Instance;
 
         return ScrapeErrorFactory.CreatePageLoadFailed($"{searchString}{pageNumber}", $"Could not load the search results page for {searchString}{pageNumber} after retry.");
     }

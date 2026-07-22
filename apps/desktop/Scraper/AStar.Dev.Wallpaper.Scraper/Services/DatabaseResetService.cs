@@ -22,7 +22,7 @@ public sealed class DatabaseResetService(IDatabaseResetRepository repository, IF
                 if (!string.IsNullOrWhiteSpace(path) && fileSystem.Directory.Exists(path))
                     fileSystem.Directory.Delete(path, recursive: true);
 
-                return Unit.Value;
+                return Unit.Instance;
             },
-            () => Unit.Value);
+            () => Unit.Instance);
 }

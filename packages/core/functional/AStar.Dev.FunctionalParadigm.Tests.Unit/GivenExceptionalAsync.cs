@@ -1,6 +1,3 @@
-using Shouldly;
-using Xunit;
-
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
 public class GivenExceptionalAsync
@@ -166,6 +163,17 @@ public class GivenExceptionalAsync
         actual.ShouldBeOfType<Failure<int>>();
         actual.ShouldBe(new Failure<int>(exception));
         invoked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_map_async_with_task_selector_chained_directly_onto_run_async_then_unwraps_awaited_value()
+    {
+        var actual = await Try.RunAsync(() => Task.FromResult(2))
+            .MapAsync(value => Task.FromResult(value * 3))
+            .MapAsync(value => value + 1);
+
+        actual.ShouldBeOfType<Success<int>>();
+        actual.ShouldBe(new Success<int>(7));
     }
 
     [Fact]

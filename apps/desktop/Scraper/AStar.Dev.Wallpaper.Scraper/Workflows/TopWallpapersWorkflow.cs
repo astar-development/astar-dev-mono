@@ -58,6 +58,6 @@ public sealed class TopWallpapersWorkflow(
     {
         _ = await topWallpapersPage.LoadTopWallpapersPageAsync(pageNumber).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 }

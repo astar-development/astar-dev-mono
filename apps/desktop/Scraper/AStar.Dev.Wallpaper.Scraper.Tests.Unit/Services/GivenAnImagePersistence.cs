@@ -18,7 +18,7 @@ public sealed class GivenAnImagePersistence
     private static IImageSaver BuildSucceedingImageSaver()
     {
         var imageSaver = Substitute.For<IImageSaver>();
-        imageSaver.SaveAsync(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Value)));
+        imageSaver.SaveAsync(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(Task.FromResult(Result.Success<global::AStar.Dev.FunctionalParadigm.Unit, ScrapeError>(global::AStar.Dev.FunctionalParadigm.Unit.Instance)));
 
         return imageSaver;
     }

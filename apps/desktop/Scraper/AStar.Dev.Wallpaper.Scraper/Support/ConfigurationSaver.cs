@@ -32,7 +32,7 @@ public sealed class ConfigurationSaver(ScrapeConfiguration scrapeConfiguration, 
 
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return Unit.Value;
+        return Unit.Instance;
     }
 
     private static void ApplyUpdates(ScrapeConfigurationEntity entity, IReadOnlyList<Category> toUpdate)
