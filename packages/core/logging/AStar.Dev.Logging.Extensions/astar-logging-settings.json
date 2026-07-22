@@ -19,6 +19,14 @@
           // "connectionString": "Get from Secrets Manager / Key Vault / etc.",
           "telemetryConverter": "Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters.TraceTelemetryConverter, Serilog.Sinks.ApplicationInsights"
         }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/log-.txt",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 31
+        }
       }
     ],
     "MinimumLevel": {

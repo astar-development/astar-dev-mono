@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:AStar.Dev.Wallpaper.Scraper.Home"
+        xmlns:theming="using:AStar.Dev.Wallpaper.Scraper.Theming"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AStar.Dev.Wallpaper.Scraper.Home.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="avares://AStar.Dev.Wallpaper.Scraper/Assets/astar.ico"
+        Title="{Binding Title}">
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+Q" Command="{Binding ExitCommand}" />
+    </Window.KeyBindings>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Configuration">
+                    <MenuItem Header="Edit Connection Strings Configuration" Command="{Binding OpenConnectionStringsCommand}" />
+                    <MenuItem Header="Edit File Classification Categories Configuration" Command="{Binding OpenFileClassificationCategoriesCommand}" />
+                    <MenuItem Header="Edit Search Configuration" Command="{Binding OpenSearchConfigurationCommand}" />
+                    <MenuItem Header="Edit Model to Ignore" Command="{Binding OpenModelToIgnoreCommand}" />
+                    <MenuItem Header="Edit Scrape Directories" Command="{Binding OpenScrapeDirectoriesCommand}" />
+                    <MenuItem Header="Edit Search Categories" Command="{Binding OpenSearchCategoriesCommand}" />
+                    <MenuItem Header="Edit Tag to Ignore" Command="{Binding OpenTagToIgnoreCommand}" />
+                    <MenuItem Header="Edit User Configuration" Command="{Binding OpenUserConfigurationCommand}" />
+                </MenuItem>
+                <MenuItem Header="_Theme">
+                    <MenuItem Header="_System" ToggleType="Radio" IsChecked="{Binding IsSystemThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.System}" />
+                    <MenuItem Header="_Light" ToggleType="Radio" IsChecked="{Binding IsLightThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Light}" />
+                    <MenuItem Header="_Dark" ToggleType="Radio" IsChecked="{Binding IsDarkThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Dark}" />
+                    <MenuItem Header="_Hacker" ToggleType="Radio" IsChecked="{Binding IsHackerThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Hacker}" />
+                </MenuItem>
+                <MenuItem Header="Reset Database and Directories" Command="{Binding ResetDatabaseAndDirectoriesCommand}" />
+                <Separator />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q" />
+            </MenuItem>
+        </Menu>
+        <TextBlock DockPanel.Dock="Top" Margin="12,8" Text="Welcome to the Wallpaper Scraper!" />
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="12,0">
+            <Button Content="Scrape Search Categories" Command="{Binding ScrapeSearchCategoriesCommand}" />
+            <Button Content="Scrape Top Wallpapers" Command="{Binding ScrapeTopCommand}" />
+            <Button Content="Scrape Subscribed Wallpapers" Command="{Binding ScrapeSubscribedCommand}" />
+            <Button Content="Scrape All Wallpapers" Command="{Binding ScrapeAllCommand}" />
+            <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Right" Width="750" Margin="0,8,12,8" Spacing="4">
+            <Border VerticalAlignment="Top" CornerRadius="10" ClipToBounds="True">
+                <Image x:Name="ThumbnailImage" Width="750" Height="750" Stretch="Uniform" />
+            </Border>
+            <TextBlock Text="{Binding ThumbnailCategoryName}" FontSize="32" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Width="475" />
+            <TextBlock Text="--------------------------------" Height="20" VerticalAlignment="Center" TextAlignment="Center" />
+            <TextBlock Text="{Binding ThumbnailTags}" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" />
+        </StackPanel>
+
+        <ScrollViewer x:Name="StatusScroller" Margin="12,8">
+            <TextBlock x:Name="StatusLabel" vm:StatusTextBehavior.FormattedText="{Binding StatusText}" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+        </ScrollViewer>
+        
+    </DockPanel>
+</Window>

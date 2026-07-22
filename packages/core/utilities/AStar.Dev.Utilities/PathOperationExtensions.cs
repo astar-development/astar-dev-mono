@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace AStar.Dev.Utilities;
 
 /// <summary>
@@ -19,10 +21,8 @@ public static class PathOperationExtensions
     {
         string combined = basePath;
 
-        foreach (string? segment in segments.Where(s => s is not null))
+        foreach(string? segment in segments.Where(s => s is not null))
         {
-            if (Path.IsPathRooted(segment)) throw new ArgumentException("Path segments must be relative.", nameof(segments));
-
             combined = Path.Join(combined, segment);
         }
 
@@ -30,16 +30,20 @@ public static class PathOperationExtensions
     }
 
     /// <summary>
-    ///     Normalizes path separators while preserving the path content.
+    ///
     /// </summary>
-    /// <param name="path">The path to normalize.</param>
-    /// <returns>The normalized path.</returns>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static string CleanPath(this string path)
     {
-        ArgumentNullException.ThrowIfNull(path);
+        char[] invalidFileChars = Path.GetInvalidPathChars();
+        path = Regex.Replace(path, """[^\u0000-\u007F]+""", string.Empty);
 
-        return string.IsNullOrEmpty(path)
-            ? string.Empty
-            : path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        foreach(char invalidFileChar in invalidFileChars) path = path.Replace(invalidFileChar, ' ');
+
+        return
+            path.Replace("\"", "'", StringComparison.OrdinalIgnoreCase)
+            .Replace("|", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("煙", string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
     }
 }

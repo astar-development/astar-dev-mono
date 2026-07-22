@@ -6,6 +6,7 @@ namespace AStar.Dev.Logging.Extensions.Models;
 /// </summary>
 public sealed class Serilog
 {
+#pragma warning disable CA1819 // Properties should not return arrays
     /// <summary>
     ///     A collection of enrichers used to add additional contextual data to log events.
     ///     Each element in the array represents the name of an enricher to be applied during logging.
@@ -17,6 +18,7 @@ public sealed class Serilog
     ///     Each element in the array specifies the name of the sink and its associated arguments.
     /// </summary>
     public WriteTo[] WriteTo { get; set; } = [new() { Args = new() { ServerUrl = "http://seq:5341" }, Name = "Seq" }];
+#pragma warning restore CA1819 // Properties should not return arrays
 
     /// <summary>
     ///     Configures the minimum logging levels for log events.

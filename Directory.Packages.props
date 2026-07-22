@@ -165,6 +165,7 @@
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="12.0.2" />
     <PackageVersion Include="Avalonia.ReactiveUI" Version="11.3.8" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.0.5" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageVersion Include="ReactiveUI" Version="20.1.1" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="ReactiveUI.Fody" Version="19.5.41" />
@@ -190,6 +191,7 @@
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.mtp-v1" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="Bogus" Version="35.6.1" />
     <PackageVersion Include="Respawn" Version="6.2.1" />

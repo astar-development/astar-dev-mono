@@ -1,52 +1,62 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UserSecretsId>4a7fa383-33e1-4e3b-99e5-b7e59e611a05</UserSecretsId>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <UserSecretsId>c35e09dc-dc30-416a-95a6-ec1a5ba1b43f</UserSecretsId>
-        <ApplicationIcon>Assets/astar.ico</ApplicationIcon>
-    </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
 
-    <!--
-      SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
-      Upgrading to 3.x (which tracks SQLite version numbers) is a major-scheme
-      change with potential compatibility risk against Microsoft.Data.Sqlite 10.0.8.
-      This suppression is intentional and matches the same decision already made
-      in AStar.Dev.Infrastructure.FilesDb.
-    -->
+  <!--
+    SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+    Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.9.
+    Suppressed intentionally; revisit when EF Core ships with a safe SQLitePCLRaw version.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.ReactiveUI" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Serilog.Exceptions" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="Testably.Abstractions" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
     <ItemGroup>
-        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Data.Sqlite" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" />
-        <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-        <PackageReference Include="Microsoft.Playwright" />
-        <PackageReference Include="Serilog.Exceptions" />
-        <PackageReference Include="Serilog.Settings.Configuration" />
-        <PackageReference Include="Serilog.Sinks.Console" />
-        <PackageReference Include="Serilog.Sinks.Seq" />
-        <PackageReference Include="SkiaSharp" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
-        <PackageReference Include="Avalonia" />
-        <PackageReference Include="Avalonia.Desktop" />
-        <PackageReference Include="Avalonia.Themes.Fluent" />
-        <PackageReference Include="Avalonia.Fonts.Inter" />
-        <PackageReference Include="Testably.Abstractions" />
-        <PackageReference Include="Tmds.DBus.Protocol" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
+        <ProjectReference Include="../../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
         <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
         <ProjectReference Include="../../../../packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />

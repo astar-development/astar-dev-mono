@@ -1,0 +1,33 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="Black" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="#00FF00" />
+    </Style>
+
+    <Style Selector="Menu">
+        <Setter Property="Background" Value="Black" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="Foreground" Value="#00FF00" />
+    </Style>
+
+    <Style Selector="Button">
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="Foreground" Value="#00FF00" />
+        <Setter Property="BorderBrush" Value="#00FF00" />
+    </Style>
+
+    <Style Selector="TextBox">
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="Foreground" Value="#00FF00" />
+        <Setter Property="BorderBrush" Value="#00FF00" />
+    </Style>
+
+</Styles>

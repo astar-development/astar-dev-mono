@@ -1,35 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AStar.Dev.Wallpaper.Scraper.Tests.Unit</RootNamespace>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\AStar.Dev.Wallpaper.Scraper\AStar.Dev.Wallpaper.Scraper.csproj" />
+      <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
   </ItemGroup>
 
   <!--
-    SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q
-    and flows into this project via the ProjectReference above.
-    The suppression here mirrors the decision made in AStar.Dev.Infrastructure.FilesDb
-    and AStar.Dev.Wallpaper.Scraper.
+    SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+    Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.9.
+    Suppressed intentionally; revisit when EF Core ships with a safe SQLitePCLRaw version.
   -->
   <ItemGroup>
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NSubstitute" />
-    <PackageReference Include="Testably.Abstractions.Testing" />
-    <PackageReference Include="xunit.v3" />
-    <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="Shouldly" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Test-local appsettings; must win over the copy flowing from the app project reference -->
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Shouldly" />
     <Using Include="NSubstitute" />
-    <Using Include="Testably.Abstractions.Testing" />
-    <Using Include="Testably.Abstractions.Testing.Initializer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Testably.Abstractions.Testing" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit.v3.mtp-v1" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AStar.Dev.Wallpaper.Scraper\AStar.Dev.Wallpaper.Scraper.csproj" />
   </ItemGroup>
 
 </Project>

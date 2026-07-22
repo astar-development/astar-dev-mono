@@ -98,12 +98,41 @@
             <returns>The parsed value as the matching enum value</returns>
             <exception cref="T:System.ArgumentException">Thrown when the string is not a valid enum value</exception>
         </member>
+        <member name="T:AStar.Dev.Utilities.IntParser">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Utilities.IntParser.ToInt(System.String)">
+            <summary>
+                The ToInt method will parse the supplied string and return the matching int value
+            </summary>
+            <param name="value">The value to parse to the int</param>
+            <returns>The parsed value as the matching int value</returns>
+            <exception cref="T:System.FormatException">Thrown when the string is not a valid int value</exception>
+        </member>
+        <member name="M:AStar.Dev.Utilities.IntParser.ToIntSafe(System.String)">
+            <summary>
+               The ToIntSafe method will parse the supplied string and return the matching int value, or 0 if the string is not a valid int value
+            </summary>
+            <param name="value">The value to parse to the int</param>
+            <returns>The parsed value as the matching int value, or 0 if the string is not a valid int value</returns>
+        </member>
         <member name="T:AStar.Dev.Utilities.LinqExtensions">
             <summary>
             </summary>
         </member>
         <member name="M:AStar.Dev.Utilities.LinqExtensions.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
             <summary>
+            </summary>
+            <param name="enumerable"></param>
+            <param name="action"></param>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:AStar.Dev.Utilities.LinqExtensions.ForEachAsync``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Threading.Tasks.Task})">
+            <summary>
+                Awaits the supplied asynchronous action once per item, strictly sequentially, so no two invocations
+                ever run concurrently.
             </summary>
             <param name="enumerable"></param>
             <param name="action"></param>
@@ -119,14 +148,6 @@
             <summary>
                 The ToJson method, as you might expect, converts the supplied object to its JSON equivalent (using the
                 JsonSerializerDefaults.Web defaults with WriteIndented set to true)
-            </summary>
-            <param name="obj">The object to convert to JSON</param>
-            <returns>The JSON string of the object supplied</returns>
-        </member>
-        <member name="M:AStar.Dev.Utilities.ObjectExtensions.ToJsonWithoutNulls``1(``0)">
-            <summary>
-                The ToJsonWithoutNulls method converts the supplied object to its JSON equivalent, excluding null values (using the
-                JsonSerializerDefaults.Web defaults with WriteIndented set to true and ignore nulls when writing)
             </summary>
             <param name="obj">The object to convert to JSON</param>
             <returns>The JSON string of the object supplied</returns>
@@ -149,11 +170,11 @@
             <exception cref="T:System.ArgumentException">Thrown when any segment is rooted.</exception>
         </member>
         <member name="M:AStar.Dev.Utilities.PathOperationExtensions.CleanPath(System.String)">
-            <summary>
-                Normalizes path separators while preserving the path content.
-            </summary>
-            <param name="path">The path to normalize.</param>
-            <returns>The normalized path.</returns>
+             <summary>
+            
+             </summary>
+             <param name="path"></param>
+             <returns></returns>
         </member>
         <member name="T:AStar.Dev.Utilities.RegexExtensions">
             <summary>
@@ -314,6 +335,29 @@
             <param name="removeTrailing">The character to remove from the end if it exists</param>
             <returns>The original or updated string</returns>
         </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.EnsureTrailing(System.String,System.String)">
+            <summary>
+                The EnsureTrailing method will, as the name suggests, ensure the string ends with the specified character
+            </summary>
+            <param name="value">The raw string to potentially add the trailing character to</param>
+            <param name="ensureTrailing">The character to ensure is at the end of the string</param>
+            <returns>The original or updated string</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.EnsureTrailing(System.Uri,System.String)">
+            <summary>
+                The EnsureTrailing method will, as the name suggests, ensure the string ends with the specified character
+            </summary>
+            <param name="value">The raw string to potentially add the trailing character to</param>
+            <param name="ensureTrailing">The character to ensure is at the end of the string</param>
+            <returns>The original or updated string</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.EnsureTrailingSlash(System.Uri)">
+            <summary>
+                The EnsureTrailing method will, as the name suggests, ensure the string ends with the specified character
+            </summary>
+            <param name="value">The raw string to potentially add the trailing character to</param>
+            <returns>The original or updated string</returns>
+        </member>
         <member name="M:AStar.Dev.Utilities.StringExtensions.SanitizeFilePath(System.String)">
             <summary>
                 The SanitizeFilePath method replaces invalid or undesirable characters in a file path
@@ -348,6 +392,22 @@
             </summary>
             <param name="fileSize">The file size in bytes (represented as a long integer)</param>
             <returns>The human-readable string format</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.CaseInsensitiveContains(System.String,System.String)">
+            <summary>
+                The CaseInsensitiveContains method checks if the string contains the specified substring, ignoring case.
+            </summary>
+            <param name="value">The string to search within</param>
+            <param name="contains">The substring to search for</param>
+            <returns>True if the value contains the substring, false otherwise</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.CaseInsensitiveEquals(System.String,System.String)">
+            <summary>
+                The CaseInsensitiveEquals method checks if the string equals the specified substring, ignoring case.
+            </summary>
+            <param name="value">The string to compare</param>
+            <param name="equals">The string to compare with</param>
+            <returns>True if the value equals the specified string, false otherwise</returns>
         </member>
         <member name="M:AStar.Dev.Utilities.StringExtensions.ToTitleCase(System.String,System.String)">
             <summary>
