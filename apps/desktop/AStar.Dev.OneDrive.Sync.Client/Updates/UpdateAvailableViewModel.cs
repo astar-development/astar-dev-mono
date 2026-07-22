@@ -1,7 +1,7 @@
 using System.Globalization;
 using AStar.Dev.Logging.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.Velopack.Publishing;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -13,11 +13,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Updates;
 public sealed partial class UpdateAvailableViewModel : ObservableObject, IDisposable
 {
     private readonly UpdateInfo updateInfo;
-    private readonly IUpdateCheckService updateCheckService;
+    private readonly IVelopackUpdateService updateCheckService;
     private readonly ILocalizationService loc;
     private readonly ILogger<UpdateAvailableViewModel> logger;
 
-    public UpdateAvailableViewModel(UpdateInfo updateInfo, IUpdateCheckService updateCheckService, ILocalizationService localizationService, ILogger<UpdateAvailableViewModel> logger)
+    public UpdateAvailableViewModel(UpdateInfo updateInfo, IVelopackUpdateService updateCheckService, ILocalizationService localizationService, ILogger<UpdateAvailableViewModel> logger)
     {
         this.updateInfo = updateInfo;
         this.updateCheckService = updateCheckService;

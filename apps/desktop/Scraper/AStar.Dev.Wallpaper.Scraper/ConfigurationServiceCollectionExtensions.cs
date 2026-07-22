@@ -16,7 +16,6 @@ public static class ConfigurationServiceCollectionExtensions
     {
         services.AddSingleton(configuration);
         services.Configure<ScrapeConfiguration>(configuration.GetSection(nameof(ScrapeConfiguration)));
-        services.Configure<UpdateConfiguration>(configuration.GetSection(nameof(UpdateConfiguration)));
         services.AddSingleton(ExportDirectoryFactory.Create(ApplicationDirectories.DocumentsExportDirectory)
             .Match(exportDirectory => exportDirectory, error => throw new InvalidOperationException(error)));
 

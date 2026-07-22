@@ -1,49 +1,40 @@
-using AStar.Dev.Wallpaper.Scraper.Configuration;
+using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Wallpaper.Scraper.Services;
-using Avalonia.Controls;
-using Microsoft.Extensions.Options;
-using Testably.Abstractions.Testing;
+using Microsoft.Extensions.Logging;
+using NSubstitute.ExceptionExtensions;
+using Velopack;
 
 namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Services;
 
 public sealed class GivenUpdateService
 {
-    private const string LogFileName = "astar-dev-wallpaper-scraper-update.log";
-
-    private readonly MockFileSystem fileSystem = new();
-
-    public GivenUpdateService() =>
-        fileSystem.Directory.CreateDirectory(Path.GetTempPath());
-
-    [Fact]
-    public async Task when_the_app_is_not_a_velopack_install_then_the_update_check_completes_without_prompting()
+    private static (UpdateService Sut, IVelopackUpdateService UpdateService) CreateSut()
     {
-        var sut = CreateUpdateService("https://github.com/astar-development/astar-dev-wallpaper-scraper");
+        var updateService = Substitute.For<IVelopackUpdateService>();
+        var logger = Substitute.For<ILogger<UpdateService>>();
 
-        await Should.NotThrowAsync(() => sut.CheckForUpdatesAsync(null!));
-
-        string logContent = ReadLog();
-        logContent.ShouldContain("Not a Velopack install");
-        logContent.ShouldNotContain("Update check failed");
+        return (new UpdateService(updateService, logger), updateService);
     }
 
     [Fact]
-    public async Task when_creating_the_update_manager_throws_then_the_error_tap_logs_the_failure_and_swallows_it()
+    public async Task when_no_update_is_available_then_the_check_completes_without_downloading()
     {
-        var sut = CreateUpdateService(string.Empty);
+        var (sut, updateService) = CreateSut();
+        updateService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns((UpdateInfo?)null);
 
         await Should.NotThrowAsync(() => sut.CheckForUpdatesAsync(null!));
 
-        ReadLog().ShouldContain("Update check failed");
+        await updateService.DidNotReceive().DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
     }
 
-    private UpdateService CreateUpdateService(string repositoryUrl) =>
-        new(Options.Create(new UpdateConfiguration { RepositoryUrl = repositoryUrl }), fileSystem);
-
-    private string ReadLog()
+    [Fact]
+    public async Task when_the_update_check_throws_then_the_failure_is_swallowed()
     {
-        string logPath = Path.Combine(Path.GetTempPath(), LogFileName);
+        var (sut, updateService) = CreateSut();
+        updateService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
 
-        return fileSystem.File.ReadAllText(logPath);
+        await Should.NotThrowAsync(() => sut.CheckForUpdatesAsync(null!));
+
+        updateService.DidNotReceive().ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>());
     }
 }

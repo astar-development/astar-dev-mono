@@ -1,122 +1,58 @@
-using System.IO.Abstractions;
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Wallpaper.Scraper.Configuration;
+using AStar.Dev.Logging.Extensions;
+using AStar.Dev.Velopack.Publishing;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Threading;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Velopack;
-using Velopack.Locators;
-using Velopack.Sources;
 
 namespace AStar.Dev.Wallpaper.Scraper.Services;
 
 /// <summary>
-///     Checks GitHub Releases for a newer Velopack package in the background,
-///     downloads it, then prompts the user to restart and apply it.
+///     Checks GitHub Releases for a newer Velopack package, asks the user whether to download and
+///     restart, and - only if they agree - downloads it and applies the update.
 /// </summary>
-public sealed class UpdateService(IOptions<UpdateConfiguration> updateConfiguration, IFileSystem fileSystem)
+public sealed class UpdateService(IVelopackUpdateService updateService, ILogger<UpdateService> logger)
 {
-    private static readonly string LogPath = Path.Combine(Path.GetTempPath(), "astar-dev-wallpaper-scraper-update.log");
-
     /// <summary>
-    ///    Checks for updates in the background, downloads them if available, and prompts the user to restart.
+    ///     Checks for updates, and - if one is available and the user agrees - downloads and applies it.
     /// </summary>
     /// <param name="owner">The owner window for the update prompt dialog.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task CheckForUpdatesAsync(Window owner)
     {
-        Log($"Update check starting; repository {updateConfiguration.Value.RepositoryUrl}");
-
-        await Try.RunAsync(CreateManagerAsync)
-            .MapAsync(CheckForUpdateAsync)
-            .MapAsync(DownloadUpdateAsync)
-            .MapAsync(context => PromptAndApplyAsync(context, owner))
-            .TapAsync(static _ => { }, exception => LogUpdateCheckFailure(exception));
-    }
-
-    private Task<UpdateCheckContext> CreateManagerAsync()
-    {
-        var locator = VelopackLocator.CreateDefaultForPlatform(logger: null);
-        var manager = new UpdateManager(new GithubSource(updateConfiguration.Value.RepositoryUrl, accessToken: null, prerelease: false), locator: locator);
-
-        return Task.FromResult(new UpdateCheckContext(manager));
-    }
-
-    private async Task<UpdateCheckContext> CheckForUpdateAsync(UpdateCheckContext context)
-    {
-        if (!context.Manager.IsInstalled) return SkipNotInstalled(context);
-
-        Log($"Installed version {context.Manager.CurrentVersion}; checking for updates");
-        context.Update = await context.Manager.CheckForUpdatesAsync().ConfigureAwait(false);
-
-        return context.Update is null ? SkipAlreadyLatest(context) : LogUpdateFound(context);
-    }
-
-    private async Task<UpdateCheckContext> DownloadUpdateAsync(UpdateCheckContext context)
-    {
-        if (!context.ShouldContinue) return context;
-
-        await context.Manager.DownloadUpdatesAsync(context.Update!, new DownloadProgressReporter(Log).Report).ConfigureAwait(false);
-        Log("Download complete; prompting to restart");
-
-        return context;
-    }
-
-    private async Task<UpdateCheckContext> PromptAndApplyAsync(UpdateCheckContext context, Window owner)
-    {
-        if (!context.ShouldContinue) return context;
-
-        bool restartNow = await Dispatcher.UIThread.InvokeAsync(() => PromptToRestartAsync(owner, context.Update!.TargetFullRelease.Version.ToString())).ConfigureAwait(false);
-        Log($"Prompt answered; restart now: {restartNow}");
-
-        if (restartNow) context.Manager.ApplyUpdatesAndRestart(context.Update!);
-
-        return context;
-    }
-
-    private UpdateCheckContext SkipNotInstalled(UpdateCheckContext context)
-    {
-        Log("Not a Velopack install (IDE / plain publish folder run); skipping");
-        context.ShouldContinue = false;
-
-        return context;
-    }
-
-    private UpdateCheckContext SkipAlreadyLatest(UpdateCheckContext context)
-    {
-        Log("Already on the latest version");
-        context.ShouldContinue = false;
-
-        return context;
-    }
-
-    private UpdateCheckContext LogUpdateFound(UpdateCheckContext context)
-    {
-        Log($"Update {context.Update!.TargetFullRelease.Version} found; downloading");
-
-        return context;
-    }
-
-    private void LogUpdateCheckFailure(Exception exception) =>
-        Log($"Update check failed: {exception}");
-
-    private void Log(string message)
-    {
         try
         {
-            fileSystem.File.AppendAllText(LogPath, $"{DateTimeOffset.Now:O} {message}{Environment.NewLine}");
+            var updateInfo = await updateService.CheckForUpdatesAsync();
+            if (updateInfo is null)
+                return;
+
+            string version = updateInfo.TargetFullRelease.Version.ToString();
+            bool shouldDownload = await Dispatcher.UIThread.InvokeAsync(() => PromptToDownloadAsync(owner, version));
+
+            if (!shouldDownload)
+            {
+                string declinedMessage = $"Update {version} declined by user.";
+                LogMessage.Information(logger, nameof(UpdateService), declinedMessage);
+
+                return;
+            }
+
+            await updateService.DownloadUpdatesAsync(updateInfo, new DownloadProgressReporter(logger).Report);
+            string appliedMessage = $"Update {version} downloaded; applying and restarting.";
+            LogMessage.Information(logger, nameof(UpdateService), appliedMessage);
+            updateService.ApplyUpdatesAndRestart(updateInfo);
         }
-        catch (IOException)
+        catch (Exception ex)
         {
-            // Diagnostics only - never let logging break the update flow.
+            LogMessage.LogException(logger, nameof(UpdateService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
         }
     }
 
-    private static async Task<bool> PromptToRestartAsync(Window owner, string version)
+    private static async Task<bool> PromptToDownloadAsync(Window owner, string version)
     {
-        bool restartNow = false;
+        bool shouldDownload = false;
 
         var dialog = new Window
         {
@@ -126,12 +62,12 @@ public sealed class UpdateService(IOptions<UpdateConfiguration> updateConfigurat
             CanResize = false,
         };
 
-        var restartButton = new Button { Content = "Restart now" };
+        var downloadButton = new Button { Content = "Download and restart" };
         var laterButton = new Button { Content = "Later" };
 
-        restartButton.Click += (_, _) =>
+        downloadButton.Click += (_, _) =>
         {
-            restartNow = true;
+            shouldDownload = true;
             dialog.Close();
         };
 
@@ -143,41 +79,34 @@ public sealed class UpdateService(IOptions<UpdateConfiguration> updateConfigurat
             Spacing = 12,
             Children =
             {
-                new TextBlock { Text = $"Version {version} has been downloaded. Restart to apply?" },
+                new TextBlock { Text = $"Version {version} is available. Download and restart to update?" },
                 new StackPanel
                 {
                     Orientation = Orientation.Horizontal,
                     Spacing = 8,
                     HorizontalAlignment = HorizontalAlignment.Right,
-                    Children = { laterButton, restartButton },
+                    Children = { laterButton, downloadButton },
                 },
             },
         };
 
         await dialog.ShowDialog(owner);
 
-        return restartNow;
+        return shouldDownload;
     }
 
-    private sealed class UpdateCheckContext(UpdateManager manager)
-    {
-        public UpdateManager Manager { get; } = manager;
-
-        public UpdateInfo? Update { get; set; }
-
-        public bool ShouldContinue { get; set; } = true;
-    }
-
-    private sealed class DownloadProgressReporter(Action<string> log)
+    private sealed class DownloadProgressReporter(ILogger<UpdateService> logger)
     {
         private int lastLoggedProgress;
 
         public void Report(int progress)
         {
-            if (progress < lastLoggedProgress + 25) return;
+            if (progress < lastLoggedProgress + 25)
+                return;
 
             lastLoggedProgress = progress;
-            log($"Download progress {progress}%");
+            string progressMessage = $"Download progress {progress}%";
+            LogMessage.Information(logger, nameof(UpdateService), progressMessage);
         }
     }
 }
