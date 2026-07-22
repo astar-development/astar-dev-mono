@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Microsoft.Extensions.Logging;
@@ -17,7 +17,7 @@ public sealed class GivenAnUpdateNotificationService
 
     private static UpdateAvailableViewModel CreateViewModel(UpdateInfo updateInfo)
     {
-        var updateCheckService = Substitute.For<IUpdateCheckService>();
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
@@ -26,9 +26,9 @@ public sealed class GivenAnUpdateNotificationService
         return new UpdateAvailableViewModel(updateInfo, updateCheckService, localization, logger);
     }
 
-    private static (UpdateNotificationService Sut, IUpdateCheckService UpdateCheckService, IUpdateAvailableViewModelFactory ViewModelFactory, IUpdateAvailableDialogService DialogService) CreateSut()
+    private static (UpdateNotificationService Sut, IVelopackUpdateService UpdateCheckService, IUpdateAvailableViewModelFactory ViewModelFactory, IUpdateAvailableDialogService DialogService) CreateSut()
     {
-        var updateCheckService = Substitute.For<IUpdateCheckService>();
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
         var viewModelFactory = Substitute.For<IUpdateAvailableViewModelFactory>();
         var dialogService = Substitute.For<IUpdateAvailableDialogService>();
         var sut = new UpdateNotificationService(updateCheckService, viewModelFactory, dialogService);

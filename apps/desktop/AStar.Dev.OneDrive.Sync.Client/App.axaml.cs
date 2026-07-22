@@ -16,6 +16,7 @@ using Testably.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
+using AStar.Dev.Velopack.Publishing;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -74,6 +75,7 @@ public class App : Application, IDisposable
         var configuration = RegisterOptions(services);
         ConfigureSerilog(inMemoryLogSink, fileSystem, configuration);
 
+        _ = services.AddVelopackUpdates(configuration);
         _ = services.AddShell(inMemoryLogSink);
 
         return services.BuildServiceProvider();
@@ -94,10 +96,6 @@ public class App : Application, IDisposable
                 .ValidateOnStart();
         _ = services.AddOptions<ClientConfiguration>()
                 .Bind(configuration.GetSection(ClientConfiguration.SectionName))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
-        _ = services.AddOptions<UpdateSettings>()
-                .Bind(configuration.GetSection(UpdateSettings.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 

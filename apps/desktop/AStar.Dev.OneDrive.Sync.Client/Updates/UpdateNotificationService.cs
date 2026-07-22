@@ -1,9 +1,9 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.Velopack.Publishing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Updates;
 
 /// <inheritdoc />
-public sealed class UpdateNotificationService(IUpdateCheckService updateCheckService, IUpdateAvailableViewModelFactory viewModelFactory, IUpdateAvailableDialogService dialogService) : IUpdateNotificationService
+public sealed class UpdateNotificationService(IVelopackUpdateService updateCheckService, IUpdateAvailableViewModelFactory viewModelFactory, IUpdateAvailableDialogService dialogService) : IUpdateNotificationService
 {
     /// <inheritdoc />
     public async Task CheckAndNotifyAsync(CancellationToken cancellationToken = default)

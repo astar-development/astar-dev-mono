@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Microsoft.Extensions.Logging;
@@ -16,9 +16,9 @@ public sealed class GivenAnUpdateAvailableViewModel
         return new UpdateInfo(asset, false, null, []);
     }
 
-    private static (UpdateAvailableViewModel ViewModel, IUpdateCheckService UpdateCheckService) CreateSut(UpdateInfo? updateInfo = null)
+    private static (UpdateAvailableViewModel ViewModel, IVelopackUpdateService UpdateCheckService) CreateSut(UpdateInfo? updateInfo = null)
     {
-        var updateCheckService = Substitute.For<IUpdateCheckService>();
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
@@ -90,7 +90,7 @@ public sealed class GivenAnUpdateAvailableViewModel
 
         Received.InOrder(() =>
         {
-            updateCheckService.DownloadUpdatesAsync(updateInfo, Arg.Any<CancellationToken>());
+            updateCheckService.DownloadUpdatesAsync(updateInfo, cancellationToken: Arg.Any<CancellationToken>());
             updateCheckService.ApplyUpdatesAndRestart(updateInfo);
         });
     }
@@ -109,7 +109,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     public async Task when_download_fails_then_error_message_is_populated_and_exception_does_not_propagate()
     {
         var (viewModel, updateCheckService) = CreateSut();
-        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
+        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), cancellationToken: Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
 
         await viewModel.RestartNowCommand.ExecuteAsync(null);
 
@@ -120,7 +120,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     public async Task when_download_fails_then_apply_updates_and_restart_is_never_called()
     {
         var (viewModel, updateCheckService) = CreateSut();
-        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
+        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), cancellationToken: Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
 
         await viewModel.RestartNowCommand.ExecuteAsync(null);
 
