@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Updates;
+using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Avalonia.Controls;
@@ -19,7 +19,7 @@ public sealed class GivenUpdateAvailableViewDisplay
 
     private static UpdateAvailableViewModel CreateViewModel(UpdateInfo? updateInfo = null)
     {
-        var updateCheckService = Substitute.For<IUpdateCheckService>();
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());

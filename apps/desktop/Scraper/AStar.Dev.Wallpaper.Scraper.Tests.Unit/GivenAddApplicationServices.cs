@@ -1,4 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Home;
 using AStar.Dev.Wallpaper.Scraper.Services;
@@ -37,11 +38,11 @@ public class GivenAddApplicationServices
     }
 
     [Fact]
-    public void when_services_are_built_then_update_configuration_binds_from_appsettings()
+    public void when_services_are_built_then_velopack_update_settings_bind_from_appsettings()
     {
-        var updateConfiguration = serviceProvider.GetRequiredService<IOptions<UpdateConfiguration>>().Value;
+        var updateSettings = serviceProvider.GetRequiredService<IOptions<VelopackUpdateSettings>>().Value;
 
-        updateConfiguration.RepositoryUrl.ShouldBe("https://github.com/astar-development/astar-dev-wallpaper-scraper");
+        updateSettings.GithubRepositoryUrl.ShouldBe(new Uri("https://github.com/astar-development/astar-dev-wallpaper-scraper"));
     }
 
     [Fact]
