@@ -1,6 +1,3 @@
-using Shouldly;
-using Xunit;
-
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
 public class GivenBindAsync
@@ -47,7 +44,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_result_task_and_binder_returns_task_then_returns_bound_success()
     {
-        var resultTask = Task.FromResult<Result<int, string>>(Result.Success<int, string>(5));
+        var resultTask = Task.FromResult(Result.Success<int, string>(5));
 
         var actual = await resultTask.BindAsync(value => Task.FromResult(Result.Success<int, string>(value * 2)));
 
@@ -58,7 +55,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_value_task_result_and_binder_returns_value_task_then_returns_bound_success()
     {
-        var resultTask = ValueTask.FromResult<Result<int, string>>(Result.Success<int, string>(4));
+        var resultTask = ValueTask.FromResult(Result.Success<int, string>(4));
 
         var actual = await resultTask.BindAsync(value => ValueTask.FromResult(Result.Success<int, string>(value + 3)));
 
@@ -69,7 +66,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_task_result_failure_then_binder_not_invoked()
     {
-        var resultTask = Task.FromResult<Result<int, string>>(Result.Failure<int, string>("err"));
+        var resultTask = Task.FromResult(Result.Failure<int, string>("err"));
         bool invoked = false;
 
         var actual = await resultTask.BindAsync(value =>
@@ -85,7 +82,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_task_result_with_value_task_binder_then_returns_bound_success()
     {
-        var resultTask = Task.FromResult<Result<int, string>>(Result.Success<int, string>(3));
+        var resultTask = Task.FromResult(Result.Success<int, string>(3));
 
         var actual = await resultTask.BindAsync(value => ValueTask.FromResult(Result.Success<int, string>(value * 10)));
 
@@ -96,7 +93,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_task_result_failure_with_value_task_binder_then_returns_failure()
     {
-        var resultTask = Task.FromResult<Result<int, string>>(Result.Failure<int, string>("failed"));
+        var resultTask = Task.FromResult(Result.Failure<int, string>("failed"));
 
         var actual = await resultTask.BindAsync(value => ValueTask.FromResult(Result.Success<int, string>(value)));
 
@@ -107,7 +104,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_value_task_result_with_task_binder_then_returns_bound_success()
     {
-        var resultTask = ValueTask.FromResult<Result<int, string>>(Result.Success<int, string>(6));
+        var resultTask = ValueTask.FromResult(Result.Success<int, string>(6));
 
         var actual = await resultTask.BindAsync(value => Task.FromResult(Result.Success<int, string>(value - 1)));
 
@@ -118,7 +115,7 @@ public class GivenBindAsync
     [Fact]
     public async Task when_value_task_result_failure_with_task_binder_then_returns_failure()
     {
-        var resultTask = ValueTask.FromResult<Result<int, string>>(Result.Failure<int, string>("error"));
+        var resultTask = ValueTask.FromResult(Result.Failure<int, string>("error"));
 
         var actual = await resultTask.BindAsync(value => Task.FromResult(Result.Success<int, string>(value)));
 
