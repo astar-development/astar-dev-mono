@@ -42,7 +42,7 @@ public class GivenAddApplicationServices
     {
         var updateSettings = serviceProvider.GetRequiredService<IOptions<VelopackUpdateSettings>>().Value;
 
-        updateSettings.GithubRepositoryUrl.ShouldBe(new Uri("https://github.com/astar-development/astar-dev-wallpaper-scraper"));
+        updateSettings.GithubRepositoryUrl.ShouldBe(new Uri("https://github.com/astar-development/astar-dev-mono"));
     }
 
     [Fact]
