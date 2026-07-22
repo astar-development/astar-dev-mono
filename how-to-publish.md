@@ -49,8 +49,8 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 Tag format: bare `v{version}`.
 
 ```bash
-git tag v0.35.0
-git push origin v0.35.0
+git tag v0.35.1
+git push origin v0.35.1
 ```
 
 Prerelease: `git tag v0.35.0-rc.1`
@@ -70,8 +70,8 @@ Tag format: `scraper-v{version}` — **not** bare `v{version}` (that's the OneDr
 namespace — see the collision note below).
 
 ```bash
-git tag scraper-v0.2.0
-git push origin scraper-v0.2.0
+git tag scraper-v0.10.4
+git push origin scraper-v0.10.4
 ```
 
 What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64

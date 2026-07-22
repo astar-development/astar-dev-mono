@@ -239,7 +239,7 @@ The bullet and diamond are decorative inline SVGs, `aria-hidden="true"`. The bad
 | Alignment   | Left                       |
 | Max lines   | 2                          |
 
-Copy (dark / light themes): **"Senior .NET Engineer & Architect"**
+Copy (dark / light themes): **".NET Staff Engineer & Architect"**
 
 **3. Subtitle Paragraph**
 
