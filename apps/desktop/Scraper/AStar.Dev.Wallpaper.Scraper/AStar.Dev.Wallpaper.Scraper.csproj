@@ -61,6 +61,7 @@
         <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
         <ProjectReference Include="../../../../packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
     </ItemGroup>
 
 </Project>
