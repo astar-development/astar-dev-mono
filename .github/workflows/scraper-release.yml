@@ -1,0 +1,95 @@
+name: Scraper Release
+
+# Pushing a scraper-prefixed semver tag (e.g. scraper-v0.2.0) publishes
+# self-contained Velopack packages for linux-x64 and win-x64 to a GitHub
+# Release. The app's UpdateService reads the same release feed to offer
+# in-app updates.
+#
+# The "scraper-" prefix keeps this tag namespace separate from:
+#   - onedrive-sync-client-release.yml, which owns bare v[0-9]+.[0-9]+.[0-9]+ tags
+#   - nuget-publish.yml, which owns */v[0-9]+.[0-9]+.[0-9]+ tags (slash-delimited)
+# A bare "v*" tag here would have fired both this workflow and the OneDrive
+# one on the same push.
+on:
+  push:
+    tags: ["scraper-v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Pack and release ${{ matrix.rid }}
+    strategy:
+      # vpk upload creates/updates the GitHub release; serialise the jobs so
+      # both runtimes attach to the same release without racing.
+      max-parallel: 1
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            mainExe: AStar.Dev.Wallpaper.Scraper
+            icon: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/Assets/astar.png
+          - os: windows-latest
+            rid: win-x64
+            mainExe: AStar.Dev.Wallpaper.Scraper.exe
+            icon: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/Assets/astar.ico
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Derive version from tag
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME#scraper-v}" >> "$GITHUB_ENV"
+
+      - name: Publish self-contained
+        shell: bash
+        run: >
+          dotnet publish apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained
+          -p:Version=$VERSION
+          --output publish
+
+      - name: Install vpk
+        run: dotnet tool install --global vpk
+
+      - name: Download previous release packages (enables delta updates)
+        shell: bash
+        run: >
+          vpk download github
+          --repoUrl https://github.com/${{ github.repository }}
+          --token ${{ secrets.GITHUB_TOKEN }}
+          || echo "No previous release found - building full package only"
+
+      - name: Pack
+        shell: bash
+        run: >
+          vpk pack
+          --packId AStar.Dev.Wallpaper.Scraper
+          --packVersion $VERSION
+          --packDir publish
+          --mainExe ${{ matrix.mainExe }}
+          --packTitle "AStar Dev Wallpaper Scraper"
+          --icon ${{ matrix.icon }}
+
+      - name: Upload to GitHub Release
+        shell: bash
+        run: >
+          vpk upload github
+          --repoUrl https://github.com/${{ github.repository }}
+          --token ${{ secrets.GITHUB_TOKEN }}
+          --publish
+          --merge
+          --releaseName "v$VERSION"
+          --tag $GITHUB_REF_NAME
