@@ -18,7 +18,7 @@ const entries = await getCollection('case-studies');
     <ul class="case-studies-list" role="list">
       {entries.map((entry) => (
         <li>
-          <a href={`/case-studies/${entry.slug}`} class="card-link">
+          <a href={`/case-studies/${entry.id}`} class="card-link">
             <article class="card">
               <div class="card-text">
                 <span class="content-type-pill">Case Study</span>

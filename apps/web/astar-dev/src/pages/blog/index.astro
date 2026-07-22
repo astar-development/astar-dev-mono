@@ -11,7 +11,7 @@ const allPosts = await getCollection('blog', ({ data }) => isDev || !data.draft)
 const posts = allPosts
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .map((entry) => ({
-    slug: entry.slug,
+    slug: entry.id,
     title: entry.data.title,
     date: entry.data.date.toISOString(),
     summary: entry.data.summary,

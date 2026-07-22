@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.x'
+  NODE_VERSION: '24.x'
   AZURE_WEBAPP_NAME: astar-dev
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 

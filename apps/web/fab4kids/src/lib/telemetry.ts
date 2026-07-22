@@ -1,13 +1,13 @@
-import appInsights from 'applicationinsights';
+import appInsights, { KnownSeverityLevel } from 'applicationinsights';
 
-type SeverityLevel = 0 | 1 | 2 | 3 | 4;
+type SeverityLevel = KnownSeverityLevel;
 
 const Severity = {
-  Verbose: 0 as SeverityLevel,
-  Information: 1 as SeverityLevel,
-  Warning: 2 as SeverityLevel,
-  Error: 3 as SeverityLevel,
-  Critical: 4 as SeverityLevel,
+  Verbose: KnownSeverityLevel.Verbose,
+  Information: KnownSeverityLevel.Information,
+  Warning: KnownSeverityLevel.Warning,
+  Error: KnownSeverityLevel.Error,
+  Critical: KnownSeverityLevel.Critical,
 };
 
 function initClient(): appInsights.TelemetryClient | null {

@@ -6,7 +6,7 @@ function uniqueIp(): string {
   return `10.${Math.floor(ipCounter / 65536) % 256}.${Math.floor(ipCounter / 256) % 256}.${ipCounter % 256}`
 }
 
-const mockRequest = vi.fn<() => Promise<unknown>>()
+const mockRequest = vi.fn<(payload: { Messages: unknown[] }) => Promise<unknown>>()
 
 vi.mock('../../src/lib/telemetry', () => ({
   trackTrace: vi.fn(),
