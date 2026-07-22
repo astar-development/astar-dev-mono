@@ -83,9 +83,8 @@ When a plan is approved, raise one GitHub issue per phase before writing any cod
 2. `dotnet test --no-build` — paste EXACT pass/fail count. New failures = zero. If this change broke tests, diagnose and fix them — never dismiss as pre-existing.
 3. **Leave it better than you found it.** Pre-existing failures in any test project you touch (or report on) must be fixed in the same branch, as a separate commit — never merged around, never left red. Unless the failure exposes a genuine production bug (raise it before changing anything), production behaviour is the specification: update the test to match it. A test for a deleted feature gets deleted, not skipped.
 4. Confirm all call sites and test files found and updated.
-5. Human review BEFORE committing.
-6. Commit to branch (not main).
-7. **Raise PR using `.github/PULL_REQUEST_TEMPLATE.md`** — fill all sections, do not omit or rewrite.
+5. Commit to branch (not main).
+6. Push branch and **raise PR using `.github/PULL_REQUEST_TEMPLATE.md`** — fill all sections, do not omit or rewrite. Human review happens on the PR, not before commit/push.
 
 Never say "fixed"/"done" without evidence. Say "I believe this is fixed because…"
 For sync/download bugs: confirm full flow (Graph API → persistence → sync logic) first.
