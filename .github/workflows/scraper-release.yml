@@ -28,10 +28,12 @@ jobs:
         include:
           - os: ubuntu-latest
             rid: linux-x64
+            channel: scraper-linux
             mainExe: AStar.Dev.Wallpaper.Scraper
             icon: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/Assets/astar.png
           - os: windows-latest
             rid: win-x64
+            channel: scraper-win
             mainExe: AStar.Dev.Wallpaper.Scraper.exe
             icon: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/Assets/astar.ico
     runs-on: ${{ matrix.os }}
@@ -72,6 +74,7 @@ jobs:
           vpk download github
           --repoUrl https://github.com/${{ github.repository }}
           --token ${{ secrets.GITHUB_TOKEN }}
+          --channel ${{ matrix.channel }}
           || echo "No previous release found - building full package only"
 
       - name: Pack
@@ -84,6 +87,7 @@ jobs:
           --mainExe ${{ matrix.mainExe }}
           --packTitle "AStar Dev Wallpaper Scraper"
           --icon ${{ matrix.icon }}
+          --channel ${{ matrix.channel }}
 
       - name: Upload to GitHub Release
         shell: bash
@@ -91,6 +95,7 @@ jobs:
           vpk upload github
           --repoUrl https://github.com/${{ github.repository }}
           --token ${{ secrets.GITHUB_TOKEN }}
+          --channel ${{ matrix.channel }}
           --publish
           --merge
           --releaseName "v$VERSION"
