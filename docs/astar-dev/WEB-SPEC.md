@@ -60,8 +60,8 @@ The site must be rebuilt as a production-grade, SEO-friendly, multi-page profess
 ### Persona 1: The Engineering Leader
 
 - **Role:** CTO, VP Engineering, Engineering Manager at a mid-size company
-- **Goals:** Find a senior .NET consultant/contractor for architecture, backend, or mentoring work
-- **Behaviour:** Arrives via search ("senior .NET consultant"), scans the homepage in < 30 seconds, looks at case studies for credibility, uses the contact form if impressed
+- **Goals:** Find a .NET Staff consultant/contractor for architecture, backend, or mentoring work
+- **Behaviour:** Arrives via search (".NET Staff consultant"), scans the homepage in < 30 seconds, looks at case studies for credibility, uses the contact form if impressed
 - **Pain points:** Dislikes generic corporate sites; values evidence of real work over buzzwords
 - **Device:** Likely desktop at work, but may share links via Slack/Teams to colleagues who open on mobile
 
@@ -382,11 +382,11 @@ Use `output: 'hybrid'` in `astro.config.mjs`:
 
 #### Copy Variants by Theme
 
-| Element  | Dark / Light                                             | Metal                                                               | Polished                                                                 |
-| -------- | -------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Headline | Professional (e.g., "Senior .NET Developer & Architect") | Personality-driven (e.g., "Production systems that play at volume") | Personality-driven (e.g., "Precision-engineered .NET, polished to ship") |
-| Subtitle | Straightforward summary of skills and services           | Band-energy metaphor                                                | K-pop precision metaphor                                                 |
-| Eyebrow  | Skill keywords                                           | "VOLUME // ELEVEN"                                                  | "PRECISION // POLISH"                                                    |
+| Element  | Dark / Light                                            | Metal                                                               | Polished                                                                 |
+| -------- | ------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Headline | Professional (e.g., ".NET Staff Developer & Architect") | Personality-driven (e.g., "Production systems that play at volume") | Personality-driven (e.g., "Precision-engineered .NET, polished to ship") |
+| Subtitle | Straightforward summary of skills and services          | Band-energy metaphor                                                | K-pop precision metaphor                                                 |
+| Eyebrow  | Skill keywords                                          | "VOLUME // ELEVEN"                                                  | "PRECISION // POLISH"                                                    |
 
 ### 8.2 Packages Page (`/packages`)
 

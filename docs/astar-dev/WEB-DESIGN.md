@@ -239,7 +239,7 @@ The bullet and diamond are decorative inline SVGs, `aria-hidden="true"`. The bad
 | Alignment   | Left                       |
 | Max lines   | 2                          |
 
-Copy (dark / light themes): **"Senior .NET Engineer & Architect"**
+Copy (dark / light themes): **".NET Staff Engineer & Architect"**
 
 **3. Subtitle Paragraph**
 
@@ -266,7 +266,7 @@ Example copy: _"I design and build production-grade .NET systems — architectur
 | Border radius | `999px`              |
 | Padding       | `4px 12px`           |
 
-Tags are static `<span>` elements — not interactive filters. Example set: `TDD` · `Clean Architecture` · `Observability` · `CI/CD` · `.NET 9`
+Tags are static `<span>` elements — not interactive filters. Example set: `TDD` · `Clean Architecture` · `Observability` · `CI/CD` · `.NET 10`
 
 **5. CTA Button Row**
 
