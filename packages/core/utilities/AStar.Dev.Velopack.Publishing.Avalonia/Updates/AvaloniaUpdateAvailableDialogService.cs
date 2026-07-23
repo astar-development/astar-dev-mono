@@ -1,15 +1,15 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
+using global::Avalonia;
+using global::Avalonia.Controls.ApplicationLifetimes;
+using global::Avalonia.Threading;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
 /// <inheritdoc />
 public sealed class AvaloniaUpdateAvailableDialogService : IUpdateAvailableDialogService
 {
     /// <inheritdoc />
     public async Task ShowAsync(UpdateAvailableViewModel viewModel, CancellationToken cancellationToken = default)
-        => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(viewModel, cancellationToken));
+        => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(viewModel, cancellationToken)).ConfigureAwait(false);
 
     private static async Task ShowDialogAsync(UpdateAvailableViewModel viewModel, CancellationToken cancellationToken)
     {

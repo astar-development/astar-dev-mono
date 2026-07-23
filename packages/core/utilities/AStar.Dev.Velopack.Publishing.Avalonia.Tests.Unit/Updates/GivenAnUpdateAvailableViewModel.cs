@@ -1,11 +1,9 @@
-using AStar.Dev.Velopack.Publishing;
-using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AStar.Dev.OneDrive.Sync.Client.Updates;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Logging;
 using NSubstitute.ExceptionExtensions;
 using Velopack;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Updates;
 
 public sealed class GivenAnUpdateAvailableViewModel
 {
@@ -19,17 +17,15 @@ public sealed class GivenAnUpdateAvailableViewModel
     private static (UpdateAvailableViewModel ViewModel, IVelopackUpdateService UpdateCheckService) CreateSut(UpdateInfo? updateInfo = null)
     {
         var updateCheckService = Substitute.For<IVelopackUpdateService>();
-        var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
+        var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
-        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, localization, logger);
+        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, textProvider, logger);
 
         return (viewModel, updateCheckService);
     }
 
     [Fact]
-    public void when_constructed_then_title_is_the_echoed_localization_key()
+    public void when_constructed_then_title_is_the_echoed_text_provider_value()
     {
         var (viewModel, _) = CreateSut();
 
@@ -37,7 +33,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     }
 
     [Fact]
-    public void when_constructed_then_restart_now_label_is_the_echoed_localization_key()
+    public void when_constructed_then_restart_now_label_is_the_echoed_text_provider_value()
     {
         var (viewModel, _) = CreateSut();
 
@@ -45,7 +41,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     }
 
     [Fact]
-    public void when_constructed_then_later_label_is_the_echoed_localization_key()
+    public void when_constructed_then_later_label_is_the_echoed_text_provider_value()
     {
         var (viewModel, _) = CreateSut();
 
@@ -66,6 +62,14 @@ public sealed class GivenAnUpdateAvailableViewModel
         var (viewModel, _) = CreateSut(CreateUpdateInfo(releaseNotes: "## Fixed a bug"));
 
         viewModel.ReleaseNotes.ShouldBe("## Fixed a bug");
+    }
+
+    [Fact]
+    public void when_constructed_then_message_includes_the_target_version()
+    {
+        var (viewModel, _) = CreateSut(CreateUpdateInfo(version: "2.0.0"));
+
+        viewModel.Message.ShouldBe("Update.Message:2.0.0");
     }
 
     [Fact]

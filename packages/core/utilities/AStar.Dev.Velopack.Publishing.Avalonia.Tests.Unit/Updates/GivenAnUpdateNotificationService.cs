@@ -1,10 +1,8 @@
-using AStar.Dev.Velopack.Publishing;
-using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AStar.Dev.OneDrive.Sync.Client.Updates;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Logging;
 using Velopack;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Updates;
 
 public sealed class GivenAnUpdateNotificationService
 {
@@ -18,12 +16,10 @@ public sealed class GivenAnUpdateNotificationService
     private static UpdateAvailableViewModel CreateViewModel(UpdateInfo updateInfo)
     {
         var updateCheckService = Substitute.For<IVelopackUpdateService>();
-        var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
+        var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
 
-        return new UpdateAvailableViewModel(updateInfo, updateCheckService, localization, logger);
+        return new UpdateAvailableViewModel(updateInfo, updateCheckService, textProvider, logger);
     }
 
     private static (UpdateNotificationService Sut, IVelopackUpdateService UpdateCheckService, IUpdateAvailableViewModelFactory ViewModelFactory, IUpdateAvailableDialogService DialogService) CreateSut()
@@ -52,7 +48,7 @@ public sealed class GivenAnUpdateNotificationService
     {
         var (sut, updateCheckService, viewModelFactory, _) = CreateSut();
         var updateInfo = CreateUpdateInfo();
-        var viewModel = CreateViewModel(updateInfo);
+        using var viewModel = CreateViewModel(updateInfo);
         updateCheckService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns(updateInfo);
         viewModelFactory.Create(updateInfo).Returns(viewModel);
 
@@ -66,7 +62,7 @@ public sealed class GivenAnUpdateNotificationService
     {
         var (sut, updateCheckService, viewModelFactory, dialogService) = CreateSut();
         var updateInfo = CreateUpdateInfo();
-        var viewModel = CreateViewModel(updateInfo);
+        using var viewModel = CreateViewModel(updateInfo);
         updateCheckService.CheckForUpdatesAsync(Arg.Any<CancellationToken>()).Returns(updateInfo);
         viewModelFactory.Create(updateInfo).Returns(viewModel);
 

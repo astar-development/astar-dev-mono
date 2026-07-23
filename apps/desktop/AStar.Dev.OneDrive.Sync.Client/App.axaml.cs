@@ -15,8 +15,8 @@ using Serilog.Events;
 using Testably.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
-using AStar.Dev.OneDrive.Sync.Client.Updates;
 using AStar.Dev.Velopack.Publishing;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 

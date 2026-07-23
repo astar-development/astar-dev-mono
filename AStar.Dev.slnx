@@ -46,6 +46,8 @@
         <Project Path="packages/core/utilities/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Tests.Unit/AStar.Dev.Velopack.Publishing.Tests.Unit.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />

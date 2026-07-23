@@ -62,6 +62,7 @@
         <ProjectReference Include="../../../../packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
     </ItemGroup>
 
 </Project>

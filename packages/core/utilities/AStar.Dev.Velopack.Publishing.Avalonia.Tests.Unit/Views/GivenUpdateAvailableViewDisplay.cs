@@ -1,12 +1,11 @@
-using AStar.Dev.Velopack.Publishing;
-using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AStar.Dev.OneDrive.Sync.Client.Updates;
+using AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Updates;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Microsoft.Extensions.Logging;
 using Velopack;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Views;
 
 public sealed class GivenUpdateAvailableViewDisplay
 {
@@ -20,12 +19,10 @@ public sealed class GivenUpdateAvailableViewDisplay
     private static UpdateAvailableViewModel CreateViewModel(UpdateInfo? updateInfo = null)
     {
         var updateCheckService = Substitute.For<IVelopackUpdateService>();
-        var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
+        var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
 
-        return new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, localization, logger);
+        return new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, textProvider, logger);
     }
 
     private static UpdateAvailableView CreateViewWithViewModel(UpdateAvailableViewModel viewModel)
@@ -38,14 +35,14 @@ public sealed class GivenUpdateAvailableViewDisplay
     }
 
     [AvaloniaFact]
-    public void when_rendered_then_title_text_block_shows_localized_title()
+    public void when_rendered_then_title_text_block_shows_the_text_provider_title()
     {
         var viewModel = CreateViewModel();
 
         var sut = CreateViewWithViewModel(viewModel);
 
         var titleBlock = sut.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(tb => tb.Text == "Update.Title");
-        titleBlock.ShouldNotBeNull("title TextBlock must display the echoed localization key for Update.Title");
+        titleBlock.ShouldNotBeNull("title TextBlock must display the text provider's Title");
     }
 
     [AvaloniaFact]

@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
 /// <summary>Checks for an application update and, if one is found, presents the user with the update-available dialog.</summary>
 public interface IUpdateNotificationService
