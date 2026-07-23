@@ -8,6 +8,7 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using ReactiveUI;
 using Unit = System.Reactive.Unit;
 
@@ -155,7 +156,7 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
             return Task.CompletedTask;
         }
 
-        Try.Run(ReplaceItemsFromExportFile)
+        Try.Run(UpsertItemsFromExportFile)
             .Tap(importedRowCount => StatusMessage = $"Imported {importedRowCount} row(s) from {exportFilePath}. Click Save to persist.", exception => StatusMessage = $"Import failed: {exception.Message}");
 
         return Task.CompletedTask;
@@ -195,19 +196,39 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
         return items.Count;
     }
 
-    private int ReplaceItemsFromExportFile()
+    private int UpsertItemsFromExportFile()
     {
         var imported = fileSystem.File.ReadAllText(exportFilePath).FromJson<List<TEntity>>(Constants.WebDeserialisationSettings);
+        var keyProperties = context.Model.FindEntityType(typeof(TEntity))!.FindPrimaryKey()!.Properties;
+        var existingByKey = context.Set<TEntity>().Local.ToDictionary(entity => GetKeyValues(entity, keyProperties), KeyComparer.Instance);
+        var importedKeys = new HashSet<object[]>(KeyComparer.Instance);
 
-        foreach (var existing in context.Set<TEntity>().Local.ToList())
+        foreach (var entity in imported)
         {
-            context.Remove(existing);
+            var key = GetKeyValues(entity, keyProperties);
+            importedKeys.Add(key);
+
+            if (existingByKey.TryGetValue(key, out var existing))
+            {
+                context.Entry(existing).CurrentValues.SetValues(entity);
+            }
+            else
+            {
+                context.Add(entity);
+            }
         }
 
-        context.AddRange(imported);
+        foreach (var (key, existing) in existingByKey)
+        {
+            if (!importedKeys.Contains(key))
+            {
+                context.Remove(existing);
+            }
+        }
+
         items.Clear();
 
-        foreach (var entity in ApplySortOrder(imported))
+        foreach (var entity in ApplySortOrder(context.Set<TEntity>().Local.ToList()))
         {
             items.Add(entity);
         }
@@ -215,6 +236,29 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
         return imported.Count;
     }
 
+    private static object[] GetKeyValues(TEntity entity, IReadOnlyList<IProperty> keyProperties) =>
+        [.. keyProperties.Select(property => property.PropertyInfo!.GetValue(entity)!)];
+
     private IReadOnlyList<TEntity> ApplySortOrder(IReadOnlyList<TEntity> entities) =>
         descriptor.OrderItemsBy is null ? entities : [.. entities.OrderBy(descriptor.OrderItemsBy, StringComparer.OrdinalIgnoreCase)];
+
+    private sealed class KeyComparer : IEqualityComparer<object[]>
+    {
+        public static readonly KeyComparer Instance = new();
+
+        public bool Equals(object[]? x, object[]? y) =>
+            x is not null && y is not null && x.SequenceEqual(y);
+
+        public int GetHashCode(object[] key)
+        {
+            var hash = new HashCode();
+
+            foreach (var value in key)
+            {
+                hash.Add(value);
+            }
+
+            return hash.ToHashCode();
+        }
+    }
 }
