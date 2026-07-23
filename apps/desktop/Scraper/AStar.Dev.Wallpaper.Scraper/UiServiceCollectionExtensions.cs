@@ -1,7 +1,8 @@
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
 using AStar.Dev.Wallpaper.Scraper.Home;
-using AStar.Dev.Wallpaper.Scraper.Services;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Theming;
+using AStar.Dev.Wallpaper.Scraper.Updates;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.Wallpaper.Scraper;
@@ -14,7 +15,7 @@ public static class UiServiceCollectionExtensions
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddUiServices(this IServiceCollection services)
     {
-        services.AddSingleton<UpdateService>();
+        services.AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>();
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
         services.AddSingleton<IEntityEditorFactory, EntityEditorFactory>();

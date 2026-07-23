@@ -1,8 +1,8 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Velopack.Publishing;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Home;
-using AStar.Dev.Wallpaper.Scraper.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +46,7 @@ public class GivenAddApplicationServices
     }
 
     [Fact]
-    public void when_services_are_built_then_update_service_resolves() => serviceProvider.GetRequiredService<UpdateService>().ShouldNotBeNull();
+    public void when_services_are_built_then_update_notification_service_resolves() => serviceProvider.GetRequiredService<IUpdateNotificationService>().ShouldNotBeNull();
 
     [Fact]
     public void when_app_db_context_factory_is_resolved_then_it_uses_the_configured_sqlite_connection_string()

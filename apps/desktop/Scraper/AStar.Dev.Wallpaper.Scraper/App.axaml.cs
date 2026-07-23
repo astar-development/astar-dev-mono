@@ -1,5 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb;
-using AStar.Dev.Wallpaper.Scraper.Services;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Startup;
 using AStar.Dev.Wallpaper.Scraper.Theming;
 using Avalonia;
@@ -67,7 +67,7 @@ public partial class App : Application, IDisposable
 
         desktop.MainWindow = serviceProvider.GetRequiredService<Home.MainWindow>();
 
-        _ = serviceProvider.GetRequiredService<UpdateService>().CheckForUpdatesAsync(desktop.MainWindow);
+        _ = serviceProvider.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
     }
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>

@@ -1,4 +1,5 @@
 using AStar.Dev.Velopack.Publishing;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class ServiceCollectionExtensions
         services
             .AddConfigurationServices(configuration)
             .AddVelopackUpdates(configuration)
+            .AddVelopackUpdateNotifications()
             .AddInfrastructureServices()
             .AddScrapingServices()
             .AddUiServices();

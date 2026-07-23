@@ -1,6 +1,4 @@
-using AStar.Dev.Velopack.Publishing;
-
-namespace AStar.Dev.OneDrive.Sync.Client.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
 /// <inheritdoc />
 public sealed class UpdateNotificationService(IVelopackUpdateService updateCheckService, IUpdateAvailableViewModelFactory viewModelFactory, IUpdateAvailableDialogService dialogService) : IUpdateNotificationService
@@ -8,7 +6,7 @@ public sealed class UpdateNotificationService(IVelopackUpdateService updateCheck
     /// <inheritdoc />
     public async Task CheckAndNotifyAsync(CancellationToken cancellationToken = default)
     {
-        var updateInfo = await updateCheckService.CheckForUpdatesAsync(cancellationToken);
+        var updateInfo = await updateCheckService.CheckForUpdatesAsync(cancellationToken).ConfigureAwait(false);
         if (updateInfo is null)
             return;
 
@@ -16,7 +14,7 @@ public sealed class UpdateNotificationService(IVelopackUpdateService updateCheck
 
         try
         {
-            await dialogService.ShowAsync(viewModel, cancellationToken);
+            await dialogService.ShowAsync(viewModel, cancellationToken).ConfigureAwait(false);
         }
         finally
         {

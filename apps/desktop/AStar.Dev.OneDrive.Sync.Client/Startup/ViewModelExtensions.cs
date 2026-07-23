@@ -7,7 +7,6 @@ using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Search;
-using AStar.Dev.OneDrive.Sync.Client.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewModel;
 using AccountSyncSettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountSyncSettingsViewModel;
@@ -44,7 +43,6 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<IConflictItemViewModelFactory, ConflictItemViewModelFactory>();
         _ = services.AddSingleton<IDashboardAccountViewModelFactory, DashboardAccountViewModelFactory>();
         _ = services.AddSingleton<IFolderTreeNodeViewModelFactory, FolderTreeNodeViewModelFactory>();
-        _ = services.AddSingleton<IUpdateAvailableViewModelFactory, UpdateAvailableViewModelFactory>();
 
         return services;
     }
