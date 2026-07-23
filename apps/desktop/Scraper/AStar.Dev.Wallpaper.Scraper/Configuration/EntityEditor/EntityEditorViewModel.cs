@@ -183,10 +183,9 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
     }
 
     private List<TEntity> GetAddedEntities() =>
-        context.ChangeTracker.Entries<TEntity>()
+        [.. context.ChangeTracker.Entries<TEntity>()
             .Where(entry => entry.State == EntityState.Added)
-            .Select(entry => entry.Entity)
-            .ToList();
+            .Select(entry => entry.Entity)];
 
     private int WriteItemsToExportFile()
     {
