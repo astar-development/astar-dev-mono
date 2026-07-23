@@ -10,26 +10,17 @@
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource BackgroundPrimaryBrush}">
 
+    <!--
+      Deliberately no local overrides for BackgroundPrimaryBrush / TextPrimaryBrush / TextSecondaryBrush /
+      TextTertiaryBrush / TextAccentBrush / BorderSubtleBrush / BorderDefaultBrush / StatusErrorBrush here.
+      Avalonia resolves DynamicResource nearest-scope-first, so a local Window.Resources entry would always
+      shadow the host app's own theme dictionaries and the dialog would never follow the app's Light/Dark/
+      Hacker selection (see #781). Host apps must define these 8 keys at Application scope - see README.md.
+    -->
     <Window.Resources>
         <x:Double x:Key="FontSizeSm">12</x:Double>
         <x:Double x:Key="FontSizeXl">18</x:Double>
         <CornerRadius x:Key="RadiusMd">8</CornerRadius>
-        <Color x:Key="BackgroundPrimaryColor">#FFFFFF</Color>
-        <Color x:Key="TextPrimaryColor">#1A1917</Color>
-        <Color x:Key="TextSecondaryColor">#5F5E5A</Color>
-        <Color x:Key="TextTertiaryColor">#888780</Color>
-        <Color x:Key="TextAccentColor">#185FA5</Color>
-        <Color x:Key="BorderSubtleColor">#E0DED7</Color>
-        <Color x:Key="BorderDefaultColor">#C8C6BD</Color>
-        <Color x:Key="StatusErrorColor">#E24B4A</Color>
-        <SolidColorBrush x:Key="BackgroundPrimaryBrush" Color="{StaticResource BackgroundPrimaryColor}"/>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
-        <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryColor}"/>
-        <SolidColorBrush x:Key="TextAccentBrush" Color="{StaticResource TextAccentColor}"/>
-        <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtleColor}"/>
-        <SolidColorBrush x:Key="BorderDefaultBrush" Color="{StaticResource BorderDefaultColor}"/>
-        <SolidColorBrush x:Key="StatusErrorBrush" Color="{StaticResource StatusErrorColor}"/>
     </Window.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto"

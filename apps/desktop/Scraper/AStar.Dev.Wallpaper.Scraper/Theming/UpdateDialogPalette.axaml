@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+      Supplies the 8 theme keys AStar.Dev.Velopack.Publishing.Avalonia's shared update-available
+      dialog resolves via DynamicResource (see that package's README.md). Scraper has no broader
+      semantic brush scheme of its own (bare FluentTheme + ThemeVariant only), so this is scoped
+      to just the update dialog's needs. Values mirror AStar.Dev.OneDrive.Sync.Client's Light/Dark
+      palettes for visual parity between the two apps' update dialogs.
+    -->
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="BackgroundPrimaryBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1A1917"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#5F5E5A"/>
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#888780"/>
+            <SolidColorBrush x:Key="TextAccentBrush" Color="#185FA5"/>
+            <SolidColorBrush x:Key="BorderSubtleBrush" Color="#E0DED7"/>
+            <SolidColorBrush x:Key="BorderDefaultBrush" Color="#C8C6BD"/>
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="#E24B4A"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="BackgroundPrimaryBrush" Color="#1C1B19"/>
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E8E6DF"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9C9A92"/>
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#5F5E5A"/>
+            <SolidColorBrush x:Key="TextAccentBrush" Color="#85B7EB"/>
+            <SolidColorBrush x:Key="BorderSubtleBrush" Color="#2C2B28"/>
+            <SolidColorBrush x:Key="BorderDefaultBrush" Color="#3A3830"/>
+            <SolidColorBrush x:Key="StatusErrorBrush" Color="#E24B4A"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

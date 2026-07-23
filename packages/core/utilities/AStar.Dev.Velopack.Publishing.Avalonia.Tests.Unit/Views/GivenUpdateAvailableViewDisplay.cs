@@ -114,4 +114,23 @@ public sealed class GivenUpdateAvailableViewDisplay
         var restartButton = sut.GetLogicalDescendants().OfType<Button>().First(b => b.Command == viewModel.RestartNowCommand);
         restartButton.IsEnabled.ShouldBeFalse("Restart Now must be disabled while a download is in progress");
     }
+
+    [AvaloniaFact]
+    public void when_created_then_the_window_does_not_locally_shadow_the_host_apps_theme_brushes()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        string[] hostThemeBrushKeys =
+        [
+            "BackgroundPrimaryBrush", "TextPrimaryBrush", "TextSecondaryBrush", "TextTertiaryBrush",
+            "TextAccentBrush", "BorderSubtleBrush", "BorderDefaultBrush", "StatusErrorBrush"
+        ];
+
+        foreach (var key in hostThemeBrushKeys)
+        {
+            sut.Resources.ContainsKey(key).ShouldBeFalse($"'{key}' must resolve from the host app's Application-scope theme resources, not a local override on the dialog window");
+        }
+    }
 }
