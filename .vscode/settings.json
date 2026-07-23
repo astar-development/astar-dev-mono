@@ -116,6 +116,7 @@
     "bootstrapper",
     "Categorisor",
     "Deriver",
+    "Deserialisation",
     "dorny",
     "Isnt",
     "Kiota",
@@ -131,6 +132,7 @@
     "slnx",
     "Testably",
     "testsettings",
+    "Velopack",
     "XMLDOC"
   ],
   "chat.tools.terminal.autoApprove": {

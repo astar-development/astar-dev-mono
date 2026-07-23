@@ -1,4 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Infrastructure.AppDb;
@@ -38,6 +39,18 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         optionsBuilder
             .UseAsyncSeeding(async (context, _, cancellationToken) =>
             {
+                if (!await context.Set<ScrapeConfigurationEntity>().AnyAsync(cancellationToken))
+                {
+                    var classifications = new[]
+                    {
+                        new ScrapeConfigurationEntity
+                        {
+                            Id = 1, CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow
+                        }
+                    };
+
+                    await context.Set<ScrapeConfigurationEntity>().AddRangeAsync(classifications, cancellationToken);
+                }
                 if (!await context.Set<FileClassificationCategoryEntity>().AnyAsync(cancellationToken))
                 {
                     var classifications = new[]
@@ -49,8 +62,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                     };
 
                     await context.Set<FileClassificationCategoryEntity>().AddRangeAsync(classifications, cancellationToken);
-                    await context.SaveChangesAsync(cancellationToken);
                 }
+
+                await context.SaveChangesAsync(cancellationToken);
             })
             .UseSeeding((context, _) =>
             {

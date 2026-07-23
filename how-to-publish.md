@@ -3,11 +3,11 @@
 Three independent tag-triggered release pipelines live in this repo. Each owns its own tag
 namespace so pushing one tag only ever fires one workflow. Pick the right format below.
 
-| What | Tag format | Workflow |
-|---|---|---|
-| A NuGet package | `{PackageName}/v{version}` | `.github/workflows/nuget-publish.yml` |
-| OneDrive Sync Client (desktop) | `v{version}` | `.github/workflows/onedrive-sync-client-release.yml` |
-| Wallpaper Scraper (desktop) | `scraper-v{version}` | `.github/workflows/scraper-release.yml` |
+| What                           | Tag format                 | Workflow                                             |
+| ------------------------------ | -------------------------- | ---------------------------------------------------- |
+| A NuGet package                | `{PackageName}/v{version}` | `.github/workflows/nuget-publish.yml`                |
+| OneDrive Sync Client (desktop) | `v{version}`               | `.github/workflows/onedrive-sync-client-release.yml` |
+| Wallpaper Scraper (desktop)    | `scraper-v{version}`       | `.github/workflows/scraper-release.yml`              |
 
 **Never reuse another row's tag format.** The three patterns are deliberately disjoint
 (slash-delimited vs. bare `v` vs. `scraper-v`) — mixing them up either fires the wrong
@@ -49,8 +49,8 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 Tag format: bare `v{version}`.
 
 ```bash
-git tag v0.35.0
-git push origin v0.35.0
+git tag v0.35.4
+git push origin v0.35.4
 ```
 
 Prerelease: `git tag v0.35.0-rc.1`
@@ -70,8 +70,8 @@ Tag format: `scraper-v{version}` — **not** bare `v{version}` (that's the OneDr
 namespace — see the collision note below).
 
 ```bash
-git tag scraper-v0.2.0
-git push origin scraper-v0.2.0
+git tag scraper-v0.10.11
+git push origin scraper-v0.10.11
 ```
 
 What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64
