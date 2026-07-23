@@ -14,4 +14,15 @@ services.AddSingleton<IUpdateDialogTextProvider, MyUpdateDialogTextProvider>();
 
 Call `IUpdateNotificationService.CheckAndNotifyAsync()` once the main window is available. If an update is found, the shared `UpdateAvailableView` dialog is shown with title/version/release notes, a visible downloading state, and a themed Restart-now/Later flow.
 
-The dialog defines its own `Window.Resources` (fonts, radii, colours) so it renders identically regardless of the host app's own theme.
+The dialog follows the host app's own theme. It only defines non-theme-dependent constants locally (`FontSizeSm`, `FontSizeXl`, `RadiusMd`); colours resolve via `DynamicResource` up to the host app's `Application`-scope resources, so the host app must define these 8 keys, ideally as a `ResourceDictionary.ThemeDictionaries` with `Light`/`Dark` entries so they follow `ThemeVariant` automatically:
+
+- `BackgroundPrimaryBrush`
+- `TextPrimaryBrush`
+- `TextSecondaryBrush`
+- `TextTertiaryBrush`
+- `TextAccentBrush`
+- `BorderSubtleBrush`
+- `BorderDefaultBrush`
+- `StatusErrorBrush`
+
+See `AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml`/`Dark.axaml`/`Hacker.axaml` or `AStar.Dev.Wallpaper.Scraper/Theming/UpdateDialogPalette.axaml` for examples.
