@@ -49,6 +49,43 @@ public sealed class GivenEntityEditorViewModelImport : IDisposable
         sut.StatusMessage.ShouldStartWith("Imported ");
     }
 
+    [Fact]
+    public async Task when_imported_rows_carry_a_duplicated_nested_parent_navigation_then_the_import_command_does_not_throw()
+    {
+        var sut = CreateSut();
+        var root = new FileClassificationCategoryEntity { Id = 78, Name = "Famous", Level = 2, Priority = 78 };
+
+        var imported = new List<FileClassificationCategoryEntity>
+        {
+            root,
+            new()
+            {
+                Id = 994, Name = "Miss April", Level = 3, Priority = 994, ParentId = 78,
+                Parent = new FileClassificationCategoryEntity { Id = 78, Name = "Famous", Level = 2, Priority = 78 }
+            },
+            new()
+            {
+                Id = 998, Name = "Miss August", Level = 3, Priority = 998, ParentId = 78,
+                Parent = new FileClassificationCategoryEntity { Id = 78, Name = "Famous", Level = 2, Priority = 78 }
+            }
+        };
+
+        fileSystem.File.WriteAllText("/exports/FileClassificationCategories.json", imported.ToJson());
+
+        await Command(sut.ImportCommand).Execute();
+
+        sut.StatusMessage.ShouldStartWith("Imported ");
+
+        await Command(sut.SaveCommand).Execute();
+
+        sut.StatusMessage.ShouldStartWith("Saved ");
+        await using var context = new AppDbContext(options);
+        var rows = await context.Set<FileClassificationCategoryEntity>().ToListAsync(TestContext.Current.CancellationToken);
+        rows.ShouldContain(row => row.Id == 78 && row.Name == "Famous");
+        rows.ShouldContain(row => row.Id == 994 && row.ParentId == 78);
+        rows.ShouldContain(row => row.Id == 998 && row.ParentId == 78);
+    }
+
     public void Dispose() =>
         connection.Dispose();
 
