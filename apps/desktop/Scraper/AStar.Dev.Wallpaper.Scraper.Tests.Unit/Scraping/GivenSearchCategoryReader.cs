@@ -38,7 +38,7 @@ public sealed class GivenSearchCategoryReader : IDisposable
                 LastKnownImageCount = 120,
                 LastPageVisited = 3
             });
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
         }
 

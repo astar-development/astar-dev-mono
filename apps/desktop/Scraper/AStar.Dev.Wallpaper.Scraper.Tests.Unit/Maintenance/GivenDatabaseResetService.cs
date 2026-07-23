@@ -100,7 +100,7 @@ public sealed class GivenDatabaseResetService : IDisposable
             {
                 Id = "nature-id", Name = "Nature", LastKnownImageCount = 120, LastPageVisited = 3,
             });
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
         }
 
@@ -121,7 +121,7 @@ public sealed class GivenDatabaseResetService : IDisposable
         {
             var searchConfiguration = new SearchConfigurationEntity();
             searchConfiguration.SearchCategories.Add(new SearchCategoryEntity { Id = "nature-id", Name = "Nature", });
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
         }
 
@@ -139,7 +139,7 @@ public sealed class GivenDatabaseResetService : IDisposable
     {
         using (var context = dbContextFactory.CreateDbContext())
         {
-            context.ScrapeDirectories.Add(new ScrapeDirectoriesEntity { RootDirectory = "/wallpapers", });
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/wallpapers", } });
             context.SaveChanges();
         }
 
@@ -157,7 +157,7 @@ public sealed class GivenDatabaseResetService : IDisposable
     {
         using (var context = dbContextFactory.CreateDbContext())
         {
-            context.ScrapeDirectories.Add(new ScrapeDirectoriesEntity { RootDirectory = "/wallpapers", });
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/wallpapers", } });
             context.SaveChanges();
         }
 
