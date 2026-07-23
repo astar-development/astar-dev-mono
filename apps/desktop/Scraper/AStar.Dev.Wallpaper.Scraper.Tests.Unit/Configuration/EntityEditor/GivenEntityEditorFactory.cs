@@ -118,10 +118,10 @@ public sealed class GivenEntityEditorFactory : IDisposable
         int searchConfigurationId;
         await using (var seedContext = new AppDbContext(options))
         {
-            var searchConfiguration = new SearchConfigurationEntity();
-            seedContext.Add(searchConfiguration);
+            var scrapeConfiguration = new ScrapeConfigurationEntity();
+            seedContext.Add(scrapeConfiguration);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
-            searchConfigurationId = searchConfiguration.Id;
+            searchConfigurationId = scrapeConfiguration.SearchConfiguration.Id;
         }
 
         var editor = sut.CreateSearchCategoriesEditor();

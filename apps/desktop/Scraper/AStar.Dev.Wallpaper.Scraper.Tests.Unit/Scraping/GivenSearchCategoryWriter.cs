@@ -38,7 +38,7 @@ public sealed class GivenSearchCategoryWriter : IDisposable
                 LastKnownImageCount = 0,
                 LastPageVisited = 0
             });
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
         }
 

@@ -126,7 +126,7 @@ public sealed class GivenWallpaperFileClassificationRepository : IDisposable
         {
             var searchConfiguration = new SearchConfigurationEntity();
             searchConfiguration.SearchCategories.Add(new SearchCategoryEntity { Id = "landscapes-id", Name = "Landscapes", });
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Nature", });
             context.SaveChanges();
         }

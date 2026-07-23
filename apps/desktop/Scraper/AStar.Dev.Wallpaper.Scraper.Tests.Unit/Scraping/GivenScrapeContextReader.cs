@@ -27,14 +27,17 @@ public sealed class GivenScrapeContextReader : IDisposable
         using (var context = dbContextFactory.CreateDbContext())
         {
             var searchConfiguration = new SearchConfigurationEntity { SearchStringPrefix = "https://wallhaven.cc/search?categories=", SearchStringSuffix = "&sorting=random", };
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity
+            {
+                SearchConfiguration = searchConfiguration,
+                ScrapeDirectories = new ScrapeDirectoriesEntity { RootDirectory = "/root", BaseDirectory = "/base", BaseDirectoryFamous = "/famous", },
+            });
             context.SaveChanges();
 
             context.SearchCategories.Add(new SearchCategoryEntity { Id = "2", SearchConfigurationId = searchConfiguration.Id, Name = "Zebra", });
             context.SearchCategories.Add(new SearchCategoryEntity { Id = "1", SearchConfigurationId = searchConfiguration.Id, Name = "Anteater", });
             context.ModelsToIgnore.Add(new ModelToIgnoreEntity { Value = "Some Model", });
             context.TagsToIgnore.Add(new TagToIgnoreEntity { Value = "Some Tag", });
-            context.ScrapeDirectories.Add(new ScrapeDirectoriesEntity { RootDirectory = "/root", BaseDirectory = "/base", BaseDirectoryFamous = "/famous", });
             context.SaveChanges();
         }
 
@@ -57,7 +60,7 @@ public sealed class GivenScrapeContextReader : IDisposable
         using (var context = dbContextFactory.CreateDbContext())
         {
             var searchConfiguration = new SearchConfigurationEntity { SearchStringPrefix = "https://wallhaven.cc/search?categories=", SearchStringSuffix = "&sorting=random", };
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
 
             context.SearchCategories.Add(new SearchCategoryEntity { Id = "1", SearchConfigurationId = searchConfiguration.Id, Name = "Included", IncludeInSearch = true, });
@@ -78,7 +81,7 @@ public sealed class GivenScrapeContextReader : IDisposable
         using (var context = dbContextFactory.CreateDbContext())
         {
             var searchConfiguration = new SearchConfigurationEntity { SearchStringPrefix = "https://wallhaven.cc/search?categories=", SearchStringSuffix = "&sorting=random", };
-            context.SearchConfigurations.Add(searchConfiguration);
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();
 
             context.SearchCategories.Add(new SearchCategoryEntity { Id = "1", SearchConfigurationId = searchConfiguration.Id, Name = "Zebra", });
@@ -108,7 +111,7 @@ public sealed class GivenScrapeContextReader : IDisposable
     {
         using (var context = dbContextFactory.CreateDbContext())
         {
-            context.SearchConfigurations.Add(new SearchConfigurationEntity());
+            context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = new SearchConfigurationEntity() });
             context.SaveChanges();
         }
 
