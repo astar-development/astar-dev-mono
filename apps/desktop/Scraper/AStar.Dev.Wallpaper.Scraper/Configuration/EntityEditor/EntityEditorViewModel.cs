@@ -200,22 +200,38 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
     {
         var imported = fileSystem.File.ReadAllText(exportFilePath).FromJson<List<TEntity>>(Constants.WebDeserialisationSettings);
         var keyProperties = context.Model.FindEntityType(typeof(TEntity))!.FindPrimaryKey()!.Properties;
-        var existingByKey = context.Set<TEntity>().Local.ToDictionary(entity => GetKeyValues(entity, keyProperties), KeyComparer.Instance);
+        var existingByKey = new Dictionary<object[], TEntity>(KeyComparer.Instance);
+
+        foreach (var existing in context.Set<TEntity>().Local.ToList())
+        {
+            if (context.Entry(existing).IsKeySet)
+            {
+                existingByKey[GetKeyValues(existing, keyProperties)] = existing;
+            }
+            else
+            {
+                context.Remove(existing);
+            }
+        }
+
         var importedKeys = new HashSet<object[]>(KeyComparer.Instance);
 
         foreach (var entity in imported)
         {
-            var key = GetKeyValues(entity, keyProperties);
-            importedKeys.Add(key);
+            if (context.Entry(entity).IsKeySet)
+            {
+                var key = GetKeyValues(entity, keyProperties);
+                importedKeys.Add(key);
 
-            if (existingByKey.TryGetValue(key, out var existing))
-            {
-                context.Entry(existing).CurrentValues.SetValues(entity);
+                if (existingByKey.TryGetValue(key, out var existing))
+                {
+                    context.Entry(existing).CurrentValues.SetValues(entity);
+
+                    continue;
+                }
             }
-            else
-            {
-                context.Add(entity);
-            }
+
+            context.Add(entity);
         }
 
         foreach (var (key, existing) in existingByKey)
