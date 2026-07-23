@@ -248,6 +248,44 @@ public sealed class GivenEntityEditorViewModel : IDisposable
     }
 
     [Fact]
+    public async Task when_the_import_command_runs_with_a_matching_key_then_the_existing_tracked_entity_is_updated_in_place()
+    {
+        SeedTag("original-tag");
+        var sut = CreateSut();
+        var trackedBeforeImport = (TagToIgnoreEntity)sut.Items[0]!;
+        fileSystem.File.WriteAllText("/exports/TagToIgnore.json", new List<TagToIgnoreEntity> { new() { Id = trackedBeforeImport.Id, Value = "updated-tag" } }.ToJson());
+
+        await Command(sut.ImportCommand).Execute();
+
+        sut.Items.Count.ShouldBe(1);
+        var trackedAfterImport = (TagToIgnoreEntity)sut.Items[0]!;
+        trackedAfterImport.ShouldBeSameAs(trackedBeforeImport);
+        trackedAfterImport.Value.ShouldBe("updated-tag");
+    }
+
+    [Fact]
+    public async Task when_the_import_command_runs_with_a_mix_of_matching_and_new_keys_then_matching_rows_are_updated_and_new_rows_are_added()
+    {
+        SeedTag("keep-me");
+        var sut = CreateSut();
+        var existingId = ((TagToIgnoreEntity)sut.Items[0]!).Id;
+        fileSystem.File.WriteAllText("/exports/TagToIgnore.json", new List<TagToIgnoreEntity>
+        {
+            new() { Id = existingId, Value = "keep-me-renamed" },
+            new() { Value = "brand-new" }
+        }.ToJson());
+
+        await Command(sut.ImportCommand).Execute();
+        await Command(sut.SaveCommand).Execute();
+
+        await using var context = new AppDbContext(options);
+        var rows = await context.Set<TagToIgnoreEntity>().ToListAsync(TestContext.Current.CancellationToken);
+        rows.Count.ShouldBe(2);
+        rows.ShouldContain(row => row.Id == existingId && row.Value == "keep-me-renamed");
+        rows.ShouldContain(row => row.Value == "brand-new");
+    }
+
+    [Fact]
     public async Task when_the_import_command_reads_invalid_json_then_the_status_message_reports_the_failure()
     {
         var sut = CreateSut();
