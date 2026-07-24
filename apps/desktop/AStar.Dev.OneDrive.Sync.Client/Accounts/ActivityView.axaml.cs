@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -5,6 +6,7 @@ using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewMo
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
+[ExcludeFromCodeCoverage]
 public partial class ActivityView : UserControl
 {
     public ActivityView() => InitializeComponent();

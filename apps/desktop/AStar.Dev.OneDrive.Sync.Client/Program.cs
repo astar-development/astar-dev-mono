@@ -1,4 +1,5 @@
-﻿using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
+﻿using System.Diagnostics.CodeAnalysis;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.Utilities;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,7 @@ using Velopack;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
+[ExcludeFromCodeCoverage]
 internal sealed class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any

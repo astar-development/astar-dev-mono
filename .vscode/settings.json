@@ -109,15 +109,20 @@
   "files.insertFinalNewline": true,
   "cSpell.language": "en-GB",
   "cSpell.words": [
+    "Analyzers",
+    "aspnet",
     "Astar",
     "Avalonia",
     "axaml",
     "Blazor",
     "bootstrapper",
+    "buildtransitive",
     "Categorisor",
+    "contentfiles",
     "Deriver",
     "Deserialisation",
     "dorny",
+    "GHSA",
     "Isnt",
     "Kiota",
     "Msal",
@@ -134,7 +139,8 @@
     "Testably",
     "testsettings",
     "Velopack",
-    "XMLDOC"
+    "XMLDOC",
+    "Xunit"
   ],
   "chat.tools.terminal.autoApprove": {
     "dotnet build": true,

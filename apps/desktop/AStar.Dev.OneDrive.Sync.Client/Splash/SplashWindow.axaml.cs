@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using Avalonia.Controls;
 using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Splash;
 
+[ExcludeFromCodeCoverage]
 public partial class SplashWindow : Window
 {
     private readonly SplashWindowViewModel viewModel;

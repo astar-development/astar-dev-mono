@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
 namespace AStar.Dev.Wallpaper.Scraper;
 
+[ExcludeFromCodeCoverage]
 public partial class ConfirmDialog : Window
 {
     // Parameterless constructor is required by the XAML previewer only; the app uses the message constructor.

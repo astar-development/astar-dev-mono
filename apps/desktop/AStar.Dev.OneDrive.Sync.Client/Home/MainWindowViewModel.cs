@@ -18,9 +18,11 @@ using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewMo
 using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
 using DashboardViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardViewModel;
 using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
+[ExcludeFromCodeCoverage]
 public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, SyncedFileSearchViewModel search, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : ObservableObject
 {
     private readonly ILogger<MainWindowViewModel> logger = logger;
@@ -122,75 +124,19 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         _ => null
     };
 
-    private DashboardView DashboardViewInstance
-    {
-        get
-        {
-            field ??= new DashboardView { DataContext = dashboard };
+    private DashboardView DashboardViewInstance => field ??= new DashboardView { DataContext = dashboard };
 
-            return field;
-        }
-    }
+    private FilesView FilesViewInstance => field ??= new FilesView { DataContext = files };
 
-    private FilesView FilesViewInstance
-    {
-        get
-        {
-            field ??= new FilesView { DataContext = files };
+    private ActivityView ActivityViewInstance => field ??= new ActivityView { DataContext = activity };
 
-            return field;
-        }
-    }
+    private AccountsView AccountsViewInstance => field ??= new AccountsView { DataContext = this };
 
-    private ActivityView ActivityViewInstance
-    {
-        get
-        {
-            field ??= new ActivityView { DataContext = activity };
+    private SettingsView SettingsViewInstance => field ??= new SettingsView { DataContext = settings };
 
-            return field;
-        }
-    }
+    private FileClassificationsView FileClassificationsViewInstance => field ??= new FileClassificationsView { DataContext = classificationRules };
 
-    private AccountsView AccountsViewInstance
-    {
-        get
-        {
-            field ??= new AccountsView { DataContext = this };
-
-            return field;
-        }
-    }
-
-    private SettingsView SettingsViewInstance
-    {
-        get
-        {
-            field ??= new SettingsView { DataContext = settings };
-
-            return field;
-        }
-    }
-
-    private FileClassificationsView FileClassificationsViewInstance
-    {
-        get
-        {
-            field ??= new FileClassificationsView { DataContext = classificationRules };
-
-            return field;
-        }
-    }
-
-    private SyncedFileSearchView SearchViewInstance
-    {
-        get
-        {
-            field ??= new SyncedFileSearchView { DataContext = search };
-
-            return field;
-        }
-    }
+    private SyncedFileSearchView SearchViewInstance => field ??= new SyncedFileSearchView { DataContext = search };
 
     public AccountsViewModel Accounts => accounts;
 

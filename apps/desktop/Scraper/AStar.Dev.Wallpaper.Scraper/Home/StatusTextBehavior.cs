@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
-
+using System.Diagnostics.CodeAnalysis;
 namespace AStar.Dev.Wallpaper.Scraper.Home;
 
 /// <summary>
@@ -9,6 +9,7 @@ namespace AStar.Dev.Wallpaper.Scraper.Home;
 ///     changes. Use in place of binding directly to <see cref="TextBlock.Text" /> when the bound string may contain
 ///     inline formatting tags produced at runtime.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class StatusTextBehavior
 {
     /// <summary>Identifies the attached <c>FormattedText</c> property.</summary>

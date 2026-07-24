@@ -914,6 +914,19 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity.Parent">
             <summary>Navigation to parent category.</summary>
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryQueries">
+            <summary>Query and persistence helpers for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity"/> records.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryQueries.EnsureCategoriesExistAsync(AStar.Dev.Infrastructure.AppDb.AppDbContext,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)">
+            <summary>
+                Ensures each of the given category names exists as a Level 2 child of the "Unclassified" root
+                category, creating the root and any missing categories. Categories already present are left
+                untouched.
+            </summary>
+            <param name="context">The database context to persist through.</param>
+            <param name="categoryNames">The category names observed during the scrape.</param>
+            <param name="cancellationToken">A token used to observe cancellation of the operation.</param>
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity">
             <summary>Junction row linking a file to a category in the normalised classification taxonomy, regardless of which application classified it.</summary>
         </member>
@@ -1676,6 +1689,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.MigrateOfflineScraper.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">
