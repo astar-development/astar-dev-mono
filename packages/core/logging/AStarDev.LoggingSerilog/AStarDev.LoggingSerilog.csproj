@@ -7,6 +7,7 @@
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="Microsoft.Extensions.Configuration" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+        <PackageReference Include="System.Reactive" />
     </ItemGroup>
 
     <PropertyGroup>

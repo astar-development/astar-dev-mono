@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.LogViewer;
+namespace AStarDev.LoggingSerilog.LogViewer;
 
 /// <summary>Provides access to in-memory log entries captured by <see cref="InMemoryLogSink"/>.</summary>
 public interface ILogEntryProvider

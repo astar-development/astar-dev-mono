@@ -4,7 +4,7 @@ using System.Reactive.Subjects;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace AStar.Dev.OneDrive.Sync.Client.LogViewer;
+namespace AStarDev.LoggingSerilog.LogViewer;
 
 /// <summary>
 ///     Serilog sink that retains the last <see cref="DefaultCapacity"/> log entries in a thread-safe ring buffer
