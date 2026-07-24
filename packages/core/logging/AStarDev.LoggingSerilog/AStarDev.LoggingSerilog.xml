@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.LoggingSerilog</name>
+    </assembly>
+    <members>
+        <member name="T:AStarDev.LoggingSerilog.SerilogConfigurator">
+            <summary>
+            This class provides a method to create a Serilog logger using the provided configuration and log file path. It allows for customization of the rolling interval and the number of retained log files.
+            </summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,Serilog.RollingInterval,System.Int32)">
+            <summary>
+             This method creates a Serilog logger using the provided configuration and log file path. It allows for customization of the rolling interval and the number of retained log files.
+            </summary>
+            <param name="configuration">The configuration providing Serilog sink settings.</param>
+            <param name="logFilePath">The path to the log file.</param>
+            <param name="rollingInterval">The rolling interval for the log file.</param>
+            <param name="retainedFileCountLimit">The number of retained log files.</param>
+            <returns>The configured Serilog logger.</returns>
+        </member>
+    </members>
+</doc>
