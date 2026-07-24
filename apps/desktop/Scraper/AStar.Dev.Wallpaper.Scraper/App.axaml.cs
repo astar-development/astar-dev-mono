@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Startup;
 using AStar.Dev.Wallpaper.Scraper.Theming;
 using Avalonia;
@@ -46,7 +47,8 @@ public partial class App : Application, IDisposable
             .AddApplicationServices(configuration);
 
         ApplicationOptionsRegistrar.Register(collection, configuration);
-        Log.Logger = SerilogConfigurator.CreateLogger(fileSystem, configuration);
+        string logDirectory = ApplicationDirectories.LogsDirectory;
+        Log.Logger = AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(configuration, $"{logDirectory}/log.txt"  );
 
         return collection
             .AddLogging(logging => logging.AddSerilog(dispose: true))
