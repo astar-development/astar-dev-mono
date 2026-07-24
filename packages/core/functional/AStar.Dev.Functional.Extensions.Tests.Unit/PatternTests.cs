@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-internal class PatternTests
+public sealed class PatternTests
 {
     [Fact]
     public void IsSome_And_IsNone_WorkCorrectly()

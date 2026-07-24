@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(JsonWriterOptions))]
-internal class GivenJsonWriterOptions
+public sealed class GivenJsonWriterOptions
 {
     [Fact]
     public void DefaultIndented_ToFalse()

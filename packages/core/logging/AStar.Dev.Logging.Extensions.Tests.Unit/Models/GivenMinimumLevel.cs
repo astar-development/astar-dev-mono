@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(MinimumLevel))]
-internal class GivenMinimumLevel
+public sealed class GivenMinimumLevel
 {
     [Fact]
     public void DefaultProperty_GetsAndSetsValuesCorrectly()

@@ -4,7 +4,7 @@ using LogLevel = AStar.Dev.Logging.Extensions.Models.LogLevel;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(LogLevel))]
-internal class GivenLogLevel
+public sealed class GivenLogLevel
 {
     [Fact]
     public void Default_ShouldHaveInitialValue_EmptyString()

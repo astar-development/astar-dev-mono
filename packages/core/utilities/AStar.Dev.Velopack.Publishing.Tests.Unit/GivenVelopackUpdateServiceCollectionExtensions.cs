@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.Velopack.Publishing.Tests.Unit;
 
-internal sealed class GivenVelopackUpdateServiceCollectionExtensions
+public sealed class GivenVelopackUpdateServiceCollectionExtensions
 {
     private static IServiceProvider BuildProvider(string githubRepositoryUrl)
     {

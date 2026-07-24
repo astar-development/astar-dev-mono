@@ -1,6 +1,6 @@
 namespace AStar.Dev.Source.Generators.Attributes.Tests.Unit;
 
-internal class StrongIdAttributeShould
+public sealed class StrongIdAttributeShould
 {
     [Fact]
     public void DefaultToGuidWhenNoTypeIsSpecified()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-internal class ResultShould
+public sealed class ResultShould
 {
     [Fact]
     public void MatchToSuccessHandlerWhenResultIsOk()

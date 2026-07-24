@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenLinqExtensions
+public sealed class GivenLinqExtensions
 {
     [Fact]
     public void when_first_or_none_is_called_on_an_empty_sequence_then_none_is_returned()

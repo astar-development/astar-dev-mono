@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenMap
+public sealed class GivenMap
 {
     [Fact]
     public void when_selector_is_value_then_returns_expected_result()

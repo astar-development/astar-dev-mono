@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Tests.Unit.Helpers;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(LogMessage))]
-internal class GivenLogMessageTemplate
+public sealed class GivenLogMessageTemplate
 {
     [Fact]
     public void LogBadRequest_WithValidPath_ShouldLogCorrectMessage()

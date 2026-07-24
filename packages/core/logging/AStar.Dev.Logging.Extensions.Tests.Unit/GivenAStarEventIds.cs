@@ -1,7 +1,7 @@
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(AStarEventIds))]
-internal class GivenAStarEventIds
+public sealed class GivenAStarEventIds
 {
     [Fact]
     public void PageView_HasExpectedIdAndName()

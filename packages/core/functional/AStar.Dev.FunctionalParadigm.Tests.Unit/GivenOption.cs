@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenOption
+public sealed class GivenOption
 {
     [Fact]
     public void when_some_is_called_with_a_value_then_returns_a_some_instance()

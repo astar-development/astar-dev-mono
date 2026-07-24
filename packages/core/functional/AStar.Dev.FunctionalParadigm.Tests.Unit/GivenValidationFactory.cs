@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenValidationFactory
+public sealed class GivenValidationFactory
 {
     [Fact]
     public void when_valid_created_then_wraps_value()

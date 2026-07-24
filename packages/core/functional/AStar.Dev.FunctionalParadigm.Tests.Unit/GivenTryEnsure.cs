@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenTryEnsure
+public sealed class GivenTryEnsure
 {
     [Fact]
     public void when_the_exceptional_is_a_success_then_the_finally_action_is_invoked_and_the_original_result_is_returned()

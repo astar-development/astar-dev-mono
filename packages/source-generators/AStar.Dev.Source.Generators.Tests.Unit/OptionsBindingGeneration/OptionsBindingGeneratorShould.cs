@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.OptionsBindingGeneration;
 
-internal class OptionsBindingGeneratorShould
+public sealed class OptionsBindingGeneratorShould
 {
     [Fact]
     public void GenerateRegistrationForClassWithAttributeSectionName()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenOptionExtensions
+public sealed class GivenOptionExtensions
 {
     [Fact]
     public void when_try_get_value_is_called_on_some_then_returns_true_and_outputs_the_value()

@@ -4,7 +4,7 @@ using AStar.Dev.Utilities;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Extensions.Models.Serilog))]
-internal class GivenSerilog
+public sealed class GivenSerilog
 {
     [Fact]
     public void SetTheEnrichPropertyToAnEmptyArrayByDefault()

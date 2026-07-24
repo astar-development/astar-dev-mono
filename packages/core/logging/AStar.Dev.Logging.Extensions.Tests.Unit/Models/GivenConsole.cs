@@ -4,7 +4,7 @@ using Console = AStar.Dev.Logging.Extensions.Models.Console;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Console))]
-internal class GivenConsole
+public sealed class GivenConsole
 {
     [Fact]
     public void Console_DefaultValues_ShouldInitializeCorrectly()

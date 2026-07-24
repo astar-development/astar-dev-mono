@@ -2,7 +2,7 @@ using AStar.Dev.FunctionalParadigm.Composition;
 
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenFunctionTap
+public sealed class GivenFunctionTap
 {
     [Fact]
     public void when_value_is_tapped_then_side_effect_runs_and_original_value_is_returned()

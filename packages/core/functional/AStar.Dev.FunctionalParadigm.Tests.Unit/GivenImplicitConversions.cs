@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenImplicitConversions
+public sealed class GivenImplicitConversions
 {
     [Fact]
     public void when_assigning_value_then_creates_ok()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenExceptionalBind
+public sealed class GivenExceptionalBind
 {
     [Fact]
     public void when_exceptional_is_success_then_returns_bound_result()
