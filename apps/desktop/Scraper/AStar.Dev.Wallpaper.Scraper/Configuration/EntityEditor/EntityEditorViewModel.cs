@@ -10,7 +10,6 @@ using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ReactiveUI;
-using Unit = System.Reactive.Unit;
 
 namespace AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
 

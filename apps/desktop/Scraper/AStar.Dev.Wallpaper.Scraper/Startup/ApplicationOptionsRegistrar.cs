@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.Wallpaper.Scraper.Startup;
 
