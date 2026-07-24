@@ -1,0 +1,159 @@
+name: SonarCloud
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/**/*.cs'
+      - 'apps/**/*.csproj'
+      - 'apps/**/*.axaml'
+      - 'apps/**/*.razor'
+      - 'packages/**/*.cs'
+      - 'packages/**/*.csproj'
+      - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - '*.slnx'
+      - '.github/workflows/sonarcloud.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/**/*.cs'
+      - 'apps/**/*.csproj'
+      - 'apps/**/*.axaml'
+      - 'apps/**/*.razor'
+      - 'packages/**/*.cs'
+      - 'packages/**/*.csproj'
+      - 'tests/**/*.cs'
+      - 'tests/**/*.csproj'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - '*.slnx'
+      - '.github/workflows/sonarcloud.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonarcloud-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  SONAR_PROJECT_KEY: 'astar-development_astar-dev-mono'
+  SONAR_ORG: 'astar-development'
+
+jobs:
+  build-and-analyze:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up JDK
+        uses: actions/setup-java@v4.4.0
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: 🛠 Cache SonarQube Cloud packages
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: 🛠 Cache SonarQube Cloud scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v4.2.3
+        with:
+          path: ./.sonar/scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: 🛠 Install SonarQube Cloud scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ./.sonar/scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: 🔍 Begin ☁️ SonarCloud scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          ./.sonar/scanner/dotnet-sonarscanner begin \
+            /k:"${{ env.SONAR_PROJECT_KEY }}" \
+            /o:"${{ env.SONAR_ORG }}" \
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.cobertura.reportsPaths="TestResults/**/coverage.cobertura.xml" \
+            /d:sonar.scanner.scanAll=false \
+            /d:sonar.scanner.skipJreProvisioning=true
+
+      - name: 🛠 Build
+        run: |
+          dotnet build \
+            --no-restore \
+            --configuration Release \
+            -p:TreatWarningsAsErrors=true
+
+      - name: 🧪 Test (per project)
+        run: |
+          mkdir -p TestResults
+
+          mapfile -t projects < <(find . -name '*.Tests*.csproj')
+
+          for proj in "${projects[@]}"; do
+            echo "Running tests for $proj"
+
+            proj_dir=$(dirname "$proj")
+            proj_name=$(basename "$proj" .csproj)
+
+            cd "$proj_dir"
+
+            dotnet test \
+              --no-build \
+              --configuration Release \
+              --logger "trx;LogFileName=$proj_name.trx" \
+              --results-directory "$GITHUB_WORKSPACE/TestResults" \
+              --collect:"XPlat Code Coverage" \
+              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+
+            cd "$GITHUB_WORKSPACE"
+          done
+
+      - name: 🏁 End ☁️ SonarCloud scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
