@@ -13,9 +13,9 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Versioning;
-using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using AStar.Dev.OneDrive.Sync.Client.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.LoggingSerilog.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
 

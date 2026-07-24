@@ -4,6 +4,69 @@
         <name>AStarDev.LoggingSerilog</name>
     </assembly>
     <members>
+        <member name="T:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider">
+            <summary>Provides access to in-memory log entries captured by <see cref="T:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink"/>.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider.GetSnapshot">
+            <summary>Returns a point-in-time snapshot of all retained log entries.</summary>
+        </member>
+        <member name="P:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider.EntryAdded">
+            <summary>Observable that fires each time a new <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/> is captured.</summary>
+        </member>
+        <member name="T:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink">
+            <summary>
+                Serilog sink that retains the last <see cref="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity"/> log entries in a thread-safe ring buffer
+                and exposes them via <see cref="T:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider"/> (LG-01, NF-07).
+                PII (email addresses) is scrubbed before storage.
+            </summary>
+        </member>
+        <member name="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity">
+            <summary>Default maximum number of log entries held in memory.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.#ctor">
+            <summary>Initialises the sink with <see cref="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity"/>.</summary>
+        </member>
+        <member name="P:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.EntryAdded">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.GetSnapshot">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.Emit(Serilog.Events.LogEvent)">
+            <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.LoggingSerilog.LogViewer.LogEntry">
+            <summary>An immutable snapshot of a single Serilog log event, with PII already scrubbed.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.LogEntry.#ctor(System.DateTimeOffset,Serilog.Events.LogEventLevel,System.String,System.String)">
+            <summary>An immutable snapshot of a single Serilog log event, with PII already scrubbed.</summary>
+        </member>
+        <member name="T:AStarDev.LoggingSerilog.LogViewer.LogEntryFactory">
+            <summary>Factory for <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/>.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.LogEntryFactory.Create(System.DateTimeOffset,Serilog.Events.LogEventLevel,System.String,System.String)">
+            <summary>Creates a <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/> with the supplied values.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.PiiScrubber.EmailRegex">
+            <remarks>
+            Pattern:<br/>
+            <code>[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}</code><br/>
+            Explanation:<br/>
+            <code>
+            ○ Match a character in the set [%+\-.0-9A-Z_a-z] atomically at least once.<br/>
+            ○ Match '@'.<br/>
+            ○ Match a character in the set [\-.0-9A-Za-z] greedily at least once.<br/>
+            ○ Match '.'.<br/>
+            ○ Match an ASCII letter atomically at least twice.<br/>
+            </code>
+            </remarks>
+        </member>
+        <member name="M:AStarDev.LoggingSerilog.LogViewer.PiiScrubber.Scrub(System.String)">
+            <summary>Replaces any email addresses in <paramref name="message"/> with <c>[email redacted]</c>.</summary>
+        </member>
         <member name="T:AStarDev.LoggingSerilog.SerilogConfigurator">
             <summary>
             This class provides a method to create a Serilog logger using the provided configuration and log file path. It allows for customization of the rolling interval and the number of retained log files.
@@ -18,6 +81,56 @@
             <param name="rollingInterval">The rolling interval for the log file.</param>
             <param name="retainedFileCountLimit">The number of retained log files.</param>
             <returns>The configured Serilog logger.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0">
+            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the EmailRegex method.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.EmailRegex_0.Instance">
+            <summary>Cached, thread-safe singleton instance.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EmailRegex_0.#ctor">
+            <summary>Initializes the instance.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory">
+            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory.CreateInstance">
+            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory.Runner">
+            <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
+            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if a possible match was found; false if no more matches are possible.</returns>
+        </member>
+        <member name="M:System.Text.RegularExpressions.Generated.EmailRegex_0.RunnerFactory.Runner.TryMatchAtCurrentPosition(System.ReadOnlySpan{System.Char})">
+            <summary>Determine whether <paramref name="inputSpan"/> at base.runtextpos is a match for the regular expression.</summary>
+            <param name="inputSpan">The text being scanned by the regular expression.</param>
+            <returns>true if the regular expression matches at the current position; otherwise, false.</returns>
+        </member>
+        <member name="T:System.Text.RegularExpressions.Generated.Utilities">
+            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout">
+            <summary>Default timeout value set in <see cref="T:System.AppContext"/>, or <see cref="F:System.Text.RegularExpressions.Regex.InfiniteMatchTimeout"/> if none was set.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_hasTimeout">
+            <summary>Whether <see cref="F:System.Text.RegularExpressions.Generated.Utilities.s_defaultTimeout"/> is non-infinite.</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_asciiLetters">
+            <summary>Supports searching for characters in or not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_asciiLettersAndDigitsAndDashDot">
+            <summary>Supports searching for characters in or not in "-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".</summary>
+        </member>
+        <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_ascii_2068FF03FEFFFF87FEFFFF07">
+            <summary>Supports searching for characters in or not in "%+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".</summary>
         </member>
     </members>
 </doc>

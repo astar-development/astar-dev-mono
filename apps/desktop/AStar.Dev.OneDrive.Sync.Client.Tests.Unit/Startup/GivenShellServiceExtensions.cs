@@ -1,7 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
-using AStar.Dev.OneDrive.Sync.Client.LogViewer;
 using AStar.Dev.OneDrive.Sync.Client.Startup;
+using AStarDev.LoggingSerilog.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Startup;

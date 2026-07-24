@@ -1,6 +1,6 @@
 using Serilog.Events;
 
-namespace AStar.Dev.OneDrive.Sync.Client.LogViewer;
+namespace AStarDev.LoggingSerilog.LogViewer;
 
 /// <summary>An immutable snapshot of a single Serilog log event, with PII already scrubbed.</summary>
 public record LogEntry(DateTimeOffset Timestamp, LogEventLevel Level, string RenderedMessage, string? AccountId);

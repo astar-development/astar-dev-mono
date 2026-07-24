@@ -1,6 +1,7 @@
-using AStar.Dev.OneDrive.Sync.Client.LogViewer;
+using AStarDev.LoggingSerilog.LogViewer;
+using Serilog.Events;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.LogViewer;
+namespace AStarDev.LoggingSerilog.Tests.Unit.LogViewer;
 
 public sealed class GivenAnInMemoryLogSink
 {
@@ -13,7 +14,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_then_entry_appears_in_snapshot()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
 
         sut.Emit(MakeEvent());
 
@@ -23,7 +24,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_multiple_times_then_snapshot_count_matches()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
 
         sut.Emit(MakeEvent());
         sut.Emit(MakeEvent());
@@ -35,7 +36,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_then_entry_level_matches_event_level()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
 
         sut.Emit(MakeEvent(LogEventLevel.Warning));
 
@@ -45,7 +46,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_with_account_id_property_then_entry_account_id_is_extracted()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
 
         sut.Emit(MakeEvent(properties: AccountIdProperty("acc-test")));
 
@@ -55,7 +56,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_without_account_id_property_then_entry_account_id_is_null()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
 
         sut.Emit(MakeEvent());
 
@@ -65,7 +66,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_then_entry_added_observable_fires()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
         LogEntry? received = null;
         sut.EntryAdded.Subscribe(e => received = e);
 
@@ -77,7 +78,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_emit_called_then_entry_added_observable_fires_correct_level()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
         LogEntry? received = null;
         sut.EntryAdded.Subscribe(e => received = e);
 
@@ -101,7 +102,7 @@ public sealed class GivenAnInMemoryLogSink
     [Fact]
     public void when_get_snapshot_called_then_returns_immutable_copy()
     {
-        var sut = new InMemoryLogSink();
+        using var sut = new InMemoryLogSink();
         sut.Emit(MakeEvent());
         var snapshot = sut.GetSnapshot();
 

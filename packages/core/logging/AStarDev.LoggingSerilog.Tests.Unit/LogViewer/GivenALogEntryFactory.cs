@@ -1,6 +1,7 @@
-using AStar.Dev.OneDrive.Sync.Client.LogViewer;
+using AStarDev.LoggingSerilog.LogViewer;
+using Serilog.Events;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.LogViewer;
+namespace AStarDev.LoggingSerilog.Tests.Unit.LogViewer;
 
 public sealed class GivenALogEntryFactory
 {

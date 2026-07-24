@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace AStar.Dev.OneDrive.Sync.Client.LogViewer;
+namespace AStarDev.LoggingSerilog.LogViewer;
 
 internal static partial class PiiScrubber
 {
