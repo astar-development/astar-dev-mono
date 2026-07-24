@@ -9,14 +9,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Onboarding;
 public sealed class GivenAnAccountOnboardingService
 {
     private const string AccountIdStr = "account-1";
-    private const string DisplayName  = "Test User";
-    private const string Email        = "test@outlook.com";
-    private const string FolderId1    = "f1";
-    private const string FolderName1  = "Documents";
-    private const string FolderId2    = "f2";
-    private const string FolderName2  = "Desktop";
+    private const string DisplayName = "Test User";
+    private const string Email = "test@outlook.com";
+    private const string FolderId1 = "f1";
+    private const string FolderName1 = "Documents";
+    private const string FolderId2 = "f2";
+    private const string FolderName2 = "Desktop";
 
-    private readonly IAccountRepository  _accountRepository  = Substitute.For<IAccountRepository>();
+    private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
     private readonly ISyncRuleRepository _syncRuleRepository = Substitute.For<ISyncRuleRepository>();
 
     private AccountOnboardingService BuildSut() => new(_accountRepository, _syncRuleRepository);
@@ -24,9 +24,9 @@ public sealed class GivenAnAccountOnboardingService
     private static OneDriveAccount BuildAccountWithFolders()
         => new()
         {
-            Id        = new AccountId(AccountIdStr),
-            Profile   = AccountProfileFactory.Create(DisplayName, Email),
-            IsActive  = true,
+            Id = new AccountId(AccountIdStr),
+            Profile = AccountProfileFactory.Create(DisplayName, Email),
+            IsActive = true,
             FolderNames = new Dictionary<OneDriveFolderId, string>
             {
                 { new OneDriveFolderId(FolderId1), FolderName1 },
@@ -37,9 +37,9 @@ public sealed class GivenAnAccountOnboardingService
     private static OneDriveAccount BuildAccountWithNoFolders()
         => new()
         {
-            Id        = new AccountId(AccountIdStr),
-            Profile   = AccountProfileFactory.Create(DisplayName, Email),
-            IsActive  = false,
+            Id = new AccountId(AccountIdStr),
+            Profile = AccountProfileFactory.Create(DisplayName, Email),
+            IsActive = false,
             FolderNames = []
         };
 
@@ -128,7 +128,7 @@ public sealed class GivenAnAccountOnboardingService
     [Fact]
     public async Task when_account_has_existing_sync_config_then_sync_config_is_not_overwritten()
     {
-        var account      = BuildAccountWithFolders();
+        var account = BuildAccountWithFolders();
         var existingPath = LocalSyncPathFactory.Create("/custom/path").Match(p => p, _ => throw new InvalidOperationException());
         var existingConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, existingPath);
         account.SyncConfig = existingConfig;

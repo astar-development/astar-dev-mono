@@ -1,13 +1,14 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.Utilities;
 using Avalonia.Media;
@@ -15,7 +16,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using FolderTreeNodeViewModel = AStar.Dev.OneDrive.Sync.Client.Home.FolderTreeNodeViewModel;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 

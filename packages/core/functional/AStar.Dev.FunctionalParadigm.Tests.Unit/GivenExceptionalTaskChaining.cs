@@ -2,7 +2,7 @@ using System.Globalization;
 
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenExceptionalTaskChaining
+internal class GivenExceptionalTaskChaining
 {
     [Fact]
     public async Task when_run_async_succeeds_then_tap_chained_directly_executes_success_handler()

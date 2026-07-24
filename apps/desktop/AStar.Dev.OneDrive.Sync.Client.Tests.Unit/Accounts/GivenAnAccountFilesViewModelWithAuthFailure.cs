@@ -1,14 +1,14 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
@@ -18,7 +18,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
 
     private static OneDriveAccount BuildAccount() => new()
     {
-        Id      = new AccountId(AccountIdString),
+        Id = new AccountId(AccountIdString),
         Profile = AccountProfileFactory.Create("Test User", "test@test.com")
     };
 
@@ -110,7 +110,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_succeeds_then_has_load_error_is_false()
     {
-        var authService  = Substitute.For<IAuthService>();
+        var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));

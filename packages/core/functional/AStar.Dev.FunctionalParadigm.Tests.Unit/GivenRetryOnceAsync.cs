@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public sealed class GivenRetryOnceAsync
+internal sealed class GivenRetryOnceAsync
 {
     [Fact]
     public async Task when_operation_is_null_then_throws_argument_null_exception()

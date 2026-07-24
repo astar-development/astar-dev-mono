@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public class TryShouldOld
+internal class TryShouldOld
 {
     [Fact]
     public void Try_Run_CapturesSuccess()
@@ -35,7 +35,7 @@ public class TryShouldOld
         string a = success.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
         string b = failure.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
 
-        Assert.Equal("OK: done",  a);
+        Assert.Equal("OK: done", a);
         Assert.Equal("ERR: fail", b);
     }
 }

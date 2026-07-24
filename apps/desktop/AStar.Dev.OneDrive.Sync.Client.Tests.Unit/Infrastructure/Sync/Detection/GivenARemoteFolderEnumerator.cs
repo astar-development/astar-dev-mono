@@ -1,18 +1,18 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using AStar.Dev.Functional.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Detection;
 
 public sealed class GivenARemoteFolderEnumerator
 {
-    private readonly IGraphService         _graphService         = Substitute.For<IGraphService>();
-    private readonly ISyncRuleRepository   _syncRuleRepository   = Substitute.For<ISyncRuleRepository>();
+    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
+    private readonly ISyncRuleRepository _syncRuleRepository = Substitute.For<ISyncRuleRepository>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
 
     public GivenARemoteFolderEnumerator()
@@ -27,9 +27,9 @@ public sealed class GivenARemoteFolderEnumerator
 
     private static OneDriveAccount CreateAccount() => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/sync-root")),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/sync-root")),
         SelectedFolderIds = []
     };
 

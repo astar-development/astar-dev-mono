@@ -4,7 +4,7 @@ using Console = AStar.Dev.Logging.Extensions.Models.Console;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Extensions.Models.Logging))]
-public class GivenLogging
+internal class GivenLogging
 {
     [Fact]
     public void Logging_DefaultValues_ShouldInitializeCorrectly()
@@ -62,10 +62,10 @@ public class GivenLogging
         logging.Console.FormatterOptions.TimestampFormat.ShouldBe("HH:mm:ss ");
         logging.Console.FormatterOptions.JsonWriterOptions.ShouldNotBeNull();
 
-        logging.Console.FormatterOptions.SingleLine                 = true;
-        logging.Console.FormatterOptions.IncludeScopes              = true;
-        logging.Console.FormatterOptions.TimestampFormat            = "yyyy-MM-dd";
-        logging.Console.FormatterOptions.UseUtcTimestamp            = false;
+        logging.Console.FormatterOptions.SingleLine = true;
+        logging.Console.FormatterOptions.IncludeScopes = true;
+        logging.Console.FormatterOptions.TimestampFormat = "yyyy-MM-dd";
+        logging.Console.FormatterOptions.UseUtcTimestamp = false;
         logging.Console.FormatterOptions.JsonWriterOptions.Indented = true;
 
         logging.Console.FormatterOptions.SingleLine.ShouldBeTrue();
@@ -80,9 +80,9 @@ public class GivenLogging
     {
         var logging = new Extensions.Models.Logging();
 
-        logging.ApplicationInsights.LogLevel.Default             = "Debug";
+        logging.ApplicationInsights.LogLevel.Default = "Debug";
         logging.ApplicationInsights.LogLevel.MicrosoftAspNetCore = "Fatal";
-        logging.ApplicationInsights.LogLevel.AStar               = "Trace";
+        logging.ApplicationInsights.LogLevel.AStar = "Trace";
 
         logging.ApplicationInsights.LogLevel.Default.ShouldBe("Debug");
         logging.ApplicationInsights.LogLevel.MicrosoftAspNetCore.ShouldBe("Fatal");

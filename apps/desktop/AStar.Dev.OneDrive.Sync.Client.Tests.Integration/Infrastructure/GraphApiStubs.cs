@@ -18,7 +18,7 @@ internal static class GraphApiStubs
     public static void StubDriveItemsPage(WireMockServer server, IEnumerable<DriveItemStub> items)
     {
         var valueArray = new JsonArray();
-        foreach(var stub in items)
+        foreach (var stub in items)
             valueArray.Add(BuildDriveItemNode(stub));
 
         string body = new JsonObject
@@ -74,7 +74,7 @@ internal static class GraphApiStubs
             }
         };
 
-        if(stub.IsFolder)
+        if (stub.IsFolder)
             node["folder"] = new JsonObject();
         else
         {

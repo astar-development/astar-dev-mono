@@ -1,12 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
@@ -79,7 +79,7 @@ public sealed partial class ConflictItemViewModel : ObservableObject
     [RelayCommand]
     private async Task ResolveAsync()
     {
-        if(IsResolving)
+        if (IsResolving)
             return;
 
         IsResolving = true;

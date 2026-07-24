@@ -1,5 +1,5 @@
-using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;

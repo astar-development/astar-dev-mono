@@ -33,9 +33,9 @@ public sealed class GivenAnActivityItemViewModel
         SyncJob baseJob = direction switch
         {
             SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
-            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
-            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
-            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
+            SyncDirection.Upload => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _ => SyncJobFactory.CreateDownload(remote, target, metadata)
         };
 
         var status = baseJob.Status with { CompletedAt = completedAt.ToOption(), ErrorMessage = errorMessage is null ? Option.None<string>() : Option.Some(errorMessage) };

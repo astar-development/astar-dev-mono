@@ -6,7 +6,7 @@ using LogLevel = AStar.Dev.Logging.Extensions.Models.LogLevel;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(ApplicationInsights))]
-public class GivenApplicationInsights
+internal class GivenApplicationInsights
 {
     [Fact]
     public void ApplicationInsights_DefaultConstructor_ShouldInitializeLogLevel()

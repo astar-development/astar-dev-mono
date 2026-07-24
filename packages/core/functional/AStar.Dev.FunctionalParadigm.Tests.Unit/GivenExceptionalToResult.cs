@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenExceptionalToResult
+internal class GivenExceptionalToResult
 {
     [Fact]
     public void when_exceptional_is_success_then_maps_to_ok_result()

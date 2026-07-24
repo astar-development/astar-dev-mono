@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Infrastructure.FilesDb.Models;
+namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
 ///     The <see href="FileSizeEqualityComparer"></see> class that defines how the file sizes are deemed to be equal
@@ -36,9 +36,9 @@ public sealed class FileSizeEqualityComparer : IEqualityComparer<FileSize>
         => HashCode.Combine(fileSize.Height, fileSize.Width, fileSize.FileLength);
 
     private static bool CompareFileSizes(FileSize? leftFileSize, FileSize? rightFileSize)
-        => leftFileSize               != null
-           && rightFileSize           != null
-           && leftFileSize.Height     == rightFileSize.Height
+        => leftFileSize != null
+           && rightFileSize != null
+           && leftFileSize.Height == rightFileSize.Height
            && leftFileSize.FileLength == rightFileSize.FileLength
-           && leftFileSize.Width      == rightFileSize.Width;
+           && leftFileSize.Width == rightFileSize.Width;
 }

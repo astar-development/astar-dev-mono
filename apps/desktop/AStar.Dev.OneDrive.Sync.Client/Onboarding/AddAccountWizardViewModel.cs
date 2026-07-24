@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
@@ -125,16 +125,16 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     [RelayCommand]
     private void Back()
     {
-        if(CurrentStep == WizardStep.SelectFolders)
+        if (CurrentStep == WizardStep.SelectFolders)
             CurrentStep = WizardStep.SignIn;
-        else if(CurrentStep == WizardStep.Confirm)
+        else if (CurrentStep == WizardStep.Confirm)
             CurrentStep = WizardStep.SelectFolders;
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     private async Task NextAsync()
     {
-        switch(CurrentStep)
+        switch (CurrentStep)
         {
             case WizardStep.SignIn:
                 CurrentStep = WizardStep.SelectFolders;
@@ -155,7 +155,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     [RelayCommand]
     private void SkipFolders()
     {
-        foreach(var f in Folders)
+        foreach (var f in Folders)
             f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
@@ -164,23 +164,23 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
-        if(IsWaitingForAuth)
+        if (IsWaitingForAuth)
             return;
 
         SetInitialSignInState();
 
-        lock(authCtsLock)
+        lock (authCtsLock)
             authCts = new CancellationTokenSource();
 
         try
         {
             CancellationToken token;
-            lock(authCtsLock)
+            lock (authCtsLock)
                 token = authCts!.Token;
 
             var result = await authService.SignInInteractiveAsync(token);
             _ = result.Match(
-                ok    => { UpdateSuccessfulLoginState(ok); return true; },
+                ok => { UpdateSuccessfulLoginState(ok); return true; },
                 error => { DispatchAuthError(error); return false; });
         }
         finally
@@ -191,7 +191,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
     private void DispatchAuthError(AuthError error)
     {
-        switch(error)
+        switch (error)
         {
             case AuthCancelledError: SetCancelledLoginState(); break;
             case AuthFailedError failed: SetFailedLoginState(failed); break;
@@ -227,7 +227,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     {
         IsWaitingForAuth = false;
         CancellationTokenSource? toDispose;
-        lock(authCtsLock)
+        lock (authCtsLock)
         {
             toDispose = authCts;
             authCts = null;
@@ -249,10 +249,10 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private async Task CancelAsync()
     {
         CancellationTokenSource? toCancel;
-        lock(authCtsLock)
+        lock (authCtsLock)
             toCancel = authCts;
 
-        if(toCancel is not null)
+        if (toCancel is not null)
             await toCancel.CancelAsync();
 
         Cancelled?.Invoke(this, EventArgs.Empty);
@@ -260,7 +260,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
     private async Task LoadFoldersAsync()
     {
-        if(accessToken is null)
+        if (accessToken is null)
             return;
 
         IsLoadingFolders = true;
@@ -278,10 +278,10 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
                         return null;
                     });
 
-            if(folders is null)
+            if (folders is null)
                 return;
 
-            foreach(var f in folders)
+            foreach (var f in folders)
             {
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {
@@ -289,7 +289,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
                 });
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             FolderLoadError = $"Could not load folders: {ex.Message}";
         }
@@ -332,7 +332,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     {
         loc.CultureChanged -= OnCultureChanged;
         CancellationTokenSource? toDispose;
-        lock(authCtsLock)
+        lock (authCtsLock)
         {
             toDispose = authCts;
             authCts = null;

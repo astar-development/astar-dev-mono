@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-public class GivenEncryptionExtensions
+internal class GivenEncryptionExtensions
 {
     [Fact]
     public void when_a_value_is_encrypted_then_the_result_is_as_expected()
@@ -16,7 +16,7 @@ public class GivenEncryptionExtensions
     public void when_a_value_is_encrypted_and_decrypted_with_a_custom_key_and_iv_then_the_round_trip_returns_the_original_value()
     {
         const string key = "0123456789abcdef0123456789abcdef";
-        const string iv  = "0123456789abcdef";
+        const string iv = "0123456789abcdef";
 
         string encrypted = "irrelevant-string".Encrypt(key, iv);
 

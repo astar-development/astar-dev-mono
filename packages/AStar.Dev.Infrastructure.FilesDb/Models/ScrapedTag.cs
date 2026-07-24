@@ -20,7 +20,7 @@ public sealed class ScrapedTag : AuditableEntity
     /// <summary>
     ///     Gets or sets the category for the tag.
     /// </summary>
-    public string Category {get;set;} = string.Empty;
+    public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// 

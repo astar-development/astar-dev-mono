@@ -13,7 +13,7 @@ public sealed class GivenADriveId
     [Fact]
     public void when_two_instances_have_same_value_then_they_are_equal()
     {
-        var first  = new DriveId("drive-abc");
+        var first = new DriveId("drive-abc");
         var second = new DriveId("drive-abc");
 
         first.ShouldBe(second);
@@ -22,7 +22,7 @@ public sealed class GivenADriveId
     [Fact]
     public void when_two_instances_have_different_values_then_they_are_not_equal()
     {
-        var first  = new DriveId("drive-abc");
+        var first = new DriveId("drive-abc");
         var second = new DriveId("drive-xyz");
 
         first.ShouldNotBe(second);

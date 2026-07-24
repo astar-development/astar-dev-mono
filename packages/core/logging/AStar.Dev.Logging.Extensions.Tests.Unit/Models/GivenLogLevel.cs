@@ -4,7 +4,7 @@ using LogLevel = AStar.Dev.Logging.Extensions.Models.LogLevel;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(LogLevel))]
-public class GivenLogLevel
+internal class GivenLogLevel
 {
     [Fact]
     public void Default_ShouldHaveInitialValue_EmptyString()
@@ -18,7 +18,7 @@ public class GivenLogLevel
     [Fact]
     public void Default_ShouldAllowSettingValue()
     {
-        var logLevel      = new LogLevel();
+        var logLevel = new LogLevel();
         string expectedValue = "Info";
 
         logLevel.Default = expectedValue;
@@ -38,7 +38,7 @@ public class GivenLogLevel
     [Fact]
     public void MicrosoftAspNetCore_ShouldAllowSettingValue()
     {
-        var logLevel      = new LogLevel();
+        var logLevel = new LogLevel();
         string expectedValue = "Warning";
 
         logLevel.MicrosoftAspNetCore = expectedValue;
@@ -58,7 +58,7 @@ public class GivenLogLevel
     [Fact]
     public void AStar_ShouldAllowSettingValue()
     {
-        var logLevel      = new LogLevel();
+        var logLevel = new LogLevel();
         string expectedValue = "Error";
 
         logLevel.AStar = expectedValue;

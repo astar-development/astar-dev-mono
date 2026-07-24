@@ -11,16 +11,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 
 public sealed class GivenAConflictApplier
 {
-    private readonly IGraphService   graphService   = Substitute.For<IGraphService>();
+    private readonly IGraphService graphService = Substitute.For<IGraphService>();
     private readonly IHttpDownloader httpDownloader = Substitute.For<IHttpDownloader>();
-    private readonly IFileSystem     fileSystem     = Substitute.For<IFileSystem>();
+    private readonly IFileSystem fileSystem = Substitute.For<IFileSystem>();
 
     private ConflictApplier CreateSut() => new(httpDownloader, graphService, fileSystem, Substitute.For<ILogger<ConflictApplier>>());
 
     private static SyncConflict CreateUseRemoteConflict() => new()
     {
-        Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1")),
-        Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+        Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1")),
+        Target = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow.AddMinutes(-5), 0L, DateTimeOffset.UtcNow, 0L)
     };
 
@@ -100,8 +100,8 @@ public sealed class GivenAConflictApplier
 
         var conflict = new SyncConflict
         {
-            Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
-            Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+            Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+            Target = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
         };
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -128,8 +128,8 @@ public sealed class GivenAConflictApplier
 
         var conflict = new SyncConflict
         {
-            Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
-            Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+            Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+            Target = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
         };
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -157,8 +157,8 @@ public sealed class GivenAConflictApplier
 
         var conflict = new SyncConflict
         {
-            Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
-            Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+            Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+            Target = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow, 0L)
         };
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");

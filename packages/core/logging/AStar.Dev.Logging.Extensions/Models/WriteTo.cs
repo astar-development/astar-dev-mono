@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Logging.Extensions.Models;
+namespace AStar.Dev.Logging.Extensions.Models;
 
 /// <summary>
 ///     Represents the configuration target for writing logs in a Serilog configuration.

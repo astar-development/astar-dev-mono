@@ -1,6 +1,6 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
@@ -9,7 +9,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline
 public sealed class GivenASyncProgressTracker
 {
     private const string AccountIdValue = "account-1";
-    private const string FolderIdValue  = "folder-1";
+    private const string FolderIdValue = "folder-1";
     private const int TestProgressInterval = 100;
 
     private static DownloadSyncJob MakeDownloadJob(string relativePath = "folder/file.txt")

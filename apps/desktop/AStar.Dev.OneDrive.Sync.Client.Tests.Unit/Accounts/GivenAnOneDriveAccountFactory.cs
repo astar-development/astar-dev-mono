@@ -5,12 +5,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnOneDriveAccountFactory
 {
-    private const string AccountId   = "account-abc";
+    private const string AccountId = "account-abc";
     private const string DisplayName = "Test User";
-    private const string Email       = "test@example.com";
-    private const string FolderId1   = "folder-1";
+    private const string Email = "test@example.com";
+    private const string FolderId1 = "folder-1";
     private const string FolderName1 = "Documents";
-    private const string FolderId2   = "folder-2";
+    private const string FolderId2 = "folder-2";
     private const string FolderName2 = "Desktop";
 
     private static AccountProfile Profile => AccountProfileFactory.Create(DisplayName, Email);

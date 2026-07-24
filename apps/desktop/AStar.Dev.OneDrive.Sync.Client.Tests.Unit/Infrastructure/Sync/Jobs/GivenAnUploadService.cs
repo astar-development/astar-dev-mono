@@ -1,10 +1,10 @@
-using WireMockBodyType = WireMock.Types.BodyType;
-using WireMockRequest = WireMock.RequestBuilders.Request;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using WireMock.Util;
+using WireMockBodyType = WireMock.Types.BodyType;
+using WireMockRequest = WireMock.RequestBuilders.Request;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Jobs;
 

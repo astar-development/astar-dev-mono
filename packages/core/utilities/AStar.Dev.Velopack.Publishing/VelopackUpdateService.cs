@@ -1,9 +1,9 @@
 using AStar.Dev.Logging.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using global::Velopack;
 using global::Velopack.Locators;
 using global::Velopack.Sources;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.Velopack.Publishing;
 

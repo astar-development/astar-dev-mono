@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AStar.Dev.Source.Generators.OptionsBindingGeneration;
@@ -12,10 +12,10 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 {
     private const string AttrFqn = "AStar.Dev.Source.Generators.Attributes.AutoRegisterOptionsAttribute";
 
-/// <summary>
-///  The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes or structs annotated with the <see cref="Attributes.AutoRegisterOptionsAttribute" /> and generates source code for them.
-/// </summary>
-/// <param name="context"></param>
+    /// <summary>
+    ///  The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes or structs annotated with the <see cref="Attributes.AutoRegisterOptionsAttribute" /> and generates source code for them.
+    /// </summary>
+    /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var optionsTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -27,12 +27,12 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(optionsTypes, static (spc, types) =>
         {
             var validTypes = new List<OptionsTypeInfo>();
-            foreach(var info in types)
+            foreach (var info in types)
             {
-                if(info == null)
+                if (info == null)
                     continue;
 
-                if(string.IsNullOrWhiteSpace(info.SectionName))
+                if (string.IsNullOrWhiteSpace(info.SectionName))
                 {
                     var diag = Diagnostic.Create(
                         new DiagnosticDescriptor(
@@ -50,7 +50,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
                 validTypes.Add(info);
             }
 
-            if(validTypes.Count == 0)
+            if (validTypes.Count == 0)
                 return;
             string code = OptionsBindingCodeGenerator.Generate(validTypes);
             spc.AddSource("AutoOptionsRegistrationExtensions.g.cs", code);
@@ -59,23 +59,23 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 
     private static OptionsTypeInfo? GetOptionsTypeInfo(GeneratorAttributeSyntaxContext ctx)
     {
-        if(ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
+        if (ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
             return null;
         string typeName = typeSymbol.Name;
         string? ns = typeSymbol.ContainingNamespace?.ToDisplayString();
         string fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
         string? sectionName = null;
         var attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
-        if(attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
+        if (attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
             sectionName = s;
-        else if(ctx.Attributes.Length > 0)
+        else if (ctx.Attributes.Length > 0)
         {
             // Fallback: parse from syntax
             var attrSyntax = ctx.Attributes[0].ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
-            if(attrSyntax?.ArgumentList?.Arguments.Count > 0)
+            if (attrSyntax?.ArgumentList?.Arguments.Count > 0)
             {
                 var expr = attrSyntax.ArgumentList.Arguments[0].Expression;
-                if(expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
+                if (expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
             }
         }
 
@@ -86,9 +86,9 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 
     private static OptionsTypeInfo? ExtractSectionNameFromMembers(GeneratorAttributeSyntaxContext ctx, INamedTypeSymbol typeSymbol, string? sectionName, string typeName, string fullTypeName)
     {
-        foreach(var member in typeSymbol.GetMembers())
+        foreach (var member in typeSymbol.GetMembers())
         {
-            if(member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
+            if (member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
                field.ConstantValue is not string val || string.IsNullOrWhiteSpace(val))
                 continue;
 

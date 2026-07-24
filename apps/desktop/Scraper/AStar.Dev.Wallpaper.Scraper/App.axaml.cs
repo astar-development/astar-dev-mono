@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Startup;
@@ -9,9 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using System.IO.Abstractions;
 using Testably.Abstractions;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.Wallpaper.Scraper;
 

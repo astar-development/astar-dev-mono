@@ -1,13 +1,13 @@
 using System.Collections.Concurrent;
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 
@@ -52,9 +52,9 @@ public sealed class GivenASyncJobExecutor
         return direction switch
         {
             SyncDirection.Download => SyncJobFactory.CreateDownload(remote, target, metadata),
-            SyncDirection.Upload   => SyncJobFactory.CreateUpload(remote, target, metadata),
-            SyncDirection.Delete   => SyncJobFactory.CreateDelete(remote, target, metadata),
-            _                      => SyncJobFactory.CreateDownload(remote, target, metadata)
+            SyncDirection.Upload => SyncJobFactory.CreateUpload(remote, target, metadata),
+            SyncDirection.Delete => SyncJobFactory.CreateDelete(remote, target, metadata),
+            _ => SyncJobFactory.CreateDownload(remote, target, metadata)
         };
     }
 

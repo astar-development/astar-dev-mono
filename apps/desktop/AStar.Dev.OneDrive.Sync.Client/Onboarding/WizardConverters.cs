@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Onboarding;
 public sealed class BoolToAccentConverter : IValueConverter
 {
     public static readonly BoolToAccentConverter Instance = new();
-    private static readonly Color Active   = Color.Parse("#185FA5");
+    private static readonly Color Active = Color.Parse("#185FA5");
     private static readonly Color Inactive = Color.Parse("#D3D1C7");
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)

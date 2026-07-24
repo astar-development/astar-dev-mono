@@ -1,10 +1,10 @@
+using System.Collections.ObjectModel;
+using System.Reactive;
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Services;
 using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using System.Collections.ObjectModel;
-using System.Reactive;
 
 namespace AStar.Dev.File.App.ViewModels;
 
@@ -27,7 +27,7 @@ public class DeletePendingViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ClearMarkingsCommand { get; }
     public ReactiveCommand<ScannedFileDisplayItem?, Unit> ViewFileCommand { get; }
 
-    public DeletePendingViewModel(IDbContextFactory<FileAppDbContext> dbContextFactory,IFileDeleteService fileDeleteService, IFileViewerService fileViewerService)
+    public DeletePendingViewModel(IDbContextFactory<FileAppDbContext> dbContextFactory, IFileDeleteService fileDeleteService, IFileViewerService fileViewerService)
     {
         _dbContextFactory = dbContextFactory;
         _fileDeleteService = fileDeleteService;

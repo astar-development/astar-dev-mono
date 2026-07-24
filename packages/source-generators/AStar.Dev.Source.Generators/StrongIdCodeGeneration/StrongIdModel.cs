@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace AStar.Dev.Source.Generators.StrongIdCodeGeneration;
 

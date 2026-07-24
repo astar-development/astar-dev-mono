@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.StrongIdCodeGeneration;
 
-public class StrongIdGeneratorShould
+internal class StrongIdGeneratorShould
 {
     [Fact]
     public void GeneratePartialStructWithIdPropertyWithTypeOfIntWhenSpecifiedForValidReadonlyRecordStruct()

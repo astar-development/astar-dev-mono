@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Controls;
-using System.Diagnostics.CodeAnalysis;
 namespace AStar.Dev.Wallpaper.Scraper.Home;
 
 /// <summary>

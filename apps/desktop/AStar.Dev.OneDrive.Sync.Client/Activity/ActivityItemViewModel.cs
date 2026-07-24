@@ -28,21 +28,21 @@ public sealed partial class ActivityItemViewModel : ObservableObject
     public string TypeLabel => Type switch
     {
         ActivityItemType.Downloaded => loc.GetLocal("Activity.Downloaded"),
-        ActivityItemType.Uploaded   => loc.GetLocal("Activity.Uploaded"),
-        ActivityItemType.Deleted    => loc.GetLocal("Activity.Deleted"),
-        ActivityItemType.Conflict   => loc.GetLocal("Activity.Conflict"),
-        ActivityItemType.Error      => loc.GetLocal("Activity.Error"),
-        _                           => loc.GetLocal("Activity.Info")
+        ActivityItemType.Uploaded => loc.GetLocal("Activity.Uploaded"),
+        ActivityItemType.Deleted => loc.GetLocal("Activity.Deleted"),
+        ActivityItemType.Conflict => loc.GetLocal("Activity.Conflict"),
+        ActivityItemType.Error => loc.GetLocal("Activity.Error"),
+        _ => loc.GetLocal("Activity.Info")
     };
 
     public string TypeIcon => Type switch
     {
         ActivityItemType.Downloaded => "↓",
-        ActivityItemType.Uploaded   => "↑",
-        ActivityItemType.Deleted    => "×",
-        ActivityItemType.Conflict   => "⚠",
-        ActivityItemType.Error      => "⚠",
-        _                           => "•"
+        ActivityItemType.Uploaded => "↑",
+        ActivityItemType.Deleted => "×",
+        ActivityItemType.Conflict => "⚠",
+        ActivityItemType.Error => "⚠",
+        _ => "•"
     };
 
     public string TimeAgoText
@@ -53,11 +53,11 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
             return elapsed switch
             {
-                { TotalSeconds: < 60 }  => loc.GetLocal("Common.JustNow"),
+                { TotalSeconds: < 60 } => loc.GetLocal("Common.JustNow"),
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
-                { TotalHours: < 24 } td  => $"{(int)td.TotalHours}h ago",
-                { TotalDays: < 2 }       => loc.GetLocal("Common.Yesterday"),
-                var td                   => $"{(int)td.TotalDays}d ago"
+                { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
+                { TotalDays: < 2 } => loc.GetLocal("Common.Yesterday"),
+                var td => $"{(int)td.TotalDays}d ago"
             };
         }
     }
@@ -77,9 +77,9 @@ public sealed partial class ActivityItemViewModel : ObservableObject
         Type = job switch
         {
             DownloadSyncJob => ActivityItemType.Downloaded,
-            UploadSyncJob   => ActivityItemType.Uploaded,
-            DeleteSyncJob   => ActivityItemType.Deleted,
-            _               => ActivityItemType.Info
+            UploadSyncJob => ActivityItemType.Uploaded,
+            DeleteSyncJob => ActivityItemType.Deleted,
+            _ => ActivityItemType.Info
         },
         FileSize = job.Metadata.FileSize,
         OccurredAt = job.Status.CompletedAt.MapOrDefault(v => v, DateTimeOffset.UtcNow),

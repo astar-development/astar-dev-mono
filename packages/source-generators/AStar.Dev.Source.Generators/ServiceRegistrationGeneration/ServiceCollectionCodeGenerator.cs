@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using AStar.Dev.Source.Generators.Attributes;
 
 namespace AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
@@ -20,19 +20,19 @@ internal static class ServiceCollectionCodeGenerator
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach(var model in items)
-        foreach(string? registration in CreateRegistrationsForModel(model).Where(seen.Add)) yield return registration;
+        foreach (var model in items)
+            foreach (string? registration in CreateRegistrationsForModel(model).Where(seen.Add)) yield return registration;
     }
 
     private static IEnumerable<string> CreateRegistrationsForModel(ServiceModel model)
     {
         string method = GetRegistrationMethod(model.Lifetime);
 
-        if(!string.IsNullOrEmpty(model.ServiceFqn))
+        if (!string.IsNullOrEmpty(model.ServiceFqn))
         {
             yield return $"        services.{method}<{model.ServiceFqn}, {model.ImplFqn}>();";
 
-            if(model.AlsoAsSelf)
+            if (model.AlsoAsSelf)
                 yield return $"        services.{method}<{model.ImplFqn}>();";
         }
         else
@@ -61,7 +61,7 @@ internal static class ServiceCollectionCodeGenerator
         _ = sb.AppendLine("    public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)");
         _ = sb.AppendLine("    {");
 
-        foreach(string? registration in registrations)
+        foreach (string? registration in registrations)
             _ = sb.AppendLine(registration);
 
         _ = sb.AppendLine("        return services;");

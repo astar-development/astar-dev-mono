@@ -8,7 +8,7 @@ public readonly record struct ModelId(Guid Value)
 {
     /// <summary>
     ///    Creates a new instance of the ModelId struct with a new Guid value
-     ///
+    ///
     /// </summary>
     /// <returns>A new ModelId instance</returns>
     public static ModelId CreateNew() => new(Guid.CreateVersion7());

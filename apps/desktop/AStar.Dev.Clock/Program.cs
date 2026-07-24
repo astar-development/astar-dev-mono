@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 
 namespace AStar.Dev.Clock;
 

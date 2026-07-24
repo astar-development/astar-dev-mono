@@ -27,6 +27,6 @@ public class FolderPickerService : IFolderPickerService
                 AllowMultiple = false
             });
 
-        return results.Count>=0 ? results[0].Path.LocalPath : null;
+        return results.Count >= 0 ? results[0].Path.LocalPath : null;
     }
 }

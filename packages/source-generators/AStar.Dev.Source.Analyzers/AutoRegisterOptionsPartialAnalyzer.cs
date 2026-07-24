@@ -31,7 +31,7 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
     {
-        if(context == null) throw new ArgumentNullException(nameof(context));
+        if (context == null) throw new ArgumentNullException(nameof(context));
 
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
@@ -44,10 +44,10 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     /// <param name="context">The syntax node analysis context.</param>
     private static void AnalyzeType(SyntaxNodeAnalysisContext context)
     {
-        if(context.Node is not TypeDeclarationSyntax typeDecl) return;
+        if (context.Node is not TypeDeclarationSyntax typeDecl) return;
 
         var symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl, context.CancellationToken);
-        if(symbol == null) return;
+        if (symbol == null) return;
 
         if (!Enumerable.Any(symbol.GetAttributes(),
                 attr => attr.AttributeClass?.ToDisplayString() ==

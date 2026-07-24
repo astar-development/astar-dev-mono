@@ -4,7 +4,7 @@ using Velopack;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Updates;
 
-public sealed class GivenAnUpdateNotificationService
+internal sealed class GivenAnUpdateNotificationService
 {
     private static UpdateInfo CreateUpdateInfo(string version = "1.2.3")
     {

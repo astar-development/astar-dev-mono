@@ -1,6 +1,6 @@
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-public sealed class GivenPathOperationExtensions
+internal sealed class GivenPathOperationExtensions
 {
     [Fact]
     public void when_combine_path_is_called_with_relative_segments_then_returns_the_combined_path()
@@ -70,7 +70,7 @@ public sealed class GivenPathOperationExtensions
     public void when_clean_path_is_called_with_an_invalid_path_character_then_replaces_it_with_a_space()
     {
         char invalidChar = Path.GetInvalidPathChars().First();
-        string path         = $"path{invalidChar}file.txt";
+        string path = $"path{invalidChar}file.txt";
 
         path.CleanPath().ShouldBe("path file.txt");
     }

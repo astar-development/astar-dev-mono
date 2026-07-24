@@ -1,12 +1,9 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
-
-
-using AStar.Dev.Infrastructure.AppDb;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -23,24 +20,24 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
 
         var entities = jobs.Select(j => new SyncJobEntity
         {
-            Id             = j.Status.Id,
-            AccountId      = j.Remote.AccountId,
-            FolderId       = j.Remote.FolderId,
-            RemoteItemId   = j.Remote.RemoteItemId,
-            RelativePath   = j.Target.RelativePath,
-            LocalPath      = j.Target.LocalPath,
-            Direction      = j switch
+            Id = j.Status.Id,
+            AccountId = j.Remote.AccountId,
+            FolderId = j.Remote.FolderId,
+            RemoteItemId = j.Remote.RemoteItemId,
+            RelativePath = j.Target.RelativePath,
+            LocalPath = j.Target.LocalPath,
+            Direction = j switch
             {
                 DownloadSyncJob => SyncDirection.Download,
-                UploadSyncJob   => SyncDirection.Upload,
-                DeleteSyncJob   => SyncDirection.Delete,
-                _               => throw new System.Diagnostics.UnreachableException()
+                UploadSyncJob => SyncDirection.Upload,
+                DeleteSyncJob => SyncDirection.Delete,
+                _ => throw new System.Diagnostics.UnreachableException()
             },
-            State          = j.Status.State,
-            DownloadUrl    = (j as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
-            FileSize       = j.Metadata.FileSize,
+            State = j.Status.State,
+            DownloadUrl = (j as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
+            FileSize = j.Metadata.FileSize,
             RemoteModified = j.Metadata.RemoteModified,
-            QueuedAt       = j.Status.QueuedAt
+            QueuedAt = j.Status.QueuedAt
         });
 
         db.SyncJobs.AddRange(entities);
@@ -54,24 +51,24 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
 
         var entity = new SyncJobEntity
         {
-            Id             = job.Status.Id,
-            AccountId      = job.Remote.AccountId,
-            FolderId       = job.Remote.FolderId,
-            RemoteItemId   = job.Remote.RemoteItemId,
-            RelativePath   = job.Target.RelativePath,
-            LocalPath      = job.Target.LocalPath,
-            Direction      = job switch
+            Id = job.Status.Id,
+            AccountId = job.Remote.AccountId,
+            FolderId = job.Remote.FolderId,
+            RemoteItemId = job.Remote.RemoteItemId,
+            RelativePath = job.Target.RelativePath,
+            LocalPath = job.Target.LocalPath,
+            Direction = job switch
             {
                 DownloadSyncJob => SyncDirection.Download,
-                UploadSyncJob   => SyncDirection.Upload,
-                DeleteSyncJob   => SyncDirection.Delete,
-                _               => throw new System.Diagnostics.UnreachableException()
+                UploadSyncJob => SyncDirection.Upload,
+                DeleteSyncJob => SyncDirection.Delete,
+                _ => throw new System.Diagnostics.UnreachableException()
             },
-            State          = job.Status.State,
-            DownloadUrl    = (job as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
-            FileSize       = job.Metadata.FileSize,
+            State = job.Status.State,
+            DownloadUrl = (job as DownloadSyncJob)?.DownloadUrl ?? Option.None<string>(),
+            FileSize = job.Metadata.FileSize,
             RemoteModified = job.Metadata.RemoteModified,
-            QueuedAt       = job.Status.QueuedAt
+            QueuedAt = job.Status.QueuedAt
         };
 
         db.SyncJobs.Add(entity);
@@ -126,18 +123,18 @@ public sealed class SyncRepository(IDbContextFactory<AppDbContext> dbFactory) : 
 
         _ = db.SyncConflicts.Add(new SyncConflictEntity
         {
-            Id             = conflict.Id,
-            AccountId      = conflict.Remote.AccountId,
-            FolderId       = conflict.Remote.FolderId,
-            RemoteItemId   = conflict.Remote.RemoteItemId,
-            RelativePath   = conflict.Target.RelativePath,
-            LocalPath      = conflict.Target.LocalPath,
-            LocalModified  = conflict.Snapshot.LocalModified,
+            Id = conflict.Id,
+            AccountId = conflict.Remote.AccountId,
+            FolderId = conflict.Remote.FolderId,
+            RemoteItemId = conflict.Remote.RemoteItemId,
+            RelativePath = conflict.Target.RelativePath,
+            LocalPath = conflict.Target.LocalPath,
+            LocalModified = conflict.Snapshot.LocalModified,
             RemoteModified = conflict.Snapshot.RemoteModified,
-            LocalSize      = conflict.Snapshot.LocalSize,
-            RemoteSize     = conflict.Snapshot.RemoteSize,
-            State          = conflict.State,
-            DetectedAt     = conflict.DetectedAt
+            LocalSize = conflict.Snapshot.LocalSize,
+            RemoteSize = conflict.Snapshot.RemoteSize,
+            State = conflict.State,
+            DetectedAt = conflict.DetectedAt
         });
 
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

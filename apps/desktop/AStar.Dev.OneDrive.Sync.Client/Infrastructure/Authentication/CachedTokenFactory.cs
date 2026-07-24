@@ -39,9 +39,9 @@ internal sealed class CachedTokenFactory : IDisposable
                 return cachedToken;
 
             var refreshResult = await authService.AcquireTokenSilentAsync(accountId, cancellationToken).ConfigureAwait(false);
-                (cachedToken, tokenExpiresOn) = refreshResult.Match(
-                    ok => (ok.AccessToken, ok.ExpiresOn),
-                    _ => (cachedToken, tokenExpiresOn));
+            (cachedToken, tokenExpiresOn) = refreshResult.Match(
+                ok => (ok.AccessToken, ok.ExpiresOn),
+                _ => (cachedToken, tokenExpiresOn));
 
             return cachedToken;
         }

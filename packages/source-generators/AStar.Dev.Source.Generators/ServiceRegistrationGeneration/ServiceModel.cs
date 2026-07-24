@@ -1,4 +1,4 @@
-﻿using AStar.Dev.Source.Generators.Attributes;
+using AStar.Dev.Source.Generators.Attributes;
 using Microsoft.CodeAnalysis;
 
 namespace AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
@@ -13,7 +13,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     public static ServiceModel? TryCreate(INamedTypeSymbol impl, AttributeData attr)
     {
-        if(!IsValidImplementationType(impl))
+        if (!IsValidImplementationType(impl))
             return null;
 
         var lifetime = ExtractLifetime(attr);
@@ -43,9 +43,9 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     private static INamedTypeSymbol? ExtractAsType(AttributeData attr)
     {
-        foreach(var na in attr.NamedArguments)
+        foreach (var na in attr.NamedArguments)
         {
-            if(na is { Key: "As", Value.Value: INamedTypeSymbol ts })
+            if (na is { Key: "As", Value.Value: INamedTypeSymbol ts })
                 return ts;
         }
 
@@ -54,9 +54,9 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     private static bool ExtractAsSelf(AttributeData attr)
     {
-        foreach(var na in attr.NamedArguments)
+        foreach (var na in attr.NamedArguments)
         {
-            if(na is { Key: "AsSelf", Value.Value: bool b })
+            if (na is { Key: "AsSelf", Value.Value: bool b })
                 return b;
         }
 

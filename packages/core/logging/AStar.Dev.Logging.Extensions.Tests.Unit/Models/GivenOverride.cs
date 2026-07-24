@@ -5,7 +5,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Override))]
-public class GivenOverride
+internal class GivenOverride
 {
     [Fact]
     public void MicrosoftAspNetCore_DefaultValue_ShouldBeEmptyString()

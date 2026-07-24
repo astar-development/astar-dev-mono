@@ -9,7 +9,7 @@ public class ScrapeConfigurationEntity : AuditableEntity
     /// The unique identifier for the scrape configuration entity. This property serves as the primary key for the entity in the database, allowing for efficient retrieval and management of different scrape configurations. The Id is typically an auto-incrementing integer that uniquely distinguishes each configuration entry, enabling users to store and manage multiple configurations for different scraping scenarios or target websites. Proper management of the Id property is essential for maintaining the integrity of the database and ensuring that each configuration can be accessed and modified as needed without conflicts or ambiguity.
     /// </summary>
     public int Id { get; set; }
-    
+
     /// <summary>
     /// The connection strings required for the scraper to connect to various databases or services. This property is essential for configuring the scraper's access to necessary resources, such as a SQLite database for storing scraped data or a logging service for recording the scraping process. The ConnectionStrings property allows for flexible configuration of different connection strings, enabling the scraper to adapt to various environments and requirements without hardcoding sensitive information directly into the codebase. Proper management of connection strings is crucial for ensuring secure and efficient operation of the scraper, as it may need to connect to multiple services or databases during its execution.
     /// </summary>

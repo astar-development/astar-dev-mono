@@ -1,8 +1,8 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public class OptionShould
+internal class OptionShould
 {
-    private static readonly int[] ExpectedArrayOfInts  = [1, 2, 3];
+    private static readonly int[] ExpectedArrayOfInts = [1, 2, 3];
     private static readonly int[] ExpectedArrayOfInts2 = [20, 40];
 
     [Fact]
@@ -452,14 +452,14 @@ public class OptionShould
     [Fact]
     public void ExecuteSideEffectWithTapWhenOptionIsSome()
     {
-        var option             = Option.Some(42);
+        var option = Option.Some(42);
         bool sideEffectExecuted = false;
-        int capturedValue      = 0;
+        int capturedValue = 0;
 
         var result = option.Tap(x =>
                                 {
                                     sideEffectExecuted = true;
-                                    capturedValue      = x;
+                                    capturedValue = x;
                                 });
 
         sideEffectExecuted.ShouldBeTrue();
@@ -470,7 +470,7 @@ public class OptionShould
     [Fact]
     public void NotExecuteSideEffectWithTapWhenOptionIsNone()
     {
-        var option             = Option.None<int>();
+        var option = Option.None<int>();
         bool sideEffectExecuted = false;
 
         var result = option.Tap(_ => sideEffectExecuted = true);
@@ -523,7 +523,7 @@ public class OptionShould
     [Fact]
     public void MapToTransformedValueWithMapOrElseWhenOptionIsSome()
     {
-        var option        = Option.Some(42);
+        var option = Option.Some(42);
         bool factoryCalled = false;
 
         int result = option.MapOrElse(
@@ -543,7 +543,7 @@ public class OptionShould
     [Fact]
     public void UseFactoryWithMapOrElseWhenOptionIsNone()
     {
-        var option        = Option.None<int>();
+        var option = Option.None<int>();
         bool factoryCalled = false;
 
         int result = option.MapOrElse(
@@ -686,14 +686,14 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithSomeOption()
     {
-        var option             = Option.Some(42);
+        var option = Option.Some(42);
         bool sideEffectExecuted = false;
-        int capturedValue      = 0;
+        int capturedValue = 0;
 
         var result = await option.TapAsync(x =>
                                            {
                                                sideEffectExecuted = true;
-                                               capturedValue      = x;
+                                               capturedValue = x;
 
                                                return Task.CompletedTask;
                                            });
@@ -706,7 +706,7 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithNoneOption()
     {
-        var option             = Option.None<int>();
+        var option = Option.None<int>();
         bool sideEffectExecuted = false;
 
         var result = await option.TapAsync(_ =>
@@ -756,14 +756,14 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithTaskOptionAndSyncAction()
     {
-        var optionTask         = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
-        int capturedValue      = 0;
+        int capturedValue = 0;
 
         var result = await optionTask.TapAsync(x =>
                                                {
                                                    sideEffectExecuted = true;
-                                                   capturedValue      = x;
+                                                   capturedValue = x;
                                                });
 
         sideEffectExecuted.ShouldBeTrue();
@@ -775,14 +775,14 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithTaskOptionAndAsyncAction()
     {
-        var optionTask         = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
-        int capturedValue      = 0;
+        int capturedValue = 0;
 
         var result = await optionTask.TapAsync(x =>
                                                {
                                                    sideEffectExecuted = true;
-                                                   capturedValue      = x;
+                                                   capturedValue = x;
 
                                                    return Task.CompletedTask;
                                                });
@@ -837,7 +837,7 @@ public class OptionShould
     [Fact]
     public void CheckEqualityWithDifferentTypes()
     {
-        var option    = Option.Some(42);
+        var option = Option.Some(42);
         string notOption = "not an option";
 
         bool result = option.Equals(notOption);

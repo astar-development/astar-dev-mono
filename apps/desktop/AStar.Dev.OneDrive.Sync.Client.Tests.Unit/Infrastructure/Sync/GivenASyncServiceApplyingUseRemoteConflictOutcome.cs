@@ -13,8 +13,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
 {
-    private readonly IAuthService     _authService     = Substitute.For<IAuthService>();
-    private readonly ISyncRepository  _syncRepository  = Substitute.For<ISyncRepository>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
 
     public GivenASyncServiceApplyingUseRemoteConflictOutcome()
@@ -26,8 +26,8 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
 
     private static SyncConflict CreateConflict() => new()
     {
-        Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1")),
-        Target   = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
+        Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId("item-1")),
+        Target = SyncFileTargetFactory.Create("/local/path/file.txt", "file.txt"),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow.AddMinutes(-5), 0L, DateTimeOffset.UtcNow, 0L)
     };
 
@@ -41,7 +41,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
                 captured = args;
         };
 

@@ -1,6 +1,6 @@
-﻿namespace AStar.Dev.Utilities.Tests.Unit;
+namespace AStar.Dev.Utilities.Tests.Unit;
 
-public sealed class GivenEnumExtensions
+internal sealed class GivenEnumExtensions
 {
     [Fact]
     public void when_parse_is_called_with_a_valid_value_then_returns_the_expected_value() =>

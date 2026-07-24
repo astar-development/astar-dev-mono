@@ -1,6 +1,6 @@
-﻿namespace AStar.Dev.Source.Generators.Attributes.Tests.Unit;
+namespace AStar.Dev.Source.Generators.Attributes.Tests.Unit;
 
-public class AutoRegisterOptionsAttributeShould
+internal class AutoRegisterOptionsAttributeShould
 {
     [Fact]
     public void SetSectionNameViaConstructor()

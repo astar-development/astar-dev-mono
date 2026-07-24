@@ -1,13 +1,13 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
-using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Avalonia.Platform.Storage;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Settings;
 

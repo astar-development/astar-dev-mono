@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Logging.Extensions;
+namespace AStar.Dev.Logging.Extensions;
 
 /// <summary>
 ///     Provides configuration settings for the logging extensions.

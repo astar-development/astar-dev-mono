@@ -1,7 +1,6 @@
 using AStar.Dev.Functional.Extensions;
-using Microsoft.Graph;
-
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using Microsoft.Graph;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 

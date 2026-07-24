@@ -10,12 +10,12 @@ public sealed class GivenASyncStateToForegroundConverter
     private static readonly SyncStateToForegroundConverter Sut = SyncStateToForegroundConverter.Instance;
 
     [Theory]
-    [InlineData(SyncState.Syncing,  "#185FA5")]
-    [InlineData(SyncState.Pending,  "#BA7517")]
+    [InlineData(SyncState.Syncing, "#185FA5")]
+    [InlineData(SyncState.Pending, "#BA7517")]
     [InlineData(SyncState.Conflict, "#E24B4A")]
-    [InlineData(SyncState.Error,    "#E24B4A")]
-    [InlineData(SyncState.Idle,     "#1D9E75")]
-    [InlineData(SyncState.Completed,"#1D9E75")]
+    [InlineData(SyncState.Error, "#E24B4A")]
+    [InlineData(SyncState.Idle, "#1D9E75")]
+    [InlineData(SyncState.Completed, "#1D9E75")]
     public void when_sync_state_is_provided_then_correct_brush_color_is_returned(SyncState state, string expectedHex)
     {
         var result = (SolidColorBrush)Sut.Convert(state, typeof(IBrush), null, CultureInfo.InvariantCulture)!;

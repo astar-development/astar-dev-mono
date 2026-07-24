@@ -1,11 +1,11 @@
-﻿using AStar.Dev.Source.Generators.OptionsBindingGeneration;
+using AStar.Dev.Source.Generators.OptionsBindingGeneration;
 using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.OptionsBindingGeneration;
 
-public class OptionsBindingGeneratorShould
+internal class OptionsBindingGeneratorShould
 {
     [Fact]
     public void GenerateRegistrationForClassWithAttributeSectionName()
@@ -170,7 +170,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         var result = driver.GetRunResult();
         var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
-        if(allGenerated.Count > 0)
+        if (allGenerated.Count > 0)
         {
             string generatedText = allGenerated[0].SourceText.ToString();
             generatedText.ShouldNotContain("NotRegistered");

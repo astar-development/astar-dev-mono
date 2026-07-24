@@ -1,12 +1,11 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-
-using AStar.Dev.Infrastructure.AppDb;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -18,7 +17,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = await db.FileClassificationCategories.Where(c=>c.IncludeInSearch).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var entities = await db.FileClassificationCategories.Where(c => c.IncludeInSearch).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var categories = new List<FileClassificationCategory>(entities.Count);
         foreach (var e in entities)

@@ -39,7 +39,7 @@ public sealed class GivenASyncPassResult
     [Fact]
     public void when_two_instances_have_same_values_then_they_are_equal()
     {
-        var first  = SyncPassResultFactory.Create(didRun: true, failedJobCount: 2);
+        var first = SyncPassResultFactory.Create(didRun: true, failedJobCount: 2);
         var second = SyncPassResultFactory.Create(didRun: true, failedJobCount: 2);
 
         first.ShouldBe(second);
@@ -48,7 +48,7 @@ public sealed class GivenASyncPassResult
     [Fact]
     public void when_two_instances_differ_in_did_run_then_they_are_not_equal()
     {
-        var first  = SyncPassResultFactory.Create(didRun: true,  failedJobCount: 0);
+        var first = SyncPassResultFactory.Create(didRun: true, failedJobCount: 0);
         var second = SyncPassResultFactory.Create(didRun: false, failedJobCount: 0);
 
         first.ShouldNotBe(second);
@@ -57,7 +57,7 @@ public sealed class GivenASyncPassResult
     [Fact]
     public void when_two_instances_differ_in_failed_job_count_then_they_are_not_equal()
     {
-        var first  = SyncPassResultFactory.Create(didRun: true, failedJobCount: 1);
+        var first = SyncPassResultFactory.Create(didRun: true, failedJobCount: 1);
         var second = SyncPassResultFactory.Create(didRun: true, failedJobCount: 2);
 
         first.ShouldNotBe(second);

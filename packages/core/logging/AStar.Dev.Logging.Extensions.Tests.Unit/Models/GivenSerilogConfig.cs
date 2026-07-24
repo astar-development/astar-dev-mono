@@ -5,7 +5,7 @@ using Console = AStar.Dev.Logging.Extensions.Models.Console;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(SerilogConfig))]
-public class GivenSerilogConfig
+internal class GivenSerilogConfig
 {
     [Fact]
     public void SerilogConfig_ShouldInitializeWithDefaultValues()
@@ -22,28 +22,28 @@ public class GivenSerilogConfig
         var serilogConfig = new SerilogConfig();
 
         var serilog = new Extensions.Models.Serilog
-                      {
-                          Enrich       = ["ThreadId", "MachineName"],
-                          WriteTo      = [new WriteTo { Name                                              = "File", Args             = new() { ServerUrl = "http://localhost" } }],
-                          MinimumLevel = new() { Default = "Information", Override = new() { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Error", AStar = "Debug" } }
-                      };
+        {
+            Enrich = ["ThreadId", "MachineName"],
+            WriteTo = [new WriteTo { Name = "File", Args = new() { ServerUrl = "http://localhost" } }],
+            MinimumLevel = new() { Default = "Information", Override = new() { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Error", AStar = "Debug" } }
+        };
 
         var logging = new Extensions.Models.Logging
-                      {
-                          Console = new()
-                                    {
-                                        FormatterName = "default",
-                                        FormatterOptions = new()
-                                                           {
-                                                               SingleLine        = true,
-                                                               IncludeScopes     = false,
-                                                               TimestampFormat   = "yyyy-MM-dd",
-                                                               UseUtcTimestamp   = false,
-                                                               JsonWriterOptions = new()
-                                                           }
-                                    },
-                          ApplicationInsights = new() { LogLevel = new() { Default = "Debug", MicrosoftAspNetCore = "Trace", AStar = "Error" } }
-                      };
+        {
+            Console = new()
+            {
+                FormatterName = "default",
+                FormatterOptions = new()
+                {
+                    SingleLine = true,
+                    IncludeScopes = false,
+                    TimestampFormat = "yyyy-MM-dd",
+                    UseUtcTimestamp = false,
+                    JsonWriterOptions = new()
+                }
+            },
+            ApplicationInsights = new() { LogLevel = new() { Default = "Debug", MicrosoftAspNetCore = "Trace", AStar = "Error" } }
+        };
 
         serilogConfig.Serilog = serilog;
         serilogConfig.Logging = logging;

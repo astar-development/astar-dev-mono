@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
-using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Dashboard;
@@ -81,7 +81,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     public void AddAccount(OneDriveAccount account)
     {
-        if(AccountSections.Any(s => s.AccountId == account.Id.Id))
+        if (AccountSections.Any(s => s.AccountId == account.Id.Id))
             return;
 
         var section = dashboardAccountViewModelFactory.Create(account);
@@ -94,7 +94,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     public void RemoveAccount(string accountId)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
-        if(section is null)
+        if (section is null)
             return;
 
         _ = AccountSections.Remove(section);
@@ -105,7 +105,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     public void UpdateAccountSyncState(string accountId, AccountCardViewModel card)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
-        if(section is null)
+        if (section is null)
             return;
 
         section.UpdateSyncState(card.SyncState, card.ConflictCount);
@@ -116,7 +116,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     public void UpdateFolderCount(string accountId, int folderCount)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
-        if(section is null)
+        if (section is null)
             return;
 
         section.FolderCount = folderCount;
@@ -134,7 +134,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     public void MarkSyncCompleted(string accountId)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
-        if(section is null)
+        if (section is null)
             return;
 
         section.UpdateSyncState(SyncState.Completed, section.ConflictCount);
@@ -159,12 +159,12 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs args)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == args.AccountId);
-        if(section is null)
+        if (section is null)
             return;
 
         section.UpdateSyncState(args.SyncState, section.ConflictCount);
 
-        if(args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
+        if (args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
             AddActivityItem(activityItemViewModelFactory.CreateInfo(args.AccountId, args.CurrentFile));
 
         RecalculateGlobals();
@@ -183,7 +183,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
-        if(section is null)
+        if (section is null)
             return;
 
         section.UpdateSyncState(section.SyncState, section.ConflictCount + 1);
@@ -194,7 +194,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
     private void OnConflictResolved(object? sender, SyncConflict conflict)
     {
         var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
-        if(section is null)
+        if (section is null)
             return;
 
         section.UpdateSyncState(section.SyncState, Math.Max(0, section.ConflictCount - 1));

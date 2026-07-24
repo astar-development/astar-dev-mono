@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Logging.Extensions.Models;
+namespace AStar.Dev.Logging.Extensions.Models;
 
 /// <summary>
 ///     The <see cref="ApplicationInsights" /> class which is used to configure the logging.

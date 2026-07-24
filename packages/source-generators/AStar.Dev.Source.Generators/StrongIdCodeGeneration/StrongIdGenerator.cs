@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -34,21 +34,21 @@ public class StrongIdGenerator : IIncrementalGenerator
             (var compilation, var structs) = source;
             // Cache attribute symbol lookup
             var strongIdAttrSymbol = compilation.GetTypeByMetadataName("AStar.Dev.Source.Generators.Attributes.StrongIdAttribute");
-            if(strongIdAttrSymbol == null)
+            if (strongIdAttrSymbol == null)
                 return;
 
-            foreach(var recordStruct in structs)
+            foreach (var recordStruct in structs)
             {
                 var model = compilation.GetSemanticModel(recordStruct.SyntaxTree);
-                if(model.GetDeclaredSymbol(recordStruct) is not { } symbol)
+                if (model.GetDeclaredSymbol(recordStruct) is not { } symbol)
                     continue;
 
                 var attr = symbol.GetAttributes().FirstOrDefault(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, strongIdAttrSymbol));
-                if(attr == null)
+                if (attr == null)
                     continue;
 
                 // Only allow 0 or 1 constructor argument
-                if(attr.ConstructorArguments.Length > 1)
+                if (attr.ConstructorArguments.Length > 1)
                     continue;
 
                 // Use StrongIdModel logic for underlying type

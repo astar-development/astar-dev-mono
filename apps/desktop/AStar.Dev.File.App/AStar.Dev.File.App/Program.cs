@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.ReactiveUI;
 
 namespace AStar.Dev.File.App;

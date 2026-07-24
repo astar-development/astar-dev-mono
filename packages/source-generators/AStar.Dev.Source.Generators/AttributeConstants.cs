@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Source.Generators;
+namespace AStar.Dev.Source.Generators;
 
 /// <summary>
 ///    The <see cref="AttributeConstants" /> class contains constant values related to the attributes used by the source generators.

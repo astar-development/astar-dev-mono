@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using AStar.Dev.File.App.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using AStar.Dev.File.App.ViewModels;
 
 namespace AStar.Dev.File.App;
 

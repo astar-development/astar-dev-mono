@@ -8,11 +8,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public sealed class GivenAFolderTreeNodeViewModelWithARuleStateResolver
 {
-    private const string DriveIdString   = "drive-1";
-    private const string RootFolderId   = "folder-root";
+    private const string DriveIdString = "drive-1";
+    private const string RootFolderId = "folder-root";
     private const string RootFolderName = "Documents";
-    private const string ChildFolderId  = "folder-child";
-    private const string ChildName      = "Work";
+    private const string ChildFolderId = "folder-child";
+    private const string ChildName = "Work";
 
     private static Func<CancellationToken, Task<string>> TokenFactory => _ => Task.FromResult("token-abc");
 
@@ -88,12 +88,12 @@ public sealed class GivenAFolderTreeNodeViewModelWithARuleStateResolver
     private static FolderTreeNodeViewModel BuildRootVm(IGraphService graphService, FolderSyncState syncState, Func<string, FolderSyncState?> ruleStateResolver)
     {
         var node = new FolderTreeNode(
-            Id:          RootFolderId,
-            Name:        RootFolderName,
+            Id: RootFolderId,
+            Name: RootFolderName,
             ParentId: Option.None<string>(),
-            AccountId:   "account-1",
-            RemotePath:  $"/{RootFolderName}",
-            SyncState:   syncState,
+            AccountId: "account-1",
+            RemotePath: $"/{RootFolderName}",
+            SyncState: syncState,
             HasChildren: true);
 
         return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), ruleStateResolver, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), BuildLocalizationService());

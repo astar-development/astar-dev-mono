@@ -3,7 +3,7 @@ using Xunit;
 
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenOrElseAsync
+internal class GivenOrElseAsync
 {
     [Fact]
     public async Task when_result_is_success_then_returns_original_without_invoking_fallback()

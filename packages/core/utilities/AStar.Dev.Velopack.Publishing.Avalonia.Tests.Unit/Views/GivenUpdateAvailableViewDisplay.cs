@@ -7,7 +7,7 @@ using Velopack;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Views;
 
-public sealed class GivenUpdateAvailableViewDisplay
+internal sealed class GivenUpdateAvailableViewDisplay
 {
     private static UpdateInfo CreateUpdateInfo(string version = "1.2.3")
     {
@@ -128,7 +128,7 @@ public sealed class GivenUpdateAvailableViewDisplay
             "TextAccentBrush", "BorderSubtleBrush", "BorderDefaultBrush", "StatusErrorBrush"
         ];
 
-        foreach (var key in hostThemeBrushKeys)
+        foreach (string key in hostThemeBrushKeys)
         {
             sut.Resources.ContainsKey(key).ShouldBeFalse($"'{key}' must resolve from the host app's Application-scope theme resources, not a local override on the dialog window");
         }

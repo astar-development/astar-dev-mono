@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Logging.Extensions.Models;
+namespace AStar.Dev.Logging.Extensions.Models;
 
 /// <summary>
 ///     Represents the minimum logging levels configuration, providing a mechanism

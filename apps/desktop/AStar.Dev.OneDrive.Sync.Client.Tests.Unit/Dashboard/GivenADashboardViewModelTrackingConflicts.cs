@@ -1,13 +1,13 @@
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Dashboard;
 
@@ -24,10 +24,10 @@ public sealed class GivenADashboardViewModelTrackingConflicts
 
     private static SyncConflict CreateConflict(string accountId) => new()
     {
-        Id       = Guid.NewGuid(),
-        Remote   = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+        Id = Guid.NewGuid(),
+        Remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow.AddMinutes(-5), 0L),
-        State    = ConflictState.Pending
+        State = ConflictState.Pending
     };
 
     [Fact]

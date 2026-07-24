@@ -1,14 +1,14 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Models;
 using AStar.Dev.File.App.Services;
 using Microsoft.EntityFrameworkCore;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 
 namespace AStar.Dev.File.App.ViewModels;
 

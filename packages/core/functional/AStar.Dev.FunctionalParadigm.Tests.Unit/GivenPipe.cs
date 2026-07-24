@@ -2,7 +2,7 @@ using AStar.Dev.FunctionalParadigm.Composition;
 
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenPipe
+internal class GivenPipe
 {
     [Fact]
     public void when_value_is_piped_then_function_result_is_returned() =>

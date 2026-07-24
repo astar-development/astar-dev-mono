@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using AStar.Dev.OneDrive.Sync.Client.Conflicts;
-using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;

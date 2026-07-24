@@ -33,7 +33,7 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     public IObservable<LogEntry> EntryAdded => subject;
 
     /// <inheritdoc />
-    public IReadOnlyList<LogEntry> GetSnapshot() => [..entries];
+    public IReadOnlyList<LogEntry> GetSnapshot() => [.. entries];
 
     /// <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
     public void Emit(LogEvent logEvent)
@@ -56,7 +56,7 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
 
     private static LogEntry ToLogEntry(LogEvent logEvent)
     {
-        string rendered  = PiiScrubber.Scrub(logEvent.RenderMessage(CultureInfo.InvariantCulture));
+        string rendered = PiiScrubber.Scrub(logEvent.RenderMessage(CultureInfo.InvariantCulture));
         string? accountId = ExtractAccountId(logEvent);
 
         return LogEntryFactory.Create(logEvent.Timestamp, logEvent.Level, rendered, accountId);

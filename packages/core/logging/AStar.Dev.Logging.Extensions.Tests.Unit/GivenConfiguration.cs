@@ -1,7 +1,7 @@
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(Configuration))]
-public class GivenConfiguration
+internal class GivenConfiguration
 {
     [Fact]
     public void ReturnDefaultFilename_ForExternalSettingsFile()

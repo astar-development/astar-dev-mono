@@ -5,28 +5,28 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceResolvingConflicts
 {
-    private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
-    private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
+    private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
 
     private SyncService CreateSut()
         => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
 
     private static SyncConflict CreateConflict() => new()
     {
-        Id       = Guid.NewGuid(),
-        Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+        Id = Guid.NewGuid(),
+        Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow.AddMinutes(-5), 0L),
-        State    = ConflictState.Pending
+        State = ConflictState.Pending
     };
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class GivenASyncServiceResolvingConflicts
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
                 captured = args;
         };
 

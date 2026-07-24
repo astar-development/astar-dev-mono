@@ -1,9 +1,8 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
-
-using AStar.Dev.Infrastructure.AppDb;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -24,13 +23,13 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
         var existing = await db.DriveStates
             .FirstOrDefaultAsync(d => d.AccountId == driveState.AccountId, cancellationToken).ConfigureAwait(false);
 
-        if(existing is null)
+        if (existing is null)
         {
             _ = db.DriveStates.Add(driveState);
         }
         else
         {
-            existing.DeltaLink         = driveState.DeltaLink;
+            existing.DeltaLink = driveState.DeltaLink;
             existing.LastSyncStartedAt = driveState.LastSyncStartedAt;
         }
 

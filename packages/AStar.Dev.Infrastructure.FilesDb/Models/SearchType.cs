@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Infrastructure.FilesDb.Models;
+namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
 ///     The <see href="SearchType"></see> enumeration defining the available search types

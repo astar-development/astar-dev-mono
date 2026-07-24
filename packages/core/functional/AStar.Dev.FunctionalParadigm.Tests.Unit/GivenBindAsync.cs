@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenBindAsync
+internal class GivenBindAsync
 {
     [Fact]
     public async Task when_binder_returns_success_task_then_returns_bound_success()

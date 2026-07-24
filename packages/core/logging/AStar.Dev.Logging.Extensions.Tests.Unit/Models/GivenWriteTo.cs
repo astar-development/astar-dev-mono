@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(WriteTo))]
-public class GivenWriteTo
+internal class GivenWriteTo
 {
     [Fact]
     public void InitializeName_AsEmptyStringByDefault()

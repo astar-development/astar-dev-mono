@@ -1,32 +1,32 @@
 using System.Collections.Concurrent;
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline;
 
 public sealed class GivenASyncPassOrchestrator
 {
-    private readonly IAccountRepository           _accountRepository           = Substitute.For<IAccountRepository>();
-    private readonly IDriveStateRepository        _driveStateRepository        = Substitute.For<IDriveStateRepository>();
-    private readonly IRemoteFolderEnumerator      _remoteFolderEnumerator      = Substitute.For<IRemoteFolderEnumerator>();
-    private readonly IRemoteDeletionDetector      _remoteDeletionDetector      = Substitute.For<IRemoteDeletionDetector>();
-    private readonly ILocalDeletionDetector       _localDeletionDetector       = Substitute.For<ILocalDeletionDetector>();
-    private readonly ILocalChangeDetector         _localChangeDetector         = Substitute.For<ILocalChangeDetector>();
-    private readonly ISyncJobExecutor             _syncJobExecutor             = Substitute.For<ISyncJobExecutor>();
-    private readonly IDownloadJobBuilder          _downloadJobBuilder          = Substitute.For<IDownloadJobBuilder>();
-    private readonly ILocalizationService         _localizationService         = Substitute.For<ILocalizationService>();
-    private readonly ISettingsService             _settingsService             = Substitute.For<ISettingsService>();
-    private readonly IFileClassificationRepository _classificationRepository  = Substitute.For<IFileClassificationRepository>();
+    private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
+    private readonly IDriveStateRepository _driveStateRepository = Substitute.For<IDriveStateRepository>();
+    private readonly IRemoteFolderEnumerator _remoteFolderEnumerator = Substitute.For<IRemoteFolderEnumerator>();
+    private readonly IRemoteDeletionDetector _remoteDeletionDetector = Substitute.For<IRemoteDeletionDetector>();
+    private readonly ILocalDeletionDetector _localDeletionDetector = Substitute.For<ILocalDeletionDetector>();
+    private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
+    private readonly ISyncJobExecutor _syncJobExecutor = Substitute.For<ISyncJobExecutor>();
+    private readonly IDownloadJobBuilder _downloadJobBuilder = Substitute.For<IDownloadJobBuilder>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
+    private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
+    private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
 
     public GivenASyncPassOrchestrator()
     {
@@ -54,9 +54,9 @@ public sealed class GivenASyncPassOrchestrator
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
         SelectedFolderIds = []
     };
 
@@ -108,7 +108,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
@@ -127,7 +127,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -143,7 +143,7 @@ public sealed class GivenASyncPassOrchestrator
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => { callInfo.ArgAt<RemoteEnumerationContext>(2).HadNoRules = true; return EmptyStream(); });
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -159,7 +159,7 @@ public sealed class GivenASyncPassOrchestrator
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => { callInfo.ArgAt<RemoteEnumerationContext>(2).HadNoRules = true; return EmptyStream(); });
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -177,7 +177,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         var result = await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -190,7 +190,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -208,7 +208,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -225,7 +225,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -247,8 +247,8 @@ public sealed class GivenASyncPassOrchestrator
         SetupDeepSyncPrerequisites();
 
         var progressMessages = new List<string>();
-        var sut              = CreateSut();
-        var account          = CreateAccount();
+        var sut = CreateSut();
+        var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
@@ -261,8 +261,8 @@ public sealed class GivenASyncPassOrchestrator
         SetupDeepSyncPrerequisites();
 
         var progressMessages = new List<string>();
-        var sut              = CreateSut();
-        var account          = CreateAccount();
+        var sut = CreateSut();
+        var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
@@ -278,7 +278,7 @@ public sealed class GivenASyncPassOrchestrator
         _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.Some(new AccountEntity { Id = new AccountId("user-1") }));
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -291,7 +291,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         SetupDeepSyncPrerequisites();
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -313,7 +313,7 @@ public sealed class GivenASyncPassOrchestrator
 
         var conflict = new SyncConflict
         {
-            Id     = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty))
         };
         bool callbackInvoked = false;
@@ -327,12 +327,12 @@ public sealed class GivenASyncPassOrchestrator
                 return (SyncJob?)null;
             });
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), async detectedConflict =>
         {
-            if(detectedConflict.Id == conflict.Id)
+            if (detectedConflict.Id == conflict.Id)
                 callbackInvoked = true;
             await Task.CompletedTask;
         }, cancellationToken: TestContext.Current.CancellationToken);
@@ -349,8 +349,8 @@ public sealed class GivenASyncPassOrchestrator
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Do<string>(p => capturedPath = p), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
 
-        var sut        = CreateSut();
-        var account    = CreateAccount("/my/local/path");
+        var sut = CreateSut();
+        var account = CreateAccount("/my/local/path");
         var syncConfig = CreateSyncConfig("/my/local/path");
 
         await sut.OrchestrateAsync(account, syncConfig, _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
@@ -364,7 +364,7 @@ public sealed class GivenASyncPassOrchestrator
         SetupEnumeratorWithCallbacks(99);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
@@ -384,7 +384,7 @@ public sealed class GivenASyncPassOrchestrator
         SetupEnumeratorWithCallbacks(100);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
@@ -404,7 +404,7 @@ public sealed class GivenASyncPassOrchestrator
         SetupEnumeratorWithCallbacks(200);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
@@ -429,7 +429,7 @@ public sealed class GivenASyncPassOrchestrator
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new ThrowingStream());
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await Should.ThrowAsync<OperationCanceledException>(
@@ -446,7 +446,7 @@ public sealed class GivenASyncPassOrchestrator
         _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(new CancelOnIterateStream(cts));
 
-        var sut     = CreateSut();
+        var sut = CreateSut();
         var account = CreateAccount();
 
         await Should.ThrowAsync<OperationCanceledException>(

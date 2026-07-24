@@ -115,7 +115,7 @@ public sealed class GivenALocalDeletionDetector
         var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
             ["item-fail"] = new() { RemoteItemId = new OneDriveItemId("item-fail"), RemotePath = "/fail.txt", LocalPath = $"{BaseDir}/fail.txt", IsFolder = false },
-            ["item-ok"]   = new() { RemoteItemId = new OneDriveItemId("item-ok"),   RemotePath = "/ok.txt",   LocalPath = $"{BaseDir}/ok.txt",   IsFolder = false }
+            ["item-ok"] = new() { RemoteItemId = new OneDriveItemId("item-ok"), RemotePath = "/ok.txt", LocalPath = $"{BaseDir}/ok.txt", IsFolder = false }
         };
         var sut = CreateSut(mockFileSystem);
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -144,9 +144,9 @@ public sealed class GivenALocalDeletionDetector
 
         var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
         {
-            ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/first.txt",  LocalPath = $"{BaseDir}/first.txt",  IsFolder = false },
+            ["item-1"] = new() { RemoteItemId = new OneDriveItemId("item-1"), RemotePath = "/first.txt", LocalPath = $"{BaseDir}/first.txt", IsFolder = false },
             ["item-2"] = new() { RemoteItemId = new OneDriveItemId("item-2"), RemotePath = "/second.txt", LocalPath = $"{BaseDir}/second.txt", IsFolder = false },
-            ["item-3"] = new() { RemoteItemId = new OneDriveItemId("item-3"), RemotePath = "/third.txt",  LocalPath = $"{BaseDir}/third.txt",  IsFolder = false }
+            ["item-3"] = new() { RemoteItemId = new OneDriveItemId("item-3"), RemotePath = "/third.txt", LocalPath = $"{BaseDir}/third.txt", IsFolder = false }
         };
         var sut = CreateSut(mockFileSystem);
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");

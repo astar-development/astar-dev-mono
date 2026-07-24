@@ -9,9 +9,9 @@ public sealed class GivenASyncRuleEvaluator
 
     private static SyncRuleEntity Rule(string path, RuleType type) => new()
     {
-        AccountId  = AnyAccount,
+        AccountId = AnyAccount,
         RemotePath = path,
-        RuleType   = type
+        RuleType = type
     };
 
     [Fact]

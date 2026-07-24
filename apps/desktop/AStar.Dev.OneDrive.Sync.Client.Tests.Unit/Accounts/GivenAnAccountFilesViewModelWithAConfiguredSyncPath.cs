@@ -1,27 +1,27 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 {
-    private const string AccountIdString  = "account-1";
+    private const string AccountIdString = "account-1";
     private const string LocalSyncPathString = "/configured/sync/path";
-    private const string AccessToken      = "token-abc";
-    private const string DriveIdValue      = "drive-1";
-    private const string FolderId         = "folder-1";
-    private const string FolderName       = "Photos";
-    private const string ChildFolderId    = "folder-1-child";
-    private const string ChildFolderName  = "Holidays";
+    private const string AccessToken = "token-abc";
+    private const string DriveIdValue = "drive-1";
+    private const string FolderId = "folder-1";
+    private const string FolderName = "Photos";
+    private const string ChildFolderId = "folder-1-child";
+    private const string ChildFolderName = "Holidays";
 
     [Fact]
     public async Task when_a_folder_is_toggled_then_repository_upsert_is_not_called()
@@ -188,9 +188,9 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
 
     private static (IAuthService Auth, IGraphService Graph, IAccountRepository Repository) BuildMocks()
     {
-        var authService  = Substitute.For<IAuthService>();
+        var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
-        var repository   = Substitute.For<IAccountRepository>();
+        var repository = Substitute.For<IAccountRepository>();
 
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
@@ -217,8 +217,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     private static OneDriveAccount BuildAccount(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id         = new AccountId(AccountIdString),
-            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            Id = new AccountId(AccountIdString),
+            Profile = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = string.IsNullOrEmpty(localSyncPath)
                 ? Option.None<AccountSyncConfig>()
                 : Option.Some(AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath)))
@@ -227,8 +227,8 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
     private static AccountEntity BuildStoredEntity(string localSyncPath, ConflictPolicy conflictPolicy)
         => new()
         {
-            Id         = new AccountId(AccountIdString),
-            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            Id = new AccountId(AccountIdString),
+            Profile = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = AccountSyncConfigFactory.Create(conflictPolicy, LocalSyncPath.Restore(localSyncPath))
         };
 

@@ -1,5 +1,5 @@
-using Avalonia.Controls.Documents;
 using AStar.Dev.Wallpaper.Scraper.Home;
+using Avalonia.Controls.Documents;
 using DocumentSpan = Avalonia.Controls.Documents.Span;
 
 namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Home;

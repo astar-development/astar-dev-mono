@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 
 namespace AStar.Dev.Guard.Clauses;
 

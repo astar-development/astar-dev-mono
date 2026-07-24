@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenValidationApply
+internal class GivenValidationApply
 {
     [Fact]
     public void when_both_are_valid_then_applies_function_to_value()

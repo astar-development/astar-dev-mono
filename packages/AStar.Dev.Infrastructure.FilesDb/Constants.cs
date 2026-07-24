@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Infrastructure.FilesDb;
+namespace AStar.Dev.Infrastructure.FilesDb;
 
 /// <summary>
 /// </summary>

@@ -1,10 +1,10 @@
-using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
+using AStar.Dev.OneDrive.Sync.Client.Dashboard;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
 using Avalonia.Controls.Primitives;
+using Avalonia.LogicalTree;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 

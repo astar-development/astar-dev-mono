@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenTryRunAsync
+internal class GivenTryRunAsync
 {
     [Fact]
     public async Task when_operation_succeeds_then_returns_success_with_value()

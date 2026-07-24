@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Services;
 using AStar.Dev.File.App.ViewModels;
@@ -7,12 +8,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using Serilog.Events;
-
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
-using System.Globalization;
 
 namespace AStar.Dev.File.App;
 
@@ -66,7 +65,7 @@ public partial class App : Application
         _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
 
         var serviceProvider = services.BuildServiceProvider();
-        var logger          = serviceProvider.GetRequiredService<ILogger<App>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<App>>();
         LogAppStarting(logger, _appVersion);
 
         return serviceProvider;

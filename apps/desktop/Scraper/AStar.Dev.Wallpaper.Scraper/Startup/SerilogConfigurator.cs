@@ -1,10 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO.Abstractions;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.IO.Abstractions;
 
 namespace AStar.Dev.Wallpaper.Scraper.Startup;
 

@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Api.HealthChecks;
+namespace AStar.Dev.Api.HealthChecks;
 
 /// <summary>
 /// </summary>

@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenExceptionalMatch
+internal class GivenExceptionalMatch
 {
     [Fact]
     public void when_on_success_then_invokes_success_handler()

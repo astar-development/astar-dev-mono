@@ -144,7 +144,7 @@ public sealed class GivenAThemeService
         {
             service.Apply(AppTheme.Light);
         }
-        catch(ObjectDisposedException)
+        catch (ObjectDisposedException)
         {
             // Expected
         }

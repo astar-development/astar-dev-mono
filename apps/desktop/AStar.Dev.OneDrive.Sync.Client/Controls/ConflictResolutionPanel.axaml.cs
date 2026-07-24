@@ -13,7 +13,7 @@ public partial class ConflictResolutionPanel : UserControl
 
     private void OnPolicyClick(object? sender, RoutedEventArgs e)
     {
-        if(sender is Button { Tag: ConflictPolicy policy } && DataContext is ConflictItemViewModel vm)
+        if (sender is Button { Tag: ConflictPolicy policy } && DataContext is ConflictItemViewModel vm)
         {
             vm.SelectedPolicy = policy;
         }

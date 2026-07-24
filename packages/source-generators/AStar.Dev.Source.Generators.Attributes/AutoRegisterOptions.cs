@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Source.Generators.Attributes;
+namespace AStar.Dev.Source.Generators.Attributes;
 
 /// <summary>
 /// Attribute used to indicate that a class or struct should be automatically registered as an IOption{T}.
