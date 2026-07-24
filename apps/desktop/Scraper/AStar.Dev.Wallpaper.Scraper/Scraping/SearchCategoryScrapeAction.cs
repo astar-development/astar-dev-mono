@@ -42,6 +42,7 @@ public sealed class SearchCategoryScrapeAction(
 
             await scrapeContext.Categories.ForEachAsync(category => VisitCategoryAsync(new CategoryScrapeContext(page, progress, scrapeContext, category, scrapeContext.FileClassifications), cancellationToken));
 
+            progress.Report($"{clock():T} Completed scraping all categories");
             return Unit.Instance;
         }, cancellationToken);
 

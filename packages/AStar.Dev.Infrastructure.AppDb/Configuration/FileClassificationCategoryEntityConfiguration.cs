@@ -11,7 +11,7 @@ public sealed class FileClassificationCategoryEntityConfiguration : IEntityTypeC
     public void Configure(EntityTypeBuilder<FileClassificationCategoryEntity> builder)
     {
         _ = builder.HasKey(e => e.Id);
-        _ = builder.Property(e => e.Name).IsRequired();
+        _ = builder.Property(e => e.Name).UseCollation("NOCASE").IsRequired();
         _ = builder.HasIndex(e => new { e.ParentId, e.Name }).IsUnique();
         _ = builder.HasIndex(e => e.Name ).IsUnique(false);
     }

@@ -14,6 +14,6 @@ public sealed class SearchCategoryEntityConfiguration : IEntityTypeConfiguration
         _ = builder.HasKey(category => new { category.SearchConfigurationId, category.Id });
         _ = builder.Property(category => category.SearchConfigurationId).IsRequired();
         _ = builder.Property(category => category.Id).HasMaxLength(128).IsRequired();
-        _ = builder.Property(category => category.Name).HasMaxLength(256).IsRequired();
+        _ = builder.Property(category => category.Name).HasMaxLength(256).IsRequired().UseCollation("NOCASE");
     }
 }

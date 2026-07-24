@@ -27,4 +27,7 @@ public class FileAppDbContext(DbContextOptions<FileAppDbContext> options) : DbCo
             entity.HasIndex(e => e.Key).IsUnique();
         });
     }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        => configurationBuilder.Properties<string>().UseCollation("NOCASE");
 }

@@ -13,6 +13,6 @@ public sealed class TagToIgnoreEntityConfiguration : IEntityTypeConfiguration<Ta
         _ = builder.ToTable("TagToIgnore");
         _ = builder.HasKey(tag => tag.Id);
         _ = builder.Property(tag => tag.Id).HasConversion(tagId => tagId.Id, guid => new TagId(guid));
-        _ = builder.Property(tag => tag.Value).HasMaxLength(300);
+        _ = builder.Property(tag => tag.Value).HasMaxLength(300).UseCollation("NOCASE");
     }
 }
