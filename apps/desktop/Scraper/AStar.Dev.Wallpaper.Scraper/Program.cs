@@ -14,8 +14,6 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        // Velopack hooks install/update/uninstall events and may exit the process;
-        // it must run before anything else touches the app state.
         VelopackApp.Build().Run();
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

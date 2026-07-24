@@ -36,6 +36,8 @@
     <Folder Name="/packages/core/logging/">
         <Project Path="packages/core/logging/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
         <Project Path="packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingSerilog.Tests.Unit/AStarDev.LoggingSerilog.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/packages/core/utilities/">
         <Project Path="packages/core/utilities/AStar.Dev.FluentAssignments.Tests.Unit/AStar.Dev.FluentAssignments.Tests.Unit.csproj" />
