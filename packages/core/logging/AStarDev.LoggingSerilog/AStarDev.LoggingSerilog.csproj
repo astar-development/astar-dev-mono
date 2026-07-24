@@ -9,4 +9,20 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageTags>serilog;extensions;astar;astardevelopment</PackageTags>
+        <Title>AStar Dev Logging Serilog</Title>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <Description>A Serilog configuration for AStar Dev applications.</Description>
+        <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core</PackageProjectUrl>
+        <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+        <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <NoWarn>$(NoWarn);CA1724;CA1062</NoWarn>
+    </PropertyGroup>
+
 </Project>
