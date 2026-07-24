@@ -7,7 +7,7 @@ using Velopack;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.Views;
 
-internal sealed class GivenUpdateAvailableViewDisplay
+public sealed class GivenUpdateAvailableViewDisplay
 {
     private static UpdateInfo CreateUpdateInfo(string version = "1.2.3")
     {

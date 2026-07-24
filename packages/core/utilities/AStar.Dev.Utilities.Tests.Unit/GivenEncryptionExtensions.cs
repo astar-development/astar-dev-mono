@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-internal class GivenEncryptionExtensions
+public sealed class GivenEncryptionExtensions
 {
     [Fact]
     public void when_a_value_is_encrypted_then_the_result_is_as_expected()

@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(FormatterOptions))]
-internal class GivenFormatterOptions
+public sealed class GivenFormatterOptions
 {
     [Fact]
     public void SingleLine_ShouldDefaultToFalse()

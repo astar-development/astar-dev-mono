@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenExceptionalAsync
+public sealed class GivenExceptionalAsync
 {
     [Fact]
     public async Task when_map_async_task_selector_and_success_then_transforms_value()

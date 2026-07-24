@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-internal class ResultExtensionsShould
+public sealed class ResultExtensionsShould
 {
     #region Map Tests
 

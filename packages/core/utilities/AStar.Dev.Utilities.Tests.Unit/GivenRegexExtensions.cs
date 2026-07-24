@@ -1,6 +1,6 @@
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-internal class GivenRegexExtensions
+public sealed class GivenRegexExtensions
 {
     [Theory]
     [InlineData("", false)]

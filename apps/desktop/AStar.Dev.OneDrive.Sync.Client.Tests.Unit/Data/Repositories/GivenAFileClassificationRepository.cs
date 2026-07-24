@@ -1,6 +1,5 @@
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.Infrastructure.AppDb;
-using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

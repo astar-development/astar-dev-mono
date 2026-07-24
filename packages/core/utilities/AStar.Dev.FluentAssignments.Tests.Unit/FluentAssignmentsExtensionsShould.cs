@@ -1,6 +1,6 @@
 namespace AStar.Dev.FluentAssignments.Tests.Unit;
 
-internal class FluentAssignmentsExtensionsShould
+public sealed class FluentAssignmentsExtensionsShould
 {
     [Fact]
     public void AssignTheValueWhenTheCriteriaIsMatched()

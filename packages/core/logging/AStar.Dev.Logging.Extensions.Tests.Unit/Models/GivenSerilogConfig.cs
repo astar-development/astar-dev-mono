@@ -5,7 +5,7 @@ using Console = AStar.Dev.Logging.Extensions.Models.Console;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(SerilogConfig))]
-internal class GivenSerilogConfig
+public sealed class GivenSerilogConfig
 {
     [Fact]
     public void SerilogConfig_ShouldInitializeWithDefaultValues()

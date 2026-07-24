@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenTapAsync
+public sealed class GivenTapAsync
 {
     [Fact]
     public async Task when_called_on_task_result_then_returns_same_result_and_executes_side_effect()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenValidationMatch
+public sealed class GivenValidationMatch
 {
     [Fact]
     public void when_validation_is_valid_then_the_valid_branch_is_invoked_with_the_value()

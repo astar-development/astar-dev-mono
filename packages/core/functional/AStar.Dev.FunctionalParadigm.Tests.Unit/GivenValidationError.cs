@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenValidationError
+public sealed class GivenValidationError
 {
     [Fact]
     public void when_created_then_exposes_property_and_message()

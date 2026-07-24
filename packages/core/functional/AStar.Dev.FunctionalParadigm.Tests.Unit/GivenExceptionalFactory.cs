@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenExceptionalFactory
+public sealed class GivenExceptionalFactory
 {
     [Fact]
     public void when_success_created_then_wraps_value()

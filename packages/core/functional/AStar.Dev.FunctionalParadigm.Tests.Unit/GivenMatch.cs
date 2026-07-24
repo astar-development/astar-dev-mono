@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenMatch
+public sealed class GivenMatch
 {
     [Fact]
     public void when_on_success_and_on_failure_are_sync_then_returns_expected_values()

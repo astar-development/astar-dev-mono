@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenExceptionalTap
+public sealed class GivenExceptionalTap
 {
     [Fact]
     public void when_exceptional_is_success_then_executes_success_handler_and_returns_same()

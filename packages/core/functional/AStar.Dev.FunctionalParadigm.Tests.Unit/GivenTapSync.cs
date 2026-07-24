@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenTapSync
+public sealed class GivenTapSync
 {
     [Fact]
     public void when_called_on_result_success_then_executes_success_handler_and_returns_same()

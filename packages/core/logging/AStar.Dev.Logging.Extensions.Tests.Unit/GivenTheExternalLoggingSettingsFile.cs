@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
-internal class GivenTheExternalLoggingSettingsFile
+public sealed class GivenTheExternalLoggingSettingsFile
 {
     private static IConfigurationRoot CreateSut() =>
         new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory).AddJsonFile(Configuration.ExternalSettingsFile).Build();

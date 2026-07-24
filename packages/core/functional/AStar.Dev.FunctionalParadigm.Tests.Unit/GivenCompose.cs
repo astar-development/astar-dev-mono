@@ -2,7 +2,7 @@ using AStar.Dev.FunctionalParadigm.Composition;
 
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenCompose
+public sealed class GivenCompose
 {
     [Fact]
     public void when_composed_function_is_invoked_then_first_runs_before_second()

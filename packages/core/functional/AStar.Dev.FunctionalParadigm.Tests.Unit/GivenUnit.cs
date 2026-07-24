@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenUnit
+public sealed class GivenUnit
 {
     [Fact]
     public void when_unit_values_are_compared_then_they_are_all_equal()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-internal sealed class GivenPathOperationExtensions
+public sealed class GivenPathOperationExtensions
 {
     [Fact]
     public void when_combine_path_is_called_with_relative_segments_then_returns_the_combined_path()

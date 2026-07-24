@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-internal class TryShouldOld
+public sealed class TryShouldOld
 {
     [Fact]
     public void Try_Run_CapturesSuccess()

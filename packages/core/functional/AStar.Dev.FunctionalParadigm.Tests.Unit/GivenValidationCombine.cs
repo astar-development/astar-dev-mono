@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenValidationCombine
+public sealed class GivenValidationCombine
 {
     [Fact]
     public void when_all_validations_are_valid_then_returns_valid_with_ordered_values()

@@ -1,6 +1,6 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-internal class OptionShould
+public sealed class OptionShould
 {
     private static readonly int[] ExpectedArrayOfInts = [1, 2, 3];
     private static readonly int[] ExpectedArrayOfInts2 = [20, 40];

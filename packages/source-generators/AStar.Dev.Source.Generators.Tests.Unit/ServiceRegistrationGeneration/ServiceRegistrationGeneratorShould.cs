@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.ServiceRegistrationGeneration;
 
-internal class ServiceRegistrationGeneratorShould()
+public sealed class ServiceRegistrationGeneratorShould
 {
     private const string AttributeSource = @"using System;
 

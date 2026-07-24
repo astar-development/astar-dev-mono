@@ -1,9 +1,6 @@
-using Shouldly;
-using Xunit;
-
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-internal class GivenOrElseAsync
+public sealed class GivenOrElseAsync
 {
     [Fact]
     public async Task when_result_is_success_then_returns_original_without_invoking_fallback()
