@@ -69,7 +69,7 @@ jobs:
           cd deploy && npm ci --omit=dev && rm package-lock.json
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v3.0.8
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_30A7893EAF2D4593B54B7ACFE4926151 }}

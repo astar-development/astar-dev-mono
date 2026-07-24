@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/login@v3.0.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Bicep
-        uses: azure/arm-deploy@v2
+        uses: azure/arm-deploy@v2.0.0
         with:
           resourceGroupName: rg-astar-dev
           template: infra/fab4kids/main.bicep

@@ -161,7 +161,7 @@ jobs:
             --pre ${{ steps.tag.outputs.prerelease }}
 
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
         continue-on-error: true
         with:
@@ -295,7 +295,7 @@ jobs:
             --pre ${{ steps.tag.outputs.prerelease }}
 
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
         continue-on-error: true
         with:
