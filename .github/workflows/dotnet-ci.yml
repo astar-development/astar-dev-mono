@@ -71,18 +71,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4.3.1
+        uses: actions/setup-dotnet@v6.0.0
         with:
           global-json-file: global.json
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
@@ -129,7 +129,7 @@ jobs:
           done
 
       - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2.23.0
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
         with:
           files: TestResults/**/*.trx
@@ -137,7 +137,7 @@ jobs:
           fail_on: test failures
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v5.4.3
+        uses: codecov/codecov-action@v7.0.0
         if: always()
         with:
           files: TestResults/**/coverage.cobertura.xml
