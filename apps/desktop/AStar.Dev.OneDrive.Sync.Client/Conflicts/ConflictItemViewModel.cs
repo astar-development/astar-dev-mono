@@ -6,9 +6,11 @@ using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 
+[ExcludeFromCodeCoverage]
 public sealed partial class ConflictItemViewModel : ObservableObject
 {
     private readonly SyncConflict conflict;

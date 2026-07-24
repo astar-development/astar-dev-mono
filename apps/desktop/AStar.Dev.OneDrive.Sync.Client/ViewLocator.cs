@@ -11,6 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 [RequiresUnreferencedCode(
     "Default implementation of ViewLocator involves reflection which may be trimmed away.",
     Url = "https://docs.avaloniaui.net/docs/concepts/view-locator")]
+[ExcludeFromCodeCoverage]
 public class ViewLocator : IDataTemplate
 {
     public Control? Build(object? param)

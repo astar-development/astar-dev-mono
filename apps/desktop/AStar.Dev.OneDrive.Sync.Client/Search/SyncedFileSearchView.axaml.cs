@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Search;
 
+[ExcludeFromCodeCoverage]
 public partial class SyncedFileSearchView : UserControl
 {
     public SyncedFileSearchView()

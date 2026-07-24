@@ -17,9 +17,11 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
+[ExcludeFromCodeCoverage]
 public class App : Application, IDisposable
 {
     private ServiceProvider? services;
