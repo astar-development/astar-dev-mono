@@ -1,7 +1,7 @@
+using System.IO.Abstractions;
 using AStar.Dev.Logging.Extensions;
 using AStar.Dev.Utilities;
 using Microsoft.Extensions.Logging;
-using System.IO.Abstractions;
 
 namespace AStar.Dev.Wallpaper.Scraper.Configuration;
 

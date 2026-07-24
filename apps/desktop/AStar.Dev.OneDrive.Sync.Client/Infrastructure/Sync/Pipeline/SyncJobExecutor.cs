@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
@@ -78,7 +78,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
 
                 if (batch.Count >= EnqueueBatchSize)
                 {
-                    await syncRepository.EnqueueJobsAsync(batch,    cancellationToken).ConfigureAwait(false);
+                    await syncRepository.EnqueueJobsAsync(batch, cancellationToken).ConfigureAwait(false);
                     foreach (var job in batch)
                         yield return job;
                     batch.Clear();

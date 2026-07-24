@@ -25,16 +25,12 @@ public class ScannedFileDisplayItem(ScannedFile file) : ReactiveObject
 
     public static string FormatSize(long bytes)
     {
-        switch (bytes)
+        return bytes switch
         {
-            case >= 1_073_741_824L:
-                return $"{bytes / 1_073_741_824.0:F1} GB";
-            case >= 1_048_576L:
-                return $"{bytes / 1_048_576.0:F1} MB";
-            case >= 1_024L:
-                return $"{bytes / 1_024.0:F1} KB";
-            default:
-                return $"{bytes} B";
-        }
+            >= 1_073_741_824L => $"{bytes / 1_073_741_824.0:F1} GB",
+            >= 1_048_576L => $"{bytes / 1_048_576.0:F1} MB",
+            >= 1_024L => $"{bytes / 1_024.0:F1} KB",
+            _ => $"{bytes} B",
+        };
     }
 }

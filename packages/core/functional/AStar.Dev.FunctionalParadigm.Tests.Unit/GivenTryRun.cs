@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenTryRun
+internal class GivenTryRun
 {
     [Fact]
     public void when_operation_succeeds_then_returns_success_with_value()

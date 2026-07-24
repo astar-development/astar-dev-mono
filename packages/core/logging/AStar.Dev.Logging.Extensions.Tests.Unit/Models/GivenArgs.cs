@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Args))]
-public class GivenArgs
+internal class GivenArgs
 {
     [Fact]
     public void DefaultToEmptyString_WhenServerUrlIsUnset()

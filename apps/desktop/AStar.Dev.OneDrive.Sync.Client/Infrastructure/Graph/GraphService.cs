@@ -3,8 +3,8 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
-using Microsoft.Kiota.Abstractions;
 using Microsoft.Graph.Models;
+using Microsoft.Kiota.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 

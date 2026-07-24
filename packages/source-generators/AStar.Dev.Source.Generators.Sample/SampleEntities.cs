@@ -1,4 +1,4 @@
-﻿using AStar.Dev.Source.Generators.Attributes;
+using AStar.Dev.Source.Generators.Attributes;
 
 namespace AStar.Dev.Source.Generators.Sample;
 

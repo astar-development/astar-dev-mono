@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-public sealed class GivenStringExtensions
+internal sealed class GivenStringExtensions
 {
     private const string AnyJson = "{\"AnyInt\":0,\"AnyString\":\"\"}";
     private const string NotNullString = "value does not matter";

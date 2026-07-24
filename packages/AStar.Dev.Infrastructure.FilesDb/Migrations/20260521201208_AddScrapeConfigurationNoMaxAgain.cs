@@ -1,22 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AStar.Dev.Infrastructure.FilesDb.Migrations
+namespace AStar.Dev.Infrastructure.FilesDb.Migrations;
+
+/// <inheritdoc />
+public partial class AddScrapeConfigurationNoMaxAgain : Migration
 {
     /// <inheritdoc />
-    public partial class AddScrapeConfigurationNoMaxAgain : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

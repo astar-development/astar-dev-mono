@@ -1,10 +1,10 @@
-﻿using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
+using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.ServiceRegistrationGeneration;
 
-public class ServiceRegistrationGeneratorShould()
+internal class ServiceRegistrationGeneratorShould()
 {
     private const string AttributeSource = @"using System;
 
@@ -279,7 +279,7 @@ namespace TestNamespace
         var result = driver.GetRunResult();
         var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
-        if(!generated.Equals(default(GeneratedSourceResult)))
+        if (!generated.Equals(default(GeneratedSourceResult)))
         {
             string text = generated.SourceText.ToString();
 
@@ -308,7 +308,7 @@ namespace TestNamespace
         var result = driver.GetRunResult();
         var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
-        if(!generated.Equals(default(GeneratedSourceResult)))
+        if (!generated.Equals(default(GeneratedSourceResult)))
         {
             string text = generated.SourceText.ToString();
 

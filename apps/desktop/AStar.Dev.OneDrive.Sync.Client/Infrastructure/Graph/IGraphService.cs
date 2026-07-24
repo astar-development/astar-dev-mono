@@ -1,6 +1,6 @@
+using System.Reactive;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using System.Reactive;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 

@@ -66,7 +66,7 @@ public partial class IconRailButton : UserControl
         bool active = e.GetNewValue<bool>();
         sender.ActiveBar.IsVisible = active;
 
-        if(active)
+        if (active)
             sender.RailBtn.Classes.Add("active");
         else
             _ = sender.RailBtn.Classes.Remove("active");
@@ -80,7 +80,7 @@ public partial class IconRailButton : UserControl
 
     private void RailBtnClick(object? sender, RoutedEventArgs e)
     {
-        if(Command?.CanExecute(CommandParameter) == true)
+        if (Command?.CanExecute(CommandParameter) == true)
             Command.Execute(CommandParameter);
     }
 }

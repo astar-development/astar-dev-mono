@@ -11,7 +11,7 @@ public sealed class GivenASyncRuleRepository : IDisposable
     private const string AccountIdString = "user-1";
 
     private readonly SqliteConnection _connection;
-    private readonly AppDbContext     _seedingContext;
+    private readonly AppDbContext _seedingContext;
     private readonly IDbContextFactory<AppDbContext> _factory;
 
     public GivenASyncRuleRepository()
@@ -200,7 +200,7 @@ public sealed class GivenASyncRuleRepository : IDisposable
 
     private async Task SeedAccountAsync(string accountId = AccountIdString)
     {
-        if(await _seedingContext.Accounts.AnyAsync(a => a.Id == new AccountId(accountId), TestContext.Current.CancellationToken))
+        if (await _seedingContext.Accounts.AnyAsync(a => a.Id == new AccountId(accountId), TestContext.Current.CancellationToken))
             return;
 
         _seedingContext.Accounts.Add(new AccountEntity { Id = new AccountId(accountId), Profile = AccountProfileFactory.Create(accountId, $"{accountId}@test.com") });

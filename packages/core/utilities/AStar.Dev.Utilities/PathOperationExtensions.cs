@@ -21,7 +21,7 @@ public static class PathOperationExtensions
     {
         string combined = basePath;
 
-        foreach(string? segment in segments.Where(s => s is not null))
+        foreach (string? segment in segments.Where(s => s is not null))
         {
             combined = Path.Join(combined, segment);
         }
@@ -39,7 +39,7 @@ public static class PathOperationExtensions
         char[] invalidFileChars = Path.GetInvalidPathChars();
         path = Regex.Replace(path, """[^\u0000-\u007F]+""", string.Empty);
 
-        foreach(char invalidFileChar in invalidFileChars) path = path.Replace(invalidFileChar, ' ');
+        foreach (char invalidFileChar in invalidFileChars) path = path.Replace(invalidFileChar, ' ');
 
         return
             path.Replace("\"", "'", StringComparison.OrdinalIgnoreCase)

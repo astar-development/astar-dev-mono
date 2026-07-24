@@ -12,11 +12,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceLocalisingAuthenticating
 {
-    private readonly IAuthService           _authService           = Substitute.For<IAuthService>();
-    private readonly ISyncRepository        _syncRepository        = Substitute.For<ISyncRepository>();
-    private readonly ISyncPassOrchestrator  _syncPassOrchestrator  = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IConflictApplier       _conflictApplier       = Substitute.For<IConflictApplier>();
-    private readonly ILocalizationService   _localizationService   = Substitute.For<ILocalizationService>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
+    private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
     public GivenASyncServiceLocalisingAuthenticating()
         => _localizationService.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
@@ -26,9 +26,9 @@ public sealed class GivenASyncServiceLocalisingAuthenticating
 
     private static OneDriveAccount CreateAccount() => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/path/to/sync")),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/path/to/sync")),
         SelectedFolderIds = []
     };
 
@@ -60,7 +60,7 @@ public sealed class GivenASyncServiceLocalisingAuthenticating
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.Authenticating")
+            if (args.CurrentFile == "Sync.Authenticating")
                 authCallOrder.Add("progress");
         };
 

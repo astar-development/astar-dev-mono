@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenValidationToResult
+internal class GivenValidationToResult
 {
     [Fact]
     public void when_validation_is_valid_then_maps_to_ok_result()

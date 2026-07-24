@@ -228,7 +228,7 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
         {
             if (context.Entry(entity).IsKeySet)
             {
-                var key = GetKeyValues(entity, keyProperties);
+                object[] key = GetKeyValues(entity, keyProperties);
                 importedKeys.Add(key);
 
                 if (existingByKey.TryGetValue(key, out var existing))
@@ -285,7 +285,7 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
         {
             var hash = new HashCode();
 
-            foreach (var value in key)
+            foreach (object value in key)
             {
                 hash.Add(value);
             }

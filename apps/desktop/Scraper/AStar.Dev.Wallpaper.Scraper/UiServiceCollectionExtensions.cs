@@ -1,6 +1,6 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
 using AStar.Dev.Wallpaper.Scraper.Home;
-using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Theming;
 using AStar.Dev.Wallpaper.Scraper.Updates;
 using Microsoft.Extensions.DependencyInjection;

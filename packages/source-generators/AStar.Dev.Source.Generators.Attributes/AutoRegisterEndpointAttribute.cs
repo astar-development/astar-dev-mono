@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Source.Generators.Attributes;
+namespace AStar.Dev.Source.Generators.Attributes;
 
 /// <summary>
 /// An attribute to automatically register a minimal APU endpoint.

@@ -3,13 +3,13 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(MinimumLevel))]
-public class GivenMinimumLevel
+internal class GivenMinimumLevel
 {
     [Fact]
     public void DefaultProperty_GetsAndSetsValuesCorrectly()
     {
         var minimumLevel = new MinimumLevel();
-        string testValue    = "Information";
+        string testValue = "Information";
 
         minimumLevel.Default = testValue;
 
@@ -35,15 +35,15 @@ public class GivenMinimumLevel
     [Fact]
     public void OverrideProperty_GetsAndSetsValuesCorrectly()
     {
-        var minimumLevel   = new MinimumLevel();
+        var minimumLevel = new MinimumLevel();
         var customOverride = new Override { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Error", AStar = "Debug" };
 
         minimumLevel.Override = customOverride;
 
         Assert.Equal(customOverride, minimumLevel.Override);
-        Assert.Equal("Warning",      minimumLevel.Override.MicrosoftAspNetCore);
-        Assert.Equal("Error",        minimumLevel.Override.SystemNetHttp);
-        Assert.Equal("Debug",        minimumLevel.Override.AStar);
+        Assert.Equal("Warning", minimumLevel.Override.MicrosoftAspNetCore);
+        Assert.Equal("Error", minimumLevel.Override.SystemNetHttp);
+        Assert.Equal("Debug", minimumLevel.Override.AStar);
     }
 
     [Fact]

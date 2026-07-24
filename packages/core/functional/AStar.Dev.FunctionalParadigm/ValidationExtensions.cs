@@ -15,13 +15,13 @@ public static class ValidationExtensions
     /// </summary>
     public static Validation<TResult> Apply<T, TResult>(this Validation<Func<T, TResult>> validationFunc, Validation<T> validationValue)
         => (validationFunc, validationValue) switch
-            {
-                (Valid<Func<T, TResult>> validFunc, Valid<T> validValue) => new Valid<TResult>(validFunc.Value(validValue.Value)),
-                (Invalid<Func<T, TResult>> invalidFunc, Valid<T>) => new Invalid<TResult>(invalidFunc.Errors),
-                (Valid<Func<T, TResult>>, Invalid<T> invalidValue) => new Invalid<TResult>(invalidValue.Errors),
-                (Invalid<Func<T, TResult>> invalidFunc, Invalid<T> invalidValue) => new Invalid<TResult>([..invalidFunc.Errors, ..invalidValue.Errors]),
-                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
-            };
+        {
+            (Valid<Func<T, TResult>> validFunc, Valid<T> validValue) => new Valid<TResult>(validFunc.Value(validValue.Value)),
+            (Invalid<Func<T, TResult>> invalidFunc, Valid<T>) => new Invalid<TResult>(invalidFunc.Errors),
+            (Valid<Func<T, TResult>>, Invalid<T> invalidValue) => new Invalid<TResult>(invalidValue.Errors),
+            (Invalid<Func<T, TResult>> invalidFunc, Invalid<T> invalidValue) => new Invalid<TResult>([.. invalidFunc.Errors, .. invalidValue.Errors]),
+            _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
+        };
 
     /// <summary>
     ///     Combines a sequence of validations into a single <see cref="Validation{T}" /> of the ordered values.
@@ -61,11 +61,11 @@ public static class ValidationExtensions
     /// </summary>
     public static TOut Match<T, TOut>(this Validation<T> validation, Func<T, TOut> onValid, Func<IReadOnlyList<ValidationError>, TOut> onInvalid)
         => validation switch
-            {
-                Valid<T> valid => onValid(valid.Value),
-                Invalid<T> invalid => onInvalid(invalid.Errors),
-                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
-            };
+        {
+            Valid<T> valid => onValid(valid.Value),
+            Invalid<T> invalid => onInvalid(invalid.Errors),
+            _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
+        };
 
     /// <summary>
     ///     Lifts a <see cref="Validation{T}" /> into a <see cref="Result{TResult,TError}" />, mapping the
@@ -73,9 +73,9 @@ public static class ValidationExtensions
     /// </summary>
     public static Result<T, TError> ToResult<T, TError>(this Validation<T> validation, Func<IReadOnlyList<ValidationError>, TError> mapErrors)
         => validation switch
-            {
-                Valid<T> valid => new Ok<T, TError>(valid.Value),
-                Invalid<T> invalid => new Fail<T, TError>(mapErrors(invalid.Errors)),
-                _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
-            };
+        {
+            Valid<T> valid => new Ok<T, TError>(valid.Value),
+            Invalid<T> invalid => new Fail<T, TError>(mapErrors(invalid.Errors)),
+            _ => throw new InvalidOperationException(UnexpectedValidationTypeMessage)
+        };
 }

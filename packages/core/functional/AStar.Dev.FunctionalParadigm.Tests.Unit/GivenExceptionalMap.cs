@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenExceptionalMap
+internal class GivenExceptionalMap
 {
     [Fact]
     public void when_exceptional_is_success_then_transforms_value()

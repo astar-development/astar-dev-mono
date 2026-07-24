@@ -13,12 +13,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
 {
-    private const string AccountIdString     = "account-1";
+    private const string AccountIdString = "account-1";
     private const string LocalSyncPathString = "/configured/sync/path";
-    private const string AccessToken         = "token-abc";
-    private const string DriveIdValue        = "drive-1";
-    private const string RootFolderId        = "folder-root";
-    private const string RootFolderName      = "Photos";
+    private const string AccessToken = "token-abc";
+    private const string DriveIdValue = "drive-1";
+    private const string RootFolderId = "folder-root";
+    private const string RootFolderName = "Photos";
 
     [Fact]
     public async Task when_apply_rule_throws_then_has_load_error_is_set()
@@ -64,7 +64,7 @@ public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
 
     private static (IAuthService Auth, IGraphService Graph) BuildMocks()
     {
-        var authService  = Substitute.For<IAuthService>();
+        var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
 
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
@@ -82,8 +82,8 @@ public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
     private static OneDriveAccount BuildAccount()
         => new()
         {
-            Id         = new AccountId(AccountIdString),
-            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            Id = new AccountId(AccountIdString),
+            Profile = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, LocalSyncPath.Restore(LocalSyncPathString)))
         };
 

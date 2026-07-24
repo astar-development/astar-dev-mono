@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenExceptionalEnsure
+internal class GivenExceptionalEnsure
 {
     [Fact]
     public async Task when_task_resolves_to_success_then_finalizer_receives_value_and_returns_same_result()

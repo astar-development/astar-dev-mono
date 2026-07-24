@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace AStar.Dev.Source.Generators.OptionsBindingGeneration;
 
@@ -42,16 +42,16 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
         Location = location;
     }
 
-/// <inheritdoc />
+    /// <inheritdoc />
     public override bool Equals(object obj) => Equals((OptionsTypeInfo)obj);
 
-/// <inheritdoc />
+    /// <inheritdoc />
     public bool Equals(OptionsTypeInfo other) => ReferenceEquals(this, other) || (other is not null && string.Equals(TypeName, other.TypeName, StringComparison.Ordinal)
             && string.Equals(FullTypeName, other.FullTypeName, StringComparison.Ordinal)
             && string.Equals(SectionName, other.SectionName, StringComparison.Ordinal)
             && Equals(Location, other.Location));
 
-/// <inheritdoc />
+    /// <inheritdoc />
     public override int GetHashCode()
     {
         unchecked
@@ -65,6 +65,6 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
         }
     }
 
-/// <inheritdoc />
+    /// <inheritdoc />
     public override string ToString() => $"{FullTypeName} (Section: {SectionName})";
 }

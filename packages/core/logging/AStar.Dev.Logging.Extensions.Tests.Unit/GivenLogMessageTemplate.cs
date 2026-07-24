@@ -3,13 +3,13 @@ using AStar.Dev.Logging.Extensions.Tests.Unit.Helpers;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(LogMessage))]
-public class GivenLogMessageTemplate
+internal class GivenLogMessageTemplate
 {
     [Fact]
     public void LogBadRequest_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/test-path";
+        var logger = new FakeLogger();
+        const string path = "/test-path";
 
         LogMessage.BadRequest(logger, path);
 
@@ -24,8 +24,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogUnauthorized_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/unauthorized-path";
+        var logger = new FakeLogger();
+        const string path = "/unauthorized-path";
 
         LogMessage.Unauthorized(logger, path);
 
@@ -40,9 +40,9 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogForbidden_WithValidPathAndUser_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/forbidden-path";
-        const string user   = "test-user";
+        var logger = new FakeLogger();
+        const string path = "/forbidden-path";
+        const string user = "test-user";
 
         LogMessage.Forbidden(logger, path, user);
 
@@ -57,8 +57,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogNotFound_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/not-found-path";
+        var logger = new FakeLogger();
+        const string path = "/not-found-path";
 
         LogMessage.NotFound(logger, path);
 
@@ -73,8 +73,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogConflict_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/conflict-path";
+        var logger = new FakeLogger();
+        const string path = "/conflict-path";
 
         LogMessage.Conflict(logger, path);
 
@@ -89,8 +89,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogUnprocessableEntity_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/unprocessable-entity-path";
+        var logger = new FakeLogger();
+        const string path = "/unprocessable-entity-path";
 
         LogMessage.UnprocessableEntity(logger, path);
 
@@ -105,8 +105,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogTooManyRequests_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/too-many-requests";
+        var logger = new FakeLogger();
+        const string path = "/too-many-requests";
 
         LogMessage.TooManyRequests(logger, path);
 
@@ -121,8 +121,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogInternalServerError_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/internal-server-error";
+        var logger = new FakeLogger();
+        const string path = "/internal-server-error";
 
         LogMessage.InternalServerError(logger, path);
 
@@ -137,8 +137,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogBadGateway_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/bad-gateway";
+        var logger = new FakeLogger();
+        const string path = "/bad-gateway";
 
         LogMessage.BadGateway(logger, path);
 
@@ -153,8 +153,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogServiceUnavailable_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/service-unavailable";
+        var logger = new FakeLogger();
+        const string path = "/service-unavailable";
 
         LogMessage.ServiceUnavailable(logger, path);
 
@@ -169,8 +169,8 @@ public class GivenLogMessageTemplate
     [Fact]
     public void LogGatewayTimeout_WithValidPath_ShouldLogCorrectMessage()
     {
-        var          logger = new FakeLogger();
-        const string path   = "/gateway-timeout";
+        var logger = new FakeLogger();
+        const string path = "/gateway-timeout";
 
         LogMessage.GatewayTimeout(logger, path);
 

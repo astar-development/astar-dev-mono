@@ -17,7 +17,7 @@ public sealed class GivenACategoryResolutionService
         var factory = Substitute.For<IDbContextFactory<AppDbContext>>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
 
-        foreach(var classification in seedingContext.FileClassificationCategories)
+        foreach (var classification in seedingContext.FileClassificationCategories)
         {
             seedingContext.FileClassificationCategories.Remove(classification);
         }

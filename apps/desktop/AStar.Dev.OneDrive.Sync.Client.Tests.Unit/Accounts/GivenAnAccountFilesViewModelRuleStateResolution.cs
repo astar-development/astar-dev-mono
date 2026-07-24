@@ -1,27 +1,27 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelRuleStateResolution
 {
-    private const string AccountIdString     = "account-1";
+    private const string AccountIdString = "account-1";
     private const string LocalSyncPathString = "/configured/sync/path";
-    private const string AccessToken         = "token-abc";
-    private const string DriveIdValue        = "drive-1";
-    private const string RootFolderId        = "folder-root";
-    private const string RootFolderName      = "Photos";
-    private const string ChildFolderId       = "folder-child";
-    private const string ChildFolderName     = "Holidays";
+    private const string AccessToken = "token-abc";
+    private const string DriveIdValue = "drive-1";
+    private const string RootFolderId = "folder-root";
+    private const string RootFolderName = "Photos";
+    private const string ChildFolderId = "folder-child";
+    private const string ChildFolderName = "Holidays";
 
     [Fact]
     public async Task when_root_folder_has_exclude_rule_then_its_sync_state_is_excluded_after_load()
@@ -104,7 +104,7 @@ public sealed class GivenAnAccountFilesViewModelRuleStateResolution
 
     private static (IAuthService Auth, IGraphService Graph) BuildMocks()
     {
-        var authService  = Substitute.For<IAuthService>();
+        var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
 
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
@@ -132,8 +132,8 @@ public sealed class GivenAnAccountFilesViewModelRuleStateResolution
     private static OneDriveAccount BuildAccount()
         => new()
         {
-            Id         = new AccountId(AccountIdString),
-            Profile    = AccountProfileFactory.Create("Test User", "test@test.com"),
+            Id = new AccountId(AccountIdString),
+            Profile = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, LocalSyncPath.Restore(LocalSyncPathString)))
         };
 

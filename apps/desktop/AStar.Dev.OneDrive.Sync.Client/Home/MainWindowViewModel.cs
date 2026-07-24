@@ -1,9 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Dashboard;
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -18,7 +19,6 @@ using AccountsViewModel = AStar.Dev.OneDrive.Sync.Client.Accounts.AccountsViewMo
 using ActivityViewModel = AStar.Dev.OneDrive.Sync.Client.Activity.ActivityViewModel;
 using DashboardViewModel = AStar.Dev.OneDrive.Sync.Client.Dashboard.DashboardViewModel;
 using SettingsViewModel = AStar.Dev.OneDrive.Sync.Client.Settings.SettingsViewModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 

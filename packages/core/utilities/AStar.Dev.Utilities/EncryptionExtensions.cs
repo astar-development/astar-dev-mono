@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace AStar.Dev.Utilities;
@@ -9,7 +9,7 @@ namespace AStar.Dev.Utilities;
 public static class EncryptionExtensions
 {
     private const string Key = "oe3QnEe&@NnJ$$^L$1N@4WVKFayaAAOb";
-    private const string Iv  = "sBA&3z*4cQf%$!ww";
+    private const string Iv = "sBA&3z*4cQf%$!ww";
 
     /// <summary>
     ///     The Encrypt extension method will encrypt the specified string (using AES encryption)
@@ -29,7 +29,7 @@ public static class EncryptionExtensions
         using var aesAlg = Aes.Create();
 
         aesAlg.Key = Encoding.UTF8.GetBytes(key ?? Key);
-        aesAlg.IV  = Encoding.UTF8.GetBytes(iv  ?? Iv);
+        aesAlg.IV = Encoding.UTF8.GetBytes(iv ?? Iv);
 
 #pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
         var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
@@ -38,7 +38,7 @@ public static class EncryptionExtensions
         using var msEncrypt = new MemoryStream();
         using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
 
-        using(var swEncrypt = new StreamWriter(csEncrypt)) swEncrypt.Write(plainText);
+        using (var swEncrypt = new StreamWriter(csEncrypt)) swEncrypt.Write(plainText);
 
         return Convert.ToBase64String(msEncrypt.ToArray());
     }
@@ -61,7 +61,7 @@ public static class EncryptionExtensions
         using var aesAlg = Aes.Create();
 
         aesAlg.Key = Encoding.UTF8.GetBytes(key ?? Key);
-        aesAlg.IV  = Encoding.UTF8.GetBytes(iv  ?? Iv);
+        aesAlg.IV = Encoding.UTF8.GetBytes(iv ?? Iv);
 
         var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 

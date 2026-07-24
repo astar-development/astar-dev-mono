@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Source.Generators.Attributes;
+namespace AStar.Dev.Source.Generators.Attributes;
 
 /// <summary>
 /// Specifies the lifetime of a service within a dependency injection container.

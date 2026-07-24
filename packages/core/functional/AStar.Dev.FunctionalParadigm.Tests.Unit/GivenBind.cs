@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenBind
+internal class GivenBind
 {
     [Fact]
     public void when_binder_returns_success_then_returns_bound_result()

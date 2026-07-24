@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenMapAsync
+internal class GivenMapAsync
 {
     [Fact]
     public async Task when_selector_is_task_then_returns_expected_result()

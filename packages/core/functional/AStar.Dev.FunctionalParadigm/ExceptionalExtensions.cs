@@ -12,22 +12,22 @@ public static class ExceptionalExtensions
     /// </summary>
     public static TOut Match<T, TOut>(this Exceptional<T> exceptional, Func<T, TOut> onSuccess, Func<Exception, TOut> onFailure)
         => exceptional switch
-            {
-                Success<T> success => onSuccess(success.Value),
-                Failure<T> failure => onFailure(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => onSuccess(success.Value),
+            Failure<T> failure => onFailure(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously pattern matches on the <see cref="Exceptional{T}" />, invoking the async success handler.
     /// </summary>
     public static async Task<TOut> MatchAsync<T, TOut>(this Exceptional<T> exceptional, Func<T, Task<TOut>> onSuccess, Func<Exception, TOut> onFailure)
         => exceptional switch
-            {
-                Success<T> success => await onSuccess(success.Value).ConfigureAwait(false),
-                Failure<T> failure => onFailure(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => await onSuccess(success.Value).ConfigureAwait(false),
+            Failure<T> failure => onFailure(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously pattern matches on a Task of <see cref="Exceptional{T}" />, invoking the handler for the case present.
@@ -44,33 +44,33 @@ public static class ExceptionalExtensions
     /// </summary>
     public static Exceptional<TResult> Map<T, TResult>(this Exceptional<T> exceptional, Func<T, TResult> selector)
         => exceptional switch
-            {
-                Success<T> success => new Success<TResult>(selector(success.Value)),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => new Success<TResult>(selector(success.Value)),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously transforms the value inside a <see cref="Exceptional{T}" /> if it is a <see cref="Success{T}" />.
     /// </summary>
     public static async Task<Exceptional<TResult>> MapAsync<T, TResult>(this Exceptional<T> exceptional, Func<T, Task<TResult>> selector)
         => exceptional switch
-            {
-                Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously transforms the value inside a <see cref="Exceptional{T}" /> if it is a <see cref="Success{T}" />.
     /// </summary>
     public static async ValueTask<Exceptional<TResult>> MapAsync<T, TResult>(this Exceptional<T> exceptional, Func<T, ValueTask<TResult>> selector)
         => exceptional switch
-            {
-                Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => new Success<TResult>(await selector(success.Value).ConfigureAwait(false)),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously transforms the value inside a Task of <see cref="Exceptional{T}" /> if it is a <see cref="Success{T}" />.
@@ -98,22 +98,22 @@ public static class ExceptionalExtensions
     /// </summary>
     public static Exceptional<TResult> Bind<T, TResult>(this Exceptional<T> exceptional, Func<T, Exceptional<TResult>> binder)
         => exceptional switch
-            {
-                Success<T> success => binder(success.Value),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => binder(success.Value),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously chains another <see cref="Exceptional{T}" />-producing function, short-circuiting on <see cref="Failure{T}" />.
     /// </summary>
     public static async Task<Exceptional<TResult>> BindAsync<T, TResult>(this Exceptional<T> exceptional, Func<T, Task<Exceptional<TResult>>> binder)
         => exceptional switch
-            {
-                Success<T> success => await binder(success.Value).ConfigureAwait(false),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => await binder(success.Value).ConfigureAwait(false),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 
     /// <summary>
     ///     Asynchronously chains another <see cref="Exceptional{T}" />-producing function, short-circuiting on <see cref="Failure{T}" />.
@@ -133,11 +133,11 @@ public static class ExceptionalExtensions
         var exceptional = await exceptionalTask.ConfigureAwait(false);
 
         return exceptional switch
-            {
-                Success<T> success => await binder(success.Value).ConfigureAwait(false),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => await binder(success.Value).ConfigureAwait(false),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
     }
 
     /// <summary>
@@ -148,11 +148,11 @@ public static class ExceptionalExtensions
         var exceptional = await exceptionalTask.ConfigureAwait(false);
 
         return exceptional switch
-            {
-                Success<T> success => await binder(success.Value).ConfigureAwait(false),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => await binder(success.Value).ConfigureAwait(false),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
     }
 
     /// <summary>
@@ -163,11 +163,11 @@ public static class ExceptionalExtensions
         var exceptional = await exceptionalTask.ConfigureAwait(false);
 
         return exceptional switch
-            {
-                Success<T> success => await binder(success.Value).ConfigureAwait(false),
-                Failure<T> failure => new Failure<TResult>(failure.Exception),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => await binder(success.Value).ConfigureAwait(false),
+            Failure<T> failure => new Failure<TResult>(failure.Exception),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
     }
 
     /// <summary>
@@ -251,9 +251,9 @@ public static class ExceptionalExtensions
     /// </summary>
     public static Result<T, TError> ToResult<T, TError>(this Exceptional<T> exceptional, Func<Exception, TError> mapError)
         => exceptional switch
-            {
-                Success<T> success => new Ok<T, TError>(success.Value),
-                Failure<T> failure => new Fail<T, TError>(mapError(failure.Exception)),
-                _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
-            };
+        {
+            Success<T> success => new Ok<T, TError>(success.Value),
+            Failure<T> failure => new Fail<T, TError>(mapError(failure.Exception)),
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+        };
 }

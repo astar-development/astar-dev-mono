@@ -16,7 +16,7 @@ public sealed class EventType : IEquatable<EventType>
     private EventType(int value, string name)
     {
         Value = value;
-        Name  = name;
+        Name = name;
     }
 
     /// <summary>
@@ -52,11 +52,11 @@ public sealed class EventType : IEquatable<EventType>
     /// <inheritdoc />
     public bool Equals(EventType? other)
     {
-        if(other is null) return false;
+        if (other is null) return false;
 
-        #pragma warning disable IDE0046
-        if(ReferenceEquals(this, other))
-            #pragma warning restore IDE0046
+#pragma warning disable IDE0046
+        if (ReferenceEquals(this, other))
+#pragma warning restore IDE0046
             return true;
 
         return Value == other.Value && Name == other.Name;
@@ -84,9 +84,9 @@ public sealed class EventType : IEquatable<EventType>
     /// <param name="right">The second <see cref="EventType" /> to compare.</param>
     /// <returns><c>true</c> if the two <see cref="EventType" /> objects are equal; otherwise, <c>false</c>.</returns>
     public static bool operator ==(EventType left, EventType right)
-        #pragma warning disable IDE0041
+#pragma warning disable IDE0041
         => left?.Equals(right) ?? ReferenceEquals(right, null);
-    #pragma warning restore IDE0041
+#pragma warning restore IDE0041
 
     /// <summary>
     ///     Overloads the inequality operator to compare two <see cref="EventType" /> objects.

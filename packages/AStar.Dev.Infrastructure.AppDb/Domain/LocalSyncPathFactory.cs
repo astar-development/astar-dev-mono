@@ -13,7 +13,7 @@ public static class LocalSyncPathFactory
     /// </summary>
     public static Result<LocalSyncPath, ErrorResponse> Create(string? rawPath)
     {
-        if(string.IsNullOrWhiteSpace(rawPath))
+        if (string.IsNullOrWhiteSpace(rawPath))
             return new Result<LocalSyncPath, ErrorResponse>.Error(new ErrorResponse(InvalidPathError));
 
         return new Result<LocalSyncPath, ErrorResponse>.Ok(LocalSyncPath.Restore(rawPath));

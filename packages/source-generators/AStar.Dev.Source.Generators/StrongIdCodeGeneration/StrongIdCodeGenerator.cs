@@ -20,10 +20,10 @@ internal static class StrongIdCodeGenerator
     private static string GetRequiredUnderlyingIdType(StrongIdModel model)
     {
         string underlying = model.UnderlyingTypeDisplay;
-        if(string.IsNullOrEmpty(underlying))
+        if (string.IsNullOrEmpty(underlying))
             return "System.Guid";
 
-        if(underlying.IndexOf('.') < 0)
+        if (underlying.IndexOf('.') < 0)
         {
             switch (underlying)
             {

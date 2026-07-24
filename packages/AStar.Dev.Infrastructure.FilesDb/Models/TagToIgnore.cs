@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using AStar.Dev.Utilities;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;

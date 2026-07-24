@@ -6,6 +6,6 @@ public static class MissingCategoryFinder
     {
         var referenceSet = new HashSet<string>(referenceNames.Select(x => x.Item1), StringComparer.OrdinalIgnoreCase);
 
-        return namesToCheck.Where(name => !referenceSet.Contains(name.Item1)).Where(n=>n.Item2).ToList();
+        return namesToCheck.Where(name => !referenceSet.Contains(name.Item1)).Where(n => n.Item2).ToList();
     }
 }

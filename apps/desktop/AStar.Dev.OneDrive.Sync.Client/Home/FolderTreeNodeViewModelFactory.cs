@@ -1,8 +1,7 @@
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Microsoft.Extensions.Logging;
-
-using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 

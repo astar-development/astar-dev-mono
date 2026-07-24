@@ -1,12 +1,12 @@
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 
 [TestSubject(typeof(AStarEventIds))]
-public class GivenAStarEventIds
+internal class GivenAStarEventIds
 {
     [Fact]
     public void PageView_HasExpectedIdAndName()
     {
-        const int    expectedId   = 1000;
+        const int expectedId = 1000;
         const string expectedName = "Page view";
 
         var eventId = AStarEventIds.PageView;

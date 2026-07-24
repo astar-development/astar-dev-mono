@@ -27,7 +27,7 @@ public sealed class LocalizationService : ILocalizationService
     private static readonly CultureInfo fallbackCulture = new("en-GB");
 
     private readonly Assembly assembly;
-    private readonly string   resourcePrefix;
+    private readonly string resourcePrefix;
 
     private Dictionary<string, string> strings = [];
 
@@ -63,7 +63,7 @@ public sealed class LocalizationService : ILocalizationService
         {
             return string.Format(CurrentCulture, template, args);
         }
-        catch(FormatException)
+        catch (FormatException)
         {
             return template;
         }
@@ -71,7 +71,7 @@ public sealed class LocalizationService : ILocalizationService
 
     public async Task SetCultureAsync(CultureInfo culture, CancellationToken cancellationToken = default)
     {
-        if(culture.Name == CurrentCulture.Name)
+        if (culture.Name == CurrentCulture.Name)
             return;
 
         Load(culture);
@@ -87,15 +87,15 @@ public sealed class LocalizationService : ILocalizationService
             fallbackCulture.Name
         }.Distinct();
 
-        foreach(string name in candidates)
+        foreach (string name in candidates)
         {
             string resourceName = $"{resourcePrefix}{name}.json";
-             using var stream = assembly.GetManifestResourceStream(resourceName);
-            if(stream is null)
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream is null)
                 continue;
 
-            var loaded =  Parse(stream);
-            if(loaded.Count == 0)
+            var loaded = Parse(stream);
+            if (loaded.Count == 0)
                 continue;
 
             strings = loaded;
@@ -117,18 +117,18 @@ public sealed class LocalizationService : ILocalizationService
         {
             using var doc = JsonDocument.Parse(stream);
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach(var prop in doc.RootElement.EnumerateObject())
+            foreach (var prop in doc.RootElement.EnumerateObject())
             {
-                if(prop.Name is "locale" or "culture")
+                if (prop.Name is "locale" or "culture")
                     continue;
 
-                if(prop.Value.ValueKind == JsonValueKind.String)
+                if (prop.Value.ValueKind == JsonValueKind.String)
                     result[prop.Name] = prop.Value.GetString()!;
             }
 
             return result;
         }
-        catch(JsonException)
+        catch (JsonException)
         {
             return [];
         }
@@ -139,12 +139,12 @@ public sealed class LocalizationService : ILocalizationService
         string prefix = resourcePrefix;
         var cultures = new List<CultureInfo>();
 
-        foreach(string name in assembly.GetManifestResourceNames())
+        foreach (string name in assembly.GetManifestResourceNames())
         {
-            if(!name.StartsWith(prefix, StringComparison.Ordinal))
+            if (!name.StartsWith(prefix, StringComparison.Ordinal))
                 continue;
 
-            if(!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            if (!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             string cultureName = name[prefix.Length..^".json".Length];
@@ -152,7 +152,7 @@ public sealed class LocalizationService : ILocalizationService
             {
                 cultures.Add(new CultureInfo(cultureName));
             }
-            catch(CultureNotFoundException)
+            catch (CultureNotFoundException)
             {
                 // Skip resource files that aren't valid culture identifiers
             }

@@ -1,9 +1,9 @@
 using System.IO.Abstractions;
 using System.Text.Json;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 
@@ -85,7 +85,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
 
     private static List<ClassificationCategoryNode> BuildCategoryHierarchy(IReadOnlyList<FileClassificationCategoryEntity> categories)
     {
-        Dictionary<int, ClassificationCategoryNode> nodesById = categories
+        var nodesById = categories
             .OrderBy(category => category.Level)
             .ThenBy(category => category.Name)
             .ToDictionary(category => category.Id, category => new ClassificationCategoryNode
@@ -113,7 +113,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
 
     private static List<ClassificationCategoryNode> BuildCategoryHierarchy(IReadOnlyList<FileClassificationCategory> categories)
     {
-        Dictionary<int, ClassificationCategoryNode> nodesById = categories
+        var nodesById = categories
             .OrderBy(category => category.Level)
             .ThenBy(category => category.Name)
             .ToDictionary(category => category.Id.Id, category => new ClassificationCategoryNode

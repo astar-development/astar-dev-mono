@@ -119,7 +119,7 @@ public sealed class GivenASyncRepository
         {
             await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress, Option.None<string>(), TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }
@@ -138,7 +138,7 @@ public sealed class GivenASyncRepository
         {
             await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed, Option.None<string>(), TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }
@@ -157,7 +157,7 @@ public sealed class GivenASyncRepository
         {
             await repository.UpdateJobStateAsync(jobId, SyncJobState.Failed, "Upload failed", TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }
@@ -179,7 +179,7 @@ public sealed class GivenASyncRepository
         {
             await repository.ClearCompletedJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }
@@ -244,7 +244,7 @@ public sealed class GivenASyncRepository
         {
             await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }
@@ -261,7 +261,7 @@ public sealed class GivenASyncRepository
         {
             await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.LocalWins, TestContext.Current.CancellationToken);
         }
-        catch(InvalidOperationException)
+        catch (InvalidOperationException)
         {
         }
     }

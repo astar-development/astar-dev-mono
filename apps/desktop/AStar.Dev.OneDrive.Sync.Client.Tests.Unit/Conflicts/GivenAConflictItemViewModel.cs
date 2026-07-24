@@ -11,8 +11,8 @@ public sealed class GivenAConflictItemViewModel
 {
     private static SyncConflict BuildConflict() => new()
     {
-        Remote   = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789")),
-        Target   = SyncFileTargetFactory.Create("/home/user/docs/report.pdf", "docs/report.pdf"),
+        Remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789")),
+        Target = SyncFileTargetFactory.Create("/home/user/docs/report.pdf", "docs/report.pdf"),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow.AddHours(-1), 1024L, DateTimeOffset.UtcNow, 2048L),
     };
 

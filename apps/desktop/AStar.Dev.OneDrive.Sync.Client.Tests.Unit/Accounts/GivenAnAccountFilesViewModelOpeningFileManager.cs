@@ -1,24 +1,24 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelOpeningFileManager
 {
     private const string AccountIdString = "account-1";
-    private const string AccessToken     = "token-abc";
-    private const string DriveIdValue    = "drive-1";
-    private const string FolderId        = "folder-1";
-    private const string FolderName      = "Photos";
+    private const string AccessToken = "token-abc";
+    private const string DriveIdValue = "drive-1";
+    private const string FolderId = "folder-1";
+    private const string FolderName = "Photos";
 
     [Fact]
     public async Task when_directory_exists_then_open_folder_is_called()
@@ -71,7 +71,7 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManager
 
         var account = new OneDriveAccount
         {
-            Id      = new AccountId(AccountIdString),
+            Id = new AccountId(AccountIdString),
             Profile = AccountProfileFactory.Create("Test User", "test@test.com")
         };
 

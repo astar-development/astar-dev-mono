@@ -1,9 +1,8 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
-
-using AStar.Dev.Infrastructure.AppDb;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -41,7 +40,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         var existing = await db.Accounts
             .FirstOrDefaultAsync(a => a.Id == account.Id, cancellationToken).ConfigureAwait(false);
 
-        if(existing is null)
+        if (existing is null)
         {
             _ = db.Accounts.Add(account);
         }
@@ -59,7 +58,7 @@ public sealed class AccountRepository(IDbContextFactory<AppDbContext> dbFactory)
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
 
         var entity = await db.Accounts.FirstOrDefaultAsync(a => a.Id == id, cancellationToken).ConfigureAwait(false);
-        if(entity is null)
+        if (entity is null)
             return;
 
         entity.Quota = quota;

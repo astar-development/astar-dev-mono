@@ -1,5 +1,5 @@
-using AStar.Dev.Functional.Extensions;
 using System.Reactive;
+using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 

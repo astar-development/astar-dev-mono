@@ -14,20 +14,20 @@ public static class SyncRuleEvaluator
     {
         SyncRuleEntity? match = null;
 
-        foreach(var rule in rules)
+        foreach (var rule in rules)
         {
-            if(!remotePath.StartsWith(rule.RemotePath, StringComparison.OrdinalIgnoreCase))
+            if (!remotePath.StartsWith(rule.RemotePath, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             char afterPrefix = remotePath.Length > rule.RemotePath.Length
                 ? remotePath[rule.RemotePath.Length]
                 : (char)0;
-            if(rule.RemotePath != "/" && remotePath.Length > rule.RemotePath.Length && afterPrefix != '/')
+            if (rule.RemotePath != "/" && remotePath.Length > rule.RemotePath.Length && afterPrefix != '/')
                 continue;
 
-            if(match is null || rule.RemotePath.Length > match.RemotePath.Length)
+            if (match is null || rule.RemotePath.Length > match.RemotePath.Length)
                 match = rule;
-            else if(rule.RemotePath.Length == match.RemotePath.Length && rule.RuleType == RuleType.Exclude)
+            else if (rule.RemotePath.Length == match.RemotePath.Length && rule.RuleType == RuleType.Exclude)
                 match = rule;
         }
 

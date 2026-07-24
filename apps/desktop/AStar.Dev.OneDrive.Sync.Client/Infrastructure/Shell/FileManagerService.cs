@@ -9,7 +9,7 @@ public sealed class FileManagerService : IFileManagerService
     public void OpenFolder(string path)
     {
         string opener = OperatingSystem.IsWindows() ? "explorer"
-                      : OperatingSystem.IsMacOS()   ? "open"
+                      : OperatingSystem.IsMacOS() ? "open"
                       : "xdg-open";
 
         _ = Process.Start(opener, path);

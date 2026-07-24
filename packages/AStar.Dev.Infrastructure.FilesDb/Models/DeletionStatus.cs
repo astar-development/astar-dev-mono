@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Infrastructure.FilesDb.Models;
+namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
 /// <summary>
 ///     Defines dates/times for soft and hard deletion

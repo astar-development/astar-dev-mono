@@ -4,7 +4,7 @@ using AStar.Dev.Utilities;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(Extensions.Models.Serilog))]
-public class GivenSerilog
+internal class GivenSerilog
 {
     [Fact]
     public void SetTheEnrichPropertyToAnEmptyArrayByDefault()
@@ -18,7 +18,7 @@ public class GivenSerilog
     [Fact]
     public void SetTheEnrichPropertyToTheProvidedValues()
     {
-        var serilog       = new Extensions.Models.Serilog();
+        var serilog = new Extensions.Models.Serilog();
         string[] testEnrichers = ["Enricher1", "Enricher2"];
 
         serilog.Enrich = testEnrichers;
@@ -61,7 +61,7 @@ public class GivenSerilog
     [Fact]
     public void SetTheMinimumLevelPropertyToTheProvidedValues()
     {
-        var serilog              = new Extensions.Models.Serilog();
+        var serilog = new Extensions.Models.Serilog();
         var modifiedMinimumLevel = new MinimumLevel { Default = "Error", Override = new() { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Information", AStar = "Debug" } };
 
         serilog.MinimumLevel = modifiedMinimumLevel;

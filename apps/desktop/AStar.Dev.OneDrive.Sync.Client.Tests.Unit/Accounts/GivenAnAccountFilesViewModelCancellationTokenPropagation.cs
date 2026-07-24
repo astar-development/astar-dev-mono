@@ -14,8 +14,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
 {
     private const string AccountIdString = "account-1";
-    private const string AccessToken     = "token-abc";
-    private const string DriveIdValue    = "drive-1";
+    private const string AccessToken = "token-abc";
+    private const string DriveIdValue = "drive-1";
 
     [Fact]
     public async Task when_load_is_called_with_a_cancellation_token_then_get_rule_states_receives_it()
@@ -47,7 +47,7 @@ public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
     private static OneDriveAccount BuildAccount()
         => new()
         {
-            Id      = new AccountId(AccountIdString),
+            Id = new AccountId(AccountIdString),
             Profile = AccountProfileFactory.Create("Test User", "test@test.com"),
             SyncConfig = Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.LastWriteWins, LocalSyncPath.Restore("/tmp/sync")))
         };

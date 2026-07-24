@@ -13,7 +13,7 @@ public static class ExportDirectoryFactory
     /// </summary>
     public static Result<ExportDirectory, string> Create(string? rawPath)
     {
-        if(string.IsNullOrWhiteSpace(rawPath))
+        if (string.IsNullOrWhiteSpace(rawPath))
             return Result.Failure<ExportDirectory, string>(InvalidPathError);
 
         return Result.Success<ExportDirectory, string>(ExportDirectory.Restore(rawPath));

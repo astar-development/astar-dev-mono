@@ -2,14 +2,13 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Http;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
-
-using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 

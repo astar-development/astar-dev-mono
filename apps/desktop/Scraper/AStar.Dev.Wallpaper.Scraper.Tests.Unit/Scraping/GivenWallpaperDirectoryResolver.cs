@@ -79,7 +79,7 @@ public sealed class GivenWallpaperDirectoryResolver
     {
         List<TagData> tags = [new("Zebra", "animals"), new("Apple", "food"), new("Mango", "food")];
 
-        string directory = WallpaperDirectoryResolver.Resolve(layout, tags, category, [ new FileClassificationCategoryEntity { Name = "Apple", IncludeInSearch = true, Level = 1 }, new FileClassificationCategoryEntity { Name = "Mango", IncludeInSearch = true, Level = 1 }, new FileClassificationCategoryEntity { Name = "Zebra", IncludeInSearch = true, Level = 1 }], fileSystem);
+        string directory = WallpaperDirectoryResolver.Resolve(layout, tags, category, [new FileClassificationCategoryEntity { Name = "Apple", IncludeInSearch = true, Level = 1 }, new FileClassificationCategoryEntity { Name = "Mango", IncludeInSearch = true, Level = 1 }, new FileClassificationCategoryEntity { Name = "Zebra", IncludeInSearch = true, Level = 1 }], fileSystem);
 
         directory.ShouldBe("/root/regular/L/Landscapes/Apple/Mango/Zebra");
     }
@@ -104,7 +104,7 @@ public sealed class GivenWallpaperDirectoryResolver
     [Fact]
     public void when_a_tag_contains_a_colon_then_the_colon_is_removed_from_the_path()
     {
-        string directory = WallpaperDirectoryResolver.Resolve(layout, [new TagData("Marvel: Avengers", "movies")], category, [ new FileClassificationCategoryEntity { Name = "Marvel: Avengers", IncludeInSearch = true, Level = 1 }], fileSystem);
+        string directory = WallpaperDirectoryResolver.Resolve(layout, [new TagData("Marvel: Avengers", "movies")], category, [new FileClassificationCategoryEntity { Name = "Marvel: Avengers", IncludeInSearch = true, Level = 1 }], fileSystem);
 
         directory.ShouldBe("/root/regular/L/Landscapes/Marvel Avengers");
     }
@@ -122,7 +122,7 @@ public sealed class GivenWallpaperDirectoryResolver
     [Fact]
     public void when_a_tag_contains_an_invalid_path_character_then_the_character_is_removed()
     {
-        string directory = WallpaperDirectoryResolver.Resolve(layout, [new TagData("Bad\0Tag", "outdoors")], category, [ new FileClassificationCategoryEntity { Name = "Bad\0Tag", IncludeInSearch = true, Level = 1 }], fileSystem);
+        string directory = WallpaperDirectoryResolver.Resolve(layout, [new TagData("Bad\0Tag", "outdoors")], category, [new FileClassificationCategoryEntity { Name = "Bad\0Tag", IncludeInSearch = true, Level = 1 }], fileSystem);
 
         directory.ShouldBe("/root/regular/L/Landscapes/Bad Tag");
     }

@@ -1,5 +1,5 @@
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
@@ -13,10 +13,10 @@ public static class OneDriveAccountFactory
 
         return new OneDriveAccount
         {
-            Id               = new AccountId(accountId),
-            Profile          = profile,
+            Id = new AccountId(accountId),
+            Profile = profile,
             SelectedFolderIds = [.. folders.Select(f => new OneDriveFolderId(f.Id))],
-            FolderNames      = folders.ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
+            FolderNames = folders.ToDictionary(f => new OneDriveFolderId(f.Id), f => f.Name)
         };
     }
 }

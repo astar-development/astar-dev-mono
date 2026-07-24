@@ -8,7 +8,7 @@ public readonly record struct EventId(Guid Value)
 {
     /// <summary>
     ///    Creates a new instance of the EventId struct with a new Guid value
-     ///
+    ///
     /// </summary>
     /// <returns>A new FileId instance</returns>
     public static EventId CreateNew() => new(Guid.CreateVersion7());

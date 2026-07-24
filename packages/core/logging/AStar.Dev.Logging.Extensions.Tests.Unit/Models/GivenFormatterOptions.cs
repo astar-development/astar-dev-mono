@@ -3,7 +3,7 @@ using AStar.Dev.Logging.Extensions.Models;
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
 [TestSubject(typeof(FormatterOptions))]
-public class GivenFormatterOptions
+internal class GivenFormatterOptions
 {
     [Fact]
     public void SingleLine_ShouldDefaultToFalse()
@@ -54,7 +54,7 @@ public class GivenFormatterOptions
     [Fact]
     public void TimestampFormat_ShouldSetAndGetCorrectly()
     {
-        var options   = new FormatterOptions();
+        var options = new FormatterOptions();
         string newFormat = "yyyy-MM-dd";
 
         options.TimestampFormat = newFormat;

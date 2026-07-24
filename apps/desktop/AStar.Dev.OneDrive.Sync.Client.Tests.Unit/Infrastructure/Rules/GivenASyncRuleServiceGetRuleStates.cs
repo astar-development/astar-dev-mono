@@ -8,9 +8,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Rules;
 public sealed class GivenASyncRuleServiceGetRuleStates
 {
     private const string AccountIdString = "account-1";
-    private const string IncludePath     = "/Photos";
-    private const string ExcludePath     = "/Videos";
-    private const string MixedCasePath   = "/photos";
+    private const string IncludePath = "/Photos";
+    private const string ExcludePath = "/Videos";
+    private const string MixedCasePath = "/photos";
 
     [Fact]
     public async Task when_getting_rule_states_then_include_rules_are_returned()

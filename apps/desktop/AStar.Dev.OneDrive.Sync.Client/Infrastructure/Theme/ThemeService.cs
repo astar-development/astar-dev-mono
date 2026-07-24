@@ -11,8 +11,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 /// </summary>
 public sealed class ThemeService : IThemeService, IDisposable
 {
-    private static readonly Uri lightUri  = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
-    private static readonly Uri darkUri   = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
+    private static readonly Uri lightUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml");
+    private static readonly Uri darkUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
     private static readonly Uri hackerUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Hacker.axaml");
     private Disposable? systemWatcher;
 
@@ -99,9 +99,9 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private static Uri ResolveUri(AppTheme resolved) => resolved switch
     {
-        AppTheme.Dark   => darkUri,
+        AppTheme.Dark => darkUri,
         AppTheme.Hacker => hackerUri,
-        _               => lightUri,
+        _ => lightUri,
     };
 
     public void Dispose() => systemWatcher?.Dispose();

@@ -1,10 +1,10 @@
 using System.IO.Abstractions;
-using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.OneDrive;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Rules;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;

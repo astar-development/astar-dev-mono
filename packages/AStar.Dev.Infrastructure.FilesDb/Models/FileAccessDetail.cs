@@ -1,4 +1,4 @@
-﻿using AStar.Dev.Utilities;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 

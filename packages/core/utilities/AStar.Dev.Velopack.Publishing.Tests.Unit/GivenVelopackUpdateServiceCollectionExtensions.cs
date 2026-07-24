@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.Velopack.Publishing.Tests.Unit;
 
-public sealed class GivenVelopackUpdateServiceCollectionExtensions
+internal sealed class GivenVelopackUpdateServiceCollectionExtensions
 {
     private static IServiceProvider BuildProvider(string githubRepositoryUrl)
     {

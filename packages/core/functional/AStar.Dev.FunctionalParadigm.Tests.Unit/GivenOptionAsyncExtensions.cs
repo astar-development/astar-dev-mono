@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenOptionAsyncExtensions
+internal class GivenOptionAsyncExtensions
 {
     [Fact]
     public async Task when_map_async_is_called_on_an_option_with_some_then_transforms_the_value()

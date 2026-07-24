@@ -12,11 +12,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceSyncingAnAccount
 {
-    private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
-    private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
-    private readonly ILocalizationService  _localizationService  = Substitute.For<ILocalizationService>();
+    private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
     public GivenASyncServiceSyncingAnAccount()
     {
@@ -29,9 +29,9 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
         SelectedFolderIds = []
     };
 
@@ -59,7 +59,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.Authenticating")
+            if (args.CurrentFile == "Sync.Authenticating")
                 authCallOrder.Add("progress");
         };
 
@@ -78,7 +78,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.Authenticating")
+            if (args.CurrentFile == "Sync.Authenticating")
                 capturedState = args.SyncState;
         };
 
@@ -97,7 +97,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
                 capturedMessage = args.CurrentFile;
         };
 
@@ -117,7 +117,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -142,7 +142,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.Cancelled")
+            if (args.CurrentFile == "Sync.Cancelled")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -167,7 +167,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error && args.CurrentFile != "Sync.Authenticating")
+            if (args.SyncState == SyncState.Error && args.CurrentFile != "Sync.Authenticating")
             {
                 capturedState = args.SyncState;
                 capturedMessage = args.CurrentFile;
@@ -191,7 +191,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.NoFoldersSelected")
+            if (args.CurrentFile == "Sync.NoFoldersSelected")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -215,7 +215,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.CurrentFile == "Sync.Complete")
+            if (args.CurrentFile == "Sync.Complete")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;
@@ -239,7 +239,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
         var sut = CreateSut();
         sut.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error && args.CurrentFile == "Sync.CompletedWithErrors")
+            if (args.SyncState == SyncState.Error && args.CurrentFile == "Sync.CompletedWithErrors")
             {
                 capturedMessage = args.CurrentFile;
                 capturedState = args.SyncState;

@@ -1,6 +1,6 @@
 namespace AStar.Dev.Utilities.Tests.Unit;
 
-public sealed class GivenIntParser
+internal sealed class GivenIntParser
 {
     [Fact]
     public void when_toint_is_called_with_a_valid_value_then_returns_the_expected_value() =>

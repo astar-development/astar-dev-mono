@@ -1,27 +1,27 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using WireMock;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
-using WireMock.Util;
 using WireMock.Types;
+using WireMock.Util;
 using WireMockBodyType = WireMock.Types.BodyType;
 using WireMockRequest = WireMock.RequestBuilders.Request;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
-using AStar.Dev.Functional.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Time.Testing;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Sync.Jobs;
 
 public sealed class GivenAnUploadService
 {
-    private const string DriveIdValue   = "drive-001";
+    private const string DriveIdValue = "drive-001";
     private const string ParentFolderId = "folder-001";
-    private const string RemotePath     = "test-file.bin";
+    private const string RemotePath = "test-file.bin";
     private const string ExpectedItemId = "item-abc-123";
-    private const string LocalFilePath  = "/mock/test-file.bin";
+    private const string LocalFilePath = "/mock/test-file.bin";
 
     private static IHttpClientFactory CreateChunkClientFactory()
     {

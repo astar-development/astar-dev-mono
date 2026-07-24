@@ -16,17 +16,17 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync.Pipeline
 
 public sealed class GivenASyncPassOrchestratorLocalisingStrings
 {
-    private readonly IAccountRepository           _accountRepository           = Substitute.For<IAccountRepository>();
-    private readonly IDriveStateRepository        _driveStateRepository        = Substitute.For<IDriveStateRepository>();
-    private readonly IRemoteFolderEnumerator      _remoteFolderEnumerator      = Substitute.For<IRemoteFolderEnumerator>();
-    private readonly IRemoteDeletionDetector      _remoteDeletionDetector      = Substitute.For<IRemoteDeletionDetector>();
-    private readonly ILocalDeletionDetector       _localDeletionDetector       = Substitute.For<ILocalDeletionDetector>();
-    private readonly ILocalChangeDetector         _localChangeDetector         = Substitute.For<ILocalChangeDetector>();
-    private readonly ISyncJobExecutor             _syncJobExecutor             = Substitute.For<ISyncJobExecutor>();
-    private readonly IDownloadJobBuilder          _downloadJobBuilder          = Substitute.For<IDownloadJobBuilder>();
-    private readonly ILocalizationService         _localizationService         = Substitute.For<ILocalizationService>();
-    private readonly ISettingsService             _settingsService             = Substitute.For<ISettingsService>();
-    private readonly IFileClassificationRepository _classificationRepository  = Substitute.For<IFileClassificationRepository>();
+    private readonly IAccountRepository _accountRepository = Substitute.For<IAccountRepository>();
+    private readonly IDriveStateRepository _driveStateRepository = Substitute.For<IDriveStateRepository>();
+    private readonly IRemoteFolderEnumerator _remoteFolderEnumerator = Substitute.For<IRemoteFolderEnumerator>();
+    private readonly IRemoteDeletionDetector _remoteDeletionDetector = Substitute.For<IRemoteDeletionDetector>();
+    private readonly ILocalDeletionDetector _localDeletionDetector = Substitute.For<ILocalDeletionDetector>();
+    private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
+    private readonly ISyncJobExecutor _syncJobExecutor = Substitute.For<ISyncJobExecutor>();
+    private readonly IDownloadJobBuilder _downloadJobBuilder = Substitute.For<IDownloadJobBuilder>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
+    private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
+    private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
 
     public GivenASyncPassOrchestratorLocalisingStrings()
     {
@@ -54,9 +54,9 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore(localSyncPath)),
         SelectedFolderIds = []
     };
 
@@ -70,8 +70,8 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
 
     private static SyncJob CreateMinimalDownloadJob()
     {
-        var remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId("folder-1"), new OneDriveItemId("item-1"));
-        var target   = SyncFileTargetFactory.Create("/sync/file.txt", "file.txt");
+        var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId("folder-1"), new OneDriveItemId("item-1"));
+        var target = SyncFileTargetFactory.Create("/sync/file.txt", "file.txt");
         var metadata = SyncFileMetadataFactory.Create(1024L, DateTimeOffset.UtcNow);
 
         return SyncJobFactory.CreateDownload(remote, target, metadata);

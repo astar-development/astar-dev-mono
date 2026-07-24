@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.Velopack.Publishing.Tests.Unit;
 
-public sealed class GivenVelopackUpdateSettings
+internal sealed class GivenVelopackUpdateSettings
 {
     private static IOptions<VelopackUpdateSettings> BuildOptions(string githubRepositoryUrl)
     {

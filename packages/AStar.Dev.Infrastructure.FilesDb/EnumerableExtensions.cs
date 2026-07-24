@@ -1,4 +1,4 @@
-﻿using AStar.Dev.Infrastructure.FilesDb.Models;
+using AStar.Dev.Infrastructure.FilesDb.Models;
 using AStar.Dev.Technical.Debt.Reporting;
 
 namespace AStar.Dev.Infrastructure.FilesDb;
@@ -33,13 +33,13 @@ public static class EnumerableExtensions
     /// </returns>
     public static IEnumerable<FileDetail> OrderFiles(this IEnumerable<FileDetail> files, SortOrder sortOrder)
         => sortOrder switch
-           {
-               SortOrder.NameAscending  => files.OrderBy(f => f.FileName),
-               SortOrder.NameDescending => files.OrderByDescending(f => f.FileName),
-               SortOrder.SizeAscending  => files.OrderBy(f => f.FileSize),
-               SortOrder.SizeDescending => files.OrderByDescending(f => f.FileSize),
-               _                        => files,
-           };
+        {
+            SortOrder.NameAscending => files.OrderBy(f => f.FileName),
+            SortOrder.NameDescending => files.OrderByDescending(f => f.FileName),
+            SortOrder.SizeAscending => files.OrderBy(f => f.FileSize),
+            SortOrder.SizeDescending => files.OrderByDescending(f => f.FileSize),
+            _ => files,
+        };
 
     /// <summary>
     ///     Gets the count of duplicates, grouped by Size, Height and Width.
@@ -53,7 +53,7 @@ public static class EnumerableExtensions
     /// </returns>
     public static int GetDuplicatesCount(this IEnumerable<FileDetail> files, CancellationToken cancellationToken)
     {
-        if(cancellationToken.IsCancellationRequested) return 0;
+        if (cancellationToken.IsCancellationRequested) return 0;
 
         IGrouping<FileSize, FileDetail>[] duplicatesBySize = [.. files.AsEnumerable()
                                                                   .GroupBy(file => FileSize.Create(file.FileSize, file?.ImageDetail?.Height, file?.ImageDetail?.Width),

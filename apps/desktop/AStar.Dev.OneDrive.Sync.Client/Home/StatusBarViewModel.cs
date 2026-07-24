@@ -62,11 +62,11 @@ public sealed partial class StatusBarViewModel : ObservableObject
     /// <summary>Human-readable label for the current sync state.</summary>
     public string StatusLabel => SyncState switch
     {
-        SyncState.Syncing  => loc.GetLocal("StatusBar.Syncing"),
-        SyncState.Pending  => loc.GetLocal("StatusBar.Pending", PendingCount),
+        SyncState.Syncing => loc.GetLocal("StatusBar.Syncing"),
+        SyncState.Pending => loc.GetLocal("StatusBar.Pending", PendingCount),
         SyncState.Conflict => ConflictCount == 1 ? loc.GetLocal("StatusBar.Conflict", ConflictCount) : loc.GetLocal("StatusBar.Conflicts", ConflictCount),
-        SyncState.Error    => loc.GetLocal("StatusBar.Error"),
-        _                  => loc.GetLocal("StatusBar.Synced")
+        SyncState.Error => loc.GetLocal("StatusBar.Error"),
+        _ => loc.GetLocal("StatusBar.Synced")
     };
 
     /// <summary>Localised "No account selected" placeholder shown when no account is active.</summary>
@@ -84,7 +84,7 @@ public sealed partial class StatusBarViewModel : ObservableObject
 
     private void OnAccountsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
+        if (e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
             ApplyActiveAccount(accounts.ActiveAccount);
     }
 
@@ -92,10 +92,10 @@ public sealed partial class StatusBarViewModel : ObservableObject
 
     private void OnTrackedCardPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if(trackedCard is null)
+        if (trackedCard is null)
             return;
 
-        switch(e.PropertyName)
+        switch (e.PropertyName)
         {
             case nameof(AccountCardViewModel.SyncState):
                 SyncState = trackedCard.SyncState;
@@ -114,7 +114,7 @@ public sealed partial class StatusBarViewModel : ObservableObject
     {
         UntrackCurrentCard();
 
-        if(active is null)
+        if (active is null)
         {
             HasAccount = false;
             AccountEmail = string.Empty;
@@ -142,7 +142,7 @@ public sealed partial class StatusBarViewModel : ObservableObject
 
     private void UntrackCurrentCard()
     {
-        if(trackedCard is null)
+        if (trackedCard is null)
             return;
 
         trackedCard.PropertyChanged -= OnTrackedCardPropertyChanged;

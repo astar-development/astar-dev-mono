@@ -15,11 +15,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncServiceLocalisingStrings
 {
-    private readonly IAuthService           _authService           = Substitute.For<IAuthService>();
-    private readonly ISyncRepository        _syncRepository        = Substitute.For<ISyncRepository>();
-    private readonly ISyncPassOrchestrator  _syncPassOrchestrator  = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IConflictApplier       _conflictApplier       = Substitute.For<IConflictApplier>();
-    private readonly ILocalizationService   _localizationService   = Substitute.For<ILocalizationService>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
+    private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
+    private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
     public GivenASyncServiceLocalisingStrings()
     {
@@ -32,18 +32,18 @@ public sealed class GivenASyncServiceLocalisingStrings
 
     private static OneDriveAccount CreateAccount(bool withSyncConfig = true) => new()
     {
-        Id                = new AccountId("user-1"),
-        Profile           = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
-        SyncConfig        = withSyncConfig ? AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/path/to/sync")) : Option.None<AccountSyncConfig>(),
+        Id = new AccountId("user-1"),
+        Profile = AccountProfileFactory.Create(string.Empty, "user@outlook.com"),
+        SyncConfig = withSyncConfig ? AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/path/to/sync")) : Option.None<AccountSyncConfig>(),
         SelectedFolderIds = []
     };
 
     private static SyncConflict CreateConflict() => new()
     {
-        Id       = Guid.NewGuid(),
-        Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+        Id = Guid.NewGuid(),
+        Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
         Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow.AddMinutes(-5), 0L),
-        State    = ConflictState.Pending
+        State = ConflictState.Pending
     };
 
     [Fact]

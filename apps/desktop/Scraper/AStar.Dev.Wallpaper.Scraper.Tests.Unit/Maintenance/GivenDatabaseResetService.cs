@@ -98,7 +98,10 @@ public sealed class GivenDatabaseResetService : IDisposable
             var searchConfiguration = new SearchConfigurationEntity();
             searchConfiguration.SearchCategories.Add(new SearchCategoryEntity
             {
-                Id = "nature-id", Name = "Nature", LastKnownImageCount = 120, LastPageVisited = 3,
+                Id = "nature-id",
+                Name = "Nature",
+                LastKnownImageCount = 120,
+                LastPageVisited = 3,
             });
             context.ScrapeConfiguration.Add(new ScrapeConfigurationEntity { SearchConfiguration = searchConfiguration });
             context.SaveChanges();

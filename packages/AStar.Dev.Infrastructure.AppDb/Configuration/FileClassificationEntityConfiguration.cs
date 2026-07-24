@@ -20,6 +20,6 @@ public sealed class FileClassificationEntityConfiguration : IEntityTypeConfigura
                    .WithMany()
                    .HasForeignKey(e => e.CategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
-                   _ = builder.HasIndex(e => e.CategoryId).IsUnique(false);
+        _ = builder.HasIndex(e => e.CategoryId).IsUnique(false);
     }
 }

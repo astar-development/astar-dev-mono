@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenMatchValueTask
+internal class GivenMatchValueTask
 {
     [Fact]
     public async Task when_both_handlers_are_valuetask_then_returns_expected()

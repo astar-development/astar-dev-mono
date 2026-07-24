@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
@@ -40,12 +40,12 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public string StatusBadgeText => SyncState switch
     {
         FolderSyncState.Included => loc.GetLocal("Files.FolderStatus.Included"),
-        FolderSyncState.Synced   => loc.GetLocal("Files.FolderStatus.Synced"),
-        FolderSyncState.Syncing  => loc.GetLocal("Files.FolderStatus.Syncing"),
-        FolderSyncState.Partial  => loc.GetLocal("Files.FolderStatus.Partial"),
+        FolderSyncState.Synced => loc.GetLocal("Files.FolderStatus.Synced"),
+        FolderSyncState.Syncing => loc.GetLocal("Files.FolderStatus.Syncing"),
+        FolderSyncState.Partial => loc.GetLocal("Files.FolderStatus.Partial"),
         FolderSyncState.Conflict => loc.GetLocal("Files.FolderStatus.Conflict"),
-        FolderSyncState.Error    => loc.GetLocal("Files.FolderStatus.Error"),
-        _                        => loc.GetLocal("Files.FolderStatus.Excluded")
+        FolderSyncState.Error => loc.GetLocal("Files.FolderStatus.Error"),
+        _ => loc.GetLocal("Files.FolderStatus.Excluded")
     };
 
     public string ToggleLabel => loc.GetLocal(IsIncluded ? "Files.Exclude" : "Files.Include");

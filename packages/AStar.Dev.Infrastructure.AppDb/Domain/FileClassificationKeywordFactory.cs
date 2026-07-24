@@ -10,7 +10,7 @@ public static class FileClassificationKeywordFactory
     public static Result<FileClassificationKeyword, string> Create(string value, Option<bool> isFamous, Option<bool> isInternet)
     {
         string normalised = value?.Trim().ToTitleCase() ?? string.Empty;
-        if(string.IsNullOrEmpty(normalised))
+        if (string.IsNullOrEmpty(normalised))
             return new Result<FileClassificationKeyword, string>.Error("Value must not be empty.");
 
         return new Result<FileClassificationKeyword, string>.Ok(new(normalised, isFamous, isInternet));

@@ -1,4 +1,4 @@
-﻿namespace AStar.Dev.Utilities.Tests.Unit;
+namespace AStar.Dev.Utilities.Tests.Unit;
 
 internal sealed class AnyClass
 {

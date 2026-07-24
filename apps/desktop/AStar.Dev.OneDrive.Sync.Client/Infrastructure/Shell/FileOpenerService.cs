@@ -16,6 +16,6 @@ public sealed class FileOpenerService : IFileOpenerService
 
     internal static string GetOpener()
         => OperatingSystem.IsWindows() ? "explorer"
-         : OperatingSystem.IsMacOS()   ? "open"
+         : OperatingSystem.IsMacOS() ? "open"
          : "xdg-open";
 }

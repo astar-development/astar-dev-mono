@@ -41,7 +41,7 @@ public sealed partial class FilesViewModel(IAccountFilesViewModelFactory account
 
     public void AddAccount(OneDriveAccount account)
     {
-        if(Tabs.Any(t => t.AccountId == account.Id.Id))
+        if (Tabs.Any(t => t.AccountId == account.Id.Id))
             return;
 
         var tab = accountFilesViewModelFactory.Create(account);
@@ -57,28 +57,28 @@ public sealed partial class FilesViewModel(IAccountFilesViewModelFactory account
         OnPropertyChanged(nameof(HasTabs));
         OnPropertyChanged(nameof(HasNoAccounts));
 
-        if(ActiveTab is null)
+        if (ActiveTab is null)
             ActivateTab(tab);
     }
 
     public void RemoveAccount(string accountId)
     {
         var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
-        if(tab is null)
+        if (tab is null)
             return;
 
         _ = Tabs.Remove(tab);
         OnPropertyChanged(nameof(HasTabs));
         OnPropertyChanged(nameof(HasNoAccounts));
 
-        if(ActiveTab == tab)
+        if (ActiveTab == tab)
             ActivateTab(Tabs.FirstOrDefault());
     }
 
     public async Task ActivateAccountAsync(string accountId)
     {
         var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
-        if(tab is null)
+        if (tab is null)
             return;
 
         ActivateTab(tab);
@@ -87,7 +87,7 @@ public sealed partial class FilesViewModel(IAccountFilesViewModelFactory account
 
     private void ActivateTab(AccountFilesViewModel? tab)
     {
-        foreach(var t in Tabs)
+        foreach (var t in Tabs)
             t.IsActiveTab = t == tab;
 
         ActiveTab = tab;

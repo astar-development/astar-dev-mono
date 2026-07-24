@@ -1,12 +1,12 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public class PatternTests
+internal class PatternTests
 {
     [Fact]
     public void IsSome_And_IsNone_WorkCorrectly()
     {
         Option<string> some = new Option<string>.Some("value");
-        var            none = Option.None<string>();
+        var none = Option.None<string>();
 
         Assert.True(Pattern.IsSome(some));
         Assert.False(Pattern.IsNone(some));
@@ -18,7 +18,7 @@ public class PatternTests
     [Fact]
     public void IsOk_And_IsError_WorkCorrectly()
     {
-        Result<int, string> ok  = new Result<int, string>.Ok(1);
+        Result<int, string> ok = new Result<int, string>.Ok(1);
         Result<int, string> err = new Result<int, string>.Error("fail");
 
         Assert.True(Pattern.IsOk(ok));

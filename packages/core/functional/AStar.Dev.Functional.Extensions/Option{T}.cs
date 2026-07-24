@@ -29,8 +29,8 @@ public abstract class Option<T>
         this switch
         {
             Some some => onSome(some.Value),
-            None _    => onNone(),
-            _         => throw new InvalidOperationException("It should not be possible to reach this point.")
+            None _ => onNone(),
+            _ => throw new InvalidOperationException("It should not be possible to reach this point.")
         };
 
     /// <summary>
@@ -42,11 +42,11 @@ public abstract class Option<T>
     /// </returns>
     public override bool Equals(object? obj) =>
         obj is Option<T> other && this switch
-                                  {
-                                      Some some => other is Some otherSome && EqualityComparer<T>.Default.Equals(some.Value, otherSome.Value),
-                                      None      => other is None,
-                                      _         => false
-                                  };
+        {
+            Some some => other is Some otherSome && EqualityComparer<T>.Default.Equals(some.Value, otherSome.Value),
+            None => other is None,
+            _ => false
+        };
 
     /// <summary>
     ///     Returns a hash code for the current instance of the <see cref="Option{T}" />.
@@ -60,8 +60,8 @@ public abstract class Option<T>
         this switch
         {
             Some some => HashCode.Combine(typeof(Some), some.Value),
-            None      => typeof(None).GetHashCode(),
-            _         => 0
+            None => typeof(None).GetHashCode(),
+            _ => 0
         };
 
     /// <summary>
@@ -97,7 +97,7 @@ public abstract class Option<T>
         /// <exception cref="ArgumentNullException" />
         public Some(T value)
         {
-            if(value is null) throw new ArgumentNullException(nameof(value));
+            if (value is null) throw new ArgumentNullException(nameof(value));
 
             Value = value;
         }

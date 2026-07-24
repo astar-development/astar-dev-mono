@@ -1,9 +1,9 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Onboarding;
-using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Onboarding;
 
@@ -11,8 +11,8 @@ public sealed class GivenAnAddAccountWizardViewModel
 {
     private sealed record UnknownAuthError : AuthError;
 
-    private readonly IAuthService         _authService         = Substitute.For<IAuthService>();
-    private readonly IGraphService        _graphService        = Substitute.For<IGraphService>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly IGraphService _graphService = Substitute.For<IGraphService>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
 
     private AddAccountWizardViewModel CreateSut() => new(_authService, _graphService, _localizationService);

@@ -1,6 +1,6 @@
 namespace AStar.Dev.Source.Generators.Attributes.Tests.Unit;
 
-public class RegisterServiceAttributeShould
+internal class RegisterServiceAttributeShould
 {
     [Fact]
     public void HaveDefaultLifetimeAsScoped()

@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Sync.Client.Onboarding;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -6,21 +6,21 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Onboarding;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStar.Dev.OneDrive.Sync.Client.Onboarding;
 using Microsoft.Extensions.Logging;
-using AStar.Dev.Functional.Extensions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
 public sealed class GivenAnAccountsViewModelWithACompletingWizard
 {
-    private const string AccessToken  = "token-123";
+    private const string AccessToken = "token-123";
     private const string AccountIdStr = "account-1";
-    private const string DisplayName  = "Test User";
-    private const string Email        = "test@outlook.com";
-    private const string FolderId1    = "f1";
-    private const string FolderName1  = "Documents";
-    private const string FolderId2    = "f2";
-    private const string FolderName2  = "Desktop";
+    private const string DisplayName = "Test User";
+    private const string Email = "test@outlook.com";
+    private const string FolderId1 = "f1";
+    private const string FolderName1 = "Documents";
+    private const string FolderId2 = "f2";
+    private const string FolderName2 = "Desktop";
 
     [Fact]
     public async Task when_wizard_completes_then_account_onboarding_service_is_called()
@@ -103,11 +103,11 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
 
     private static (IAuthService AuthService, IGraphService GraphService, IAccountRepository Repository, IAccountOnboardingService OnboardingService, IQuotaRefreshService QuotaRefreshService) BuildMocks()
     {
-        var authService          = Substitute.For<IAuthService>();
-        var graphService         = Substitute.For<IGraphService>();
-        var repository           = Substitute.For<IAccountRepository>();
-        var onboardingService    = Substitute.For<IAccountOnboardingService>();
-        var quotaRefreshService  = Substitute.For<IQuotaRefreshService>();
+        var authService = Substitute.For<IAuthService>();
+        var graphService = Substitute.For<IGraphService>();
+        var repository = Substitute.For<IAccountRepository>();
+        var onboardingService = Substitute.For<IAccountOnboardingService>();
+        var quotaRefreshService = Substitute.For<IQuotaRefreshService>();
 
         authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));

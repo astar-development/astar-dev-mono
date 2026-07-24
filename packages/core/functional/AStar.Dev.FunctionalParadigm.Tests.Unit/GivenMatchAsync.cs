@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public class GivenMatchAsync
+internal class GivenMatchAsync
 {
     [Fact]
     public async Task when_on_success_is_async_then_returns_expected_value()

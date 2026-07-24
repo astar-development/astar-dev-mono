@@ -10,12 +10,12 @@ public sealed class GivenASyncStateToBadgeForegroundConverter
     private static readonly SyncStateToBadgeForegroundConverter Sut = SyncStateToBadgeForegroundConverter.Instance;
 
     [Theory]
-    [InlineData(FolderSyncState.Synced,   "#27500A")]
-    [InlineData(FolderSyncState.Syncing,  "#0C447C")]
+    [InlineData(FolderSyncState.Synced, "#27500A")]
+    [InlineData(FolderSyncState.Syncing, "#0C447C")]
     [InlineData(FolderSyncState.Included, "#0C447C")]
-    [InlineData(FolderSyncState.Partial,  "#633806")]
+    [InlineData(FolderSyncState.Partial, "#633806")]
     [InlineData(FolderSyncState.Conflict, "#633806")]
-    [InlineData(FolderSyncState.Error,    "#791F1F")]
+    [InlineData(FolderSyncState.Error, "#791F1F")]
     [InlineData(FolderSyncState.Excluded, "#5F5E5A")]
     public void when_folder_sync_state_is_provided_then_correct_color_is_returned(FolderSyncState state, string expectedHex)
     {

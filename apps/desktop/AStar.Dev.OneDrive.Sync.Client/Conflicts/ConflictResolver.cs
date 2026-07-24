@@ -26,9 +26,9 @@ public static class ConflictResolver
     /// </summary>
     public static string MakeKeepBothName(string localPath, DateTimeOffset localModified, IFileSystem fileSystem)
     {
-        string dir       = fileSystem.Path.GetDirectoryName(localPath) ?? string.Empty;
-        string stem      = fileSystem.Path.GetFileNameWithoutExtension(localPath);
-        string ext       = fileSystem.Path.GetExtension(localPath);
+        string dir = fileSystem.Path.GetDirectoryName(localPath) ?? string.Empty;
+        string stem = fileSystem.Path.GetFileNameWithoutExtension(localPath);
+        string ext = fileSystem.Path.GetExtension(localPath);
         string timestamp = localModified.LocalDateTime.ToString("yyyy-MM-dd HH-mm", CultureInfo.CurrentCulture);
 
         return dir.CombinePath($"{stem} (local {timestamp}){ext}");

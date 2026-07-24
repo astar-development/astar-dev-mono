@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
-using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;

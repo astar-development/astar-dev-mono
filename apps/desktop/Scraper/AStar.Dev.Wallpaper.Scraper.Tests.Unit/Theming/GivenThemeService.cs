@@ -1,6 +1,6 @@
+using AStar.Dev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Theming;
-using AStar.Dev.Utilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testably.Abstractions.Testing;
 

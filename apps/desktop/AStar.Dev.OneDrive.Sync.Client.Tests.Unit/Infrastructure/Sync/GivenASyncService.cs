@@ -1,24 +1,24 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
-using AStar.Dev.Functional.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Sync;
 
 public sealed class GivenASyncService
 {
-    private readonly IAuthService          _authService          = Substitute.For<IAuthService>();
-    private readonly ISyncRepository       _syncRepository       = Substitute.For<ISyncRepository>();
+    private readonly IAuthService _authService = Substitute.For<IAuthService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
-    private readonly IConflictApplier      _conflictApplier      = Substitute.For<IConflictApplier>();
+    private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
 
     private SyncService BuildSut()
         => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
@@ -42,8 +42,8 @@ public sealed class GivenASyncService
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id         = new AccountId("user-1"),
-            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            Id = new AccountId("user-1"),
+            Profile = AccountProfileFactory.Create("User", "user@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
 
@@ -63,8 +63,8 @@ public sealed class GivenASyncService
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id         = new AccountId("user-1"),
-            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            Id = new AccountId("user-1"),
+            Profile = AccountProfileFactory.Create("User", "user@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
 
@@ -91,7 +91,7 @@ public sealed class GivenASyncService
         bool errorRaised = false;
         service.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
                 errorRaised = true;
         };
 
@@ -111,7 +111,7 @@ public sealed class GivenASyncService
         bool noSyncPathRaised = false;
         service.SyncProgressChanged += (_, args) =>
         {
-            if(args.SyncState == SyncState.Error)
+            if (args.SyncState == SyncState.Error)
                 noSyncPathRaised = true;
         };
 
@@ -147,8 +147,8 @@ public sealed class GivenASyncService
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id         = new AccountId("user-1"),
-            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            Id = new AccountId("user-1"),
+            Profile = AccountProfileFactory.Create("User", "user@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
         SyncState? raisedState = null;
@@ -172,8 +172,8 @@ public sealed class GivenASyncService
         var service = BuildSut();
         var account = new OneDriveAccount
         {
-            Id         = new AccountId("user-1"),
-            Profile    = AccountProfileFactory.Create("User", "user@outlook.com"),
+            Id = new AccountId("user-1"),
+            Profile = AccountProfileFactory.Create("User", "user@outlook.com"),
             SyncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/home/user/OneDrive"))
         };
         SyncState? raisedState = null;
@@ -199,10 +199,10 @@ public sealed class GivenASyncService
         var service = BuildSut();
         var conflict = new SyncConflict
         {
-            Id       = Guid.NewGuid(),
-            Remote   = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
+            Id = Guid.NewGuid(),
+            Remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(string.Empty), new OneDriveItemId(string.Empty)),
             Snapshot = ConflictSnapshotFactory.Create(DateTimeOffset.UtcNow, 0L, DateTimeOffset.UtcNow.AddMinutes(-5), 0L),
-            State    = ConflictState.Pending
+            State = ConflictState.Pending
         };
 
         await service.ResolveConflictAsync(conflict, ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
