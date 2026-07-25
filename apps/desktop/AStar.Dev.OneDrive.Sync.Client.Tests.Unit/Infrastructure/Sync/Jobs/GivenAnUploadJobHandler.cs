@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -73,7 +73,7 @@ public sealed class GivenAnUploadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Ok("remote-item-id"));
+            .Returns(new Ok<string, string>("remote-item-id"));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
@@ -87,7 +87,7 @@ public sealed class GivenAnUploadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Ok("remote-item-id"));
+            .Returns(new Ok<string, string>("remote-item-id"));
 
         await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
@@ -102,10 +102,10 @@ public sealed class GivenAnUploadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Error(uploadError));
+            .Returns(new Fail<string, string>(uploadError));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
-        result.Match<string?>(_ => null, error => error).ShouldBe(uploadError);
+        result.Match(_ => (string?)null, error => error).ShouldBe(uploadError);
     }
 }

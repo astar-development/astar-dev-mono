@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
@@ -138,7 +138,7 @@ public sealed class GivenAnOneDriveAccount
     {
         var account = new OneDriveAccount();
         string rawPath = "/home/jason/OneDrive";
-        var path = LocalSyncPathFactory.Create(rawPath).Match<LocalSyncPath?>(p => p, _ => null);
+        var path = LocalSyncPathFactory.Create(rawPath).Match(p => p, _ => (LocalSyncPath?)null);
 
         account.SyncConfig = path is null ? Option.None<AccountSyncConfig>() : Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, path));
 

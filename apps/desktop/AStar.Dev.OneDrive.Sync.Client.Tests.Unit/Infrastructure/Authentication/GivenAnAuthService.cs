@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using Microsoft.Extensions.Logging;
@@ -50,7 +50,7 @@ public sealed class GivenAnAuthService
 
         var result = await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+        result.ShouldBeOfType<Fail<AuthResult, AuthError>>();
     }
 
     [Fact]
@@ -60,9 +60,9 @@ public sealed class GivenAnAuthService
         mockApp.GetAccountsAsync().Returns(Task.FromResult(Enumerable.Empty<IAccount>()));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.Reason.ShouldBeOfType<AuthReAuthRequiredError>();
+        result.Error.ShouldBeOfType<AuthReAuthRequiredError>();
     }
 
     [Fact]
@@ -72,8 +72,8 @@ public sealed class GivenAnAuthService
         mockApp.GetAccountsAsync().Returns(Task.FromResult(Enumerable.Empty<IAccount>()));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
-        var reAuthError = (AuthReAuthRequiredError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var reAuthError = (AuthReAuthRequiredError)result.Error;
 
         reAuthError.ErrorCode.ShouldBe("no_account");
     }
@@ -88,8 +88,8 @@ public sealed class GivenAnAuthService
             .Throw(new MsalUiRequiredException("interaction_required", "User interaction required"));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
-        var reAuthError = (AuthReAuthRequiredError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var reAuthError = (AuthReAuthRequiredError)result.Error;
 
         reAuthError.ErrorCode.ShouldNotBe("no_account");
     }
@@ -104,8 +104,8 @@ public sealed class GivenAnAuthService
             .Throw(new MsalUiRequiredException("interaction_required", "User interaction required"));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(Username, TestContext.Current.CancellationToken);
-        var reAuthError = (AuthReAuthRequiredError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(Username, TestContext.Current.CancellationToken);
+        var reAuthError = (AuthReAuthRequiredError)result.Error;
 
         reAuthError.ErrorCode.ShouldNotBe("no_account");
     }
@@ -122,7 +122,7 @@ public sealed class GivenAnAuthService
 
         var result = await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+        result.ShouldBeOfType<Fail<AuthResult, AuthError>>();
     }
 
     [Fact]
@@ -135,9 +135,9 @@ public sealed class GivenAnAuthService
             .Throw(new MsalUiRequiredException("interaction_required", "User interaction required"));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.Reason.ShouldBeOfType<AuthReAuthRequiredError>();
+        result.Error.ShouldBeOfType<AuthReAuthRequiredError>();
     }
 
     [Fact]
@@ -150,8 +150,8 @@ public sealed class GivenAnAuthService
             .Throw(new MsalUiRequiredException("interaction_required", "User interaction required"));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
-        var reAuthError = (AuthReAuthRequiredError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var reAuthError = (AuthReAuthRequiredError)result.Error;
 
         reAuthError.ErrorCode.ShouldBe("interaction_required");
     }
@@ -168,7 +168,7 @@ public sealed class GivenAnAuthService
 
         var result = await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+        result.ShouldBeOfType<Fail<AuthResult, AuthError>>();
     }
 
     [Fact]
@@ -181,9 +181,9 @@ public sealed class GivenAnAuthService
             .Throw(new OperationCanceledException());
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.Reason.ShouldBeOfType<AuthCancelledError>();
+        result.Error.ShouldBeOfType<AuthCancelledError>();
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public sealed class GivenAnAuthService
 
         var result = await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+        result.ShouldBeOfType<Fail<AuthResult, AuthError>>();
     }
 
     [Fact]
@@ -211,9 +211,9 @@ public sealed class GivenAnAuthService
             .Throw(new MsalServiceException("service_error", "MSAL internals: authority=https://login.microsoftonline.com/tenant correlation_id=abc123"));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
 
-        result.Reason.ShouldBeOfType<AuthFailedError>();
+        result.Error.ShouldBeOfType<AuthFailedError>();
     }
 
     [Fact]
@@ -227,8 +227,8 @@ public sealed class GivenAnAuthService
             .Throw(new MsalServiceException("service_error", msalInternalDetail));
         var sut = BuildSut(mockApp, Substitute.For<ITokenCacheService>());
 
-        var result = (Result<AuthResult, AuthError>.Error)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
-        var authFailed = (AuthFailedError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)await sut.AcquireTokenSilentAsync(HomeAccountIdentifier, TestContext.Current.CancellationToken);
+        var authFailed = (AuthFailedError)result.Error;
 
         authFailed.Message.ShouldNotContain(msalInternalDetail);
     }

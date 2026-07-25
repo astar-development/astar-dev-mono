@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -69,7 +69,7 @@ public sealed class GivenAnUploadService
 
         var result = await uploadTask;
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     private static ResponseMessage Accepted202Response() =>

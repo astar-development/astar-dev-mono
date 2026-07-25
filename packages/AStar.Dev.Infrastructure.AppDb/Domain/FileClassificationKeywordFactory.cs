@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Utilities;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
@@ -11,8 +11,8 @@ public static class FileClassificationKeywordFactory
     {
         string normalised = value?.Trim().ToTitleCase() ?? string.Empty;
         if (string.IsNullOrEmpty(normalised))
-            return new Result<FileClassificationKeyword, string>.Error("Value must not be empty.");
+            return new Fail<FileClassificationKeyword, string>("Value must not be empty.");
 
-        return new Result<FileClassificationKeyword, string>.Ok(new(normalised, isFamous, isInternet));
+        return new Ok<FileClassificationKeyword, string>(new(normalised, isFamous, isInternet));
     }
 }

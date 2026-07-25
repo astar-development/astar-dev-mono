@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -27,7 +27,7 @@ public sealed class GivenAQuotaRefreshService
     {
         var account = BuildAccount();
         _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(BuildSuccessAuthResult());
-        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<(long Total, long Used), string>.Ok((1_073_741_824L, 536_870_912L)));
+        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<(long Total, long Used), string>((1_073_741_824L, 536_870_912L)));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 
@@ -40,7 +40,7 @@ public sealed class GivenAQuotaRefreshService
     {
         var account = BuildAccount();
         _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(BuildSuccessAuthResult());
-        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<(long Total, long Used), string>.Ok((1_073_741_824L, 536_870_912L)));
+        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<(long Total, long Used), string>((1_073_741_824L, 536_870_912L)));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 
@@ -51,7 +51,7 @@ public sealed class GivenAQuotaRefreshService
     public async Task when_auth_fails_then_account_quota_remains_unknown()
     {
         var account = BuildAccount();
-        _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(new Result<AuthResult, AuthError>.Error(new AuthFailedError("silent auth failed")));
+        _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(new Fail<AuthResult, AuthError>(new AuthFailedError("silent auth failed")));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 
@@ -63,7 +63,7 @@ public sealed class GivenAQuotaRefreshService
     public async Task when_auth_fails_then_graph_service_is_not_called()
     {
         var account = BuildAccount();
-        _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(new Result<AuthResult, AuthError>.Error(new AuthFailedError("silent auth failed")));
+        _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(new Fail<AuthResult, AuthError>(new AuthFailedError("silent auth failed")));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 
@@ -75,7 +75,7 @@ public sealed class GivenAQuotaRefreshService
     {
         var account = BuildAccount();
         _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(BuildSuccessAuthResult());
-        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<(long Total, long Used), string>.Error("Graph API error"));
+        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Fail<(long Total, long Used), string>("Graph API error"));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 
@@ -88,7 +88,7 @@ public sealed class GivenAQuotaRefreshService
     {
         var account = BuildAccount();
         _authService.AcquireTokenSilentAsync("acc-1", Arg.Any<CancellationToken>()).Returns(BuildSuccessAuthResult());
-        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<(long Total, long Used), string>.Error("Graph API error"));
+        _graphService.GetQuotaAsync("acc-1", Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Fail<(long Total, long Used), string>("Graph API error"));
 
         await CreateSut().TryRefreshAsync(account, TestContext.Current.CancellationToken);
 

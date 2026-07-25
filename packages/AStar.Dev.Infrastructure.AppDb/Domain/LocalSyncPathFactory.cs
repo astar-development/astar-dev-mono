@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 
@@ -14,8 +14,8 @@ public static class LocalSyncPathFactory
     public static Result<LocalSyncPath, ErrorResponse> Create(string? rawPath)
     {
         if (string.IsNullOrWhiteSpace(rawPath))
-            return new Result<LocalSyncPath, ErrorResponse>.Error(new ErrorResponse(InvalidPathError));
+            return new Fail<LocalSyncPath, ErrorResponse>(new ErrorResponse(InvalidPathError));
 
-        return new Result<LocalSyncPath, ErrorResponse>.Ok(LocalSyncPath.Restore(rawPath));
+        return new Ok<LocalSyncPath, ErrorResponse>(LocalSyncPath.Restore(rawPath));
     }
 }

@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -187,7 +187,7 @@ public sealed class GivenASyncJobExecutor
     {
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
+            ((Ok<FileClassificationCategory, string>)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
         var job = MakeJob("item-1", SyncDirection.Download);
         SimulateJobCompleted(job.Complete());
@@ -247,7 +247,7 @@ public sealed class GivenASyncJobExecutor
     {
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
+            ((Ok<FileClassificationCategory, string>)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
         var mockFileSystem = new MockFileSystem();
         mockFileSystem.Initialize().WithFile(ColourUploadLocalPath).Which(m => m.HasStringContent("data"));

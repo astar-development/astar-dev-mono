@@ -16,23 +16,23 @@ internal sealed class DriveContextCache(IGraphClientFactory graphClientFactory)
         var client = graphClientFactory.CreateClient(tokenFactory);
 
         if (cache.TryGetValue(accountId, out var cached))
-            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, cached));
+            return new Ok<(GraphServiceClient Client, DriveContext Ctx), string>((client, cached));
 
         var drive = await client.Me.Drive.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (drive?.Id is null)
-            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve drive ID.");
+            return new Fail<(GraphServiceClient Client, DriveContext Ctx), string>("Could not retrieve drive ID.");
 
         var driveId = new DriveId(drive.Id);
         var root = await client.Drives[driveId.Value].Root.GetAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (root?.Id is null)
-            return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error("Could not retrieve root item ID.");
+            return new Fail<(GraphServiceClient Client, DriveContext Ctx), string>("Could not retrieve root item ID.");
 
         var driveContext = new DriveContext(driveId, root.Id);
         cache[accountId] = driveContext;
 
-        return new Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok((client, driveContext));
+        return new Ok<(GraphServiceClient Client, DriveContext Ctx), string>((client, driveContext));
     }
 
     /// <summary>Removes the cached drive context for the given account. Call after sign-out to prevent stale entries accumulating.</summary>

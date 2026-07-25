@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 
@@ -9,11 +9,11 @@ public static class KeywordMappingFactory
     public static Result<KeywordMapping, string> Create(string keyword, string level1, Option<string> level2, Option<string> level3, bool isSpecial)
     {
         if (string.IsNullOrWhiteSpace(keyword))
-            return new Result<KeywordMapping, string>.Error("Keyword must not be empty.");
+            return new Fail<KeywordMapping, string>("Keyword must not be empty.");
 
         if (string.IsNullOrWhiteSpace(level1))
-            return new Result<KeywordMapping, string>.Error("Level1 must not be empty.");
+            return new Fail<KeywordMapping, string>("Level1 must not be empty.");
 
-        return new Result<KeywordMapping, string>.Ok(new KeywordMapping(keyword.Trim(), level1, level2, level3, isSpecial));
+        return new Ok<KeywordMapping, string>(new KeywordMapping(keyword.Trim(), level1, level2, level3, isSpecial));
     }
 }

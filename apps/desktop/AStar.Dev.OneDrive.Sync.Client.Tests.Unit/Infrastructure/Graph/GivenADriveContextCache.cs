@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Graph;
@@ -45,7 +45,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var ok = result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Ok>()!;
+        var ok = result.ShouldBeAssignableTo<Ok<(GraphServiceClient Client, DriveContext Ctx), string>>()!;
         ok.Value.Ctx.DriveId.Value.ShouldBe(AnyDriveId);
         ok.Value.Ctx.RootId.ShouldBe(AnyRootId);
     }
@@ -98,7 +98,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error>();
+        result.ShouldBeAssignableTo<Fail<(GraphServiceClient Client, DriveContext Ctx), string>>();
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<(GraphServiceClient Client, DriveContext Ctx), string>.Error>();
+        result.ShouldBeAssignableTo<Fail<(GraphServiceClient Client, DriveContext Ctx), string>>();
     }
 
     [Fact]

@@ -18,6 +18,6 @@ public sealed class DeleteJobHandler(IFileSystem fileSystem) : IJobHandler
         if (fileSystem.File.Exists(deleteJob.Target.LocalPath))
             fileSystem.File.Delete(deleteJob.Target.LocalPath);
 
-        return Task.FromResult<Result<SyncJob, string>>(new Result<SyncJob, string>.Ok(deleteJob));
+        return Task.FromResult<Result<SyncJob, string>>(new Ok<SyncJob, string>(deleteJob));
     }
 }

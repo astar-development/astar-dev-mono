@@ -1,5 +1,5 @@
 using System.Reactive;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -27,13 +27,13 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
-            return contextResult.Match<Result<DriveId, string>>(
-                ctx => new Result<DriveId, string>.Ok(ctx.Ctx.DriveId),
-                error => new Result<DriveId, string>.Error(error));
+            return contextResult.Match(
+                ctx => new Ok<DriveId, string>(ctx.Ctx.DriveId),
+                error => (Result<DriveId, string>)new Fail<DriveId, string>(error));
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<DriveId, string>.Error(ex.Message);
+            return new Fail<DriveId, string>(ex.Message);
         }
     }
 
@@ -44,7 +44,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
-            return await contextResult.MatchAsync<Result<List<DriveFolder>, string>>(
+            return await contextResult.MatchAsync(
                 async ctx =>
                 {
                     var firstPage = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
@@ -56,13 +56,13 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                             .WithUrl(nextLink)
                             .GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-                    return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
+                    return (Result<List<DriveFolder>, string>)new Ok<List<DriveFolder>, string>([.. folders.OrderBy(f => f.Name)]);
                 },
-                error => new Result<List<DriveFolder>, string>.Error(error)).ConfigureAwait(false);
+                error => new Fail<List<DriveFolder>, string>(error)).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<List<DriveFolder>, string>.Error(ex.Message);
+            return new Fail<List<DriveFolder>, string>(ex.Message);
         }
     }
 
@@ -86,11 +86,11 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                     .WithUrl(nextLink)
                     .GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-            return new Result<List<DriveFolder>, string>.Ok([.. folders.OrderBy(f => f.Name)]);
+            return new Ok<List<DriveFolder>, string>([.. folders.OrderBy(f => f.Name)]);
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<List<DriveFolder>, string>.Error(ex.Message);
+            return new Fail<List<DriveFolder>, string>(ex.Message);
         }
     }
 
@@ -101,7 +101,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
-            return await contextResult.MatchAsync<Result<(long Total, long Used), string>>(
+            return await contextResult.MatchAsync(
                 async ctx =>
                 {
                     var drive = await ctx.Client.Drives[ctx.Ctx.DriveId.Value]
@@ -111,13 +111,13 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                         ? (drive.Quota.Total!.Value, drive.Quota.Used!.Value)
                         : (0L, 0L);
 
-                    return new Result<(long Total, long Used), string>.Ok(quota);
+                    return (Result<(long Total, long Used), string>)new Ok<(long Total, long Used), string>(quota);
                 },
-                error => new Result<(long Total, long Used), string>.Error(error)).ConfigureAwait(false);
+                error => new Fail<(long Total, long Used), string>(error)).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<(long Total, long Used), string>.Error(ex.Message);
+            return new Fail<(long Total, long Used), string>(ex.Message);
         }
     }
 
@@ -154,7 +154,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
-            return await contextResult.MatchAsync<Result<string, string>>(
+            return await contextResult.MatchAsync(
                 async ctx =>
                 {
                     var item = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId]
@@ -162,18 +162,18 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                         .ConfigureAwait(false);
 
                     if (item?.AdditionalData is null)
-                        return new Result<string, string>.Error($"No download URL available for item {itemId}.");
+                        return (Result<string, string>)new Fail<string, string>($"No download URL available for item {itemId}.");
 
                     if (!item.AdditionalData.TryGetValue(DownloadUrlKey, out object? url) || url is null)
-                        return new Result<string, string>.Error($"No download URL available for item {itemId}.");
+                        return new Fail<string, string>($"No download URL available for item {itemId}.");
 
-                    return new Result<string, string>.Ok(url.ToString()!);
+                    return new Ok<string, string>(url.ToString()!);
                 },
-                error => new Result<string, string>.Error(error)).ConfigureAwait(false);
+                error => new Fail<string, string>(error)).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<string, string>.Error(ex.Message);
+            return new Fail<string, string>(ex.Message);
         }
     }
 
@@ -186,11 +186,11 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
             return await contextResult.MatchAsync(
                 async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, cancellationToken: cancellationToken).ConfigureAwait(false),
-                error => new Result<string, string>.Error(error)).ConfigureAwait(false);
+                error => new Fail<string, string>(error)).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Result<string, string>.Error(ex.Message);
+            return new Fail<string, string>(ex.Message);
         }
     }
 
@@ -199,21 +199,21 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
     {
         var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
 
-        return await contextResult.MatchAsync<Result<Unit, string>>(
+        return await contextResult.MatchAsync(
             async ctx =>
             {
                 try
                 {
                     await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                    return new Result<Unit, string>.Ok(Unit.Default);
+                    return (Result<Unit, string>)new Ok<Unit, string>(Unit.Default);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
                 {
-                    return new Result<Unit, string>.Error(ex.Message);
+                    return new Fail<Unit, string>(ex.Message);
                 }
             },
-            error => new Result<Unit, string>.Error(error)).ConfigureAwait(false);
+            error => new Fail<Unit, string>(error)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
@@ -12,7 +12,7 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create(AnyKeyword, AnyLevel1, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Ok>();
+        _ = result.ShouldBeOfType<Ok<KeywordMapping, string>>();
     }
 
     [Theory]
@@ -22,7 +22,7 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create(blankKeyword, AnyLevel1, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<KeywordMapping, string>>();
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create("   ", AnyLevel1, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<KeywordMapping, string>>();
     }
 
     [Theory]
@@ -40,7 +40,7 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create(AnyKeyword, blankLevel1, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<KeywordMapping, string>>();
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create(null!, AnyLevel1, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<KeywordMapping, string>>();
     }
 
     [Fact]
@@ -80,6 +80,6 @@ public sealed class GivenAKeywordMappingFactory
     {
         var result = KeywordMappingFactory.Create(AnyKeyword, null!, Option.None<string>(), Option.None<string>(), false);
 
-        _ = result.ShouldBeOfType<Result<KeywordMapping, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<KeywordMapping, string>>();
     }
 }

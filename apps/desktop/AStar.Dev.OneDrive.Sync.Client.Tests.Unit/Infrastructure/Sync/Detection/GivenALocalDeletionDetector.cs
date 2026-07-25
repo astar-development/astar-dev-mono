@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
@@ -20,7 +20,7 @@ public sealed class GivenALocalDeletionDetector
 
     public GivenALocalDeletionDetector()
         => _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default));
+            .Returns(new Ok<System.Reactive.Unit, string>(System.Reactive.Unit.Default));
 
     private LocalDeletionDetector CreateSut(MockFileSystem mockFileSystem) => new(_graphService, _syncedItemRepository, mockFileSystem, NullLogger<LocalDeletionDetector>.Instance);
 
@@ -139,7 +139,7 @@ public sealed class GivenALocalDeletionDetector
                 if (Interlocked.Increment(ref callCount) == 1)
                     cts.Cancel();
 
-                return new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default);
+                return new Ok<System.Reactive.Unit, string>(System.Reactive.Unit.Default);
             });
 
         var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>

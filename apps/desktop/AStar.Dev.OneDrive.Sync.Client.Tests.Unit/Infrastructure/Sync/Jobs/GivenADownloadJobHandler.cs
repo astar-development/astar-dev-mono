@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,7 @@ public sealed class GivenADownloadJobHandler
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
 
     public GivenADownloadJobHandler() => _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<System.Reactive.Unit, string>.Ok(System.Reactive.Unit.Default));
+            .Returns(new Ok<System.Reactive.Unit, string>(System.Reactive.Unit.Default));
 
     private DownloadJobHandler CreateSut() => new(_downloader, _graphService, Substitute.For<ILogger<DownloadJobHandler>>());
 
@@ -90,7 +90,7 @@ public sealed class GivenADownloadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _graphService.GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Ok(fetchedUrl));
+            .Returns(new Ok<string, string>(fetchedUrl));
 
         await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
@@ -106,12 +106,12 @@ public sealed class GivenADownloadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _graphService.GetDownloadUrlAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), ItemId, Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Error(errorMessage));
+            .Returns(new Fail<string, string>(errorMessage));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
         result.Match(_ => true, _ => false).ShouldBeFalse();
-        result.Match<string?>(_ => null, error => error).ShouldBe(errorMessage);
+        result.Match(_ => (string?)null, error => error).ShouldBe(errorMessage);
     }
 
     [Fact]
@@ -133,10 +133,10 @@ public sealed class GivenADownloadJobHandler
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
         _downloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<System.Reactive.Unit, string>.Error(downloadError));
+            .Returns(new Fail<System.Reactive.Unit, string>(downloadError));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
-        result.Match<string?>(_ => null, error => error).ShouldBe(downloadError);
+        result.Match(_ => (string?)null, error => error).ShouldBe(downloadError);
     }
 }

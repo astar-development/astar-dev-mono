@@ -23,13 +23,13 @@ public sealed class FeatureAvailabilityService : IFeatureAvailabilityService, IF
     /// </summary>
     /// <param name="section">The navigation section to register.</param>
     /// <returns>A successful result if the section was registered, or an error result if called after the set has been frozen.</returns>
-    public Result<FunctionalParadigm.UnitFp, string> Register(NavSection section)
+    public Result<Unit, string> Register(NavSection section)
     {
         if (frozenSections is not null)
-            return "Cannot register sections after the set has been frozen.";
+            return new Fail<Unit, string>("Cannot register sections after the set has been frozen.");
 
         pendingSections.Add(section);
 
-        return FunctionalParadigm.UnitFp.Instance;
+        return new Ok<Unit, string>(Unit.Default);
     }
 }

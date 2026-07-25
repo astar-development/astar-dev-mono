@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
@@ -22,7 +22,7 @@ public sealed class GivenAFileClassificationExportImportService
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(new FileClassificationCategoryId(1))));
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(1))));
         sut = new FileClassificationExportImportService(repository, fileSystem);
     }
 
@@ -94,7 +94,7 @@ public sealed class GivenAFileClassificationExportImportService
     {
         var parentId = new FileClassificationCategoryId(42);
         repository.AddCategoryAsync(Arg.Is<FileClassificationCategory>(c => c.Name == "Photos" && c.Level == 1), Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Result<FileClassificationCategoryId, string>.Ok(parentId)));
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(parentId)));
 
         string importJson = """{"version":1,"categories":[{"name":"Photos","id":42,"children":[{"name":"Holidays","parentId":42,"id":12,"children":[],"keywords":[]}],"keywords":[]}]}""";
         fileSystem.File.WriteAllText(ExportFilePath, importJson);

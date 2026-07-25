@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication;
@@ -16,12 +16,12 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_result_is_ok() =>
         AuthResultFactory.Success(AccessToken, AccountId, Profile)
-            .ShouldBeOfType<Result<AuthResult, AuthError>.Ok>();
+            .ShouldBeOfType<Ok<AuthResult, AuthError>>();
 
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_access_token()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
+        var result = (Ok<AuthResult, AuthError>)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.AccessToken.ShouldBe(AccessToken);
     }
@@ -29,7 +29,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_account_id()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
+        var result = (Ok<AuthResult, AuthError>)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.AccountId.ShouldBe(AccountId);
     }
@@ -37,7 +37,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_display_name()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
+        var result = (Ok<AuthResult, AuthError>)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.Profile.DisplayName.ShouldBe(DisplayName);
     }
@@ -45,7 +45,7 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_success_is_called_then_ok_value_has_correct_email()
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(AccessToken, AccountId, Profile);
+        var result = (Ok<AuthResult, AuthError>)AuthResultFactory.Success(AccessToken, AccountId, Profile);
 
         result.Value.Profile.Email.ShouldBe(Email);
     }
@@ -53,34 +53,34 @@ public sealed class GivenAnAuthResultFactory
     [Fact]
     public void when_cancelled_is_called_then_result_is_error() =>
         AuthResultFactory.Cancelled()
-            .ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+            .ShouldBeOfType<Fail<AuthResult, AuthError>>();
 
     [Fact]
     public void when_cancelled_is_called_then_error_reason_is_auth_cancelled_error()
     {
-        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Cancelled();
+        var result = (Fail<AuthResult, AuthError>)AuthResultFactory.Cancelled();
 
-        result.Reason.ShouldBeOfType<AuthCancelledError>();
+        result.Error.ShouldBeOfType<AuthCancelledError>();
     }
 
     [Fact]
     public void when_failure_is_called_then_result_is_error() =>
         AuthResultFactory.Failure(ErrorMessage)
-            .ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+            .ShouldBeOfType<Fail<AuthResult, AuthError>>();
 
     [Fact]
     public void when_failure_is_called_then_error_reason_is_auth_failed_error()
     {
-        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
+        var result = (Fail<AuthResult, AuthError>)AuthResultFactory.Failure(ErrorMessage);
 
-        result.Reason.ShouldBeOfType<AuthFailedError>();
+        result.Error.ShouldBeOfType<AuthFailedError>();
     }
 
     [Fact]
     public void when_failure_is_called_then_auth_failed_error_carries_the_message()
     {
-        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
-        var authFailed = (AuthFailedError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)AuthResultFactory.Failure(ErrorMessage);
+        var authFailed = (AuthFailedError)result.Error;
 
         authFailed.Message.ShouldBe(ErrorMessage);
     }
@@ -91,7 +91,7 @@ public sealed class GivenAnAuthResultFactory
     [InlineData("token-3", "account-3", "User Three", "user3@outlook.com")]
     public void when_success_is_called_then_all_token_and_account_data_are_preserved(string accessToken, string accountId, string displayName, string email)
     {
-        var result = (Result<AuthResult, AuthError>.Ok)AuthResultFactory.Success(accessToken, accountId, AccountProfileFactory.Create(displayName, email));
+        var result = (Ok<AuthResult, AuthError>)AuthResultFactory.Success(accessToken, accountId, AccountProfileFactory.Create(displayName, email));
 
         result.Value.AccessToken.ShouldBe(accessToken);
         result.Value.AccountId.ShouldBe(accountId);
@@ -105,8 +105,8 @@ public sealed class GivenAnAuthResultFactory
     [InlineData("Network error: Connection timeout")]
     public void when_failure_is_called_then_error_message_is_preserved(string errorMessage)
     {
-        var result = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(errorMessage);
-        var authFailed = (AuthFailedError)result.Reason;
+        var result = (Fail<AuthResult, AuthError>)AuthResultFactory.Failure(errorMessage);
+        var authFailed = (AuthFailedError)result.Error;
 
         authFailed.Message.ShouldBe(errorMessage);
     }
@@ -117,17 +117,17 @@ public sealed class GivenAnAuthResultFactory
         var successResult = AuthResultFactory.Success(AccessToken, AccountId, Profile);
         var failureResult = AuthResultFactory.Failure(ErrorMessage);
 
-        successResult.ShouldBeOfType<Result<AuthResult, AuthError>.Ok>();
-        failureResult.ShouldBeOfType<Result<AuthResult, AuthError>.Error>();
+        successResult.ShouldBeOfType<Ok<AuthResult, AuthError>>();
+        failureResult.ShouldBeOfType<Fail<AuthResult, AuthError>>();
     }
 
     [Fact]
     public void when_cancelled_and_failure_results_are_compared_then_their_error_reasons_differ()
     {
-        var cancelledResult = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Cancelled();
-        var failureResult = (Result<AuthResult, AuthError>.Error)AuthResultFactory.Failure(ErrorMessage);
+        var cancelledResult = (Fail<AuthResult, AuthError>)AuthResultFactory.Cancelled();
+        var failureResult = (Fail<AuthResult, AuthError>)AuthResultFactory.Failure(ErrorMessage);
 
-        cancelledResult.Reason.ShouldBeOfType<AuthCancelledError>();
-        failureResult.Reason.ShouldBeOfType<AuthFailedError>();
+        cancelledResult.Error.ShouldBeOfType<AuthCancelledError>();
+        failureResult.Error.ShouldBeOfType<AuthFailedError>();
     }
 }

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.Infrastructure.AppDb.Entities;

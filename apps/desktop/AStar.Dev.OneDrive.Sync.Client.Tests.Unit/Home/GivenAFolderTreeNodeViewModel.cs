@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
@@ -302,7 +302,7 @@ public sealed class GivenAFolderTreeNodeViewModel
         var graphService = Substitute.For<IGraphService>();
 
         graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
 
         return graphService;
     }
@@ -312,10 +312,10 @@ public sealed class GivenAFolderTreeNodeViewModel
         var graphService = Substitute.For<IGraphService>();
 
         graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(ChildFolderId, ChildName, RootFolderId)]));
 
         graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), ChildFolderId, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(GrandChildId, GrandChildName, ChildFolderId)]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(GrandChildId, GrandChildName, ChildFolderId)]));
 
         return graphService;
     }

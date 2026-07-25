@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 
@@ -154,7 +154,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
         folders.Count.ShouldBe(2);
         folders[0].Name.ShouldBe("AFolder");
         folders[1].Name.ShouldBe("ZFolder");
@@ -176,7 +176,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
         folders.Count.ShouldBe(1);
         folders[0].Name.ShouldBe("OnlyFolder");
     }
@@ -200,7 +200,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
         folders.Count.ShouldBe(2);
         folders[0].Name.ShouldBe("AChild");
         folders[1].Name.ShouldBe("ZChild");
@@ -221,7 +221,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Ok>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
         folders.Count.ShouldBe(1);
         folders[0].Name.ShouldBe("OnlyChild");
     }
@@ -252,7 +252,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var quotaResult = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var (total, used) = quotaResult.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Ok>()!.Value;
+        var (total, used) = quotaResult.ShouldBeAssignableTo<Ok<(long Total, long Used), string>>()!.Value;
         total.ShouldBe(0L);
         used.ShouldBe(0L);
     }
@@ -269,7 +269,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<DriveId, string>>();
     }
 
     [Fact]
@@ -387,7 +387,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<DriveId, string>>();
     }
 
     [Fact]
@@ -456,7 +456,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDriveIdAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<DriveId, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<DriveId, string>>();
     }
 
     [Fact]
@@ -470,7 +470,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<List<DriveFolder>, string>>();
     }
 
     [Fact]
@@ -484,7 +484,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<(long Total, long Used), string>.Error>();
+        result.ShouldBeAssignableTo<Fail<(long Total, long Used), string>>();
     }
 
     [Fact]
@@ -512,7 +512,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     [Fact]
@@ -526,7 +526,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().UploadFileAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyLocalPath, AnyRemotePath, AnyFolderId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     [Fact]
@@ -536,7 +536,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetDownloadUrlAsync(AnyAccountId, failingFactory, AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     [Fact]
@@ -550,7 +550,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<List<DriveFolder>, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<List<DriveFolder>, string>>();
     }
 
     [Fact]
@@ -580,7 +580,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
     }
 
     private void SetupDriveContext(string driveId, string rootId)

@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -66,7 +66,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([]));
         await sut.NextCommand.ExecuteAsync(null);
         EventArgs? firedArgs = null;
         sut.Cancelled += (_, args) => firedArgs = args;
@@ -81,7 +81,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([]));
         await sut.NextCommand.ExecuteAsync(null);
         await sut.NextCommand.ExecuteAsync(null);
         EventArgs? firedArgs = null;
@@ -102,7 +102,7 @@ public sealed class GivenAnAddAccountWizardViewModel
             .Returns(_ =>
             {
                 stepAtFolderLoad = sut.CurrentStep;
-                return Task.FromResult<Result<List<DriveFolder>, string>>(new Result<List<DriveFolder>, string>.Ok([]));
+                return Task.FromResult<Result<List<DriveFolder>, string>>(new Ok<List<DriveFolder>, string>([]));
             });
 
         await sut.NextCommand.ExecuteAsync(null);
@@ -120,7 +120,7 @@ public sealed class GivenAnAddAccountWizardViewModel
             .Returns(_ =>
             {
                 wasLoadingDuringFetch = sut.IsLoadingFolders;
-                return Task.FromResult<Result<List<DriveFolder>, string>>(new Result<List<DriveFolder>, string>.Ok([]));
+                return Task.FromResult<Result<List<DriveFolder>, string>>(new Ok<List<DriveFolder>, string>([]));
             });
 
         await sut.NextCommand.ExecuteAsync(null);
@@ -135,7 +135,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -148,7 +148,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Desktop", Option.None<string>()), new DriveFolder("id-3", "Pictures", Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Desktop", Option.None<string>()), new DriveFolder("id-3", "Pictures", Option.None<string>())]));
 
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -163,7 +163,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Error("network error"));
+            .Returns(new Fail<List<DriveFolder>, string>("network error"));
 
         await sut.NextCommand.ExecuteAsync(null);
 
@@ -176,7 +176,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     {
         var sut = CreateSut();
         await SignInAsync(sut);
-        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Result<List<DriveFolder>, string>.Ok([]));
+        _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([]));
         await sut.NextCommand.ExecuteAsync(null);
 
         sut.SkipFoldersCommand.Execute(null);
@@ -190,7 +190,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder("id-1", "Documents", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
 
         sut.SkipFoldersCommand.Execute(null);
@@ -204,7 +204,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
 
@@ -219,7 +219,7 @@ public sealed class GivenAnAddAccountWizardViewModel
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder("id-1", "Documents", Option.None<string>()), new DriveFolder("id-2", "Pictures", Option.None<string>())]));
         await sut.NextCommand.ExecuteAsync(null);
         sut.Folders[1].IsSelected = false;
         await sut.NextCommand.ExecuteAsync(null);
@@ -427,7 +427,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_returns_unknown_error_type_then_sign_in_has_error_is_true()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+            .Returns(new Fail<AuthResult, AuthError>(new UnknownAuthError()));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -439,7 +439,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_returns_unknown_error_type_then_sign_in_status_text_is_set()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+            .Returns(new Fail<AuthResult, AuthError>(new UnknownAuthError()));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
@@ -451,7 +451,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     public async Task when_sign_in_returns_unknown_error_type_then_is_signed_in_remains_false()
     {
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
-            .Returns(new Result<AuthResult, AuthError>.Error(new UnknownAuthError()));
+            .Returns(new Fail<AuthResult, AuthError>(new UnknownAuthError()));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);

@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
@@ -9,7 +9,7 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create("/home/user/OneDrive");
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Ok>();
+        _ = result.ShouldBeOfType<Ok<LocalSyncPath, ErrorResponse>>();
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create(null);
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Error>();
+        _ = result.ShouldBeOfType<Fail<LocalSyncPath, ErrorResponse>>();
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create(string.Empty);
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Error>();
+        _ = result.ShouldBeOfType<Fail<LocalSyncPath, ErrorResponse>>();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create("   ");
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Error>();
+        _ = result.ShouldBeOfType<Fail<LocalSyncPath, ErrorResponse>>();
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create(path);
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Ok>();
+        _ = result.ShouldBeOfType<Ok<LocalSyncPath, ErrorResponse>>();
     }
 
     [Theory]
@@ -79,6 +79,6 @@ public sealed class GivenALocalSyncPathFactory
     {
         var result = LocalSyncPathFactory.Create(path);
 
-        _ = result.ShouldBeOfType<Result<LocalSyncPath, ErrorResponse>.Error>();
+        _ = result.ShouldBeOfType<Fail<LocalSyncPath, ErrorResponse>>();
     }
 }

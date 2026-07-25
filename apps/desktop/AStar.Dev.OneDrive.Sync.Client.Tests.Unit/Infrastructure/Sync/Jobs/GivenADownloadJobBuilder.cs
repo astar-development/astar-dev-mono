@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
@@ -175,7 +175,7 @@ public sealed class GivenADownloadJobBuilder
         var rules = new List<SyncRuleEntity> { IncludeRule("/Documents") };
         IReadOnlyList<FileClassificationCategory> mappings =
         [
-            ((Result<FileClassificationCategory, string>.Ok)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
+            ((Ok<FileClassificationCategory, string>)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)).Value
         ];
 
         await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, mappings, TestContext.Current.CancellationToken);

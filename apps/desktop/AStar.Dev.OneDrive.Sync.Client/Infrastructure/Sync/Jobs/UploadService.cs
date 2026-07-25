@@ -36,7 +36,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
     {
         var fileInfo = fileSystem.FileInfo.New(localPath);
         if (!fileInfo.Exists)
-            return new Result<string, string>.Error($"Local file not found: {localPath}");
+            return new Fail<string, string>($"Local file not found: {localPath}");
 
         OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
@@ -49,7 +49,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
                 return result.Tap(_ => OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath));
             },
-            error => new Result<string, string>.Error(error)).ConfigureAwait(false);
+            error => new Fail<string, string>(error)).ConfigureAwait(false);
     }
 
     private static async Task<Result<string, string>> CreateUploadSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken cancellationToken)
@@ -83,9 +83,9 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             .PostAsync(requestBody, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (session?.UploadUrl is null)
-            return new Result<string, string>.Error("Graph API did not return an upload session URL.");
+            return new Fail<string, string>("Graph API did not return an upload session URL.");
 
-        return new Result<string, string>.Ok(session.UploadUrl);
+        return new Ok<string, string>(session.UploadUrl);
     }
 
     private async Task<Result<string, string>> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken cancellationToken)
@@ -99,25 +99,25 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         async Task<Result<string, string>> UploadNextChunkAsync(long uploaded)
         {
             if (uploaded >= totalBytes)
-                return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
+                return new Fail<string, string>(UploadCompletedWithoutItemIdError);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             int bytesRead = await ReadChunkAsync(file, buffer, totalBytes, uploaded, cancellationToken).ConfigureAwait(false);
 
             if (bytesRead == 0)
-                return new Result<string, string>.Error(UploadCompletedWithoutItemIdError);
+                return new Fail<string, string>(UploadCompletedWithoutItemIdError);
 
             long rangeEnd = ComputeRangeEnd(uploaded, bytesRead);
 
             return await UploadChunkWithRetryAsync(http, sessionUrl, buffer.AsMemory(0, bytesRead), uploaded, rangeEnd, totalBytes, cancellationToken)
-                .BindAsync(async itemId =>
+                .BindAsync(async Task<Result<string, string>> (itemId) =>
                 {
                     long newUploaded = uploaded + bytesRead;
                     progress?.Report(newUploaded);
 
                     if (itemId is not null)
-                        return new Result<string, string>.Ok(itemId);
+                        return new Ok<string, string>(itemId);
 
                     return await UploadNextChunkAsync(newUploaded).ConfigureAwait(false);
                 }).ConfigureAwait(false);
@@ -154,7 +154,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if (attempt > HttpRetryPolicy.MaxRetries)
-                        return new Result<string?, string>.Error($"Upload rate limited after {HttpRetryPolicy.MaxRetries} retries.");
+                        return new Fail<string?, string>($"Upload rate limited after {HttpRetryPolicy.MaxRetries} retries.");
 
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
@@ -164,14 +164,14 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 }
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
-                    return new Result<string?, string>.Ok(null);
+                    return new Ok<string?, string>(null);
 
                 if (response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
                     return await GetUploadedDocumentIdAsync(response, cancellationToken).ConfigureAwait(false);
 
                 _ = response.EnsureSuccessStatusCode();
 
-                return new Result<string?, string>.Ok(null);
+                return new Ok<string?, string>(null);
             }
             catch (HttpRequestException) when (attempt <= HttpRetryPolicy.MaxRetries)
             {
@@ -189,11 +189,11 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
         using var doc = System.Text.Json.JsonDocument.Parse(json);
 
         if (!doc.RootElement.TryGetProperty("id", out var idElement))
-            return new Result<string?, string>.Error("Upload response missing item ID.");
+            return new Fail<string?, string>("Upload response missing item ID.");
         string? itemId = idElement.GetString();
         if (itemId is null)
-            return new Result<string?, string>.Error("Upload response missing item ID.");
+            return new Fail<string?, string>("Upload response missing item ID.");
 
-        return new Result<string?, string>.Ok(itemId);
+        return new Ok<string?, string>(itemId);
     }
 }

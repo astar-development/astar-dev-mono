@@ -45,7 +45,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if (attempt > HttpRetryPolicy.MaxRetries)
-                        return new Result<Unit, string>.Error($"Rate limited after {HttpRetryPolicy.MaxRetries} retries.");
+                        return new Fail<Unit, string>($"Rate limited after {HttpRetryPolicy.MaxRetries} retries.");
 
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.DownloadThrottled(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
@@ -64,8 +64,8 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
 
                 return await MoveWithRetryAsync(tempPath, localPath, cancellationToken)
                     .MatchAsync<Unit, string, Result<Unit, string>>(
-                        _ => { PreserveRemoteTimestamp(localPath, remoteModified); return new Result<Unit, string>.Ok(Unit.Default); },
-                        error => { TryDeleteTemp(tempPath); return new Result<Unit, string>.Error(error); }).ConfigureAwait(false);
+                        _ => { PreserveRemoteTimestamp(localPath, remoteModified); return new Ok<Unit, string>(Unit.Default); },
+                        error => { TryDeleteTemp(tempPath); return new Fail<Unit, string>(error); }).ConfigureAwait(false);
             }
             catch (IOException) when (attempt <= HttpRetryPolicy.MaxRetries)
             {
@@ -77,7 +77,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             catch (IOException ex)
             {
                 TryDeleteTemp(tempPath);
-                return new Result<Unit, string>.Error($"IO error downloading '{localPath}': {ex.Message}");
+                return new Fail<Unit, string>($"IO error downloading '{localPath}': {ex.Message}");
             }
             catch (HttpRequestException) when (attempt <= HttpRetryPolicy.MaxRetries)
             {
@@ -108,7 +108,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             try
             {
                 fileSystem.File.Move(tempPath, localPath, overwrite: true);
-                return new Result<Unit, string>.Ok(Unit.Default);
+                return new Ok<Unit, string>(Unit.Default);
             }
             catch (IOException ex)
             {
@@ -123,7 +123,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         }
 
         OneDriveSyncClientMessages.DownloadMoveExhausted(logger, localPath, MaxMoveRetries, lastError?.Message ?? string.Empty);
-        return new Result<Unit, string>.Error($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message}");
+        return new Fail<Unit, string>($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message}");
     }
 
     private void TryDeleteTemp(string tempPath)
