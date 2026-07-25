@@ -5,6 +5,7 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Startup;
 using AStar.Dev.Wallpaper.Scraper.Theming;
+using AStarDev.LoggingSerilog.LogViewer;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -48,7 +49,8 @@ public partial class App : Application, IDisposable
 
         ApplicationOptionsRegistrar.Register(collection, configuration);
         string logDirectory = ApplicationDirectories.LogsDirectory;
-        Log.Logger = AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(configuration, $"{logDirectory}/log.txt"  );
+        var inMemoryLogSink = new InMemoryLogSink();
+        Log.Logger = AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(configuration, $"{logDirectory}/log.txt", inMemoryLogSink);
 
         return collection
             .AddLogging(logging => logging.AddSerilog(dispose: true))

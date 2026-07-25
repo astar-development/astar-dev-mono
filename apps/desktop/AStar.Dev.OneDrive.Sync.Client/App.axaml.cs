@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
@@ -9,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Splash;
 using AStar.Dev.OneDrive.Sync.Client.Startup;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.LoggingSerilog;
 using AStarDev.LoggingSerilog.LogViewer;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -16,7 +16,6 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Serilog.Events;
 using Testably.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
@@ -75,7 +74,8 @@ public class App : Application, IDisposable
         _ = services.AddViews();
         _ = services.AddViewModels();
         var configuration = RegisterOptions(services);
-        ConfigureSerilog(inMemoryLogSink, fileSystem, configuration);
+        _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
+        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/log.txt", inMemoryLogSink);
 
         _ = services.AddVelopackUpdates(configuration);
         _ = services.AddShell(inMemoryLogSink);
@@ -102,26 +102,6 @@ public class App : Application, IDisposable
                 .ValidateOnStart();
 
         return configuration;
-    }
-
-    private static void ConfigureSerilog(InMemoryLogSink inMemoryLogSink, RealFileSystem fileSystem, IConfigurationRoot configuration)
-    {
-        _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
-
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .ReadFrom.Configuration(configuration)
-            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-            .WriteTo.File(
-                formatter: new Serilog.Formatting.Json.JsonFormatter(),
-                path: $"{ApplicationDirectories.LogsDirectory}/log.txt",
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                shared: true,
-                flushToDiskInterval: TimeSpan.FromSeconds(1))
-            .WriteTo.Sink(inMemoryLogSink)
-            .CreateLogger();
     }
 
     public void Dispose()
