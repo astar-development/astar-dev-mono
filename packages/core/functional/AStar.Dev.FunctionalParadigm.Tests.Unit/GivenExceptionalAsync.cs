@@ -302,7 +302,7 @@ public sealed class GivenExceptionalAsync
         var exceptionalTask = Task.FromResult(Exceptional.Success(9));
         bool sideEffect = false;
 
-        var actual = await exceptionalTask.Tap(value => sideEffect = value == 9);
+        var actual = await exceptionalTask.TapAsync(value => sideEffect = value == 9);
 
         actual.ShouldBeOfType<Success<int>>();
         actual.ShouldBe(new Success<int>(9));
@@ -316,7 +316,7 @@ public sealed class GivenExceptionalAsync
         var exceptionalTask = Task.FromResult(Exceptional.Failure<int>(exception));
         bool sideEffect = false;
 
-        var actual = await exceptionalTask.Tap(_ => { }, ex => sideEffect = ex == exception);
+        var actual = await exceptionalTask.TapAsync(_ => { }, ex => sideEffect = ex == exception);
 
         actual.ShouldBeOfType<Failure<int>>();
         sideEffect.ShouldBeTrue();
@@ -328,7 +328,7 @@ public sealed class GivenExceptionalAsync
         var exceptionalTask = ValueTask.FromResult(Exceptional.Success(11));
         bool sideEffect = false;
 
-        var actual = await exceptionalTask.Tap(value => sideEffect = value == 11);
+        var actual = await exceptionalTask.TapAsync(value => sideEffect = value == 11);
 
         actual.ShouldBeOfType<Success<int>>();
         actual.ShouldBe(new Success<int>(11));
@@ -342,7 +342,7 @@ public sealed class GivenExceptionalAsync
         var exceptionalTask = ValueTask.FromResult(Exceptional.Failure<int>(exception));
         bool sideEffect = false;
 
-        var actual = await exceptionalTask.Tap(_ => { }, ex => sideEffect = ex == exception);
+        var actual = await exceptionalTask.TapAsync(_ => { }, ex => sideEffect = ex == exception);
 
         actual.ShouldBeOfType<Failure<int>>();
         sideEffect.ShouldBeTrue();
