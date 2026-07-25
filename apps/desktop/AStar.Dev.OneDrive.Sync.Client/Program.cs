@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
-using AStar.Dev.Utilities;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
+using AStarDev.LoggingSerilog;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -25,18 +26,8 @@ internal sealed class Program
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            string logPath = ApplicationMetadata.ApplicationNameHyphenated.LogsDirectory().CombinePath(ApplicationMetadata.ApplicationLogName);
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(configuration)
-                .WriteTo.File(
-                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
-                    path: logPath,
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7,
-                    shared: true,
-                    flushToDiskInterval: TimeSpan.FromSeconds(1)
-                )
-                .CreateLogger();
+            _ = Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
+            Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
 
             Log.Information("Application Starting");
             var appBuilder = BuildAvaloniaApp();

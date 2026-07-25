@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Home;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Startup;
@@ -75,7 +76,7 @@ public class App : Application, IDisposable
         _ = services.AddViewModels();
         var configuration = RegisterOptions(services);
         _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
-        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/log.txt", inMemoryLogSink);
+        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", inMemoryLogSink, RollingInterval.Hour, 7);
 
         _ = services.AddVelopackUpdates(configuration);
         _ = services.AddShell(inMemoryLogSink);
