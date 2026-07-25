@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Home;
@@ -196,10 +196,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
 
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
+            .Returns(new Ok<DriveId, string>(new DriveId(DriveIdValue)));
 
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
 
         return (authService, graphService, repository);
     }
@@ -209,7 +209,7 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var (authService, graphService, repository) = BuildMocks();
 
         graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdValue), FolderId, Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(ChildFolderId, ChildFolderName, FolderId)]));
 
         return (authService, graphService, repository);
     }

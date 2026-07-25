@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -72,7 +72,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
         {
             OneDriveSyncClientMessages.SyncWorkerNoHandler(logger, workerId, job.GetType().Name);
 
-            return Task.FromResult<Result<SyncJob, string>>(new Result<SyncJob, string>.Error($"No handler registered for job type '{job.GetType().Name}'."));
+            return Task.FromResult<Result<SyncJob, string>>(new Fail<SyncJob, string>($"No handler registered for job type '{job.GetType().Name}'."));
         }
 
         return handler.HandleAsync(job, accountId, tokenFactory, cancellationToken);

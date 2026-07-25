@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -36,9 +36,9 @@ public sealed class GivenAConflictApplier
     public async Task when_outcome_is_use_remote_and_url_resolution_succeeds_and_download_succeeds_then_returns_true()
     {
         graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
+            .Returns(new Ok<string, string>("https://example.com/file.txt"));
         httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<ReactiveUnit, string>.Ok(ReactiveUnit.Default));
+            .Returns(new Ok<ReactiveUnit, string>(ReactiveUnit.Default));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
@@ -50,7 +50,7 @@ public sealed class GivenAConflictApplier
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_returns_false()
     {
         graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Error("url-resolution-failed"));
+            .Returns(new Fail<string, string>("url-resolution-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
@@ -62,9 +62,9 @@ public sealed class GivenAConflictApplier
     public async Task when_outcome_is_use_remote_and_download_fails_then_returns_false()
     {
         graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Ok("https://example.com/file.txt"));
+            .Returns(new Ok<string, string>("https://example.com/file.txt"));
         httpDownloader.DownloadAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<ReactiveUnit, string>.Error("download-failed"));
+            .Returns(new Fail<ReactiveUnit, string>("download-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         bool result = await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);
@@ -76,7 +76,7 @@ public sealed class GivenAConflictApplier
     public async Task when_outcome_is_use_remote_and_url_resolution_fails_then_downloader_is_not_called()
     {
         graphService.GetDownloadUrlAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<string, string>.Error("url-resolution-failed"));
+            .Returns(new Fail<string, string>("url-resolution-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
 
         await CreateSut().ApplyAsync(CreateUseRemoteConflict(), ConflictOutcome.UseRemote, "user-1", tokenFactory, TestContext.Current.CancellationToken);

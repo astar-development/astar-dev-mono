@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Kiota.Http.HttpClientLibrary;
@@ -159,8 +159,8 @@ public sealed class GivenAnUploadService
 
         var result = await sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, "/nonexistent/path/file.bin", RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
-        var error = result.ShouldBeAssignableTo<Result<string, string>.Error>();
-        error!.Reason.ShouldContain("Local file not found");
+        var error = result.ShouldBeAssignableTo<Fail<string, string>>();
+        error!.Error.ShouldContain("Local file not found");
     }
 
     [Fact]
@@ -177,8 +177,8 @@ public sealed class GivenAnUploadService
 
         var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
-        var error = result.ShouldBeAssignableTo<Result<string, string>.Error>();
-        error!.Reason.ShouldContain("upload session URL");
+        var error = result.ShouldBeAssignableTo<Fail<string, string>>();
+        error!.Error.ShouldContain("upload session URL");
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public sealed class GivenAnUploadService
 
         var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<string, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
     private static ResponseMessage Accepted202Response() =>

@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -51,8 +51,8 @@ public sealed class GivenAnHttpDownloader
 
         var result = await downloadTask;
 
-        var error = result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
-        error!.Reason.ShouldNotBeNullOrWhiteSpace();
+        var error = result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
+        error!.Error.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]

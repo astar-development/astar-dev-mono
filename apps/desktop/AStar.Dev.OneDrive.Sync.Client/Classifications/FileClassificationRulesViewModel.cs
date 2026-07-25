@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
@@ -152,7 +152,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         CategoryNodeViewModel? newNode = null;
 
         await repository.AddCategoryAsync(category, CancellationToken.None)
-            .TapAsync(newId =>
+            .Tap(newId =>
             {
                 newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), repository, self => Categories.Remove(self));
                 Categories.Add(newNode);

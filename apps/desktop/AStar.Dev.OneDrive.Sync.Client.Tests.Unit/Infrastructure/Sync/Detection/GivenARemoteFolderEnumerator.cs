@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -20,7 +20,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncedItemRepository.GetAllByAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
         _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<DriveId, string>.Ok(new DriveId("drive-1")));
+            .Returns(new Ok<DriveId, string>(new DriveId("drive-1")));
     }
 
     private RemoteFolderEnumerator CreateSut() => new(_graphService, _syncRuleRepository, _syncedItemRepository, Substitute.For<ILogger<RemoteFolderEnumerator>>());
@@ -219,7 +219,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
         _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<DriveId, string>.Error("drive-id-resolution-failed"));
+            .Returns(new Fail<DriveId, string>("drive-id-resolution-failed"));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 

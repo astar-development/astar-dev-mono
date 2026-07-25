@@ -47,7 +47,7 @@ public sealed class GivenSearchCategoryWriter : IDisposable
 
         var result = await sut.WriteAsync(searchCategory, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Ok<FunctionalParadigm.Unit, string>>();
+        result.ShouldBeOfType<Ok<FunctionalParadigm.UnitFp, string>>();
         using var verifyContext = dbContextFactory.CreateDbContext();
         var updated = verifyContext.SearchCategories.Single(category => category.Name == "Nature");
         updated.IsFamous.ShouldBeTrue();
@@ -65,7 +65,7 @@ public sealed class GivenSearchCategoryWriter : IDisposable
 
         var result = await sut.WriteAsync(searchCategory, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Fail<FunctionalParadigm.Unit, string>>();
+        result.ShouldBeOfType<Fail<FunctionalParadigm.UnitFp, string>>();
         using var verifyContext = dbContextFactory.CreateDbContext();
         verifyContext.SearchCategories.Count().ShouldBe(0);
     }

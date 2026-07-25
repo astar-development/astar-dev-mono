@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reactive;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -44,13 +44,13 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         {
             timer = new Timer(OnTimerTickAsync, state: null, dueTime: this.interval, period: this.interval);
 
-            return new Result<Unit, string>.Ok(Unit.Default);
+            return new Ok<Unit, string>(Unit.Default);
         }
         catch (Exception ex)
         {
             OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.Message, ex);
 
-            return new Result<Unit, string>.Error(ex.Message);
+            return new Fail<Unit, string>(ex.Message);
         }
     }
 

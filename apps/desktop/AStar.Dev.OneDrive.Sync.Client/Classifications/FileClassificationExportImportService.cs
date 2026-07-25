@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using System.Text.Json;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -61,11 +61,11 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         var fileClassificationCategoryId = FileClassificationCategoryIdFactory.Create(node.Id);
 
         var createResult = FileClassificationCategoryFactory.Create(fileClassificationCategoryId, node.Name, level, node.IsFamous ?? false, node.IsInternet ?? false, effectiveParentId, node.IncludeInSearch);
-        if (createResult is not Result<FileClassificationCategory, string>.Ok { Value: var category })
+        if (createResult is not Ok<FileClassificationCategory, string> { Value: var category })
             return;
 
         var addResult = await repository.AddCategoryAsync(category, cancellationToken).ConfigureAwait(false);
-        if (addResult is not Result<FileClassificationCategoryId, string>.Ok { Value: var newFileClassificationCategoryId })
+        if (addResult is not Ok<FileClassificationCategoryId, string> { Value: var newFileClassificationCategoryId })
             return;
 
         existingIds.Add(newFileClassificationCategoryId.Id);

@@ -1,5 +1,5 @@
 using System.Collections.ObjectModel;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.Utilities;
@@ -103,7 +103,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     private async Task PersistUpdateAsync(FileClassificationCategory category, string trimmedName)
         => await repository.UpdateCategoryAsync(CategoryId, category, CancellationToken.None)
-            .TapAsync(_ =>
+            .Tap(_ =>
             {
                 Name = trimmedName;
                 IsEditing = false;
@@ -141,7 +141,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private async Task AddValidatedChildCategoryAsync(FileClassificationCategory category, string trimmedName, int childLevel)
     {
         await repository.AddCategoryAsync(category, CancellationToken.None)
-            .TapAsync(newId =>
+            .Tap(newId =>
             {
                 var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), repository, self => Children.Remove(self));
                 Children.Add(newChild);

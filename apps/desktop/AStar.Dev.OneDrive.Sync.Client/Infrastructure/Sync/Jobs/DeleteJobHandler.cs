@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -18,6 +18,6 @@ public sealed class DeleteJobHandler(IFileSystem fileSystem) : IJobHandler
         if (fileSystem.File.Exists(deleteJob.Target.LocalPath))
             fileSystem.File.Delete(deleteJob.Target.LocalPath);
 
-        return Task.FromResult<Result<SyncJob, string>>(new Result<SyncJob, string>.Ok(deleteJob));
+        return Task.FromResult<Result<SyncJob, string>>(new Ok<SyncJob, string>(deleteJob));
     }
 }

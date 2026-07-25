@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
@@ -18,18 +18,18 @@ public sealed class UploadJobHandler(IGraphService graphService, ILogger<UploadJ
         var uploadJob = (UploadSyncJob)job;
         var uploadResult = await graphService.UploadFileAsync(accountId, tokenFactory, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, cancellationToken).ConfigureAwait(false);
 
-        return uploadResult.Match<Result<SyncJob, string>>(
+        return uploadResult.Match(
             itemId =>
             {
                 OneDriveSyncClientMessages.UploadCompleted(logger, uploadJob.Target.RelativePath);
 
-                return new Result<SyncJob, string>.Ok(uploadJob with { UploadedRemoteItemId = itemId });
+                return (Result<SyncJob, string>)new Ok<SyncJob, string>(uploadJob with { UploadedRemoteItemId = itemId });
             },
             uploadError =>
             {
                 OneDriveSyncClientMessages.UploadFailed(logger, uploadJob.Target.RelativePath, uploadError);
 
-                return new Result<SyncJob, string>.Error(uploadError);
+                return new Fail<SyncJob, string>(uploadError);
             });
     }
 }

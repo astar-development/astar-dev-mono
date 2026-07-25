@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +30,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
 
         var result = await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Ok>();
+        result.ShouldBeAssignableTo<Ok<System.Reactive.Unit, string>>();
         callCount.ShouldBe(2);
     }
 

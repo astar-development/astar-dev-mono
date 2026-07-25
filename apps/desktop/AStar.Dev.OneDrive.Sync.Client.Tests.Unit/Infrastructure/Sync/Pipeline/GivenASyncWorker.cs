@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
@@ -57,7 +57,7 @@ public sealed class GivenASyncWorker
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Ok(job));
+            .Returns(new Ok<SyncJob, string>(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -82,7 +82,7 @@ public sealed class GivenASyncWorker
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Ok(job));
+            .Returns(new Ok<SyncJob, string>(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -95,7 +95,7 @@ public sealed class GivenASyncWorker
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Ok(job));
+            .Returns(new Ok<SyncJob, string>(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -108,7 +108,7 @@ public sealed class GivenASyncWorker
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Ok(job));
+            .Returns(new Ok<SyncJob, string>(job));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -121,7 +121,7 @@ public sealed class GivenASyncWorker
         var job = MakeDownloadJob();
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Error("handler error"));
+            .Returns(new Fail<SyncJob, string>("handler error"));
 
         await RunWorkerWithJobsAsync(CreateSut(), [job], TestContext.Current.CancellationToken);
 
@@ -158,7 +158,7 @@ public sealed class GivenASyncWorker
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("fresh-token");
         _handler.CanHandle(job).Returns(true);
         _handler.HandleAsync(job, AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<SyncJob, string>.Ok(job));
+            .Returns(new Ok<SyncJob, string>(job));
 
         var channel = Channel.CreateUnbounded<SyncJob>();
         channel.Writer.TryWrite(job);

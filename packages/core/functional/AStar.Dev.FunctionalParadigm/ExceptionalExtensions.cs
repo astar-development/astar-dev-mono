@@ -195,26 +195,6 @@ public static class ExceptionalExtensions
     /// <summary>
     ///     Asynchronously executes a side-effect action for the case present, and returns the original <see cref="Exceptional{T}" />.
     /// </summary>
-    public static async Task<Exceptional<T>> Tap<T>(this Task<Exceptional<T>> exceptionalTask, Action<T> onSuccess, Action<Exception>? onFailure = null)
-    {
-        var exceptional = await exceptionalTask.ConfigureAwait(false);
-
-        return exceptional.Tap(onSuccess, onFailure);
-    }
-
-    /// <summary>
-    ///     Asynchronously executes a side-effect action for the case present, and returns the original <see cref="Exceptional{T}" />.
-    /// </summary>
-    public static async ValueTask<Exceptional<T>> Tap<T>(this ValueTask<Exceptional<T>> exceptionalTask, Action<T> onSuccess, Action<Exception>? onFailure = null)
-    {
-        var exceptional = await exceptionalTask.ConfigureAwait(false);
-
-        return exceptional.Tap(onSuccess, onFailure);
-    }
-
-    /// <summary>
-    ///     Asynchronously executes a side-effect action for the case present, and returns the original <see cref="Exceptional{T}" />.
-    /// </summary>
     public static async Task<Exceptional<T>> TapAsync<T>(this Task<Exceptional<T>> exceptionalTask, Action<T> onSuccess, Action<Exception>? onFailure = null)
     {
         var exceptional = await exceptionalTask.ConfigureAwait(false);
@@ -233,10 +213,32 @@ public static class ExceptionalExtensions
     }
 
     /// <summary>
+    ///     Executes a side-effect action on the captured exception of an <see cref="Exceptional{T}" />,
+    ///     returning the original result unchanged.
+    /// </summary>
+    public static Exceptional<T> TapError<T>(this Exceptional<T> exceptional, Action<Exception> onFailure)
+    {
+        if (exceptional is Failure<T> failure) onFailure(failure.Exception);
+
+        return exceptional;
+    }
+
+    /// <summary>
+    ///     Asynchronously executes a side-effect action on the captured exception of a Task of
+    ///     <see cref="Exceptional{T}" />, returning the original result unchanged.
+    /// </summary>
+    public static async Task<Exceptional<T>> TapErrorAsync<T>(this Task<Exceptional<T>> exceptionalTask, Action<Exception> onFailure)
+    {
+        var exceptional = await exceptionalTask.ConfigureAwait(false);
+
+        return exceptional.TapError(onFailure);
+    }
+
+    /// <summary>
     ///     Asynchronously runs a finalizer against a Task of <see cref="Exceptional{T}" /> regardless of whether it
     ///     resolves to a <see cref="Success{T}" /> or a <see cref="Failure{T}" />, and returns the original result.
     /// </summary>
-    public static async Task<Exceptional<T>> Ensure<T>(this Task<Exceptional<T>> exceptionalTask, Action<T> finallyAction)
+    public static async Task<Exceptional<T>> EnsureAsync<T>(this Task<Exceptional<T>> exceptionalTask, Action<T> finallyAction)
     {
         var exceptional = await exceptionalTask.ConfigureAwait(false);
 
@@ -256,4 +258,11 @@ public static class ExceptionalExtensions
             Failure<T> failure => new Fail<T, TError>(mapError(failure.Exception)),
             _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
         };
+
+    /// <summary>
+    ///     Lifts a Task of <see cref="Exceptional{T}" /> into a <see cref="Result{TResult,TError}" />, mapping a
+    ///     captured exception to a domain error via <paramref name="mapError" />.
+    /// </summary>
+    public static async Task<Result<T, TError>> ToResultAsync<T, TError>(this Task<Exceptional<T>> exceptionalTask, Func<Exception, TError> mapError)
+        => (await exceptionalTask.ConfigureAwait(false)).ToResult(mapError);
 }

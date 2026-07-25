@@ -23,6 +23,20 @@ public static class ResultExtensions
 
     public static Task<Result<TResult, TError>> Tap<TResult, TError>(this Task<Result<TResult, TError>> resultTask, Action<TResult> onSuccess, Action<TError>? onFailure = null) => resultTask.ContinueWith(task => task.Result.Tap(onSuccess, onFailure), TaskContinuationOptions.ExecuteSynchronously);
 
+    public static Result<TResult, TError> TapError<TResult, TError>(this Result<TResult, TError> result, Action<TError> onFailure)
+    {
+        if (result is Fail<TResult, TError> fail) onFailure(fail.Error);
+
+        return result;
+    }
+
+    public static async Task<Result<TResult, TError>> TapAsync<TResult, TError>(this Result<TResult, TError> result, Func<TResult, Task> onSuccessAsync)
+    {
+        if (result is Ok<TResult, TError> ok) await onSuccessAsync(ok.Value).ConfigureAwait(false);
+
+        return result;
+    }
+
     public static async ValueTask<Result<TResult, TError>> TapAsync<TResult, TError>(this ValueTask<Result<TResult, TError>> resultTask, Action<TResult> onSuccess, Action<TError>? onFailure = null)
     {
         var result = await resultTask.ConfigureAwait(false);
@@ -164,28 +178,40 @@ public static class ResultExtensions
             _ => throw new InvalidOperationException(UnexpectedResultTypeMessage)
         };
 
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, Task<TOut>> onSuccess, Func<TError, TOut> onFailure)
-        => MatchAsyncCore(result, ok => new ValueTask<TOut>(onSuccess(ok)), fail => new ValueTask<TOut>(onFailure(fail)));
-
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, TOut> onSuccess, Func<TError, Task<TOut>> onFailure)
-        => MatchAsyncCore(result, ok => new ValueTask<TOut>(onSuccess(ok)), fail => new ValueTask<TOut>(onFailure(fail)));
-
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, Task<TOut>> onSuccess, Func<TError, Task<TOut>> onFailure)
-        => MatchAsyncCore(result, ok => new ValueTask<TOut>(onSuccess(ok)), fail => new ValueTask<TOut>(onFailure(fail)));
-
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, ValueTask<TOut>> onSuccess, Func<TError, TOut> onFailure)
-        => MatchAsyncCore(result, onSuccess, fail => new ValueTask<TOut>(onFailure(fail)));
-
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, TOut> onSuccess, Func<TError, ValueTask<TOut>> onFailure)
-        => MatchAsyncCore(result, ok => new ValueTask<TOut>(onSuccess(ok)), onFailure);
-
-    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, ValueTask<TOut>> onSuccess, Func<TError, ValueTask<TOut>> onFailure)
-        => MatchAsyncCore(result, onSuccess, onFailure);
-
-    private static ValueTask<TOut> MatchAsyncCore<TResult, TError, TOut>(Result<TResult, TError> result, Func<TResult, ValueTask<TOut>> onSuccess, Func<TError, ValueTask<TOut>> onFailure)
+    public static Task<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, Task<TOut>> onSuccess, Func<TError, Task<TOut>> onFailure)
         => result switch
         {
             Ok<TResult, TError> ok => onSuccess(ok.Value),
+            Fail<TResult, TError> fail => onFailure(fail.Error),
+            _ => throw new InvalidOperationException(UnexpectedResultTypeMessage)
+        };
+
+    public static async Task<TOut> MatchAsync<TResult, TError, TOut>(this Task<Result<TResult, TError>> resultTask, Func<TResult, Task<TOut>> onSuccess, Func<TError, Task<TOut>> onFailure)
+        => await (await resultTask.ConfigureAwait(false)).MatchAsync(onSuccess, onFailure).ConfigureAwait(false);
+
+    public static async Task<TOut> MatchAsync<TResult, TError, TOut>(this Task<Result<TResult, TError>> resultTask, Func<TResult, TOut> onSuccess, Func<TError, TOut> onFailure)
+        => (await resultTask.ConfigureAwait(false)).Match(onSuccess, onFailure);
+
+    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, ValueTask<TOut>> onSuccess, Func<TError, ValueTask<TOut>> onFailure)
+        => result switch
+        {
+            Ok<TResult, TError> ok => onSuccess(ok.Value),
+            Fail<TResult, TError> fail => onFailure(fail.Error),
+            _ => throw new InvalidOperationException(UnexpectedResultTypeMessage)
+        };
+
+    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, ValueTask<TOut>> onSuccess, Func<TError, TOut> onFailure)
+        => result switch
+        {
+            Ok<TResult, TError> ok => onSuccess(ok.Value),
+            Fail<TResult, TError> fail => ValueTask.FromResult(onFailure(fail.Error)),
+            _ => throw new InvalidOperationException(UnexpectedResultTypeMessage)
+        };
+
+    public static ValueTask<TOut> MatchAsync<TResult, TError, TOut>(this Result<TResult, TError> result, Func<TResult, TOut> onSuccess, Func<TError, ValueTask<TOut>> onFailure)
+        => result switch
+        {
+            Ok<TResult, TError> ok => ValueTask.FromResult(onSuccess(ok.Value)),
             Fail<TResult, TError> fail => onFailure(fail.Error),
             _ => throw new InvalidOperationException(UnexpectedResultTypeMessage)
         };

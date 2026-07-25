@@ -14,5 +14,5 @@ public interface ISearchCategoryWriter
     /// </summary>
     /// <param name="searchCategory">The scrape progress to persist.</param>
     /// <param name="cancellationToken">A token used to observe cancellation of the write.</param>
-    Task<Result<Unit, string>> WriteAsync(SearchCategoryDto searchCategory, CancellationToken cancellationToken);
+    Task<Result<UnitFp, string>> WriteAsync(SearchCategoryDto searchCategory, CancellationToken cancellationToken);
 }

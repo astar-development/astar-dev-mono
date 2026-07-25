@@ -1,6 +1,6 @@
 using System.Collections.Frozen;
 using System.Reactive;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
@@ -26,10 +26,10 @@ public sealed class FeatureAvailabilityService : IFeatureAvailabilityService, IF
     public Result<Unit, string> Register(NavSection section)
     {
         if (frozenSections is not null)
-            return new Result<Unit, string>.Error("Cannot register sections after the set has been frozen.");
+            return new Fail<Unit, string>("Cannot register sections after the set has been frozen.");
 
         pendingSections.Add(section);
 
-        return new Result<Unit, string>.Ok(Unit.Default);
+        return new Ok<Unit, string>(Unit.Default);
     }
 }

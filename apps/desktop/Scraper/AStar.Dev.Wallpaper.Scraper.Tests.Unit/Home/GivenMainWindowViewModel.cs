@@ -48,7 +48,7 @@ public sealed class GivenMainWindowViewModel
         {
             callInfo.ArgAt<IProgress<string>>(1).Report("Visiting category: Nature");
 
-            return Task.FromResult(Exceptional.Success(FunctionalParadigm.Unit.Instance));
+            return Task.FromResult(Exceptional.Success(FunctionalParadigm.UnitFp.Instance));
         });
 
         await sut.ScrapeSearchCategoriesCommand.Execute();
@@ -59,7 +59,7 @@ public sealed class GivenMainWindowViewModel
     [Fact]
     public async Task when_the_search_categories_action_fails_then_the_status_reports_the_failure_message()
     {
-        var sut = CreateViewModel(scrapeActionResult: Exceptional.Failure<FunctionalParadigm.Unit>(new InvalidOperationException("boom")));
+        var sut = CreateViewModel(scrapeActionResult: Exceptional.Failure<FunctionalParadigm.UnitFp>(new InvalidOperationException("boom")));
 
         await sut.ScrapeSearchCategoriesCommand.Execute();
 
@@ -76,7 +76,7 @@ public sealed class GivenMainWindowViewModel
             actionEntered.TrySetResult();
             await actionGate.Task;
 
-            return Exceptional.Failure<FunctionalParadigm.Unit>(new InvalidOperationException("Protocol error: kaboom"));
+            return Exceptional.Failure<FunctionalParadigm.UnitFp>(new InvalidOperationException("Protocol error: kaboom"));
         });
 
         var execution = sut.ScrapeSearchCategoriesCommand.Execute().ToTask();
@@ -102,7 +102,7 @@ public sealed class GivenMainWindowViewModel
                 progress.Report($"Message {i}");
             }
 
-            return Task.FromResult(Exceptional.Success(FunctionalParadigm.Unit.Instance));
+            return Task.FromResult(Exceptional.Success(FunctionalParadigm.UnitFp.Instance));
         });
 
         await sut.ScrapeSearchCategoriesCommand.Execute();
@@ -494,15 +494,15 @@ public sealed class GivenMainWindowViewModel
     private MainWindowViewModel CreateViewModel(
         Exceptional<IPage>? configureResult = null,
         Func<CallInfo, Task<Exceptional<IPage>>>? configureBehavior = null,
-        Exceptional<FunctionalParadigm.Unit>? scrapeActionResult = null,
-        Func<CallInfo, Task<Exceptional<FunctionalParadigm.Unit>>>? scrapeActionBehavior = null,
+        Exceptional<FunctionalParadigm.UnitFp>? scrapeActionResult = null,
+        Func<CallInfo, Task<Exceptional<FunctionalParadigm.UnitFp>>>? scrapeActionBehavior = null,
         bool? confirmScrape = true)
     {
         playwrightService.ConfigurePlaywrightAsync(Arg.Any<CancellationToken>())
             .Returns(configureBehavior ?? (_ => Task.FromResult(configureResult ?? Exceptional.Success(Substitute.For<IPage>()))));
 
         searchCategoryScrapeAction.ExecuteAsync(Arg.Any<IPage>(), Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
-            .Returns(scrapeActionBehavior ?? (_ => Task.FromResult(scrapeActionResult ?? Exceptional.Success(FunctionalParadigm.Unit.Instance))));
+            .Returns(scrapeActionBehavior ?? (_ => Task.FromResult(scrapeActionResult ?? Exceptional.Success(FunctionalParadigm.UnitFp.Instance))));
 
         var scrapeConfiguration = Options.Create(new ScrapeConfiguration { ApplicationName = "Test App", WindowSize = new WindowSize(1_234, 567) });
         var sut = new MainWindowViewModel(scrapeConfiguration, playwrightService, searchCategoryScrapeAction, entityEditorFactory, themeService, databaseResetService);

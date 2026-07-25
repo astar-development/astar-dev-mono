@@ -58,6 +58,13 @@ public static class OptionExtensions
         => option.Match(bind, Option.None<TResult>);
 
     /// <summary>
+    ///     Converts an <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
+    /// ToDo - check whether this compiles at the end of the migration and, if it does, migrate / add tests for it.
+    /// </summary>
+    public static Result<T, TError> ToResult<T, TError>(this Option<T> option, Func<TError> errorFactory)
+        => option.Match(Result.Success<T, TError>, () => Result.Failure<T, TError>(errorFactory()));
+
+    /// <summary>
     ///     Converts an <see cref="Option{T}" /> to a nullable type.
     /// </summary>
     public static T? ToNullable<T>(this Option<T> option) where T : struct => option is Option<T>.Some some ? some.Value : null;
@@ -132,6 +139,33 @@ public static class OptionExtensions
         var option = await optionTask;
 
         return await option.BindAsync(bindAsync);
+    }
+
+    /// <summary>
+    ///     Asynchronously converts an <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
+    /// ToDo - check whether this compiles at the end of the migration and, if it does, migrate / add tests for it and the other ToResultAsync overloads.
+    /// </summary>
+    public static async Task<Result<T, TError>> ToResultAsync<T, TError>(this Option<T> option, Func<Task<TError>> errorFactoryAsync)
+        => await option.Match<Task<Result<T, TError>>>(
+                                                    some => Task.FromResult<Result<T, TError>>(Result.Success<T, TError>(some)),
+                                                    async () => Result.Failure<T, TError>(await errorFactoryAsync()));
+
+    /// <summary>
+    ///     Asynchronously converts a Task of <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
+    /// </summary>
+    public static async Task<Result<T, TError>> ToResultAsync<T, TError>(
+        this Task<Option<T>> optionTask,
+        Func<TError> errorFactory) =>
+        (await optionTask).ToResult(errorFactory);
+
+    /// <summary>
+    ///     Asynchronously converts a Task of <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
+    /// </summary>
+    public static async Task<Result<T, TError>> ToResultAsync<T, TError>(this Task<Option<T>> optionTask, Func<Task<TError>> errorFactoryAsync)
+    {
+        var option = await optionTask;
+
+        return await option.ToResultAsync(errorFactoryAsync);
     }
 
     /// <summary>

@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
@@ -57,9 +57,9 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         settingsService.Current.Returns(new AppSettings { SyncIntervalMinutes = 30, Theme = AppTheme.System });
         settingsServiceForViewModel.Current.Returns(new AppSettings());
         localizationService.AvailableCultures.Returns([]);
-        startupService.RestoreAccountsAsync().Returns(Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Ok([])));
+        startupService.RestoreAccountsAsync().Returns(Task.FromResult<Result<List<OneDriveAccount>, string>>(new Ok<List<OneDriveAccount>, string>([])));
         syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
-        syncScheduler.StartSync(Arg.Any<TimeSpan?>()).Returns(new Result<ReactiveUnit, string>.Ok(ReactiveUnit.Default));
+        syncScheduler.StartSync(Arg.Any<TimeSpan?>()).Returns(new Ok<ReactiveUnit, string>(ReactiveUnit.Default));
 
         sqliteConnection = new SqliteConnection("Data Source=:memory:");
         sqliteConnection.Open();

@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 
@@ -10,17 +10,17 @@ public static class FileClassificationCategoryFactory
     {
         string trimmedName = name?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(trimmedName))
-            return new Result<FileClassificationCategory, string>.Error("Name must not be empty.");
+            return new Fail<FileClassificationCategory, string>("Name must not be empty.");
 
         if (level is < 1 or > 3)
-            return new Result<FileClassificationCategory, string>.Error("Level must be 1, 2, or 3.");
+            return new Fail<FileClassificationCategory, string>("Level must be 1, 2, or 3.");
 
         if (level == 1 && parentId is Option<FileClassificationCategoryId>.Some)
-            return new Result<FileClassificationCategory, string>.Error("Level 1 category must not have a parent.");
+            return new Fail<FileClassificationCategory, string>("Level 1 category must not have a parent.");
 
         if (level is 2 or 3 && parentId is Option<FileClassificationCategoryId>.None)
-            return new Result<FileClassificationCategory, string>.Error("Level 2 and 3 categories must have a parent.");
+            return new Fail<FileClassificationCategory, string>("Level 2 and 3 categories must have a parent.");
 
-        return new Result<FileClassificationCategory, string>.Ok(new(id, trimmedName, level, IsFamous, IsInternet, parentId, IncludeInSearch));
+        return new Ok<FileClassificationCategory, string>(new(id, trimmedName, level, IsFamous, IsInternet, parentId, IncludeInSearch));
     }
 }

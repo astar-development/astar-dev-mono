@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
@@ -11,7 +11,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     {
         var result = FileClassificationKeywordFactory.Create("", Option.None<bool>(), Option.None<bool>());
 
-        _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationKeyword, string>>();
     }
 
     [Fact]
@@ -19,7 +19,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     {
         var result = FileClassificationKeywordFactory.Create("   ", Option.None<bool>(), Option.None<bool>());
 
-        _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationKeyword, string>>();
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     {
         var result = FileClassificationKeywordFactory.Create(AnyValidValue, Option.None<bool>(), Option.None<bool>());
 
-        _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Ok>();
+        _ = result.ShouldBeOfType<Ok<FileClassificationKeyword, string>>();
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public sealed class GivenAFileClassificationKeywordFactory
     {
         var result = FileClassificationKeywordFactory.Create(null!, Option.None<bool>(), Option.None<bool>());
 
-        _ = result.ShouldBeOfType<Result<FileClassificationKeyword, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationKeyword, string>>();
     }
 
     [Fact]

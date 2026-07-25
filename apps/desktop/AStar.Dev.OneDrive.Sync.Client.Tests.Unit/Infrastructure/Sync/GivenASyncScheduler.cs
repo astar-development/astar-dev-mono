@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
@@ -35,7 +35,7 @@ public sealed class GivenASyncScheduler
 
         var result = scheduler.StartSync();
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
+        result.ShouldBeOfType<Ok<ReactiveUnit, string>>();
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class GivenASyncScheduler
 
         var result = scheduler.StartSync();
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
+        result.ShouldBeOfType<Ok<ReactiveUnit, string>>();
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class GivenASyncScheduler
 
         var result = scheduler.StartSync(customInterval);
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
+        result.ShouldBeOfType<Ok<ReactiveUnit, string>>();
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class GivenASyncScheduler
 
         var result = scheduler.StartSync(interval);
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
+        result.ShouldBeOfType<Ok<ReactiveUnit, string>>();
     }
 
     [Fact]

@@ -1,6 +1,6 @@
 namespace AStar.Dev.FunctionalParadigm.Tests.Unit;
 
-public sealed class GivenExceptionalEnsure
+public sealed class GivenExceptionalEnsureAsync
 {
     [Fact]
     public async Task when_task_resolves_to_success_then_finalizer_receives_value_and_returns_same_result()
@@ -8,7 +8,7 @@ public sealed class GivenExceptionalEnsure
         var resultTask = Task.FromResult<Exceptional<int>>(new Success<int>(7));
         int? finalizerValue = null;
 
-        var actual = await resultTask.Ensure(value => finalizerValue = value);
+        var actual = await resultTask.EnsureAsync(value => finalizerValue = value);
 
         actual.ShouldBeOfType<Success<int>>();
         actual.ShouldBe(new Success<int>(7));
@@ -22,7 +22,7 @@ public sealed class GivenExceptionalEnsure
         var resultTask = Task.FromResult<Exceptional<int>>(new Failure<int>(exception));
         bool finalizerInvoked = false;
 
-        var actual = await resultTask.Ensure(_ => finalizerInvoked = true);
+        var actual = await resultTask.EnsureAsync(_ => finalizerInvoked = true);
 
         actual.ShouldBeOfType<Failure<int>>();
         actual.ShouldBe(new Failure<int>(exception));
@@ -35,7 +35,7 @@ public sealed class GivenExceptionalEnsure
         var resultTask = Task.FromResult<Exceptional<string>>(new Failure<string>(new InvalidOperationException("boom")));
         string finalizerValue = "not-null";
 
-        await resultTask.Ensure(value => finalizerValue = value);
+        await resultTask.EnsureAsync(value => finalizerValue = value);
 
         finalizerValue.ShouldBeNull();
     }
@@ -45,8 +45,7 @@ public sealed class GivenExceptionalEnsure
     {
         bool finalizerInvoked = false;
 
-        var actual = await Try.RunAsync(() => Task.FromResult(3))
-            .Ensure(_ => finalizerInvoked = true);
+        var actual = await Try.RunAsync(() => Task.FromResult(3)).EnsureAsync(_ => finalizerInvoked = true);
 
         actual.ShouldBe(new Success<int>(3));
         finalizerInvoked.ShouldBeTrue();

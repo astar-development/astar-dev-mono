@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Domain;
 
@@ -13,7 +13,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 1, false, false, Option.None<FileClassificationCategoryId>(), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Ok>();
+        _ = result.ShouldBeOfType<Ok<FileClassificationCategory, string>>();
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 2, false, false, Option.Some(AnyParentCategoryId), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Ok>();
+        _ = result.ShouldBeOfType<Ok<FileClassificationCategory, string>>();
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 3, false, false, Option.Some(AnyParentCategoryId), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Ok>();
+        _ = result.ShouldBeOfType<Ok<FileClassificationCategory, string>>();
     }
 
     [Theory]
@@ -71,7 +71,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, invalidLevel, false, false, Option.None<FileClassificationCategoryId>(), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 1, false, false, Option.Some(AnyParentCategoryId), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 2, false, false, Option.None<FileClassificationCategoryId>(), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 3, false, false, Option.None<FileClassificationCategoryId>(), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
     }
 
     [Theory]
@@ -105,7 +105,7 @@ public sealed class GivenAFileClassificationCategoryFactory
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), blankName, 1, false, false, Option.None<FileClassificationCategoryId>(), false);
 
-        _ = result.ShouldBeOfType<Result<FileClassificationCategory, string>.Error>();
+        _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
     }
 
     [Fact]

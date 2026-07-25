@@ -19,5 +19,5 @@ public interface IScrapeAction
     /// <param name="page">The Playwright page to scrape.</param>
     /// <param name="progress">Receives human-readable progress messages as the scrape advances.</param>
     /// <param name="token">A token used to observe cancellation of the scrape.</param>
-    Task<Exceptional<Unit>> ExecuteAsync(IPage page, IProgress<string> progress, CancellationToken cancellationToken);
+    Task<Exceptional<UnitFp>> ExecuteAsync(IPage page, IProgress<string> progress, CancellationToken cancellationToken);
 }

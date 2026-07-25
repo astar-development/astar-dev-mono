@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
@@ -32,9 +32,9 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 e.IncludeInSearch
             );
 
-            _ = result.Match<object?>(
-                ok => { categories.Add(ok); return null; },
-                err => { OneDriveSyncClientMessages.ClassificationRowSkipped(logger, e.Id, err); return null; });
+            result.Tap(
+                ok => categories.Add(ok),
+                err => OneDriveSyncClientMessages.ClassificationRowSkipped(logger, e.Id, err));
         }
 
         return categories.AsReadOnly();
@@ -69,7 +69,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
                 return new FileClassificationCategoryId(entity.Id);
-            }).MapFailureAsync(ex => ex.GetBaseException().Message);
+            }).ToResultAsync(ex => ex.GetBaseException().Message);
 
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default)
@@ -79,7 +79,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
         if (entity is null)
-            return new Result<FileClassificationCategoryId, string>.Error("Category not found.");
+            return new Fail<FileClassificationCategoryId, string>("Category not found.");
 
         entity.Name = category.Name.ToTitleCase();
         entity.Level = category.Level;
@@ -90,7 +90,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        return new Result<FileClassificationCategoryId, string>.Ok(id);
+        return new Ok<FileClassificationCategoryId, string>(id);
     }
 
     /// <inheritdoc />

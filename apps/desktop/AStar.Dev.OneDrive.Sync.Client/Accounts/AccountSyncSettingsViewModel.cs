@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Conflicts;
@@ -67,7 +67,7 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveAsync()
     {
-        var resolvedPath = LocalSyncPathFactory.Create(LocalSyncPath).Match<LocalSyncPath?>(p => p, _ => null);
+        var resolvedPath = LocalSyncPathFactory.Create(LocalSyncPath).Match(p => (LocalSyncPath?)p, _ => null);
         account.SyncConfig = resolvedPath is null
             ? Option.None<AccountSyncConfig>()
             : Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy, resolvedPath));

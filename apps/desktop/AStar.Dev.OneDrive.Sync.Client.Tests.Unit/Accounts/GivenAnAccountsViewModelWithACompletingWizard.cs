@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -113,7 +113,7 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
             .Returns(AuthResultFactory.Success(AccessToken, AccountIdStr, AccountProfileFactory.Create(DisplayName, Email)));
 
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([new DriveFolder(FolderId1, FolderName1, Option.None<string>()), new DriveFolder(FolderId2, FolderName2, Option.None<string>())]));
+            .Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(FolderId1, FolderName1, Option.None<string>()), new DriveFolder(FolderId2, FolderName2, Option.None<string>())]));
 
         onboardingService.CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => callInfo.Arg<OneDriveAccount>());

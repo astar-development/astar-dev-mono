@@ -2,6 +2,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 public sealed class SyncProgressEventArgs(string accountId, string folderId, int completed, int total, string currentFile, SyncState syncState) : EventArgs
 {
+    public SyncProgressEventArgs(string accountId, string currentFile, SyncState syncState)
+        : this(accountId, string.Empty, 0, 0, currentFile, syncState)
+    {
+    }
+
     public string AccountId { get; } = accountId;
     public string FolderId { get; } = folderId;
     public int Completed { get; } = completed;

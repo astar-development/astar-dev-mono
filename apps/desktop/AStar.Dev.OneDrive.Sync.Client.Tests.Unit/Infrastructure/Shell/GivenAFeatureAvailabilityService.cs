@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using ReactiveUnit = System.Reactive.Unit;
 
@@ -13,7 +13,7 @@ public sealed class GivenAFeatureAvailabilityService
 
         var result = sut.Register(NavSection.Dashboard);
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Ok>();
+        result.ShouldBeOfType<Ok<ReactiveUnit, string>>();
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public sealed class GivenAFeatureAvailabilityService
 
         var result = sut.Register(NavSection.Dashboard);
 
-        result.ShouldBeOfType<Result<ReactiveUnit, string>.Error>();
+        result.ShouldBeOfType<Fail<ReactiveUnit, string>>();
     }
 
     [Fact]
@@ -35,8 +35,8 @@ public sealed class GivenAFeatureAvailabilityService
 
         var result = sut.Register(NavSection.Dashboard);
 
-        var error = result.ShouldBeOfType<Result<ReactiveUnit, string>.Error>();
-        error.Reason.ShouldNotBeNullOrEmpty();
+        var error = result.ShouldBeOfType<Fail<ReactiveUnit, string>>();
+        error.Error.ShouldNotBeNullOrEmpty();
     }
 
     [Fact]

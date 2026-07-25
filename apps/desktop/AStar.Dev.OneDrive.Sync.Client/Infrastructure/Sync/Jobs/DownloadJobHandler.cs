@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
@@ -23,27 +23,27 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
             {
                 var downloadResult = await downloader.DownloadAsync(url, downloadJob.Target.LocalPath, downloadJob.Metadata.RemoteModified).ConfigureAwait(false);
 
-                return downloadResult.Match<Result<SyncJob, string>>(
-                    _ => new Result<SyncJob, string>.Ok(downloadJob),
+                return downloadResult.Match(
+                    _ => (Result<SyncJob, string>)new Ok<SyncJob, string>(downloadJob),
                     error =>
                     {
                         OneDriveSyncClientMessages.DownloadFailed(logger, downloadJob.Target.RelativePath, error);
 
-                        return new Result<SyncJob, string>.Error(error);
+                        return new Fail<SyncJob, string>(error);
                     });
             },
             urlError =>
             {
                 OneDriveSyncClientMessages.DownloadUrlResolveFailed(logger, downloadJob.Target.RelativePath, urlError);
 
-                return new Result<SyncJob, string>.Error(urlError);
+                return new Fail<SyncJob, string>(urlError);
             }).ConfigureAwait(false);
     }
 
     private async Task<Result<string, string>> ResolveDownloadUrlAsync(DownloadSyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         if (job.DownloadUrl is Option<string>.Some downloadUrl)
-            return new Result<string, string>.Ok(downloadUrl.Value);
+            return new Ok<string, string>(downloadUrl.Value);
 
         OneDriveSyncClientMessages.DownloadUrlAbsent(logger, job.Target.RelativePath);
 

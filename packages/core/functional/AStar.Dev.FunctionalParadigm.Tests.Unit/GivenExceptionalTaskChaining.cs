@@ -10,7 +10,7 @@ public sealed class GivenExceptionalTaskChaining
         bool sideEffect = false;
 
         var actual = await Try.RunAsync(() => Task.FromResult(7))
-            .Tap(value => sideEffect = value == 7);
+            .TapAsync(value => sideEffect = value == 7);
 
         actual.ShouldBeOfType<Success<int>>();
         actual.ShouldBe(new Success<int>(7));
@@ -24,7 +24,7 @@ public sealed class GivenExceptionalTaskChaining
         bool sideEffect = false;
 
         var actual = await Try.RunAsync<int>(() => throw exception)
-            .Tap(_ => { }, ex => sideEffect = ex == exception);
+            .TapAsync(_ => { }, ex => sideEffect = ex == exception);
 
         actual.ShouldBeOfType<Failure<int>>();
         actual.ShouldBe(new Failure<int>(exception));

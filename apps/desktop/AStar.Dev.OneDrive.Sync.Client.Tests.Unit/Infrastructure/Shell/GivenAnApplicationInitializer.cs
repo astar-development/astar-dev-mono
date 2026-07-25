@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Activity;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
@@ -47,10 +47,10 @@ public sealed class GivenAnApplicationInitializer
     }
 
     private static Task<Result<List<OneDriveAccount>, string>> OkResult(List<OneDriveAccount> accounts)
-        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Ok(accounts));
+        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Ok<List<OneDriveAccount>, string>(accounts));
 
     private static Task<Result<List<OneDriveAccount>, string>> ErrorResult(string message)
-        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Result<List<OneDriveAccount>, string>.Error(message));
+        => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Fail<List<OneDriveAccount>, string>(message));
 
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _quotaRefreshService, _syncEventAggregator, new AddAccountWizardViewModelFactory(_authService, _graphService, _localizationService), new AccountCardViewModelFactory(_localizationService), Substitute.For<ILogger<AccountsViewModel>>());
     private FilesViewModel CreateFilesViewModel() => new(new AccountFilesViewModelFactory(_authService, _graphService, Substitute.For<ISyncRuleService>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(_graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService), _localizationService), _localizationService);

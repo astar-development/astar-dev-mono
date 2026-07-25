@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
@@ -33,9 +33,9 @@ public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
 
         var graphService = Substitute.For<IGraphService>();
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<DriveId, string>.Ok(new DriveId(DriveIdValue)));
+            .Returns(new Ok<DriveId, string>(new DriveId(DriveIdValue)));
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
-            .Returns(new Result<List<DriveFolder>, string>.Ok([]));
+            .Returns(new Ok<List<DriveFolder>, string>([]));
 
         var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, syncRuleService, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
 

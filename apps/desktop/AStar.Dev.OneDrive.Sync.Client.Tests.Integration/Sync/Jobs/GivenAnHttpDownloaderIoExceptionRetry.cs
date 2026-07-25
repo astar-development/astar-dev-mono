@@ -1,5 +1,5 @@
 using System.Net;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -33,7 +33,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
 
         var result = await downloadTask;
 
-        result.ShouldBeAssignableTo<Result<System.Reactive.Unit, string>.Error>();
+        result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
     }
 
     private sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

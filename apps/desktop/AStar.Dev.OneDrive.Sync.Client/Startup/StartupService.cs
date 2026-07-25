@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
@@ -16,12 +16,12 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
               .BindAsync(FetchWithCachedIdsAsync)
               .BindAsync(BuildFilteredAccountsAsync)
               .TapAsync(EnsureSingleActiveAccount)
-              .MapFailureAsync(ex => ex.GetBaseException().Message);
+              .ToResultAsync(ex => ex.GetBaseException().Message);
 
-    private Task<Result<(List<AccountEntity> entities, HashSet<string> cachedIds), Exception>> FetchWithCachedIdsAsync(List<AccountEntity> entities)
+    private Task<Exceptional<(List<AccountEntity> entities, HashSet<string> cachedIds)>> FetchWithCachedIdsAsync(List<AccountEntity> entities)
         => Try.RunAsync(async () => (entities, (await authService.GetCachedAccountIdsAsync().ConfigureAwait(false)).ToHashSet()));
 
-    private Task<Result<List<OneDriveAccount>, Exception>> BuildFilteredAccountsAsync((List<AccountEntity> entities, HashSet<string> cachedIds) input)
+    private Task<Exceptional<List<OneDriveAccount>>> BuildFilteredAccountsAsync((List<AccountEntity> entities, HashSet<string> cachedIds) input)
         => Try.RunAsync(() => BuildAccountsAsync(FilterToCachedEntities(input.entities, input.cachedIds)));
 
     private static IEnumerable<AccountEntity> FilterToCachedEntities(IEnumerable<AccountEntity> entities, HashSet<string> cachedIds)

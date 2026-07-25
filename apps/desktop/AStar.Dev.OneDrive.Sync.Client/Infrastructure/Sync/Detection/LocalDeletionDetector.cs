@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using System.Reactive;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Graph;
@@ -30,18 +31,18 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
             {
                 var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, cancellationToken).ConfigureAwait(false);
 
-                await deleteResult.MatchAsync(
+                deleteResult.Match(
                     _ =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorRemoteDeleted(logger, remoteId);
                         successfullyDeletedIds.Add(knownItem.RemoteItemId);
-                        return Task.FromResult(Unit.Default);
+                        return Unit.Default;
                     },
                     deleteError =>
                     {
                         OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, remoteId, deleteError);
                         return Unit.Default;
-                    }).ConfigureAwait(false);
+                    });
             }
             catch (Exception ex)
             {
