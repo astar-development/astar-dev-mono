@@ -1,7 +1,7 @@
-﻿using AStarDev.LoggingSerilog.LogViewer;
+using System.Globalization;
+using AStarDev.LoggingSerilog.LogViewer;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using System.Globalization;
 
 namespace AStarDev.LoggingSerilog;
 

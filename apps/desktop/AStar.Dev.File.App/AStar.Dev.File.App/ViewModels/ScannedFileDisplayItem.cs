@@ -23,14 +23,11 @@ public class ScannedFileDisplayItem(ScannedFile file) : ReactiveObject
 
     [Reactive] public bool PendingDelete { get; set; } = file.PendingDelete;
 
-    public static string FormatSize(long bytes)
+    public static string FormatSize(long bytes) => bytes switch
     {
-        return bytes switch
-        {
-            >= 1_073_741_824L => $"{bytes / 1_073_741_824.0:F1} GB",
-            >= 1_048_576L => $"{bytes / 1_048_576.0:F1} MB",
-            >= 1_024L => $"{bytes / 1_024.0:F1} KB",
-            _ => $"{bytes} B",
-        };
-    }
+        >= 1_073_741_824L => $"{bytes / 1_073_741_824.0:F1} GB",
+        >= 1_048_576L => $"{bytes / 1_048_576.0:F1} MB",
+        >= 1_024L => $"{bytes / 1_024.0:F1} KB",
+        _ => $"{bytes} B",
+    };
 }
