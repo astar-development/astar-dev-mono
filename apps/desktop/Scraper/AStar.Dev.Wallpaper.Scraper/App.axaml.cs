@@ -49,8 +49,7 @@ public partial class App : Application, IDisposable
 
         ApplicationOptionsRegistrar.Register(collection, configuration);
         string logDirectory = ApplicationDirectories.LogsDirectory;
-        var inMemoryLogSink = new InMemoryLogSink();
-        Log.Logger = AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(configuration, $"{logDirectory}/log.txt", inMemoryLogSink);
+        Log.Logger = AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(configuration, $"{logDirectory}/log.txt");
 
         return collection
             .AddLogging(logging => logging.AddSerilog(dispose: true))
