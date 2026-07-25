@@ -3,7 +3,6 @@ global using Avalonia.Headless.XUnit;
 global using Microsoft.Extensions.Options;
 global using Microsoft.Graph;
 global using Microsoft.Kiota.Abstractions.Authentication;
-global using Serilog.Events;
 global using WireMock;
 global using WireMock.RequestBuilders;
 global using WireMock.ResponseBuilders;

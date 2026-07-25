@@ -1,8 +1,8 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
+using AStar.Dev.Logging.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
 
 namespace AStar.Dev.Wallpaper.Scraper.Startup;
 
@@ -13,11 +13,12 @@ public static class DatabaseMigrator
     /// <param name="dbContextFactory">The factory used to create the <see cref="AppDbContext" />.</param>
     /// <param name="logger">The logger used to report migration failures.</param>
     public static async Task MigrateAsync(IDbContextFactory<AppDbContext> dbContextFactory, ILogger logger) =>
-        await Try.RunAsync(() => ApplyPendingMigrationsAsync(dbContextFactory))
+        await Try.RunAsync(() => ApplyPendingMigrationsAsync(dbContextFactory, logger))
             .TapAsync(static _ => { }, exception => LogMigrationFailure(logger, exception));
 
-    private static async Task<Unit> ApplyPendingMigrationsAsync(IDbContextFactory<AppDbContext> dbContextFactory)
+    private static async Task<Unit> ApplyPendingMigrationsAsync(IDbContextFactory<AppDbContext> dbContextFactory, ILogger logger)
     {
+        LogMessage.Information(logger, "Applying pending database migrations");
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         await dbContext.Database.MigrateAsync();
 
