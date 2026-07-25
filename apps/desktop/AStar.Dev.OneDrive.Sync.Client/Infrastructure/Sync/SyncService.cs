@@ -34,31 +34,37 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
         var initialAuth = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).ConfigureAwait(false);
-        bool authOk = initialAuth.Match(_ => true, _ => false);
 
-        if (!authOk)
-        {
-            bool reAuthRequired = initialAuth.Match(_ => false, err => err is AuthReAuthRequiredError);
-            RaiseProgress(account.Id.Id, 0, 0,
-                localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed"),
-                reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error);
+        await initialAuth.MatchAsync<bool>(
+            ok => { _ = SyncAsync(account, initialAuth, cancellationToken); return Task.FromResult(true); },
+            err =>
+            {
+                bool reAuthRequired = initialAuth.Match(_ => false, err => err is AuthReAuthRequiredError);
+                RaiseProgress(account.Id.Id, 0, 0, GetSyncResultText(reAuthRequired), GetSyncState(reAuthRequired));
 
-            return;
-        }
+                return false;
+            });
+    }
 
+    private static SyncState GetSyncState(bool reAuthRequired) => reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error;
+    private string GetSyncResultText(bool reAuthRequired) => localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed");
+
+    private async Task<bool> SyncAsync(OneDriveAccount account, Result<AuthResult, AuthError> initialAuth,  CancellationToken cancellationToken)
+    {
         if (account.SyncConfig is not Option<AccountSyncConfig>.Some syncConfigSome)
         {
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.NoSyncPath"), SyncState.Error);
 
-            return;
+            return false;
         }
 
         var syncConfig = syncConfigSome.Value;
         var (initialToken, initialExpiry) = initialAuth.Match(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
-        using var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialToken, initialExpiry);
-
+        var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialToken, initialExpiry);
+        RaiseProgress(account.Id.Id, 0, 0, "We Rock!!!!", SyncState.Idle);
         try
         {
+            await Task.Delay(2_000, cancellationToken).ConfigureAwait(false);
             var syncResult = await syncPassOrchestrator.OrchestrateAsync(
                 account,
                 syncConfig,
@@ -101,6 +107,8 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             OneDriveSyncClientMessages.SyncServiceError(logger, account.Id.Id, ex.Message, ex);
             RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.UnexpectedError"), SyncState.Error);
         }
+
+        return true;
     }
 
     /// <inheritdoc />
