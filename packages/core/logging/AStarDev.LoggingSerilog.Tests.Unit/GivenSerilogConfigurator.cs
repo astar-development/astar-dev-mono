@@ -68,11 +68,10 @@ public sealed class GivenSerilogConfigurator
     {
         var configuration = CreateConfiguration();
         var logFilePath   = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
-        var inMemoryLogSink = new InMemoryLogSink();
+        using var inMemoryLogSink = new InMemoryLogSink();
 
         var logger = SerilogConfigurator.CreateLogger(configuration, logFilePath, inMemoryLogSink);
         logger.Information("the expected message was logged to the in memory sink");
-        (logger as IDisposable)?.Dispose();
 
         var snapshot = inMemoryLogSink.GetSnapshot();
 
