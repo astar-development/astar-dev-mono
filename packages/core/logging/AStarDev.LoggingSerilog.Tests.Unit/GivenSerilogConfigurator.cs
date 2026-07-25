@@ -1,3 +1,4 @@
+using AStarDev.LoggingSerilog.LogViewer;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
@@ -60,5 +61,27 @@ public sealed class GivenSerilogConfigurator
         var logger = SerilogConfigurator.CreateLogger(configuration, logFilePath, retainedFileCountLimit: 3);
 
         logger.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void when_the_create_logger_method_is_called_with_an_in_memory_log_sink_then_it_writes_log_entries_to_the_sink()
+    {
+        var configuration = CreateConfiguration();
+        var logFilePath   = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.json");
+        using var inMemoryLogSink = new InMemoryLogSink();
+
+        var logger = SerilogConfigurator.CreateLogger(configuration, logFilePath, inMemoryLogSink);
+        logger.Information("the expected message was logged to the in memory sink");
+
+        var snapshot = inMemoryLogSink.GetSnapshot();
+
+        snapshot.ShouldContain(entry => entry.RenderedMessage.Contains("the expected message was logged to the in memory sink"));
+
+        var writtenFiles = Directory.GetFiles(Path.GetTempPath(), $"{Path.GetFileNameWithoutExtension(logFilePath)}*");
+
+        foreach (var writtenFile in writtenFiles)
+        {
+            File.Delete(writtenFile);
+        }
     }
 }
