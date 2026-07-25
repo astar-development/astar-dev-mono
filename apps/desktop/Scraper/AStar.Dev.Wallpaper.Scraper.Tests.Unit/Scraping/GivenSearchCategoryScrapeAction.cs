@@ -84,7 +84,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("need to get all <Span Foreground=\"Green\">3</Span> pages")));
     }
@@ -92,11 +92,11 @@ public sealed class GivenSearchCategoryScrapeAction
     [Fact]
     public async Task when_persisting_scrape_progress_fails_then_progress_reports_the_failure_and_the_page_is_still_visited()
     {
-        var sut = CreateSut(clock, writerResult: Result.Failure<FunctionalParadigm.Unit, string>("No search category named 'Nature' exists to update."));
+        var sut = CreateSut(clock, writerResult: Result.Failure<FunctionalParadigm.UnitFp, string>("No search category named 'Nature' exists to update."));
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to persist scrape progress for category: <Run FontSize=\"18\">Nature</Run>, error: <Span Foreground=\"Red\">No search category named 'Nature' exists to update.</Span>")));
         await page.Received().GotoAsync(Arg.Is<string>(url => url!.Contains("&page=1")));
     }
@@ -108,7 +108,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Space</Run>")));
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
@@ -123,7 +123,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=2");
         await hrefCollector.Received(2).CollectAsync(page, Arg.Any<CancellationToken>());
@@ -136,7 +136,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Failure<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Failure<FunctionalParadigm.UnitFp>>();
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to load wallpaper page")));
         await tagReader.DidNotReceive().ReadAsync(Arg.Any<IPage>(), Arg.Any<CancellationToken>());
     }
@@ -158,7 +158,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to get wallpaper image URL")));
         await imageDownloader.DidNotReceive().DownloadAsync(Arg.Any<IPage>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
     }
@@ -170,7 +170,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await page.DidNotReceive().GotoAsync(WallpaperHref, Arg.Any<PageGotoOptions>());
         await tagReader.DidNotReceive().ReadAsync(Arg.Any<IPage>(), Arg.Any<CancellationToken>());
         await imageDownloader.DidNotReceive().DownloadAsync(Arg.Any<IPage>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
@@ -207,7 +207,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await categoryRegistrar.Received().EnsureCategoriesExistAsync(Arg.Is<IReadOnlyList<TagData>>(tags => tags != null && tags.Any(tag => tag.Tag == "Nature")), Arg.Any<CancellationToken>());
         await fileClassificationRepository.Received().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), WallpaperImageUrl, Arg.Any<string>(), 3, dimensions, Arg.Any<CancellationToken>());
         await imageDownloader.Received().DownloadAsync(page, WallpaperImageUrl, "Nature", Arg.Is<IReadOnlyList<string>>(tags => tags!.SequenceEqual(expectedNatureTagOnly)), Arg.Any<CancellationToken>());
@@ -221,7 +221,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to download wallpaper image")));
         await fileStore.DidNotReceive().SaveAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
         await fileClassificationRepository.DidNotReceive().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<long>(), Arg.Any<ImageDimensions>(), Arg.Any<CancellationToken>());
@@ -234,7 +234,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("disk full")));
         await fileClassificationRepository.DidNotReceive().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<long>(), Arg.Any<ImageDimensions>(), Arg.Any<CancellationToken>());
     }
@@ -246,7 +246,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         progress.Received().Report(Arg.Is<string>(message => message!.Contains("Category: <Run FontSize=\"18\">Nature</Run>") && message!.Contains("already fully visited")));
         thumbnailPublisher.Received().PublishCategorySkipped("Nature");
         await page.DidNotReceive().GotoAsync(Arg.Is<string>(url => url!.Contains("&page=")), Arg.Any<PageGotoOptions>());
@@ -260,7 +260,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=2");
         await hrefCollector.Received(2).CollectAsync(page, Arg.Any<CancellationToken>());
@@ -273,7 +273,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
         await hrefCollector.Received(1).CollectAsync(page, Arg.Any<CancellationToken>());
     }
@@ -285,7 +285,7 @@ public sealed class GivenSearchCategoryScrapeAction
 
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
-        result.ShouldBeOfType<Success<FunctionalParadigm.Unit>>();
+        result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
         await hrefCollector.Received(1).CollectAsync(page, Arg.Any<CancellationToken>());
     }
@@ -301,7 +301,7 @@ public sealed class GivenSearchCategoryScrapeAction
         IReadOnlyList<TagData>? tags = null,
         Option<string>? imageUrl = null,
         bool isAlreadyDownloaded = false,
-        Result<FunctionalParadigm.Unit, string>? writerResult = null,
+        Result<FunctionalParadigm.UnitFp, string>? writerResult = null,
         Exceptional<byte[]>? downloadResult = null,
         SavedWallpaperFile? savedFile = null,
         ImageDimensions? dimensions = null,
@@ -324,7 +324,7 @@ public sealed class GivenSearchCategoryScrapeAction
             .Returns(storedProgress is null ? Option.None<SearchCategoryProgress>() : new Option<SearchCategoryProgress>.Some(storedProgress));
 
         categoryWriter.WriteAsync(Arg.Any<SearchCategoryDto>(), Arg.Any<CancellationToken>())
-            .Returns(writerResult ?? Result.Success<FunctionalParadigm.Unit, string>(FunctionalParadigm.Unit.Instance));
+            .Returns(writerResult ?? Result.Success<FunctionalParadigm.UnitFp, string>(FunctionalParadigm.UnitFp.Instance));
 
         if (hrefs is not null)
         {

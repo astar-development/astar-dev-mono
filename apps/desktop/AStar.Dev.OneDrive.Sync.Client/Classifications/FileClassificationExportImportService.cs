@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using System.Text.Json;
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;

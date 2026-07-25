@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Authentication;
 

@@ -35,7 +35,7 @@ public sealed class SearchCategoryScrapeAction(
     public string Name => "Scrape Search Categories";
 
     /// <inheritdoc />
-    public async Task<Exceptional<Unit>> ExecuteAsync(IPage page, IProgress<string> progress, CancellationToken cancellationToken) =>
+    public async Task<Exceptional<UnitFp>> ExecuteAsync(IPage page, IProgress<string> progress, CancellationToken cancellationToken) =>
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
@@ -43,7 +43,7 @@ public sealed class SearchCategoryScrapeAction(
             await scrapeContext.Categories.ForEachAsync(category => VisitCategoryAsync(new CategoryScrapeContext(page, progress, scrapeContext, category, scrapeContext.FileClassifications), cancellationToken));
 
             progress.Report($"{clock():T} Completed scraping all categories");
-            return Unit.Instance;
+            return UnitFp.Instance;
         }, cancellationToken);
 
     private async Task VisitCategoryAsync(CategoryScrapeContext context, CancellationToken cancellationToken)
@@ -75,12 +75,12 @@ public sealed class SearchCategoryScrapeAction(
     {
         SearchCategoryDto searchCategory = new(context.Category.Name, context.Category.IsFamous, context.Category.IsInternet, pageCount, wallpaperCount, pageNumber);
         (await searchCategoryWriter.WriteAsync(searchCategory, cancellationToken)).Match(
-            onSuccess: _ => Unit.Instance,
+            onSuccess: _ => UnitFp.Instance,
             onFailure: error =>
             {
                 context.Progress.Report($"{clock():T} Failed to persist scrape progress for category: <Run FontSize=\"18\">{context.Category.Name}</Run>, error: <Span Foreground=\"Red\">{error}</Span>");
 
-                return Unit.Instance;
+                return UnitFp.Instance;
             });
 
         string pageUrl = $"{context.Category.SearchUrl}&page={pageNumber}";
@@ -129,11 +129,11 @@ public sealed class SearchCategoryScrapeAction(
             {
                 context.Progress.Report($"{clock():T} Failed to get wallpaper image URL for page: <Span Foreground=\"Red\">{href}</Span>");
 
-                return Unit.Instance;
+                return UnitFp.Instance;
             });
     }
 
-    private async Task<Unit> DownloadWallpaperAsync(CategoryScrapeContext context, WallpaperDownloadContext download, CancellationToken cancellationToken) =>
+    private async Task<UnitFp> DownloadWallpaperAsync(CategoryScrapeContext context, WallpaperDownloadContext download, CancellationToken cancellationToken) =>
         (await Try.RunAsync(async () =>
         {
             await categoryRegistrar.EnsureCategoriesExistAsync(download.Tags, cancellationToken);
@@ -150,13 +150,13 @@ public sealed class SearchCategoryScrapeAction(
                     await fileClassificationRepository.RecordAsync(download.Tags, download.ImageUrl, download.DirectoryPath, savedFile.SizeBytes, dimensions, cancellationToken);
                     await Task.Delay(context.ScrapeContext.SearchConfiguration.ImagePauseInSeconds * 1_000, cancellationToken);
 
-                    return Unit.Instance;
+                    return UnitFp.Instance;
                 },
                 onFailure: exception =>
                 {
                     context.Progress.Report($"{clock():T} Failed to download wallpaper image from URL: {download.ImageUrl}, error: <Span Foreground=\"Red\">{exception.Message}</Span>");
 
-                    return Unit.Instance;
+                    return UnitFp.Instance;
                 });
         }, cancellationToken)).Match(
             onSuccess: unit => unit,
@@ -164,6 +164,6 @@ public sealed class SearchCategoryScrapeAction(
             {
                 context.Progress.Report($"{clock():T} Failed to process wallpaper image from URL: <Span Foreground=\"Red\">{download.ImageUrl}</Span>, error: <Span Foreground=\"Red\">{exception.Message}</Span>");
 
-                return Unit.Instance;
+                return UnitFp.Instance;
             });
 }

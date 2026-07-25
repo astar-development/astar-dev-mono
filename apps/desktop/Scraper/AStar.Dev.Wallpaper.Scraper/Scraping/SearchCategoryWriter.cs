@@ -8,14 +8,14 @@ namespace AStar.Dev.Wallpaper.Scraper.Scraping;
 public sealed class SearchCategoryWriter(IDbContextFactory<AppDbContext> dbContextFactory) : ISearchCategoryWriter
 {
     /// <inheritdoc cref="ISearchCategoryWriter.WriteAsync" />
-    public async Task<Result<Unit, string>> WriteAsync(SearchCategoryDto searchCategory, CancellationToken cancellationToken)
+    public async Task<Result<UnitFp, string>> WriteAsync(SearchCategoryDto searchCategory, CancellationToken cancellationToken)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken);
 
         var existingCategory = await context.SearchCategories.FirstOrDefaultAsync(category => category.Name == searchCategory.Name, cancellationToken);
 
         if (existingCategory is null)
-            return Result.Failure<Unit, string>($"No search category named '{searchCategory.Name}' exists to update.");
+            return Result.Failure<UnitFp, string>($"No search category named '{searchCategory.Name}' exists to update.");
 
         existingCategory.IsFamous = searchCategory.IsFamous;
         existingCategory.IsInternet = searchCategory.IsInternet;
@@ -26,6 +26,6 @@ public sealed class SearchCategoryWriter(IDbContextFactory<AppDbContext> dbConte
 
         await context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success<Unit, string>(Unit.Instance);
+        return Result.Success<UnitFp, string>(UnitFp.Instance);
     }
 }

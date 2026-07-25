@@ -287,7 +287,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             error => ReportConfigurationError(error, cancellationToken));
     }
 
-    private async Task<FunctionalParadigm.Unit> RunOnConfiguredPageAsync(string actionName, IScrapeAction? action, IPage configuredPage, CancellationToken cancellationToken)
+    private async Task<FunctionalParadigm.UnitFp> RunOnConfiguredPageAsync(string actionName, IScrapeAction? action, IPage configuredPage, CancellationToken cancellationToken)
     {
         AppendStatusLine("Playwright page configured successfully.");
 
@@ -295,34 +295,34 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         {
             _ = configuredPage.GotoAsync("login");
 
-            return FunctionalParadigm.Unit.Instance;
+            return FunctionalParadigm.UnitFp.Instance;
         }
 
         _ = configuredPage.GotoAsync("/");
         var progress = new Progress<string>(AppendStatusLine);
 
         return await action.ExecuteAsync(configuredPage, progress, cancellationToken)
-            .MatchAsync(_ => FunctionalParadigm.Unit.Instance, error => ReportActionError(actionName, error, cancellationToken));
+            .MatchAsync(_ => FunctionalParadigm.UnitFp.Instance, error => ReportActionError(actionName, error, cancellationToken));
     }
 
-    private FunctionalParadigm.Unit ReportActionError(string actionName, Exception error, CancellationToken cancellationToken)
+    private FunctionalParadigm.UnitFp ReportActionError(string actionName, Exception error, CancellationToken cancellationToken)
     {
         if (!cancellationToken.IsCancellationRequested)
         {
             AppendStatusLine($"{actionName}: {error.Message}");
         }
 
-        return FunctionalParadigm.Unit.Instance;
+        return FunctionalParadigm.UnitFp.Instance;
     }
 
-    private FunctionalParadigm.Unit ReportConfigurationError(Exception error, CancellationToken cancellationToken)
+    private FunctionalParadigm.UnitFp ReportConfigurationError(Exception error, CancellationToken cancellationToken)
     {
         if (!cancellationToken.IsCancellationRequested)
         {
             AppendStatusLine($"Error configuring Playwright page: {error.Message}");
         }
 
-        return FunctionalParadigm.Unit.Instance;
+        return FunctionalParadigm.UnitFp.Instance;
     }
 
     public ReactiveCommand<Unit, Unit> ExitCommand { get; } = ReactiveCommand.Create(static () =>

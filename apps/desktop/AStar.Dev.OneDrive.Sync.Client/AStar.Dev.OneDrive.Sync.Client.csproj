@@ -16,7 +16,7 @@
   <PropertyGroup Condition="$(MSBuildProjectName.Contains('.Tests.'))">
     <NoWarn>$(NoWarn);CS1591;IDE1006;</NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
   </ItemGroup>
@@ -81,7 +81,7 @@
     <ProjectReference Include="..\..\..\packages\AStar.Dev.Infrastructure.AppDb\AStar.Dev.Infrastructure.AppDb.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
-    <ProjectReference Include="..\..\..\packages\core\functional\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\packages\core\functional\AStar.Dev.FunctionalParadigm\AStar.Dev.FunctionalParadigm.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Velopack.Publishing\AStar.Dev.Velopack.Publishing.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Velopack.Publishing.Avalonia\AStar.Dev.Velopack.Publishing.Avalonia.csproj" />

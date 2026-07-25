@@ -16,13 +16,13 @@ public static class DatabaseMigrator
         await Try.RunAsync(() => ApplyPendingMigrationsAsync(dbContextFactory, logger))
             .TapAsync(static _ => { }, exception => LogMigrationFailure(logger, exception));
 
-    private static async Task<Unit> ApplyPendingMigrationsAsync(IDbContextFactory<AppDbContext> dbContextFactory, ILogger logger)
+    private static async Task<UnitFp> ApplyPendingMigrationsAsync(IDbContextFactory<AppDbContext> dbContextFactory, ILogger logger)
     {
         LogMessage.Information(logger, "Applying pending database migrations");
         await using var dbContext = await dbContextFactory.CreateDbContextAsync();
         await dbContext.Database.MigrateAsync();
 
-        return Unit.Instance;
+        return UnitFp.Instance;
     }
 
     private static void LogMigrationFailure(ILogger logger, Exception exception) =>
