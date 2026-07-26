@@ -137,6 +137,10 @@
                                                       IsChecked="{Binding IsInternet}"
                                                       FontSize="{StaticResource FontSizeSm}"
                                                       VerticalAlignment="Center"/>
+                                            <ToggleSwitch Content="Include in search"
+                                                          IsChecked="{Binding IncludeInSearch}"
+                                                          FontSize="{StaticResource FontSizeSm}"
+                                                          VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <Button Content="Edit"
