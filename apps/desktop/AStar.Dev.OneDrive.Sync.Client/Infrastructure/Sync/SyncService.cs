@@ -33,39 +33,25 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Id);
         RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
-        _ = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).MatchAsync(
-            async authResult =>
-            {
-                _ = await RunSyncAsync(account, authResult, cancellationToken);
-                return true;
-            },
-            async authError =>
-            {
-                bool reAuthRequired = authError is AuthReAuthRequiredError;
-                RaiseProgress(account.Id.Id, GetSyncStatusText(reAuthRequired), GetSyncState(reAuthRequired));
+        var outcome = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).MatchAsync(
+            authResult => RunSyncPassAsync(account, authResult, cancellationToken),
+            authError => Task.FromResult(SyncOutcomeFactory.CreateAuthFailed(authError is AuthReAuthRequiredError)));
 
-                return false;
-            });
+        ApplyOutcome(account.Id.Id, outcome);
     }
 
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken cancellationToken = default)
     {
-        var initialAuth = await authService.AcquireTokenSilentAsync(conflict.Remote.AccountId.Id, cancellationToken).ConfigureAwait(false);
-        bool authOk = initialAuth.Match(_ => true, _ => false);
+        string accountId = conflict.Remote.AccountId.Id;
 
-        if (!authOk)
-            return;
-
-        var (initialToken, initialExpiry) = initialAuth.Match(ok => (ok.AccessToken, ok.ExpiresOn), _ => (string.Empty, DateTimeOffset.MinValue));
-        using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, initialToken, initialExpiry);
-
-        var outcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
-        bool applied = await conflictApplier.ApplyAsync(conflict, outcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, cancellationToken).ConfigureAwait(false);
+        bool applied = await authService.AcquireTokenSilentAsync(accountId, cancellationToken).MatchAsync(
+            authResult => ApplyConflictAsync(conflict, policy, authResult, cancellationToken),
+            _ => Task.FromResult(false));
 
         if (!applied)
         {
-            RaiseProgress(conflict.Remote.AccountId.Id, localizationService.GetLocal("Sync.ConflictResolutionFailed"), SyncState.Error);
+            RaiseProgress(accountId, localizationService.GetLocal("Sync.ConflictResolutionFailed"), SyncState.Error);
 
             return;
         }
@@ -74,22 +60,26 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         ConflictResolved?.Invoke(this, conflict);
     }
 
-    private static SyncState GetSyncState(bool reAuthRequired) => reAuthRequired ? SyncState.ReAuthRequired : SyncState.Error;
-    private string GetSyncStatusText(bool reAuthRequired) => localizationService.GetLocal(reAuthRequired ? "Sync.ReAuthRequired" : "Sync.AuthFailed");
-
-    private async Task<bool> RunSyncAsync(OneDriveAccount account, AuthResult initialAuth, CancellationToken cancellationToken)
+    private async Task<bool> ApplyConflictAsync(SyncConflict conflict, ConflictPolicy policy, AuthResult authResult, CancellationToken cancellationToken)
     {
-        if (account.SyncConfig is not Option<AccountSyncConfig>.Some syncConfigSome)
-        {
-            RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.NoSyncPath"), SyncState.Error);
+        using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, authResult.AccessToken, authResult.ExpiresOn);
+        var conflictOutcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
 
-            return false;
-        }
-        var syncConfig = syncConfigSome.Value;
-        var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, initialAuth.AccessToken, initialAuth.ExpiresOn);
+        return await conflictApplier.ApplyAsync(conflict, conflictOutcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, cancellationToken).ConfigureAwait(false);
+    }
+
+    private Task<SyncOutcome> RunSyncPassAsync(OneDriveAccount account, AuthResult authResult, CancellationToken cancellationToken)
+        => account.SyncConfig.MatchAsync(
+            syncConfig => ExecuteSyncPassAsync(account, syncConfig, authResult, cancellationToken),
+            SyncOutcomeFactory.CreateNoSyncPath);
+
+    private async Task<SyncOutcome> ExecuteSyncPassAsync(OneDriveAccount account, AccountSyncConfig syncConfig, AuthResult authResult, CancellationToken cancellationToken)
+    {
+        var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, authResult.AccessToken, authResult.ExpiresOn);
+
         try
         {
-            var syncResult = await syncPassOrchestrator.OrchestrateAsync(
+            var exceptional = await Try.RunAsync(() => syncPassOrchestrator.OrchestrateAsync(
                 account,
                 syncConfig,
                 tokenFactory.GetTokenAsync,
@@ -100,39 +90,65 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 },
                 args => SyncProgressChanged?.Invoke(this, args),
                 args => { JobCompleted?.Invoke(this, args); return Task.CompletedTask; },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken)).ConfigureAwait(false);
 
-            if (!syncResult.DidRun)
-            {
-                RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.NoFoldersSelected"), SyncState.Idle);
-            }
-            else if (syncResult.FailedJobCount > 0)
-            {
-                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Id.Id);
-                RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.CompletedWithErrors", syncResult.FailedJobCount), SyncState.Error);
-            }
-            else
-            {
-                OneDriveSyncClientMessages.SyncServiceComplete(logger, account.Id.Id);
-                RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.Complete"), SyncState.Idle);
-            }
+            return exceptional.Match(
+                DetermineOutcome,
+                exception => exception is SyncReAuthRequiredException ? SyncOutcomeFactory.CreateReAuthRequired() : SyncOutcomeFactory.CreateUnexpectedError(exception));
         }
         catch (OperationCanceledException)
         {
-            RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.Cancelled"), SyncState.Idle);
+            return SyncOutcomeFactory.CreateCancelled();
         }
-        catch (SyncReAuthRequiredException)
-        {
-            OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, account.Id.Id);
-            RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.ReAuthRequired"), SyncState.ReAuthRequired);
-        }
-        catch (Exception ex)
-        {
-            OneDriveSyncClientMessages.SyncServiceError(logger, account.Id.Id, ex.Message, ex);
-            RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.UnexpectedError"), SyncState.Error);
-        }
+    }
 
-        return true;
+    private static SyncOutcome DetermineOutcome(SyncPassResult result) => result switch
+    {
+        { DidRun: false } => SyncOutcomeFactory.CreateNoFoldersSelected(),
+        { FailedJobCount: > 0 } => SyncOutcomeFactory.CreateCompletedWithErrors(result.FailedJobCount),
+        _ => SyncOutcomeFactory.CreateCompleted()
+    };
+
+    private void ApplyOutcome(string accountId, SyncOutcome outcome)
+    {
+        switch (outcome)
+        {
+            case SyncOutcome.NoSyncPath:
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.NoSyncPath"), SyncState.Error);
+                break;
+
+            case SyncOutcome.AuthFailed(var requiresReAuth):
+                RaiseProgress(accountId, localizationService.GetLocal(requiresReAuth ? "Sync.ReAuthRequired" : "Sync.AuthFailed"), requiresReAuth ? SyncState.ReAuthRequired : SyncState.Error);
+                break;
+
+            case SyncOutcome.ReAuthRequired:
+                OneDriveSyncClientMessages.SyncServiceReAuthRequired(logger, accountId);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.ReAuthRequired"), SyncState.ReAuthRequired);
+                break;
+
+            case SyncOutcome.NoFoldersSelected:
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.NoFoldersSelected"), SyncState.Idle);
+                break;
+
+            case SyncOutcome.CompletedWithErrors(var failedJobCount):
+                OneDriveSyncClientMessages.SyncServiceComplete(logger, accountId);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.CompletedWithErrors", failedJobCount), SyncState.Error);
+                break;
+
+            case SyncOutcome.Completed:
+                OneDriveSyncClientMessages.SyncServiceComplete(logger, accountId);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.Complete"), SyncState.Idle);
+                break;
+
+            case SyncOutcome.Cancelled:
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.Cancelled"), SyncState.Idle);
+                break;
+
+            case SyncOutcome.UnexpectedError(var cause):
+                OneDriveSyncClientMessages.SyncServiceError(logger, accountId, cause.Message, cause);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.UnexpectedError"), SyncState.Error);
+                break;
+        }
     }
 
     private void RaiseProgress(string accountId, string currentFile, SyncState syncState)
