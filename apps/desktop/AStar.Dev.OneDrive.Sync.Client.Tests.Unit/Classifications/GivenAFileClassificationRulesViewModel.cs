@@ -391,6 +391,36 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public async Task when_load_async_called_then_include_in_search_populated_from_category()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_add_category_command_executed_then_include_in_search_passed_to_new_category()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem)
+        {
+            NewCategoryName = "Media",
+            IncludeInSearch = true
+        };
+
+        await sut.AddCategoryCommand.ExecuteAsync(null);
+
+        sut.Categories[0].IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_root_category_deleted_then_visible_categories_no_longer_includes_it()
     {
         IReadOnlyList<FileClassificationCategory> categories =

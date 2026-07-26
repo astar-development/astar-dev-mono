@@ -15,8 +15,8 @@ public sealed class GivenACategoryNodeViewModel
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(42))));
     }
 
-    private CategoryNodeViewModel CreateSut(int level = 1) =>
-        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), repository, _ => { });
+    private CategoryNodeViewModel CreateSut(int level = 1, bool includeInSearch = false) =>
+        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), includeInSearch, repository, _ => { });
 
     [Fact]
     public async Task when_add_child_category_command_executed_then_category_persisted_and_child_added()
@@ -54,10 +54,33 @@ public sealed class GivenACategoryNodeViewModel
     public async Task when_delete_self_command_executed_then_on_delete_self_callback_invoked()
     {
         bool callbackInvoked = false;
-        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), repository, _ => callbackInvoked = true);
+        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => callbackInvoked = true);
 
         await sut.DeleteSelfCommand.ExecuteAsync(null);
 
         callbackInvoked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_cancel_command_executed_then_include_in_search_reverted_to_original_value()
+    {
+        var sut = CreateSut(includeInSearch: true);
+        sut.EditCommand.Execute(null);
+        sut.IncludeInSearch = false;
+
+        sut.CancelCommand.Execute(null);
+
+        sut.IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_add_child_category_command_executed_then_child_inherits_include_in_search()
+    {
+        var sut = CreateSut(includeInSearch: true);
+        sut.NewChildCategoryName = "Photos";
+
+        await sut.AddChildCategoryCommand.ExecuteAsync(null);
+
+        sut.Children[0].IncludeInSearch.ShouldBeTrue();
     }
 }

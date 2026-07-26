@@ -16,14 +16,16 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private readonly Option<FileClassificationCategoryId> parentId;
     private bool originalIsFamous;
     private bool originalIsInternet;
+    private bool originalIncludeInSearch;
 
-    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf)
+    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf)
     {
         CategoryId = categoryId;
         Name = name;
         Level = level;
         IsFamous = isFamous;
         IsInternet = isInternet;
+        IncludeInSearch = includeInSearch;
         this.parentId = parentId;
         this.repository = repository;
         this.onDeleteSelf = onDeleteSelf;
@@ -89,6 +91,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         EditedName = Name;
         originalIsFamous = IsFamous;
         originalIsInternet = IsInternet;
+        originalIncludeInSearch = IncludeInSearch;
         IsEditing = true;
     }
 
@@ -122,6 +125,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         EditedName = string.Empty;
         IsFamous = originalIsFamous;
         IsInternet = originalIsInternet;
+        IncludeInSearch = originalIncludeInSearch;
         IsEditing = false;
     }
 
@@ -149,7 +153,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .Tap(newId =>
             {
-                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), repository, self => Children.Remove(self));
+                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, self => Children.Remove(self));
                 Children.Add(newChild);
             })
             .ConfigureAwait(false);
