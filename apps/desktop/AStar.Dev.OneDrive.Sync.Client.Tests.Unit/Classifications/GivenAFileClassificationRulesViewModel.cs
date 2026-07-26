@@ -348,4 +348,64 @@ public sealed class GivenAFileClassificationRulesViewModel
         sut.Categories[0].Children[1].Name.ShouldBe("Photos");
         sut.Categories[0].Children[2].Name.ShouldBe("Videos");
     }
+
+    [Fact]
+    public async Task when_load_async_called_then_visible_categories_is_flattened_preorder_tree()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), false),
+            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), false),
+            new(new FileClassificationCategoryId(4), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Holiday", "Documents"]);
+    }
+
+    [Fact]
+    public async Task when_child_category_added_then_visible_categories_includes_it_in_tree_order()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(3))));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        sut.Categories[0].NewChildCategoryName = "Photos";
+
+        await sut.Categories[0].AddChildCategoryCommand.ExecuteAsync(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Documents"]);
+    }
+
+    [Fact]
+    public async Task when_root_category_deleted_then_visible_categories_no_longer_includes_it()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        repository.DeleteCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.CompletedTask);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        await sut.Categories[0].DeleteSelfCommand.ExecuteAsync(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
+    }
 }
