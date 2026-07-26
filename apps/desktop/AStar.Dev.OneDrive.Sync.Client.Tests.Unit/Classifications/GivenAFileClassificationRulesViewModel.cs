@@ -365,7 +365,7 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         await sut.LoadAsync(CancellationToken.None);
 
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Holiday", "Documents"]);
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media", "Photos", "Holiday"]);
     }
 
     [Fact]
@@ -382,11 +382,12 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(3))));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
         await sut.LoadAsync(CancellationToken.None);
-        sut.Categories[0].NewChildCategoryName = "Photos";
+        var media = sut.Categories.Single(category => category.Name == "Media");
+        media.NewChildCategoryName = "Photos";
 
-        await sut.Categories[0].AddChildCategoryCommand.ExecuteAsync(null);
+        await media.AddChildCategoryCommand.ExecuteAsync(null);
 
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Documents"]);
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media", "Photos"]);
     }
 
     [Fact]
@@ -403,8 +404,9 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.CompletedTask);
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
         await sut.LoadAsync(CancellationToken.None);
+        var media = sut.Categories.Single(category => category.Name == "Media");
 
-        await sut.Categories[0].DeleteSelfCommand.ExecuteAsync(null);
+        await media.DeleteSelfCommand.ExecuteAsync(null);
 
         sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
     }

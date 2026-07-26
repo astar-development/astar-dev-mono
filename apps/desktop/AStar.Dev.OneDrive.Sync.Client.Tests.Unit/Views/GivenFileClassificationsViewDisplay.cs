@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -88,10 +89,13 @@ public sealed class GivenFileClassificationsViewDisplay
     public void when_category_tree_is_inspected_then_items_control_uses_a_virtualizing_stack_panel()
     {
         var viewModel = CreateViewModel();
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 1000, Height = 800 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
 
-        var sut = CreateViewWithViewModel(viewModel);
-
-        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
+        var categoriesItemsControl = view.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
         categoriesItemsControl.ItemsPanelRoot.ShouldBeOfType<VirtualizingStackPanel>("Category tree must virtualize so only on-screen rows are realized");
     }
 
