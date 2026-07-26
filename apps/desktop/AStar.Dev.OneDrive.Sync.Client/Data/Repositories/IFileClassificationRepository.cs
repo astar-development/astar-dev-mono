@@ -31,6 +31,9 @@ public interface IFileClassificationRepository
     /// <summary>Updates the mutable fields of an existing category and returns its identifier.</summary>
     Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default);
 
+    /// <summary>Reassigns a category's parent, recalculating its level and cascading the level change to all of its descendants. Fails if the category or the new parent do not exist, or if the new parent is the category itself or one of its own descendants.</summary>
+    Task<Result<FileClassificationCategoryId, string>> ReparentCategoryAsync(FileClassificationCategoryId id, Option<FileClassificationCategoryId> newParentId, CancellationToken cancellationToken = default);
+
     /// <summary>Deletes a category. No-op if the category does not exist.</summary>
     Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default);
 

@@ -66,12 +66,20 @@ public sealed class GivenAFileClassificationCategoryFactory
 
     [Theory]
     [InlineData(0)]
-    [InlineData(4)]
-    public void when_level_is_out_of_range_then_result_is_failure(int invalidLevel)
+    [InlineData(-1)]
+    public void when_level_is_below_one_then_result_is_failure(int invalidLevel)
     {
         var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, invalidLevel, false, false, Option.None<FileClassificationCategoryId>(), false);
 
         _ = result.ShouldBeOfType<Fail<FileClassificationCategory, string>>();
+    }
+
+    [Fact]
+    public void when_level4_created_with_valid_name_and_parent_then_result_is_success()
+    {
+        var result = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(AnyId), AnyValidName, 4, false, false, Option.Some(AnyParentCategoryId), false);
+
+        _ = result.ShouldBeOfType<Ok<FileClassificationCategory, string>>();
     }
 
     [Fact]

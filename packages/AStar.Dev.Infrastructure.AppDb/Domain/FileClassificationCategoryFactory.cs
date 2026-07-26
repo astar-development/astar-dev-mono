@@ -12,8 +12,8 @@ public static class FileClassificationCategoryFactory
         if (string.IsNullOrEmpty(trimmedName))
             return new Fail<FileClassificationCategory, string>("Name must not be empty.");
 
-        if (level is < 1 or > 3)
-            return new Fail<FileClassificationCategory, string>("Level must be 1, 2, or 3.");
+        if (level < 1)
+            return new Fail<FileClassificationCategory, string>("Level must be at least 1.");
 
         if (level == 1 && parentId is Option<FileClassificationCategoryId>.Some)
             return new Fail<FileClassificationCategory, string>("Level 1 category must not have a parent.");

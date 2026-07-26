@@ -201,4 +201,120 @@ public sealed class GivenAFileClassificationRepository
         var persisted = db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == existing.Id);
         persisted.IncludeInSearch.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task when_reparent_category_is_called_with_a_valid_parent_then_level_is_recalculated()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        var documents = new FileClassificationCategoryEntity { Name = "Documents", Level = 1 };
+        db.FileClassificationCategories.AddRange(media, documents);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(documents.Id), Option.Some(new FileClassificationCategoryId(media.Id)), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<FileClassificationCategoryId, string>>();
+        var persisted = db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == documents.Id);
+        persisted.Level.ShouldBe(2);
+        persisted.ParentId.ShouldBe(media.Id);
+    }
+
+    [Fact]
+    public async Task when_reparent_category_is_called_then_level_change_cascades_to_descendants()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        var documents = new FileClassificationCategoryEntity { Name = "Documents", Level = 1 };
+        db.FileClassificationCategories.AddRange(media, documents);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 2, ParentId = documents.Id };
+        db.FileClassificationCategories.Add(photos);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var holiday = new FileClassificationCategoryEntity { Name = "Holiday", Level = 3, ParentId = photos.Id };
+        db.FileClassificationCategories.Add(holiday);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.ReparentCategoryAsync(new FileClassificationCategoryId(documents.Id), Option.Some(new FileClassificationCategoryId(media.Id)), TestContext.Current.CancellationToken);
+
+        db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == photos.Id).Level.ShouldBe(3);
+        db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == holiday.Id).Level.ShouldBe(4);
+    }
+
+    [Fact]
+    public async Task when_reparent_category_to_root_then_level_becomes_one_and_parent_cleared()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.Add(media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 2, ParentId = media.Id };
+        db.FileClassificationCategories.Add(photos);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(photos.Id), Option.None<FileClassificationCategoryId>(), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<FileClassificationCategoryId, string>>();
+        var persisted = db.FileClassificationCategories.AsNoTracking().Single(c => c.Id == photos.Id);
+        persisted.Level.ShouldBe(1);
+        persisted.ParentId.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_reparent_category_under_its_own_descendant_then_result_is_failure()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.Add(media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 2, ParentId = media.Id };
+        db.FileClassificationCategories.Add(photos);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(media.Id), Option.Some(new FileClassificationCategoryId(photos.Id)), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Fail<FileClassificationCategoryId, string>>();
+    }
+
+    [Fact]
+    public async Task when_reparent_category_under_itself_then_result_is_failure()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.Add(media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(media.Id), Option.Some(new FileClassificationCategoryId(media.Id)), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Fail<FileClassificationCategoryId, string>>();
+    }
+
+    [Fact]
+    public async Task when_reparent_category_with_nonexistent_parent_then_result_is_failure()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.Add(media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(media.Id), Option.Some(new FileClassificationCategoryId(9999)), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Fail<FileClassificationCategoryId, string>>();
+    }
+
+    [Fact]
+    public async Task when_reparent_category_that_does_not_exist_then_result_is_failure()
+    {
+        var (_, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+
+        var result = await repository.ReparentCategoryAsync(new FileClassificationCategoryId(9999), Option.None<FileClassificationCategoryId>(), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Fail<FileClassificationCategoryId, string>>();
+    }
 }

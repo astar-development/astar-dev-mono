@@ -94,6 +94,70 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     }
 
     /// <inheritdoc />
+    public async Task<Result<FileClassificationCategoryId, string>> ReparentCategoryAsync(FileClassificationCategoryId id, Option<FileClassificationCategoryId> newParentId, CancellationToken cancellationToken = default)
+    {
+        int rawId = id.Id;
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
+        if (entity is null)
+            return new Fail<FileClassificationCategoryId, string>("Category not found.");
+
+        var descendantIds = await GetDescendantIdsAsync(db, rawId, cancellationToken).ConfigureAwait(false);
+
+        int newLevel = 1;
+        if (newParentId is Option<FileClassificationCategoryId>.Some someParent)
+        {
+            int newParentRawId = someParent.Value.Id;
+            if (newParentRawId == rawId || descendantIds.Contains(newParentRawId))
+                return new Fail<FileClassificationCategoryId, string>("Cannot reparent a category under itself or one of its own descendants.");
+
+            var parentEntity = await db.FileClassificationCategories.FindAsync([newParentRawId], cancellationToken).ConfigureAwait(false);
+            if (parentEntity is null)
+                return new Fail<FileClassificationCategoryId, string>("Parent category not found.");
+
+            newLevel = parentEntity.Level + 1;
+        }
+
+        int levelDelta = newLevel - entity.Level;
+        entity.ParentId = newParentId.MapOrDefault(parentId => (int?)parentId.Id, null);
+        entity.Level = newLevel;
+
+        if (levelDelta != 0 && descendantIds.Count > 0)
+        {
+            var descendants = await db.FileClassificationCategories.Where(c => descendantIds.Contains(c.Id)).ToListAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var descendant in descendants)
+                descendant.Level += levelDelta;
+        }
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        return new Ok<FileClassificationCategoryId, string>(id);
+    }
+
+    private static async Task<HashSet<int>> GetDescendantIdsAsync(AppDbContext db, int rootId, CancellationToken cancellationToken)
+    {
+        var allParentLinks = await db.FileClassificationCategories.Select(c => new { c.Id, c.ParentId }).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var childrenByParentId = allParentLinks.Where(c => c.ParentId.HasValue).ToLookup(c => c.ParentId!.Value);
+
+        var descendantIds = new HashSet<int>();
+        var pendingIds = new Queue<int>();
+        pendingIds.Enqueue(rootId);
+
+        while (pendingIds.Count > 0)
+        {
+            int currentId = pendingIds.Dequeue();
+            foreach (var child in childrenByParentId[currentId])
+            {
+                if (descendantIds.Add(child.Id))
+                    pendingIds.Enqueue(child.Id);
+            }
+        }
+
+        return descendantIds;
+    }
+
+    /// <inheritdoc />
     public async Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default)
     {
         int rawId = id.Id;

@@ -141,6 +141,11 @@
                                                           IsChecked="{Binding IncludeInSearch}"
                                                           FontSize="{StaticResource FontSizeSm}"
                                                           VerticalAlignment="Center"/>
+                                            <ComboBox ItemsSource="{Binding ParentOptionNames}"
+                                                      SelectedIndex="{Binding SelectedParentOptionIndex}"
+                                                      FontSize="{StaticResource FontSizeSm}"
+                                                      MinWidth="160"
+                                                      VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <Button Content="Edit"
@@ -184,8 +189,7 @@
 
                                     <!-- Add sub-category form -->
                                     <StackPanel Orientation="Horizontal"
-                                                Spacing="6"
-                                                IsVisible="{Binding SupportsChildCategories}">
+                                                Spacing="6">
                                         <TextBox Text="{Binding NewChildCategoryName}"
                                                  PlaceholderText="New sub-category"
                                                  FontSize="{StaticResource FontSizeSm}"
