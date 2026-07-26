@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using AStar.Dev.FunctionalParadigm;
@@ -29,11 +30,53 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         this.confirmationDialogService = confirmationDialogService;
         this.localizationService = localizationService;
         this.fileSystem = fileSystem;
-        Categories.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasNoCategories));
+        Categories.CollectionChanged += (_, e) =>
+        {
+            OnPropertyChanged(nameof(HasNoCategories));
+            AttachStructureChangeHandlers(e.NewItems);
+            if (!suppressVisibleCategoriesRebuild)
+                RebuildVisibleCategories();
+        };
     }
+
+    private bool suppressVisibleCategoriesRebuild;
 
     /// <summary>Root-level category nodes.</summary>
     public ObservableCollection<CategoryNodeViewModel> Categories { get; } = [];
+
+    /// <summary>Flattened, preorder traversal of the category tree, used to render a single virtualized list instead of nesting nested trees of controls.</summary>
+    public ObservableCollection<CategoryNodeViewModel> VisibleCategories { get; } = [];
+
+    private void AttachStructureChangeHandlers(IList? nodes)
+    {
+        if (nodes is null)
+            return;
+
+        foreach (CategoryNodeViewModel node in nodes)
+        {
+            node.Children.CollectionChanged += (_, e) =>
+            {
+                AttachStructureChangeHandlers(e.NewItems);
+                if (!suppressVisibleCategoriesRebuild)
+                    RebuildVisibleCategories();
+            };
+            AttachStructureChangeHandlers(node.Children);
+        }
+    }
+
+    private void RebuildVisibleCategories()
+    {
+        VisibleCategories.Clear();
+        foreach (var root in Categories)
+            AppendVisible(root);
+    }
+
+    private void AppendVisible(CategoryNodeViewModel node)
+    {
+        VisibleCategories.Add(node);
+        foreach (var child in node.Children)
+            AppendVisible(child);
+    }
 
     /// <summary>True when the view model is loading data from the repository.</summary>
     [ObservableProperty]
@@ -90,17 +133,27 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 nodeDict[category.Id] = node;
             }
 
-            Categories.Clear();
-
-            foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
+            suppressVisibleCategoriesRebuild = true;
+            try
             {
-                var node = nodeDict[category.Id];
+                Categories.Clear();
 
-                if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode))
-                    parentNode.Children.Add(node);
-                else
-                    Categories.Add(node);
+                foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
+                {
+                    var node = nodeDict[category.Id];
+
+                    if (category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode))
+                        parentNode.Children.Add(node);
+                    else
+                        Categories.Add(node);
+                }
             }
+            finally
+            {
+                suppressVisibleCategoriesRebuild = false;
+            }
+
+            RebuildVisibleCategories();
 
             IsLoaded = true;
         }

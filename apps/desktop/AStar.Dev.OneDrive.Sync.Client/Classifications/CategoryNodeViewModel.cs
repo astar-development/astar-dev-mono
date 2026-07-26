@@ -41,6 +41,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     /// <summary>Hierarchy level (1 = root, 2 = child, 3 = grandchild).</summary>
     public int Level { get; }
 
+    /// <summary>Left indent, in pixels, applied when this node is rendered in the flattened category list.</summary>
+    public double IndentWidth => (Level - 1) * 20;
+
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
 
@@ -58,6 +61,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     /// <summary>True when this node has no children and can therefore hold keywords.</summary>
     public bool IsLeafNode => Children.Count == 0;
+
+    /// <summary>True when this node has not yet reached the maximum hierarchy depth and can hold further sub-categories.</summary>
+    public bool SupportsChildCategories => Level < 3;
 
     /// <summary>Keywords assigned to this category (only populated for leaf nodes).</summary>
     public ObservableCollection<KeywordRowViewModel> Keywords { get; } = [];

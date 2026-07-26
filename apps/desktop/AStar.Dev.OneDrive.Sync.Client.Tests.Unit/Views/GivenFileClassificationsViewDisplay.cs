@@ -4,6 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
@@ -74,14 +75,28 @@ public sealed class GivenFileClassificationsViewDisplay
     }
 
     [AvaloniaFact]
-    public void when_category_tree_is_inspected_then_items_control_is_bound_to_categories()
+    public void when_category_tree_is_inspected_then_items_control_is_bound_to_visible_categories()
     {
         var viewModel = CreateViewModel();
 
         var sut = CreateViewWithViewModel(viewModel);
 
-        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().FirstOrDefault(ic => ReferenceEquals(ic.ItemsSource, viewModel.Categories));
-        categoriesItemsControl.ShouldNotBeNull("Category tree ItemsControl should be bound to the Categories collection");
+        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().FirstOrDefault(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
+        categoriesItemsControl.ShouldNotBeNull("Category tree ItemsControl should be bound to the flattened VisibleCategories collection");
+    }
+
+    [AvaloniaFact]
+    public void when_category_tree_is_inspected_then_items_control_uses_a_virtualizing_stack_panel()
+    {
+        var viewModel = CreateViewModel();
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 1000, Height = 800 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        var categoriesItemsControl = view.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
+        categoriesItemsControl.ItemsPanelRoot.ShouldBeOfType<VirtualizingStackPanel>("Category tree must virtualize so only on-screen rows are realized");
     }
 
     [AvaloniaFact]
@@ -92,7 +107,7 @@ public sealed class GivenFileClassificationsViewDisplay
 
         viewModel.IsLoading = false;
 
-        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.Categories));
+        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
         categoriesItemsControl.IsVisible.ShouldBeFalse("Category tree should be hidden when HasNoCategories is true");
     }
 

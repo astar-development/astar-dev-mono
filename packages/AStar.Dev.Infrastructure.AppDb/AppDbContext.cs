@@ -59,7 +59,11 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
                     {
                         new FileClassificationCategoryEntity
                         {
-                            Id = 1, Name = "Colour", Level = 1, IsFamous = false, IsInternet = false
+                            Id = 1, Name = "Unclassified", Level = 1, IsFamous = false, IsInternet = false, IncludeInSearch = true
+                        },
+                        new FileClassificationCategoryEntity
+                        {
+                            Id = 2, Name = "Colour", Level = 1, IsFamous = false, IsInternet = false, IncludeInSearch = true
                         }
                     };
 
