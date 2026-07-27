@@ -1,4 +1,5 @@
 using System.Threading;
+using AStar.Dev.FunctionalParadigm;
 using AStarDev.Web.Consent;
 using Blazored.LocalStorage;
 using NSubstitute;
@@ -14,7 +15,7 @@ public class GivenACookieConsentState
     {
         var sut = new CookieConsentState(localStorage);
 
-        sut.AnalyticsAccepted.ShouldBeNull();
+        sut.AnalyticsAccepted.TryGetValue(out _).ShouldBeFalse();
     }
 
     [Fact]
@@ -25,7 +26,7 @@ public class GivenACookieConsentState
 
         await sut.InitializeAsync();
 
-        sut.AnalyticsAccepted.ShouldBeNull();
+        sut.AnalyticsAccepted.TryGetValue(out _).ShouldBeFalse();
     }
 
     [Fact]
@@ -36,7 +37,8 @@ public class GivenACookieConsentState
 
         await sut.InitializeAsync();
 
-        sut.AnalyticsAccepted.ShouldBe(true);
+        sut.AnalyticsAccepted.TryGetValue(out bool accepted).ShouldBeTrue();
+        accepted.ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +49,8 @@ public class GivenACookieConsentState
 
         await sut.InitializeAsync();
 
-        sut.AnalyticsAccepted.ShouldBe(false);
+        sut.AnalyticsAccepted.TryGetValue(out bool accepted).ShouldBeTrue();
+        accepted.ShouldBeFalse();
     }
 
     [Fact]
@@ -57,7 +60,8 @@ public class GivenACookieConsentState
 
         await sut.SetPreferenceAsync(analyticsAccepted: true);
 
-        sut.AnalyticsAccepted.ShouldBe(true);
+        sut.AnalyticsAccepted.TryGetValue(out bool accepted).ShouldBeTrue();
+        accepted.ShouldBeTrue();
         await localStorage.Received(1).SetItemAsStringAsync("cookie-consent-analytics", "true", Arg.Any<CancellationToken>());
     }
 
@@ -81,7 +85,7 @@ public class GivenACookieConsentState
 
         await sut.ClearPreferenceAsync();
 
-        sut.AnalyticsAccepted.ShouldBeNull();
+        sut.AnalyticsAccepted.TryGetValue(out _).ShouldBeFalse();
         await localStorage.Received(1).RemoveItemAsync("cookie-consent-analytics", Arg.Any<CancellationToken>());
     }
 }

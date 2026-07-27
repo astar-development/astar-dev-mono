@@ -1,0 +1,48 @@
+@page "/case-studies/{Slug}"
+@using AStar.Dev.FunctionalParadigm
+@using AStarDev.Web.CaseStudies
+@inject IMarkdownRenderer MarkdownRenderer
+
+@if (caseStudy.TryGetValue(out var foundCaseStudy))
+{
+    <PageTitle>@foundCaseStudy.Title | AStar Development</PageTitle>
+
+    <div class="reading-column">
+        <a href="/case-studies" class="back-link">&larr; Back to case studies</a>
+
+        <span class="content-type-pill">Case Study</span>
+
+        <h1>@foundCaseStudy.Title</h1>
+
+        <p class="summary">@foundCaseStudy.Summary</p>
+
+        <div class="tech-stack">
+            <ul class="stack-tags" role="list">
+                @foreach (var tag in foundCaseStudy.TechStack)
+                {
+                    <li class="stack-tag">@tag</li>
+                }
+            </ul>
+        </div>
+
+        <hr class="content-divider" />
+
+        <article class="case-study-content">
+            @((MarkupString)MarkdownRenderer.RenderToHtml(foundCaseStudy.ContentMarkdown))
+        </article>
+
+        <hr class="content-divider" />
+
+        <a href="/case-studies" class="back-link">&larr; Back to case studies</a>
+    </div>
+}
+else
+{
+    <PageTitle>Case Study Not Found | AStar Development</PageTitle>
+
+    <div class="reading-column">
+        <h1>Case study not found</h1>
+        <p class="summary">This case study doesn&rsquo;t exist, or may have been moved.</p>
+        <a href="/case-studies" class="back-link">&larr; Back to case studies</a>
+    </div>
+}

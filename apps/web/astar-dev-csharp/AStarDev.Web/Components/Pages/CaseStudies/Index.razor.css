@@ -1,0 +1,33 @@
+.page-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+.page-head {
+  margin-bottom: 36px;
+}
+
+h1 {
+  font-size: clamp(1.4rem, 2.8vw, 2rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  transition: color 0.25s;
+}
+
+.intro {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  transition: color 0.25s;
+}
+
+.case-studies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

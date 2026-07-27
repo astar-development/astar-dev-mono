@@ -1,8 +1,69 @@
-﻿@page "/"
+@page "/"
+@using AStarDev.Web.CaseStudies
+@using AStarDev.Web.Components.Common
+@using AStarDev.Web.Packages
+@inject INugetPackageService NugetPackageService
 
 <PageTitle>Home | AStar Development</PageTitle>
 
-<div class="section-container">
-    <h1>AStar Development</h1>
-    <p>The full home page content is being ported from the Astro site in a follow-up phase.</p>
-</div>
+<Hero />
+
+<hr class="section-divider" />
+
+<section id="services" aria-labelledby="services-heading" class="section section--raised">
+    <div class="section-container">
+        <div class="section-head">
+            <h2 id="services-heading">What I offer</h2>
+            <p class="section-subtitle">
+                Concrete outcomes for real teams. Typically 2&ndash;12 weeks, shaped around your constraints.
+            </p>
+        </div>
+        <div class="services-grid">
+            @foreach (var service in Services)
+            {
+                <ServiceCard Title="@service.Title" Description="@service.Description" Icon="@((MarkupString)service.IconSvg)" />
+            }
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider" />
+
+<section aria-labelledby="packages-heading" class="section section--base">
+    <div class="section-container">
+        <div class="section-head packages-head">
+            <div>
+                <h2 id="packages-heading">Open Source Packages</h2>
+                <p class="section-subtitle">Production-tested patterns, published on NuGet.</p>
+            </div>
+            <a href="/packages" class="view-all-link">View all packages &rarr;</a>
+        </div>
+        <div class="packages-grid">
+            @foreach (var package in featuredPackages)
+            {
+                <PackageCard Package="package" />
+            }
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider" />
+
+<section aria-labelledby="work-heading" class="section section--raised">
+    <div class="section-container">
+        <div class="section-head">
+            <h2 id="work-heading">Selected Work</h2>
+            <p class="section-subtitle">Anonymised case studies from real client engagements.</p>
+        </div>
+        <div class="case-studies-list">
+            @foreach (var caseStudy in CaseStudyCatalog.All)
+            {
+                <CaseStudyTeaser Title="@caseStudy.Title" Summary="@caseStudy.Summary" TechStack="@caseStudy.TechStack" Slug="@caseStudy.Slug" />
+            }
+        </div>
+    </div>
+</section>
+
+<hr class="section-divider" />
+
+<CtaBanner />

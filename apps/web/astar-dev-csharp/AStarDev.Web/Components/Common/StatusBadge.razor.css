@@ -1,0 +1,17 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--badge-bg);
+  border: 1px solid var(--badge-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--badge-text);
+  transition: background-color 0.25s, border-color 0.25s, color 0.25s;
+}
+
+.badge-icon {
+  flex-shrink: 0;
+}

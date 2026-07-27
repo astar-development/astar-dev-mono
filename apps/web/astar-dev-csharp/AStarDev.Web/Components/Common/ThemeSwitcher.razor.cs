@@ -16,6 +16,15 @@ public partial class ThemeSwitcher : ComponentBase, IDisposable
 
     protected override void OnInitialized() => ThemeState.OnChange += StateHasChanged;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await ThemeState.InitializeAsync();
+        StateHasChanged();
+    }
+
     private async Task SelectAsync(Theme theme)
     {
         await ThemeState.SetThemeAsync(theme);

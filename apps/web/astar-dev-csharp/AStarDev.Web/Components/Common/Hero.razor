@@ -1,0 +1,81 @@
+@inject IConfiguration Configuration
+
+<section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-container">
+
+        <div class="hero-text">
+            <div class="hero-badges">
+                @if (AvailableForContracts)
+                {
+                    <StatusBadge Variant="StatusBadgeVariant.Available" />
+                }
+                <StatusBadge Variant="StatusBadgeVariant.Contributor" />
+            </div>
+
+            <div class="theme-copy theme-copy--dark-light">
+                <h1 id="hero-heading">.NET Staff Engineer &amp; Architect</h1>
+                <p class="subtitle">
+                    I design and build production-grade .NET systems &mdash; architecture, pipelines,
+                    observability, and the team patterns that make them last. Available for contracts
+                    and consultancy engagements.
+                </p>
+                <div class="skill-tags" aria-label="Key skills">
+                    <span class="skill-tag">TDD</span>
+                    <span class="skill-tag">Clean Architecture</span>
+                    <span class="skill-tag">Observability</span>
+                    <span class="skill-tag">CI/CD</span>
+                    <span class="skill-tag">.NET 10</span>
+                </div>
+            </div>
+
+            <div class="theme-copy theme-copy--metal">
+                <h1 id="hero-heading-metal" aria-hidden="true">Production systems that play at volume</h1>
+                <p class="subtitle">
+                    High-throughput .NET at the centre &mdash; architecture, pipelines, and the
+                    engineering discipline to keep it alive at ELEVEN.
+                </p>
+                <p class="eyebrow-tag" aria-label="Theme: Volume Eleven">VOLUME // ELEVEN</p>
+            </div>
+
+            <div class="theme-copy theme-copy--polished">
+                <h1 id="hero-heading-polished" aria-hidden="true">Precision-engineered .NET, polished to ship</h1>
+                <p class="subtitle">
+                    Every interface deliberate. Every abstraction earned. Systems that hold their
+                    shape under pressure, and look the part doing it.
+                </p>
+                <p class="eyebrow-tag" aria-label="Theme: Precision Polish">PRECISION // POLISH</p>
+            </div>
+
+            <div class="hero-cta">
+                <a href="#services" class="btn btn-primary">View my services</a>
+                <a href="/contact" class="btn btn-secondary">Get in touch</a>
+            </div>
+        </div>
+
+        <div class="hero-terminal" aria-label="Terminal panel" role="img">
+            <p class="sr-only">Example: installing an AStar.Dev NuGet package via the .NET CLI</p>
+            <div class="terminal-window">
+                <div class="terminal-titlebar" aria-hidden="true">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-amber"></span>
+                    <span class="dot dot-green"></span>
+                </div>
+
+                <pre class="terminal-body"><code><span class="t-accent">$ dotnet add package @TerminalPackage</span>
+
+  <span class="t-muted">Determining projects to restore...</span>
+  <span class="t-muted">info :</span> Adding PackageReference for
+         <span class="t-text">'@TerminalPackage'</span> to project.
+  <span class="t-muted">info :</span> Restoring packages...
+  <span class="t-muted">info :</span> Package <span class="t-text">'@TerminalPackage'</span> is
+         compatible with all frameworks.
+
+  <span class="t-accent">Build succeeded.</span>
+  Package added: <span class="t-text">@TerminalPackage v@TerminalVersion</span>
+  <span class="t-accent">✓</span>  <span class="t-muted">0 Warning(s)   0 Error(s)</span>
+</code></pre>
+            </div>
+        </div>
+
+    </div>
+</section>

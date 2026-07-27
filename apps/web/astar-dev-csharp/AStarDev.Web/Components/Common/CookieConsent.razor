@@ -1,8 +1,9 @@
 @rendermode InteractiveServer
+@using AStar.Dev.FunctionalParadigm
 @inject Consent.CookieConsentState ConsentState
 @inject IJSRuntime JsRuntime
 
-@if (ConsentState.AnalyticsAccepted is null)
+@if (!ConsentState.AnalyticsAccepted.TryGetValue(out _))
 {
     <div class="consent-bar" role="dialog" aria-label="Cookie consent" aria-modal="false">
         <div class="consent-inner">

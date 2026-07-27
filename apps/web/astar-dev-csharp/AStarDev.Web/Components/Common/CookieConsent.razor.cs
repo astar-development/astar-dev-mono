@@ -7,10 +7,15 @@ public partial class CookieConsent : ComponentBase, IDisposable
 {
     private string liveText = string.Empty;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized() => ConsentState.OnChange += StateHasChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        ConsentState.OnChange += StateHasChanged;
+        if (!firstRender)
+            return;
+
         await ConsentState.InitializeAsync();
+        StateHasChanged();
     }
 
     private async Task AcceptAsync()
