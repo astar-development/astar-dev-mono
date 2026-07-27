@@ -68,6 +68,40 @@ public static class ValidationExtensions
         };
 
     /// <summary>
+    ///     Attempts to extract the value from a <see cref="Validation{T}" />.
+    /// </summary>
+    public static bool TryGetValue<T>(this Validation<T> validation, out T value)
+    {
+        if (validation is Valid<T> valid)
+        {
+            value = valid.Value;
+
+            return true;
+        }
+
+        value = default!;
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Attempts to extract the accumulated errors from a <see cref="Validation{T}" />.
+    /// </summary>
+    public static bool TryGetErrors<T>(this Validation<T> validation, out IReadOnlyList<ValidationError> errors)
+    {
+        if (validation is Invalid<T> invalid)
+        {
+            errors = invalid.Errors;
+
+            return true;
+        }
+
+        errors = [];
+
+        return false;
+    }
+
+    /// <summary>
     ///     Lifts a <see cref="Validation{T}" /> into a <see cref="Result{TResult,TError}" />, mapping the
     ///     accumulated errors to a domain error via <paramref name="mapErrors" />.
     /// </summary>
