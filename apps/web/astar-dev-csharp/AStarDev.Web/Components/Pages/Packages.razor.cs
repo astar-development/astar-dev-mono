@@ -6,6 +6,8 @@ namespace AStarDev.Web.Components.Pages;
 
 public partial class Packages : ComponentBase
 {
+    private static readonly Regex NonAlphanumericRuns = new("[^a-z0-9]+", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
     private IReadOnlyList<(string Slug, PackageCategory Category, IReadOnlyList<PackageData> Packages)> categories = [];
 
     private int totalCount;
@@ -28,5 +30,5 @@ public partial class Packages : ComponentBase
         totalCount = categories.Sum(c => c.Packages.Count);
     }
 
-    private static string SlugFor(string name) => Regex.Replace(name.ToLowerInvariant(), "[^a-z0-9]+", "-");
+    private static string SlugFor(string name) => NonAlphanumericRuns.Replace(name.ToLowerInvariant(), "-");
 }
