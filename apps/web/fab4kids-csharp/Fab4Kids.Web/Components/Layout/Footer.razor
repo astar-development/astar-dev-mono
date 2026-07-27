@@ -1,0 +1,45 @@
+@using Fab4Kids.Web.Navigation
+
+<footer class="site-footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__brand">
+            <a href="/" class="site-footer__logo" aria-label="fab4kids home">
+                <span class="site-footer__logo-text">fab4kids</span>
+            </a>
+            <p class="site-footer__tagline">Quality educational resources for every child</p>
+        </div>
+
+        <nav class="site-footer__col" aria-label="Subject pages">
+            <h3 class="site-footer__heading">Subjects</h3>
+            <ul class="site-footer__list" role="list">
+                @foreach (var link in SiteNavigation.SubjectLinks)
+                {
+                    <li>
+                        <a href="@link.Href" class="site-footer__link">@link.Label</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <nav class="site-footer__col" aria-label="Support links">
+            <h3 class="site-footer__heading">Support</h3>
+            <ul class="site-footer__list" role="list">
+                <li><a href="/search" class="site-footer__link">Search Resources</a></li>
+                <li><a href="/#newsletter" class="site-footer__link">Newsletter</a></li>
+            </ul>
+        </nav>
+
+        <nav class="site-footer__col" aria-label="Legal links">
+            <h3 class="site-footer__heading">Legal</h3>
+            <ul class="site-footer__list" role="list">
+                <li><a href="/privacy-policy" class="site-footer__link">Privacy Policy</a></li>
+                <li><a href="/cookie-policy" class="site-footer__link">Cookie Policy</a></li>
+                <li><a href="/terms" class="site-footer__link">Terms</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="site-footer__bottom">
+        <p class="site-footer__copyright">&copy; @CurrentYear fab4kids. All rights reserved.</p>
+    </div>
+</footer>

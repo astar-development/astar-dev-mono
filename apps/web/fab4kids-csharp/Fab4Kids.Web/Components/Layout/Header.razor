@@ -1,0 +1,52 @@
+@using Fab4Kids.Web.Components.Common
+@using Fab4Kids.Web.Navigation
+
+<header class="site-header">
+    <div class="site-header__inner">
+        <a href="/" class="site-header__logo" aria-label="fab4kids home">
+            <span class="site-header__logo-text">fab4kids</span>
+        </a>
+
+        <button
+            type="button"
+            class="site-header__hamburger"
+            aria-controls="primary-nav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+            id="hamburger-btn">
+            <span class="site-header__bar"></span>
+            <span class="site-header__bar"></span>
+            <span class="site-header__bar"></span>
+        </button>
+
+        <nav class="site-header__nav" id="primary-nav" aria-label="Primary navigation">
+            <ul class="site-header__nav-list" role="list">
+                @foreach (var link in SiteNavigation.SubjectLinks)
+                {
+                    <li>
+                        <a href="@link.Href" class="site-header__nav-link">@link.Label</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <form class="site-header__search" action="/search" method="get" role="search">
+            <input
+                name="q"
+                type="search"
+                placeholder="Search resources..."
+                aria-label="Search"
+                class="site-header__search-input" />
+            <button type="submit" class="site-header__search-btn" aria-label="Submit search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </form>
+
+        <div class="site-header__actions">
+            <ThemeSwitcher />
+        </div>
+    </div>
+</header>

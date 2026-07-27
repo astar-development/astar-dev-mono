@@ -1,3 +1,4 @@
+using System.Globalization;
 using Bunit;
 using Fab4Kids.Web.Components.Layout;
 
@@ -28,6 +29,6 @@ public class GivenAFooter : Bunit.BunitContext
     {
         var cut = Render<Footer>();
 
-        cut.Find("p.site-footer__copyright").TextContent.ShouldContain(DateTime.UtcNow.Year.ToString());
+        cut.Find("p.site-footer__copyright").TextContent.ShouldContain(DateTime.UtcNow.Year.ToString(CultureInfo.InvariantCulture));
     }
 }

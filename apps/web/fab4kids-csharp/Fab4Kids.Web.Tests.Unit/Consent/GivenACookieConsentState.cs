@@ -79,7 +79,7 @@ public class GivenACookieConsentState
     public async Task when_a_preference_is_set_then_on_change_is_raised()
     {
         var sut = new CookieConsentState(localStorage);
-        var raised = false;
+        bool raised = false;
         sut.OnChange += () => raised = true;
 
         await sut.SetPreferenceAsync(analyticsAccepted: false);

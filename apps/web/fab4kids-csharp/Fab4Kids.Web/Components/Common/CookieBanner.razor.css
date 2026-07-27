@@ -1,0 +1,28 @@
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: var(--color-bg-surface);
+    border-top: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+}
+
+.cookie-banner-text {
+    flex: 1 1 20rem;
+    font-size: 0.875rem;
+    color: var(--color-text);
+}
+
+.cookie-banner-actions {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+}

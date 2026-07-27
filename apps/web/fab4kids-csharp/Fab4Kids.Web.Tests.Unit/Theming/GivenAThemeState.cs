@@ -74,7 +74,7 @@ public class GivenAThemeState
     public async Task when_theme_is_set_then_on_change_is_raised()
     {
         var sut = new ThemeState(localStorage);
-        var raised = false;
+        bool raised = false;
         sut.OnChange += () => raised = true;
 
         await sut.SetThemeAsync(Theme.Dark);
