@@ -1,5 +1,11 @@
 # ════════════════════════════════════════════════════════════════════════════
 # astar-dev-deploy.yml
+# DISABLED: the astar-dev Astro site is being replaced by AStarDev.Web (Blazor,
+# .NET 10) — see astar-dev-web-deploy.yml. This workflow is kept for manual
+# runs only (workflow_dispatch) until the Astro site is fully retired and the
+# astar-dev App Service is swapped to Linux/.NET (issue #848). Do not
+# re-enable the workflow_run trigger.
+#
 # Fires when AStar.Dev CI completes successfully on main.
 # Builds and deploys the static + SSR output to Azure Web App astar-dev..
 # ════════════════════════════════════════════════════════════════════════════
@@ -7,10 +13,6 @@
 name: AStar.Dev Deploy
 
 on:
-  workflow_run:
-    workflows: ['AStar.Dev CI']
-    branches: [main]
-    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -30,7 +32,6 @@ jobs:
   deploy:
     name: Build & Deploy to Azure
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     defaults:
       run:
         working-directory: apps/web/astar-dev

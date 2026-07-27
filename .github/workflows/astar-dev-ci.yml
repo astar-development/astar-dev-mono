@@ -1,5 +1,10 @@
 # ════════════════════════════════════════════════════════════════════════════
 # astar-dev-ci.yml
+# DISABLED: the astar-dev Astro site is being replaced by AStarDev.Web (Blazor,
+# .NET 10) — see astar-dev-web-ci.yml. This workflow is kept for manual runs
+# only (workflow_dispatch) until the Astro site is fully retired. Do not
+# re-enable push/PR triggers.
+#
 # Triggers on any push or PR that touches the astar-dev Astro site or this
 # workflow. Installs dependencies and builds the site.
 # A successful run on main triggers astar-dev-deploy.yml
@@ -8,23 +13,6 @@
 name: AStar.Dev CI
 
 on:
-  push:
-    branches:
-      - main
-      - 'feature/**'
-      - 'bug/**'
-      - 'doc/**'
-    paths:
-      - 'apps/web/astar-dev/**'
-      - '.github/workflows/astar-dev-ci.yml'
-      - '.github/workflows/astar-dev-deploy.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'apps/web/astar-dev/**'
-      - '.github/workflows/astar-dev-ci.yml'
-      - '.github/workflows/astar-dev-deploy.yml'
   workflow_dispatch:
 
 permissions:
