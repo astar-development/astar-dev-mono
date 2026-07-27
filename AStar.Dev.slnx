@@ -16,6 +16,10 @@
         <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
+    <Folder Name="/apps/web/astar-dev-csharp/">
+        <Project Path="apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj" />
+        <Project Path="apps/web/astar-dev-csharp/AStarDev.Web.Tests.Unit/AStarDev.Web.Tests.Unit.csproj" />
+    </Folder>
     <Folder Name="/infra/" />
     <Folder Name="/packages/">
         <Project Path="packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
