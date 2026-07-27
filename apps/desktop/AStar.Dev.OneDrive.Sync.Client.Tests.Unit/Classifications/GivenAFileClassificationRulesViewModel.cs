@@ -372,6 +372,74 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public async Task when_load_async_called_then_root_category_ancestor_path_is_empty()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].AncestorPath.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_load_async_called_then_child_category_ancestor_path_is_parent_name()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].Children[0].AncestorPath.ShouldBe("Media");
+    }
+
+    [Fact]
+    public async Task when_load_async_called_then_grandchild_category_ancestor_path_is_full_ancestor_chain()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true),
+            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.Categories[0].Children[0].Children[0].AncestorPath.ShouldBe("Media > Photos");
+    }
+
+    [Fact]
+    public async Task when_load_async_called_then_ancestor_path_is_populated_regardless_of_ancestor_filter_state()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Archived", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        sut.ShowOnlyIncludedInSearch = false;
+
+        sut.VisibleCategories.Single(node => node.Name == "Archived").AncestorPath.ShouldBe("Media");
+    }
+
+    [Fact]
     public async Task when_child_category_added_then_visible_categories_includes_it_in_tree_order()
     {
         IReadOnlyList<FileClassificationCategory> categories =

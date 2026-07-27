@@ -23,7 +23,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private bool originalIsInternet;
     private bool originalIncludeInSearch;
 
-    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, ICategoryEditDialogService categoryEditDialogService, Action<CategoryNodeViewModel> onDeleteSelf, IReadOnlyList<CategoryNodeViewModel> allCategories, Func<Task> reloadAsync)
+    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, ICategoryEditDialogService categoryEditDialogService, Action<CategoryNodeViewModel> onDeleteSelf, IReadOnlyList<CategoryNodeViewModel> allCategories, Func<Task> reloadAsync, string ancestorPath = "")
     {
         CategoryId = categoryId;
         Name = name;
@@ -31,6 +31,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         IsFamous = isFamous;
         IsInternet = isInternet;
         IncludeInSearch = includeInSearch;
+        AncestorPath = ancestorPath;
         this.parentId = parentId;
         this.repository = repository;
         this.categoryEditDialogService = categoryEditDialogService;
@@ -53,6 +54,12 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     /// <summary>Left indent, in pixels, applied when this node is rendered in the flattened category list.</summary>
     public double IndentWidth => (Level - 1) * 20;
+
+    /// <summary>Names of this node's ancestors, joined with " &gt; ", excluding this node itself. Empty for root categories. Used to disambiguate hierarchy in the flattened list, since the row directly above may not be this node's real parent when a search filter is active.</summary>
+    public string AncestorPath { get; }
+
+    /// <summary>True when <see cref="AncestorPath"/> is non-empty and should be displayed.</summary>
+    public bool HasAncestorPath => AncestorPath.Length > 0;
 
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
@@ -219,10 +226,12 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     private async Task AddValidatedChildCategoryAsync(FileClassificationCategory category, string trimmedName, int childLevel)
     {
+        string childAncestorPath = HasAncestorPath ? $"{AncestorPath} > {Name}" : Name;
+
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .Tap(newId =>
             {
-                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync);
+                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync, childAncestorPath);
                 Children.Add(newChild);
             })
             .ConfigureAwait(false);
