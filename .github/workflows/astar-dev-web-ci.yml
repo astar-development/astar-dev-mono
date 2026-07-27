@@ -61,7 +61,6 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  PROJECT_PATH: apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj
   TEST_PROJECT_PATH: apps/web/astar-dev-csharp/AStarDev.Web.Tests.Unit/AStarDev.Web.Tests.Unit.csproj
 
 jobs:
@@ -87,7 +86,7 @@ jobs:
         run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
       - name: Restore
-        run: dotnet restore ${{ env.PROJECT_PATH }} ${{ env.TEST_PROJECT_PATH }}
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
       - name: Build
         run: |
