@@ -447,7 +447,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_view_model_created_then_show_only_included_in_search_defaults_to_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
 
         sut.ShowOnlyIncludedInSearch.ShouldBeTrue();
     }
