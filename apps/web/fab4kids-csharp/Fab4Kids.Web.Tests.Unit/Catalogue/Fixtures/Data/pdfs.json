@@ -1,0 +1,33 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "Maths",
+      "subcategories": [
+        {
+          "id": 1,
+          "name": "KS1",
+          "files": [
+            {
+              "id": 1,
+              "name": "Times Tables Pack",
+              "url": "pdfs/times-tables.pdf",
+              "price": 2.50
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "English",
+      "subcategories": [
+        {
+          "id": 2,
+          "name": "KS2",
+          "files": []
+        }
+      ]
+    }
+  ]
+}

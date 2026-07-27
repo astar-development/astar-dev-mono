@@ -1,0 +1,43 @@
+@page "/search"
+@using Fab4Kids.Web.Components.Common
+
+<PageTitle>Search | fab4kids</PageTitle>
+
+<div class="search-page">
+    <h1>Search resources</h1>
+
+    <form class="search-form" action="/search" method="get" role="search">
+        <input
+            name="q"
+            type="search"
+            value="@Q"
+            placeholder="Search resources..."
+            aria-label="Search resources"
+            class="search-form__input" />
+        <button type="submit" class="btn btn--primary">Search</button>
+    </form>
+
+    @if (!string.IsNullOrWhiteSpace(Q))
+    {
+        @if (results.Count == 0)
+        {
+            <p class="search-empty">No resources found for &ldquo;@Q&rdquo;.</p>
+        }
+        else
+        {
+            <p class="search-count">@results.Count resource@(results.Count == 1 ? "" : "s") found for &ldquo;@Q&rdquo;.</p>
+            <ul class="search-results">
+                @foreach (var result in results)
+                {
+                    <li>
+                        <p class="search-results__breadcrumb">
+                            <a href="/@result.CategorySlug">@result.CategoryName</a> ›
+                            <a href="/@result.CategorySlug/@result.SubcategorySlug">@result.SubcategoryName</a>
+                        </p>
+                        <PdfCard File="result.File" />
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>

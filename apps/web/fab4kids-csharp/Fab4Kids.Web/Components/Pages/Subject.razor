@@ -1,0 +1,64 @@
+@page "/{subject}"
+@using Fab4Kids.Web.Catalogue
+@using Fab4Kids.Web.Components.Common
+
+@if (category is not null)
+{
+    <PageTitle>@category.Name Resources | fab4kids</PageTitle>
+
+    <section class="hero">
+        <div class="container">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="/">Home</a></li>
+                    <li aria-current="page">@category.Name</li>
+                </ol>
+            </nav>
+            <h1 class="hero__title">@category.Name Resources</h1>
+            <p class="hero__subtitle">Browse all @category.Name PDF resources.</p>
+        </div>
+    </section>
+
+    <section class="filter-bar">
+        <div class="container">
+            <nav aria-label="Filter by key stage">
+                <ul class="ks-tabs">
+                    <li><a href="/@subject" class="ks-tab ks-tab--active" aria-current="page">All</a></li>
+                    @foreach (var subcategory in category.Subcategories)
+                    {
+                        <li><a href="/@subject/@subcategory.Name.ToSlug()" class="ks-tab">@subcategory.Name</a></li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    </section>
+
+    <section class="catalogue">
+        <div class="container">
+            @if (!hasFiles)
+            {
+                <div class="empty-state">
+                    <p>No @category.Name resources available yet. Check back soon!</p>
+                    <a href="/" class="btn btn--secondary">Back to home</a>
+                </div>
+            }
+            else
+            {
+                @foreach (var subcategory in category.Subcategories.Where(sub => sub.Files.Count > 0))
+                {
+                    <div class="subcategory-section">
+                        <h2 class="subcategory-title">
+                            <a href="/@subject/@subcategory.Name.ToSlug()">@subcategory.Name</a>
+                        </h2>
+                        <ul class="pdf-list">
+                            @foreach (var file in subcategory.Files)
+                            {
+                                <li><PdfCard File="file" /></li>
+                            }
+                        </ul>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+}

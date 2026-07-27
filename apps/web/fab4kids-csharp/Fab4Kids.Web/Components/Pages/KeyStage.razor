@@ -1,0 +1,49 @@
+@page "/{subject}/{ks}"
+@using Fab4Kids.Web.Catalogue
+@using Fab4Kids.Web.Components.Common
+
+@if (category is not null && subcategory is not null)
+{
+    <PageTitle>@category.Name @subcategory.Name Resources | fab4kids</PageTitle>
+
+    <section class="hero">
+        <div class="container">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/@subject">@category.Name</a></li>
+                    <li aria-current="page">@subcategory.Name</li>
+                </ol>
+            </nav>
+            <h1 class="hero__title">@category.Name — @subcategory.Name Resources</h1>
+            <p class="hero__subtitle">@subcategory.Name @category.Name resources for teachers and parents.</p>
+        </div>
+    </section>
+
+    <section class="catalogue">
+        <div class="container">
+            <div class="catalogue__header">
+                <a href="/@subject" class="back-link" aria-label="Back to all @category.Name resources">
+                    ← All @category.Name
+                </a>
+            </div>
+
+            @if (subcategory.Files.Count == 0)
+            {
+                <div class="empty-state">
+                    <p>No @category.Name @subcategory.Name resources yet. Check back soon!</p>
+                    <a href="/@subject" class="btn btn--secondary">Back to @category.Name</a>
+                </div>
+            }
+            else
+            {
+                <ul class="pdf-list">
+                    @foreach (var file in subcategory.Files)
+                    {
+                        <li><PdfCard File="file" /></li>
+                    }
+                </ul>
+            }
+        </div>
+    </section>
+}

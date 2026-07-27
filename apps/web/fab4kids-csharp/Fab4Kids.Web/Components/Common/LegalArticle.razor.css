@@ -1,0 +1,38 @@
+.legal-page {
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.legal-meta {
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
+
+.legal-page ::deep h2 {
+    margin-top: 2rem;
+}
+
+.legal-page ::deep .legal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.legal-page ::deep .legal-table th,
+.legal-page ::deep .legal-table td {
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+}
+
+.legal-page ::deep .legal-table th {
+    background: var(--color-bg-surface);
+}
+
+.legal-page ::deep code {
+    background: var(--color-bg-surface);
+    padding: 0.1em 0.3em;
+    border-radius: var(--radius-sm);
+    font-size: 0.875em;
+}
