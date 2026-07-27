@@ -1,0 +1,40 @@
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  transition: border-color 0.25s;
+}
+
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.theme-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.theme-btn--active {
+  background: var(--surface-raised);
+  border-color: var(--border);
+}
+
+.theme-btn:not(.theme-btn--active):hover {
+  background: var(--copy-btn-hover-bg);
+}

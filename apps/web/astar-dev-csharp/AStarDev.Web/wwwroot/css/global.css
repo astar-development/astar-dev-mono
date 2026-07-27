@@ -1,0 +1,172 @@
+/* =============================================================================
+   GLOBAL STYLES
+   Reset, typography, shared utilities. No theme colours here — use tokens.
+   ============================================================================= */
+
+/* ----- Reset ---------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--surface-base);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ----- Typography ---------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text);
+}
+
+p {
+  margin: 0;
+}
+
+/* ----- Section layout ------------------------------------------------------ */
+.section-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--section-border);
+  margin: 0;
+}
+
+/* ----- Buttons ------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s, border-color 0.15s;
+  text-decoration: none;
+  border: 2px solid transparent;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-bg);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover {
+    transform: none;
+  }
+}
+
+/* ----- Accessibility utilities --------------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 0 0 8px 0;
+  transition: top 0.1s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ----- Focus styles -------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ----- Cards --------------------------------------------------------------- */
+.card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+/* ----- Responsive grid helpers -------------------------------------------- */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1023px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

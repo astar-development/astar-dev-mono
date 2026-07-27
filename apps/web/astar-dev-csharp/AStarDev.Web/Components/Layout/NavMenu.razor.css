@@ -1,0 +1,144 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  height: 64px;
+  transition: background-color 0.25s, border-color 0.25s;
+}
+
+.nav-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  flex-shrink: 0;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.brand-name {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  transition: color 0.25s;
+}
+
+.brand-tagline {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  transition: color 0.25s;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.nav-links li {
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: opacity 0.15s, border-color 0.15s, color 0.25s;
+}
+
+.nav-link:hover {
+  opacity: 0.75;
+}
+
+.nav-link--active {
+  border-bottom-color: var(--active-indicator);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -3px;
+  border-radius: 2px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nav-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  transition: background-color 0.25s;
+}
+
+.nav-icon-link {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.nav-icon-link:hover {
+  color: var(--accent);
+}
+
+.nav-icon-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .nav {
+    height: 56px;
+  }
+
+  .nav-links,
+  .nav-separator,
+  .nav-icon-link {
+    display: none;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+}
