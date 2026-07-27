@@ -1,0 +1,125 @@
+.container {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+}
+
+.hero {
+    padding-block: 3rem 2rem;
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.breadcrumb ol {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.breadcrumb li + li::before {
+    content: '›';
+    margin-right: 0.5rem;
+}
+
+.breadcrumb a {
+    color: var(--color-text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--color-primary);
+}
+
+.hero__title {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+}
+
+.hero__subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.0625rem;
+}
+
+.filter-bar {
+    padding-block: 1.25rem;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.ks-tabs {
+    display: flex;
+    gap: 0.5rem;
+    list-style: none;
+    flex-wrap: wrap;
+}
+
+.ks-tab {
+    display: inline-flex;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    background: var(--color-bg-surface);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ks-tab:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.ks-tab--active {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    border-color: var(--color-primary);
+}
+
+.catalogue {
+    padding-block: 2.5rem;
+}
+
+.subcategory-section {
+    margin-bottom: 2.5rem;
+}
+
+.subcategory-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.subcategory-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.subcategory-title a:hover {
+    color: var(--color-primary);
+}
+
+.pdf-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding-block: 4rem;
+    color: var(--color-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}

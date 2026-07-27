@@ -1,0 +1,9 @@
+@using Fab4Kids.Web.Catalogue
+
+<article class="pdf-card">
+    <h3 class="pdf-card__name">@File.Name</h3>
+    <p class="pdf-card__price">@File.Price.ToString("C", PriceCulture)</p>
+    <a href="@File.Url" class="btn btn--secondary" target="_blank" rel="noopener noreferrer" aria-label="View @File.Name">
+        View
+    </a>
+</article>

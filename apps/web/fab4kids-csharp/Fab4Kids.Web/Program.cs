@@ -1,5 +1,6 @@
 using AStar.Dev.Logging.Extensions;
 using Blazored.LocalStorage;
+using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Components;
 using Fab4Kids.Web.Consent;
 using Fab4Kids.Web.Theming;
@@ -16,8 +17,11 @@ builder.Services.AddFluentUIComponents();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<ThemeState>();
 builder.Services.AddScoped<CookieConsentState>();
+builder.Services.AddSingleton<ICatalogueService, CatalogueService>();
 
 var app = builder.Build();
+
+app.Services.GetRequiredService<ICatalogueService>();
 
 if (!app.Environment.IsDevelopment())
 {

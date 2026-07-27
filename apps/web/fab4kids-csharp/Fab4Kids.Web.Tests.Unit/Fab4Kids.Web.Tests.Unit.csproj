@@ -35,4 +35,8 @@
         <ProjectReference Include="../Fab4Kids.Web/Fab4Kids.Web.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Update="Catalogue/Fixtures/Data/pdfs.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

@@ -1,6 +1,39 @@
 @page "/"
+@using Fab4Kids.Web.Homepage
 
 <PageTitle>Quality resources for every child | fab4kids</PageTitle>
 
-<h1>Quality resources for every child</h1>
-<p>Curriculum-aligned PDFs and Word documents for KS1&ndash;KS4. Catalogue browsing lands in the next phase.</p>
+<section class="hero">
+    <div class="container">
+        <h1 class="hero__headline">Quality resources for every child</h1>
+        <p class="hero__subtitle">Curriculum-aligned PDFs and Word documents for KS1&ndash;KS4</p>
+        <div class="hero__ctas">
+            <a href="/maths" class="btn btn--primary">Browse resources</a>
+            <a href="/search" class="btn btn--secondary">Search</a>
+        </div>
+    </div>
+</section>
+
+<section class="subjects">
+    <div class="container">
+        <h2 class="section-title">Browse by subject</h2>
+        <div class="subject-grid">
+            @foreach (var subject in HomeSubjectCards.All)
+            {
+                <a href="@subject.Href" class="subject-card">
+                    <span class="subject-card__icon" aria-hidden="true">@subject.Icon</span>
+                    <h3 class="subject-card__label">@subject.Label</h3>
+                    <p class="subject-card__description">@subject.Description</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="newsletter" id="newsletter">
+    <div class="container">
+        <h2 class="section-title">Stay up to date</h2>
+        <p class="newsletter__subtitle">Get notified when new resources are added.</p>
+        <p class="newsletter__placeholder">Newsletter signup is coming soon.</p>
+    </div>
+</section>
