@@ -1,4 +1,6 @@
+using Blazored.LocalStorage;
 using Bunit;
+using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Components.Pages;
 using Microsoft.AspNetCore.Components;
@@ -15,6 +17,7 @@ public class GivenASearchPage : Bunit.BunitContext
     {
         catalogueService.Search(Arg.Any<string>()).Returns([]);
         Services.AddSingleton(catalogueService);
+        Services.AddSingleton(new CartState(Substitute.For<ILocalStorageService>()));
     }
 
     private void Navigate(string uri) => Services.GetRequiredService<NavigationManager>().NavigateTo(uri);

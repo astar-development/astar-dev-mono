@@ -1,0 +1,45 @@
+@rendermode InteractiveServer
+@using Fab4Kids.Web.Cart
+@inject CartState CartState
+
+<div class="cart-widget">
+    <button
+        type="button"
+        class="cart-widget__toggle"
+        aria-label="@($"View basket ({CartState.TotalItems} items)")"
+        aria-expanded="@(open ? "true" : "false")"
+        @onclick="Toggle">
+        <span aria-hidden="true">🧺</span>
+        @if (CartState.TotalItems > 0)
+        {
+            <span class="cart-widget__badge">@CartState.TotalItems</span>
+        }
+    </button>
+
+    @if (open)
+    {
+        <div class="cart-widget__drawer" role="dialog" aria-label="Basket">
+            @if (CartState.Items.Count == 0)
+            {
+                <p class="cart-widget__empty">Your basket is empty.</p>
+            }
+            else
+            {
+                <ul class="cart-widget__items" role="list">
+                    @foreach (var item in CartState.Items)
+                    {
+                        <li class="cart-widget__item">
+                            <span class="cart-widget__item-name">@item.Name</span>
+                            <span class="cart-widget__item-qty">&times;@item.Quantity</span>
+                            <span class="cart-widget__item-price">@((item.Price * item.Quantity).ToString("C", PriceCulture))</span>
+                            <button type="button" class="cart-widget__remove" aria-label="Remove @item.Name" @onclick="() => RemoveAsync(item.ProductId)">
+                                Remove
+                            </button>
+                        </li>
+                    }
+                </ul>
+                <p class="cart-widget__total">Total: @CartState.TotalPrice.ToString("C", PriceCulture)</p>
+            }
+        </div>
+    }
+</div>

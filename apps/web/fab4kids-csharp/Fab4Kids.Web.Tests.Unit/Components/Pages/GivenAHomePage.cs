@@ -1,10 +1,15 @@
 using Bunit;
 using Fab4Kids.Web.Components.Pages;
+using Fab4Kids.Web.Newsletter;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Fab4Kids.Web.Tests.Unit.Components.Pages;
 
 public class GivenAHomePage : Bunit.BunitContext
 {
+    public GivenAHomePage() => Services.AddSingleton(Substitute.For<INewsletterSubscriptionService>());
+
     [Fact]
     public void when_rendered_then_the_hero_headline_is_shown()
     {

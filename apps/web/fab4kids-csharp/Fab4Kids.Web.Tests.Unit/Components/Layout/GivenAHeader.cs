@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using Bunit;
+using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Components.Layout;
 using Fab4Kids.Web.Theming;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ public class GivenAHeader : Bunit.BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton(new ThemeState(Substitute.For<ILocalStorageService>()));
+        Services.AddSingleton(new CartState(Substitute.For<ILocalStorageService>()));
     }
 
     [Fact]

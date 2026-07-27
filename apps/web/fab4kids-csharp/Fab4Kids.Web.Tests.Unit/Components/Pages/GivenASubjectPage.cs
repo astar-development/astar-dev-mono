@@ -1,5 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
+using Blazored.LocalStorage;
 using Bunit;
+using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Components.Pages;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +19,7 @@ public class GivenASubjectPage : Bunit.BunitContext
     {
         Services.AddSingleton(catalogueService);
         Services.AddSingleton<Microsoft.Extensions.Logging.ILogger<Subject>>(NullLogger<Subject>.Instance);
+        Services.AddSingleton(new CartState(Substitute.For<ILocalStorageService>()));
     }
 
     [Fact]

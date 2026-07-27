@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Communication.Email" />
+    <PackageReference Include="Azure.Data.Tables" />
     <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
   </ItemGroup>
