@@ -1,0 +1,30 @@
+.page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 64px 24px 80px;
+}
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  transition: color 0.25s;
+}
+
+.page-intro {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  transition: color 0.25s;
+}
+
+.coming-soon {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  transition: color 0.25s;
+}
