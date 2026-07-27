@@ -14,11 +14,14 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private readonly IFileClassificationRepository repository;
     private readonly Action<CategoryNodeViewModel> onDeleteSelf;
     private readonly Option<FileClassificationCategoryId> parentId;
+    private readonly IReadOnlyList<CategoryNodeViewModel> allCategories;
+    private readonly Func<Task> reloadAsync;
+    private readonly List<CategoryNodeViewModel?> parentOptionCandidates = [];
     private bool originalIsFamous;
     private bool originalIsInternet;
     private bool originalIncludeInSearch;
 
-    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf)
+    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf, IReadOnlyList<CategoryNodeViewModel> allCategories, Func<Task> reloadAsync)
     {
         CategoryId = categoryId;
         Name = name;
@@ -29,6 +32,8 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         this.parentId = parentId;
         this.repository = repository;
         this.onDeleteSelf = onDeleteSelf;
+        this.allCategories = allCategories;
+        this.reloadAsync = reloadAsync;
 
         Children.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsLeafNode));
     }
@@ -64,8 +69,11 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     /// <summary>True when this node has no children and can therefore hold keywords.</summary>
     public bool IsLeafNode => Children.Count == 0;
 
-    /// <summary>True when this node has not yet reached the maximum hierarchy depth and can hold further sub-categories.</summary>
-    public bool SupportsChildCategories => Level < 3;
+    /// <summary>Display names of the categories this node can be reparented under, with a leading "no parent" option. Populated when editing starts.</summary>
+    public ObservableCollection<string> ParentOptionNames { get; } = [];
+
+    [ObservableProperty]
+    public partial int SelectedParentOptionIndex { get; set; }
 
     /// <summary>Keywords assigned to this category (only populated for leaf nodes).</summary>
     public ObservableCollection<KeywordRowViewModel> Keywords { get; } = [];
@@ -92,7 +100,42 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         originalIsFamous = IsFamous;
         originalIsInternet = IsInternet;
         originalIncludeInSearch = IncludeInSearch;
+        RefreshParentOptions();
         IsEditing = true;
+    }
+
+    private void RefreshParentOptions()
+    {
+        var selfAndDescendants = SelfAndDescendants();
+        List<CategoryNodeViewModel> eligibleParents = [.. allCategories.Where(category => !selfAndDescendants.Contains(category))];
+
+        parentOptionCandidates.Clear();
+        parentOptionCandidates.Add(null);
+        parentOptionCandidates.AddRange(eligibleParents);
+
+        ParentOptionNames.Clear();
+        ParentOptionNames.Add("(No parent - root)");
+        foreach (var candidate in eligibleParents)
+            ParentOptionNames.Add(candidate.Name);
+
+        int currentParentIndex = parentId is Option<FileClassificationCategoryId>.Some someParent
+            ? parentOptionCandidates.FindIndex(candidate => candidate is not null && candidate.CategoryId.Equals(someParent.Value))
+            : 0;
+        SelectedParentOptionIndex = currentParentIndex >= 0 ? currentParentIndex : 0;
+    }
+
+    private HashSet<CategoryNodeViewModel> SelfAndDescendants()
+    {
+        HashSet<CategoryNodeViewModel> collected = [];
+        void Collect(CategoryNodeViewModel node)
+        {
+            collected.Add(node);
+            foreach (var child in node.Children)
+                Collect(child);
+        }
+        Collect(this);
+
+        return collected;
     }
 
     [RelayCommand]
@@ -108,7 +151,28 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         await FileClassificationCategoryFactory.Create(CategoryId, trimmedName, Level, IsFamous, IsInternet, parentId, IncludeInSearch)
             .Match(category => PersistUpdateAsync(category, trimmedName), _ => Task.CompletedTask)
             .ConfigureAwait(false);
+
+        var selectedParentId = SelectedParentId();
+        if (!selectedParentId.Equals(parentId))
+            await ReparentAsync(selectedParentId).ConfigureAwait(false);
     }
+
+    private Option<FileClassificationCategoryId> SelectedParentId()
+    {
+        var selected = parentOptionCandidates.ElementAtOrDefault(SelectedParentOptionIndex);
+
+        return selected is null ? Option.None<FileClassificationCategoryId>() : Option.Some(selected.CategoryId);
+    }
+
+    private async Task ReparentAsync(Option<FileClassificationCategoryId> newParentId)
+        => await repository.ReparentCategoryAsync(CategoryId, newParentId, CancellationToken.None)
+            .MatchAsync(async _ =>
+            {
+                await reloadAsync().ConfigureAwait(false);
+
+                return true;
+            }, _ => Task.FromResult(false))
+            .ConfigureAwait(false);
 
     private async Task PersistUpdateAsync(FileClassificationCategory category, string trimmedName)
         => await repository.UpdateCategoryAsync(CategoryId, category, CancellationToken.None)
@@ -134,7 +198,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanAddKeyword))]
     private Task AddKeywordAsync() => Task.CompletedTask;
 
-    private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewChildCategoryName) && Level < 3;
+    private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewChildCategoryName);
 
     [RelayCommand(CanExecute = nameof(CanAddCategory))]
     private async Task AddChildCategoryAsync()
@@ -153,7 +217,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .Tap(newId =>
             {
-                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, self => Children.Remove(self));
+                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, self => Children.Remove(self), allCategories, reloadAsync);
                 Children.Add(newChild);
             })
             .ConfigureAwait(false);
