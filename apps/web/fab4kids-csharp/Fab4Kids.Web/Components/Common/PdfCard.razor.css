@@ -20,3 +20,10 @@
     font-weight: 600;
     color: var(--color-text-muted);
 }
+
+.pdf-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}

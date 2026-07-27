@@ -99,12 +99,3 @@
     color: var(--color-text-muted);
     margin-bottom: 1.5rem;
 }
-
-.newsletter__placeholder {
-    display: inline-block;
-    padding: 1rem 2rem;
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-}

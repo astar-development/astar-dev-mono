@@ -1,0 +1,57 @@
+@rendermode InteractiveServer
+@using Fab4Kids.Web.Newsletter
+@inject INewsletterSubscriptionService SubscriptionService
+
+<form class="newsletter-form" @onsubmit="HandleSubmitAsync">
+
+    <div class="form-group @(emailError.Length > 0 ? "form-group--error" : "")">
+        <label for="newsletter-email" class="form-label">Email <span class="required" aria-hidden="true">*</span></label>
+        <input
+            id="newsletter-email"
+            @bind="email"
+            @bind:event="oninput"
+            type="email"
+            class="form-input"
+            autocomplete="email"
+            required
+            aria-invalid="@(emailError.Length > 0 ? "true" : null)"
+            aria-describedby="@(emailError.Length > 0 ? "newsletter-email-error" : null)"
+            disabled="@(submitStatus == NewsletterFormSubmitStatus.Submitting)" />
+        @if (emailError.Length > 0)
+        {
+            <p id="newsletter-email-error" class="field-error" role="alert">@emailError</p>
+        }
+    </div>
+
+    <div class="form-group form-group--checkbox @(consentError.Length > 0 ? "form-group--error" : "")">
+        <label class="checkbox-label">
+            <input
+                @bind="consent"
+                type="checkbox"
+                class="checkbox-input"
+                aria-invalid="@(consentError.Length > 0 ? "true" : null)"
+                disabled="@(submitStatus == NewsletterFormSubmitStatus.Submitting)" />
+            <span class="checkbox-text">I consent to receive newsletter emails from fab4kids</span>
+        </label>
+        @if (consentError.Length > 0)
+        {
+            <p class="field-error" role="alert">@consentError</p>
+        }
+    </div>
+
+    <button type="submit" class="btn btn--primary" disabled="@(submitStatus == NewsletterFormSubmitStatus.Submitting)">
+        @(submitStatus == NewsletterFormSubmitStatus.Submitting ? "Subscribing…" : "Subscribe")
+    </button>
+
+    @if (submitStatus is NewsletterFormSubmitStatus.Success or NewsletterFormSubmitStatus.Error)
+    {
+        <div
+            class="status-message @(submitStatus == NewsletterFormSubmitStatus.Success ? "status-message--success" : "status-message--error")"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true">
+            @statusMessage
+        </div>
+    }
+
+</form>

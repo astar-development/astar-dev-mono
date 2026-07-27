@@ -1,9 +1,16 @@
+@rendermode InteractiveServer
 @using Fab4Kids.Web.Catalogue
+@inject Fab4Kids.Web.Cart.CartState CartState
 
 <article class="pdf-card">
     <h3 class="pdf-card__name">@File.Name</h3>
     <p class="pdf-card__price">@File.Price.ToString("C", PriceCulture)</p>
-    <a href="@File.Url" class="btn btn--secondary" target="_blank" rel="noopener noreferrer" aria-label="View @File.Name">
-        View
-    </a>
+    <div class="pdf-card__actions">
+        <a href="@File.Url" class="btn btn--secondary" target="_blank" rel="noopener noreferrer" aria-label="View @File.Name">
+            View
+        </a>
+        <button type="button" class="btn btn--primary" disabled="@added" @onclick="AddToBasketAsync">
+            @(added ? "Added ✓" : "Add to basket")
+        </button>
+    </div>
 </article>
