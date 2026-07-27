@@ -1,3 +1,4 @@
+using AStar.Dev.FunctionalParadigm;
 using AStarDev.Web.CaseStudies;
 using Microsoft.AspNetCore.Components;
 
@@ -8,7 +9,7 @@ public partial class Detail : ComponentBase
     [Parameter]
     public string Slug { get; set; } = string.Empty;
 
-    private CaseStudy? caseStudy;
+    private Option<CaseStudy> caseStudy = Option.None<CaseStudy>();
 
     protected override void OnParametersSet() => caseStudy = CaseStudyCatalog.FindBySlug(Slug);
 }

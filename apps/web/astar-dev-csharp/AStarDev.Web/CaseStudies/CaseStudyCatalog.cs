@@ -1,3 +1,5 @@
+using AStar.Dev.FunctionalParadigm;
+
 namespace AStarDev.Web.CaseStudies;
 
 /// <summary>The site's anonymised case studies.</summary>
@@ -43,5 +45,5 @@ public static class CaseStudyCatalog
             """),
     ];
 
-    public static CaseStudy? FindBySlug(string slug) => All.FirstOrDefault(c => c.Slug == slug);
+    public static Option<CaseStudy> FindBySlug(string slug) => All.FirstOrNone(c => c.Slug == slug);
 }

@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -15,30 +15,42 @@ public sealed class NugetPackageService(INugetApiClient apiClient, IMemoryCache 
         var freshKey = FreshCacheKeyFor(packageId);
         var lastGoodKey = LastGoodCacheKeyFor(packageId);
 
-        if (cache.TryGetValue(freshKey, out PackageData? fresh) && fresh is not null)
+        if (TryGetCached(freshKey, out var freshValue))
+            return freshValue;
+
+        var fetchedOption = await apiClient.FetchAsync(packageId, cancellationToken);
+        if (fetchedOption.TryGetValue(out var fetchedValue))
         {
-            return new Result<PackageData, string>.Ok(fresh);
+            cache.Set(freshKey, fetchedValue, FreshDuration);
+            cache.Set(lastGoodKey, fetchedValue);
+
+            return fetchedValue;
         }
 
-        var fetched = await apiClient.FetchAsync(packageId, cancellationToken);
-        if (fetched is not null)
-        {
-            cache.Set(freshKey, fetched, FreshDuration);
-            cache.Set(lastGoodKey, fetched);
-
-            return new Result<PackageData, string>.Ok(fetched);
-        }
-
-        if (cache.TryGetValue(lastGoodKey, out PackageData? lastGood) && lastGood is not null)
+        if (TryGetCached(lastGoodKey, out var lastGoodValue))
         {
             LogMessage.Warning(logger, nameof(NugetPackageService), $"NuGet API unreachable for '{packageId}' — using last known good data.");
 
-            return new Result<PackageData, string>.Ok(lastGood);
+            return lastGoodValue;
         }
 
         LogMessage.Error(logger, $"NuGet API unreachable for '{packageId}' and no cached data is available.");
 
-        return new Result<PackageData, string>.Error($"Package data for '{packageId}' is currently unavailable.");
+        return $"Package data for '{packageId}' is currently unavailable.";
+    }
+
+    private bool TryGetCached(string key, out PackageData value)
+    {
+        if (cache.TryGetValue(key, out PackageData? cached) && cached is not null)
+        {
+            value = cached;
+
+            return true;
+        }
+
+        value = null!;
+
+        return false;
     }
 
     private static string FreshCacheKeyFor(string packageId) => $"nuget:fresh:{packageId.ToLowerInvariant()}";

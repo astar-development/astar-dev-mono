@@ -1,4 +1,4 @@
-using AStar.Dev.Functional.Extensions;
+using AStar.Dev.FunctionalParadigm;
 using AStarDev.Web.Components.Pages;
 using AStarDev.Web.Packages;
 using Bunit;
@@ -16,8 +16,8 @@ public class GivenTheHomePage : Bunit.BunitContext
 
         var nugetPackageService = Substitute.For<INugetPackageService>();
         nugetPackageService.GetPackageDataAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => Task.FromResult<Result<PackageData, string>>(new Result<PackageData, string>.Ok(
-                PackageDataFactory.Create(callInfo.ArgAt<string>(0), "1.0.0", "A package.", 100, ""))));
+            .Returns(callInfo => Task.FromResult<Result<PackageData, string>>(
+                PackageDataFactory.Create(callInfo.ArgAt<string>(0), "1.0.0", "A package.", 100, "")));
 
         Services.AddSingleton(nugetPackageService);
         Services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());

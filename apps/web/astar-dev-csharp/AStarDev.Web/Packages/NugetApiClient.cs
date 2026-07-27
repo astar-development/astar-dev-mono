@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AStar.Dev.FunctionalParadigm;
 
 namespace AStarDev.Web.Packages;
 
@@ -9,19 +10,18 @@ public sealed class NugetApiClient(HttpClient httpClient) : INugetApiClient
 {
     private static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public async Task<PackageData?> FetchAsync(string packageId, CancellationToken cancellationToken)
+    public async Task<Option<PackageData>> FetchAsync(string packageId, CancellationToken cancellationToken)
     {
         var url = $"query?q=packageid:{Uri.EscapeDataString(packageId)}&prerelease=false&take=1";
         using var response = await httpClient.GetAsync(url, cancellationToken);
         if (!response.IsSuccessStatusCode)
-            return null;
+            return Option.None<PackageData>();
 
         var payload = await response.Content.ReadFromJsonAsync<NugetSearchResponse>(SerializerOptions, cancellationToken);
-        var entry = payload?.Data?.FirstOrDefault(d => string.Equals(d.Id, packageId, StringComparison.OrdinalIgnoreCase));
+        var entries = payload?.Data ?? [];
+        var entry = entries.FirstOrNone(d => string.Equals(d.Id, packageId, StringComparison.OrdinalIgnoreCase));
 
-        return entry is null
-            ? null
-            : PackageDataFactory.Create(entry.Id ?? packageId, entry.Version ?? "", entry.Description ?? "", entry.TotalDownloads, entry.ProjectUrl ?? "");
+        return entry.Map(e => PackageDataFactory.Create(e.Id ?? packageId, e.Version ?? "", e.Description ?? "", e.TotalDownloads, e.ProjectUrl ?? ""));
     }
 
     private sealed class NugetSearchResponse
