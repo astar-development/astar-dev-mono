@@ -440,4 +440,41 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
     }
+
+    [Fact]
+    public async Task when_show_only_included_in_search_is_true_then_visible_categories_excludes_others()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.ShowOnlyIncludedInSearch = true;
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media"]);
+    }
+
+    [Fact]
+    public async Task when_show_only_included_in_search_is_toggled_off_then_visible_categories_restored()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        sut.ShowOnlyIncludedInSearch = true;
+
+        sut.ShowOnlyIncludedInSearch = false;
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media"]);
+    }
 }

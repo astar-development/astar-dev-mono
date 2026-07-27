@@ -1,8 +1,12 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -120,5 +124,42 @@ public sealed class GivenFileClassificationsViewDisplay
 
         var addButton = sut.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Command == viewModel.AddCategoryCommand);
         addButton.ShouldNotBeNull("Add-category button should be bound to AddCategoryCommand");
+    }
+
+    [AvaloniaFact]
+    public void when_category_tree_is_inspected_then_items_control_max_width_is_740()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
+        categoriesItemsControl.MaxWidth.ShouldBe(740);
+    }
+
+    [AvaloniaFact]
+    public void when_edit_clicked_then_scroll_offset_is_preserved()
+    {
+        var viewModel = CreateViewModel();
+        var nodeRepository = Substitute.For<IFileClassificationRepository>();
+        for (int index = 0; index < 50; index++)
+            viewModel.VisibleCategories.Add(new CategoryNodeViewModel(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false, nodeRepository, _ => { }, viewModel.VisibleCategories, () => Task.CompletedTask));
+        viewModel.IsLoading = false;
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 800, Height = 400 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        var scrollViewer = view.FindControl<ScrollViewer>("CategoriesScrollViewer")!;
+        scrollViewer.Offset = new Vector(0, 50);
+        window.UpdateLayout();
+        double offsetBeforeEdit = scrollViewer.Offset.Y;
+        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
+
+        editButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        scrollViewer.Offset.Y.ShouldBe(offsetBeforeEdit);
     }
 }
