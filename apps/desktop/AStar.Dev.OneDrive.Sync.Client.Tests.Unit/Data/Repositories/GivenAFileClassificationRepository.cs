@@ -144,6 +144,22 @@ public sealed class GivenAFileClassificationRepository
     }
 
     [Fact]
+    public async Task when_get_all_categories_contains_a_row_with_include_in_search_false_then_that_row_is_still_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+
+        db.FileClassificationCategories.Add(new FileClassificationCategoryEntity { Name = "Archived", Level = 1, IncludeInSearch = false });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var result = await repository.GetAllCategoriesAsync(TestContext.Current.CancellationToken);
+
+        result.Count.ShouldBe(1);
+        result[0].Name.ShouldBe("Archived");
+        result[0].IncludeInSearch.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_get_all_categories_contains_invalid_row_then_logger_receives_a_warning_call()
     {
         var (db, factory) = CreateInMemoryFactory();
