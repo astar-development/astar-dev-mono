@@ -76,6 +76,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFileAutoCategorisor, RuleBasedFileAutoCategorisor>();
         _ = services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         _ = services.AddSingleton<IConfirmationDialogService, AvaloniaConfirmationDialogService>();
+        _ = services.AddSingleton<ICategoryEditDialogService, AvaloniaCategoryEditDialogService>();
         _ = services.AddSingleton<IFileClassificationExportImportService, FileClassificationExportImportService>();
         _ = services.AddSingleton<IFileTypeClassifier, SyncClientFileTypeClassifier>();
         _ = services.AddSingleton<IApplicationVersionProvider, ApplicationVersionProvider>();

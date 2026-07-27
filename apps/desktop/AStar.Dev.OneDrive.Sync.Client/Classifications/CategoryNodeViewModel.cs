@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 public sealed partial class CategoryNodeViewModel : ObservableObject
 {
     private readonly IFileClassificationRepository repository;
+    private readonly ICategoryEditDialogService categoryEditDialogService;
     private readonly Action<CategoryNodeViewModel> onDeleteSelf;
     private readonly Option<FileClassificationCategoryId> parentId;
     private readonly IReadOnlyList<CategoryNodeViewModel> allCategories;
@@ -21,7 +23,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     private bool originalIsInternet;
     private bool originalIncludeInSearch;
 
-    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, Action<CategoryNodeViewModel> onDeleteSelf, IReadOnlyList<CategoryNodeViewModel> allCategories, Func<Task> reloadAsync)
+    public CategoryNodeViewModel(FileClassificationCategoryId categoryId, string name, int level, bool isFamous, bool isInternet, Option<FileClassificationCategoryId> parentId, bool includeInSearch, IFileClassificationRepository repository, ICategoryEditDialogService categoryEditDialogService, Action<CategoryNodeViewModel> onDeleteSelf, IReadOnlyList<CategoryNodeViewModel> allCategories, Func<Task> reloadAsync)
     {
         CategoryId = categoryId;
         Name = name;
@@ -31,6 +33,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         IncludeInSearch = includeInSearch;
         this.parentId = parentId;
         this.repository = repository;
+        this.categoryEditDialogService = categoryEditDialogService;
         this.onDeleteSelf = onDeleteSelf;
         this.allCategories = allCategories;
         this.reloadAsync = reloadAsync;
@@ -94,7 +97,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     public partial string NewChildCategoryName { get; set; } = string.Empty;
 
     [RelayCommand]
-    private void Edit()
+    private async Task EditAsync()
     {
         EditedName = Name;
         originalIsFamous = IsFamous;
@@ -102,6 +105,8 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         originalIncludeInSearch = IncludeInSearch;
         RefreshParentOptions();
         IsEditing = true;
+
+        await categoryEditDialogService.ShowAsync(this).ConfigureAwait(false);
     }
 
     private void RefreshParentOptions()
@@ -217,7 +222,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .Tap(newId =>
             {
-                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, self => Children.Remove(self), allCategories, reloadAsync);
+                var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync);
                 Children.Add(newChild);
             })
             .ConfigureAwait(false);
