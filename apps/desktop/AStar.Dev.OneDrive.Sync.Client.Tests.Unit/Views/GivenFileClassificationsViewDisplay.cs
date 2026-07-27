@@ -139,7 +139,7 @@ public sealed class GivenFileClassificationsViewDisplay
     public void when_edit_clicked_then_category_edit_dialog_service_shown_for_that_category()
     {
         var repository = Substitute.For<IFileClassificationRepository>();
-        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 3).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 3).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
