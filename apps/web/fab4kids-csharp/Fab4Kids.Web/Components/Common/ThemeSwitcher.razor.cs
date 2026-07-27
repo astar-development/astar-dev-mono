@@ -4,7 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Fab4Kids.Web.Components.Common;
 
-public partial class ThemeSwitcher : ComponentBase, IDisposable
+public sealed partial class ThemeSwitcher : ComponentBase, IDisposable
 {
     private static readonly IReadOnlyList<ThemeOption> Options =
     [

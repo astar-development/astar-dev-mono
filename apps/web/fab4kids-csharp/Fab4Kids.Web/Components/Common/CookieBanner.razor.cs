@@ -3,7 +3,7 @@ using Microsoft.JSInterop;
 
 namespace Fab4Kids.Web.Components.Common;
 
-public partial class CookieBanner : ComponentBase, IDisposable
+public sealed partial class CookieBanner : ComponentBase, IDisposable
 {
     protected override void OnInitialized() => ConsentState.OnChange += StateHasChanged;
 
