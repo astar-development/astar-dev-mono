@@ -1,0 +1,112 @@
+# ════════════════════════════════════════════════════════════════════════════
+# astar-dev-web-ci.yml
+# Triggers on any push or PR that touches the AStarDev.Web Blazor site, its
+# FunctionalParadigm/Logging.Extensions package dependencies, or this workflow.
+# Restores, builds, and tests the site.
+# A successful run on main triggers astar-dev-web-deploy.yml
+# ════════════════════════════════════════════════════════════════════════════
+
+name: AStar.Dev Web CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'bug/**'
+      - 'fix/**'
+      - 'doc/**'
+    paths:
+      - 'apps/web/astar-dev-csharp/**'
+      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
+      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - 'AStar.Dev.slnx'
+      - '.github/workflows/astar-dev-web-ci.yml'
+      - '.github/workflows/astar-dev-web-deploy.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/astar-dev-csharp/**'
+      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
+      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - 'AStar.Dev.slnx'
+      - '.github/workflows/astar-dev-web-ci.yml'
+      - '.github/workflows/astar-dev-web-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  packages: read
+
+concurrency:
+  group: astar-dev-web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  TEST_PROJECT_PATH: apps/web/astar-dev-csharp/AStarDev.Web.Tests.Unit/AStarDev.Web.Tests.Unit.csproj
+
+jobs:
+
+  ci:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build
+        run: |
+          dotnet build ${{ env.TEST_PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Test
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=AStarDev.Web.Tests.Unit.trx" \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        with:
+          files: TestResults/**/*.trx
+          check_name: AStarDev.Web test results
+          fail_on: test failures
