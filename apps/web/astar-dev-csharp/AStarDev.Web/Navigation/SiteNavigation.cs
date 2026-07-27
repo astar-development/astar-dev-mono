@@ -15,9 +15,7 @@ public static class SiteNavigation
     public static bool IsActive(string href, string currentPath)
     {
         if (href == "/")
-        {
             return currentPath == "/";
-        }
 
         return currentPath == href || currentPath.StartsWith(href + "/", StringComparison.Ordinal);
     }

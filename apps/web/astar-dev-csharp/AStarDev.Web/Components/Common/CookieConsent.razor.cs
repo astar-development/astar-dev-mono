@@ -12,9 +12,7 @@ public partial class CookieConsent : ComponentBase, IDisposable
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
-        {
             return;
-        }
 
         await ConsentState.InitializeAsync();
         StateHasChanged();

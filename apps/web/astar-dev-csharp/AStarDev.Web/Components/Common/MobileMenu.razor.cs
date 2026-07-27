@@ -46,9 +46,7 @@ public partial class MobileMenu : ComponentBase, IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (isOpen)
-        {
             await JsRuntime.InvokeVoidAsync("astarMobileMenu.detach", triggerElement);
-        }
 
         dotNetRef?.Dispose();
         GC.SuppressFinalize(this);

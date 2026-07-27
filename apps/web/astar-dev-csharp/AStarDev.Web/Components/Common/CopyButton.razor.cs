@@ -14,9 +14,7 @@ public partial class CopyButton : ComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
-        {
             return;
-        }
 
         supported = await JsRuntime.InvokeAsync<bool>("astarClipboard.isSupported", []);
         StateHasChanged();
@@ -26,9 +24,7 @@ public partial class CopyButton : ComponentBase
     {
         var success = await JsRuntime.InvokeAsync<bool>("astarClipboard.copy", [Text]);
         if (!success)
-        {
             return;
-        }
 
         copied = true;
         liveRegionText = "Copied to clipboard";

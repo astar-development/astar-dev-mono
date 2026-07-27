@@ -14,9 +14,7 @@ public sealed class NugetApiClient(HttpClient httpClient) : INugetApiClient
         var url = $"query?q=packageid:{Uri.EscapeDataString(packageId)}&prerelease=false&take=1";
         using var response = await httpClient.GetAsync(url, cancellationToken);
         if (!response.IsSuccessStatusCode)
-        {
             return null;
-        }
 
         var payload = await response.Content.ReadFromJsonAsync<NugetSearchResponse>(SerializerOptions, cancellationToken);
         var entry = payload?.Data?.FirstOrDefault(d => string.Equals(d.Id, packageId, StringComparison.OrdinalIgnoreCase));
