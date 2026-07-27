@@ -1,12 +1,14 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Classifications;
 
 public sealed class GivenACategoryNodeViewModel
 {
     private readonly IFileClassificationRepository repository;
+    private readonly ICategoryEditDialogService categoryEditDialogService;
 
     public GivenACategoryNodeViewModel()
     {
@@ -17,10 +19,12 @@ public sealed class GivenACategoryNodeViewModel
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(1))));
         repository.UpdateCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(1))));
+        categoryEditDialogService = Substitute.For<ICategoryEditDialogService>();
+        categoryEditDialogService.ShowAsync(Arg.Any<CategoryNodeViewModel>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
     }
 
     private CategoryNodeViewModel CreateSut(int level = 1, bool includeInSearch = false, IReadOnlyList<CategoryNodeViewModel>? allCategories = null) =>
-        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), includeInSearch, repository, _ => { }, allCategories ?? [], () => Task.CompletedTask);
+        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), includeInSearch, repository, categoryEditDialogService, _ => { }, allCategories ?? [], () => Task.CompletedTask);
 
     [Fact]
     public async Task when_add_child_category_command_executed_then_category_persisted_and_child_added()
@@ -58,7 +62,7 @@ public sealed class GivenACategoryNodeViewModel
     public async Task when_delete_self_command_executed_then_on_delete_self_callback_invoked()
     {
         bool callbackInvoked = false;
-        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => callbackInvoked = true, [], () => Task.CompletedTask);
+        CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => callbackInvoked = true, [], () => Task.CompletedTask);
 
         await sut.DeleteSelfCommand.ExecuteAsync(null);
 
@@ -66,10 +70,10 @@ public sealed class GivenACategoryNodeViewModel
     }
 
     [Fact]
-    public void when_cancel_command_executed_then_include_in_search_reverted_to_original_value()
+    public async Task when_cancel_command_executed_then_include_in_search_reverted_to_original_value()
     {
         var sut = CreateSut(includeInSearch: true);
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
         sut.IncludeInSearch = false;
 
         sut.CancelCommand.Execute(null);
@@ -89,26 +93,26 @@ public sealed class GivenACategoryNodeViewModel
     }
 
     [Fact]
-    public void when_edit_command_executed_then_parent_option_names_has_root_option_first()
+    public async Task when_edit_command_executed_then_parent_option_names_has_root_option_first()
     {
         var sut = CreateSut();
 
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
 
         sut.ParentOptionNames[0].ShouldBe("(No parent - root)");
     }
 
     [Fact]
-    public void when_edit_command_executed_then_parent_option_names_excludes_self_and_descendants()
+    public async Task when_edit_command_executed_then_parent_option_names_excludes_self_and_descendants()
     {
         List<CategoryNodeViewModel> allCategories = [];
-        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
-        var photos = new CategoryNodeViewModel(new FileClassificationCategoryId(3), "Photos", 2, false, false, Option.Some(sut.CategoryId), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
-        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var photos = new CategoryNodeViewModel(new FileClassificationCategoryId(3), "Photos", 2, false, false, Option.Some(sut.CategoryId), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
         sut.Children.Add(photos);
         allCategories.AddRange([sut, photos, documents]);
 
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
 
         sut.ParentOptionNames.ShouldNotContain("Media");
         sut.ParentOptionNames.ShouldNotContain("Photos");
@@ -116,10 +120,20 @@ public sealed class GivenACategoryNodeViewModel
     }
 
     [Fact]
+    public async Task when_edit_command_executed_then_category_edit_dialog_service_shown_with_self()
+    {
+        var sut = CreateSut();
+
+        await sut.EditCommand.ExecuteAsync(null);
+
+        await categoryEditDialogService.Received(1).ShowAsync(sut, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task when_save_command_executed_with_parent_option_unchanged_then_reparent_not_called()
     {
         var sut = CreateSut();
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
         sut.EditedName = "Media";
 
         await sut.SaveCommand.ExecuteAsync(null);
@@ -131,10 +145,10 @@ public sealed class GivenACategoryNodeViewModel
     public async Task when_save_command_executed_with_parent_option_changed_then_reparent_called_with_selected_parent()
     {
         List<CategoryNodeViewModel> allCategories = [];
-        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
-        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
         allCategories.AddRange([sut, documents]);
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
         sut.EditedName = "Media";
         sut.SelectedParentOptionIndex = sut.ParentOptionNames.ToList().IndexOf("Documents");
 
@@ -148,15 +162,15 @@ public sealed class GivenACategoryNodeViewModel
     {
         bool reloadInvoked = false;
         List<CategoryNodeViewModel> allCategories = [];
-        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () =>
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () =>
         {
             reloadInvoked = true;
 
             return Task.CompletedTask;
         });
-        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
         allCategories.AddRange([sut, documents]);
-        sut.EditCommand.Execute(null);
+        await sut.EditCommand.ExecuteAsync(null);
         sut.EditedName = "Media";
         sut.SelectedParentOptionIndex = sut.ParentOptionNames.ToList().IndexOf("Documents");
 

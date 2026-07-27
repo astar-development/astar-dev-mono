@@ -24,7 +24,7 @@ public sealed class GivenFileClassificationsViewPagingKeys
             .ToList();
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(categories);
 
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 400, Height = 400, SizeToContent = SizeToContent.Manual };
         window.Show();
