@@ -22,7 +22,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ThemeState>();
 builder.Services.AddScoped<CookieConsentState>();
 builder.Services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-builder.Services.AddHttpClient<INugetApiClient, NugetApiClient>(client => client.BaseAddress = new Uri("https://azuresearch-usnc.nuget.org/"));
+var nugetSearchApiBaseAddress = builder.Configuration["NuGet:SearchApiBaseAddress"] ?? "https://azuresearch-usnc.nuget.org/";
+builder.Services.AddHttpClient<INugetApiClient, NugetApiClient>(client => client.BaseAddress = new Uri(nugetSearchApiBaseAddress));
 builder.Services.AddScoped<INugetPackageService, NugetPackageService>();
 
 builder.Services.Configure<ContactFormOptions>(builder.Configuration.GetSection("ContactForm"));

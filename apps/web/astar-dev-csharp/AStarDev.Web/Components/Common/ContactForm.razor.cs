@@ -7,6 +7,8 @@ namespace AStarDev.Web.Components.Common;
 
 public partial class ContactForm : ComponentBase
 {
+    private const string FocusInterop = "astarFocus.focus";
+
     private string name = string.Empty;
     private string email = string.Empty;
     private string message = string.Empty;
@@ -78,7 +80,7 @@ public partial class ContactForm : ComponentBase
         if (submitStatus is ContactFormSubmitStatus.Success or ContactFormSubmitStatus.Error)
         {
             await Task.Delay(50);
-            await JsRuntime.InvokeVoidAsync("astarFocus.focus", statusElement);
+            await JsRuntime.InvokeVoidAsync(FocusInterop, statusElement);
         }
     }
 
@@ -104,10 +106,10 @@ public partial class ContactForm : ComponentBase
     private async Task FocusFirstInvalidFieldAsync()
     {
         if (nameError.Length > 0)
-            await JsRuntime.InvokeVoidAsync("astarFocus.focus", nameElement);
+            await JsRuntime.InvokeVoidAsync(FocusInterop, nameElement);
         else if (emailError.Length > 0)
-            await JsRuntime.InvokeVoidAsync("astarFocus.focus", emailElement);
+            await JsRuntime.InvokeVoidAsync(FocusInterop, emailElement);
         else if (messageError.Length > 0)
-            await JsRuntime.InvokeVoidAsync("astarFocus.focus", messageElement);
+            await JsRuntime.InvokeVoidAsync(FocusInterop, messageElement);
     }
 }

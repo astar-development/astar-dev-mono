@@ -11,17 +11,17 @@ namespace AStarDev.Web.Contact;
 /// <inheritdoc cref="IContactEmailSender"/>
 public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options, ILogger<AzureContactEmailSender> logger, EmailClient? emailClient = null) : IContactEmailSender
 {
-    public async Task<Result<UnitFp, string>> SendAsync(ContactMessage message, CancellationToken cancellationToken)
+    public Task<Result<UnitFp, string>> SendAsync(ContactMessage message, CancellationToken cancellationToken)
     {
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress) || string.IsNullOrWhiteSpace(settings.ToAddress))
         {
             LogMessage.Error(logger, "Contact form email is not configured (missing connection string, from address, or to address).");
 
-            return "Something went wrong. Please try again later.";
+            return Task.FromResult<Result<UnitFp, string>>("Something went wrong. Please try again later.");
         }
 
-        try
+        return Try.RunAsync(async () =>
         {
             await SendOwnerNotificationAsync(emailClient, message, settings.FromAddress, settings.ToAddress, cancellationToken);
 
@@ -29,13 +29,12 @@ public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options
                 await SendCopyToSenderAsync(emailClient, message, settings.FromAddress, cancellationToken);
 
             return UnitFp.Instance;
-        }
-        catch (Exception ex)
+        }).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureContactEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
             return $"Something went wrong. Please email {settings.ToAddress} directly.";
-        }
+        });
     }
 
     private static Task<EmailSendOperation> SendOwnerNotificationAsync(EmailClient client, ContactMessage message, string fromAddress, string toAddress, CancellationToken cancellationToken)
