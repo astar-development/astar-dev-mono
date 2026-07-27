@@ -4,9 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -20,7 +18,7 @@ public sealed class GivenFileClassificationsViewDisplay
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
 
-        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
+        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
     }
 
     private static FileClassificationsView CreateViewWithViewModel(FileClassificationRulesViewModel viewModel)
@@ -138,59 +136,26 @@ public sealed class GivenFileClassificationsViewDisplay
     }
 
     [AvaloniaFact]
-    public void when_edit_clicked_then_scroll_offset_is_preserved()
+    public void when_edit_clicked_then_category_edit_dialog_service_shown_for_that_category()
     {
         var repository = Substitute.For<IFileClassificationRepository>();
-        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))];
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 3).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
+        var categoryEditDialogService = Substitute.For<ICategoryEditDialogService>();
+        categoryEditDialogService.ShowAsync(Arg.Any<CategoryNodeViewModel>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), categoryEditDialogService, localization, Substitute.For<IFileSystem>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 400 };
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
-        var scrollViewer = view.FindControl<ScrollViewer>("CategoriesScrollViewer")!;
         var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
-        scrollViewer.Offset = new Vector(0, 50);
-        window.UpdateLayout();
-        double offsetBeforeEdit = scrollViewer.Offset.Y;
 
-        editButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        editButton.Command!.Execute(editButton.CommandParameter);
         Dispatcher.UIThread.RunJobs();
-        window.UpdateLayout();
 
-        scrollViewer.Offset.Y.ShouldBe(offsetBeforeEdit);
-    }
-
-    [AvaloniaFact]
-    public void when_edit_clicked_then_scroll_offset_is_preserved_across_multiple_layout_passes()
-    {
-        var repository = Substitute.For<IFileClassificationRepository>();
-        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
-        var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
-        var view = new FileClassificationsView { DataContext = viewModel };
-        var window = new Window { Content = view, Width = 800, Height = 400 };
-        window.Show();
-        Dispatcher.UIThread.RunJobs();
-        window.UpdateLayout();
-        var scrollViewer = view.FindControl<ScrollViewer>("CategoriesScrollViewer")!;
-        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
-        scrollViewer.Offset = new Vector(0, 50);
-        window.UpdateLayout();
-        double offsetBeforeEdit = scrollViewer.Offset.Y;
-
-        editButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-
-        for (var layoutPass = 0; layoutPass < 4; layoutPass++)
-        {
-            Dispatcher.UIThread.RunJobs();
-            window.UpdateLayout();
-            scrollViewer.Offset.Y.ShouldBe(offsetBeforeEdit, $"offset should hold steady on layout pass {layoutPass}");
-        }
+        categoryEditDialogService.Received(1).ShowAsync(Arg.Is<CategoryNodeViewModel>(node => node.Name == "Category 0"), Arg.Any<CancellationToken>());
     }
 }

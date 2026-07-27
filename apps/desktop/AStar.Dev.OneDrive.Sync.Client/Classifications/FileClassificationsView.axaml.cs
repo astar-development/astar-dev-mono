@@ -63,32 +63,6 @@ public partial class FileClassificationsView : UserControl, IDisposable
     }
 #pragma warning restore IDE1006 // Naming Styles
 
-#pragma warning disable IDE1006 // Naming Styles - this does not apply to event handlers
-    private void OnEditClick(object? sender, RoutedEventArgs e)
-    {
-        if (sender is not Button { DataContext: CategoryNodeViewModel node })
-            return;
-
-        var offsetBeforeEdit = CategoriesScrollViewer.Offset;
-        node.EditCommand.Execute(null);
-        RestoreScrollOffsetAcrossLayoutPasses(offsetBeforeEdit);
-    }
-
-    private void RestoreScrollOffsetAcrossLayoutPasses(Vector offset)
-    {
-        var remainingPasses = 5;
-        EventHandler? handler = null;
-        handler = (_, _) =>
-        {
-            CategoriesScrollViewer.Offset = offset;
-            remainingPasses--;
-            if (remainingPasses <= 0)
-                CategoriesScrollViewer.LayoutUpdated -= handler;
-        };
-        CategoriesScrollViewer.LayoutUpdated += handler;
-    }
-#pragma warning restore IDE1006 // Naming Styles
-
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         switch (e.Key)

@@ -19,15 +19,17 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     private readonly IFileClassificationExportImportService exportImportService;
     private readonly IFilePickerService filePickerService;
     private readonly IConfirmationDialogService confirmationDialogService;
+    private readonly ICategoryEditDialogService categoryEditDialogService;
     private readonly ILocalizationService localizationService;
     private readonly IFileSystem fileSystem;
 
-    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ILocalizationService localizationService, IFileSystem fileSystem)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ICategoryEditDialogService categoryEditDialogService, ILocalizationService localizationService, IFileSystem fileSystem)
     {
         this.repository = repository;
         this.exportImportService = exportImportService;
         this.filePickerService = filePickerService;
         this.confirmationDialogService = confirmationDialogService;
+        this.categoryEditDialogService = categoryEditDialogService;
         this.localizationService = localizationService;
         this.fileSystem = fileSystem;
         Categories.CollectionChanged += (_, e) =>
@@ -143,7 +145,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
             foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
-                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, category.ParentId, category.IncludeInSearch, repository, self => RemoveFromParent(self, nodeDict), VisibleCategories, () => LoadAsync(CancellationToken.None));
+                var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, category.ParentId, category.IncludeInSearch, repository, categoryEditDialogService, self => RemoveFromParent(self, nodeDict), VisibleCategories, () => LoadAsync(CancellationToken.None));
                 nodeDict[category.Id] = node;
             }
 
@@ -221,7 +223,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         await repository.AddCategoryAsync(category, CancellationToken.None)
             .Tap(newId =>
             {
-                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), IncludeInSearch, repository, self => Categories.Remove(self), VisibleCategories, () => LoadAsync(CancellationToken.None));
+                newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), IncludeInSearch, repository, categoryEditDialogService, self => Categories.Remove(self), VisibleCategories, () => LoadAsync(CancellationToken.None));
                 Categories.Add(newNode);
             })
             .ConfigureAwait(false);
