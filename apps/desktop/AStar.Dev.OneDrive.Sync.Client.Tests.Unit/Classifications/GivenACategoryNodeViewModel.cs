@@ -23,8 +23,8 @@ public sealed class GivenACategoryNodeViewModel
         categoryEditDialogService.ShowAsync(Arg.Any<CategoryNodeViewModel>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
     }
 
-    private CategoryNodeViewModel CreateSut(int level = 1, bool includeInSearch = false, IReadOnlyList<CategoryNodeViewModel>? allCategories = null) =>
-        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), includeInSearch, repository, categoryEditDialogService, _ => { }, allCategories ?? [], () => Task.CompletedTask);
+    private CategoryNodeViewModel CreateSut(int level = 1, bool includeInSearch = false, IReadOnlyList<CategoryNodeViewModel>? allCategories = null, string ancestorPath = "") =>
+        new(new FileClassificationCategoryId(1), "Media", level, false, false, Option.None<FileClassificationCategoryId>(), includeInSearch, repository, categoryEditDialogService, _ => { }, allCategories ?? [], () => Task.CompletedTask, ancestorPath);
 
     [Fact]
     public async Task when_add_child_category_command_executed_then_category_persisted_and_child_added()
@@ -90,6 +90,44 @@ public sealed class GivenACategoryNodeViewModel
         await sut.AddChildCategoryCommand.ExecuteAsync(null);
 
         sut.Children[0].IncludeInSearch.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_add_child_category_command_executed_then_child_ancestor_path_is_root_name()
+    {
+        var sut = CreateSut();
+        sut.NewChildCategoryName = "Photos";
+
+        await sut.AddChildCategoryCommand.ExecuteAsync(null);
+
+        sut.Children[0].AncestorPath.ShouldBe("Media");
+    }
+
+    [Fact]
+    public async Task when_add_child_category_command_executed_on_a_child_then_grandchild_ancestor_path_includes_full_chain()
+    {
+        var sut = CreateSut(level: 2, ancestorPath: "Root");
+        sut.NewChildCategoryName = "Photos";
+
+        await sut.AddChildCategoryCommand.ExecuteAsync(null);
+
+        sut.Children[0].AncestorPath.ShouldBe("Root > Media");
+    }
+
+    [Fact]
+    public void when_ancestor_path_is_empty_then_has_ancestor_path_is_false()
+    {
+        var sut = CreateSut();
+
+        sut.HasAncestorPath.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_ancestor_path_is_not_empty_then_has_ancestor_path_is_true()
+    {
+        var sut = CreateSut(ancestorPath: "Media");
+
+        sut.HasAncestorPath.ShouldBeTrue();
     }
 
     [Fact]
