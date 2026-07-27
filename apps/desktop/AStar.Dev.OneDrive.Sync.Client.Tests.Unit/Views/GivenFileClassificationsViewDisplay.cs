@@ -1,8 +1,12 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Classifications;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 
@@ -120,5 +124,43 @@ public sealed class GivenFileClassificationsViewDisplay
 
         var addButton = sut.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Command == viewModel.AddCategoryCommand);
         addButton.ShouldNotBeNull("Add-category button should be bound to AddCategoryCommand");
+    }
+
+    [AvaloniaFact]
+    public void when_category_tree_is_inspected_then_items_control_max_width_is_740()
+    {
+        var viewModel = CreateViewModel();
+
+        var sut = CreateViewWithViewModel(viewModel);
+
+        var categoriesItemsControl = sut.GetLogicalDescendants().OfType<ItemsControl>().First(ic => ReferenceEquals(ic.ItemsSource, viewModel.VisibleCategories));
+        categoriesItemsControl.MaxWidth.ShouldBe(740);
+    }
+
+    [AvaloniaFact]
+    public void when_edit_clicked_then_scroll_offset_is_preserved()
+    {
+        var repository = Substitute.For<IFileClassificationRepository>();
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 800, Height = 400 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+        var scrollViewer = view.FindControl<ScrollViewer>("CategoriesScrollViewer")!;
+        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
+        scrollViewer.Offset = new Vector(0, 50);
+        window.UpdateLayout();
+        double offsetBeforeEdit = scrollViewer.Offset.Y;
+
+        editButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        scrollViewer.Offset.Y.ShouldBe(offsetBeforeEdit);
     }
 }

@@ -73,10 +73,17 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
     private void AppendVisible(CategoryNodeViewModel node)
     {
-        VisibleCategories.Add(node);
+        if (!ShowOnlyIncludedInSearch || node.IncludeInSearch)
+            VisibleCategories.Add(node);
+
         foreach (var child in node.Children)
             AppendVisible(child);
     }
+
+    /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true. Display-only; does not change stored data.</summary>
+    [ObservableProperty]
+    public partial bool ShowOnlyIncludedInSearch { get; set; }
+    partial void OnShowOnlyIncludedInSearchChanged(bool value) => RebuildVisibleCategories();
 
     /// <summary>True when the view model is loading data from the repository.</summary>
     [ObservableProperty]
