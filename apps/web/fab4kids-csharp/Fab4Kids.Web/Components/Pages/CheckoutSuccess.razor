@@ -1,0 +1,17 @@
+@page "/checkout/success"
+
+<PageTitle>Order Confirmed | fab4kids</PageTitle>
+
+<div class="success-page">
+    <div class="success-icon" aria-hidden="true">✅</div>
+    <h1>Payment successful!</h1>
+    @if (!string.IsNullOrWhiteSpace(customerEmail))
+    {
+        <p class="success-lead">Thank you for your order. Download links have been sent to <strong>@customerEmail</strong>.</p>
+    }
+    else
+    {
+        <p class="success-lead">Thank you for your order. Download links have been sent to your email address.</p>
+    }
+    <p class="success-note">Links expire after 15 minutes. If you don't receive the email within a few minutes, check your spam folder.</p>
+</div>

@@ -4,12 +4,15 @@ using Azure.Data.Tables;
 using Blazored.LocalStorage;
 using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
+using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components;
 using Fab4Kids.Web.Consent;
 using Fab4Kids.Web.Newsletter;
 using Fab4Kids.Web.Theming;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Serilog;
+using Stripe;
+using Stripe.Checkout;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddSerilogLogging();
@@ -35,6 +38,12 @@ builder.Services.AddSingleton<INewsletterEmailSender, AzureNewsletterEmailSender
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<INewsletterSubscriptionService, NewsletterSubscriptionService>();
 
+builder.Services.Configure<CheckoutOptions>(builder.Configuration.GetSection("Checkout"));
+var checkoutOptions = builder.Configuration.GetSection("Checkout").Get<CheckoutOptions>();
+if (!string.IsNullOrWhiteSpace(checkoutOptions?.SecretKey))
+    builder.Services.AddSingleton(new SessionService(new StripeClient(checkoutOptions.SecretKey)));
+builder.Services.AddScoped<ICheckoutSessionService, StripeCheckoutSessionService>();
+
 var app = builder.Build();
 
 app.Services.GetRequiredService<ICatalogueService>();
@@ -52,6 +61,7 @@ app.UseAntiforgery();
 app.UseSerilogRequestLogging();
 
 app.MapStaticAssets();
+app.MapCheckoutEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

@@ -1,6 +1,9 @@
 @rendermode InteractiveServer
 @using Fab4Kids.Web.Cart
+@using Fab4Kids.Web.Checkout
 @inject CartState CartState
+@inject ICheckoutSessionService CheckoutSessionService
+@inject NavigationManager NavigationManager
 
 <div class="cart-widget">
     <button
@@ -39,6 +42,13 @@
                     }
                 </ul>
                 <p class="cart-widget__total">Total: @CartState.TotalPrice.ToString("C", PriceCulture)</p>
+                @if (checkoutError is not null)
+                {
+                    <p class="cart-widget__error" role="alert">@checkoutError</p>
+                }
+                <button type="button" class="cart-widget__checkout btn btn--primary" disabled="@checkingOut" @onclick="CheckoutAsync">
+                    @(checkingOut ? "Redirecting..." : "Checkout")
+                </button>
             }
         </div>
     }

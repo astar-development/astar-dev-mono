@@ -1,7 +1,9 @@
 using Blazored.LocalStorage;
 using Bunit;
 using Fab4Kids.Web.Cart;
+using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components.Common;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -10,6 +12,7 @@ namespace Fab4Kids.Web.Tests.Unit.Components.Common;
 public class GivenACartWidget : Bunit.BunitContext
 {
     private readonly ILocalStorageService localStorage = Substitute.For<ILocalStorageService>();
+    private readonly ICheckoutSessionService checkoutSessionService = Substitute.For<ICheckoutSessionService>();
     private readonly CartState cartState;
 
     public GivenACartWidget()
@@ -17,6 +20,7 @@ public class GivenACartWidget : Bunit.BunitContext
         JSInterop.Mode = JSRuntimeMode.Loose;
         cartState = new CartState(localStorage);
         Services.AddSingleton(cartState);
+        Services.AddSingleton(checkoutSessionService);
     }
 
     [Fact]
@@ -79,5 +83,34 @@ public class GivenACartWidget : Bunit.BunitContext
         cut.Find("button.cart-widget__remove").Click();
 
         cartState.Items.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_checkout_succeeds_then_the_browser_is_redirected_to_the_stripe_session_url()
+    {
+        checkoutSessionService.CreateSessionAsync(Arg.Any<IReadOnlyList<CartItem>>(), Arg.Any<CancellationToken>())
+            .Returns(new CheckoutSessionCreated("https://checkout.stripe.com/pay/cs_test_123"));
+        var cut = Render<CartWidget>();
+        await cut.InvokeAsync(() => cartState.AddItemAsync(1, "Times Tables Pack", 2.50m));
+        cut.Find("button.cart-widget__toggle").Click();
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+        cut.Find("button.cart-widget__checkout").Click();
+
+        navigationManager.Uri.ShouldBe("https://checkout.stripe.com/pay/cs_test_123");
+    }
+
+    [Fact]
+    public async Task when_checkout_fails_then_an_error_message_is_shown()
+    {
+        checkoutSessionService.CreateSessionAsync(Arg.Any<IReadOnlyList<CartItem>>(), Arg.Any<CancellationToken>())
+            .Returns(new CheckoutSessionFailed("Checkout is currently unavailable."));
+        var cut = Render<CartWidget>();
+        await cut.InvokeAsync(() => cartState.AddItemAsync(1, "Times Tables Pack", 2.50m));
+        cut.Find("button.cart-widget__toggle").Click();
+
+        cut.Find("button.cart-widget__checkout").Click();
+
+        cut.Find("p.cart-widget__error").TextContent.ShouldBe("Checkout is currently unavailable.");
     }
 }

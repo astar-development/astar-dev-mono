@@ -9,6 +9,7 @@
     <PackageReference Include="Azure.Data.Tables" />
     <PackageReference Include="Blazored.LocalStorage" />
     <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <PackageReference Include="Stripe.net" />
   </ItemGroup>
 
   <ItemGroup>

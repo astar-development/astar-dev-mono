@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using Bunit;
 using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
+using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components.Pages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public class GivenASubjectPage : Bunit.BunitContext
         Services.AddSingleton(catalogueService);
         Services.AddSingleton<Microsoft.Extensions.Logging.ILogger<Subject>>(NullLogger<Subject>.Instance);
         Services.AddSingleton(new CartState(Substitute.For<ILocalStorageService>()));
+        Services.AddSingleton(Substitute.For<ICheckoutSessionService>());
     }
 
     [Fact]
