@@ -1,0 +1,21 @@
+.success-page {
+    max-width: 35rem;
+    margin: 4rem auto;
+    padding-inline: 1rem;
+    text-align: center;
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.success-lead {
+    font-size: 1.125rem;
+    margin: 1rem 0;
+}
+
+.success-note {
+    color: var(--color-text-muted);
+    margin-bottom: 2rem;
+}
