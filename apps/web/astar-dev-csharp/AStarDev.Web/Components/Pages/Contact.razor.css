@@ -1,0 +1,21 @@
+.section-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  transition: color 0.25s;
+}
+
+.intro {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 48px;
+  transition: color 0.25s;
+}

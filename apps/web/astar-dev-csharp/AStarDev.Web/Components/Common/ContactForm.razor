@@ -1,0 +1,97 @@
+@rendermode InteractiveServer
+@using AStarDev.Web.Contact
+@inject IJSRuntime JsRuntime
+@inject IContactSubmissionService SubmissionService
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<form class="contact-form" @onsubmit="HandleSubmitAsync">
+
+    <div class="honeypot" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" @bind="website" type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="form-group @(nameError.Length > 0 ? "form-group--error" : "")">
+        <label for="name" class="form-label">Name <span class="required" aria-hidden="true">*</span></label>
+        <input
+            id="name"
+            @ref="nameElement"
+            @bind="name"
+            @bind:event="oninput"
+            type="text"
+            class="form-input"
+            autocomplete="name"
+            required
+            aria-invalid="@(nameError.Length > 0 ? "true" : null)"
+            aria-describedby="@(nameError.Length > 0 ? "name-error" : null)"
+            disabled="@(submitStatus == ContactFormSubmitStatus.Submitting)" />
+        @if (nameError.Length > 0)
+        {
+            <p id="name-error" class="field-error" role="alert">@nameError</p>
+        }
+    </div>
+
+    <div class="form-group @(emailError.Length > 0 ? "form-group--error" : "")">
+        <label for="email" class="form-label">Email <span class="required" aria-hidden="true">*</span></label>
+        <input
+            id="email"
+            @ref="emailElement"
+            @bind="email"
+            @bind:event="oninput"
+            type="email"
+            class="form-input"
+            autocomplete="email"
+            required
+            aria-invalid="@(emailError.Length > 0 ? "true" : null)"
+            aria-describedby="@(emailError.Length > 0 ? "email-error" : null)"
+            disabled="@(submitStatus == ContactFormSubmitStatus.Submitting)" />
+        @if (emailError.Length > 0)
+        {
+            <p id="email-error" class="field-error" role="alert">@emailError</p>
+        }
+    </div>
+
+    <div class="form-group @(messageError.Length > 0 ? "form-group--error" : "")">
+        <label for="message" class="form-label">Message <span class="required" aria-hidden="true">*</span></label>
+        <textarea
+            id="message"
+            @ref="messageElement"
+            @bind="message"
+            @bind:event="oninput"
+            class="form-textarea"
+            rows="6"
+            required
+            aria-invalid="@(messageError.Length > 0 ? "true" : null)"
+            aria-describedby="@(messageError.Length > 0 ? "message-error" : null)"
+            disabled="@(submitStatus == ContactFormSubmitStatus.Submitting)"></textarea>
+        @if (messageError.Length > 0)
+        {
+            <p id="message-error" class="field-error" role="alert">@messageError</p>
+        }
+    </div>
+
+    <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+            <input @bind="sendCopy" type="checkbox" class="checkbox-input" disabled="@(submitStatus == ContactFormSubmitStatus.Submitting)" />
+            <span class="checkbox-text">Send me a copy of this message</span>
+        </label>
+    </div>
+
+    <button type="submit" class="btn-submit" disabled="@(submitStatus == ContactFormSubmitStatus.Submitting)">
+        @(submitStatus == ContactFormSubmitStatus.Submitting ? "Sending…" : "Send message")
+    </button>
+
+    @if (submitStatus is ContactFormSubmitStatus.Success or ContactFormSubmitStatus.Error)
+    {
+        <div
+            @ref="statusElement"
+            class="status-message @(submitStatus == ContactFormSubmitStatus.Success ? "status-message--success" : "status-message--error")"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            tabindex="-1">
+            @statusMessage
+        </div>
+    }
+
+</form>
