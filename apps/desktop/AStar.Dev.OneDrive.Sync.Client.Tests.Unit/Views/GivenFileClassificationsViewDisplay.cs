@@ -141,7 +141,7 @@ public sealed class GivenFileClassificationsViewDisplay
     public void when_edit_clicked_then_scroll_offset_is_preserved()
     {
         var repository = Substitute.For<IFileClassificationRepository>();
-        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
@@ -168,7 +168,7 @@ public sealed class GivenFileClassificationsViewDisplay
     public void when_edit_clicked_then_scroll_offset_is_preserved_across_multiple_layout_passes()
     {
         var repository = Substitute.For<IFileClassificationRepository>();
-        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());

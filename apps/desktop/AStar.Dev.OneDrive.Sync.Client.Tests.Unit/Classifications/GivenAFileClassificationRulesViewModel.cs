@@ -354,10 +354,10 @@ public sealed class GivenAFileClassificationRulesViewModel
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
-            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), false),
-            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), false),
-            new(new FileClassificationCategoryId(4), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true),
+            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), true),
+            new(new FileClassificationCategoryId(4), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
@@ -373,8 +373,8 @@ public sealed class GivenAFileClassificationRulesViewModel
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
-            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
@@ -425,8 +425,8 @@ public sealed class GivenAFileClassificationRulesViewModel
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
-            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false),
-            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
@@ -439,6 +439,14 @@ public sealed class GivenAFileClassificationRulesViewModel
         await media.DeleteSelfCommand.ExecuteAsync(null);
 
         sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
+    }
+
+    [Fact]
+    public void when_view_model_created_then_show_only_included_in_search_defaults_to_true()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+
+        sut.ShowOnlyIncludedInSearch.ShouldBeTrue();
     }
 
     [Fact]
