@@ -140,21 +140,22 @@ public sealed class GivenFileClassificationsViewDisplay
     [AvaloniaFact]
     public void when_edit_clicked_then_scroll_offset_is_preserved()
     {
-        var viewModel = CreateViewModel();
-        var nodeRepository = Substitute.For<IFileClassificationRepository>();
-        for (int index = 0; index < 50; index++)
-            viewModel.VisibleCategories.Add(new CategoryNodeViewModel(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false, nodeRepository, _ => { }, viewModel.VisibleCategories, () => Task.CompletedTask));
-        viewModel.IsLoading = false;
+        var repository = Substitute.For<IFileClassificationRepository>();
+        IReadOnlyList<FileClassificationCategory> categories = [.. Enumerable.Range(0, 50).Select(index => new FileClassificationCategory(new FileClassificationCategoryId(index), $"Category {index}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), localization, Substitute.For<IFileSystem>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 400 };
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
         var scrollViewer = view.FindControl<ScrollViewer>("CategoriesScrollViewer")!;
+        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
         scrollViewer.Offset = new Vector(0, 50);
         window.UpdateLayout();
         double offsetBeforeEdit = scrollViewer.Offset.Y;
-        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
 
         editButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Dispatcher.UIThread.RunJobs();
