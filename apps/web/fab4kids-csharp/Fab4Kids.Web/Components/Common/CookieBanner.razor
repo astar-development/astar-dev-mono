@@ -1,0 +1,18 @@
+@rendermode InteractiveServer
+@using AStar.Dev.FunctionalParadigm
+@inject Consent.CookieConsentState ConsentState
+@inject IJSRuntime JsRuntime
+
+@if (!ConsentState.AnalyticsAccepted.TryGetValue(out _))
+{
+    <div class="cookie-banner" role="region" aria-label="Cookie consent">
+        <p class="cookie-banner-text">
+            We use cookies to improve your experience and process payments securely.
+            Essential cookies are always active.&nbsp;<a href="/cookie-policy">Learn more</a>.
+        </p>
+        <div class="cookie-banner-actions">
+            <button type="button" class="btn-primary" @onclick="AcceptAsync">Accept all cookies</button>
+            <button type="button" class="btn-secondary" @onclick="DeclineAsync">Essential cookies only</button>
+        </div>
+    </div>
+}

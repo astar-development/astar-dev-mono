@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

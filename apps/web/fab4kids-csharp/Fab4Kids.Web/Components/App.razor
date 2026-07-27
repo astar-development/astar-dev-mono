@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader />
+
+    <!-- No-flash theme script: must be inline, before stylesheets, synchronous -->
+    <script>
+        (function () {
+            var valid = ['light', 'dark', 'colourful'];
+            var stored;
+            try { stored = localStorage.getItem('fab4kids-theme'); } catch (_) { }
+            var theme;
+            if (stored !== null && valid.indexOf(stored) !== -1) {
+                theme = stored;
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = 'dark';
+            } else {
+                theme = 'light';
+            }
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="@Assets["css/themes.css"]" />
+    <link rel="stylesheet" href="@Assets["css/global.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["Fab4Kids.Web.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["js/theme.js"]"></script>
+    <script src="@Assets["js/cookie-consent.js"]"></script>
+</body>
+
+</html>
