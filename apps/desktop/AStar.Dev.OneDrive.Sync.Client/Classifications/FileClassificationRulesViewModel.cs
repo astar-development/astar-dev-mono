@@ -84,7 +84,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
     /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true; when false, only categories where it is false. Display-only; does not change stored data.</summary>
     [ObservableProperty]
-    public partial bool ShowOnlyIncludedInSearch { get; set; }
+    public partial bool ShowOnlyIncludedInSearch { get; set; } = true;
     partial void OnShowOnlyIncludedInSearchChanged(bool value)
     {
         RebuildVisibleCategories();

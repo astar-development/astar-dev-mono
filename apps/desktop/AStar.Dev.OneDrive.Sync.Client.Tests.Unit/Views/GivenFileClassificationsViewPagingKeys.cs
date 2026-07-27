@@ -20,7 +20,7 @@ public sealed class GivenFileClassificationsViewPagingKeys
 
         var repository = Substitute.For<IFileClassificationRepository>();
         IReadOnlyList<FileClassificationCategory> categories = Enumerable.Range(0, 30)
-            .Select(categoryIndex => new FileClassificationCategory(new FileClassificationCategoryId(categoryIndex), $"Category {categoryIndex}", 1, false, false, Option.None<FileClassificationCategoryId>(), false))
+            .Select(categoryIndex => new FileClassificationCategory(new FileClassificationCategoryId(categoryIndex), $"Category {categoryIndex}", 1, false, false, Option.None<FileClassificationCategoryId>(), true))
             .ToList();
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(categories);
 
