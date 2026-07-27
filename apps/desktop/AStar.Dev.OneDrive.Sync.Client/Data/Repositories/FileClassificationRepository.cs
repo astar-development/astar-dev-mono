@@ -17,7 +17,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = await db.FileClassificationCategories.Where(c => c.IncludeInSearch && c.Name != "Unclassified").ToListAsync(cancellationToken).ConfigureAwait(false);
+        var entities = await db.FileClassificationCategories.Where(c => c.Name != "Unclassified").ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var categories = new List<FileClassificationCategory>(entities.Count);
         foreach (var e in entities)
