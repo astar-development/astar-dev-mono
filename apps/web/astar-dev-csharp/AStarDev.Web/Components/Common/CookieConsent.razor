@@ -1,0 +1,22 @@
+@rendermode InteractiveServer
+@inject Consent.CookieConsentState ConsentState
+@inject IJSRuntime JsRuntime
+
+@if (ConsentState.AnalyticsAccepted is null)
+{
+    <div class="consent-bar" role="dialog" aria-label="Cookie consent" aria-modal="false">
+        <div class="consent-inner">
+            <p class="consent-text">
+                We use cookies to remember your theme preference and collect anonymised
+                usage analytics.&nbsp;<a href="/privacy" class="consent-link">Read our Privacy Policy.</a>
+            </p>
+
+            <div class="consent-buttons">
+                <button type="button" class="btn-accept" @onclick="AcceptAsync">Accept</button>
+                <button type="button" class="btn-decline" @onclick="DeclineAsync">Decline</button>
+            </div>
+        </div>
+    </div>
+}
+
+<span role="status" aria-live="polite" aria-atomic="true" class="sr-only">@liveText</span>
