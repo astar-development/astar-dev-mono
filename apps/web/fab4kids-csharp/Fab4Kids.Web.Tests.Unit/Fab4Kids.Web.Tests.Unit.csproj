@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <RootNamespace>Fab4Kids.Web</RootNamespace>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="bunit" />
+        <PackageReference Include="coverlet.collector">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+        <PackageReference Include="NSubstitute" />
+        <PackageReference Include="Shouldly" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+        <Using Include="Shouldly"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../Fab4Kids.Web/Fab4Kids.Web.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -20,6 +20,10 @@
         <Project Path="apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj" />
         <Project Path="apps/web/astar-dev-csharp/AStarDev.Web.Tests.Unit/AStarDev.Web.Tests.Unit.csproj" />
     </Folder>
+    <Folder Name="/apps/web/fab4kids-csharp/">
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj" />
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Unit/Fab4Kids.Web.Tests.Unit.csproj" />
+    </Folder>
     <Folder Name="/infra/" />
     <Folder Name="/packages/">
         <Project Path="packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
