@@ -73,17 +73,24 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
     private void AppendVisible(CategoryNodeViewModel node)
     {
-        if (!ShowOnlyIncludedInSearch || node.IncludeInSearch)
+        if (node.IncludeInSearch == ShowOnlyIncludedInSearch)
             VisibleCategories.Add(node);
 
         foreach (var child in node.Children)
             AppendVisible(child);
     }
 
-    /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true. Display-only; does not change stored data.</summary>
+    /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true; when false, only categories where it is false. Display-only; does not change stored data.</summary>
     [ObservableProperty]
     public partial bool ShowOnlyIncludedInSearch { get; set; }
-    partial void OnShowOnlyIncludedInSearchChanged(bool value) => RebuildVisibleCategories();
+    partial void OnShowOnlyIncludedInSearchChanged(bool value)
+    {
+        RebuildVisibleCategories();
+        OnPropertyChanged(nameof(SearchFilterLabel));
+    }
+
+    /// <summary>Label describing the current state of the <see cref="ShowOnlyIncludedInSearch"/> filter toggle.</summary>
+    public string SearchFilterLabel => ShowOnlyIncludedInSearch ? "Showing: included in search" : "Showing: excluded from search";
 
     /// <summary>True when the view model is loading data from the repository.</summary>
     [ObservableProperty]

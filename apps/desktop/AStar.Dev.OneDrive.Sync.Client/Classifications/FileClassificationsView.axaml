@@ -24,7 +24,7 @@
                            TextWrapping="Wrap"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <ToggleSwitch Content="Included in search only"
+                <ToggleSwitch Content="{Binding SearchFilterLabel}"
                               IsChecked="{Binding ShowOnlyIncludedInSearch}"
                               FontSize="{StaticResource FontSizeSm}"
                               VerticalAlignment="Center"/>
