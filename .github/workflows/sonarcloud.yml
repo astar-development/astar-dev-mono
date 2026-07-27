@@ -65,7 +65,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4.4.0
         with:
-          java-version: 17
+          java-version: 25
           distribution: 'zulu'
 
       - name: Checkout
