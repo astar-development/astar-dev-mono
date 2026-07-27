@@ -94,6 +94,12 @@
                                     Padding="12,10">
                                 <StackPanel Spacing="8">
 
+                                    <!-- Ancestor breadcrumb: shown when a filter may hide this row's real parent, so hierarchy stays unambiguous -->
+                                    <TextBlock Text="{Binding AncestorPath}"
+                                               FontSize="{StaticResource FontSizeXs}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               IsVisible="{Binding HasAncestorPath}"/>
+
                                     <!-- Category header -->
                                     <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">

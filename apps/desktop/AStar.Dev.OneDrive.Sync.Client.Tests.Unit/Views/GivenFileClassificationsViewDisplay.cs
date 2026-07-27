@@ -114,6 +114,56 @@ public sealed class GivenFileClassificationsViewDisplay
     }
 
     [AvaloniaFact]
+    public void when_child_category_row_is_rendered_then_ancestor_path_breadcrumb_shows_parent_name()
+    {
+        var repository = Substitute.For<IFileClassificationRepository>();
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 800, Height = 400 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        var breadcrumb = view.GetLogicalDescendants().OfType<TextBlock>()
+            .FirstOrDefault(tb => tb.DataContext is CategoryNodeViewModel node && node.Name == "Photos" && tb.Text == "Media" && tb.IsVisible);
+
+        breadcrumb.ShouldNotBeNull("Photos row should show a visible 'Media' breadcrumb identifying its real parent");
+    }
+
+    [AvaloniaFact]
+    public void when_root_category_row_is_rendered_then_ancestor_path_breadcrumb_is_hidden()
+    {
+        var repository = Substitute.For<IFileClassificationRepository>();
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 800, Height = 400 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        var media = viewModel.VisibleCategories.Single(node => node.Name == "Media");
+        var breadcrumb = view.GetLogicalDescendants().OfType<TextBlock>()
+            .First(tb => ReferenceEquals(tb.DataContext, media) && tb.Text == string.Empty);
+
+        breadcrumb.IsVisible.ShouldBeFalse("Root category has no ancestors, so its breadcrumb row should stay hidden");
+    }
+
+    [AvaloniaFact]
     public void when_view_is_rendered_then_add_category_button_is_bound_to_add_category_command()
     {
         var viewModel = CreateViewModel();
