@@ -460,7 +460,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
-    public async Task when_show_only_included_in_search_is_toggled_off_then_visible_categories_restored()
+    public async Task when_show_only_included_in_search_is_toggled_off_then_visible_categories_shows_excluded_only()
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
@@ -475,6 +475,28 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         sut.ShowOnlyIncludedInSearch = false;
 
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media"]);
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
+    }
+
+    [Fact]
+    public async Task when_show_only_included_in_search_is_true_then_label_reflects_included()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.ShowOnlyIncludedInSearch = true;
+
+        sut.SearchFilterLabel.ShouldBe("Showing: included in search");
+    }
+
+    [Fact]
+    public async Task when_show_only_included_in_search_is_false_then_label_reflects_excluded()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.ShowOnlyIncludedInSearch = false;
+
+        sut.SearchFilterLabel.ShouldBe("Showing: excluded from search");
     }
 }

@@ -71,7 +71,21 @@ public partial class FileClassificationsView : UserControl, IDisposable
 
         var offsetBeforeEdit = CategoriesScrollViewer.Offset;
         node.EditCommand.Execute(null);
-        Dispatcher.UIThread.Post(() => CategoriesScrollViewer.Offset = offsetBeforeEdit, DispatcherPriority.Loaded);
+        RestoreScrollOffsetAcrossLayoutPasses(offsetBeforeEdit);
+    }
+
+    private void RestoreScrollOffsetAcrossLayoutPasses(Vector offset)
+    {
+        var remainingPasses = 5;
+        EventHandler? handler = null;
+        handler = (_, _) =>
+        {
+            CategoriesScrollViewer.Offset = offset;
+            remainingPasses--;
+            if (remainingPasses <= 0)
+                CategoriesScrollViewer.LayoutUpdated -= handler;
+        };
+        CategoriesScrollViewer.LayoutUpdated += handler;
     }
 #pragma warning restore IDE1006 // Naming Styles
 
