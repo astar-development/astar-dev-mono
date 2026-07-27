@@ -1,0 +1,108 @@
+.package-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: background-color 0.25s, border-color 0.25s;
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.package-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.25s;
+}
+
+.nuget-badge {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-left: 8px;
+  transition: border-color 0.25s, color 0.25s;
+}
+
+.description {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  transition: color 0.25s;
+}
+
+.data-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  transition: color 0.25s;
+}
+
+.install-block {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.install-pre {
+  background: var(--terminal-bg);
+  border-radius: 8px;
+  padding: 10px 14px;
+  padding-right: 44px;
+  margin: 0;
+  overflow: auto;
+  transition: background-color 0.25s;
+}
+
+.install-code {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  color: var(--terminal-text);
+  white-space: pre;
+  display: block;
+  transition: color 0.25s;
+}
+
+.card-footer {
+  display: flex;
+  gap: 16px;
+  margin-top: auto;
+}
+
+.nuget-link {
+  color: var(--accent);
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nuget-link:hover {
+  text-decoration: underline;
+}
+
+.nuget-link:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

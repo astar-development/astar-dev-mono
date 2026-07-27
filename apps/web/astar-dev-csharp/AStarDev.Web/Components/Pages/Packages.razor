@@ -1,0 +1,48 @@
+@page "/packages"
+@using AStarDev.Web.Components.Common
+@using AStarDev.Web.Packages
+@inject INugetPackageService NugetPackageService
+
+<PageTitle>Packages | AStar Development</PageTitle>
+
+<div class="page-container">
+
+    <header class="page-header">
+        <h1>Open Source Packages</h1>
+        <p class="page-intro">
+            @totalCount packages published on NuGet.org — production-tested utilities, infrastructure
+            helpers, and testing tools for .NET projects.
+        </p>
+    </header>
+
+    <nav aria-label="Jump to package category" class="category-nav">
+        <ul class="category-nav-list" role="list">
+            @foreach (var category in categories)
+            {
+                <li>
+                    <a href="@($"#{category.Slug}")" class="category-nav-link">
+                        @category.Category.Name
+                        <span class="category-count" aria-label="@($"{category.Packages.Count} packages")">@category.Packages.Count</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+
+    @foreach (var category in categories)
+    {
+        <section id="@category.Slug" aria-labelledby="@($"{category.Slug}-heading")" class="category-section">
+            <div class="category-header">
+                <h2 id="@($"{category.Slug}-heading")" class="category-title">@category.Category.Name</h2>
+                <p class="category-description">@category.Category.Description</p>
+            </div>
+            <div class="packages-grid">
+                @foreach (var package in category.Packages)
+                {
+                    <PackageCard Package="package" />
+                }
+            </div>
+        </section>
+    }
+
+</div>

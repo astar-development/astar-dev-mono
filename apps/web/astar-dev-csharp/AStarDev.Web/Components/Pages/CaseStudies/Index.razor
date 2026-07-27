@@ -1,0 +1,21 @@
+@page "/case-studies"
+@using AStarDev.Web.CaseStudies
+@using AStarDev.Web.Components.Common
+
+<PageTitle>Case Studies | AStar Development</PageTitle>
+
+<div class="page-container">
+    <div class="page-head">
+        <h1>Selected Work</h1>
+        <p class="intro">Anonymised case studies from real client engagements.</p>
+    </div>
+
+    <ul class="case-studies-list" role="list">
+        @foreach (var caseStudy in CaseStudyCatalog.All)
+        {
+            <li>
+                <CaseStudyTeaser Title="@caseStudy.Title" Summary="@caseStudy.Summary" TechStack="@caseStudy.TechStack" Slug="@caseStudy.Slug" />
+            </li>
+        }
+    </ul>
+</div>

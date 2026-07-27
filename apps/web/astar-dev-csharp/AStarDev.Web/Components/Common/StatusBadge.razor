@@ -1,0 +1,13 @@
+<span class="badge">
+    <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" focusable="false" class="badge-icon">
+        @if (Variant == StatusBadgeVariant.Available)
+        {
+            <circle cx="5" cy="5" r="3.5" fill="currentColor" />
+        }
+        else
+        {
+            <path d="M5 1 L6.5 3.5 L9.5 4 L7.25 6.25 L7.8 9.25 L5 7.75 L2.2 9.25 L2.75 6.25 L0.5 4 L3.5 3.5 Z" fill="currentColor" />
+        }
+    </svg>
+    @Label
+</span>

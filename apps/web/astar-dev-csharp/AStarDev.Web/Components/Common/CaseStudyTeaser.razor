@@ -1,0 +1,44 @@
+@if (Slug is not null)
+{
+    <a href="@($"/case-studies/{Slug}")" class="teaser-link">
+        <article class="teaser">
+            <div class="teaser-text">
+                <span class="content-type-pill">Case Study</span>
+                <h3>@Title</h3>
+                <p class="summary">@Summary</p>
+                <span class="read-link">Read case study &rarr;</span>
+            </div>
+
+            <div class="teaser-stack">
+                <p class="stack-label">Tech Stack</p>
+                <ul class="stack-tags" role="list">
+                    @foreach (var tag in TechStack)
+                    {
+                        <li class="stack-tag">@tag</li>
+                    }
+                </ul>
+            </div>
+        </article>
+    </a>
+}
+else
+{
+    <article class="teaser">
+        <div class="teaser-text">
+            <span class="content-type-pill">Case Study</span>
+            <h3>@Title</h3>
+            <p class="summary">@Summary</p>
+            <span class="coming-soon" aria-label="Full case study coming soon">Full case study coming soon</span>
+        </div>
+
+        <div class="teaser-stack">
+            <p class="stack-label">Tech Stack</p>
+            <ul class="stack-tags" role="list">
+                @foreach (var tag in TechStack)
+                {
+                    <li class="stack-tag">@tag</li>
+                }
+            </ul>
+        </div>
+    </article>
+}

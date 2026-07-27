@@ -194,3 +194,25 @@
   --panel-border: var(--border);
   --hover-glow:   rgba(255, 45, 170, 0.35);
 }
+
+/* --------------------------------------------------------------------------- */
+/* THEME-DEPENDENT COPY (Hero)                                                  */
+/* Global (not component-scoped) because it selects on an ancestor <html>      */
+/* class, which a Blazor scoped stylesheet cannot reach.                       */
+/* --------------------------------------------------------------------------- */
+.theme-copy {
+  display: none;
+}
+
+.theme-dark .theme-copy--dark-light,
+.theme-light .theme-copy--dark-light {
+  display: block;
+}
+
+.theme-metal .theme-copy--metal {
+  display: block;
+}
+
+.theme-polished .theme-copy--polished {
+  display: block;
+}

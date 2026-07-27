@@ -1,0 +1,38 @@
+@using AStarDev.Web.Packages
+
+<article class="package-card">
+    <div class="top-row">
+        <h3 class="package-name">@Package.Id</h3>
+        <span class="nuget-badge" aria-label="NuGet package">NuGet</span>
+    </div>
+
+    <p class="description">@Package.Description</p>
+
+    <div class="data-row" aria-label="Package metadata">
+        <span class="meta-item">
+            <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M6 0L7.5 4.5H12L8.25 7.25L9.75 12L6 9.25L2.25 12L3.75 7.25L0 4.5H4.5Z" />
+            </svg>
+            v@(Package.Version)
+        </span>
+        <span class="meta-item">
+            <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M6 8L2 4H4.5V0H7.5V4H10L6 8ZM0 10H12V12H0V10Z" />
+            </svg>
+            @DownloadCountFormatter.Format(Package.TotalDownloads) downloads
+        </span>
+    </div>
+
+    <div class="install-block">
+        <p class="sr-only">Install command for @Package.Id</p>
+        <pre class="install-pre"><code class="install-code">@InstallCommand</code></pre>
+        <CopyButton Text="@InstallCommand" />
+    </div>
+
+    <div class="card-footer">
+        <a href="@NugetUrl" target="_blank" rel="noopener noreferrer" class="nuget-link">
+            View on NuGet.org&nbsp;&#8599;
+            <span class="sr-only">(opens in new tab)</span>
+        </a>
+    </div>
+</article>
