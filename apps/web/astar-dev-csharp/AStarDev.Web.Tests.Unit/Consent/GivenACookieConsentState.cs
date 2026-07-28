@@ -1,4 +1,3 @@
-using System.Threading;
 using AStar.Dev.FunctionalParadigm;
 using AStarDev.Web.Consent;
 using Blazored.LocalStorage;

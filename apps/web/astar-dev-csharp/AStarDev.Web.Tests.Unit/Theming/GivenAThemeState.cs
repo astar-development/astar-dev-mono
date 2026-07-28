@@ -1,7 +1,6 @@
 using AStarDev.Web.Theming;
 using Blazored.LocalStorage;
 using NSubstitute;
-using System.Threading;
 
 namespace AStarDev.Web.Tests.Unit.Theming;
 

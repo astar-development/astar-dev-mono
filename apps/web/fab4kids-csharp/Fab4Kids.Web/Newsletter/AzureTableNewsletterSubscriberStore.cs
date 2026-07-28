@@ -2,7 +2,6 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using Azure;
 using Azure.Data.Tables;
-using Microsoft.Extensions.Logging;
 
 namespace Fab4Kids.Web.Newsletter;
 

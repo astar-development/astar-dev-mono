@@ -3,7 +3,6 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using Azure;
 using Azure.Communication.Email;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AStarDev.Web.Contact;

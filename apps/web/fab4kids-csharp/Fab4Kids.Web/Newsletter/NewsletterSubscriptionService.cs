@@ -1,6 +1,5 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace Fab4Kids.Web.Newsletter;
 

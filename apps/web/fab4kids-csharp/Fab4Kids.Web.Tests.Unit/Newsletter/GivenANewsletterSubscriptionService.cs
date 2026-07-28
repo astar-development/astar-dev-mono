@@ -1,4 +1,3 @@
-using System.Threading;
 using AStar.Dev.FunctionalParadigm;
 using Fab4Kids.Web.Newsletter;
 using Microsoft.Extensions.Logging;

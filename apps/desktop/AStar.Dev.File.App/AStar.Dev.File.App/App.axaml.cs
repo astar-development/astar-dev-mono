@@ -1,4 +1,3 @@
-using System.Globalization;
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Services;
 using AStar.Dev.File.App.Updates;
@@ -13,16 +12,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
 using MelILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AStar.Dev.File.App;
 
 public partial class App : Application
 {
-    private const string ApplicationName = "AStar.Dev.File.App";
     private static readonly string _appVersion = typeof(App).Assembly.GetName().Version?.ToString() ?? "unknown";
-    private const int LogRetentionDays = 7;
     private ServiceProvider? _services;
 
     public T? GetService<T>() where T : class => _services?.GetService(typeof(T)) as T;
@@ -52,7 +48,7 @@ public partial class App : Application
 
     private static ServiceProvider BuildServices()
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationName, "files.db");
+        string dbPath = Path.Combine(ApplicationDirectories.DataDirectory, "files.db");
         Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
 
         var services = new ServiceCollection();
