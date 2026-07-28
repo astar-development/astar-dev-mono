@@ -9,19 +9,15 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' existing = {
 resource webApp 'Microsoft.Web/sites@2023-01-01' = {
   name: webAppName
   location: location
+  tags: {
+    'hidden-link: /app-insights-resource-id': resourceId('microsoft.insights/components', 'astar-dev')
+  }
   properties: {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'NODE|22-lts'
-      appCommandLine: 'npm start'
+      linuxFxVersion: 'DOTNETCORE|10.0'
       alwaysOn: true
-      appSettings: [
-        {
-          name: 'WEBSITES_PORT'
-          value: '8080'
-        }
-      ]
     }
   }
 }
