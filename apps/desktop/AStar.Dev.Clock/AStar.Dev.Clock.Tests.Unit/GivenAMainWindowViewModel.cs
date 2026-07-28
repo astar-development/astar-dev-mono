@@ -42,4 +42,56 @@ public sealed class GivenAMainWindowViewModel
 
         sut.ShowSecondHand.ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_select_theme_command_is_executed_with_dark_then_the_theme_service_applies_the_dark_theme()
+    {
+        var themeService = Substitute.For<IThemeService>();
+        var sut = new MainWindowViewModel(themeService);
+
+        sut.SelectThemeCommand.Execute(ThemeMode.Dark);
+
+        themeService.Received(1).ApplyTheme(ThemeMode.Dark);
+    }
+
+    [Fact]
+    public void when_select_theme_command_is_executed_with_dark_then_is_dark_theme_selected_is_true()
+    {
+        var sut = CreateSut();
+
+        sut.SelectThemeCommand.Execute(ThemeMode.Dark);
+
+        sut.IsDarkThemeSelected.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_select_theme_command_is_executed_with_dark_then_is_system_theme_selected_is_false()
+    {
+        var sut = CreateSut();
+
+        sut.SelectThemeCommand.Execute(ThemeMode.Dark);
+
+        sut.IsSystemThemeSelected.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_select_theme_command_is_executed_with_dark_then_is_light_theme_selected_is_false()
+    {
+        var sut = CreateSut();
+
+        sut.SelectThemeCommand.Execute(ThemeMode.Dark);
+
+        sut.IsLightThemeSelected.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_constructed_with_light_theme_as_the_current_theme_then_is_light_theme_selected_is_true()
+    {
+        var themeService = Substitute.For<IThemeService>();
+        themeService.CurrentTheme.Returns(ThemeMode.Light);
+
+        var sut = new MainWindowViewModel(themeService);
+
+        sut.IsLightThemeSelected.ShouldBeTrue();
+    }
 }
