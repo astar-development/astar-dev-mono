@@ -88,8 +88,8 @@ twice).
 Tag format: `file-app-v{version}`.
 
 ```bash
-git tag file-app-v0.1.3
-git push origin file-app-v0.1.3
+git tag file-app-v1.0.0
+git push origin file-app-v1.0.0
 ```
 
 Prerelease: `git tag file-app-v0.1.0-rc.1`

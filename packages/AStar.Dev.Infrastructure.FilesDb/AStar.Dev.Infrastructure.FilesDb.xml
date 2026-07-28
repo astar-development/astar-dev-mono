@@ -534,18 +534,6 @@
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.UnifyFileClassificationHierarchy.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:AStar.Dev.Infrastructure.FilesDb.Migrations.RemoveKeywordsFromFilesDb">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.RemoveKeywordsFromFilesDb.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.RemoveKeywordsFromFilesDb.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
-            <inheritdoc />
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.FilesDb.Migrations.RemoveKeywordsFromFilesDb.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
-            <inheritdoc />
-        </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Models.AuditableEntity">
             <summary>
                The <see cref="T:AStar.Dev.Infrastructure.FilesDb.Models.AuditableEntity"></see> class provides common properties for tracking the creation and modification of entities.
