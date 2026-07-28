@@ -24,11 +24,11 @@ public sealed class CartState(ILocalStorageService localStorage)
         Items = stored ?? [];
     }
 
-    public async Task AddItemAsync(int productId, string name, decimal price)
+    public async Task AddItemAsync(int productId, string name, decimal price, string? blobPath = null)
     {
         var existing = Items.FirstOrDefault(item => item.ProductId == productId);
         Items = existing is null
-            ? [.. Items, CartItemFactory.Create(productId, name, price, 1)]
+            ? [.. Items, CartItemFactory.Create(productId, name, price, 1, blobPath)]
             : [.. Items.Select(item => item.ProductId == productId ? item with { Quantity = item.Quantity + 1 } : item)];
 
         await PersistAsync();

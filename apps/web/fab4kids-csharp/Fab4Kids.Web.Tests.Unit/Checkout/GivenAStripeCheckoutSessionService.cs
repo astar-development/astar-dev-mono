@@ -14,7 +14,7 @@ public class GivenAStripeCheckoutSessionService
     private readonly SessionService sessionService = Substitute.For<SessionService>();
     private readonly ILogger<StripeCheckoutSessionService> logger = Substitute.For<ILogger<StripeCheckoutSessionService>>();
 
-    private static readonly IReadOnlyList<CartItem> Items = [CartItemFactory.Create(1, "Times Tables Pack", 2.50m, 2)];
+    private static readonly IReadOnlyList<CartItem> Items = [CartItemFactory.Create(1, "Times Tables Pack", 2.50m, 2, "pdfs/times-tables.pdf")];
 
     private StripeCheckoutSessionService CreateSut(SessionService? client, CheckoutOptions options) => new(Options.Create(options), logger, client);
 
@@ -76,6 +76,21 @@ public class GivenAStripeCheckoutSessionService
 
         await sessionService.Received(1).CreateAsync(
             Arg.Is<SessionCreateOptions>(options => options.LineItems.Count == 1 && options.LineItems[0].Quantity == 2 && options.LineItems[0].PriceData.ProductData.Name == "Times Tables Pack"),
+            Arg.Any<RequestOptions>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_session_creation_sends_the_blob_path_as_product_metadata()
+    {
+        sessionService.CreateAsync(Arg.Any<SessionCreateOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>())
+            .Returns(new Session { Id = "cs_test_123", Url = "https://checkout.stripe.com/pay/cs_test_123" });
+        var sut = CreateSut(sessionService, ConfiguredOptions());
+
+        await sut.CreateSessionAsync(Items, TestContext.Current.CancellationToken);
+
+        await sessionService.Received(1).CreateAsync(
+            Arg.Is<SessionCreateOptions>(options => options.LineItems[0].PriceData.ProductData.Metadata["blobPath"] == "pdfs/times-tables.pdf"),
             Arg.Any<RequestOptions>(),
             Arg.Any<CancellationToken>());
     }

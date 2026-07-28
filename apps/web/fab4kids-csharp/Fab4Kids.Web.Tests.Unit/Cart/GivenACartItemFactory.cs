@@ -41,4 +41,23 @@ public class GivenACartItemFactory
 
         sut.Quantity.ShouldBe(1);
     }
+
+    [Fact]
+    public void when_created_with_a_blob_path_then_it_is_preserved()
+    {
+        var sut = CartItemFactory.Create(1, "File", 1m, 1, "pdfs/file1.pdf");
+
+        sut.BlobPath.ShouldBe("pdfs/file1.pdf");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void when_created_without_a_blob_path_then_it_defaults_to_empty(string? blobPath)
+    {
+        var sut = CartItemFactory.Create(1, "File", 1m, 1, blobPath);
+
+        sut.BlobPath.ShouldBe(string.Empty);
+    }
 }

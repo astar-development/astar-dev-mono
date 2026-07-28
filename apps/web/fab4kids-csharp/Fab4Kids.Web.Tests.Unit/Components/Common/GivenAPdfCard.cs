@@ -50,4 +50,16 @@ public class GivenAPdfCard : Bunit.BunitContext
         cartState.Items[0].ProductId.ShouldBe(1);
         cartState.Items[0].Name.ShouldBe("Times Tables Pack");
     }
+
+    [Fact]
+    public void when_the_add_to_basket_button_is_clicked_then_the_blob_path_is_added_to_the_cart()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+        var cartState = Services.GetRequiredService<CartState>();
+        var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
+
+        cut.Find("button.btn--primary").Click();
+
+        cartState.Items[0].BlobPath.ShouldBe("pdfs/times-tables.pdf");
+    }
 }

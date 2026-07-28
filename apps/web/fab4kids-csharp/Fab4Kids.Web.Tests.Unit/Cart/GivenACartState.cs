@@ -53,6 +53,16 @@ public class GivenACartState
     }
 
     [Fact]
+    public async Task when_a_new_item_is_added_with_a_blob_path_then_it_is_preserved()
+    {
+        var sut = new CartState(localStorage);
+
+        await sut.AddItemAsync(1, "Times Tables Pack", 2.50m, "pdfs/file1.pdf");
+
+        sut.Items[0].BlobPath.ShouldBe("pdfs/file1.pdf");
+    }
+
+    [Fact]
     public async Task when_an_existing_item_is_added_again_then_its_quantity_increments()
     {
         var sut = new CartState(localStorage);
