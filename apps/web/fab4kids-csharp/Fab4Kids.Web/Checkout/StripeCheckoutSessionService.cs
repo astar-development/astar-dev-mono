@@ -75,7 +75,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
             {
                 Currency = "gbp",
                 UnitAmount = (long)(item.Price * 100),
-                ProductData = new SessionLineItemPriceDataProductDataOptions { Name = item.Name }
+                ProductData = new SessionLineItemPriceDataProductDataOptions { Name = item.Name, Metadata = new Dictionary<string, string> { ["blobPath"] = item.BlobPath } }
             }
         })],
         AutomaticTax = new SessionAutomaticTaxOptions { Enabled = true },

@@ -1,14 +1,17 @@
 using AStar.Dev.Logging.Extensions;
 using Azure.Communication.Email;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs;
 using Blazored.LocalStorage;
 using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components;
 using Fab4Kids.Web.Consent;
+using Fab4Kids.Web.Fulfilment;
 using Fab4Kids.Web.Newsletter;
 using Fab4Kids.Web.Theming;
+using Microsoft.Extensions.Options;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Serilog;
 using Stripe;
@@ -44,6 +47,29 @@ if (!string.IsNullOrWhiteSpace(checkoutOptions?.SecretKey))
     builder.Services.AddSingleton(new SessionService(new StripeClient(checkoutOptions.SecretKey)));
 builder.Services.AddScoped<ICheckoutSessionService, StripeCheckoutSessionService>();
 
+builder.Services.Configure<FulfilmentOptions>(builder.Configuration.GetSection("Fulfilment"));
+var fulfilmentOptions = builder.Configuration.GetSection("Fulfilment").Get<FulfilmentOptions>();
+if (!string.IsNullOrWhiteSpace(fulfilmentOptions?.StorageConnectionString) && !string.IsNullOrWhiteSpace(fulfilmentOptions.BlobContainerName))
+    builder.Services.AddSingleton(new BlobContainerClient(fulfilmentOptions.StorageConnectionString, fulfilmentOptions.BlobContainerName));
+builder.Services.AddSingleton<IPdfDeliveryLinkGenerator, BlobSasDeliveryLinkGenerator>();
+builder.Services.AddSingleton<IIdempotencyStore>(sp =>
+{
+    var idempotencyLogger = sp.GetRequiredService<ILogger<AzureTableIdempotencyStore>>();
+    TableClient? idempotencyTableClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.StorageConnectionString) && !string.IsNullOrWhiteSpace(fulfilmentOptions.IdempotencyTableName)
+        ? new TableClient(fulfilmentOptions.StorageConnectionString, fulfilmentOptions.IdempotencyTableName)
+        : null;
+
+    return new AzureTableIdempotencyStore(idempotencyLogger, idempotencyTableClient);
+});
+builder.Services.AddSingleton<IDeliveryEmailSender>(sp =>
+{
+    var deliveryEmailLogger = sp.GetRequiredService<ILogger<AzureDeliveryEmailSender>>();
+    EmailClient? deliveryEmailClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.EmailConnectionString) ? new EmailClient(fulfilmentOptions.EmailConnectionString) : null;
+
+    return new AzureDeliveryEmailSender(sp.GetRequiredService<IOptions<FulfilmentOptions>>(), deliveryEmailLogger, deliveryEmailClient);
+});
+builder.Services.AddScoped<IFulfilmentService, FulfilmentService>();
+
 var app = builder.Build();
 
 app.Services.GetRequiredService<ICatalogueService>();
@@ -62,6 +88,7 @@ app.UseSerilogRequestLogging();
 
 app.MapStaticAssets();
 app.MapCheckoutEndpoints();
+app.MapFulfilmentEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

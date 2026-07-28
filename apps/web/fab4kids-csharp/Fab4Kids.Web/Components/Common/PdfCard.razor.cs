@@ -16,7 +16,7 @@ public sealed partial class PdfCard : ComponentBase
 
     private async Task AddToBasketAsync()
     {
-        await CartState.AddItemAsync(File.Id, File.Name, File.Price);
+        await CartState.AddItemAsync(File.Id, File.Name, File.Price, File.Url);
         added = true;
         StateHasChanged();
 
