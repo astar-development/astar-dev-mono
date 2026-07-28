@@ -2,7 +2,6 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
-using Microsoft.Extensions.Logging;
 
 namespace Fab4Kids.Web.Fulfilment;
 

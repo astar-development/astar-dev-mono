@@ -1,4 +1,3 @@
-using System.Threading;
 using Blazored.LocalStorage;
 using Bunit;
 using Fab4Kids.Web.Components.Common;

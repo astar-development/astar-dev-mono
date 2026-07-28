@@ -1,4 +1,3 @@
-using AStar.Dev.Clock;
 using AStar.Dev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.LoggingSerilog;

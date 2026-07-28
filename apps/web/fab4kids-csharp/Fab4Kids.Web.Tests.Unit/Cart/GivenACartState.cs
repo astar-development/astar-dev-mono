@@ -1,4 +1,3 @@
-using System.Threading;
 using Blazored.LocalStorage;
 using Fab4Kids.Web.Cart;
 using NSubstitute;

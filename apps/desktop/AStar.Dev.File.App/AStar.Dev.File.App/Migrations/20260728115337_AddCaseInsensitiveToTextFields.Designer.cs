@@ -3,6 +3,7 @@ using System;
 using AStar.Dev.File.App.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.File.App.Migrations
 {
     [DbContext(typeof(FileAppDbContext))]
-    partial class FileAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728115337_AddCaseInsensitiveToTextFields")]
+    partial class AddCaseInsensitiveToTextFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");

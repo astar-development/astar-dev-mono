@@ -1,7 +1,6 @@
 using System.Globalization;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
-using Microsoft.Extensions.Logging;
 using Stripe;
 using Stripe.Checkout;
 

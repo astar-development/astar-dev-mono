@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Configuration;
 
 namespace AStarDev.Web.Components.Common;
 

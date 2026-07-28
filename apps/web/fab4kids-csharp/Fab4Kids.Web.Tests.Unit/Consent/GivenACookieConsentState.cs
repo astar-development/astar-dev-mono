@@ -1,4 +1,3 @@
-using System.Threading;
 using AStar.Dev.FunctionalParadigm;
 using Blazored.LocalStorage;
 using Fab4Kids.Web.Consent;
