@@ -14,16 +14,33 @@ public class AnalogClockControl : Control
     private static readonly StyledProperty<IBrush?> ForegroundProperty =
         AvaloniaProperty.Register<AnalogClockControl, IBrush?>(nameof(Foreground), Brushes.Black);
 
+    /// <summary>Defines the <see cref="ShowSecondHand" /> property.</summary>
+    public static readonly StyledProperty<bool> ShowSecondHandProperty =
+        AvaloniaProperty.Register<AnalogClockControl, bool>(nameof(ShowSecondHand), true);
+
     public IBrush? Foreground
     {
         get => GetValue(ForegroundProperty);
         set => SetValue(ForegroundProperty, value);
     }
 
+    /// <summary>Gets or sets a value indicating whether the second hand is drawn on the clock face.</summary>
+    public bool ShowSecondHand
+    {
+        get => GetValue(ShowSecondHandProperty);
+        set => SetValue(ShowSecondHandProperty, value);
+    }
+
     public AnalogClockControl()
     {
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (_, _) => InvalidateVisual();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ShowSecondHandProperty) InvalidateVisual();
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -107,7 +124,7 @@ public class AnalogClockControl : Control
         // Hands
         DrawHand(context, center, radius * 0.55, hour / 12.0, 5, Brushes.Red);
         DrawHand(context, center, radius * 0.75, min / 60.0, 3, Brushes.Blue);
-        DrawHand(context, center, radius * 0.85, sec / 60.0, 1.5, isDark ? Brushes.White : Brushes.Black);
+        if (ShowSecondHand) DrawHand(context, center, radius * 0.85, sec / 60.0, 1.5, isDark ? Brushes.White : Brushes.Black);
 
         // Center cap
         context.DrawGeometry(isDark ? Brushes.OrangeRed : Brushes.Crimson, null,
