@@ -21,13 +21,13 @@
                               Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Dark}" />
                 </MenuItem>
                 <Separator />
-                <MenuItem Header="Placeholder" />
+                <MenuItem Header="{Binding ToggleSecondHandText}" Command="{Binding ToggleSecondHandCommand}" />
                 <Separator />
                 <MenuItem Header="E_xit" />
             </MenuItem>
         </Menu>
     <Border Margin="8" CornerRadius="12" Padding="12">
-      <c:AnalogClockControl />
+      <c:AnalogClockControl ShowSecondHand="{Binding ShowSecondHand}" />
     </Border>
   </DockPanel>
 
