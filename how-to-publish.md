@@ -51,8 +51,8 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 Tag format: bare `v{version}`.
 
 ```bash
-git tag onedrive-sync-v0.36.0
-git push origin onedrive-sync-v0.36.0
+git tag onedrive-sync-v0.36.2
+git push origin onedrive-sync-v0.36.2
 ```
 
 Prerelease: `git tag onedrive-sync-v0.35.0-rc.1`
@@ -72,8 +72,8 @@ Tag format: `scraper-v{version}` — **not** bare `v{version}` (that's the OneDr
 namespace — see the collision note below).
 
 ```bash
-git tag scraper-v0.10.12
-git push origin scraper-v0.10.12
+git tag scraper-v0.10.13
+git push origin scraper-v0.10.13
 ```
 
 What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64
@@ -88,8 +88,8 @@ twice).
 Tag format: `file-app-v{version}`.
 
 ```bash
-git tag file-app-v0.1.0
-git push origin file-app-v0.1.0
+git tag file-app-v0.1.2
+git push origin file-app-v0.1.2
 ```
 
 Prerelease: `git tag file-app-v0.1.0-rc.1`
@@ -107,8 +107,8 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 Tag format: `clock-v{version}`.
 
 ```bash
-git tag clock-v0.1.0
-git push origin clock-v0.1.0
+git tag clock-v0.1.1
+git push origin clock-v0.1.1
 ```
 
 Prerelease: `git tag clock-v0.1.0-rc.1`

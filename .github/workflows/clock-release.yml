@@ -75,7 +75,7 @@ jobs:
         shell: bash
         run: |
           RAW_TAG="${GITHUB_REF_NAME}"
-          VERSION="${RAW_TAG#v}"
+          VERSION="${RAW_TAG#clock-v}"
           IS_PRERELEASE=false
           if [[ "$VERSION" == *"-"* ]]; then
             IS_PRERELEASE=true
@@ -204,7 +204,7 @@ jobs:
         shell: bash
         run: |
           RAW_TAG="${GITHUB_REF_NAME}"
-          VERSION="${RAW_TAG#v}"
+          VERSION="${RAW_TAG#clock-v}"
           IS_PRERELEASE=false
           if [[ "$VERSION" == *"-"* ]]; then
             IS_PRERELEASE=true
