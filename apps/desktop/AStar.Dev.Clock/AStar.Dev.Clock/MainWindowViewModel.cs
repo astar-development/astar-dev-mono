@@ -1,4 +1,6 @@
 using AStar.Dev.Clock.Theming;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -42,5 +44,14 @@ public sealed partial class MainWindowViewModel(IThemeService themeService) : Ob
         showSecondHand = !showSecondHand;
         OnPropertyChanged(nameof(ShowSecondHand));
         OnPropertyChanged(nameof(ToggleSecondHandText));
+    }
+
+    [RelayCommand]
+    private static void Exit()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
     }
 }

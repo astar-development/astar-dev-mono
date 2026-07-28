@@ -8,6 +8,9 @@
         Width="400" Height="450"
         x:DataType="vm:MainWindowViewModel"
         Title="AStar Development Clock">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+Q" Command="{Binding ExitCommand}" />
+  </Window.KeyBindings>
 
   <DockPanel>
         <Menu DockPanel.Dock="Top">
@@ -23,7 +26,7 @@
                 <Separator />
                 <MenuItem Header="{Binding ToggleSecondHandText}" Command="{Binding ToggleSecondHandCommand}" />
                 <Separator />
-                <MenuItem Header="E_xit" />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q" />
             </MenuItem>
         </Menu>
     <Border Margin="8" CornerRadius="12" Padding="12">
