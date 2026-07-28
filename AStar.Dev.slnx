@@ -23,6 +23,7 @@
     <Folder Name="/apps/web/fab4kids-csharp/">
         <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj" />
         <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Unit/Fab4Kids.Web.Tests.Unit.csproj" />
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Integration/Fab4Kids.Web.Tests.Integration.csproj" />
     </Folder>
     <Folder Name="/infra/" />
     <Folder Name="/packages/">

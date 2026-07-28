@@ -1,11 +1,14 @@
+# ════════════════════════════════════════════════════════════════════════════
+# Superseded by fab4kids-web-ci.yml / fab4kids-web-deploy.yml (the Blazor
+# migration, tracked in #857). Push/PR triggers disabled so this Astro
+# pipeline no longer runs automatically — kept as workflow_dispatch only so
+# the old site can still be redeployed manually as a rollback path until the
+# App Service stack swap (#864) is complete.
+# ════════════════════════════════════════════════════════════════════════════
+
 name: fab4kids Deploy
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/web/fab4kids/**'
-      - '.github/workflows/fab4kids-deploy.yml'
   workflow_dispatch:
 
 permissions:

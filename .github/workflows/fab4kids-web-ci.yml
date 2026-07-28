@@ -1,0 +1,182 @@
+# ════════════════════════════════════════════════════════════════════════════
+# fab4kids-web-ci.yml
+# Triggers on any push or PR that touches the Fab4Kids.Web Blazor site, its
+# FunctionalParadigm/Logging.Extensions package dependencies, or this workflow.
+# Restores, builds, and unit-tests the site, then publishes a real artifact and
+# runs a headless-Chrome Playwright smoke test against it — the exact coverage
+# gap that let astar-dev-web ship two prod incidents (#855, #856) that bUnit
+# couldn't have caught.
+# A successful run on main triggers fab4kids-web-deploy.yml
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Fab4Kids.Web CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+      - 'bug/**'
+      - 'fix/**'
+      - 'doc/**'
+    paths:
+      - 'apps/web/fab4kids-csharp/**'
+      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
+      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
+      - 'packages/core/utilities/AStar.Dev.Utilities/**'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - 'AStar.Dev.slnx'
+      - '.github/workflows/fab4kids-web-ci.yml'
+      - '.github/workflows/fab4kids-web-deploy.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/web/fab4kids-csharp/**'
+      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
+      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
+      - 'packages/core/utilities/AStar.Dev.Utilities/**'
+      - 'Directory.Build.props'
+      - 'Directory.Build.targets'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'NuGet.Config'
+      - 'AStar.Dev.slnx'
+      - '.github/workflows/fab4kids-web-ci.yml'
+      - '.github/workflows/fab4kids-web-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  packages: read
+
+concurrency:
+  group: fab4kids-web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj
+  TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Unit/Fab4Kids.Web.Tests.Unit.csproj
+  SMOKE_TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Integration/Fab4Kids.Web.Tests.Integration.csproj
+  SMOKE_APP_URL: http://localhost:5299
+
+jobs:
+
+  ci:
+    name: Build, test & smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build
+        run: |
+          dotnet build ${{ env.TEST_PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Unit test
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=Fab4Kids.Web.Tests.Unit.trx" \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish unit test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        with:
+          files: TestResults/Fab4Kids.Web.Tests.Unit.trx
+          check_name: Fab4Kids.Web unit test results
+          fail_on: test failures
+
+      - name: Restore & build smoke test project
+        run: |
+          dotnet restore ${{ env.SMOKE_TEST_PROJECT_PATH }}
+          dotnet build ${{ env.SMOKE_TEST_PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Install Playwright browsers
+        run: |
+          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.Tests.Integration*' -name playwright.ps1 -print -quit)
+          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
+
+      - name: Publish app for smoke testing
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            --output ./smoke-publish
+
+      - name: Start published app
+        run: |
+          cd smoke-publish
+          ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=${{ env.SMOKE_APP_URL }} nohup dotnet Fab4Kids.Web.dll > "$GITHUB_WORKSPACE/smoke-app.log" 2>&1 &
+          cd ..
+          for i in $(seq 1 30); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' ${{ env.SMOKE_APP_URL }}/)" = "200" ]; then
+              echo "App is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "App failed to start within 30s"
+          cat smoke-app.log
+          exit 1
+
+      - name: Playwright smoke test
+        env:
+          FAB4KIDS_SMOKE_URL: ${{ env.SMOKE_APP_URL }}
+        run: |
+          dotnet test ${{ env.SMOKE_TEST_PROJECT_PATH }} \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=Fab4Kids.Web.Tests.Integration.trx" \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Show published app log
+        if: always()
+        run: cat smoke-app.log || true
+
+      - name: Stop published app
+        if: always()
+        run: pkill -f "smoke-publish/Fab4Kids.Web.dll" || true
+
+      - name: Publish smoke test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        with:
+          files: TestResults/Fab4Kids.Web.Tests.Integration.trx
+          check_name: Fab4Kids.Web smoke test results
+          fail_on: test failures
