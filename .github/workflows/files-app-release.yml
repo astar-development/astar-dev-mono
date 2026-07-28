@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════════════════
-# onedrive-sync-client-release.yml
+# files-app-release.yml
 #
-# Packages and publishes AStar.Dev.OneDrive.Sync.Client as a Velopack release
+# Packages and publishes AStar.Dev.File.App as a Velopack release
 # on GitHub Releases, for the in-app updater (see #744/#746) to discover.
 #
 # Tag format: v1.2.3  (or v1.2.3-beta.1 for a pre-release)
@@ -23,19 +23,19 @@
 # needs:/sequencing here isn't just about priority, it also avoids that race.
 # ════════════════════════════════════════════════════════════════════════════
 
-name: OneDrive Sync Client Release
+name: Files App Release
 
 on:
   push:
     tags:
-      - 'onedrive-sync-v[0-9]+.[0-9]+.[0-9]+'
-      - 'onedrive-sync-v[0-9]+.[0-9]+.[0-9]+-*'
+      - 'files-app-v[0-9]+.[0-9]+.[0-9]+'
+      - 'files-app-v[0-9]+.[0-9]+.[0-9]+-*'
 
 permissions:
   contents: write
 
 concurrency:
-  group: onedrive-sync-client-release-${{ github.ref }}
+  group: files-app-release-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -45,8 +45,8 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
-  PROJECT_PATH: apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj
-  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj
+  PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App/AStar.Dev.File.App.csproj
+  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App.Tests.Unit/AStar.Dev.File.App.Tests.Unit.csproj
 
 jobs:
 
@@ -136,12 +136,12 @@ jobs:
         shell: bash
         run: |
           vpk pack \
-            --packId AStar.Dev.OneDrive.Sync.Client \
+            --packId AStar.Dev.File.App \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/linux-x64 \
             --packAuthors "AStar Development" \
-            --packTitle "AStar Dev OneDrive Sync Client" \
-            --mainExe "AStar.Dev.OneDrive.Sync.Client" \
+            --packTitle "AStar Dev File App" \
+            --mainExe "AStar.Dev.File.App" \
             --channel linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
@@ -155,7 +155,7 @@ jobs:
             --channel linux \
             --outputDir ./Releases \
             --tag ${{ github.ref_name }} \
-            --releaseName "AStar Dev OneDrive Sync Client v${{ env.VERSION }}" \
+            --releaseName "AStar Dev File App v${{ env.VERSION }}" \
             --publish true \
             --merge true \
             --pre ${{ steps.tag.outputs.prerelease }}
@@ -166,7 +166,7 @@ jobs:
         continue-on-error: true
         with:
           files: TestResults/**/*.trx
-          check_name: OneDrive Sync Client (linux) — test results
+          check_name: Files App (linux) — test results
           fail_on: test failures
 
   release-other-platforms:
@@ -264,17 +264,17 @@ jobs:
       - name: Pack with vpk
         shell: bash
         run: |
-          MAIN_EXE="AStar.Dev.OneDrive.Sync.Client"
+          MAIN_EXE="AStar.Dev.File.App"
           if [ "${{ matrix.channel }}" = "win" ]; then
-            MAIN_EXE="AStar.Dev.OneDrive.Sync.Client.exe"
+            MAIN_EXE="AStar.Dev.File.App.exe"
           fi
 
           vpk pack \
-            --packId AStar.Dev.OneDrive.Sync.Client \
+            --packId AStar.Dev.File.App \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/${{ matrix.rid }} \
             --packAuthors "AStar Development" \
-            --packTitle "AStar Dev OneDrive Sync Client" \
+            --packTitle "AStar Dev File App" \
             --mainExe "$MAIN_EXE" \
             --channel ${{ matrix.channel }} \
             --releaseNotes release-notes.md \
@@ -289,7 +289,7 @@ jobs:
             --channel ${{ matrix.channel }} \
             --outputDir ./Releases \
             --tag ${{ github.ref_name }} \
-            --releaseName "AStar Dev OneDrive Sync Client v${{ env.VERSION }}" \
+            --releaseName "AStar Dev File App v${{ env.VERSION }}" \
             --publish true \
             --merge true \
             --pre ${{ steps.tag.outputs.prerelease }}
@@ -300,5 +300,5 @@ jobs:
         continue-on-error: true
         with:
           files: TestResults/**/*.trx
-          check_name: OneDrive Sync Client (${{ matrix.channel }}) — test results
+          check_name: Files App (${{ matrix.channel }}) — test results
           fail_on: test failures
