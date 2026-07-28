@@ -6,12 +6,13 @@ namespace AStar.Dev.Velopack.Publishing.Tests.Unit;
 
 public sealed class GivenVelopackUpdateSettings
 {
-    private static IOptions<VelopackUpdateSettings> BuildOptions(string githubRepositoryUrl)
+    private static IOptions<VelopackUpdateSettings> BuildOptions(string githubRepositoryUrl, string channelPrefix = "clock")
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Updates:GithubRepositoryUrl"] = githubRepositoryUrl
+                ["Updates:GithubRepositoryUrl"] = githubRepositoryUrl,
+                ["Updates:ChannelPrefix"]       = channelPrefix
             })
             .Build();
 
@@ -30,6 +31,14 @@ public sealed class GivenVelopackUpdateSettings
         var options = BuildOptions("https://github.com/astar-development/astar-dev-mono");
 
         options.Value.GithubRepositoryUrl.ShouldBe(new Uri("https://github.com/astar-development/astar-dev-mono"));
+    }
+
+    [Fact]
+    public void when_bound_then_channel_prefix_is_populated()
+    {
+        var options = BuildOptions("https://github.com/astar-development/astar-dev-mono", "onedrive-sync");
+
+        options.Value.ChannelPrefix.ShouldBe("onedrive-sync");
     }
 
     [Fact]

@@ -14,7 +14,7 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
     private readonly ILogger<VelopackUpdateService> logger;
 
     /// <summary>Creates the update service from the bound <see cref="VelopackUpdateSettings"/>.</summary>
-    /// <param name="settings">The GitHub repository releases are checked against.</param>
+    /// <param name="settings">The GitHub repository releases are checked against, and the app-specific channel prefix.</param>
     /// <param name="logger">The logger used to record check/download/apply outcomes.</param>
     public VelopackUpdateService(IOptions<VelopackUpdateSettings> settings, ILogger<VelopackUpdateService> logger)
     {
@@ -23,11 +23,21 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
 
         this.logger = logger;
         var locator = VelopackLocator.CreateDefaultForPlatform(logger: null);
-        updateManager = new UpdateManager(new GithubSource(settings.Value.GithubRepositoryUrl.AbsoluteUri, accessToken: null, prerelease: false), locator: locator);
+        Channel = $"{settings.Value.ChannelPrefix}-{PlatformChannelSuffix}";
+        var options = new UpdateOptions { ExplicitChannel = Channel };
+        updateManager = new UpdateManager(new GithubSource(settings.Value.GithubRepositoryUrl.AbsoluteUri, accessToken: null, prerelease: false), options, locator);
+
+        var channelMessage = $"Checking for updates on channel '{Channel}'.";
+        LogMessage.Information(logger, nameof(VelopackUpdateService), channelMessage);
     }
+
+    private static string PlatformChannelSuffix => OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
 
     /// <inheritdoc />
     public bool IsInstalled => updateManager.IsInstalled;
+
+    /// <inheritdoc />
+    public string Channel { get; }
 
     /// <inheritdoc />
     public async Task<UpdateInfo?> CheckForUpdatesAsync(CancellationToken cancellationToken = default)

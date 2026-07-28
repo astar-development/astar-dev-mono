@@ -21,6 +21,13 @@
 # `vpk upload github --merge` only appends to an ALREADY-existing release -
 # it doesn't handle two jobs racing to create the first one - so the
 # needs:/sequencing here isn't just about priority, it also avoids that race.
+#
+# Each platform packs/uploads under its own Velopack channel
+# (file-app-linux/file-app-win/file-app-osx) rather than the bare
+# "linux"/"win"/"osx" names - Velopack's update lookup is scoped by channel
+# name across the whole repo, not by packId, so reusing those names collides
+# with the other apps (Clock, OneDrive Sync Client, Scraper) also released
+# from here.
 # ════════════════════════════════════════════════════════════════════════════
 
 name: File App Release
@@ -142,7 +149,7 @@ jobs:
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev File App" \
             --mainExe "AStar.Dev.File.App" \
-            --channel linux \
+            --channel file-app-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
 
@@ -152,7 +159,7 @@ jobs:
           vpk upload github \
             --repoUrl https://github.com/${{ github.repository }} \
             --token ${{ secrets.GITHUB_TOKEN }} \
-            --channel linux \
+            --channel file-app-linux \
             --outputDir ./Releases \
             --tag ${{ github.ref_name }} \
             --releaseName "AStar Dev File App v${{ env.VERSION }}" \
@@ -181,10 +188,10 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
-            channel: win
+            channel: file-app-win
           - os: macos-latest
             rid: osx-arm64
-            channel: osx
+            channel: file-app-osx
 
     steps:
 
@@ -265,7 +272,7 @@ jobs:
         shell: bash
         run: |
           MAIN_EXE="AStar.Dev.File.App"
-          if [ "${{ matrix.channel }}" = "win" ]; then
+          if [ "${{ matrix.channel }}" = "file-app-win" ]; then
             MAIN_EXE="AStar.Dev.File.App.exe"
           fi
 

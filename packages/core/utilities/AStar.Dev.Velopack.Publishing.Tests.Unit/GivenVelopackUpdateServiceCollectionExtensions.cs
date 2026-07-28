@@ -11,7 +11,8 @@ public sealed class GivenVelopackUpdateServiceCollectionExtensions
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["Updates:GithubRepositoryUrl"] = githubRepositoryUrl
+                ["Updates:GithubRepositoryUrl"] = githubRepositoryUrl,
+                ["Updates:ChannelPrefix"]       = "clock"
             })
             .Build();
 

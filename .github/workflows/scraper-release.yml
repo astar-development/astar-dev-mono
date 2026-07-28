@@ -11,10 +11,10 @@
 #   git push origin scraper-v0.11.0
 #
 # The "scraper-" prefix keeps this tag namespace separate from:
-#   - onedrive-sync-client-release.yml, which owns bare v[0-9]+.[0-9]+.[0-9]+ tags
+#   - clock-release.yml, which owns clock-v[0-9]+.[0-9]+.[0-9]+ tags
+#   - file-app-release.yml, which owns file-app-v[0-9]+.[0-9]+.[0-9]+ tags
+#   - onedrive-sync-client-release.yml, which owns onedrive-sync-v[0-9]+.[0-9]+.[0-9]+ tags
 #   - nuget-publish.yml, which owns */v[0-9]+.[0-9]+.[0-9]+ tags (slash-delimited)
-# A bare "v*" tag here would have fired both this workflow and the OneDrive
-# one on the same push.
 #
 # Linux is this project's primary platform, so `release-linux` runs alone,
 # first, and is the only job that can fail the workflow. `release-other-platforms`
