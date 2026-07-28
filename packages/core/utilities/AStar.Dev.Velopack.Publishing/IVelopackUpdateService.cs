@@ -8,6 +8,9 @@ public interface IVelopackUpdateService
     /// <summary>Gets a value indicating whether the app is running as a Velopack-installed instance.</summary>
     bool IsInstalled { get; }
 
+    /// <summary>Gets the explicit Velopack channel this instance checks for updates, e.g. "clock-linux".</summary>
+    string Channel { get; }
+
     /// <summary>
     /// Checks the configured GitHub releases feed for a newer version.
     /// Returns <c>null</c> if no update is available, the app is not installed (e.g. running unpackaged), or the check fails.

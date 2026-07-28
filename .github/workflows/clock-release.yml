@@ -4,12 +4,12 @@
 # Packages and publishes AStar.Dev.Clock as a Velopack release
 # on GitHub Releases, for the in-app updater (see #744/#746) to discover.
 #
-# Tag format: v1.2.3  (or v1.2.3-beta.1 for a pre-release)
+# Tag format: clock-v1.2.3  (or clock-v1.2.3-beta.1 for a pre-release)
 #
 # Release workflow:
 #
-#   git tag v0.34.0
-#   git push origin v0.34.0
+#   git tag clock-v0.34.0
+#   git push origin clock-v0.34.0
 #
 # Linux is this project's primary platform - developed on Linux, primarily
 # consumed on Linux - so `release-linux` runs alone, first, and is the only
@@ -21,6 +21,12 @@
 # `vpk upload github --merge` only appends to an ALREADY-existing release -
 # it doesn't handle two jobs racing to create the first one - so the
 # needs:/sequencing here isn't just about priority, it also avoids that race.
+#
+# Each platform packs/uploads under its own Velopack channel
+# (clock-linux/clock-win/clock-osx) rather than the bare "linux"/"win"/"osx"
+# names - Velopack's update lookup is scoped by channel name across the
+# whole repo, not by packId, so reusing those names collides with the other
+# apps (File App, OneDrive Sync Client, Scraper) also released from here.
 # ════════════════════════════════════════════════════════════════════════════
 
 name: Clock Release
@@ -142,7 +148,7 @@ jobs:
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev Clock" \
             --mainExe "AStar.Dev.Clock" \
-            --channel linux \
+            --channel clock-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
 
@@ -152,7 +158,7 @@ jobs:
           vpk upload github \
             --repoUrl https://github.com/${{ github.repository }} \
             --token ${{ secrets.GITHUB_TOKEN }} \
-            --channel linux \
+            --channel clock-linux \
             --outputDir ./Releases \
             --tag ${{ github.ref_name }} \
             --releaseName "AStar Dev Clock v${{ env.VERSION }}" \
@@ -181,10 +187,10 @@ jobs:
         include:
           - os: windows-latest
             rid: win-x64
-            channel: win
+            channel: clock-win
           - os: macos-latest
             rid: osx-arm64
-            channel: osx
+            channel: clock-osx
 
     steps:
 
@@ -265,7 +271,7 @@ jobs:
         shell: bash
         run: |
           MAIN_EXE="AStar.Dev.Clock"
-          if [ "${{ matrix.channel }}" = "win" ]; then
+          if [ "${{ matrix.channel }}" = "clock-win" ]; then
             MAIN_EXE="AStar.Dev.Clock.exe"
           fi
 
