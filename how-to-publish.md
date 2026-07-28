@@ -107,8 +107,8 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 Tag format: `clock-v{version}`.
 
 ```bash
-git tag clock-v0.1.1
-git push origin clock-v0.1.1
+git tag clock-v0.1.2
+git push origin clock-v0.1.2
 ```
 
 Prerelease: `git tag clock-v0.1.0-rc.1`
