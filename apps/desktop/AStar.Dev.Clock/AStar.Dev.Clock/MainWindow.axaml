@@ -1,20 +1,34 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="clr-namespace:AStar.Dev.Clock.Controls"
+        xmlns:vm="using:AStar.Dev.Clock"
+        xmlns:theming="using:AStar.Dev.Clock.Theming"
         x:Class="AStar.Dev.Clock.MainWindow"
         Icon="avares://AStar.Dev.Clock/Assets/astar.ico"
         Width="400" Height="450"
+        x:DataType="vm:MainWindowViewModel"
         Title="AStar Development Clock">
-  
+
   <DockPanel>
-    <StackPanel Orientation="Horizontal" Spacing="8" Margin="8" DockPanel.Dock="Top">
-      <Button Content="Light" Click="OnLight"/>
-      <Button Content="Dark" Click="OnDark"/>
-      <Button Content="Auto" Click="OnAuto"/>
-    </StackPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Theme">
+                    <MenuItem Header="_System" ToggleType="Radio" IsChecked="{Binding IsSystemThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.System}" />
+                    <MenuItem Header="_Light" ToggleType="Radio" IsChecked="{Binding IsLightThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Light}" />
+                    <MenuItem Header="_Dark" ToggleType="Radio" IsChecked="{Binding IsDarkThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Dark}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Placeholder" />
+                <Separator />
+                <MenuItem Header="E_xit" />
+            </MenuItem>
+        </Menu>
     <Border Margin="8" CornerRadius="12" Padding="12">
       <c:AnalogClockControl />
     </Border>
   </DockPanel>
-  
+
 </Window>
