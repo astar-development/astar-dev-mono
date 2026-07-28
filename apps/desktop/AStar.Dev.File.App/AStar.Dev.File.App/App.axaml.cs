@@ -1,12 +1,15 @@
 using System.Globalization;
 using AStar.Dev.File.App.Data;
 using AStar.Dev.File.App.Services;
+using AStar.Dev.File.App.Updates;
 using AStar.Dev.File.App.ViewModels;
 using AStar.Dev.File.App.Views;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -41,6 +44,8 @@ public partial class App : Application
             {
                 DataContext = _services.GetRequiredService<MainWindowViewModel>()
             };
+
+            _ = _services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -63,6 +68,11 @@ public partial class App : Application
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<DeletePendingViewModel>();
         _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
+
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .Build();
+        _ = services.AddVelopackUpdateServices(configuration);
 
         var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<App>>();

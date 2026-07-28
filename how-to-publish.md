@@ -1,6 +1,6 @@
 # How to Publish
 
-Three independent tag-triggered release pipelines live in this repo. Each owns its own tag
+Independent tag-triggered release pipelines live in this repo. Each owns its own tag
 namespace so pushing one tag only ever fires one workflow. Pick the right format below.
 
 | What                           | Tag format                 | Workflow                                             |
@@ -8,10 +8,11 @@ namespace so pushing one tag only ever fires one workflow. Pick the right format
 | A NuGet package                | `{PackageName}/v{version}` | `.github/workflows/nuget-publish.yml`                |
 | OneDrive Sync Client (desktop) | `v{version}`               | `.github/workflows/onedrive-sync-client-release.yml` |
 | Wallpaper Scraper (desktop)    | `scraper-v{version}`       | `.github/workflows/scraper-release.yml`              |
+| File App (desktop)             | `file-app-v{version}`      | `.github/workflows/file-app-release.yml`             |
 
-**Never reuse another row's tag format.** The three patterns are deliberately disjoint
-(slash-delimited vs. bare `v` vs. `scraper-v`) — mixing them up either fires the wrong
-pipeline or fires two at once against the same GitHub Release.
+**Never reuse another row's tag format.** The patterns are deliberately disjoint
+(slash-delimited vs. bare `v` vs. `scraper-v` vs. `file-app-v`) — mixing them up either
+fires the wrong pipeline or fires two at once against the same GitHub Release.
 
 ---
 
@@ -88,6 +89,25 @@ the same push, publishing two unrelated apps' assets onto the same GitHub Releas
 
 - won't match OneDrive's `v[0-9]+.[0-9]+.[0-9]+` (doesn't start with a bare `v`)
 - won't match NuGet's `*/v[0-9]+.[0-9]+.[0-9]+` (no `/` in the tag)
+
+---
+
+## 4. Publish the File App
+
+Tag format: `file-app-v{version}`.
+
+```bash
+git tag file-app-v0.1.0
+git push origin file-app-v0.1.0
+```
+
+Prerelease: `git tag file-app-v0.1.0-rc.1`
+
+What happens: `file-app-release.yml` builds, tests, and publishes self-contained Velopack
+packages, mirroring the OneDrive Sync Client's workflow shape — `release-linux` runs
+first and is the only job that can fail the workflow; `release-other-platforms` (win-x64,
+osx-arm64) only starts after Linux succeeds and is best-effort (`continue-on-error: true`).
+All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 
 ---
 

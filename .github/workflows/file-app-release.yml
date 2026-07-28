@@ -1,0 +1,304 @@
+# ════════════════════════════════════════════════════════════════════════════
+# file-app-release.yml
+#
+# Packages and publishes AStar.Dev.File.App as a Velopack release
+# on GitHub Releases, for the in-app updater (see #744/#746/#876) to discover.
+#
+# Tag format: file-app-v1.2.3  (or file-app-v1.2.3-beta.1 for a pre-release)
+#
+# Release workflow:
+#
+#   git tag file-app-v0.1.0
+#   git push origin file-app-v0.1.0
+#
+# Linux is this project's primary platform - developed on Linux, primarily
+# consumed on Linux - so `release-linux` runs alone, first, and is the only
+# job that can fail the workflow. `release-other-platforms` (win-x64,
+# osx-arm64) only starts once release-linux has published, and is entirely
+# best-effort (continue-on-error) so a Windows/macOS packaging problem never
+# blocks or delays shipping the Linux release.
+#
+# `vpk upload github --merge` only appends to an ALREADY-existing release -
+# it doesn't handle two jobs racing to create the first one - so the
+# needs:/sequencing here isn't just about priority, it also avoids that race.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: File App Release
+
+on:
+  push:
+    tags:
+      - 'file-app-v[0-9]+.[0-9]+.[0-9]+'
+      - 'file-app-v[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: file-app-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VELOPACK_VERSION: 1.2.0
+  PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App/AStar.Dev.File.App.csproj
+  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App.Tests.Unit/AStar.Dev.File.App.Tests.Unit.csproj
+
+jobs:
+
+  release-linux:
+    name: Release (linux)
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      # ── Derive version from the tag ────────────────────────────────────────
+      # Tag:     file-app-v0.1.0
+      # VERSION → 0.1.0  (leading 'file-app-v' stripped)
+      - name: Extract version from tag
+        id: tag
+        shell: bash
+        run: |
+          RAW_TAG="${GITHUB_REF_NAME}"
+          VERSION="${RAW_TAG#file-app-v}"
+          IS_PRERELEASE=false
+          if [[ "$VERSION" == *"-"* ]]; then
+            IS_PRERELEASE=true
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Version : ${VERSION}"
+          echo "Pre-release : ${IS_PRERELEASE}"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version ${{ env.VELOPACK_VERSION }}
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${{ env.PROJECT_PATH }}"
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${{ env.VERSION }} \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Test
+        shell: bash
+        run: |
+          dotnet test "${{ env.TEST_PROJECT_PATH }}" \
+            --configuration Release \
+            --logger "trx;LogFileName=linux-results.trx" \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish self-contained linux-x64
+        shell: bash
+        run: |
+          dotnet publish "${{ env.PROJECT_PATH }}" \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained true \
+            -p:Version=${{ env.VERSION }} \
+            -p:PublishTrimmed=false \
+            -p:EnableTrimAnalyzer=false \
+            --output ./publish/linux-x64
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          NOTES="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          if [ -z "$NOTES" ]; then
+            NOTES="See the full changelog: https://github.com/${{ github.repository }}/releases/tag/${GITHUB_REF_NAME}"
+          fi
+          printf '%s\n' "$NOTES" > release-notes.md
+
+      - name: Pack with vpk
+        shell: bash
+        run: |
+          vpk pack \
+            --packId AStar.Dev.File.App \
+            --packVersion ${{ env.VERSION }} \
+            --packDir ./publish/linux-x64 \
+            --packAuthors "AStar Development" \
+            --packTitle "AStar Dev File App" \
+            --mainExe "AStar.Dev.File.App" \
+            --channel linux \
+            --releaseNotes release-notes.md \
+            --outputDir ./Releases
+
+      - name: Upload to GitHub Releases
+        shell: bash
+        run: |
+          vpk upload github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel linux \
+            --outputDir ./Releases \
+            --tag ${{ github.ref_name }} \
+            --releaseName "AStar Dev File App v${{ env.VERSION }}" \
+            --publish true \
+            --merge true \
+            --pre ${{ steps.tag.outputs.prerelease }}
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          files: TestResults/**/*.trx
+          check_name: File App (linux) — test results
+          fail_on: test failures
+
+  release-other-platforms:
+    name: Release (${{ matrix.channel }})
+    needs: release-linux
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            channel: win
+          - os: macos-latest
+            rid: osx-arm64
+            channel: osx
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Extract version from tag
+        id: tag
+        shell: bash
+        run: |
+          RAW_TAG="${GITHUB_REF_NAME}"
+          VERSION="${RAW_TAG#file-app-v}"
+          IS_PRERELEASE=false
+          if [[ "$VERSION" == *"-"* ]]; then
+            IS_PRERELEASE=true
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Version : ${VERSION}"
+          echo "Pre-release : ${IS_PRERELEASE}"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version ${{ env.VELOPACK_VERSION }}
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${{ env.PROJECT_PATH }}"
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${{ env.VERSION }} \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Test
+        shell: bash
+        run: |
+          dotnet test "${{ env.TEST_PROJECT_PATH }}" \
+            --configuration Release \
+            --logger "trx;LogFileName=${{ matrix.channel }}-results.trx" \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish self-contained ${{ matrix.rid }}
+        shell: bash
+        run: |
+          dotnet publish "${{ env.PROJECT_PATH }}" \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            -p:Version=${{ env.VERSION }} \
+            -p:PublishTrimmed=false \
+            -p:EnableTrimAnalyzer=false \
+            --output ./publish/${{ matrix.rid }}
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          NOTES="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          if [ -z "$NOTES" ]; then
+            NOTES="See the full changelog: https://github.com/${{ github.repository }}/releases/tag/${GITHUB_REF_NAME}"
+          fi
+          printf '%s\n' "$NOTES" > release-notes.md
+
+      - name: Pack with vpk
+        shell: bash
+        run: |
+          MAIN_EXE="AStar.Dev.File.App"
+          if [ "${{ matrix.channel }}" = "win" ]; then
+            MAIN_EXE="AStar.Dev.File.App.exe"
+          fi
+
+          vpk pack \
+            --packId AStar.Dev.File.App \
+            --packVersion ${{ env.VERSION }} \
+            --packDir ./publish/${{ matrix.rid }} \
+            --packAuthors "AStar Development" \
+            --packTitle "AStar Dev File App" \
+            --mainExe "$MAIN_EXE" \
+            --channel ${{ matrix.channel }} \
+            --releaseNotes release-notes.md \
+            --outputDir ./Releases
+
+      - name: Upload to GitHub Releases
+        shell: bash
+        run: |
+          vpk upload github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel ${{ matrix.channel }} \
+            --outputDir ./Releases \
+            --tag ${{ github.ref_name }} \
+            --releaseName "AStar Dev File App v${{ env.VERSION }}" \
+            --publish true \
+            --merge true \
+            --pre ${{ steps.tag.outputs.prerelease }}
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          files: TestResults/**/*.trx
+          check_name: File App (${{ matrix.channel }}) — test results
+          fail_on: test failures

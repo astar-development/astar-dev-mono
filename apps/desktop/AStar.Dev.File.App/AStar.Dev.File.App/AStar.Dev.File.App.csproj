@@ -52,11 +52,23 @@
     <PackageReference Include="Avalonia.ReactiveUI" />
     <PackageReference Include="ReactiveUI.Fody" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
