@@ -45,8 +45,8 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
-  PROJECT_PATH: apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.csproj
-  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.Clock.Tests.Unit/AStar.Dev.Clock.Tests.Unit.csproj
+  PROJECT_PATH: apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock/AStar.Dev.Clock.csproj
+  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.Clock/AStar.Dev.Clock.Tests.Unit/AStar.Dev.Clock.Tests.Unit.csproj
 
 jobs:
 
