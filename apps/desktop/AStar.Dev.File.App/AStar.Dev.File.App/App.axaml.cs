@@ -31,7 +31,6 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        ConfigureSerilog();
         _services = BuildServices();
 
         var factory = _services.GetRequiredService<IDbContextFactory<FileAppDbContext>>();
@@ -79,24 +78,6 @@ public partial class App : Application
         LogAppStarting(logger, _appVersion);
 
         return serviceProvider;
-    }
-
-    private static void ConfigureSerilog()
-    {
-        string logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationName, "logs");
-
-        _ = Directory.CreateDirectory(logDirectory);
-
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
-            .WriteTo.File(
-                path: Path.Combine(logDirectory, "app.log"),
-                formatProvider: CultureInfo.InvariantCulture,
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: LogRetentionDays)
-            .CreateLogger();
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Application starting — version {AppVersion}")]

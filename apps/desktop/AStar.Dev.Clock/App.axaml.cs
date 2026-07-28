@@ -1,10 +1,14 @@
+using AStar.Dev.Clock;
+using AStar.Dev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.LoggingSerilog;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace AStar.Dev.Clock;
 
@@ -37,9 +41,13 @@ public partial class App : Application, IDisposable
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();
 
-        return new ServiceCollection()
-            .AddApplicationServices(configuration)
-            .BuildServiceProvider();
+        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
+
+        var services = new ServiceCollection();
+        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
+        _ = services.AddVelopackUpdateServices(configuration);
+
+        return services.BuildServiceProvider();
     }
 
     public void Dispose()
