@@ -15,23 +15,27 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Velopack" />
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets/**"/>
+    <AvaloniaResource Include="Assets/**" />
   </ItemGroup>
   <!-- Rely on Avalonia SDK defaults to include **/*.axaml once -->
 
   <!-- Ensure nested duplicate sources under src/ are not included in this project -->
   <ItemGroup>
-    <Compile Remove="src/**/*.cs"/>
-    <AvaloniaResource Remove="src/**/*.axaml"/>
-    <None Remove="src/**"/>
-    <EmbeddedResource Remove="src/**"/>
+    <Compile Remove="src/**/*.cs" />
+    <AvaloniaResource Remove="src/**/*.axaml" />
+    <None Remove="src/**" />
+    <EmbeddedResource Remove="src/**" />
+    <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
+    <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
     <None Update="Assets/astar.ico">
       <Pack>true</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
