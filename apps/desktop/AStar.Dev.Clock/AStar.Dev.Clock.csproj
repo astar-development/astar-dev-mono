@@ -15,6 +15,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Testably.Abstractions" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
 
@@ -22,6 +23,7 @@
     <AvaloniaResource Include="Assets/**" />
   </ItemGroup>
   <!-- Rely on Avalonia SDK defaults to include **/*.axaml once -->
+
 
   <!-- Ensure nested duplicate sources under src/ are not included in this project -->
   <ItemGroup>
@@ -31,6 +33,7 @@
     <EmbeddedResource Remove="src/**" />
     <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
     <ProjectReference Include="../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
+    <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
     <None Update="Assets/astar.ico">
       <Pack>true</Pack>
       <PackagePath></PackagePath>

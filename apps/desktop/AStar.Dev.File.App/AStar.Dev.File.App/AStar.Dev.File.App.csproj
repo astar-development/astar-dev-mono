@@ -60,11 +60,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Velopack" />
+    <PackageReference Include="Testably.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
   </ItemGroup>
 
   <ItemGroup>
