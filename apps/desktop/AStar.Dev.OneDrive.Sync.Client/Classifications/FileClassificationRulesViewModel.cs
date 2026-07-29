@@ -62,6 +62,11 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 if (!suppressVisibleCategoriesRebuild)
                     RebuildVisibleCategories();
             };
+            node.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CategoryNodeViewModel.IsExpanded) && !suppressVisibleCategoriesRebuild)
+                    RebuildVisibleCategories();
+            };
             AttachStructureChangeHandlers(node.Children);
         }
     }
@@ -75,11 +80,27 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
     private void AppendVisible(CategoryNodeViewModel node)
     {
-        if (node.IncludeInSearch == ShowOnlyIncludedInSearch)
+        bool filterTextActive = !string.IsNullOrWhiteSpace(FilterText);
+        bool matchesFilterText = !filterTextActive || NodeOrDescendantMatchesFilterText(node);
+
+        if (node.IncludeInSearch == ShowOnlyIncludedInSearch && matchesFilterText)
             VisibleCategories.Add(node);
 
+        if (node.IsExpanded || (filterTextActive && matchesFilterText))
+            foreach (var child in node.Children)
+                AppendVisible(child);
+    }
+
+    private bool NodeOrDescendantMatchesFilterText(CategoryNodeViewModel node)
+    {
+        if (node.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+            return true;
+
         foreach (var child in node.Children)
-            AppendVisible(child);
+            if (NodeOrDescendantMatchesFilterText(child))
+                return true;
+
+        return false;
     }
 
     /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true; when false, only categories where it is false. Display-only; does not change stored data.</summary>
@@ -93,6 +114,11 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
 
     /// <summary>Label describing the current state of the <see cref="ShowOnlyIncludedInSearch"/> filter toggle.</summary>
     public string SearchFilterLabel => ShowOnlyIncludedInSearch ? "Showing: included in search" : "Showing: excluded from search";
+
+    /// <summary>Free-text filter narrowing <see cref="VisibleCategories"/> to nodes whose name, or a descendant's name, contains this value (case-insensitive). Ancestors of a match stay visible and force-expand regardless of <see cref="CategoryNodeViewModel.IsExpanded"/>.</summary>
+    [ObservableProperty]
+    public partial string FilterText { get; set; } = string.Empty;
+    partial void OnFilterTextChanged(string value) => RebuildVisibleCategories();
 
     /// <summary>True when the view model is loading data from the repository.</summary>
     [ObservableProperty]

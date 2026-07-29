@@ -126,8 +126,10 @@ public sealed class GivenFileClassificationsViewDisplay
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
         var view = new FileClassificationsView { DataContext = viewModel };
-        var window = new Window { Content = view, Width = 800, Height = 400 };
+        var window = new Window { Content = view, Width = 800, Height = 800 };
         window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
 
