@@ -82,12 +82,7 @@
         <File Path="package.json" />
         <File Path="README.md" />
     </Folder>
-    <Folder Name="/spikes/">
-        <Project Path="spikes/AStar.Dev.Database.Compare/AStar.Dev.Database.Compare.csproj" />
-        <Project Path="spikes/AStar.Dev.Database.Compare.Tests.Unit/AStar.Dev.Database.Compare.Tests.Unit.csproj" />
-    </Folder>
-    <Folder Name="/spikes/scrape-category-import-export-testing/">
-        <Project Path="spikes/scrape-category-import-export-testing/AStar.Dev.ScrapeCategoryImportExportTesting/AStar.Dev.ScrapeCategoryImportExportTesting.csproj" />
-    </Folder>
+    <Folder Name="/spikes/" />
+    <Folder Name="/spikes/scrape-category-import-export-testing/" />
     <Folder Name="/tests/" />
   </Solution>

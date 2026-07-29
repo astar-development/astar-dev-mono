@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AStar.Dev.Clock.Updates;
 
 /// <summary>Registers the Velopack update-check and update-notification services with the dependency injection container.</summary>
+[ExcludeFromCodeCoverage]
 public static class VelopackServiceCollectionExtensions
 {
     /// <summary>Registers <see cref="IVelopackUpdateService"/>, <see cref="IUpdateNotificationService"/>, and a plain <see cref="IUpdateDialogTextProvider"/>.</summary>
