@@ -17,7 +17,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = await db.FileClassificationCategories.Where(c => c.Name != "Unclassified").ToListAsync(cancellationToken).ConfigureAwait(false);
+        var entities = await db.FileClassificationCategories.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var categories = new List<FileClassificationCategory>(entities.Count);
         foreach (var e in entities)
@@ -39,6 +39,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
         return categories.AsReadOnly();
     }
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileClassificationCategoryEntity>> GetAllCategoriesSimpleAsync(CancellationToken cancellationToken = default)
     {
@@ -51,7 +52,11 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
     /// <inheritdoc />
     public Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default)
-        => Try.RunAsync(async () =>
+    {
+        if (category.Name == "Wallhaven")
+            return Task.FromResult<Result<FileClassificationCategoryId, string>>(new Fail<FileClassificationCategoryId, string>("Category name 'Wallhaven' is reserved and skipped."));
+
+        return Try.RunAsync(async () =>
             {
                 await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
@@ -70,6 +75,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
                 return new FileClassificationCategoryId(entity.Id);
             }).ToResultAsync(ex => ex.GetBaseException().Message);
+    }
 
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default)

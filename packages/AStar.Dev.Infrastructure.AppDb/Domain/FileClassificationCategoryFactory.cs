@@ -18,8 +18,8 @@ public static class FileClassificationCategoryFactory
         if (level == 1 && parentId is Option<FileClassificationCategoryId>.Some)
             return new Fail<FileClassificationCategory, string>("Level 1 category must not have a parent.");
 
-        if (level is 2 or 3 && parentId is Option<FileClassificationCategoryId>.None)
-            return new Fail<FileClassificationCategory, string>("Level 2 and 3 categories must have a parent.");
+        if (level > 1 && parentId is Option<FileClassificationCategoryId>.None)
+            return new Fail<FileClassificationCategory, string>("Level 2+ categories must have a parent.");
 
         return new Ok<FileClassificationCategory, string>(new(id, trimmedName, level, IsFamous, IsInternet, parentId, IncludeInSearch));
     }
