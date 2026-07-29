@@ -27,8 +27,12 @@
         <TextBlock Text="Parent"
                    FontSize="{StaticResource FontSizeSm}"
                    Foreground="{DynamicResource TextTertiaryBrush}"/>
-        <ComboBox ItemsSource="{Binding ParentOptionNames}"
-                  SelectedIndex="{Binding SelectedParentOptionIndex}"
+        <TextBox Text="{Binding ParentFilterText}"
+                 PlaceholderText="Filter by name"
+                 FontSize="{StaticResource FontSizeSm}"
+                 CornerRadius="{StaticResource RadiusMd}"/>
+        <ComboBox ItemsSource="{Binding FilteredParentOptionNames}"
+                  SelectedItem="{Binding SelectedParentOptionName}"
                   HorizontalAlignment="Stretch"/>
 
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
