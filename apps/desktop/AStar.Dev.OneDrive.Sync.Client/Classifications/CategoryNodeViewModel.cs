@@ -6,10 +6,12 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Classifications;
 
 /// <summary>Represents a category node in the file classification hierarchy tree.</summary>
+[ExcludeFromCodeCoverage]
 public sealed partial class CategoryNodeViewModel : ObservableObject
 {
     private readonly IFileClassificationRepository repository;
@@ -84,9 +86,6 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     [ObservableProperty]
     public partial int SelectedParentOptionIndex { get; set; }
-
-    /// <summary>Keywords assigned to this category (only populated for leaf nodes).</summary>
-    public ObservableCollection<KeywordRowViewModel> Keywords { get; } = [];
 
     [ObservableProperty]
     public partial bool IsFamous { get; set; }

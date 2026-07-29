@@ -1,10 +1,11 @@
 using Avalonia.Threading;
-
+using System.Diagnostics.CodeAnalysis;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
 /// <summary>
 /// Production implementation that posts work via <see cref="Dispatcher.UIThread"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class AvaloniaUiDispatcher : IUiDispatcher
 {
     /// <inheritdoc />
