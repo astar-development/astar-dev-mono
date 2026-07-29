@@ -20,21 +20,13 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         var entities = await db.FileClassificationCategories.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var categories = new List<FileClassificationCategory>(entities.Count);
-        foreach (var e in entities)
+        foreach (var fileClassificationCategory in entities)
         {
-            var result = FileClassificationCategoryFactory.Create(
-                new FileClassificationCategoryId(e.Id),
-                e.Name,
-                e.Level,
-                e.IsFamous,
-                e.IsInternet,
-                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>(),
-                e.IncludeInSearch
-            );
+            var result = fileClassificationCategory.ToDto();
 
             result.Tap(
-                ok => categories.Add(ok),
-                err => OneDriveSyncClientMessages.ClassificationRowSkipped(logger, e.Id, err));
+                categories.Add,
+                err => OneDriveSyncClientMessages.ClassificationRowSkipped(logger, fileClassificationCategory.Id, err));
         }
 
         return categories.AsReadOnly();
