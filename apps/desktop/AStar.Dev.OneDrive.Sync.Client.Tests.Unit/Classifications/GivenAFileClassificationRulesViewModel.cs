@@ -353,7 +353,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
-    public async Task when_load_async_called_then_visible_categories_is_flattened_preorder_tree_down_to_level_two()
+    public async Task when_load_async_called_then_only_root_categories_visible_by_default()
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
@@ -368,7 +368,26 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         await sut.LoadAsync(CancellationToken.None);
 
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media", "Photos"]);
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media"]);
+    }
+
+    [Fact]
+    public async Task when_root_node_expanded_then_its_level_two_children_become_visible()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        var media = sut.VisibleCategories.Single(node => node.Name == "Media");
+
+        media.ToggleExpandedCommand.Execute(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos"]);
     }
 
     [Fact]
@@ -384,30 +403,13 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult(categories));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
         await sut.LoadAsync(CancellationToken.None);
+        var media = sut.VisibleCategories.Single(node => node.Name == "Media");
+        media.ToggleExpandedCommand.Execute(null);
         var photos = sut.VisibleCategories.Single(node => node.Name == "Photos");
 
         photos.ToggleExpandedCommand.Execute(null);
 
         sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Holiday"]);
-    }
-
-    [Fact]
-    public async Task when_root_node_collapsed_then_its_children_become_hidden()
-    {
-        IReadOnlyList<FileClassificationCategory> categories =
-        [
-            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
-            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
-        ];
-        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
-                  .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
-        await sut.LoadAsync(CancellationToken.None);
-        var media = sut.VisibleCategories.Single(node => node.Name == "Media");
-
-        media.ToggleExpandedCommand.Execute(null);
-
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media"]);
     }
 
     [Fact]
@@ -492,6 +494,7 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult(categories));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
         await sut.LoadAsync(CancellationToken.None);
+        sut.Categories.Single(node => node.Name == "Media").ToggleExpandedCommand.Execute(null);
         sut.ShowOnlyIncludedInSearch = false;
 
         sut.VisibleCategories.Single(node => node.Name == "Archived").AncestorPath.ShouldBe("Media");

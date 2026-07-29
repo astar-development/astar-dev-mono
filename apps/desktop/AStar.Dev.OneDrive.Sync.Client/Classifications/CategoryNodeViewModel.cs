@@ -34,7 +34,6 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         IsInternet = isInternet;
         IncludeInSearch = includeInSearch;
         AncestorPath = ancestorPath;
-        IsExpanded = level == 1;
         this.parentId = parentId;
         this.repository = repository;
         this.categoryEditDialogService = categoryEditDialogService;
@@ -237,6 +236,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             {
                 var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync, childAncestorPath);
                 Children.Add(newChild);
+                IsExpanded = true;
             })
             .ConfigureAwait(false);
 

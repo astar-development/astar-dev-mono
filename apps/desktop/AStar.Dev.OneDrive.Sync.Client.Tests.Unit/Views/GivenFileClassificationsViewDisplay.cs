@@ -130,6 +130,7 @@ public sealed class GivenFileClassificationsViewDisplay
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
+        viewModel.VisibleCategories.Single(node => node.Name == "Media").ToggleExpandedCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
 
