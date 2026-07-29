@@ -253,4 +253,83 @@ public sealed class GivenACategoryNodeViewModel
 
         sut.IsExpanded.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task when_edit_command_executed_then_filtered_parent_option_names_equals_full_list()
+    {
+        var sut = CreateSut();
+
+        await sut.EditCommand.ExecuteAsync(null);
+
+        sut.FilteredParentOptionNames.ShouldBe(sut.ParentOptionNames);
+    }
+
+    [Fact]
+    public async Task when_parent_filter_text_set_then_filtered_parent_option_names_narrows_to_matches()
+    {
+        List<CategoryNodeViewModel> allCategories = [];
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var downloads = new CategoryNodeViewModel(new FileClassificationCategoryId(3), "Downloads", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        allCategories.AddRange([sut, documents, downloads]);
+        await sut.EditCommand.ExecuteAsync(null);
+
+        sut.ParentFilterText = "Down";
+
+        sut.FilteredParentOptionNames.ShouldBe(["Downloads"]);
+    }
+
+    [Fact]
+    public async Task when_parent_filter_text_cleared_then_full_list_restored()
+    {
+        List<CategoryNodeViewModel> allCategories = [];
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        allCategories.AddRange([sut, documents]);
+        await sut.EditCommand.ExecuteAsync(null);
+        sut.ParentFilterText = "Documents";
+
+        sut.ParentFilterText = string.Empty;
+
+        sut.FilteredParentOptionNames.ShouldBe(sut.ParentOptionNames);
+    }
+
+    [Fact]
+    public async Task when_edit_command_executed_then_parent_filter_text_is_cleared()
+    {
+        var sut = CreateSut();
+        await sut.EditCommand.ExecuteAsync(null);
+        sut.ParentFilterText = "Documents";
+
+        await sut.EditCommand.ExecuteAsync(null);
+
+        sut.ParentFilterText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_selected_parent_option_name_set_then_selected_parent_option_index_updated_to_matching_candidate()
+    {
+        List<CategoryNodeViewModel> allCategories = [];
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        allCategories.AddRange([sut, documents]);
+        await sut.EditCommand.ExecuteAsync(null);
+
+        sut.SelectedParentOptionName = "Documents";
+
+        sut.SelectedParentOptionIndex.ShouldBe(sut.ParentOptionNames.ToList().IndexOf("Documents"));
+    }
+
+    [Fact]
+    public async Task when_selected_parent_option_index_matches_then_selected_parent_option_name_returns_its_name()
+    {
+        List<CategoryNodeViewModel> allCategories = [];
+        var sut = new CategoryNodeViewModel(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        var documents = new CategoryNodeViewModel(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => { }, allCategories, () => Task.CompletedTask);
+        allCategories.AddRange([sut, documents]);
+        await sut.EditCommand.ExecuteAsync(null);
+        sut.SelectedParentOptionIndex = sut.ParentOptionNames.ToList().IndexOf("Documents");
+
+        sut.SelectedParentOptionName.ShouldBe("Documents");
+    }
 }

@@ -88,8 +88,28 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     /// <summary>Display names of the categories this node can be reparented under, with a leading "no parent" option. Populated when editing starts.</summary>
     public ObservableCollection<string> ParentOptionNames { get; } = [];
 
+    /// <summary><see cref="ParentOptionNames"/> narrowed by <see cref="ParentFilterText"/>, for the parent picker's ComboBox.</summary>
+    public ObservableCollection<string> FilteredParentOptionNames { get; } = [];
+
+    [ObservableProperty]
+    public partial string ParentFilterText { get; set; } = string.Empty;
+    partial void OnParentFilterTextChanged(string value) => RefreshFilteredParentOptionNames();
+
     [ObservableProperty]
     public partial int SelectedParentOptionIndex { get; set; }
+    partial void OnSelectedParentOptionIndexChanged(int value) => OnPropertyChanged(nameof(SelectedParentOptionName));
+
+    /// <summary>Name of the currently-selected parent option, for binding to a filtered ComboBox's SelectedItem.</summary>
+    public string? SelectedParentOptionName
+    {
+        get => ParentOptionNames.ElementAtOrDefault(SelectedParentOptionIndex);
+        set
+        {
+            int matchingIndex = ParentOptionNames.IndexOf(value ?? string.Empty);
+            if (matchingIndex >= 0)
+                SelectedParentOptionIndex = matchingIndex;
+        }
+    }
 
     [ObservableProperty]
     public partial bool IsFamous { get; set; }
@@ -113,6 +133,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         originalIsFamous = IsFamous;
         originalIsInternet = IsInternet;
         originalIncludeInSearch = IncludeInSearch;
+        ParentFilterText = string.Empty;
         RefreshParentOptions();
         IsEditing = true;
 
@@ -137,6 +158,15 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             ? parentOptionCandidates.FindIndex(candidate => candidate is not null && candidate.CategoryId.Equals(someParent.Value))
             : 0;
         SelectedParentOptionIndex = currentParentIndex >= 0 ? currentParentIndex : 0;
+
+        RefreshFilteredParentOptionNames();
+    }
+
+    private void RefreshFilteredParentOptionNames()
+    {
+        FilteredParentOptionNames.Clear();
+        foreach (string name in ParentOptionNames.Where(name => name.Contains(ParentFilterText, StringComparison.OrdinalIgnoreCase)))
+            FilteredParentOptionNames.Add(name);
     }
 
     private HashSet<CategoryNodeViewModel> SelfAndDescendants()
