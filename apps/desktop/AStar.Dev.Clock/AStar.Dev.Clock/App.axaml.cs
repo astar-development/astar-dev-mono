@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Clock.Theming;
 using AStar.Dev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
@@ -13,6 +14,7 @@ using Testably.Abstractions;
 
 namespace AStar.Dev.Clock;
 
+[ExcludeFromCodeCoverage]
 public partial class App : Application, IDisposable
 {
     private ServiceProvider? services;

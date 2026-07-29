@@ -2,7 +2,6 @@ using System.Globalization;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.OneDrive.Sync.Client.Home;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.DataMigration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, IClassificationDataMigrationService classificationDataMigrationService, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
+public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, ILogger<AppBootstrapper> logger) : IAppBootstrapper
 {
     /// <inheritdoc />
     public async Task BootstrapAsync(IProgress<string> progress, CancellationToken cancellationToken = default)
@@ -23,9 +22,6 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
             progress.Report("Migrating database…");
             await using var context = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
             await context.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
-
-            progress.Report("Migrating classification data…");
-            await classificationDataMigrationService.MigrateAsync(cancellationToken).ConfigureAwait(false);
 
             progress.Report("Loading settings…");
             await settingsService.LoadAsync(cancellationToken).ConfigureAwait(false);
