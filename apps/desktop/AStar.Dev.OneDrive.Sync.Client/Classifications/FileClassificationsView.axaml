@@ -24,6 +24,12 @@
                            TextWrapping="Wrap"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBox Text="{Binding FilterText}"
+                         PlaceholderText="Filter by name"
+                         FontSize="{StaticResource FontSizeSm}"
+                         CornerRadius="{StaticResource RadiusMd}"
+                         MinWidth="180"
+                         VerticalAlignment="Center"/>
                 <ToggleSwitch Content="{Binding SearchFilterLabel}"
                               IsChecked="{Binding ShowOnlyIncludedInSearch}"
                               FontSize="{StaticResource FontSizeSm}"
@@ -103,6 +109,20 @@
                                     <!-- Category header -->
                                     <Grid ColumnDefinitions="*,Auto">
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Button Content="{Binding ExpandCollapseGlyph}"
+                                                    Command="{Binding ToggleExpandedCommand}"
+                                                    IsVisible="{Binding !IsLeafNode}"
+                                                    Padding="0"
+                                                    Width="16"
+                                                    Height="16"
+                                                    MinWidth="0"
+                                                    MinHeight="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Center"
+                                                    VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding Name}"
                                                        FontSize="{StaticResource FontSizeMd}"
                                                        FontWeight="Medium"

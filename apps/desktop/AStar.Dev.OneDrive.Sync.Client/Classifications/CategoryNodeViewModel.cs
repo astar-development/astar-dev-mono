@@ -65,6 +65,10 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsExpanded { get; set; }
+    partial void OnIsExpandedChanged(bool value) => OnPropertyChanged(nameof(ExpandCollapseGlyph));
+
+    /// <summary>Chevron glyph reflecting <see cref="IsExpanded"/>, for the expand/collapse toggle button.</summary>
+    public string ExpandCollapseGlyph => IsExpanded ? "▾" : "▸";
 
     [ObservableProperty]
     public partial bool IsEditing { get; set; }
@@ -232,11 +236,15 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             {
                 var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync, childAncestorPath);
                 Children.Add(newChild);
+                IsExpanded = true;
             })
             .ConfigureAwait(false);
 
         NewChildCategoryName = string.Empty;
     }
+
+    [RelayCommand]
+    private void ToggleExpanded() => IsExpanded = !IsExpanded;
 
     [RelayCommand]
     private async Task DeleteSelfAsync()
