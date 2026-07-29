@@ -216,4 +216,30 @@ public sealed class GivenACategoryNodeViewModel
 
         reloadInvoked.ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_level_is_1_then_is_expanded_defaults_to_true()
+    {
+        var sut = CreateSut(level: 1);
+
+        sut.IsExpanded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_level_is_2_then_is_expanded_defaults_to_false()
+    {
+        var sut = CreateSut(level: 2);
+
+        sut.IsExpanded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_toggle_expanded_command_executed_then_is_expanded_flips()
+    {
+        var sut = CreateSut(level: 2);
+
+        sut.ToggleExpandedCommand.Execute(null);
+
+        sut.IsExpanded.ShouldBeTrue();
+    }
 }

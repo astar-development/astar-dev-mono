@@ -353,7 +353,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
-    public async Task when_load_async_called_then_visible_categories_is_flattened_preorder_tree()
+    public async Task when_load_async_called_then_visible_categories_is_flattened_preorder_tree_down_to_level_two()
     {
         IReadOnlyList<FileClassificationCategory> categories =
         [
@@ -368,7 +368,65 @@ public sealed class GivenAFileClassificationRulesViewModel
 
         await sut.LoadAsync(CancellationToken.None);
 
-        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media", "Photos", "Holiday"]);
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media", "Photos"]);
+    }
+
+    [Fact]
+    public async Task when_level_two_node_expanded_then_its_level_three_children_become_visible()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true),
+            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        var photos = sut.VisibleCategories.Single(node => node.Name == "Photos");
+
+        photos.ToggleExpandedCommand.Execute(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Holiday"]);
+    }
+
+    [Fact]
+    public async Task when_root_node_collapsed_then_its_children_become_hidden()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        var media = sut.VisibleCategories.Single(node => node.Name == "Media");
+
+        media.ToggleExpandedCommand.Execute(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media"]);
+    }
+
+    [Fact]
+    public async Task when_filter_text_matches_a_collapsed_descendant_then_it_becomes_visible()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true),
+            new(new FileClassificationCategoryId(3), "Holiday", 3, false, false, Option.Some(new FileClassificationCategoryId(2)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.FilterText = "Holiday";
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos", "Holiday"]);
     }
 
     [Fact]
@@ -577,5 +635,86 @@ public sealed class GivenAFileClassificationRulesViewModel
         sut.ShowOnlyIncludedInSearch = false;
 
         sut.SearchFilterLabel.ShouldBe("Showing: excluded from search");
+    }
+
+    [Fact]
+    public void when_view_model_created_then_filter_text_defaults_to_empty()
+    {
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+
+        sut.FilterText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_filter_text_set_then_visible_categories_only_includes_matching_names()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.FilterText = "doc";
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
+    }
+
+    [Fact]
+    public async Task when_filter_text_matches_only_a_descendant_then_ancestor_stays_visible()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.FilterText = "Photos";
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media", "Photos"]);
+    }
+
+    [Fact]
+    public async Task when_filter_text_cleared_then_previous_visible_categories_restored()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+        sut.FilterText = "doc";
+
+        sut.FilterText = string.Empty;
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents", "Media"]);
+    }
+
+    [Fact]
+    public async Task when_filter_text_matches_a_name_excluded_by_search_toggle_then_it_stays_hidden()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Documents", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Document Archive", 1, false, false, Option.None<FileClassificationCategoryId>(), false)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        await sut.LoadAsync(CancellationToken.None);
+
+        sut.FilterText = "Document";
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
     }
 }
