@@ -51,8 +51,8 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 Tag format: bare `v{version}`.
 
 ```bash
-git tag onedrive-sync-v0.36.3
-git push origin onedrive-sync-v0.36.3
+git tag onedrive-sync-v1.0.2
+git push origin onedrive-sync-v1.0.2
 ```
 
 Prerelease: `git tag onedrive-sync-v0.35.0-rc.1`
@@ -68,12 +68,11 @@ release. All platforms publish to the **same** GitHub Release (`vpk upload --mer
 
 ## 3. Publish the Wallpaper Scraper
 
-Tag format: `scraper-v{version}` — **not** bare `v{version}` (that's the OneDrive
-namespace — see the collision note below).
+Tag format: `scraper-v{version}` — **not** bare `v{version}`.
 
 ```bash
-git tag scraper-v0.10.14
-git push origin scraper-v0.10.14
+git tag scraper-v1.0.0
+git push origin scraper-v1.0.0
 ```
 
 What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64
@@ -88,8 +87,8 @@ twice).
 Tag format: `file-app-v{version}`.
 
 ```bash
-git tag file-app-v1.0.0
-git push origin file-app-v1.0.0
+git tag file-app-v1.0.1
+git push origin file-app-v1.0.1
 ```
 
 Prerelease: `git tag file-app-v0.1.0-rc.1`
@@ -107,8 +106,8 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 Tag format: `clock-v{version}`.
 
 ```bash
-git tag clock-v1.1.1
-git push origin clock-v1.1.1
+git tag clock-v1.1.2
+git push origin clock-v1.1.2
 ```
 
 Prerelease: `git tag clock-v0.1.0-rc.1`

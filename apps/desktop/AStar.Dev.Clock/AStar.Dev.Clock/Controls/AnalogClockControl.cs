@@ -4,9 +4,11 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AStar.Dev.Clock.Controls;
 
+[ExcludeFromCodeCoverage]
 public class AnalogClockControl : Control
 {
     private readonly DispatcherTimer _timer;
@@ -63,9 +65,7 @@ public class AnalogClockControl : Control
         var center = bounds.Center;
         double radius = Math.Min(bounds.Width, bounds.Height) * 0.45;
 
-        // Theme-aware brushes
-        bool isDark = ActualThemeVariant == ThemeVariant.Dark
-                     || Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
+        bool isDark = ActualThemeVariant == ThemeVariant.Dark || Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
         var foreground = Foreground ?? (isDark ? Brushes.White : Brushes.Black);
 
         var faceBrush = isDark ? new SolidColorBrush(Color.FromUInt32(0xFF22252A)) : new SolidColorBrush(Color.FromUInt32(0xFFFFFFFF));
@@ -73,63 +73,69 @@ public class AnalogClockControl : Control
         var tickPen = new Pen(foreground, 2);
         var minorTickPen = new Pen(foreground);
 
-        // Draw clock face
-        context.DrawEllipse(faceBrush, facePen, center, radius, radius);
+        DrawClockFace(context, center, radius, faceBrush, facePen);
 
-        // Draw ticks
-        for (int i = 0; i < 60; i++)
-        {
-            double angle = Math.PI * 2 * (i / 60.0) - Math.PI / 2; // start at 12 o'clock
-            double cos = Math.Cos(angle);
-            double sin = Math.Sin(angle);
+        DrawTicks(context, center, radius, tickPen, minorTickPen);
 
-            var outer = new Point(center.X + cos * radius * 0.95, center.Y + sin * radius * 0.95);
-            double innerLen = (i % 5 == 0) ? 0.78 : 0.88; // hour ticks longer
-            var inner = new Point(center.X + cos * radius * innerLen, center.Y + sin * radius * innerLen);
-            context.DrawLine(i % 5 == 0 ? tickPen : minorTickPen, inner, outer);
-        }
+        DrawHoursNumbers(context, center, radius, foreground);
 
-        // Draw hour numbers (1-12)
-        // Keep them inside the hour ticks a bit
-        double numberRadius = radius * 0.66;
-        var numberTypeface = new Typeface(Typeface.Default.FontFamily, FontStyle.Normal, FontWeight.SemiBold);
-        double numberSize = Math.Max(10, radius * 0.12); // scale with control size, clamp to a readable minimum
-        var culture = CultureInfo.CurrentUICulture;
-        const FlowDirection flow = FlowDirection.LeftToRight;
-        for (int h = 1; h <= 12; h++)
-        {
-            double angle = Math.PI * 2 * (h / 12.0) - Math.PI / 2; // 12 at the top
-            double cos = Math.Cos(angle);
-            double sin = Math.Sin(angle);
-
-            var pos = new Point(center.X + cos * numberRadius, center.Y + sin * numberRadius);
-
-            // Use FormattedText so we can measure and center precisely
-            string text = h.ToString(culture);
-            var ft = new FormattedText(text, culture, flow, numberTypeface, numberSize, foreground);
-            // Approximate text size since FormattedText doesn't expose Size in this API surface
-            double approxWidth = (text.Length == 1 ? 0.6 : 0.9) * numberSize;
-            double approxHeight = numberSize; // rough height equals font size
-            // Center the text at computed position
-            var origin = new Point(pos.X - approxWidth / 2.0, pos.Y - approxHeight / 2.0);
-            context.DrawText(ft, origin);
-        }
-
-        // Current time
         var now = DateTime.Now;
         double sec = now.Second + now.Millisecond / 1000.0;
         double min = now.Minute + sec / 60.0;
         double hour = now.Hour % 12 + min / 60.0;
 
-        // Hands
         DrawHand(context, center, radius * 0.55, hour / 12.0, 5, Brushes.Red);
         DrawHand(context, center, radius * 0.75, min / 60.0, 3, Brushes.Blue);
         if (ShowSecondHand) DrawHand(context, center, radius * 0.85, sec / 60.0, 1.5, isDark ? Brushes.White : Brushes.Black);
 
         // Center cap
-        context.DrawGeometry(isDark ? Brushes.OrangeRed : Brushes.Crimson, null,
-            new EllipseGeometry(new Rect(center.X - 3, center.Y - 3, 6, 6)));
+        context.DrawGeometry(isDark ? Brushes.OrangeRed : Brushes.Crimson, null, new EllipseGeometry(new Rect(center.X - 3, center.Y - 3, 6, 6)));
     }
+
+    private static void DrawHoursNumbers(DrawingContext context, Point center, double radius, IBrush foreground)
+    {
+        double numberRadius = radius * 0.66;
+        var numberTypeface = new Typeface(Typeface.Default.FontFamily, FontStyle.Normal, FontWeight.SemiBold);
+        double numberSize = ScaleSizeClampedToReadable(radius);
+        var culture = CultureInfo.CurrentUICulture;
+        const FlowDirection flow = FlowDirection.LeftToRight;
+        for (int h = 1; h <= 12; h++)
+        {
+            double angle = Math.PI * 2 * (h / 12.0) - Math.PI / 2;
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+
+            var pos = new Point(center.X + cos * numberRadius, center.Y + sin * numberRadius);
+
+            string text = h.ToString(culture);
+            var ft = new FormattedText(text, culture, flow, numberTypeface, numberSize, foreground);
+            double approxWidth = (text.Length == 1 ? 0.6 : 0.9) * numberSize;
+            double approxHeight = numberSize;
+            var origin = new Point(pos.X - approxWidth / 2.0, pos.Y - approxHeight / 2.0);
+            context.DrawText(ft, origin);
+        }
+    }
+
+    private static double ScaleSizeClampedToReadable(double radius) => Math.Max(10, radius * 0.12);
+
+    private static void DrawClockFace(DrawingContext context, Point center, double radius, SolidColorBrush faceBrush, Pen facePen) => context.DrawEllipse(faceBrush, facePen, center, radius, radius);
+
+    private static void DrawTicks(DrawingContext context, Point center, double radius, Pen tickPen, Pen minorTickPen)
+    {
+        for (int i = 0; i < 60; i++)
+        {
+            double angle = SetAngleWith12AtTheTop(i);
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+
+            var outer = new Point(center.X + cos * radius * 0.95, center.Y + sin * radius * 0.95);
+            double innerLen = (i % 5 == 0) ? 0.78 : 0.88;
+            var inner = new Point(center.X + cos * radius * innerLen, center.Y + sin * radius * innerLen);
+            context.DrawLine(i % 5 == 0 ? tickPen : minorTickPen, inner, outer);
+        }
+    }
+
+    private static double SetAngleWith12AtTheTop(int i) => Math.PI * 2 * (i / 60.0) - Math.PI / 2;
 
     private static void DrawHand(DrawingContext ctx, Point center, double length, double unit, double thickness, IBrush brush)
     {
