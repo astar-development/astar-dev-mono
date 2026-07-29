@@ -17,28 +17,21 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var entities = await db.FileClassificationCategories.Where(c => c.Name != "Unclassified").ToListAsync(cancellationToken).ConfigureAwait(false);
+        var entities = await db.FileClassificationCategories.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var categories = new List<FileClassificationCategory>(entities.Count);
-        foreach (var e in entities)
+        foreach (var fileClassificationCategory in entities)
         {
-            var result = FileClassificationCategoryFactory.Create(
-                new FileClassificationCategoryId(e.Id),
-                e.Name,
-                e.Level,
-                e.IsFamous,
-                e.IsInternet,
-                e.ParentId.HasValue ? Option.Some(new FileClassificationCategoryId(e.ParentId.Value)) : Option.None<FileClassificationCategoryId>(),
-                e.IncludeInSearch
-            );
+            var result = fileClassificationCategory.ToDto();
 
             result.Tap(
-                ok => categories.Add(ok),
-                err => OneDriveSyncClientMessages.ClassificationRowSkipped(logger, e.Id, err));
+                categories.Add,
+                err => OneDriveSyncClientMessages.ClassificationRowSkipped(logger, fileClassificationCategory.Id, err));
         }
 
         return categories.AsReadOnly();
     }
+
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileClassificationCategoryEntity>> GetAllCategoriesSimpleAsync(CancellationToken cancellationToken = default)
     {
@@ -51,7 +44,11 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
     /// <inheritdoc />
     public Task<Result<FileClassificationCategoryId, string>> AddCategoryAsync(FileClassificationCategory category, CancellationToken cancellationToken = default)
-        => Try.RunAsync(async () =>
+    {
+        if (category.Name == "Wallhaven")
+            return Task.FromResult<Result<FileClassificationCategoryId, string>>(new Fail<FileClassificationCategoryId, string>("Category name 'Wallhaven' is reserved and skipped."));
+
+        return Try.RunAsync(async () =>
             {
                 await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
@@ -70,6 +67,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
 
                 return new FileClassificationCategoryId(entity.Id);
             }).ToResultAsync(ex => ex.GetBaseException().Message);
+    }
 
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default)
