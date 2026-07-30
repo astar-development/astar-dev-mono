@@ -2,18 +2,18 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--color-bg-surface);
-    border-bottom: 1px solid var(--color-border);
-    box-shadow: var(--shadow-sm);
+    background: rgb(255 251 242 / 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 2px solid var(--color-border);
 }
 
 .site-header__inner {
     display: flex;
     align-items: center;
     gap: 1rem;
-    max-width: 1280px;
+    max-width: var(--container-max-width);
     margin: 0 auto;
-    padding: 0.75rem 1.5rem;
+    padding: 16px 2rem;
 }
 
 .site-header__logo {
@@ -23,9 +23,23 @@
 
 .site-header__logo-text {
     font-family: var(--font-family-display);
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--color-primary);
+    font-size: 26px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.site-header__logo-syllable--fab {
+    color: var(--color-subject-english);
+}
+
+.site-header__logo-syllable--4 {
+    color: var(--color-subject-history);
+}
+
+.site-header__logo-syllable--kids {
+    color: var(--color-subject-geography);
 }
 
 .site-header__nav {
@@ -34,32 +48,30 @@
 
 .site-header__nav-list {
     display: flex;
-    gap: 0.25rem;
+    gap: 1.25rem;
     list-style: none;
 }
 
 .site-header__nav-link {
     display: block;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-md);
+    padding: 0.375rem 0.25rem;
     color: var(--color-text);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 700;
     font-size: 0.9375rem;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .site-header__nav-link:hover {
-    background: var(--color-bg);
     color: var(--color-primary);
 }
 
 .site-header__search {
     display: flex;
     align-items: center;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    background: var(--color-bg-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-pill);
     overflow: hidden;
 }
 

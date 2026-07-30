@@ -51,7 +51,7 @@ public class GivenANewsletterForm : Bunit.BunitContext
 
         await cut.Find("form").SubmitAsync();
 
-        cut.Find("div.status-message--success").TextContent.ShouldContain("Thanks for subscribing");
+        cut.Find("div.status-message--success").TextContent.ShouldContain("You're on the list");
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class GivenANewsletterForm : Bunit.BunitContext
 
         await cut.Find("form").SubmitAsync();
 
-        cut.Find("div.status-message--success").TextContent.ShouldContain("Thanks for subscribing");
+        cut.Find("div.status-message--success").TextContent.ShouldContain("You're on the list");
     }
 
     [Fact]

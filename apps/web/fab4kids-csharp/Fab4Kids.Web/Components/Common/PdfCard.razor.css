@@ -2,15 +2,15 @@
     display: flex;
     flex-direction: column;
     background: var(--color-bg-surface);
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: var(--radius-lg);
     overflow: hidden;
 }
 
 .pdf-card__media {
     position: relative;
-    height: 140px;
-    background: var(--color-bg-alt);
+    height: 150px;
+    background: var(--color-bg);
 }
 
 .pdf-card__badge {
@@ -74,9 +74,9 @@
 }
 
 .pdf-card__add-btn {
-    padding: 0.4rem 0.9rem;
+    padding: 0.5rem 0.875rem;
     border: none;
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-sm);
     background: var(--color-accent-yellow);
     color: var(--color-text);
     font-weight: 700;

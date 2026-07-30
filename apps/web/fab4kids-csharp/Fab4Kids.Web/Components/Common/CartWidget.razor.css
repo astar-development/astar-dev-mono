@@ -7,12 +7,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.25rem;
-    background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    width: 44px;
+    height: 40px;
+    font-size: 1.125rem;
+    background: var(--color-accent-yellow);
+    border: none;
+    border-radius: var(--radius-sm);
     cursor: pointer;
 }
 
@@ -26,9 +26,9 @@
     font-weight: 700;
     line-height: 1.25rem;
     text-align: center;
-    color: var(--color-bg-surface);
-    background: var(--color-accent, #d64545);
-    border-radius: 999px;
+    color: var(--color-primary-contrast);
+    background: var(--color-primary);
+    border-radius: var(--radius-pill);
 }
 
 .cart-widget__drawer {
