@@ -6,7 +6,7 @@
 {
     <PageTitle>@category.Name @subcategory.Name Resources | fab4kids</PageTitle>
 
-    <section class="hero">
+    <section class="hero" style="background-color:@(accent is null ? "var(--color-bg-alt)" : $"color-mix(in srgb, {accent.Color} 10%, var(--color-bg))")">
         <div class="container">
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 <ol>
@@ -15,7 +15,10 @@
                     <li aria-current="page">@subcategory.Name</li>
                 </ol>
             </nav>
-            <h1 class="hero__title">@category.Name — @subcategory.Name Resources</h1>
+            <div class="hero__title-row">
+                <span class="hero__badge" style="background-color:@(accent?.Color ?? "var(--color-primary)")">@(accent?.Letter ?? category.Name[..1])</span>
+                <h1 class="hero__title">@category.Name — @subcategory.Name Resources</h1>
+            </div>
             <p class="hero__subtitle">@subcategory.Name @category.Name resources for teachers and parents.</p>
         </div>
     </section>
@@ -37,12 +40,17 @@
             }
             else
             {
-                <ul class="pdf-list">
+                <div class="resource-grid">
                     @foreach (var file in subcategory.Files)
                     {
-                        <li><PdfCard File="file" /></li>
+                        <PdfCard
+                            File="file"
+                            Href="@ResourceRoutes.DetailHref(subject, file.Id)"
+                            SubjectName="@category.Name"
+                            SubjectColor="@(accent?.Color ?? "var(--color-primary)")"
+                            KeyStageLabel="@subcategory.Name" />
                     }
-                </ul>
+                </div>
             }
         </div>
     </section>

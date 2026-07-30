@@ -3,7 +3,6 @@ using Bunit;
 using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components.Layout;
-using Fab4Kids.Web.Theming;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -14,7 +13,6 @@ public class GivenAHeader : Bunit.BunitContext
     public GivenAHeader()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Services.AddSingleton(new ThemeState(Substitute.For<ILocalStorageService>()));
         Services.AddSingleton(new CartState(Substitute.For<ILocalStorageService>()));
         Services.AddSingleton(Substitute.For<ICheckoutSessionService>());
     }
@@ -36,10 +34,34 @@ public class GivenAHeader : Bunit.BunitContext
     }
 
     [Fact]
-    public void when_rendered_then_the_theme_switcher_is_shown()
+    public void when_rendered_then_the_mobile_nav_is_closed()
     {
         var cut = Render<Header>();
 
-        cut.FindAll("div.theme-switcher").Count.ShouldBe(1);
+        cut.Find("button#hamburger-btn").GetAttribute("aria-expanded").ShouldBe("false");
+        cut.Find("nav#primary-nav").ClassList.ShouldNotContain("site-header__nav--open");
+    }
+
+    [Fact]
+    public void when_the_hamburger_button_is_clicked_then_the_mobile_nav_opens()
+    {
+        var cut = Render<Header>();
+
+        cut.Find("button#hamburger-btn").Click();
+
+        cut.Find("button#hamburger-btn").GetAttribute("aria-expanded").ShouldBe("true");
+        cut.Find("nav#primary-nav").ClassList.ShouldContain("site-header__nav--open");
+    }
+
+    [Fact]
+    public void when_the_hamburger_button_is_clicked_twice_then_the_mobile_nav_closes_again()
+    {
+        var cut = Render<Header>();
+
+        cut.Find("button#hamburger-btn").Click();
+        cut.Find("button#hamburger-btn").Click();
+
+        cut.Find("button#hamburger-btn").GetAttribute("aria-expanded").ShouldBe("false");
+        cut.Find("nav#primary-nav").ClassList.ShouldNotContain("site-header__nav--open");
     }
 }

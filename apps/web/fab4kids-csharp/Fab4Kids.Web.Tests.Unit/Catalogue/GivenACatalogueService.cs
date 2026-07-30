@@ -60,6 +60,28 @@ public class GivenACatalogueService
     }
 
     [Fact]
+    public void when_looking_up_a_known_file_id_under_its_subject_then_it_is_returned()
+    {
+        sut.GetFileById("maths", 1).TryGetValue(out var lookup).ShouldBeTrue();
+
+        lookup.Category.Name.ShouldBe("Maths");
+        lookup.Subcategory.Name.ShouldBe("KS1");
+        lookup.File.Name.ShouldBe("Times Tables Pack");
+    }
+
+    [Fact]
+    public void when_looking_up_a_file_id_under_the_wrong_subject_then_none_is_returned()
+    {
+        sut.GetFileById("english", 1).TryGetValue(out _).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_looking_up_an_unknown_file_id_then_none_is_returned()
+    {
+        sut.GetFileById("maths", 999).TryGetValue(out _).ShouldBeFalse();
+    }
+
+    [Fact]
     public void when_searching_a_blank_query_then_no_results_are_returned()
     {
         sut.Search(string.Empty).ShouldBeEmpty();

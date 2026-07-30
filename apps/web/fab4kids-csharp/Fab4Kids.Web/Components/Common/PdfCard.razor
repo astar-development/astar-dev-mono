@@ -2,15 +2,44 @@
 @using Fab4Kids.Web.Catalogue
 @inject Fab4Kids.Web.Cart.CartState CartState
 
-<article class="pdf-card">
-    <h3 class="pdf-card__name">@File.Name</h3>
-    <p class="pdf-card__price">@File.Price.ToString("C", PriceCulture)</p>
-    <div class="pdf-card__actions">
-        <a href="@File.Url" class="btn btn--secondary" target="_blank" rel="noopener noreferrer" aria-label="View @File.Name">
-            View
-        </a>
-        <button type="button" class="btn btn--primary" disabled="@added" @onclick="AddToBasketAsync">
-            @(added ? "Added ✓" : "Add to basket")
-        </button>
+<article class="pdf-card card-hover-lift">
+    <div class="pdf-card__media" aria-hidden="true">
+        @if (!string.IsNullOrEmpty(SubjectName))
+        {
+            <span class="pdf-card__badge pdf-card__badge--subject" style="background-color:@SubjectColor">@SubjectName</span>
+        }
+        <span class="pdf-card__badge pdf-card__badge--format">@Format</span>
+    </div>
+
+    <div class="pdf-card__body">
+        <h3 class="pdf-card__name">
+            @if (Href is not null)
+            {
+                <a href="@Href" class="pdf-card__name-link">@File.Name</a>
+            }
+            else
+            {
+                @File.Name
+            }
+        </h3>
+
+        @if (!string.IsNullOrEmpty(KeyStageLabel))
+        {
+            <p class="pdf-card__stage">@KeyStageLabel</p>
+        }
+
+        <div class="pdf-card__footer">
+            <span class="pdf-card__price">@File.Price.ToString("C", PriceCulture)</span>
+            <button type="button" class="pdf-card__add-btn" disabled="@added" aria-label="Add @File.Name to basket" @onclick="AddToBasketAsync">
+                @(added ? "Added ✓" : "Add +")
+            </button>
+        </div>
+
+        @if (Href is null)
+        {
+            <a href="@File.Url" class="btn btn--secondary" target="_blank" rel="noopener noreferrer" aria-label="View @File.Name">
+                View
+            </a>
+        }
     </div>
 </article>

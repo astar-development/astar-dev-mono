@@ -1,29 +1,95 @@
 .pdf-card {
     display: flex;
     flex-direction: column;
+    background: var(--color-bg-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.pdf-card__media {
+    position: relative;
+    height: 150px;
+    background: var(--color-bg);
+}
+
+.pdf-card__badge {
+    position: absolute;
+    top: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--color-primary-contrast);
+}
+
+.pdf-card__badge--subject {
+    left: 0.75rem;
+}
+
+.pdf-card__badge--format {
+    right: 0.75rem;
+    background: var(--color-footer-bg);
+}
+
+.pdf-card__body {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
     padding: 1rem;
-    background: var(--color-bg-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
 }
 
 .pdf-card__name {
+    font-family: var(--font-family-display);
     font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.pdf-card__name-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pdf-card__stage {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.pdf-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+}
+
+.pdf-card__price {
+    font-family: var(--font-family-display);
+    font-size: 1.0625rem;
     font-weight: 700;
     color: var(--color-text);
 }
 
-.pdf-card__price {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
+.pdf-card__add-btn {
+    padding: 0.5rem 0.875rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-accent-yellow);
+    color: var(--color-text);
+    font-weight: 700;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: transform 0.1s ease;
 }
 
-.pdf-card__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.25rem;
+.pdf-card__add-btn:hover {
+    transform: translateY(-2px);
+}
+
+.pdf-card__add-btn:disabled {
+    opacity: 0.7;
+    cursor: default;
 }

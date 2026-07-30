@@ -15,21 +15,21 @@
 .form-label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: #C9BFAE;
 }
 
 .required {
-    color: var(--color-accent, #d64545);
+    color: var(--color-accent-yellow);
     margin-left: 0.125rem;
 }
 
 .form-input {
-    padding: 0.625rem 0.875rem;
+    padding: 14px 18px;
     background: var(--color-bg-surface);
     color: var(--color-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    font-size: 0.9375rem;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
     font-family: inherit;
     width: 100%;
     box-sizing: border-box;
@@ -41,12 +41,12 @@
 }
 
 .form-group--error .form-input {
-    border-color: #ef4444;
+    box-shadow: 0 0 0 2px var(--color-error);
 }
 
 .field-error {
     font-size: 0.8125rem;
-    color: #ef4444;
+    color: var(--color-accent-yellow);
     margin: 0;
 }
 
@@ -62,7 +62,7 @@
     gap: 0.625rem;
     cursor: pointer;
     font-size: 0.875rem;
-    color: var(--color-text);
+    color: #C9BFAE;
 }
 
 .checkbox-input {
@@ -81,22 +81,36 @@
     line-height: 1.4;
 }
 
+.newsletter-form button[type='submit'] {
+    background: var(--color-accent-yellow);
+    color: var(--color-text);
+    font-family: var(--font-family-display);
+    font-weight: 700;
+    padding: 14px 26px;
+    border: none;
+    border-radius: 14px;
+    box-shadow: none;
+}
+
+.newsletter-form button[type='submit']:hover {
+    background: var(--color-accent-yellow);
+    color: var(--color-text);
+    border-color: transparent;
+}
+
 .status-message {
     padding: 0.875rem 1.125rem;
     border-radius: var(--radius-md);
     font-size: 0.875rem;
-    font-weight: 500;
-    border: 1px solid transparent;
+    font-weight: 700;
 }
 
 .status-message--success {
-    color: var(--color-text);
-    background: var(--color-bg-surface);
-    border-color: var(--color-border);
+    color: var(--color-accent-yellow);
+    background: transparent;
 }
 
 .status-message--error {
-    color: #dc2626;
-    background: var(--color-bg-surface);
-    border-color: #ef4444;
+    color: #FCA5A5;
+    background: transparent;
 }

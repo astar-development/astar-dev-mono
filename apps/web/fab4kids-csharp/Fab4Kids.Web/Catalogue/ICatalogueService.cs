@@ -14,6 +14,9 @@ public interface ICatalogueService
     /// <summary>Looks up a key-stage subcategory by its subject and key-stage URL slugs.</summary>
     Option<PdfSubcategory> GetSubcategoryBySlug(string categorySlug, string subcategorySlug);
 
+    /// <summary>Looks up a single file by its subject URL slug and file ID, for the resource detail page.</summary>
+    Option<PdfFileLookup> GetFileById(string categorySlug, int fileId);
+
     /// <summary>Finds every file whose name, subject, or key stage matches <paramref name="query"/>. Returns an empty list for a blank query.</summary>
     IReadOnlyList<PdfSearchResult> Search(string query);
 }

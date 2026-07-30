@@ -1,40 +1,125 @@
 @page "/"
+@using Fab4Kids.Web.Catalogue
 @using Fab4Kids.Web.Components.Common
 @using Fab4Kids.Web.Homepage
 
-<PageTitle>Quality resources for every child | fab4kids</PageTitle>
+<PageTitle>Learning that feels like play | fab4kids</PageTitle>
 
 <section class="hero">
-    <div class="container">
-        <h1 class="hero__headline">Quality resources for every child</h1>
-        <p class="hero__subtitle">Curriculum-aligned PDFs and Word documents for KS1&ndash;KS4</p>
-        <div class="hero__ctas">
-            <a href="/maths" class="btn btn--primary">Browse resources</a>
-            <a href="/search" class="btn btn--secondary">Search</a>
+    <div class="watermark-shape watermark-shape--circle" style="top:-40px;left:-30px;width:180px;height:180px;background:#3B8FE0;opacity:0.10;"></div>
+    <div class="watermark-shape watermark-shape--diamond" style="top:40px;right:6%;width:90px;height:90px;background:#E8483A;opacity:0.12;"></div>
+    <div class="watermark-shape watermark-shape--triangle" style="bottom:10px;left:10%;width:70px;height:70px;background:#4CAF6D;opacity:0.14;"></div>
+    <div class="watermark-rainbow-arch hero__arch">
+        <div class="watermark-rainbow-arch__band" style="width:220px;height:110px;background:#E8483A;"></div>
+        <div class="watermark-rainbow-arch__band" style="width:176px;height:88px;background:#F5A623;"></div>
+        <div class="watermark-rainbow-arch__band" style="width:132px;height:66px;background:#FFC93C;"></div>
+        <div class="watermark-rainbow-arch__band" style="width:88px;height:44px;background:#4CAF6D;"></div>
+        <div class="watermark-rainbow-arch__band" style="width:44px;height:22px;background:#3B8FE0;"></div>
+    </div>
+
+    <div class="container hero__grid">
+        <div class="hero__copy">
+            <p class="hero__eyebrow">KS1&ndash;KS4 &middot; Made with love</p>
+            <h1 class="hero__headline">Learning that feels like <span class="hero__headline-accent">play</span></h1>
+            <p class="hero__subtitle">Curriculum-aligned PDFs, editable Word documents and hands-on materials &mdash; designed to make homework and home learning genuinely joyful.</p>
+            <div class="hero__ctas">
+                <a href="/maths" class="btn btn--primary hero__cta">Browse resources</a>
+                <a href="#subjects" class="hero__cta hero__cta--outline">See subjects</a>
+            </div>
+        </div>
+        <div class="hero__media">
+            <div class="hero__blob"></div>
+            <div class="hero__image-placeholder" role="img" aria-label="Child with printed worksheet"></div>
         </div>
     </div>
 </section>
 
-<section class="subjects">
+<section class="trust-strip">
+    <div class="container trust-strip__row">
+        @foreach (var item in TrustStripItems.All)
+        {
+            <div class="trust-strip__item">@item</div>
+        }
+    </div>
+</section>
+
+<section class="subjects" id="subjects">
+    <div class="watermark-shape watermark-shape--star" style="top:30px;right:-20px;width:130px;height:130px;background:#FFC93C;opacity:0.18;"></div>
+    <div class="watermark-shape watermark-shape--circle" style="bottom:10px;left:-10px;width:100px;height:100px;background:#9B59D0;opacity:0.10;"></div>
+
     <div class="container">
-        <h2 class="section-title">Browse by subject</h2>
+        <div class="section-heading">
+            <h2 class="section-title">Browse by subject</h2>
+            <p class="section-subtitle">Five subjects, hundreds of resources, one happy learner.</p>
+        </div>
         <div class="subject-grid">
-            @foreach (var subject in HomeSubjectCards.All)
+            @foreach (var subject in SubjectAccents.All)
             {
-                <a href="@subject.Href" class="subject-card">
-                    <span class="subject-card__icon" aria-hidden="true">@subject.Icon</span>
-                    <h3 class="subject-card__label">@subject.Label</h3>
-                    <p class="subject-card__description">@subject.Description</p>
-                </a>
+                <SubjectCard Label="@subject.Name" Letter="@subject.Letter" Color="@subject.Color" Description="@subject.Description" Href="@subject.Href" />
             }
         </div>
     </div>
 </section>
 
-<section class="newsletter" id="newsletter">
+<section class="featured">
+    <div class="watermark-shape watermark-shape--diamond" style="top:-30px;left:8%;width:110px;height:110px;background:#3B8FE0;opacity:0.12;"></div>
+    <div class="watermark-shape watermark-shape--triangle" style="bottom:-20px;right:6%;width:80px;height:80px;background:#E8483A;opacity:0.14;"></div>
+
     <div class="container">
-        <h2 class="section-title">Stay up to date</h2>
-        <p class="newsletter__subtitle">Get notified when new resources are added.</p>
+        <div class="featured__header">
+            <div>
+                <h2 class="section-title section-title--left">Fresh off the (virtual) press</h2>
+                <p class="section-subtitle section-subtitle--left">New resources added every week.</p>
+            </div>
+            <a href="/search" class="featured__see-all">See all resources &rarr;</a>
+        </div>
+        <div class="featured__grid">
+            @foreach (var item in featured)
+            {
+                <PdfCard File="item.File" Href="@item.Href" SubjectName="@item.SubjectName" SubjectColor="@item.SubjectColor" KeyStageLabel="@item.KeyStageLabel" />
+            }
+        </div>
+    </div>
+</section>
+
+<section class="how-it-works">
+    <div class="watermark-shape watermark-shape--circle" style="top:20px;left:40%;width:60px;height:60px;background:#FFC93C;opacity:0.16;"></div>
+
+    <div class="container how-it-works__inner">
+        <h2 class="section-title">How it works</h2>
+        <div class="how-it-works__grid">
+            @foreach (var step in HowItWorksSteps.All)
+            {
+                <div class="how-it-works__step">
+                    <div class="how-it-works__number" style="background-color:@step.Color">@step.Number</div>
+                    <h3 class="how-it-works__title">@step.Title</h3>
+                    <p class="how-it-works__description">@step.Description</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="testimonials">
+    <div class="container testimonials__grid">
+        @foreach (var testimonial in Testimonials.All)
+        {
+            <div class="testimonial-card">
+                <div class="testimonial-card__stars" aria-hidden="true">★★★★★</div>
+                <p class="testimonial-card__quote">&ldquo;@testimonial.Quote&rdquo;</p>
+                <div class="testimonial-card__name">@testimonial.Name</div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="newsletter" id="newsletter">
+    <div class="watermark-shape watermark-shape--circle" style="top:-30px;left:-30px;width:140px;height:140px;background:#E8483A;opacity:0.20;"></div>
+    <div class="watermark-shape watermark-shape--diamond" style="bottom:-40px;right:4%;width:120px;height:120px;background:#3B8FE0;opacity:0.18;"></div>
+
+    <div class="container newsletter__inner">
+        <h2 class="newsletter__title">Stay in the loop</h2>
+        <p class="newsletter__subtitle">Get notified when new resources land &mdash; no spam, just good stuff.</p>
         <NewsletterForm />
     </div>
 </section>

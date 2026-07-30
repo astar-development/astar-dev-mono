@@ -1,4 +1,4 @@
-@import './themes.css';
+@import './tokens.css';
 
 *,
 *::before,
@@ -126,6 +126,8 @@ a:hover {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
   border-color: var(--color-primary);
+  box-shadow: var(--shadow-cta);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .btn--primary:hover,
@@ -133,6 +135,12 @@ a:hover {
   background: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
   color: var(--color-primary-contrast);
+}
+
+.btn--primary:active,
+.btn-primary:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--color-primary-hover);
 }
 
 .btn--secondary,
@@ -146,4 +154,65 @@ a:hover {
 .btn-secondary:hover {
   background: var(--color-primary);
   color: var(--color-primary-contrast);
+}
+
+/* ── Shared layout utility ────────────────────────────────────────────────── */
+
+.container {
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+  padding-inline: 2rem;
+}
+
+/* ── Card hover lift ──────────────────────────────────────────────────────── */
+
+.card-hover-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover-hard);
+}
+
+/* ── Decorative watermark shapes ──────────────────────────────────────────── */
+
+.watermark-shape {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.watermark-shape--circle {
+  border-radius: 50%;
+}
+
+.watermark-shape--diamond {
+  border-radius: 18%;
+  transform: rotate(45deg);
+}
+
+.watermark-shape--triangle {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.watermark-shape--star {
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+    50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+  );
+}
+
+.watermark-rainbow-arch {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.watermark-rainbow-arch__band {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 0 0;
 }

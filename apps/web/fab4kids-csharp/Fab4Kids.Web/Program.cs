@@ -10,7 +10,6 @@ using Fab4Kids.Web.Components;
 using Fab4Kids.Web.Consent;
 using Fab4Kids.Web.Fulfilment;
 using Fab4Kids.Web.Newsletter;
-using Fab4Kids.Web.Theming;
 using Microsoft.Extensions.Options;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Serilog;
@@ -25,7 +24,6 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddFluentUIComponents();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<ThemeState>();
 builder.Services.AddScoped<CookieConsentState>();
 builder.Services.AddScoped<CartState>();
 builder.Services.AddSingleton<ICatalogueService, CatalogueService>();

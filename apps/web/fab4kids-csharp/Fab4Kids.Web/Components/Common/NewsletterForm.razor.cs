@@ -28,7 +28,7 @@ public sealed partial class NewsletterForm : ComponentBase
         {
             case NewsletterSubscriptionSucceeded or NewsletterSubscriptionAlreadySubscribed:
                 submitStatus = NewsletterFormSubmitStatus.Success;
-                statusMessage = "Thanks for subscribing! Keep an eye on your inbox.";
+                statusMessage = "\U0001F389 You're on the list!";
                 email = string.Empty;
                 consent = false;
                 break;

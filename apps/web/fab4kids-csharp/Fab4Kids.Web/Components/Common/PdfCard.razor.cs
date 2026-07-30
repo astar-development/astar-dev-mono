@@ -14,6 +14,21 @@ public sealed partial class PdfCard : ComponentBase
     [Parameter, EditorRequired]
     public required PdfFile File { get; set; }
 
+    [Parameter]
+    public string? Href { get; set; }
+
+    [Parameter]
+    public string? SubjectName { get; set; }
+
+    [Parameter]
+    public string SubjectColor { get; set; } = "var(--color-primary)";
+
+    [Parameter]
+    public string Format { get; set; } = "PDF";
+
+    [Parameter]
+    public string? KeyStageLabel { get; set; }
+
     private async Task AddToBasketAsync()
     {
         await CartState.AddItemAsync(File.Id, File.Name, File.Price, File.Url);

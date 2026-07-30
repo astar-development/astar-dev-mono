@@ -50,6 +50,18 @@ public sealed class CatalogueService : ICatalogueService
                 ? Option.Some(subcategory)
                 : Option.None<PdfSubcategory>());
 
+    public Option<PdfFileLookup> GetFileById(string categorySlug, int fileId) =>
+        GetCategoryBySlug(categorySlug).Bind(category =>
+        {
+            var match = category.Subcategories
+                .SelectMany(subcategory => subcategory.Files.Select(file => (subcategory, file)))
+                .FirstOrDefault(entry => entry.file.Id == fileId);
+
+            return match.file is not null
+                ? Option.Some(PdfFileLookupFactory.Create(category, match.subcategory, match.file))
+                : Option.None<PdfFileLookup>();
+        });
+
     public IReadOnlyList<PdfSearchResult> Search(string query)
     {
         if (query.IsNullOrWhiteSpace()) return [];
