@@ -39,7 +39,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
 
         await GotoAndAwaitInteractiveAsync(page, $"{fixture.BaseUrl}/maths", ".pdf-card");
 
-        var addToBasketButton = page.Locator(".pdf-card button", new PageLocatorOptions { HasText = "Add to basket" }).First;
+        var addToBasketButton = page.Locator(".pdf-card button", new PageLocatorOptions { HasText = "Add +" }).First;
         await addToBasketButton.ClickAsync();
         await page.Locator(".pdf-card button", new PageLocatorOptions { HasText = "Added" }).First.WaitForAsync();
 
@@ -65,7 +65,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();
 
         await GotoAndAwaitInteractiveAsync(page, $"{fixture.BaseUrl}/maths", ".pdf-card");
-        await page.Locator(".pdf-card button", new PageLocatorOptions { HasText = "Add to basket" }).First.ClickAsync();
+        await page.Locator(".pdf-card button", new PageLocatorOptions { HasText = "Add +" }).First.ClickAsync();
         await page.Locator(".cart-widget__badge").WaitForAsync();
 
         await page.Locator(".cart-widget__toggle").ClickAsync();
