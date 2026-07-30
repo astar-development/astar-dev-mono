@@ -1,0 +1,78 @@
+@page "/{subject}/resource/{fileId:int}"
+@using Fab4Kids.Web.Catalogue
+@using Fab4Kids.Web.Components.Common
+@inject Fab4Kids.Web.Cart.CartState CartState
+
+@if (lookup is not null)
+{
+    <PageTitle>@lookup.File.Name | fab4kids</PageTitle>
+
+    <section class="detail">
+        <div class="watermark-shape watermark-shape--circle" style="top:20px;right:4%;width:120px;height:120px;background:@SubjectColor;opacity:0.10;"></div>
+        <div class="watermark-shape watermark-shape--star" style="bottom:10px;left:4%;width:80px;height:80px;background:#FFC93C;opacity:0.16;"></div>
+
+        <div class="container detail__inner">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/@subject">@lookup.Category.Name</a></li>
+                    <li aria-current="page">@lookup.File.Name</li>
+                </ol>
+            </nav>
+
+            <div class="detail__grid">
+                <div class="detail__cover" role="img" aria-label="@lookup.File.Name cover / sample pages"></div>
+
+                <div>
+                    <div class="detail__badges">
+                        <span class="detail__badge detail__badge--subject" style="background-color:@SubjectColor">@lookup.Category.Name</span>
+                        <span class="detail__badge detail__badge--format">@DefaultFormat</span>
+                        <span class="detail__badge detail__badge--stage">@lookup.Subcategory.Name</span>
+                    </div>
+
+                    <h1 class="detail__title">@lookup.File.Name</h1>
+                    <p class="detail__description">@Description</p>
+                    <div class="detail__price">@lookup.File.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))</div>
+
+                    <div class="detail__actions">
+                        <button type="button" class="btn btn--primary detail__add-btn" disabled="@added" @onclick="AddToBasketAsync">
+                            @(added ? "Added ✓" : "Add to basket")
+                        </button>
+                        <a href="@lookup.File.Url" class="detail__preview-btn" target="_blank" rel="noopener noreferrer">Preview sample</a>
+                    </div>
+
+                    <div class="detail__included">
+                        <h3 class="detail__included-title">What's included</h3>
+                        <div class="detail__included-list">
+                            <div>✓ Instant-download @DefaultFormat</div>
+                            <div>✓ Curriculum-aligned content</div>
+                            <div>✓ Print-at-home friendly (A4 &amp; Letter)</div>
+                            <div>✓ Lifetime access to your download link</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (related.Count > 0)
+    {
+        <section class="related">
+            <div class="container">
+                <h2 class="related__title">You might also like</h2>
+                <div class="related__grid">
+                    @foreach (var file in related)
+                    {
+                        <PdfCard
+                            File="file"
+                            Href="@ResourceRoutes.DetailHref(subject, file.Id)"
+                            SubjectName="@lookup.Category.Name"
+                            SubjectColor="@SubjectColor"
+                            Format="@DefaultFormat"
+                            KeyStageLabel="@lookup.Subcategory.Name" />
+                    }
+                </div>
+            </div>
+        </section>
+    }
+}
