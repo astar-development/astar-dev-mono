@@ -3,17 +3,19 @@
 # Publishes Fab4Kids.Web (Blazor Web App, .NET 10) and deploys it to the
 # fab4kids-site Azure Web App.
 #
-# Manual (workflow_dispatch) only for now. The fab4kids-site App Service
-# currently runs the Linux/Node stack for the Astro site (fab4kids-deploy.yml)
-# — it must be swapped to a Linux/.NET 10 stack (tracked in issue #864) before
-# this workflow can safely run against it. Once that swap lands, switch the
-# trigger below to `workflow_run` on "Fab4Kids.Web CI" completing on main,
-# matching the fab4kids-deploy.yml / astar-dev-deploy.yml pattern.
+# Fires when "Fab4Kids.Web CI" completes successfully on main (#864 stack
+# swap to Linux/.NET 10 is live). Also runnable manually via workflow_dispatch.
 # ════════════════════════════════════════════════════════════════════════════
 
 name: Fab4Kids.Web Deploy
 
 on:
+  workflow_run:
+    workflows: ["Fab4Kids.Web CI"]
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -37,12 +39,14 @@ jobs:
   deploy:
     name: Publish & Deploy to Azure
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
 
     steps:
 
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
 
       - name: Setup .NET 10
