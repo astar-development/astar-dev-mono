@@ -22,7 +22,7 @@ public class GivenAPdfCard : Bunit.BunitContext
         var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
 
         cut.Find("h3.pdf-card__name").TextContent.ShouldBe("Times Tables Pack");
-        cut.Find("p.pdf-card__price").TextContent.ShouldBe("£2.50");
+        cut.Find("span.pdf-card__price").TextContent.ShouldBe("£2.50");
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class GivenAPdfCard : Bunit.BunitContext
         var cartState = Services.GetRequiredService<CartState>();
         var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
 
-        cut.Find("button.btn--primary").Click();
+        cut.Find("button.pdf-card__add-btn").Click();
 
         cartState.Items.ShouldHaveSingleItem();
         cartState.Items[0].ProductId.ShouldBe(1);
@@ -58,8 +58,68 @@ public class GivenAPdfCard : Bunit.BunitContext
         var cartState = Services.GetRequiredService<CartState>();
         var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
 
-        cut.Find("button.btn--primary").Click();
+        cut.Find("button.pdf-card__add-btn").Click();
 
         cartState.Items[0].BlobPath.ShouldBe("pdfs/times-tables.pdf");
+    }
+
+    [Fact]
+    public void when_href_is_not_set_then_the_view_link_is_shown()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+
+        var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
+
+        cut.FindAll("a.btn--secondary").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_href_is_set_then_the_title_links_to_it_and_the_view_link_is_hidden()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+
+        var cut = Render<PdfCard>(parameters => parameters
+            .Add(p => p.File, file)
+            .Add(p => p.Href, "/maths/resource/1"));
+
+        cut.Find("a.pdf-card__name-link").GetAttribute("href").ShouldBe("/maths/resource/1");
+        cut.FindAll("a.btn--secondary").Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void when_subject_name_is_set_then_the_subject_badge_is_shown()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+
+        var cut = Render<PdfCard>(parameters => parameters
+            .Add(p => p.File, file)
+            .Add(p => p.SubjectName, "Maths")
+            .Add(p => p.SubjectColor, "#3B8FE0"));
+
+        var badge = cut.Find("span.pdf-card__badge--subject");
+        badge.TextContent.ShouldBe("Maths");
+        badge.GetAttribute("style").ShouldNotBeNull().ShouldContain("#3B8FE0");
+    }
+
+    [Fact]
+    public void when_rendered_then_the_format_badge_defaults_to_pdf()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+
+        var cut = Render<PdfCard>(parameters => parameters.Add(p => p.File, file));
+
+        cut.Find("span.pdf-card__badge--format").TextContent.ShouldBe("PDF");
+    }
+
+    [Fact]
+    public void when_key_stage_label_is_set_then_it_is_shown()
+    {
+        var file = PdfFileFactory.Create(1, "Times Tables Pack", "pdfs/times-tables.pdf", 2.50m);
+
+        var cut = Render<PdfCard>(parameters => parameters
+            .Add(p => p.File, file)
+            .Add(p => p.KeyStageLabel, "KS1"));
+
+        cut.Find("p.pdf-card__stage").TextContent.ShouldBe("KS1");
     }
 }
