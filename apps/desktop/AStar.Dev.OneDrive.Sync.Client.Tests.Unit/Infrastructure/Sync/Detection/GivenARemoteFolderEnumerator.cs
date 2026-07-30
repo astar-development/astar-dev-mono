@@ -227,4 +227,66 @@ public sealed class GivenARemoteFolderEnumerator
 
         context.HadNoRules.ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task when_rules_are_configured_then_connecting_to_drive_stage_is_reported_before_drive_id_is_requested()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(EmptyStream());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var stages = new List<string>();
+
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, onStageChanged: stages.Add, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        stages.ShouldContain("Sync.ConnectingToDrive");
+    }
+
+    [Fact]
+    public async Task when_no_rules_configured_then_connecting_to_drive_stage_is_not_reported()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var stages = new List<string>();
+
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, onStageChanged: stages.Add, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        stages.ShouldNotContain("Sync.ConnectingToDrive");
+    }
+
+    [Fact]
+    public async Task when_folder_id_is_resolved_for_a_rule_then_resolving_folder_stage_is_reported()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(EmptyStream());
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var stages = new List<string>();
+
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, onStageChanged: stages.Add, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        stages.ShouldContain("Sync.ResolvingFolder");
+    }
+
+    [Fact]
+    public async Task when_folder_id_cannot_be_resolved_then_resolving_folder_stage_is_still_reported_before_the_failed_resolution()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents")]);
+        _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((string?)null);
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var stages = new List<string>();
+
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, onStageChanged: stages.Add, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        stages.ShouldContain("Sync.ResolvingFolder");
+    }
 }

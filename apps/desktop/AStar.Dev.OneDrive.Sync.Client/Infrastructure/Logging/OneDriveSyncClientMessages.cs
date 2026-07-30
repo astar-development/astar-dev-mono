@@ -43,6 +43,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2007, Level = LogLevel.Warning, Message = "[Worker {Id}] Job cancelled — re-queued: {Path}")]
     public static partial void SyncWorkerJobCancelledRequeued(ILogger logger, int id, string path);
 
+    /// <summary>Logs the start of pass preparation (drive state, classifications) before enumeration begins.</summary>
+    [LoggerMessage(EventId = 2008, Level = LogLevel.Information, Message = "[Pipeline] Preparing sync pass for {AccountId}")]
+    public static partial void SyncPipelinePreparing(ILogger logger, string accountId);
+
     // Sync Service (2100-2199)
 
     /// <summary>Logs start of account sync.</summary>
@@ -162,6 +166,14 @@ public static partial class OneDriveSyncClientMessages
     /// <summary>Logs cannot resolve folder ID for rule.</summary>
     [LoggerMessage(EventId = 2606, Level = LogLevel.Warning, Message = "[RemoteFolderEnumerator] Cannot resolve folder ID for rule path {Path} — skipping")]
     public static partial void RemoteFolderEnumeratorCannotResolveId(ILogger logger, string path);
+
+    /// <summary>Logs the start of drive ID resolution against the Graph API.</summary>
+    [LoggerMessage(EventId = 2607, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Connecting to drive for {AccountId}")]
+    public static partial void RemoteFolderEnumeratorConnectingToDrive(ILogger logger, string accountId);
+
+    /// <summary>Logs the start of folder ID resolution for a sync rule.</summary>
+    [LoggerMessage(EventId = 2608, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Resolving folder id for {Path}")]
+    public static partial void RemoteFolderEnumeratorResolvingFolder(ILogger logger, string path);
 
     // Download Operations (2700-2799)
 

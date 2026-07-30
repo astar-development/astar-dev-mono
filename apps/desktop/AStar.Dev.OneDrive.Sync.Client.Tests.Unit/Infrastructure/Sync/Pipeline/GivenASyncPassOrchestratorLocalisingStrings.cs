@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
@@ -49,7 +50,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository, NullLogger<SyncPassOrchestrator>.Instance);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
@@ -81,7 +82,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyStream());
         _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
@@ -95,7 +96,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyStream());
         _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
@@ -190,5 +191,17 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, onProgress: args => progressMessages.Add(args.CurrentFile), cancellationToken: TestContext.Current.CancellationToken);
 
         progressMessages.ShouldContain("Sync.NoChanges");
+    }
+
+    [Fact]
+    public async Task when_preparing_to_enumerate_then_localisation_key_Sync_Preparing_is_used()
+    {
+        SetupDeepSyncPrerequisites();
+
+        var sut = CreateSut();
+
+        await sut.OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
+
+        _localizationService.Received().GetLocal("Sync.Preparing");
     }
 }
