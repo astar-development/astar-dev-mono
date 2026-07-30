@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #FFFBF2; font-family: 'Nunito', sans-serif; }
+    a { color: #3B8FE0; text-decoration: none; }
+    a:hover { color: #2B6FB8; }
+  </style>
+</helmet>
+
+<div style="position: relative; overflow: hidden; color: #2B2420; line-height: 1.5;">
+
+  <header style="position: sticky; top: 0; z-index: 50; background: rgba(255,251,242,0.92); backdrop-filter: blur(6px); border-bottom: 2px solid #F3E9D6;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <a href="Home.dc.html" style="font-family: 'Fredoka', sans-serif; font-size: 26px; font-weight: 700; color: #2B2420; display: flex; align-items: baseline; gap: 2px;">
+        <span style="color:#E8483A">fab</span><span style="color:#F5A623">4</span><span style="color:#2BB6A3">kids</span>
+      </a>
+      <nav style="display: flex; gap: 28px; align-items: center;">
+        <a href="Maths.dc.html" style="font-weight: 800; color: #3B8FE0;">Maths</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">English</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">Science</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">History</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">Geography</a>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #FFF; border: 2px solid #F3E9D6; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Search">
+          <div style="width: 14px; height: 14px; border: 2px solid #2B2420; border-radius: 50%;"></div>
+        </div>
+        <div style="position: relative; width: 44px; height: 40px; border-radius: 14px; background: #FFC93C; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Basket">
+          <div style="width: 18px; height: 14px; border: 2px solid #2B2420; border-top: none; border-radius: 0 0 4px 4px;"></div>
+          <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; border: 2px solid #2B2420; border-bottom: none; border-radius: 10px 10px 0 0;"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== SUBJECT HERO ===== -->
+  <section style="position: relative; overflow: hidden; padding: 64px 32px 48px; background: #EAF3FE;">
+    <div style="position: absolute; top: -30px; right: 6%; width: 140px; height: 140px; border-radius: 50%; background: #3B8FE0; opacity: 0.14; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -20px; left: 8%; width: 90px; height: 90px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: #3B8FE0; opacity: 0.12; transform: rotate(-8deg); pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;">
+      <div style="font-size: 13px; font-weight: 700; color: #5A5148; margin-bottom: 14px;">
+        <a href="Home.dc.html" style="color: #5A5148;">Home</a> &rarr; Maths
+      </div>
+      <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 14px;">
+        <div style="width: 60px; height: 60px; border-radius: 16px; background: #3B8FE0; color: #FFF; font-family: 'Fredoka', sans-serif; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center;">M</div>
+        <h1 style="font-family: 'Fredoka', sans-serif; font-size: 40px; font-weight: 700; margin: 0;">Maths</h1>
+      </div>
+      <p style="color: #4A5A6E; font-size: 17px; max-width: 620px; margin: 0;">Number, algebra, geometry, statistics and problem-solving resources that make numbers click.</p>
+    </div>
+  </section>
+
+  <!-- ===== FILTERS + GRID ===== -->
+  <section style="position: relative; overflow: hidden; padding: 48px 32px 88px;">
+    <div style="position: absolute; top: 200px; right: -20px; width: 100px; height: 100px; background: #FFC93C; opacity: 0.14; transform: rotate(20deg); border-radius: 20px; pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px;">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+          <button onClick="{{ () => selectFilter(f) }}" style="{{ filterStyle(f) }}">{{ f }}</button>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 48px;">
+        <sc-for list="{{ resources }}" as="item" hint-placeholder-count="8">
+          <dc-import name="ResourceCard" item="{{ item }}" hint-size="100%,340px"></dc-import>
+        </sc-for>
+      </div>
+      <div style="text-align: center;">
+        <button style="background: #FFF; border: 2px solid #F3E9D6; font-family: 'Fredoka', sans-serif; font-weight: 600; padding: 14px 32px; border-radius: 14px; cursor: pointer;">Load more resources</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background: #FFF6E8; padding: 56px 32px 28px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 40px;">
+      <div>
+        <div style="font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 10px;">
+          <span style="color:#E8483A">fab</span><span style="color:#F5A623">4</span><span style="color:#2BB6A3">kids</span>
+        </div>
+        <p style="color: #5A5148; font-size: 14px; max-width: 260px;">Quality educational resources for every child, KS1&ndash;KS4.</p>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Subjects</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="Maths.dc.html">Maths</a><a href="Maths.dc.html">English</a><a href="Maths.dc.html">Science</a><a href="Maths.dc.html">History</a><a href="Maths.dc.html">Geography</a>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Support</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="#">Search resources</a><a href="Home.dc.html#newsletter">Newsletter</a><a href="#">Contact</a>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Legal</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="#">Privacy policy</a><a href="#">Cookie policy</a><a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width: 1200px; margin: 0 auto; border-top: 2px solid #F0E4CC; padding-top: 20px; font-size: 13px; color: #8A8072;">
+      © 2026 fab4kids. All rights reserved.
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { activeFilter: "All" };
+
+  selectFilter = (f) => this.setState({ activeFilter: f });
+
+  filterStyle(f) {
+    const active = f === this.state.activeFilter;
+    return `font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; padding: 10px 18px; border-radius: 999px; cursor: pointer; border: 2px solid ${active ? "#3B8FE0" : "#F3E9D6"}; background: ${active ? "#3B8FE0" : "#FFF"}; color: ${active ? "#FFF" : "#2B2420"};`;
+  }
+
+  renderVals() {
+    return {
+      filters: ["All", "KS1", "KS2", "KS3", "KS4", "PDF", "Word", "Physical"],
+      selectFilter: this.selectFilter,
+      filterStyle: (f) => this.filterStyle(f),
+      resources: [
+        { title: "Fractions Fun Pack", subject: "Maths", subjectColor: "#3B8FE0", format: "PDF", stage: "KS2", price: "£3.50" },
+        { title: "Times Tables Race Cards", subject: "Maths", subjectColor: "#3B8FE0", format: "PDF", stage: "KS1", price: "£2.50" },
+        { title: "Algebra Foundations", subject: "Maths", subjectColor: "#3B8FE0", format: "Word", stage: "KS3", price: "£4.50" },
+        { title: "Shape & Space Toolkit", subject: "Maths", subjectColor: "#3B8FE0", format: "Physical", stage: "KS2", price: "£8.00" },
+        { title: "Data Handling Workbook", subject: "Maths", subjectColor: "#3B8FE0", format: "PDF", stage: "KS3", price: "£3.75" },
+        { title: "GCSE Ratio Revision", subject: "Maths", subjectColor: "#3B8FE0", format: "PDF", stage: "KS4", price: "£4.00" },
+        { title: "Counting Bears Activity", subject: "Maths", subjectColor: "#3B8FE0", format: "Physical", stage: "KS1", price: "£6.50" },
+        { title: "Mental Maths Warm-ups", subject: "Maths", subjectColor: "#3B8FE0", format: "Word", stage: "KS2", price: "£2.99" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -144,7 +144,7 @@ public sealed class SearchCategoryScrapeAction(
                 onSuccess: async imageBytes =>
                 {
                     var savedFile = await fileStore.SaveAsync(download.DirectoryPath, fileName, imageBytes, cancellationToken);
-                    context.Progress.Report($"{clock():T} Downloaded wallpaper image from URL: <Span Foreground=\"Green\">{download.ImageUrl}</Span>, size: <Span Foreground=\"Green\">{imageBytes.Length}</Span> bytes");
+                    context.Progress.Report($"{clock():T} Downloaded wallpaper image from URL: <Span Foreground=\"Green\" FontSize=\"18\">{download.ImageUrl}</Span>, size: <Span Foreground=\"Green\" FontSize=\"18\">{imageBytes.Length:N0}</Span> bytes");
                     var dimensions = dimensionsReader.Read(imageBytes);
 
                     await fileClassificationRepository.RecordAsync(download.Tags, download.ImageUrl, download.DirectoryPath, savedFile.SizeBytes, dimensions, cancellationToken);

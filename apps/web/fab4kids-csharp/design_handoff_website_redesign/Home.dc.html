@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #FFFBF2; font-family: 'Nunito', sans-serif; }
+    a { color: #3B8FE0; text-decoration: none; }
+    a:hover { color: #2B6FB8; }
+    @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  </style>
+</helmet>
+
+<div style="position: relative; overflow: hidden; color: #2B2420; line-height: 1.5;">
+
+  <!-- ===== NAV ===== -->
+  <header style="position: sticky; top: 0; z-index: 50; background: rgba(255,251,242,0.92); backdrop-filter: blur(6px); border-bottom: 2px solid #F3E9D6;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+      <a href="Home.dc.html" style="font-family: 'Fredoka', sans-serif; font-size: 26px; font-weight: 700; color: #2B2420; display: flex; align-items: baseline; gap: 2px;">
+        <span style="color:#E8483A">fab</span><span style="color:#F5A623">4</span><span style="color:#2BB6A3">kids</span>
+      </a>
+      <nav style="display: flex; gap: 28px; align-items: center;">
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">Maths</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">English</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">Science</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">History</a>
+        <a href="Maths.dc.html" style="font-weight: 700; color: #2B2420;">Geography</a>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #FFF; border: 2px solid #F3E9D6; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Search">
+          <div style="width: 14px; height: 14px; border: 2px solid #2B2420; border-radius: 50%;"></div>
+        </div>
+        <div style="position: relative; width: 44px; height: 40px; border-radius: 14px; background: #FFC93C; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Basket">
+          <div style="width: 18px; height: 14px; border: 2px solid #2B2420; border-top: none; border-radius: 0 0 4px 4px;"></div>
+          <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 10px; height: 10px; border: 2px solid #2B2420; border-bottom: none; border-radius: 10px 10px 0 0;"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section style="position: relative; overflow: hidden; padding: 96px 32px 80px;">
+    <div style="position: absolute; top: -40px; left: -30px; width: 180px; height: 180px; border-radius: 50%; background: #3B8FE0; opacity: 0.10; pointer-events: none;"></div>
+    <div style="position: absolute; top: 40px; right: 6%; width: 90px; height: 90px; background: #E8483A; opacity: 0.12; transform: rotate(45deg); border-radius: 16px; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: 10px; left: 10%; width: 70px; height: 70px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: #4CAF6D; opacity: 0.14; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -20px; right: 12%; opacity: 0.16; pointer-events: none;">
+      <div style="position: relative; width: 220px; height: 110px;">
+        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 220px; height: 110px; background: #E8483A; border-radius: 50% 50% 0 0;"></div>
+        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 176px; height: 88px; background: #F5A623; border-radius: 50% 50% 0 0;"></div>
+        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 132px; height: 66px; background: #FFC93C; border-radius: 50% 50% 0 0;"></div>
+        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 88px; height: 44px; background: #4CAF6D; border-radius: 50% 50% 0 0;"></div>
+        <div style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; height: 22px; background: #3B8FE0; border-radius: 50% 50% 0 0;"></div>
+      </div>
+    </div>
+
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center;">
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: #FFF; border: 2px solid #F3E9D6; border-radius: 999px; padding: 6px 16px; font-weight: 800; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: #9B59D0; margin-bottom: 20px;">
+          KS1&ndash;KS4 &middot; Made with love
+        </div>
+        <h1 style="font-family: 'Fredoka', sans-serif; font-size: 56px; font-weight: 700; line-height: 1.08; margin: 0 0 20px; text-wrap: pretty;">
+          Learning that feels like <span style="color: #E8483A;">play</span>
+        </h1>
+        <p style="font-size: 19px; color: #5A5148; max-width: 480px; margin: 0 0 32px;">
+          Curriculum-aligned PDFs, editable Word documents and hands-on materials &mdash; designed to make homework and home learning genuinely joyful.
+        </p>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <a href="Maths.dc.html" style="background: #E8483A; color: #FFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 17px; padding: 16px 30px; border-radius: 16px; box-shadow: 0 6px 0 #B9382D; display: inline-block;">Browse resources</a>
+          <a href="#subjects" style="background: #FFF; color: #2B2420; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 17px; padding: 16px 30px; border-radius: 16px; border: 2px solid #F3E9D6; display: inline-block;">See subjects</a>
+        </div>
+      </div>
+      <div style="position: relative; display: flex; justify-content: center; align-items: center;">
+        <div style="position: absolute; width: 340px; height: 340px; border-radius: 44% 56% 60% 40% / 50% 45% 55% 50%; background: linear-gradient(135deg, #FFE8B8, #FFD6D6); animation: floatY 6s ease-in-out infinite;"></div>
+        <image-slot id="hero-image" shape="rounded" radius="32" placeholder="Photo: child with printed worksheet" style="position: relative; width: 300px; height: 340px;"></image-slot>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRUST STRIP ===== -->
+  <section style="position: relative; z-index: 1; border-top: 2px solid #F3E9D6; border-bottom: 2px solid #F3E9D6; background: #FFF;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 28px 32px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+      <div style="font-family: 'Fredoka', sans-serif; font-weight: 600; color: #5A5148;">📥 Instant download</div>
+      <div style="font-family: 'Fredoka', sans-serif; font-weight: 600; color: #5A5148;">✏️ Editable Word files</div>
+      <div style="font-family: 'Fredoka', sans-serif; font-weight: 600; color: #5A5148;">🎯 Mapped to the curriculum</div>
+      <div style="font-family: 'Fredoka', sans-serif; font-weight: 600; color: #5A5148;">💛 Made by parents & teachers</div>
+    </div>
+  </section>
+
+  <!-- ===== BROWSE BY SUBJECT ===== -->
+  <section id="subjects" style="position: relative; overflow: hidden; padding: 88px 32px;">
+    <div style="position: absolute; top: 30px; right: -20px; width: 130px; height: 130px; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); background: #FFC93C; opacity: 0.18; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: 10px; left: -10px; width: 100px; height: 100px; border-radius: 50%; background: #9B59D0; opacity: 0.10; pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 48px;">
+        <h2 style="font-family: 'Fredoka', sans-serif; font-size: 38px; font-weight: 700; margin: 0 0 12px;">Browse by subject</h2>
+        <p style="color: #5A5148; font-size: 17px; margin: 0;">Five subjects, hundreds of resources, one happy learner.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px;">
+        <dc-import name="SubjectCard" label="Maths" letter="M" color="#3B8FE0" desc="Number, algebra, geometry & problem-solving." href="Maths.dc.html" hint-size="100%,220px"></dc-import>
+        <dc-import name="SubjectCard" label="English" letter="E" color="#E8483A" desc="Reading, writing, grammar & comprehension." href="Maths.dc.html" hint-size="100%,220px"></dc-import>
+        <dc-import name="SubjectCard" label="Science" letter="S" color="#4CAF6D" desc="Biology, chemistry, physics & experiments." href="Maths.dc.html" hint-size="100%,220px"></dc-import>
+        <dc-import name="SubjectCard" label="History" letter="H" color="#F5A623" desc="Sources, timelines & topic deep-dives." href="Maths.dc.html" hint-size="100%,220px"></dc-import>
+        <dc-import name="SubjectCard" label="Geography" letter="G" color="#2BB6A3" desc="Maps, fieldwork & world investigations." href="Maths.dc.html" hint-size="100%,220px"></dc-import>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEATURED RESOURCES ===== -->
+  <section style="position: relative; overflow: hidden; padding: 88px 32px; background: #FFF6E8;">
+    <div style="position: absolute; top: -30px; left: 8%; width: 110px; height: 110px; background: #3B8FE0; opacity: 0.12; transform: rotate(20deg); border-radius: 20px; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -20px; right: 6%; width: 80px; height: 80px; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); background: #E8483A; opacity: 0.14; transform: rotate(8deg); pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 36px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2 style="font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; margin: 0 0 8px;">Fresh off the (virtual) press</h2>
+          <p style="color: #5A5148; font-size: 16px; margin: 0;">New resources added every week.</p>
+        </div>
+        <a href="Maths.dc.html" style="font-family: 'Fredoka', sans-serif; font-weight: 600; color: #E8483A; font-size: 16px;">See all resources &rarr;</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+        <sc-for list="{{ featured }}" as="item" hint-placeholder-count="4">
+          <dc-import name="ResourceCard" item="{{ item }}" hint-size="100%,340px"></dc-import>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section style="position: relative; overflow: hidden; padding: 88px 32px;">
+    <div style="position: absolute; top: 20px; left: 40%; width: 60px; height: 60px; border-radius: 50%; background: #FFC93C; opacity: 0.16; pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; text-align: center;">
+      <h2 style="font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; margin: 0 0 48px;">How it works</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;">
+        <div>
+          <div style="width: 76px; height: 76px; border-radius: 50%; background: #3B8FE0; color: #FFF; font-family: 'Fredoka', sans-serif; font-size: 30px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">1</div>
+          <h3 style="font-family: 'Fredoka', sans-serif; font-size: 20px; margin: 0 0 8px;">Browse & pick</h3>
+          <p style="color: #5A5148; margin: 0; font-size: 15px;">Filter by subject, key stage or format to find the perfect fit.</p>
+        </div>
+        <div>
+          <div style="width: 76px; height: 76px; border-radius: 50%; background: #E8483A; color: #FFF; font-family: 'Fredoka', sans-serif; font-size: 30px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">2</div>
+          <h3 style="font-family: 'Fredoka', sans-serif; font-size: 20px; margin: 0 0 8px;">Checkout securely</h3>
+          <p style="color: #5A5148; margin: 0; font-size: 15px;">Pay once, download instantly &mdash; no account required.</p>
+        </div>
+        <div>
+          <div style="width: 76px; height: 76px; border-radius: 50%; background: #4CAF6D; color: #FFF; font-family: 'Fredoka', sans-serif; font-size: 30px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">3</div>
+          <h3 style="font-family: 'Fredoka', sans-serif; font-size: 20px; margin: 0 0 8px;">Print & learn</h3>
+          <p style="color: #5A5148; margin: 0; font-size: 15px;">Print at home or edit the Word file to make it your own.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section style="position: relative; overflow: hidden; padding: 80px 32px; background: #FFF;">
+    <div style="max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+      <sc-for list="{{ testimonials }}" as="t" hint-placeholder-count="3">
+        <div style="background: #FFFBF2; border-radius: 20px; padding: 24px; border: 2px solid #F3E9D6;">
+          <div style="color: #FFC93C; font-size: 15px; margin-bottom: 10px;">★★★★★</div>
+          <p style="margin: 0 0 14px; font-size: 15px; color: #3A342C;">&ldquo;{{ t.quote }}&rdquo;</p>
+          <div style="font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: #5A5148;">{{ t.name }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ===== NEWSLETTER ===== -->
+  <section style="position: relative; overflow: hidden; padding: 72px 32px; background: #2B2420;">
+    <div style="position: absolute; top: -30px; left: -30px; width: 140px; height: 140px; border-radius: 50%; background: #E8483A; opacity: 0.20; pointer-events: none;"></div>
+    <div style="position: absolute; bottom: -40px; right: 4%; width: 120px; height: 120px; background: #3B8FE0; opacity: 0.18; transform: rotate(30deg); border-radius: 24px; pointer-events: none;"></div>
+    <div style="position: relative; z-index: 1; max-width: 640px; margin: 0 auto; text-align: center;">
+      <h2 style="font-family: 'Fredoka', sans-serif; font-size: 30px; font-weight: 700; margin: 0 0 10px; color: #FFFBF2;">Stay in the loop</h2>
+      <p style="color: #C9BFAE; margin: 0 0 28px;">Get notified when new resources land &mdash; no spam, just good stuff.</p>
+      <form style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;" onSubmit="{{ onSubscribe }}">
+        <input type="email" required="{{ true }}" placeholder="you@example.com" style="flex: 1; min-width: 220px; max-width: 320px; padding: 14px 18px; border-radius: 14px; border: none; font-size: 15px;"/>
+        <button type="submit" style="background: #FFC93C; color: #2B2420; font-family: 'Fredoka', sans-serif; font-weight: 700; padding: 14px 26px; border: none; border-radius: 14px; cursor: pointer;">Subscribe</button>
+      </form>
+      <sc-if value="{{ subscribed }}" hint-placeholder-val="{{ false }}">
+        <p style="color: #FFC93C; margin-top: 16px; font-weight: 700; animation: popIn 0.3s ease;">🎉 You're on the list!</p>
+      </sc-if>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background: #FFF6E8; padding: 56px 32px 28px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; margin-bottom: 40px;">
+      <div>
+        <div style="font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 10px;">
+          <span style="color:#E8483A">fab</span><span style="color:#F5A623">4</span><span style="color:#2BB6A3">kids</span>
+        </div>
+        <p style="color: #5A5148; font-size: 14px; max-width: 260px;">Quality educational resources for every child, KS1&ndash;KS4.</p>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Subjects</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="Maths.dc.html">Maths</a><a href="Maths.dc.html">English</a><a href="Maths.dc.html">Science</a><a href="Maths.dc.html">History</a><a href="Maths.dc.html">Geography</a>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Support</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="#">Search resources</a><a href="#newsletter">Newsletter</a><a href="#">Contact</a>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-family: 'Fredoka', sans-serif; margin: 0 0 12px;">Legal</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+          <a href="#">Privacy policy</a><a href="#">Cookie policy</a><a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+    <div style="max-width: 1200px; margin: 0 auto; border-top: 2px solid #F0E4CC; padding-top: 20px; font-size: 13px; color: #8A8072;">
+      © 2026 fab4kids. All rights reserved.
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  state = { subscribed: false };
+
+  renderVals() {
+    return {
+      subscribed: this.state.subscribed,
+      onSubscribe: (e) => { e.preventDefault(); this.setState({ subscribed: true }); },
+      featured: [
+        { title: "Fractions Fun Pack", subject: "Maths", subjectColor: "#3B8FE0", format: "PDF", stage: "KS2", price: "£3.50" },
+        { title: "Victorian Life Sources", subject: "History", subjectColor: "#F5A623", format: "Word", stage: "KS3", price: "£4.00" },
+        { title: "Persuasive Writing Kit", subject: "English", subjectColor: "#E8483A", format: "PDF", stage: "KS2", price: "£2.75" },
+        { title: "Rivers & Rainfall Study", subject: "Geography", subjectColor: "#2BB6A3", format: "Physical", stage: "KS3", price: "£6.00" },
+      ],
+      testimonials: [
+        { quote: "My son actually asks to do his maths sheets now. That's a first.", name: "Priya, parent" },
+        { quote: "Beautifully laid out and dead easy to adapt for my class.", name: "Mr. Okafor, teacher" },
+        { quote: "The Word docs saved me hours of planning every week.", name: "Sam, home educator" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
