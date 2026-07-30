@@ -9,6 +9,7 @@ public sealed partial class KeyStage : ComponentBase
 {
     private PdfCategory? category;
     private PdfSubcategory? subcategory;
+    private SubjectAccent? accent;
 
     [Parameter]
     public required string subject { get; set; }
@@ -32,6 +33,7 @@ public sealed partial class KeyStage : ComponentBase
         {
             category = foundCategory;
             subcategory = foundSubcategory;
+            accent = SubjectAccents.Find(foundCategory.Name).Match<SubjectAccent?>(value => value, () => null);
 
             return;
         }
