@@ -17,6 +17,11 @@ public interface IRemoteFolderEnumerator
     /// and <see cref="RemoteEnumerationContext.HadNoRules"/> are set before the first item is yielded.
     /// <see cref="RemoteEnumerationContext.SeenRemoteIds"/> is updated for each yielded item.
     /// </para>
+    /// <para>
+    /// <paramref name="onStageChanged"/> reports localisation-key stage markers (e.g. connecting to the
+    /// drive, resolving a folder id) for phases that precede the first discovered item, closing the UI
+    /// feedback gap between authentication and the first enumeration progress event.
+    /// </para>
     /// </summary>
-    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, CancellationToken cancellationToken = default);
 }

@@ -79,7 +79,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyStream());
         _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
@@ -93,7 +93,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => new CallbackFiringStream(callInfo.ArgAt<Action<int>?>(3), callbackCount));
         _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
             .Returns((SyncJob?)null);
@@ -119,6 +119,7 @@ public sealed class GivenASyncPassOrchestrator
             Arg.Any<Func<CancellationToken, Task<string>>>(),
             Arg.Any<RemoteEnumerationContext>(),
             Arg.Any<Action<int>?>(),
+            Arg.Any<Action<string>?>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -140,7 +141,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => { callInfo.ArgAt<RemoteEnumerationContext>(2).HadNoRules = true; return EmptyStream(); });
 
         var sut = CreateSut();
@@ -156,7 +157,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => { callInfo.ArgAt<RemoteEnumerationContext>(2).HadNoRules = true; return EmptyStream(); });
 
         var sut = CreateSut();
@@ -304,7 +305,7 @@ public sealed class GivenASyncPassOrchestrator
     {
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(new SingleItemStream(MakeFileDeltaItem()));
         _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
             .Returns([]);
@@ -359,29 +360,9 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_fires_99_item_discovered_callbacks_then_no_enumeration_progress_events_are_raised()
+    public async Task when_enumeration_fires_99_item_discovered_callbacks_then_one_enumeration_progress_event_is_raised_for_the_first_item()
     {
         SetupEnumeratorWithCallbacks(99);
-
-        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
-        var sut = CreateSut();
-        var account = CreateAccount();
-
-        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
-            onProgress: args =>
-            {
-                if (IsEnumerationProgressEvent(args))
-                    enumerationProgressEvents.Add(args);
-            },
-            cancellationToken: TestContext.Current.CancellationToken);
-
-        enumerationProgressEvents.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public async Task when_enumeration_fires_100_item_discovered_callbacks_then_one_enumeration_progress_event_is_raised()
-    {
-        SetupEnumeratorWithCallbacks(100);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
@@ -399,9 +380,9 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_fires_200_item_discovered_callbacks_then_two_enumeration_progress_events_are_raised()
+    public async Task when_enumeration_fires_100_item_discovered_callbacks_then_two_enumeration_progress_events_are_raised()
     {
-        SetupEnumeratorWithCallbacks(200);
+        SetupEnumeratorWithCallbacks(100);
 
         var enumerationProgressEvents = new List<SyncProgressEventArgs>();
         var sut = CreateSut();
@@ -419,6 +400,86 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
+    public async Task when_enumeration_fires_200_item_discovered_callbacks_then_three_enumeration_progress_events_are_raised()
+    {
+        SetupEnumeratorWithCallbacks(200);
+
+        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args =>
+            {
+                if (IsEnumerationProgressEvent(args))
+                    enumerationProgressEvents.Add(args);
+            },
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        enumerationProgressEvents.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_enumeration_fires_a_single_item_discovered_callback_then_an_enumeration_progress_event_is_raised_immediately()
+    {
+        SetupEnumeratorWithCallbacks(1);
+
+        var enumerationProgressEvents = new List<SyncProgressEventArgs>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args =>
+            {
+                if (IsEnumerationProgressEvent(args))
+                    enumerationProgressEvents.Add(args);
+            },
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        enumerationProgressEvents.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_orchestrate_is_called_then_preparing_progress_is_raised_before_enumeration_begins()
+    {
+        SetupDeepSyncPrerequisites();
+
+        var progressMessages = new List<string>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args => progressMessages.Add(args.CurrentFile),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        progressMessages.ShouldContain("Sync.Preparing");
+        progressMessages.IndexOf("Sync.Preparing").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingRemoteDeletions"));
+    }
+
+    [Fact]
+    public async Task when_remote_folder_enumerator_reports_a_stage_change_then_progress_is_raised_with_that_stage_key()
+    {
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => new StageFiringStream(callInfo.ArgAt<Action<string>?>(4), "Sync.ConnectingToDrive"));
+        _localChangeDetector.DetectNewAndModifiedFiles(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>())
+            .Returns([]);
+        _accountRepository.GetByIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<AccountEntity>());
+
+        var progressMessages = new List<string>();
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask,
+            onProgress: args => progressMessages.Add(args.CurrentFile),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        progressMessages.ShouldContain("Sync.ConnectingToDrive");
+    }
+
+    [Fact]
     public async Task when_cancellation_requested_before_enumeration_then_operation_cancelled_exception_propagates()
     {
         using var cts = new CancellationTokenSource();
@@ -426,7 +487,7 @@ public sealed class GivenASyncPassOrchestrator
 
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(new ThrowingStream());
 
         var sut = CreateSut();
@@ -443,7 +504,7 @@ public sealed class GivenASyncPassOrchestrator
 
         _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
             .Returns(new CancelOnIterateStream(cts));
 
         var sut = CreateSut();
@@ -487,6 +548,16 @@ internal sealed class CallbackFiringStream(Action<int>? onItemDiscovered, int ca
             onItemDiscovered?.Invoke(i);
             await Task.CompletedTask;
         }
+        yield break;
+    }
+}
+
+internal sealed class StageFiringStream(Action<string>? onStageChanged, string stage) : IAsyncEnumerable<DeltaItem>
+{
+    public async IAsyncEnumerator<DeltaItem> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+    {
+        onStageChanged?.Invoke(stage);
+        await Task.CompletedTask;
         yield break;
     }
 }

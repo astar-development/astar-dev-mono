@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
-    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false);
 

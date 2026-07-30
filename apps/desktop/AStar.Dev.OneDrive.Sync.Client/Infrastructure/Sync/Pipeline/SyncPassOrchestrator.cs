@@ -82,7 +82,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         bool signaled = false;
         try
         {
-            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, cancellationToken).ConfigureAwait(false))
+            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, onStageChanged: null, cancellationToken).ConfigureAwait(false))
             {
                 var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, cancellationToken).ConfigureAwait(false);
                 if (job is not null)
