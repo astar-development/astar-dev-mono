@@ -1,0 +1,38 @@
+:root {
+  --color-bg: #FFFBF2;
+  --color-bg-alt: #FFF6E8;
+  --color-bg-surface: #FFFFFF;
+  --color-text: #2B2420;
+  --color-text-secondary: #5A5148;
+  --color-text-muted: #8A8072;
+  --color-border: #F3E9D6;
+  --color-primary: #E8483A;
+  --color-primary-hover: #B9382D;
+  --color-primary-contrast: #FFFFFF;
+  --color-secondary: #9B59D0;
+  --color-accent-yellow: #FFC93C;
+  --color-subject-english: #E8483A;
+  --color-subject-history: #F5A623;
+  --color-subject-science: #4CAF6D;
+  --color-subject-geography: #2BB6A3;
+  --color-subject-maths: #3B8FE0;
+  --color-badge-ks1: #3B8FE0;
+  --color-badge-ks2: #4CAF6D;
+  --color-badge-ks3: #F5A623;
+  --color-badge-ks4: #E8483A;
+  --color-success: #4CAF6D;
+  --color-error: #E8483A;
+  --color-footer-bg: #2B2420;
+  --font-family-base: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-family-display: 'Fredoka', system-ui, -apple-system, sans-serif;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 3px 0 rgb(43 36 32 / 0.08), 0 1px 2px -1px rgb(43 36 32 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(43 36 32 / 0.1), 0 2px 4px -2px rgb(43 36 32 / 0.1);
+  --shadow-hover-hard: 0 10px 0 var(--color-border);
+  --shadow-cta: 0 6px 0 var(--color-primary-hover);
+  --container-max-width: 1200px;
+  --section-padding-y: 5.5rem;
+}
