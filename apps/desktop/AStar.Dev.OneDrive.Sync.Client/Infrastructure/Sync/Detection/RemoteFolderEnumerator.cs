@@ -30,6 +30,9 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         context.Rules = rules;
         context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, cancellationToken).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
 
+        onStageChanged?.Invoke("Sync.ConnectingToDrive");
+        OneDriveSyncClientMessages.RemoteFolderEnumeratorConnectingToDrive(logger, account.Id.Id);
+
         var driveId = await graphService.GetDriveIdAsync(account.Id.Id, tokenFactory, cancellationToken)
             .MatchAsync<DriveId, string, DriveId?>(
                 driveIdValue => driveIdValue,
@@ -51,6 +54,9 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         {
             if (cancellationToken.IsCancellationRequested)
                 yield break;
+
+            onStageChanged?.Invoke("Sync.ResolvingFolder");
+            OneDriveSyncClientMessages.RemoteFolderEnumeratorResolvingFolder(logger, rule.RemotePath);
 
             string? folderId = await ResolveAndBackFillFolderIdAsync(account.Id, rule, context.SyncedItems, tokenFactory, driveId.Value, cancellationToken).ConfigureAwait(false);
 

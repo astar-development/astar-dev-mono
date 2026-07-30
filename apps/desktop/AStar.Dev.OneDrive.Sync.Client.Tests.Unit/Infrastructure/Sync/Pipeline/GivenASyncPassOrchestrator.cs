@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
@@ -49,7 +50,7 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository);
+        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository, NullLogger<SyncPassOrchestrator>.Instance);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()

@@ -5,15 +5,17 @@ using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.ApplicationConfiguration;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Detection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 
-internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, IFileClassificationRepository classificationRepository) : ISyncPassOrchestrator
+internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, IFileClassificationRepository classificationRepository, ILogger<SyncPassOrchestrator> logger) : ISyncPassOrchestrator
 {
     public async Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken cancellationToken = default)
     {
@@ -26,20 +28,25 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
 
         var mappings = await classificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
+        OneDriveSyncClientMessages.SyncPipelinePreparing(logger, account.Id.Id);
+        RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Preparing"), onProgress);
+
         int progressReportInterval = syncSettings.Value.ProgressReportInterval;
         int workerCount = settingsService.Current.ConcurrentWorkerCount;
         var context = new RemoteEnumerationContext();
 
         Action<int>? enumerationProgress = onProgress is null ? null : count =>
         {
-            if (count % progressReportInterval == 0)
+            if (count == 1 || count % progressReportInterval == 0)
                 RaiseProgress(account.Id.Id, count, 0, localizationService.GetLocal("Sync.Enumerating", count), onProgress);
         };
+
+        Action<string>? stageChanged = onProgress is null ? null : stage => RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal(stage), onProgress);
 
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken);
+        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, stageChanged, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken);
 
         bool hasJobs;
         try
@@ -77,12 +84,12 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
 
-    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
+    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, Action<string>? stageChanged, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         bool signaled = false;
         try
         {
-            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, onStageChanged: null, cancellationToken).ConfigureAwait(false))
+            await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, stageChanged, cancellationToken).ConfigureAwait(false))
             {
                 var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, cancellationToken).ConfigureAwait(false);
                 if (job is not null)
