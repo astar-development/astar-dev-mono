@@ -18,7 +18,7 @@ public sealed class WallpaperCategoryRegistrar(IDbContextFactory<AppDbContext> d
 
         foreach (var tag in tags.Where(HasCategoryAndTag).Select(TrimTagName))
         {
-            if (!registeredNames.Add(tag.Tag))
+            if (!tag.Tag.Contains("wallhaven", StringComparison.OrdinalIgnoreCase) && !registeredNames.Add(tag.Tag))
                 continue;
 
             context.FileClassificationCategories.Add(CreateCategory(tag));
