@@ -1,3 +1,4 @@
+@rendermode InteractiveServer
 @using Fab4Kids.Web.Components.Common
 @using Fab4Kids.Web.Navigation
 
@@ -13,15 +14,16 @@
             type="button"
             class="site-header__hamburger"
             aria-controls="primary-nav"
-            aria-expanded="false"
+            aria-expanded="@(navOpen ? "true" : "false")"
             aria-label="Toggle navigation"
-            id="hamburger-btn">
+            id="hamburger-btn"
+            @onclick="ToggleNav">
             <span class="site-header__bar"></span>
             <span class="site-header__bar"></span>
             <span class="site-header__bar"></span>
         </button>
 
-        <nav class="site-header__nav" id="primary-nav" aria-label="Primary navigation">
+        <nav class="site-header__nav @(navOpen ? "site-header__nav--open" : "")" id="primary-nav" aria-label="Primary navigation">
             <ul class="site-header__nav-list" role="list">
                 @foreach (var link in SiteNavigation.SubjectLinks)
                 {
