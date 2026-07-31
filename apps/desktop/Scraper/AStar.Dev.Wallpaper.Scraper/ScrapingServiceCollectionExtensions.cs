@@ -34,8 +34,11 @@ public static class ScrapingServiceCollectionExtensions
         services.AddSingleton<IWallpaperPageVisitor, WallpaperPageVisitor>();
         services.AddSingleton<ISearchConfigurationProgressWriter, SearchConfigurationProgressWriter>();
         services.AddSingleton<ITopWallpapersPageInfoReader, TopWallpapersPageInfoReader>();
+        services.AddSingleton<ISubscriptionsPageInfoReader, SubscriptionsPageInfoReader>();
+        services.AddSingleton<ISubscriptionsClearer, SubscriptionsClearer>();
         services.AddSingleton<IScrapeAction, SearchCategoryScrapeAction>();
         services.AddSingleton<ITopWallpapersScrapeAction, TopWallpapersScrapeAction>();
+        services.AddSingleton<ISubscriptionsScrapeAction, SubscriptionsScrapeAction>();
         services.AddSingleton<IDatabaseResetService, DatabaseResetService>();
 
         return services;
