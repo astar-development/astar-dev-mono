@@ -17,7 +17,7 @@ public sealed class GivenTopWallpapersScrapeAction
     private readonly IPage page = Substitute.For<IPage>();
     private readonly Clock clock = () => new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    private const string TopWallpapersUrl = "https://wallhaven.cc/hot?page=";
+    private const string TopWallpapersUrl = "https://wallhaven.cc/search?categories=101&purity=111&topRange=1M&sorting=toplist&order=desc&page=";
 
     private static ScrapeContext CreateContext(int startingPageNumber = 0) => new(
         [],
@@ -26,7 +26,6 @@ public sealed class GivenTopWallpapersScrapeAction
         new DirectoryLayout("/root", "/base", "/famous"), [], new SearchConfigurationEntity
         {
             Id = 1,
-            TopWallpapers = TopWallpapersUrl,
             ImagePauseInSeconds = 1,
             TopWallpapersStartingPageNumber = startingPageNumber,
             CreatedAt = DateTime.UtcNow,

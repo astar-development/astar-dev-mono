@@ -17,7 +17,11 @@ public sealed class TopWallpapersScrapeAction(
     Clock clock) : ITopWallpapersScrapeAction
 {
     private const int FirstPageNumber = 1;
-    private static readonly ScrapeCategory pseudoCategoryTemplate = new("Top Wallpapers", string.Empty, false, false);
+
+    // TODO: no database field currently holds the Top Wallpapers URL - hard-coded until one is added.
+    private const string TopWallpapersUrl = "https://wallhaven.cc/search?categories=101&purity=111&topRange=1M&sorting=toplist&order=desc&page=";
+
+    private static readonly ScrapeCategory pseudoCategoryTemplate = new("Top Wallpapers", TopWallpapersUrl, false, false);
 
     /// <inheritdoc />
     public string Name => "Scrape Top Wallpapers";
@@ -27,8 +31,7 @@ public sealed class TopWallpapersScrapeAction(
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
-            var category = pseudoCategoryTemplate with { SearchUrl = scrapeContext.SearchConfiguration.TopWallpapers, };
-            var context = new CategoryScrapeContext(page, progress, scrapeContext, category, scrapeContext.FileClassifications);
+            var context = new CategoryScrapeContext(page, progress, scrapeContext, pseudoCategoryTemplate, scrapeContext.FileClassifications);
 
             int startingPage = scrapeContext.SearchConfiguration.TopWallpapersStartingPageNumber > 0 ? scrapeContext.SearchConfiguration.TopWallpapersStartingPageNumber : FirstPageNumber;
             await NavigateToStartingPageAsync(context, startingPage, cancellationToken);
