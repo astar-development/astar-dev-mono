@@ -33,7 +33,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private ThemeMode selectedTheme;
 
     public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, IScrapeAction searchCategoryScrapeAction,
-        IEntityEditorFactory entityEditorFactory, IThemeService themeService, IDatabaseResetService databaseResetService)
+        ITopWallpapersScrapeAction topWallpapersScrapeAction, IEntityEditorFactory entityEditorFactory, IThemeService themeService, IDatabaseResetService databaseResetService)
     {
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
         this.playwrightService = playwrightService;
@@ -44,7 +44,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         SelectThemeCommand = ReactiveCommand.Create<ThemeMode>(SelectTheme);
 
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", searchCategoryScrapeAction);
-        ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers");
+        ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", topWallpapersScrapeAction);
         ScrapeSubscribedCommand = CreateScrapeCommand("Scrape Subscribed Wallpapers");
         ScrapeAllCommand = CreateScrapeCommand("Scrape All Wallpapers");
         CancelCommand = ReactiveCommand.Create(CancelRunningScrape, this.WhenAnyValue(vm => vm.IsBusy));
