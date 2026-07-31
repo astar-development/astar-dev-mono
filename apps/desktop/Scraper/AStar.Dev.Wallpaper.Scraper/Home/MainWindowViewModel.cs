@@ -33,8 +33,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private ThemeMode selectedTheme;
 
     public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, IScrapeAction searchCategoryScrapeAction,
-        ITopWallpapersScrapeAction topWallpapersScrapeAction, ISubscriptionsScrapeAction subscriptionsScrapeAction, IEntityEditorFactory entityEditorFactory,
-        IThemeService themeService, IDatabaseResetService databaseResetService)
+        ITopWallpapersScrapeAction topWallpapersScrapeAction, ISubscriptionsScrapeAction subscriptionsScrapeAction, IScrapeAllAction scrapeAllAction,
+        IEntityEditorFactory entityEditorFactory, IThemeService themeService, IDatabaseResetService databaseResetService)
     {
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
         this.playwrightService = playwrightService;
@@ -47,7 +47,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", searchCategoryScrapeAction);
         ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", topWallpapersScrapeAction);
         ScrapeSubscribedCommand = CreateScrapeCommand("Scrape Subscribed Wallpapers", subscriptionsScrapeAction);
-        ScrapeAllCommand = CreateScrapeCommand("Scrape All Wallpapers");
+        ScrapeAllCommand = CreateScrapeCommand("Scrape All Wallpapers", scrapeAllAction);
         CancelCommand = ReactiveCommand.Create(CancelRunningScrape, this.WhenAnyValue(vm => vm.IsBusy));
 
         OpenConnectionStringsCommand = CreateOpenEditorCommand(entityEditorFactory.CreateConnectionStringsEditor);
@@ -226,7 +226,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction? action = null)
+    private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction action)
     {
         var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
 
@@ -238,7 +238,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         return command;
     }
 
-    private async Task ExecuteScrapeAsync(string actionName, IScrapeAction? action)
+    private async Task ExecuteScrapeAsync(string actionName, IScrapeAction action)
     {
         IsBusy = true;
         using var cancellationSource = new CancellationTokenSource();
@@ -255,7 +255,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private async Task ConfirmAndRunAsync(string actionName, IScrapeAction? action, CancellationToken cancellationToken)
+    private async Task ConfirmAndRunAsync(string actionName, IScrapeAction action, CancellationToken cancellationToken)
     {
         bool confirmed = await ConfirmScrape.Handle($"Are you sure you want to start the '{actionName}'?");
 
@@ -278,7 +278,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private async Task RunActionAsync(string actionName, IScrapeAction? action, CancellationToken cancellationToken)
+    private async Task RunActionAsync(string actionName, IScrapeAction action, CancellationToken cancellationToken)
     {
         var page = await playwrightService.ConfigurePlaywrightAsync(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
@@ -288,17 +288,9 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
             error => ReportConfigurationError(error, cancellationToken));
     }
 
-    private async Task<FunctionalParadigm.UnitFp> RunOnConfiguredPageAsync(string actionName, IScrapeAction? action, IPage configuredPage, CancellationToken cancellationToken)
+    private async Task<FunctionalParadigm.UnitFp> RunOnConfiguredPageAsync(string actionName, IScrapeAction action, IPage configuredPage, CancellationToken cancellationToken)
     {
         AppendStatusLine("Playwright page configured successfully.");
-
-        if (action is null)
-        {
-            _ = configuredPage.GotoAsync("login");
-
-            return FunctionalParadigm.UnitFp.Instance;
-        }
-
         _ = configuredPage.GotoAsync("/");
         var progress = new Progress<string>(AppendStatusLine);
 

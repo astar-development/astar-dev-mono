@@ -39,6 +39,7 @@ public static class ScrapingServiceCollectionExtensions
         services.AddSingleton<IScrapeAction, SearchCategoryScrapeAction>();
         services.AddSingleton<ITopWallpapersScrapeAction, TopWallpapersScrapeAction>();
         services.AddSingleton<ISubscriptionsScrapeAction, SubscriptionsScrapeAction>();
+        services.AddSingleton<IScrapeAllAction, ScrapeAllAction>();
         services.AddSingleton<IDatabaseResetService, DatabaseResetService>();
 
         return services;

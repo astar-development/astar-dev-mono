@@ -23,6 +23,7 @@ public sealed class GivenMainWindowViewModel
     private readonly IScrapeAction searchCategoryScrapeAction = Substitute.For<IScrapeAction>();
     private readonly ITopWallpapersScrapeAction topWallpapersScrapeAction = Substitute.For<ITopWallpapersScrapeAction>();
     private readonly ISubscriptionsScrapeAction subscriptionsScrapeAction = Substitute.For<ISubscriptionsScrapeAction>();
+    private readonly IScrapeAllAction scrapeAllAction = Substitute.For<IScrapeAllAction>();
     private readonly IEntityEditorFactory entityEditorFactory = Substitute.For<IEntityEditorFactory>();
     private readonly IThemeService themeService = Substitute.For<IThemeService>();
     private readonly IDatabaseResetService databaseResetService = Substitute.For<IDatabaseResetService>();
@@ -245,14 +246,14 @@ public sealed class GivenMainWindowViewModel
     }
 
     [Fact]
-    public async Task when_a_scrape_command_has_no_action_then_the_configured_page_navigates_to_the_login_page()
+    public async Task when_scrape_all_completes_then_the_injected_action_executes_against_the_configured_page()
     {
         var page = Substitute.For<IPage>();
         var sut = CreateViewModel(configureResult: Exceptional.Success(page));
 
         await sut.ScrapeAllCommand.Execute();
 
-        _ = page.Received().GotoAsync("login");
+        await scrapeAllAction.Received().ExecuteAsync(page, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -534,9 +535,12 @@ public sealed class GivenMainWindowViewModel
         subscriptionsScrapeAction.ExecuteAsync(Arg.Any<IPage>(), Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(Exceptional.Success(FunctionalParadigm.UnitFp.Instance)));
 
+        scrapeAllAction.ExecuteAsync(Arg.Any<IPage>(), Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult(Exceptional.Success(FunctionalParadigm.UnitFp.Instance)));
+
         var scrapeConfiguration = Options.Create(new ScrapeConfiguration { ApplicationName = "Test App", WindowSize = new WindowSize(1_234, 567) });
         var sut = new MainWindowViewModel(scrapeConfiguration, playwrightService, searchCategoryScrapeAction, topWallpapersScrapeAction, subscriptionsScrapeAction,
-            entityEditorFactory, themeService, databaseResetService);
+            scrapeAllAction, entityEditorFactory, themeService, databaseResetService);
 
         if (confirmScrape.HasValue)
         {
