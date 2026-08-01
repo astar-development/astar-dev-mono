@@ -30,6 +30,12 @@ public sealed class SubscriptionsScrapeAction(
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
+            if(!Directory.Exists(scrapeContext.Directories.RootDirectory))
+            {
+                progress.Report($"{clock():T} Root directory '{scrapeContext.Directories.RootDirectory}' does not exist, cannot scrape categories");
+                return UnitFp.Instance;
+            }
+            
             var category = pseudoCategoryTemplate with { SearchUrl = scrapeContext.SearchConfiguration.Subscriptions, };
             var context = new CategoryScrapeContext(page, progress, scrapeContext, category, scrapeContext.FileClassifications);
 

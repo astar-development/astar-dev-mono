@@ -261,7 +261,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
 
         if (!confirmed)
         {
-            AppendStatusLine($"{actionName}: No");
+            AppendStatusLine($"{actionName}: Cancelled by user");
 
             return;
         }
@@ -269,7 +269,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            AppendStatusLine($"{actionName}: Yes");
+            AppendStatusLine($"{actionName}: Confirmed by user, starting scrape...");
             await RunActionAsync(actionName, action, cancellationToken);
         }
         catch (OperationCanceledException)

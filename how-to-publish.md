@@ -48,7 +48,7 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 
 ## 2. Publish the OneDrive Sync Client
 
-Tag format: bare `v{version}`.
+Tag format: `onedrive-sync-v{version}`.
 
 ```bash
 git tag onedrive-sync-v1.0.2
@@ -68,11 +68,11 @@ release. All platforms publish to the **same** GitHub Release (`vpk upload --mer
 
 ## 3. Publish the Wallpaper Scraper
 
-Tag format: `scraper-v{version}` — **not** bare `v{version}`.
+Tag format: `scraper-v{version}`.
 
 ```bash
-git tag scraper-v1.0.0
-git push origin scraper-v1.0.0
+git tag scraper-v1.1.1
+git push origin scraper-v1.1.1
 ```
 
 What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64
