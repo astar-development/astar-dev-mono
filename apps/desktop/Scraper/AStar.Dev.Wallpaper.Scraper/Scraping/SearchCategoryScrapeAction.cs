@@ -29,6 +29,11 @@ public sealed class SearchCategoryScrapeAction(
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
+            if(!Directory.Exists(scrapeContext.Directories.RootDirectory))
+            {
+                progress.Report($"{clock():T} Root directory '{scrapeContext.Directories.RootDirectory}' does not exist, cannot scrape categories");
+                return UnitFp.Instance;
+            }
 
             await scrapeContext.Categories.ForEachAsync(category => VisitCategoryAsync(new CategoryScrapeContext(page, progress, scrapeContext, category, scrapeContext.FileClassifications), cancellationToken));
 
