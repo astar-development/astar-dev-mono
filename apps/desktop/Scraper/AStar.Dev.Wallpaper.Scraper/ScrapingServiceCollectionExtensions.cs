@@ -1,7 +1,17 @@
 using AStar.Dev.Wallpaper.Scraper.Maintenance;
-using AStar.Dev.Wallpaper.Scraper.Scraping;
 using AStar.Dev.Wallpaper.Scraper.Services;
 using Microsoft.Extensions.DependencyInjection;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Actions;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Categories;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Context;
+using AStar.Dev.Wallpaper.Scraper.Scraping.ImageDownload;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Navigation;
+using AStar.Dev.Wallpaper.Scraper.Scraping.SearchCategories;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Storage;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Subscriptions;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Tags;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Thumbnails;
+using AStar.Dev.Wallpaper.Scraper.Scraping.TopWallpapers;
 
 namespace AStar.Dev.Wallpaper.Scraper;
 

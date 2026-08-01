@@ -4,7 +4,6 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
 using AStar.Dev.Wallpaper.Scraper.Maintenance;
-using AStar.Dev.Wallpaper.Scraper.Scraping;
 using AStar.Dev.Wallpaper.Scraper.Services;
 using AStar.Dev.Wallpaper.Scraper.Theming;
 using AStar.Dev.Wallpaper.Scraper.ViewModels;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 using ReactiveUI;
 using Unit = System.Reactive.Unit;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Actions;
 
 namespace AStar.Dev.Wallpaper.Scraper.Home;
 

@@ -1,11 +1,12 @@
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
-using AStar.Dev.Wallpaper.Scraper.Scraping;
 using AStar.Dev.Wallpaper.Scraper.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Actions;
+using AStar.Dev.Wallpaper.Scraper.Scraping.ImageDownload;
 
 namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit;
 

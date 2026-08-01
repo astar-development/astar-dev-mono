@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
-using AStar.Dev.Wallpaper.Scraper.Scraping;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using ReactiveUI;
 using Unit = System.Reactive.Unit;
+using AStar.Dev.Wallpaper.Scraper.Scraping.Thumbnails;
 
 namespace AStar.Dev.Wallpaper.Scraper.Home;
 
