@@ -212,23 +212,23 @@ public sealed class GivenMainWindowViewModel
     }
 
     [Fact]
-    public async Task when_the_confirmation_is_accepted_then_the_status_records_yes()
+    public async Task when_the_confirmation_is_accepted_then_the_status_records_confirmed()
     {
         var sut = CreateViewModel();
 
         await sut.ScrapeTopCommand.Execute();
 
-        sut.StatusText.ShouldContain("Scrape Top Wallpapers: Yes");
+        sut.StatusText.ShouldContain("Scrape Top Wallpapers: Confirmed by user, starting scrape...");
     }
 
     [Fact]
-    public async Task when_the_confirmation_is_declined_then_the_status_records_no_and_the_scrape_does_not_run()
+    public async Task when_the_confirmation_is_declined_then_the_status_records_cancelled_and_the_scrape_does_not_run()
     {
         var sut = CreateViewModel(confirmScrape: false);
 
         await sut.ScrapeTopCommand.Execute();
 
-        sut.StatusText.ShouldContain("Scrape Top Wallpapers: No");
+        sut.StatusText.ShouldContain("Scrape Top Wallpapers: Cancelled by user");
         await playwrightService.DidNotReceive().ConfigurePlaywrightAsync(Arg.Any<CancellationToken>());
         sut.IsBusy.ShouldBeFalse();
     }
