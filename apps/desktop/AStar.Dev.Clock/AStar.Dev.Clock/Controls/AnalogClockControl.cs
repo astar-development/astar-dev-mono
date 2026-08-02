@@ -84,9 +84,9 @@ public class AnalogClockControl : Control
         double min = now.Minute + sec / 60.0;
         double hour = now.Hour % 12 + min / 60.0;
 
-        DrawHand(context, center, radius * 0.55, hour / 12.0, 5, Brushes.Red);
-        DrawHand(context, center, radius * 0.75, min / 60.0, 3, Brushes.Blue);
-        if (ShowSecondHand) DrawHand(context, center, radius * 0.85, sec / 60.0, 1.5, isDark ? Brushes.White : Brushes.Black);
+        DrawHand(context, center, radius * 0.55, hour / 12.0, ClockHandStyle.HourHandThickness, ClockHandStyle.HourHandBrush);
+        DrawHand(context, center, radius * 0.75, min / 60.0, ClockHandStyle.MinuteHandThickness, ClockHandStyle.MinuteHandBrush);
+        if (ShowSecondHand) DrawHand(context, center, radius * 0.85, ClockHandGeometry.SecondHandUnit(now), ClockHandStyle.SecondHandThickness, isDark ? Brushes.White : Brushes.Black);
 
         // Center cap
         context.DrawGeometry(isDark ? Brushes.OrangeRed : Brushes.Crimson, null, new EllipseGeometry(new Rect(center.X - 3, center.Y - 3, 6, 6)));
