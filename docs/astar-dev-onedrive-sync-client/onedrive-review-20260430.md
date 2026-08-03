@@ -23,7 +23,7 @@
 
 - [x] **[Startup/LocalizationExtensions.cs:13-15]** Blocker — `#pragma warning disable CA1859` is used to suppress a compiler warning without a documented reason. `TreatWarningsAsErrors=true` is a global repo rule; suppressions must carry a `// Justification: ...` comment explaining why the warning cannot be addressed. Fix: either implement the concrete type directly (remove the suppression) or add an inline comment: `// Justification: ILocalizationService is required for DI registration — concrete type must not be exposed here`.
 
-- [x] **[App.axaml.cs:93]** Blocker — `Path.Combine(logDirectory, ApplicationMetadata.ApplicationLogName)` uses `Path.Combine` instead of the repo-mandated `CombinePath` extension from `AStar.Dev.Utilities`. `Path.Combine` can silently drop all preceding components if any argument begins with a directory separator; `CombinePath` guards against this. The `logDirectory` value is constructed correctly on line 84 using `CombinePath`, but the File sink path at line 93 reverts to the forbidden API. Fix: `logDirectory.CombinePath(ApplicationMetadata.ApplicationLogName)`.
+- [x] **[App.axaml.cs:93]** Blocker — `Path.Combine(logDirectory, ApplicationMetadata.ApplicationLogName)` uses `Path.Combine` instead of the repo-mandated `CombinePath` extension from `AStarDev.Utilities`. `Path.Combine` can silently drop all preceding components if any argument begins with a directory separator; `CombinePath` guards against this. The `logDirectory` value is constructed correctly on line 84 using `CombinePath`, but the File sink path at line 93 reverts to the forbidden API. Fix: `logDirectory.CombinePath(ApplicationMetadata.ApplicationLogName)`.
 
 - [x] **[Infrastructure/Sync/LocalChangeDetector.cs:43,97] + [Infrastructure/Sync/RemoteFolderEnumerator.cs:210] + [Accounts/AccountFilesViewModel.cs:151]** Blocker — `Path.Combine` used instead of `CombinePath` in multiple places throughout the sync engine: `LocalChangeDetector.BuildLocalPath` (line 97), `RemoteFolderEnumerator.BuildLocalPath` (line 210), and `AccountFilesViewModel.OnOpenInFileManager` (line 151). Each is a repo-rule violation that can silently produce wrong paths. Fix: replace all with the `CombinePath` extension.
 
@@ -201,5 +201,5 @@ private async void OnTimerTickAsync(object? state)
 - [Microsoft: async void anti-pattern](https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming)
 - [EF Core ExecuteSqlAsync parameterisation](https://learn.microsoft.com/en-us/ef/core/querying/sql-queries#passing-parameters)
 - [AStar.Dev.Functional.Extensions](../../packages/core/AStar.Dev.Functional.Extensions/)
-- [AStar.Dev.Utilities](../../packages/core/AStar.Dev.Utilities/)
+- [AStarDev.Utilities](../../packages/core/AStarDev.Utilities/)
 - [AStar.Dev.Logging.Extensions](../../packages/infra/AStar.Dev.Logging.Extensions/)

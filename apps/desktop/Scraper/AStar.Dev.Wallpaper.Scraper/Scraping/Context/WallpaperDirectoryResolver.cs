@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Actions;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Tags;
 

@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using System.Text.Json;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;

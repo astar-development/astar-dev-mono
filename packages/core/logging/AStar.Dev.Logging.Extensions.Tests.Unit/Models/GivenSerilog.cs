@@ -1,5 +1,5 @@
 using AStar.Dev.Logging.Extensions.Models;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 

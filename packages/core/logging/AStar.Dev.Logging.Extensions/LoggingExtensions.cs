@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

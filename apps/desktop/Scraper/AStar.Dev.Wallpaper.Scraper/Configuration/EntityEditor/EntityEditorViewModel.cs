@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 using System.Windows.Input;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using ReactiveUI;

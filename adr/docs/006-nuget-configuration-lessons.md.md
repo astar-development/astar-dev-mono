@@ -7,7 +7,7 @@
 
 ## Context
 
-During the migration of the first package (`AStar.Dev.Utilities`) into the
+During the migration of the first package (`AStarDev.Utilities`) into the
 mono-repo, several NuGet configuration issues were encountered that are not
 well-documented and are likely to affect anyone setting up a similar .NET 10
 mono-repo on Linux. This ADR documents the problems and their resolutions so
@@ -122,7 +122,7 @@ The two rogue folders were removed and the following entries added to
 
 ### 4. `packages/` in `.gitignore` silenced the entire source folder
 
-**Symptom:** All files added to `packages/core/AStar.Dev.Utilities/` were
+**Symptom:** All files added to `packages/core/AStarDev.Utilities/` were
 invisible to git — not shown as untracked, not staged, completely absent
 from `git status`.
 
@@ -172,7 +172,7 @@ appears to work but inherits none of the shared configuration.
 **Symptom:**
 
 ```
-rev-parse produced no commit for packages/core/AStar.Dev.Utilities
+rev-parse produced no commit for packages/core/AStarDev.Utilities
 ```
 
 **Cause:** Nerdbank.GitVersioning calculates the version height by counting
@@ -198,25 +198,25 @@ content. No commit = no version = confusing errors downstream.
 **Symptom:**
 
 ```
-rev-parse produced no commit for packages/core/AStar.Dev.Utilities
+rev-parse produced no commit for packages/core/AStarDev.Utilities
 ```
 
 (even after committing `version.json`)
 
-**Cause:** `nbgv get-version packages/core/AStar.Dev.Utilities` interprets
+**Cause:** `nbgv get-version packages/core/AStarDev.Utilities` interprets
 the argument as a git commit-ish reference, not a filesystem path to a
 project directory.
 
 **Resolution:** Use the `-p` / `--project` flag to specify a project directory:
 
 ```bash
-nbgv get-version -p packages/core/AStar.Dev.Utilities
+nbgv get-version -p packages/core/AStarDev.Utilities
 ```
 
 Or `cd` into the project directory first:
 
 ```bash
-cd packages/core/AStar.Dev.Utilities && nbgv get-version
+cd packages/core/AStarDev.Utilities && nbgv get-version
 ```
 
 ---

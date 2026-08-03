@@ -238,7 +238,7 @@ if (response.Headers.RetryAfter?.Date is not { } date)
 
 ### `Infrastructure/Sync/LocalChangeDetector.cs:43`
 
-Building cross-platform relative path with string interpolation. Prefer `AStar.Dev.Utilities` path helpers where applicable.
+Building cross-platform relative path with string interpolation. Prefer `AStarDev.Utilities` path helpers where applicable.
 
 ### `Infrastructure/Sync/LocalChangeDetector.cs:75`
 
@@ -340,7 +340,7 @@ XML `<summary>` opening sentence restates what the code already expresses. The p
 
 ### `Infrastructure/Theme/ThemeService.cs:92–95`
 
-Private `Disposable` nested class is a general-purpose action-disposable. Re-implementation of utility that belongs in `AStar.Dev.Utilities`. If absent there, add it.
+Private `Disposable` nested class is a general-purpose action-disposable. Re-implementation of utility that belongs in `AStarDev.Utilities`. If absent there, add it.
 
 ### `Infrastructure/ViewModelBase.cs`
 

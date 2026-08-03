@@ -1,5 +1,5 @@
 using AStar.Dev.Logging.Extensions.Models;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Console = AStar.Dev.Logging.Extensions.Models.Console;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;

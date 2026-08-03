@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Homepage;
 using Microsoft.AspNetCore.Components;

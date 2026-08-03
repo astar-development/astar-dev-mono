@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="../../utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+      <ProjectReference Include="../../utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

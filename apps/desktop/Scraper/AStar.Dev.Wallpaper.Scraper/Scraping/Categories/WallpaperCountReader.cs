@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.Playwright;
 
 namespace AStar.Dev.Wallpaper.Scraper.Scraping.Categories;

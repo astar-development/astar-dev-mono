@@ -7,7 +7,7 @@
 In the list below, the bracketed letters are used to help me track whilst I rebuild the mermaid diagram. They can be ignored and will ultimately be removed.
 
 1. (A) [AStar.Dev.Technical.Debt.Reporting](https://github.com/astar-development/astar-dev-technical-debt-reporting) - NO Dependencies on other AStar Dev packages is allowed
-1. (B) [AStar.Dev.Utilities](https://github.com/astar-development/astar-dev-utilities)
+1. (B) [AStarDev.Utilities](https://github.com/astar-development/astar-dev-utilities)
 1. (C) [AStar.Dev.Admin.Api.Client.Sdk](https://github.com/astar-development/astar-dev-admin-api-client-sdk)
 1. (D) [AStar.Dev.Api.Client.Sdk.Shared](https://github.com/astar-development/astar-dev-api-client-sdk-shared)
 1. (E) [AStar.Dev.Api.HealthChecks](https://github.com/astar-development/astar-dev-api-health-checks)
@@ -37,7 +37,7 @@ In the list below, the bracketed letters are used to help me track whilst I rebu
 ```mermaid
 graph RL
     A(AStar.Dev.Technical.Debt.Reporting)
-    B(AStar.Dev.Utilities)
+    B(AStarDev.Utilities)
     C(AStar.Dev.Admin.Api.Client.Sdk) --> B
     D(AStar.Dev.Api.Client.Sdk.Shared)
     E(AStar.Dev.Api.HealthChecks)

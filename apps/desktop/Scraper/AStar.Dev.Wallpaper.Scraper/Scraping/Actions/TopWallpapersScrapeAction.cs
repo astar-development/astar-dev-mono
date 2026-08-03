@@ -1,5 +1,5 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Services;
 using Microsoft.Playwright;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Context;
@@ -35,12 +35,12 @@ public sealed class TopWallpapersScrapeAction(
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
-            if(!Directory.Exists(scrapeContext.Directories.RootDirectory))
+            if (!Directory.Exists(scrapeContext.Directories.RootDirectory))
             {
                 progress.Report($"{clock():T} Root directory '{scrapeContext.Directories.RootDirectory}' does not exist, cannot scrape categories");
                 return UnitFp.Instance;
             }
-            
+
             var context = new CategoryScrapeContext(page, progress, scrapeContext, pseudoCategoryTemplate, scrapeContext.FileClassifications);
 
             int startingPage = scrapeContext.SearchConfiguration.TopWallpapersStartingPageNumber > 0 ? scrapeContext.SearchConfiguration.TopWallpapersStartingPageNumber : FirstPageNumber;

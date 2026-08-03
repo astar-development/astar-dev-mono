@@ -44,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../core/utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="../core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
         <ProjectReference Include="../core/utilities/AStar.Dev.Technical.Debt.Reporting/AStar.Dev.Technical.Debt.Reporting.csproj" />
         <ProjectReference Include="../core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
     </ItemGroup>

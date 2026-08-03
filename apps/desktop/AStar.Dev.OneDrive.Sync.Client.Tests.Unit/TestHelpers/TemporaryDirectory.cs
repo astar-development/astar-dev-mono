@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
 

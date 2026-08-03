@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using LogLevel = AStar.Dev.Logging.Extensions.Models.LogLevel;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;

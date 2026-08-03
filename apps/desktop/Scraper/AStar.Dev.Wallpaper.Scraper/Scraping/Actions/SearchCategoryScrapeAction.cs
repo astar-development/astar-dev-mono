@@ -1,5 +1,5 @@
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using AStar.Dev.Wallpaper.Scraper.Services;
 using Microsoft.Playwright;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Categories;
@@ -34,7 +34,7 @@ public sealed class SearchCategoryScrapeAction(
         await Try.RunAsync(async () =>
         {
             var scrapeContext = await contextReader.ReadAsync(cancellationToken);
-            if(!Directory.Exists(scrapeContext.Directories.RootDirectory))
+            if (!Directory.Exists(scrapeContext.Directories.RootDirectory))
             {
                 progress.Report($"{clock():T} Root directory '{scrapeContext.Directories.RootDirectory}' does not exist, cannot scrape categories");
                 return UnitFp.Instance;
