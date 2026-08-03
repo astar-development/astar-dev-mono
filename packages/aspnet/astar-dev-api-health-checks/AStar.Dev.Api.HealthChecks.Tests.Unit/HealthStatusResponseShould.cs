@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using JetBrains.Annotations;
 
 namespace AStar.Dev.Api.HealthChecks;

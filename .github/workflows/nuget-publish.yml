@@ -6,15 +6,15 @@
 #
 # Tag format:  {PackageName}/v{version}
 # Examples:
-#   AStar.Dev.Utilities/v1.6.6
-#   AStar.Dev.Utilities/v1.7.0
+#   AStarDev.Utilities/v1.6.6
+#   AStarDev.Utilities/v1.7.0
 #   AStar.Dev.SomeNewPackage/v1.0.0
 #   AStar.Dev.AnotherPackage/v2.1.0-beta.1
 #
 # Release workflow — always the same regardless of major/minor/patch:
 #
-#   git tag AStar.Dev.Utilities/v1.7.0
-#   git push origin AStar.Dev.Utilities/v1.7.0
+#   git tag AStarDev.Utilities/v1.7.0
+#   git push origin AStarDev.Utilities/v1.7.0
 #
 # That's it. The pipeline does everything else.
 # ════════════════════════════════════════════════════════════════════════════
@@ -62,8 +62,8 @@ jobs:
           global-json-file: global.json
 
       # ── Derive package name and version from the tag ───────────────────────
-      # Tag:            AStar.Dev.Utilities/v1.7.0
-      # PACKAGE_NAME  → AStar.Dev.Utilities
+      # Tag:            AStarDev.Utilities/v1.7.0
+      # PACKAGE_NAME  → AStarDev.Utilities
       # PACKAGE_VERSION → 1.7.0  (leading 'v' stripped)
       # IS_PRERELEASE → true if version contains a hyphen
       - name: Extract package name and version from tag

@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 

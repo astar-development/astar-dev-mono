@@ -1394,9 +1394,9 @@
             </summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag.IncludeInSearch">
-            <summary>
+             <summary>
             
-            </summary>
+             </summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.FilesDb.Models.ScrapedTag.ToString">
             <inheritdoc />

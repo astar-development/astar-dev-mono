@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 
@@ -23,7 +23,7 @@ public sealed class ScrapedTag : AuditableEntity
     public string Category { get; set; } = string.Empty;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public bool IncludeInSearch { get; set; }
 

@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AStar.Dev.Utilities" />
+        <PackageReference Include="AStarDev.Utilities" />
         <PackageReference Include="Microsoft.Extensions.Configuration" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Microsoft.Extensions.Logging" />
@@ -42,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="../../utilities/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="../../utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
         <ProjectReference Include="..\AStar.Dev.Logging.Extensions\AStar.Dev.Logging.Extensions.csproj" />
     </ItemGroup>
 

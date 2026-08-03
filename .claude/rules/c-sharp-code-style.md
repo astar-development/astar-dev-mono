@@ -60,12 +60,14 @@ paths:
 ## Functional Extensions
 
 Never await `Task<Result<T,E>>` into a variable then call `.Match()` — chain `.MatchAsync()` directly:
+
 ```csharp
 // ❌ var result = await service.GetAsync(ct); result.Match(...)
 // ✅ await service.GetAsync(ct).MatchAsync(ok => ..., err => ...)
 ```
+
 Error-branch logic belongs INSIDE the error lambda. Never use `is Result<T,E>.Ok` pattern matching.
 
 ## Utilities
 
-Use `AStar.Dev.Utilities` helpers. e.g. `"dir1".CombinePaths("dir2")` not `Path.Combine(...)` — `Path.Combine` silently drops parameters.
+Use `AStarDev.Utilities` helpers. e.g. `"dir1".CombinePaths("dir2")` not `Path.Combine(...)` — `Path.Combine` silently drops parameters.

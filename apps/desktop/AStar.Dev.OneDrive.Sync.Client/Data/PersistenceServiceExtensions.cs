@@ -3,7 +3,7 @@ using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

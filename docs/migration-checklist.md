@@ -44,7 +44,7 @@ STEP 4 — CSPROJ Updates
 - Ensure casing of the README (and the ACTUAL file of course):
     - <PackageReadmeFile>README.md</PackageReadmeFile>
     - <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/<AREA>></PackageProjectUrl>
-    - <PackageId>AStar.Dev.Functional.Extensions</PackageId> - need to check the AStar.Dev.Utilities deployment to see if it has it or not
+    - <PackageId>AStar.Dev.Functional.Extensions</PackageId> - need to check the AStarDev.Utilities deployment to see if it has it or not
 - Remove any of the following from the production project:
     - refer to the directory.build.props
       <None Include="..\..\astar.png" Pack="True" PackagePath="/" Link="astar.png" />

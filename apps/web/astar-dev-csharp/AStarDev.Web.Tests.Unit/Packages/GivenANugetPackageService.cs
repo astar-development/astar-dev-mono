@@ -23,11 +23,11 @@ public class GivenANugetPackageService : IDisposable
     [Fact]
     public async Task when_the_live_fetch_succeeds_then_the_fetched_package_is_returned()
     {
-        var package = PackageDataFactory.Create("AStar.Dev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStar.Dev.Utilities");
-        apiClient.FetchAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package));
+        var package = PackageDataFactory.Create("AStarDev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStarDev.Utilities");
+        apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package));
         var sut = CreateSut();
 
-        var result = await sut.GetPackageDataAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
+        var result = await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
         result.Match(ok => ok, err => throw new InvalidOperationException(err)).ShouldBe(package);
     }
@@ -35,26 +35,26 @@ public class GivenANugetPackageService : IDisposable
     [Fact]
     public async Task when_a_fresh_value_is_already_cached_then_the_api_client_is_not_called_again()
     {
-        var package = PackageDataFactory.Create("AStar.Dev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStar.Dev.Utilities");
-        apiClient.FetchAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package));
+        var package = PackageDataFactory.Create("AStarDev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStarDev.Utilities");
+        apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package));
         var sut = CreateSut();
-        await sut.GetPackageDataAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
+        await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
-        await sut.GetPackageDataAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
+        await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
-        await apiClient.Received(1).FetchAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
+        await apiClient.Received(1).FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
     }
 
     [Fact]
     public async Task when_the_live_fetch_fails_but_a_last_known_good_value_exists_then_the_stale_value_is_returned()
     {
-        var package = PackageDataFactory.Create("AStar.Dev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStar.Dev.Utilities");
-        apiClient.FetchAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package), Option.None<PackageData>());
+        var package = PackageDataFactory.Create("AStarDev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStarDev.Utilities");
+        apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package), Option.None<PackageData>());
         var sut = CreateSut();
-        await sut.GetPackageDataAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
-        cache.Remove("nuget:fresh:astar.dev.utilities");
+        await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
+        cache.Remove("nuget:fresh:AStarDev.Utilities");
 
-        var result = await sut.GetPackageDataAsync("AStar.Dev.Utilities", TestContext.Current.CancellationToken);
+        var result = await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
         result.Match(ok => ok, err => throw new InvalidOperationException(err)).ShouldBe(package);
     }

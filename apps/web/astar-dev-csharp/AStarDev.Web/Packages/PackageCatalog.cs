@@ -5,7 +5,7 @@ public static class PackageCatalog
 {
     public static IReadOnlyList<string> Featured { get; } =
     [
-        "AStar.Dev.Utilities",
+        "AStarDev.Utilities",
         "AStar.Dev.Logging.Extensions",
         "AStar.Dev.Functional.Extensions",
     ];
@@ -15,7 +15,7 @@ public static class PackageCatalog
         PackageCategoryFactory.Create(
             "Core Utilities",
             "Foundational patterns and extension methods for .NET projects",
-            ["AStar.Dev.Utilities", "AStar.Dev.Functional.Extensions", "AStar.Dev.Technical.Debt.Reporting"]),
+            ["AStarDev.Utilities", "AStar.Dev.Functional.Extensions", "AStar.Dev.Technical.Debt.Reporting"]),
         PackageCategoryFactory.Create(
             "Infrastructure & Observability",
             "Logging, health checks, and infrastructure cross-cutting concerns",

@@ -1,4 +1,4 @@
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 

@@ -4,7 +4,7 @@ using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 

@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Logging;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;

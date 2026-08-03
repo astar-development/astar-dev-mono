@@ -22,15 +22,15 @@ fires the wrong pipeline or fires two at once against the same GitHub Release.
 Tag format: `{PackageName}/v{version}` — the tag name IS the version, nothing else to edit.
 
 ```bash
-git tag AStar.Dev.Utilities/v1.7.0
-git push origin AStar.Dev.Utilities/v1.7.0
+git tag AStarDev.Utilities/v1.7.0
+git push origin AStarDev.Utilities/v1.7.0
 ```
 
 Examples of valid package names (must match an existing `.csproj` under `packages/`,
 any nesting depth):
 
 ```
-AStar.Dev.Utilities/v1.6.8
+AStarDev.Utilities/v1.6.8
 AStar.Dev.Infrastructure.AppDb/v0.3.0
 AStar.Dev.Source.Generators.Attributes/v1.0.0
 AStar.Dev.SomePackage/v2.1.0-beta.1     # prerelease: hyphen suffix
@@ -106,8 +106,8 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 Tag format: `clock-v{version}`.
 
 ```bash
-git tag clock-v1.1.2
-git push origin clock-v1.1.2
+git tag clock-v1.1.3
+git push origin clock-v1.1.3
 ```
 
 Prerelease: `git tag clock-v0.1.0-rc.1`

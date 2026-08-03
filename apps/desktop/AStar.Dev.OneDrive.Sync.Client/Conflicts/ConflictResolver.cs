@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Conflicts;
 

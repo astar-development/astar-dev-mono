@@ -2,7 +2,7 @@ using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AStar.Dev.Logging.Extensions;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using Avalonia;
 using Avalonia.Styling;
 using Microsoft.Extensions.Logging;

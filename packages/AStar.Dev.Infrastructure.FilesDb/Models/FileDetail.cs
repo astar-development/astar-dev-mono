@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 

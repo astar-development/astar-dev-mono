@@ -10,7 +10,7 @@ public class GivenACopyButton : Bunit.BunitContext
     {
         JSInterop.Setup<bool>("astarClipboard.isSupported").SetResult(true);
 
-        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStar.Dev.Utilities"));
+        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStarDev.Utilities"));
 
         cut.WaitForAssertion(() => cut.Find("button.copy-btn").ShouldNotBeNull());
     }
@@ -20,7 +20,7 @@ public class GivenACopyButton : Bunit.BunitContext
     {
         JSInterop.Setup<bool>("astarClipboard.isSupported").SetResult(false);
 
-        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStar.Dev.Utilities"));
+        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStarDev.Utilities"));
 
         cut.WaitForAssertion(() => cut.FindAll("button.copy-btn").ShouldBeEmpty());
     }
@@ -30,7 +30,7 @@ public class GivenACopyButton : Bunit.BunitContext
     {
         JSInterop.Setup<bool>("astarClipboard.isSupported").SetResult(true);
         JSInterop.Setup<bool>("astarClipboard.copy", _ => true).SetResult(true);
-        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStar.Dev.Utilities"));
+        var cut = Render<CopyButton>(parameters => parameters.Add(p => p.Text, "dotnet add package AStarDev.Utilities"));
         cut.WaitForAssertion(() => cut.Find("button.copy-btn").ShouldNotBeNull());
 
         cut.Find("button.copy-btn").Click();

@@ -3,7 +3,7 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Shell;
-using AStar.Dev.Utilities;
+using AStarDev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics.CodeAnalysis;
