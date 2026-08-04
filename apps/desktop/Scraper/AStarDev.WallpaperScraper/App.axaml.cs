@@ -1,9 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using AStarDev.LoggingSerilog;
 using AStarDev.WallpaperScraper.Home;
+using AStarDev.WallpaperScraper.Startup;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Testably.Abstractions;
 
 namespace AStarDev.WallpaperScraper;
 
@@ -12,6 +17,7 @@ namespace AStarDev.WallpaperScraper;
 public partial class App : Application, IDisposable
 {
     private bool disposedValue;
+    private ServiceProvider? services;
 
     /// <summary>Loads the application's XAML resources.</summary>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -23,9 +29,32 @@ public partial class App : Application, IDisposable
         {
             desktop.MainWindow = new MainWindow();
         }
+        services = BuildServices();
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private static ServiceProvider BuildServices()
+    {
+        IFileSystem fileSystem = new RealFileSystem();
+        var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
+        var collection = new ServiceCollection().AddApplicationServices(configuration);
+
+        ApplicationOptionsRegistrar.Register(collection, configuration);
+        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
+
+        var serviceProvider = collection
+            .AddInfrastructureServices()
+            .AddApplicationServices(configuration)
+            .AddLogging(logging => logging.AddSerilog(dispose: true))
+            .BuildServiceProvider();
+        var applicationDirectories = serviceProvider.GetRequiredService<IApplicationDirectories>();
+        applicationDirectories.CreateIfRequired();
+        Log.Information("Application directories created if required...");
+
+        return serviceProvider;
+    }
+
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>
     /// <param name="disposing">Whether managed resources should be released.</param>
@@ -35,7 +64,7 @@ public partial class App : Application, IDisposable
         {
             if (disposing)
             {
-                // NAR at the moment
+                services?.Dispose();
             }
 
             disposedValue = true;

@@ -112,6 +112,7 @@
     "Analyzers",
     "aspnet",
     "Astar",
+    "astardev",
     "Avalonia",
     "Awaiter",
     "axaml",
@@ -141,6 +142,7 @@
     "Testably",
     "testsettings",
     "Velopack",
+    "wallpaperscraper",
     "XMLDOC",
     "Xunit"
   ],
