@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:AStarDev.WallpaperScraper.Home"
+        xmlns:theming="using:AStarDev.WallpaperScraper.Theming"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="AStarDev.WallpaperScraper.Home.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="avares://AStarDev.WallpaperScraper/Assets/astar.ico"
+        Title="{Binding Title}">
+    <Window.KeyBindings>
+    </Window.KeyBindings>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Configuration">
+                    <MenuItem Header="Edit Connection Strings Configuration" />
+                    <MenuItem Header="Edit File Classification Categories Configuration"/>
+                    <MenuItem Header="Edit Search Configuration" />
+                    <MenuItem Header="Edit Model to Ignore" />
+                    <MenuItem Header="Edit Scrape Directories" />
+                    <MenuItem Header="Edit Search Categories" />
+                    <MenuItem Header="Edit Tag to Ignore" />
+                    <MenuItem Header="Edit User Configuration" />
+                </MenuItem>
+                <MenuItem Header="_Theme">
+                    <MenuItem Header="_System" ToggleType="Radio"/>
+                    <MenuItem Header="_Light" ToggleType="Radio" />
+                    <MenuItem Header="_Dark" ToggleType="Radio" />
+                    <MenuItem Header="_Hacker" ToggleType="Radio" />
+                </MenuItem>
+                <MenuItem Header="Reset Database and Directories" />
+                <Separator />
+                <MenuItem Header="E_xit" InputGesture="Ctrl+Q" />
+            </MenuItem>
+        </Menu>
+        <TextBlock DockPanel.Dock="Top" Margin="12,8" Text="Welcome to the Wallpaper Scraper!" />
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="12,0">
+            <Button Content="Scrape Search Categories" />
+            <Button Content="Scrape Top Wallpapers" />
+            <Button Content="Scrape Subscribed Wallpapers" />
+            <Button Content="Scrape All Wallpapers" />
+            <Button x:Name="CancelButton" Content="Cancel" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Right" Width="750" Margin="0,8,12,8" Spacing="4">
+            <Border VerticalAlignment="Top" CornerRadius="10" ClipToBounds="True">
+                <Image x:Name="ThumbnailImage" Width="750" Height="750" Stretch="Uniform" />
+            </Border>
+            <TextBlock Text="ThumbnailCategoryName" FontSize="32" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" Width="475" />
+            <TextBlock Text="--------------------------------" Height="20" VerticalAlignment="Center" TextAlignment="Center" />
+            <TextBlock Text="ThumbnailTags" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" />
+        </StackPanel>
+
+        <ScrollViewer x:Name="StatusScroller" Margin="12,8">
+            <TextBlock x:Name="StatusLabel" Text="Placeholder" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+        </ScrollViewer>
+
+    </DockPanel>
+</Window>

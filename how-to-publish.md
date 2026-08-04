@@ -23,8 +23,8 @@ fires the wrong pipeline or fires two at once against the same GitHub Release.
 Tag format: `{PackageName}/v{version}` — the tag name IS the version, nothing else to edit.
 
 ```bash
-git tag AStarDev.Utilities/v1.7.0
-git push origin AStarDev.Utilities/v1.7.0
+git tag AStarDev.Utilities/v0.1.0
+git push origin AStarDev.Utilities/v0.1.0
 ```
 
 Examples of valid package names (must match an existing `.csproj` under `packages/`,
