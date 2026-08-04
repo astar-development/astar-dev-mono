@@ -1,7 +1,7 @@
 
 using AStarDev.WallpaperScraper.Startup;
 
-namespace AStarDev.WallpaperScraper.Tests.Unit;
+namespace AStarDev.WallpaperScraper.Tests.Unit.Startup;
 
 public sealed class GivenAPlainUpdateDialogTextProvider
 {

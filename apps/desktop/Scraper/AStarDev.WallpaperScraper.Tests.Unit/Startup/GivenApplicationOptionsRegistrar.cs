@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AStarDev.WallpaperScraper.Tests.Unit;
+namespace AStarDev.WallpaperScraper.Tests.Unit.Startup;
 
 public class GivenApplicationOptionsRegistrar
 {
     private static IConfiguration BuildConfiguration(string? progressReportInterval) =>
         new ConfigurationBuilder()
-            .AddInMemoryCollection([new("Sync:ProgressReportInterval", progressReportInterval)])
+            .AddInMemoryCollection([new($"{SyncSettings.SectionName}:ProgressReportInterval", progressReportInterval)])
             .Build();
 
     [Fact]
