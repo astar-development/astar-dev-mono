@@ -1,10 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
+using AStarDev.WallpaperScraper.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
-/// <summary>Registers strongly-typed options that must be bound and validated during application startup.</summary>
+/// <summary>
+/// Registers strongly-typed options that must be bound and validated during application startup.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public static class ApplicationOptionsRegistrar
 {
@@ -12,5 +15,8 @@ public static class ApplicationOptionsRegistrar
     /// <param name="services">The service collection to register options into.</param>
     /// <param name="configuration">The configuration containing the <see cref="SyncSettings.SectionName" /> section.</param>
     public static void Register(IServiceCollection services, IConfiguration configuration) =>
-        _ = services;
+        _ = services.AddOptions<SyncSettings>()
+                .Bind(configuration.GetSection(SyncSettings.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 }

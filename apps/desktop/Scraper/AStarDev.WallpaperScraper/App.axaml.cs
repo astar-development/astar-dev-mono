@@ -17,7 +17,7 @@ namespace AStarDev.WallpaperScraper;
 public partial class App : Application, IDisposable
 {
     private bool disposedValue;
-    private ServiceProvider? services;
+    private ServiceProvider? serviceProvider;
 
     /// <summary>Loads the application's XAML resources.</summary>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -25,11 +25,10 @@ public partial class App : Application, IDisposable
     /// <summary>Builds configuration, logging, and the dependency injection container, migrates the database, and shows the main window.</summary>
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindow();
-        }
-        services = BuildServices();
+        serviceProvider = BuildServices();
+        if (ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
+
+        desktop.MainWindow = serviceProvider.GetRequiredService<MainWindow>();
 
         base.OnFrameworkInitializationCompleted();
     }
@@ -38,7 +37,7 @@ public partial class App : Application, IDisposable
     {
         IFileSystem fileSystem = new RealFileSystem();
         var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
-        var collection = new ServiceCollection().AddApplicationServices(configuration);
+        var collection = new ServiceCollection().AddConfigurationServices(configuration).AddApplicationServices(configuration);
 
         ApplicationOptionsRegistrar.Register(collection, configuration);
         Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
@@ -64,7 +63,7 @@ public partial class App : Application, IDisposable
         {
             if (disposing)
             {
-                services?.Dispose();
+                serviceProvider?.Dispose();
             }
 
             disposedValue = true;
