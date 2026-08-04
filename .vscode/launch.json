@@ -17,10 +17,22 @@
       "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj"
     },
     {
-      "name": "C#: Scrape Import/Export Testing",
+      "name": "C#: Scraper Debug V2",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/spikes/scrape-category-import-export-testing/AStar.Dev.ScrapeCategoryImportExportTesting/AStar.Dev.ScrapeCategoryImportExportTesting.csproj"
+      "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStarDev.Wallpaper.Scraper/AStarDev.Wallpaper.Scraper.csproj"
+    },
+    {
+      "name": "C#: AStar Web",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj"
+    },
+    {
+      "name": "C#: Fab4Kids",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj"
     }
   ]
 }
