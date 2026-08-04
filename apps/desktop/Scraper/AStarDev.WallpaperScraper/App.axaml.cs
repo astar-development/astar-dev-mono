@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using AStarDev.WallpaperScraper.Home;
 using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +17,15 @@ public partial class App : Application, IDisposable
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     /// <summary>Builds configuration, logging, and the dependency injection container, migrates the database, and shows the main window.</summary>
-    public override void OnFrameworkInitializationCompleted() => base.OnFrameworkInitializationCompleted();
+    public override void OnFrameworkInitializationCompleted()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow = new MainWindow();
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>
     /// <param name="disposing">Whether managed resources should be released.</param>

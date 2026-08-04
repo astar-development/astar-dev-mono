@@ -9,5 +9,6 @@
     </Application.Resources>
 
     <Application.Styles>
+        <FluentTheme />
     </Application.Styles>
 </Application>
