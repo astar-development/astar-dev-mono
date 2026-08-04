@@ -3,14 +3,14 @@
 Independent tag-triggered release pipelines live in this repo. Each owns its own tag
 namespace so pushing one tag only ever fires one workflow. Pick the right format below.
 
-| What                           | Tag format                    | Workflow                                             |
-| ------------------------------ | ----------------------------- | ---------------------------------------------------- |
-| A NuGet package                | `{PackageName}/v{version}`    | `.github/workflows/nuget-publish.yml`                |
-| OneDrive Sync Client (desktop) | `onedrive-sync-v{version}`    | `.github/workflows/onedrive-sync-client-release.yml` |
-| Wallpaper Scraper (desktop)    | `scraper-v{version}`          | `.github/workflows/scraper-release.yml`              |
-| File App (desktop)             | `file-app-v{version}`         | `.github/workflows/file-app-release.yml`             |
-| Clock (desktop)                | `clock-v{version}`            | `.github/workflows/clock-release.yml`                |
-| Wallpaper Scraper (desktop) V2 | `wallpaperscraper-v{version}` | `.github/workflows/wallpaper-scraper-release.yml`    |
+| What                           | Tag format                     | Workflow                                             |
+| ------------------------------ | ------------------------------ | ---------------------------------------------------- |
+| A NuGet package                | `{PackageName}/v{version}`     | `.github/workflows/nuget-publish.yml`                |
+| OneDrive Sync Client (desktop) | `onedrive-sync-v{version}`     | `.github/workflows/onedrive-sync-client-release.yml` |
+| Wallpaper Scraper (desktop)    | `scraper-v{version}`           | `.github/workflows/scraper-release.yml`              |
+| File App (desktop)             | `file-app-v{version}`          | `.github/workflows/file-app-release.yml`             |
+| Clock (desktop)                | `clock-v{version}`             | `.github/workflows/clock-release.yml`                |
+| Wallpaper Scraper (desktop) V2 | `wallpaper-scraper-v{version}` | `.github/workflows/wallpaper-scraper-release.yml`    |
 
 **Never reuse another row's tag format.** The patterns are deliberately disjoint
 (slash-delimited vs. bare `v` vs. `scraper-v` vs. `file-app-v`) — mixing them up either
@@ -123,14 +123,14 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 
 ## 6. Publish the Wallpaper Scraper V2
 
-Tag format: `wallpaperscraper-v{version}`.
+Tag format: `wallpaper-scraper-v{version}`.
 
 ```bash
-git tag wallpaperscraper-v0.1.0
-git push origin wallpaperscraper-v0.1.0
+git tag wallpaper-scraper-v0.1.0
+git push origin wallpaper-scraper-v0.1.0
 ```
 
-Prerelease: `git tag wallpaperscraper-v0.1.0-rc.1`
+Prerelease: `git tag wallpaper-scraper-v0.1.0-rc.1`
 
 What happens: `wallpaper-scraper-release.yml` builds, tests, and publishes self-contained Velopack
 packages, mirroring the OneDrive Sync Client's workflow shape — `release-linux` runs
