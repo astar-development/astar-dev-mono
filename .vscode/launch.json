@@ -20,7 +20,7 @@
       "name": "C#: Scraper Debug V2",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStarDev.Wallpaper.Scraper/AStarDev.Wallpaper.Scraper.csproj"
+      "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj"
     },
     {
       "name": "C#: AStar Web",
