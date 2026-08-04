@@ -1,0 +1,13 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStarDev.WallpaperScraper.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Resources>
+        <ResourceDictionary>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+    </Application.Styles>
+</Application>

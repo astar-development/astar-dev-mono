@@ -1,7 +1,86 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UserSecretsId>AStarDevWallpaperScraperV2</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <!--
+    SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+    Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.9.
+    Suppressed intentionally; revisit when EF Core ships with a safe SQLitePCLRaw version.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AStarDev.Utilities" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Avalonia.ReactiveUI" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Playwright" />
+    <PackageReference Include="Serilog.Exceptions" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="Testably.Abstractions" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    Microsoft.Playwright's own CopyPlaywrightFilesToOutput target (AfterTargets="ResolveAssemblyReferences")
+    reliably puts .playwright/node/<rid>/node in $(OutDir) for `dotnet build`, but the dynamically-added
+    Content items don't make it into $(PublishDir) for `dotnet publish` - verified with a clean build,
+    where $(OutDir).playwright/node/linux-x64/node exists but $(PublishDir) only gets the platform-independent
+    LICENSE/package files. Copy the already-resolved driver across explicitly once publish has run.
+  -->
+  <Target Name="EnsurePlaywrightDriverIsPublished" AfterTargets="Publish" Condition="'$(PublishDir)' != '' AND Exists('$(OutDir).playwright')">
+    <ItemGroup>
+      <PlaywrightDriverFiles Include="$(OutDir).playwright\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PlaywrightDriverFiles)" DestinationFolder="$(PublishDir).playwright\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <PlaywrightPublishedNodeExecutables Include="$(PublishDir).playwright\node\*\node" />
+    </ItemGroup>
+    <Exec Command="chmod +x &quot;%(PlaywrightPublishedNodeExecutables.FullPath)&quot;" Condition="'@(PlaywrightPublishedNodeExecutables-&gt;Count())' != '0' AND !$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+
+    <ItemGroup>
+        <ProjectReference Include="../../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+        <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
+        <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
+        <ProjectReference Include="../../../../packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
+    </ItemGroup>
 
 </Project>
