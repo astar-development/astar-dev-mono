@@ -15,6 +15,9 @@
         <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.Tests.Unit/AStar.Dev.Wallpaper.Scraper.Tests.Unit.csproj" />
         <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.Tests.Integration/AStar.Dev.Wallpaper.Scraper.Tests.Integration.csproj" />
         <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.Tests.Unit/AStarDev.WallpaperScraper.Tests.Unit.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.Tests.Integration/AStarDev.WallpaperScraper.Tests.Integration.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/apps/web/astar-dev-csharp/">
@@ -59,7 +62,6 @@
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Tests.Unit/AStar.Dev.Velopack.Publishing.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.csproj" />
-        <Project Path="packages/core/utilities/AStarDev.Utilities.Tests.Unit/AStarDev.Utilities.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     </Folder>
     <Folder Name="/packages/source-generators/">
