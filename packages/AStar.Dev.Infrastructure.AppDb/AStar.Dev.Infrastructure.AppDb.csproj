@@ -16,14 +16,8 @@
           classes that are part of the package surface. They do not indicate runtime issues
           here and are intentionally suppressed so the package can build under the repo's
           warning-as-error policy.
-
-          CS1591/CA1307/CA1308/CA1002/CA1008/CA2007 are suppressed temporarily: Entities/
-          and Domain/ were extracted verbatim from AStar.Dev.OneDrive.Sync.Client (an apps/
-          project, which does not enforce GenerateDocumentationFile or AnalysisLevel=latest-all)
-          as part of issue #695. Tracked for proper fix in a fast-follow issue rather than
-          rewritten here, to keep #695 a pure move with no behavior change.
         -->
-        <NoWarn>$(NoWarn);CA1062;CA1812;CA1861;CS1591;CA1307;CA1308;CA1002;CA1008;CA2007</NoWarn>
+        <NoWarn>$(NoWarn);CA1062;CA1812;CA1861</NoWarn>
     </PropertyGroup>
 
     <!--

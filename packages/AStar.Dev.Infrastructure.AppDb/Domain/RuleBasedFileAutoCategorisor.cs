@@ -58,7 +58,7 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
 
     private static (Option<string> Level2, Option<string> Level3) BuildColourLevels(string phrase)
     {
-        int spaceIndex = phrase.IndexOf(' ');
+        int spaceIndex = phrase.IndexOf(' ', StringComparison.Ordinal);
 
         if (spaceIndex < 0)
             return (Option.Some(TitleCase(phrase)), Option.None<string>());
@@ -68,11 +68,11 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
 
     private static List<string> Tokenise(string filenameStem) =>
         [.. NonAlphaPattern()
-            .Split(filenameStem.ToLowerInvariant())
+            .Split(filenameStem.ToUpperInvariant())
             .Where(t => t.Length > 0 && !TokenAnalyser.StopWords.Contains(t))];
 
     private static string TitleCase(string phrase) =>
         string.Join(' ', phrase.Split(' ')
             .Where(w => w.Length > 0)
-            .Select(w => char.ToUpperInvariant(w[0]) + w[1..].ToLowerInvariant()));
+            .Select(w => char.ToUpperInvariant(w[0]) + new string([.. w[1..].Select(char.ToLowerInvariant)])));
 }

@@ -22,13 +22,13 @@ public static class FileClassifier
         var matches = mappings
             .Where(mapping =>
             {
-                string kw = mapping.Name.ToLowerInvariant();
-                if (!kw.Contains(' '))
+                string kw = mapping.Name.ToUpperInvariant();
+                if (!kw.Contains(' ', StringComparison.Ordinal))
                     return tokens.Contains(kw);
                 string[] words = kw.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
                 return tokens.Contains(kw) ||
-                       tokens.Contains(kw.Replace(" ", string.Empty)) ||
+                       tokens.Contains(kw.Replace(" ", string.Empty, StringComparison.Ordinal)) ||
                        words.All(tokens.Contains);
             })
             .Select(mapping => BuildWithAncestry(mapping, mappingsById))
@@ -66,5 +66,5 @@ public static class FileClassifier
     }
 
     private static HashSet<string> Tokenise(string remotePath)
-        => [.. remotePath.Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.ToLowerInvariant())];
+        => [.. remotePath.Split(Separators, StringSplitOptions.RemoveEmptyEntries).Select(t => t.ToUpperInvariant())];
 }

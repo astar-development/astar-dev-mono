@@ -7,8 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.Infrastructure.AppDb;
 
+/// <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="ModelBuilder"/>.</summary>
 public static class ModelBuilderExtensions
 {
+    /// <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
+    /// <param name="mb">The model builder to configure.</param>
     public static void UseSqliteFriendlyConversions(this ModelBuilder mb)
     {
         Type[] targetEntities =

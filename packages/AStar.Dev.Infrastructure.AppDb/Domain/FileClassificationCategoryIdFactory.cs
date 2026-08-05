@@ -1,5 +1,6 @@
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 
+/// <summary>Factory methods for creating <see cref="FileClassificationCategoryId"/> instances.</summary>
 public static class FileClassificationCategoryIdFactory
 {
     /// <summary>Converts an integer to a <see cref="FileClassificationCategoryId"/>.</summary>

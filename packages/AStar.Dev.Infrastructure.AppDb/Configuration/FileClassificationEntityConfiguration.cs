@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
+/// <summary>EF Core configuration for <see cref="FileClassificationEntity"/>.</summary>
 public sealed class FileClassificationEntityConfiguration : IEntityTypeConfiguration<FileClassificationEntity>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<FileClassificationEntity> builder)
     {
         _ = builder.ToTable("FileClassifications");
