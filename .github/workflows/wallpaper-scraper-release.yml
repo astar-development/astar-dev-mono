@@ -287,14 +287,14 @@ jobs:
           vpk download github \
             --repoUrl https://github.com/${{ github.repository }} \
             --token ${{ secrets.GITHUB_TOKEN }} \
-            --channel wallpaper-scraper-${{ matrix.channel }} \
+            --channel ${{ matrix.channel }} \
             || echo "No previous release found - building full package only"
 
       - name: Pack with vpk
         shell: bash
         run: |
           MAIN_EXE="AStarDev.WallpaperScraper"
-          if [ "${{ matrix.channel }}" = "scraper-win" ]; then
+          if [ "${{ matrix.channel }}" = "wallpaper-scraper-win" ]; then
             MAIN_EXE="AStarDev.WallpaperScraper.exe"
           fi
 
@@ -305,7 +305,7 @@ jobs:
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev Wallpaper Scraper" \
             --mainExe "$MAIN_EXE" \
-            --channel wallpaper-scraper-${{ matrix.channel }} \
+            --channel ${{ matrix.channel }} \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
 
