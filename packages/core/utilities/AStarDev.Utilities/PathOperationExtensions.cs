@@ -37,7 +37,7 @@ public static class PathOperationExtensions
     public static string CleanPath(this string path)
     {
         char[] invalidFileChars = Path.GetInvalidPathChars();
-        path = Regex.Replace(path, """[^\u0000-\u007F]+""", string.Empty);
+        path = Regex.Replace(path, """[^\u0000-\u007F]+""", string.Empty, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         foreach (char invalidFileChar in invalidFileChars) path = path.Replace(invalidFileChar, ' ');
 
