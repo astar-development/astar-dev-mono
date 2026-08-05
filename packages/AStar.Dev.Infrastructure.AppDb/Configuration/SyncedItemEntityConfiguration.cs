@@ -6,8 +6,10 @@ using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
+/// <summary>EF Core configuration for <see cref="SyncedItemEntity"/>.</summary>
 public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItemEntity>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<SyncedItemEntity> builder)
     {
         _ = builder.HasKey(e => e.Id);

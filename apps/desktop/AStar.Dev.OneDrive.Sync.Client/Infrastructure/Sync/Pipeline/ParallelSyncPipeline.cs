@@ -43,10 +43,11 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
                 enqueued++;
                 await channel.Writer.WriteAsync(job, cancellationToken).ConfigureAwait(false);
             }
+
+            tracker.SetTotal(enqueued);
         }
         finally
         {
-            tracker.SetTotal(enqueued);
             channel.Writer.Complete();
         }
 

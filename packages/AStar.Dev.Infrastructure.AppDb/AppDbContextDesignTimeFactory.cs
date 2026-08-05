@@ -10,6 +10,7 @@ namespace AStar.Dev.Infrastructure.AppDb;
 /// </summary>
 public sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
+    /// <inheritdoc />
     public AppDbContext CreateDbContext(string[] args)
     {
         string dbPath = Path.GetTempPath().CombinePath("design_time_temp.db");

@@ -18,19 +18,19 @@ public static class FileClassificationCategoryQueries
     public static async Task EnsureCategoriesExistAsync(this AppDbContext context, IReadOnlyList<string> categoryNames, CancellationToken cancellationToken = default)
     {
         var unclassified = await context.Set<FileClassificationCategoryEntity>()
-            .SingleOrDefaultAsync(category => category.Level == 1 && category.ParentId == null && category.Name == UnclassifiedCategoryName, cancellationToken);
+            .SingleOrDefaultAsync(category => category.Level == 1 && category.ParentId == null && category.Name == UnclassifiedCategoryName, cancellationToken).ConfigureAwait(false);
 
         if (unclassified is null)
         {
             unclassified = new FileClassificationCategoryEntity { Name = UnclassifiedCategoryName, Level = 1 };
             context.Set<FileClassificationCategoryEntity>().Add(unclassified);
-            await context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         var existingNames = await context.Set<FileClassificationCategoryEntity>()
             .Where(category => category.ParentId == unclassified.Id)
             .Select(category => category.Name)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         var existingNameSet = new HashSet<string>(existingNames, StringComparer.OrdinalIgnoreCase);
 
@@ -44,6 +44,6 @@ public static class FileClassificationCategoryQueries
             });
         }
 
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

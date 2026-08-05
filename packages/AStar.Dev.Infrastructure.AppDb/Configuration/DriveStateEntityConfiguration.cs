@@ -5,8 +5,10 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
+/// <summary>EF Core configuration for <see cref="DriveStateEntity"/>.</summary>
 public class DriveStateEntityConfiguration : IEntityTypeConfiguration<DriveStateEntity>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<DriveStateEntity> builder)
     {
         _ = builder.HasKey(e => e.Id);

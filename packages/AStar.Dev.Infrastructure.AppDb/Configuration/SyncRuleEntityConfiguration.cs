@@ -5,8 +5,10 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
+/// <summary>EF Core configuration for <see cref="SyncRuleEntity"/>.</summary>
 public class SyncRuleEntityConfiguration : IEntityTypeConfiguration<SyncRuleEntity>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<SyncRuleEntity> builder)
     {
         _ = builder.HasKey(e => e.Id);

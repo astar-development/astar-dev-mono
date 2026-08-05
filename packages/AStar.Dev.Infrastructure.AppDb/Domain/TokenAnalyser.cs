@@ -71,9 +71,9 @@ public static partial class TokenAnalyser
 
         string stem = Path.GetFileNameWithoutExtension(text);
 
-        if (stem.Contains(':'))
+        if (stem.Contains(':', StringComparison.Ordinal))
         {
-            string afterColon = stem[(stem.IndexOf(':') + 1)..];
+            string afterColon = stem[(stem.IndexOf(':', StringComparison.Ordinal) + 1)..];
 
             return ExtractNamePairFromText(afterColon)
                 .Match(Option.Some, () => ExtractNamePairFromText(stem));

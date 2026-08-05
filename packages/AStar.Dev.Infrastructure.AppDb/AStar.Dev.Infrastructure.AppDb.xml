@@ -4,11 +4,88 @@
         <name>AStar.Dev.Infrastructure.AppDb</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.AppDbContext">
+            <summary>The shared EF Core database context for the OneDrive Sync / Wallpaper Scraper desktop apps.</summary>
+            <param name="options">The EF Core options used to configure this context.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.AppDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{AStar.Dev.Infrastructure.AppDb.AppDbContext})">
+            <summary>The shared EF Core database context for the OneDrive Sync / Wallpaper Scraper desktop apps.</summary>
+            <param name="options">The EF Core options used to configure this context.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.Accounts">
+            <summary>The configured OneDrive accounts.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncConflicts">
+            <summary>The sync conflicts detected across all accounts.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncJobs">
+            <summary>The sync jobs queued or completed across all accounts.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.DriveStates">
+            <summary>The last-known drive state for each account.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncRules">
+            <summary>The user-defined sync rules applied during synchronization.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncedItems">
+            <summary>The items that have been synced between local and remote storage.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileClassifications">
+            <summary>The file classifications assigned to scraped files.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileClassificationCategories">
+            <summary>The categories available for file classification.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.Files">
+            <summary>The scraped file details.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileAccessDetails">
+            <summary>The file access details recorded for scraped files.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileClassificationKeywords">
+            <summary>The keywords used to automatically classify files.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.TagsToIgnore">
+            <summary>The tags to exclude when scraping.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.ModelsToIgnore">
+            <summary>The models to exclude when scraping.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.ScrapeConfiguration">
+            <summary>The scrape configuration entries.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SearchConfigurations">
+            <summary>The saved search configurations.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SearchCategories">
+            <summary>The categories available for search filtering.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.ScrapeDirectories">
+            <summary>The directories configured for scraping.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.AppDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.AppDbContext.ConfigureConventions(Microsoft.EntityFrameworkCore.ModelConfigurationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.AppDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.AppDbContextDesignTimeFactory">
             <summary>
             Used only by EF Core tooling (dotnet ef migrations add).
             Never called at runtime.
             </summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.AppDbContextDesignTimeFactory.CreateDbContext(System.String[])">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.AccountEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.AccountEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.AccountEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.AccountEntity})">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.ConnectionStringsEntityConfiguration">
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ConnectionStringsEntity"/>.</summary>
@@ -20,6 +97,12 @@
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.DeletionStatusEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.DeletionStatusEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.DriveStateEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.DriveStateEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.EventEntityConfiguration">
@@ -38,6 +121,18 @@
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationCategoryEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationCategoryEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationKeywordEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationKeywordEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.FileDetailEntityConfiguration">
@@ -80,6 +175,30 @@
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SearchConfigurationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SyncConflictEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncConflictEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncConflictEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncConflictEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SyncedItemEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncedItemEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncedItemEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SyncJobEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncJobEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncJobEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncJobEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SyncRuleEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncRuleEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncRuleEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncRuleEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.TagToIgnoreEntityConfiguration">
@@ -148,6 +267,48 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateDeleted(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DeletedDeltaItem"/>.</summary>
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult">
+            <summary>A page of items returned from a Microsoft Graph delta query.</summary>
+            <param name="Items">The items returned in this page.</param>
+            <param name="NextDeltaLink">The delta link to resume from on the next sync pass, when available.</param>
+            <param name="HasMorePages">Whether additional pages are available beyond this one.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.#ctor(System.Collections.Generic.IReadOnlyList{AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean)">
+            <summary>A page of items returned from a Microsoft Graph delta query.</summary>
+            <param name="Items">The items returned in this page.</param>
+            <param name="NextDeltaLink">The delta link to resume from on the next sync pass, when available.</param>
+            <param name="HasMorePages">Whether additional pages are available beyond this one.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.Items">
+            <summary>The items returned in this page.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.NextDeltaLink">
+            <summary>The delta link to resume from on the next sync pass, when available.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.HasMorePages">
+            <summary>Whether additional pages are available beyond this one.</summary>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder">
+            <summary>Represents a folder on a OneDrive as returned by the Microsoft Graph API.</summary>
+            <param name="Id">The remote identifier of the folder.</param>
+            <param name="Name">The display name of the folder.</param>
+            <param name="ParentId">The remote identifier of the parent folder, when the folder is not the drive root.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.#ctor(System.String,System.String,AStar.Dev.FunctionalParadigm.Option{System.String})">
+            <summary>Represents a folder on a OneDrive as returned by the Microsoft Graph API.</summary>
+            <param name="Id">The remote identifier of the folder.</param>
+            <param name="Name">The display name of the folder.</param>
+            <param name="ParentId">The remote identifier of the parent folder, when the folder is not the drive root.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.Id">
+            <summary>The remote identifier of the folder.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.Name">
+            <summary>The display name of the folder.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.ParentId">
+            <summary>The remote identifier of the parent folder, when the folder is not the drive root.</summary>
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveId">
             <summary>Represents a OneDrive drive ID, providing type safety over raw strings.</summary>
             <param name="Value">The string value of the drive ID.</param>
@@ -191,6 +352,18 @@
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId">
             <summary>Strongly-typed identifier for a file classification category.</summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Int32"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.#ctor(System.Int32)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Int32"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.Id">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryIdFactory">
+            <summary>Factory methods for creating <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId"/> instances.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryIdFactory.Create(System.Int32)">
             <summary>Converts an integer to a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId"/>.</summary>
@@ -323,6 +496,15 @@
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId">
             <summary>Strongly-typed identifier for a Microsoft Graph drive-item folder.</summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.#ctor(System.String)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.PathNormaliser">
             <summary>Normalises a remote OneDrive path by stripping the fixed root segments and splitting the remainder into folder segments and filename stem.</summary>
@@ -384,6 +566,42 @@
             Represents a file conflict detected during a delta sync pass.
             Queued for user resolution or automatic policy application.
             </summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.Id">
+            <summary>The unique identifier of this conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.Remote">
+            <summary>The remote item involved in the conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.Target">
+            <summary>The local file target involved in the conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.Snapshot">
+            <summary>The local and remote state captured when the conflict was detected.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.State">
+            <summary>The current resolution state of this conflict.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.Resolution">
+            <summary>The policy applied to resolve this conflict, when resolved.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.DetectedAt">
+            <summary>The date and time the conflict was detected.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.SyncConflict.ResolvedAt">
+            <summary>The date and time the conflict was resolved, when resolved.</summary>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncDirection">
+            <summary>The direction data flows for a sync job.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Domain.SyncDirection.Download">
+            <summary>The remote item is downloaded to local storage.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Domain.SyncDirection.Upload">
+            <summary>The local item is uploaded to remote storage.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Domain.SyncDirection.Delete">
+            <summary>The item is deleted.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncedItemSearchCriteria">
             <summary>Criteria for searching synced items in the repository.</summary>
@@ -606,6 +824,15 @@
             <summary>
             A strongly-typed identifier for a OneDrive account within the sync client.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.#ctor(System.String)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.AccountProfile">
             <summary>
@@ -727,6 +954,18 @@
             Represents the state of a synchronization conflict for a file during the sync process. This can be used to track whether a conflict is pending resolution, has been resolved, or was skipped based on the configured conflict policy.
             </summary>
         </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.ConflictState.NoConflict">
+            <summary>No conflict has been detected.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.ConflictState.Pending">
+            <summary>A conflict has been detected and is awaiting resolution.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.ConflictState.Resolved">
+            <summary>The conflict has been resolved.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.ConflictState.Skipped">
+            <summary>The conflict was skipped based on the configured conflict policy.</summary>
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ConnectionStringsEntity">
             <summary>The connection strings required by the scraper to reach its databases and services.</summary>
         </member>
@@ -835,6 +1074,9 @@
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.EventType">
             <summary>The kind of change recorded by an <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.EventEntity"/>.</summary>
+        </member>
+        <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.EventType.None">
+            <summary>No event type has been specified.</summary>
         </member>
         <member name="F:AStar.Dev.Infrastructure.AppDb.Entities.EventType.Add">
             <summary>A new record was created.</summary>
@@ -1000,6 +1242,15 @@
             <summary>
             A strongly-typed identifier for an <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.EventEntity"/>.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle">
             <summary>An opaque, stable handle identifying a file across renames and moves.</summary>
@@ -1022,6 +1273,15 @@
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileName">
             <summary>The name of a file, excluding its directory path.</summary>
@@ -1056,11 +1316,29 @@
             <summary>
             A strongly-typed identifier for an <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity"/>.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelId">
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity"/>.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity">
             <summary>A model whose files should be ignored completely by the scraper.</summary>
@@ -1075,6 +1353,15 @@
             <summary>
             A strongly-typed identifier for a OneDrive item (file or folder) within the sync client. This allows for type safety and clearer code when working with OneDrive items in the synchronization process.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.#ctor(System.String)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.RuleType">
             <summary>
@@ -1569,6 +1856,15 @@
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity"/>.
             </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.TagId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Id">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.TagId.Id">
+            <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity">
             <summary>A tag that should cause a scraped file to be ignored.</summary>
@@ -1702,6 +1998,49 @@
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions">
+            <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions.UseSqliteFriendlyConversions(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
+            <param name="mb">The model builder to configure.</param>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters">
+            <summary>Shared EF Core value converters for types SQLite cannot store natively.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.DateTimeOffsetToTicks">
+            <summary>Converts a <see cref="T:System.DateTimeOffset"/> to and from UTC ticks.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.NullableDateTimeOffsetToTicks">
+            <summary>Converts a nullable <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.TimeSpanToTicks">
+            <summary>Converts a <see cref="T:System.TimeSpan"/> to and from ticks.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.NullableTimeSpanToTicks">
+            <summary>Converts a nullable <see cref="T:System.TimeSpan"/> to and from nullable ticks.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.GuidToBytes">
+            <summary>Converts a <see cref="T:System.Guid"/> to and from its byte array representation.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.NullableGuidToBytes">
+            <summary>Converts a nullable <see cref="T:System.Guid"/> to and from its byte array representation.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.DecimalToCents">
+            <summary>Converts a <see cref="T:System.Decimal"/> to and from an integral cents representation.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.NullableDecimalToCents">
+            <summary>Converts a nullable <see cref="T:System.Decimal"/> to and from a nullable integral cents representation.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionStringToNullableString">
+            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks">
+            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionConflictPolicyToNullableInt">
+            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ConflictPolicy"/> to and from a nullable integer.</summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NonAlphaPattern method.</summary>

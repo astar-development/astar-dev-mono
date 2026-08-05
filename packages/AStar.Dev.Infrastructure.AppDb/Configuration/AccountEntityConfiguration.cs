@@ -6,8 +6,10 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.Infrastructure.AppDb.Configuration;
 
+/// <summary>EF Core configuration for <see cref="AccountEntity"/>.</summary>
 public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity>
 {
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<AccountEntity> builder)
     {
         _ = builder.HasKey(e => e.Id);
