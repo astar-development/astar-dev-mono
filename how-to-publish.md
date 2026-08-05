@@ -126,8 +126,8 @@ All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
 Tag format: `wallpaper-scraper-v{version}`.
 
 ```bash
-git tag wallpaper-scraper-v0.1.0
-git push origin wallpaper-scraper-v0.1.0
+git tag wallpaper-scraper-v0.1.2
+git push origin wallpaper-scraper-v0.1.2
 ```
 
 Prerelease: `git tag wallpaper-scraper-v0.1.0-rc.1`

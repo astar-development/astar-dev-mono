@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════════════════
 # scraper-release.yml
 #
-# Packages and publishes AStar.Dev.Wallpaper.Scraper as a Velopack release on
+# Packages and publishes AStarDev.WallpaperScraper as a Velopack release on
 # GitHub Releases, for the in-app updater (see AStar.Dev.Velopack.Publishing)
 # to discover.
 #
@@ -55,8 +55,8 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
-  PROJECT_PATH: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj
-  TEST_PROJECT_PATH: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.Tests.Unit/AStar.Dev.Wallpaper.Scraper.Tests.Unit.csproj
+  PROJECT_PATH: apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj
+  TEST_PROJECT_PATH: apps/desktop/Scraper/AStarDev.WallpaperScraper.Tests.Unit/AStarDev.WallpaperScraper.Tests.Unit.csproj
 
 jobs:
 
@@ -155,13 +155,13 @@ jobs:
         shell: bash
         run: |
           vpk pack \
-            --packId AStar.Dev.Wallpaper.Scraper \
+            --packId AStarDev.WallpaperScraper \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/linux-x64 \
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev Wallpaper Scraper" \
-            --mainExe "AStar.Dev.Wallpaper.Scraper" \
-            --icon apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/Assets/astar.png \
+            --mainExe "AStarDev.WallpaperScraper" \
+            --icon apps/desktop/Scraper/AStarDev.WallpaperScraper/Assets/astar.png \
             --channel wallpaper-scraper-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
@@ -293,13 +293,13 @@ jobs:
       - name: Pack with vpk
         shell: bash
         run: |
-          MAIN_EXE="AStar.Dev.Wallpaper.Scraper"
+          MAIN_EXE="AStarDev.WallpaperScraper"
           if [ "${{ matrix.channel }}" = "scraper-win" ]; then
-            MAIN_EXE="AStar.Dev.Wallpaper.Scraper.exe"
+            MAIN_EXE="AStarDev.WallpaperScraper.exe"
           fi
 
           vpk pack \
-            --packId AStar.Dev.Wallpaper.Scraper \
+            --packId AStarDev.WallpaperScraper \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/${{ matrix.rid }} \
             --packAuthors "AStar Development" \
