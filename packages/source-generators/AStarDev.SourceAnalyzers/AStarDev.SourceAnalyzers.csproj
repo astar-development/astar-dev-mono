@@ -8,7 +8,7 @@
     <Description>Analyzer for enforcing partial on AutoRegisterOptions classes.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <IncludeReleaseTracking>true</IncludeReleaseTracking>
+    <IncludeReleaseTracking>false</IncludeReleaseTracking>
         <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
