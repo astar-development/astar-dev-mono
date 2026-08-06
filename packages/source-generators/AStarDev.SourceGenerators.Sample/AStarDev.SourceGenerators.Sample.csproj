@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <RootNamespace>AStarDev.SourceGenerators.Sample</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" />
+    </ItemGroup>
+
+</Project>

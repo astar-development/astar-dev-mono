@@ -1,4 +1,4 @@
-using AStar.Dev.Source.Generators.Attributes;
+using AStarDev.SourceGenerators.Attributes;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;
 

@@ -55,6 +55,7 @@
     <PackageVersion Include="AStarDev.LoggingSerilog" Version="0.1.1" />
     <PackageVersion Include="AStarDev.Utilities" Version="0.1.0" />
     <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
+    <PackageVersion Include="Dapper" Version="2.1.79" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup Label="Core framework and hosting">

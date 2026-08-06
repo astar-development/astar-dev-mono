@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- Add `AStar.Dev.Source.Generators` + `AStar.Dev.Source.Generators.Attributes` project references to `AStar.Dev.OneDrive.Sync.Client.csproj`
+- Add `AStarDev.SourceGenerators` + `AStarDev.SourceGenerators.Attributes` project references to `AStar.Dev.OneDrive.Sync.Client.csproj`
 - Introduce `AccountId` as `[StrongId(typeof(string))]` partial record struct
 - Introduce `OneDriveFolderId` as `[StrongId(typeof(string))]` partial record struct
 - Introduce `OneDriveItemId` as `[StrongId(typeof(string))]` partial record struct

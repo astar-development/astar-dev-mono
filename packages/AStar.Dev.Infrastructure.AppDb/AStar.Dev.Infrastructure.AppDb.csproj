@@ -46,15 +46,15 @@
     <ItemGroup>
         <ProjectReference Include="../core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
         <ProjectReference Include="../core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
-        <ProjectReference Include="../source-generators/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" />
-        <ProjectReference Include="../source-generators/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" PrivateAssets="all" />
+        <ProjectReference Include="../source-generators/AStarDev.SourceGenerators.Attributes/AStarDev.SourceGenerators.Attributes.csproj" />
+        <ProjectReference Include="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
-        <MSBuild Projects="../source-generators/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+        <MSBuild Projects="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
             <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
         </MSBuild>
-        <MSBuild Projects="../source-generators/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+        <MSBuild Projects="../source-generators/AStarDev.SourceGenerators.Attributes/AStarDev.SourceGenerators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
             <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
         </MSBuild>
     </Target>
