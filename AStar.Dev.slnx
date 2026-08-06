@@ -33,6 +33,8 @@
     <Folder Name="/packages/">
         <Project Path="packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
         <Project Path="packages/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
+        <Project Path="packages/AStarDev.FilesDb/AStarDev.FilesDb/AStarDev.FilesDb.csproj" />
+        <Project Path="packages/AStarDev.FilesDb/AStarDev.FilesDb.Tests.Unit/AStarDev.FilesDb.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/packages/aspnet/" />
     <Folder Name="/packages/aspnet/astar-dev-api-health-checks/">
@@ -65,12 +67,12 @@
         <Project Path="packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     </Folder>
     <Folder Name="/packages/source-generators/">
-        <Project Path="packages/source-generators/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
-        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
-        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" />
-        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Sample/AStar.Dev.Source.Generators.Sample.csproj" />
-        <Project Path="packages/source-generators/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
-        <Project Path="packages/source-generators/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.Attributes.Tests.Unit/AStarDev.SourceGenerators.Attributes.Tests.Unit.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.Attributes/AStarDev.SourceGenerators.Attributes.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.Sample/AStarDev.SourceGenerators.Sample.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.Tests.Unit/AStarDev.SourceGenerators.Tests.Unit.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceAnalyzers/AStarDev.SourceAnalyzers.csproj" />
     </Folder>
     <Folder Name="/SolutionItems/">
         <File Path="CLAUDE.md" />

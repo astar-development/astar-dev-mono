@@ -85,8 +85,8 @@
     <ProjectReference Include="..\..\..\packages\core\utilities\AStarDev.Utilities\AStarDev.Utilities.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Velopack.Publishing\AStar.Dev.Velopack.Publishing.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStar.Dev.Velopack.Publishing.Avalonia\AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
-    <ProjectReference Include="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
-    <ProjectReference Include="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" PrivateAssets="all" />
+    <ProjectReference Include="..\..\..\packages\source-generators\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\packages\source-generators\AStarDev.SourceGenerators\AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
@@ -97,10 +97,10 @@
       netstandard2.0 analyzer projects, but nothing ever builds them into that path — CSC
       then fails with CS0006 (metadata file not found).
     -->
-    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGenerators\AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
-    <MSBuild Projects="..\..\..\packages\source-generators\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
   </Target>

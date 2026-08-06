@@ -1,7 +1,7 @@
 ## 1. Project Setup
 
-- [x] 1.1 Add `<ProjectReference>` for `AStar.Dev.Source.Generators` to `AStar.Dev.OneDrive.Sync.Client.csproj`
-- [x] 1.2 Add `<ProjectReference>` for `AStar.Dev.Source.Generators.Attributes` to `AStar.Dev.OneDrive.Sync.Client.csproj`
+- [x] 1.1 Add `<ProjectReference>` for `AStarDev.SourceGenerators` to `AStar.Dev.OneDrive.Sync.Client.csproj`
+- [x] 1.2 Add `<ProjectReference>` for `AStarDev.SourceGenerators.Attributes` to `AStar.Dev.OneDrive.Sync.Client.csproj`
 - [x] 1.3 Run `dotnet build AStar.Dev.OneDrive.Sync.Client` and confirm zero errors before continuing
 
 ## 2. Strongly-Typed ID Value Objects

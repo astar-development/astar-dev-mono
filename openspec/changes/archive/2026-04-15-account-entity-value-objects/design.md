@@ -2,17 +2,19 @@
 
 `AStar.Dev.OneDrive.Sync.Client` stores OneDrive account data in SQLite via EF Core. All domain identifiers (`AccountId`, `OneDriveFolderId`, `OneDriveItemId`) and the local sync path are currently raw `string` properties on EF entities and domain models. This allows callers to pass a folder ID where an account ID is expected without any compile-time error.
 
-The repo already provides `AStar.Dev.Source.Generators` + `AStar.Dev.Source.Generators.Attributes` which generate strongly-typed `record struct` ID wrappers via `[StrongId]`. The app project currently has no reference to these packages.
+The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGenerators.Attributes` which generate strongly-typed `record struct` ID wrappers via `[StrongId]`. The app project currently has no reference to these packages.
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Introduce compile-time type safety for `AccountId`, `OneDriveFolderId`, `OneDriveItemId`
 - Introduce `LocalSyncPath` as a validated value object
 - Keep the SQLite schema unchanged (EF value converters map to the same underlying column type)
 - No breaking change to the SQLite database file — no destructive migration
 
 **Non-Goals:**
+
 - Refactoring unrelated entities or models outside the OneDrive sync domain
 - Changing authentication, Graph API, or sync logic
 - Introducing a new database schema version (column types stay as `TEXT`)
@@ -47,11 +49,11 @@ Even though column types do not change, the EF model snapshot must reflect the n
 
 ## Risks / Trade-offs
 
-| Risk | Mitigation |
-|---|---|
-| Large call-site blast radius — many ViewModels reference `.Id` / `.AccountId` as strings | Compiler errors guide the fix; all callers in one app project, so no cross-repo breakage |
-| EF migration required even for no-op schema change | Migration is generated + reviewed before merge; SQLite does not support `ALTER COLUMN` anyway so risk is low |
-| Source generator version drift | Project reference (not package reference) used locally; CI resolves same source |
+| Risk                                                                                     | Mitigation                                                                                                   |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Large call-site blast radius — many ViewModels reference `.Id` / `.AccountId` as strings | Compiler errors guide the fix; all callers in one app project, so no cross-repo breakage                     |
+| EF migration required even for no-op schema change                                       | Migration is generated + reviewed before merge; SQLite does not support `ALTER COLUMN` anyway so risk is low |
+| Source generator version drift                                                           | Project reference (not package reference) used locally; CI resolves same source                              |
 
 ## Migration Plan
 

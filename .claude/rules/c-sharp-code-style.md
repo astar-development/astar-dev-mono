@@ -22,7 +22,7 @@ paths:
 
 ## Primitive Obsession
 
-- IDs must be strongly-typed — use `AStar.Dev.Source.Generators.Attributes`.
+- IDs must be strongly-typed — use `AStarDev.SourceGenerators.Attributes`.
 - File/directory info must NOT be a string — use Testably abstraction or dedicated type.
 
 ## Records

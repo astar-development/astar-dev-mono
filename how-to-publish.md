@@ -33,7 +33,7 @@ any nesting depth):
 ```
 AStarDev.Utilities/v1.6.8
 AStar.Dev.Infrastructure.AppDb/v0.3.0
-AStar.Dev.Source.Generators.Attributes/v1.0.0
+AStarDev.SourceGenerators.Attributes/v1.0.0
 AStar.Dev.SomePackage/v2.1.0-beta.1     # prerelease: hyphen suffix
 ```
 
