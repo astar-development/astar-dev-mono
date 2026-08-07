@@ -22,7 +22,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private readonly IAccountRepository repository;
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
-    public string AccountId => account.Id.Id;
+    public string AccountId => account.Id.Value;
     public string DisplayName => account.Profile.DisplayName;
     public string Email => account.Profile.Email;
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
@@ -119,7 +119,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private void ToggleExpand() => IsExpanded = !IsExpanded;
 
     [RelayCommand]
-    private Task CancelSyncAsync() => scheduler.CancelAccountSyncAsync(account.Id.Id);
+    private Task CancelSyncAsync() => scheduler.CancelAccountSyncAsync(account.Id.Value);
 
     [RelayCommand]
     private async Task SyncNowAsync()
@@ -146,16 +146,16 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
                 },
                 () =>
                 {
-                    OneDriveSyncClientMessages.SyncNowAccountNotFound(logger, account.Id.Id);
-                    AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Id, account.Profile.Email, localizationService.GetLocal("Dashboard.SyncAccountNotFound")));
+                    OneDriveSyncClientMessages.SyncNowAccountNotFound(logger, account.Id.Value);
+                    AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Value, account.Profile.Email, localizationService.GetLocal("Dashboard.SyncAccountNotFound")));
 
                     return Unit.Default;
                 });
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SyncNowFailed(logger, account.Id.Id, ex.Message, ex);
-            AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Id, account.Profile.Email, ex.Message));
+            OneDriveSyncClientMessages.SyncNowFailed(logger, account.Id.Value, ex.Message, ex);
+            AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Value, account.Profile.Email, ex.Message));
         }
     }
 

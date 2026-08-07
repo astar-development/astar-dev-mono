@@ -95,21 +95,21 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        if (!activeSyncs.TryAdd(account.Id.Id, cts))
+        if (!activeSyncs.TryAdd(account.Id.Value, cts))
         {
-            OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
+            OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Value);
             return;
         }
 
-        SyncStarted?.Invoke(this, account.Id.Id);
+        SyncStarted?.Invoke(this, account.Id.Value);
         try
         {
             await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
         }
         finally
         {
-            activeSyncs.TryRemove(account.Id.Id, out _);
-            SyncCompleted?.Invoke(this, account.Id.Id);
+            activeSyncs.TryRemove(account.Id.Value, out _);
+            SyncCompleted?.Invoke(this, account.Id.Value);
         }
     }
 
@@ -166,25 +166,25 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 var account = MapEntityToAccount(entity, rules);
 
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                if (!activeSyncs.TryAdd(account.Id.Id, cts))
+                if (!activeSyncs.TryAdd(account.Id.Value, cts))
                 {
-                    OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Id);
+                    OneDriveSyncClientMessages.SyncSchedulerSkippedAlreadyRunning(logger, account.Id.Value);
                     continue;
                 }
 
-                SyncStarted?.Invoke(this, account.Id.Id);
+                SyncStarted?.Invoke(this, account.Id.Value);
                 try
                 {
                     await syncService.SyncAccountAsync(account, cts.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    OneDriveSyncClientMessages.SyncSchedulerFailed(logger, account.Id.Id, ex.Message, ex);
+                    OneDriveSyncClientMessages.SyncSchedulerFailed(logger, account.Id.Value, ex.Message, ex);
                 }
                 finally
                 {
-                    activeSyncs.TryRemove(account.Id.Id, out _);
-                    SyncCompleted?.Invoke(this, account.Id.Id);
+                    activeSyncs.TryRemove(account.Id.Value, out _);
+                    SyncCompleted?.Invoke(this, account.Id.Value);
                 }
             }
         }

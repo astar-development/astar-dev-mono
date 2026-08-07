@@ -38,7 +38,7 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
         await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, deletedRemoteIds, cancellationToken).ConfigureAwait(false);
 
         foreach (var remoteId in deletedRemoteIds)
-            syncedItems.TryRemove(remoteId.Id, out _);
+            syncedItems.TryRemove(remoteId.Value, out _);
     }
 
     private void DeleteLocalItem(SyncedItemEntity knownItem)

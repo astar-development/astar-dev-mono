@@ -23,12 +23,13 @@ This is independent of — and complementary to — the `SyncDirection` discrimi
 **Fields:** `AccountId`, `FolderId`, `RemoteItemId`
 
 **Evidence:**
+
 - `EnqueueJobsAsync` maps all three to entity in the same block
 - `ExecuteJobAsync` uses `FolderId` for Graph API upload call
 - `SyncedItemEntityFactory.CreateFromDownloadJob` reads `RemoteItemId`
 - `SyncedItemEntityFactory.CreateFromUploadJob` reads `LocalPath` alongside `RemoteItemId`
 
-**Question answered:** *Which remote item are we syncing?*
+**Question answered:** _Which remote item are we syncing?_
 
 ---
 
@@ -37,12 +38,13 @@ This is independent of — and complementary to — the `SyncDirection` discrimi
 **Fields:** `LocalPath`, `RelativePath`
 
 **Evidence:**
+
 - `EnqueueJobsAsync` maps both together
 - `ExecuteJobAsync` uses `LocalPath` for download/delete/upload; `RelativePath` for logging and as upload path fallback
 - `ActivityItemViewModel.FromJob` reads both (`RelativePath` for display, `Path.GetFileName(RelativePath)`)
 - `SyncedItemEntityFactory` uses `LocalPath` in both download and upload factory methods
 
-**Question answered:** *Where does this file live locally?*
+**Question answered:** _Where does this file live locally?_
 
 ---
 
@@ -51,32 +53,37 @@ This is independent of — and complementary to — the `SyncDirection` discrimi
 **Fields:** `FileSize`, `RemoteModified`
 
 **Evidence:**
+
 - `EnqueueJobsAsync` maps both together
 - `ExecuteJobAsync` passes `RemoteModified` to the file downloader (for timestamp preservation)
 - `SyncedItemEntityFactory.CreateFromDownloadJob` reads `RemoteModified`
 - `ActivityItemViewModel.FromJob` reads `FileSize`
 
-**Question answered:** *What are the remote file's current attributes?*
+**Question answered:** _What are the remote file's current attributes?_
 
 ---
 
-### Clump 4 — Job lifecycle status *(optional — see tradeoff below)*
+### Clump 4 — Job lifecycle status _(optional — see tradeoff below)_
 
 **Fields:** `Id`, `QueuedAt`, `State`, `ErrorMessage?`, `CompletedAt?`
 
 **Evidence:**
+
 - `EnqueueJobsAsync` maps `Id`, `State`, `QueuedAt` together
 - `RunAsync` passes `job.Id` to every `UpdateJobStateAsync` call
 - `ActivityItemViewModel.FromJob` reads `CompletedAt` and `ErrorMessage` together
 - `ParallelDownloadPipeline` applies `with { State = ..., CompletedAt = ... }` together
 
-**Question answered:** *What is this job's identity and current execution state?*
+**Question answered:** _What is this job's identity and current execution state?_
 
 **Tradeoff addressed via extension methods:** Naively, state updates become nested `with`:
+
 ```csharp
 job with { Status = job.Status with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow } }
 ```
+
 This is eliminated by `SyncJobExtensions` — see section below. Call sites reduce to:
+
 ```csharp
 job.Complete()
 job.Fail(error)
@@ -164,7 +171,7 @@ public static class SyncFileMetadataFactory
 
 ---
 
-### `SyncJobStatus.cs` *(Clump 4)*
+### `SyncJobStatus.cs` _(Clump 4)_
 
 ```csharp
 namespace AStar.Dev.OneDrive.Sync.Client.Domain;
@@ -253,7 +260,7 @@ public static class SyncJobFactory
 Build each argument explicitly before the final factory call:
 
 ```csharp
-var remote = RemoteItemRefFactory.Create(account.Id.Id, string.Empty, item.Id);
+var remote = RemoteItemRefFactory.Create(account.Id.Value, string.Empty, item.Id);
 var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
 var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
 var status = SyncJobStatusFactory.Create();
@@ -267,27 +274,28 @@ SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, 
 
 ### Property access chains
 
-| Before | After |
-|--------|-------|
-| `job.AccountId` | `job.Remote.AccountId` |
-| `job.FolderId` | `job.Remote.FolderId` |
-| `job.RemoteItemId` | `job.Remote.RemoteItemId` |
-| `job.LocalPath` | `job.Target.LocalPath` |
-| `job.RelativePath` | `job.Target.RelativePath` |
-| `job.FileSize` | `job.Metadata.FileSize` |
-| `job.RemoteModified` | `job.Metadata.RemoteModified` |
-| `job.Id` | `job.Status.Id` |
-| `job.QueuedAt` | `job.Status.QueuedAt` |
-| `job.State` | `job.Status.State` |
-| `job.ErrorMessage` | `job.Status.ErrorMessage` |
-| `job.CompletedAt` | `job.Status.CompletedAt` |
-| `job.Direction` | `job.Direction` *(unchanged)* |
-| `job.DownloadUrl` | `job.DownloadUrl` *(unchanged)* |
-| `job.UploadedRemoteItemId` | `job.UploadedRemoteItemId` *(unchanged)* |
+| Before                     | After                                    |
+| -------------------------- | ---------------------------------------- |
+| `job.AccountId`            | `job.Remote.AccountId`                   |
+| `job.FolderId`             | `job.Remote.FolderId`                    |
+| `job.RemoteItemId`         | `job.Remote.RemoteItemId`                |
+| `job.LocalPath`            | `job.Target.LocalPath`                   |
+| `job.RelativePath`         | `job.Target.RelativePath`                |
+| `job.FileSize`             | `job.Metadata.FileSize`                  |
+| `job.RemoteModified`       | `job.Metadata.RemoteModified`            |
+| `job.Id`                   | `job.Status.Id`                          |
+| `job.QueuedAt`             | `job.Status.QueuedAt`                    |
+| `job.State`                | `job.Status.State`                       |
+| `job.ErrorMessage`         | `job.Status.ErrorMessage`                |
+| `job.CompletedAt`          | `job.Status.CompletedAt`                 |
+| `job.Direction`            | `job.Direction` _(unchanged)_            |
+| `job.DownloadUrl`          | `job.DownloadUrl` _(unchanged)_          |
+| `job.UploadedRemoteItemId` | `job.UploadedRemoteItemId` _(unchanged)_ |
 
 ### `with` expression migration
 
 Single-field update — no change in form:
+
 ```csharp
 // before
 job with { UploadedRemoteItemId = uploadedId }
@@ -297,6 +305,7 @@ job with { UploadedRemoteItemId = uploadedId }
 ```
 
 Status transitions — use `SyncJobExtensions`:
+
 ```csharp
 // before — completed
 job with { State = SyncJobState.Completed, CompletedAt = DateTimeOffset.UtcNow }
@@ -318,20 +327,20 @@ success ? job.Complete() : job.Fail(error)
 
 All files affected are internal to the desktop client project.
 
-| File | Change required |
-|------|-----------------|
-| `Domain/SyncJob.cs` | Replace with grouped record |
-| `Domain/SyncJobFactory.cs` | New signature — accepts record objects, not primitives |
-| `Domain/SyncJobExtensions.cs` | New file — `Complete()` and `Fail(error?)` transition extension methods |
-| `Infrastructure/Sync/LocalChangeDetector.cs` | `SyncJobFactory.Create(accountId, ...)` → build args via sub-factories |
-| `Infrastructure/Sync/RemoteFolderEnumerator.cs` | `SyncJobFactory.Create(account.Id.Id, ...)` × 4 calls → build args via sub-factories |
-| `Data/Repositories/SyncRepository.cs` | `j.AccountId` → `j.Remote.AccountId` etc. (entity mapping block) |
-| `Data/Entities/SyncedItemEntityFactory.cs` | `job.RemoteItemId` → `job.Remote.RemoteItemId`; `job.LocalPath` → `job.Target.LocalPath`; `job.RemoteModified` → `job.Metadata.RemoteModified` |
-| `Infrastructure/Sync/DownloadWorker.cs` | `job.LocalPath` → `job.Target.LocalPath`; `job.RelativePath` → `job.Target.RelativePath`; `job.RemoteModified` → `job.Metadata.RemoteModified`; `job.FolderId` → `job.Remote.FolderId`; `job.Id` → `job.Status.Id` |
-| `Activity/ActivityItemViewModel.cs` | `job.AccountId` → `job.Remote.AccountId`; `job.RelativePath` → `job.Target.RelativePath`; `job.FileSize` → `job.Metadata.FileSize`; `job.CompletedAt` → `job.Status.CompletedAt`; `job.ErrorMessage` → `job.Status.ErrorMessage` |
-| `Infrastructure/Sync/ParallelDownloadPipeline.cs` | `with { State = ..., CompletedAt = ... }` → nested `Status with { ... }` |
-| `Infrastructure/Sync/SyncJobExecutor.cs` | `args.Job.State` → `args.Job.Status.State` |
-| Test files (4 files) | `MakeJob` / `BuildSyncJob` / `MinimalJob` helpers — update both call sites and property access chains |
+| File                                              | Change required                                                                                                                                                                                                                  |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Domain/SyncJob.cs`                               | Replace with grouped record                                                                                                                                                                                                      |
+| `Domain/SyncJobFactory.cs`                        | New signature — accepts record objects, not primitives                                                                                                                                                                           |
+| `Domain/SyncJobExtensions.cs`                     | New file — `Complete()` and `Fail(error?)` transition extension methods                                                                                                                                                          |
+| `Infrastructure/Sync/LocalChangeDetector.cs`      | `SyncJobFactory.Create(accountId, ...)` → build args via sub-factories                                                                                                                                                           |
+| `Infrastructure/Sync/RemoteFolderEnumerator.cs`   | `SyncJobFactory.Create(account.Id.Value, ...)` × 4 calls → build args via sub-factories                                                                                                                                          |
+| `Data/Repositories/SyncRepository.cs`             | `j.AccountId` → `j.Remote.AccountId` etc. (entity mapping block)                                                                                                                                                                 |
+| `Data/Entities/SyncedItemEntityFactory.cs`        | `job.RemoteItemId` → `job.Remote.RemoteItemId`; `job.LocalPath` → `job.Target.LocalPath`; `job.RemoteModified` → `job.Metadata.RemoteModified`                                                                                   |
+| `Infrastructure/Sync/DownloadWorker.cs`           | `job.LocalPath` → `job.Target.LocalPath`; `job.RelativePath` → `job.Target.RelativePath`; `job.RemoteModified` → `job.Metadata.RemoteModified`; `job.FolderId` → `job.Remote.FolderId`; `job.Id` → `job.Status.Id`               |
+| `Activity/ActivityItemViewModel.cs`               | `job.AccountId` → `job.Remote.AccountId`; `job.RelativePath` → `job.Target.RelativePath`; `job.FileSize` → `job.Metadata.FileSize`; `job.CompletedAt` → `job.Status.CompletedAt`; `job.ErrorMessage` → `job.Status.ErrorMessage` |
+| `Infrastructure/Sync/ParallelDownloadPipeline.cs` | `with { State = ..., CompletedAt = ... }` → nested `Status with { ... }`                                                                                                                                                         |
+| `Infrastructure/Sync/SyncJobExecutor.cs`          | `args.Job.State` → `args.Job.Status.State`                                                                                                                                                                                       |
+| Test files (4 files)                              | `MakeJob` / `BuildSyncJob` / `MinimalJob` helpers — update both call sites and property access chains                                                                                                                            |
 
 ---
 

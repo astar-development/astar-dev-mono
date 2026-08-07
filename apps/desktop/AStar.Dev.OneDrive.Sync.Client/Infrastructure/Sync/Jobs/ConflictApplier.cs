@@ -30,7 +30,7 @@ public sealed class ConflictApplier(IHttpDownloader httpDownloader, IGraphServic
 
     private async Task<bool> ApplyUseRemoteAsync(SyncConflict conflict, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
-        var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Id, cancellationToken).ConfigureAwait(false);
+        var urlResult = await graphService.GetDownloadUrlAsync(accountId, tokenFactory, conflict.Remote.RemoteItemId.Value, cancellationToken).ConfigureAwait(false);
 
         return await urlResult.MatchAsync(
             async url =>

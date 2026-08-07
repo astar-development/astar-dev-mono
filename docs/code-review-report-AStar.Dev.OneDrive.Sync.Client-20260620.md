@@ -270,7 +270,7 @@ For frequent sync passes `ArrayPool<byte>.Shared.Rent/Return` eliminates repeate
 #### S5 — `Infrastructure/Sync/SyncService.cs:99` — Raw exception message exposed in UI progress events
 
 ```csharp
-RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
+RaiseProgress(account.Id.Value, 0, 0, ex.Message, SyncState.Error);
 ```
 
 `ex.Message` may contain file paths, stack fragments, or internal identifiers that should not be surfaced to the UI. This also makes localisation impossible for these error messages.

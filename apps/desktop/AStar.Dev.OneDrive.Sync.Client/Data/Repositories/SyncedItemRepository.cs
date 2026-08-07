@@ -19,7 +19,7 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
             .Where(i => i.AccountId == accountId)
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return items.ToDictionary(i => i.RemoteItemId.Id);
+        return items.ToDictionary(i => i.RemoteItemId.Value);
     }
 
     public async Task<int> UpsertAsync(SyncedItemEntity item, CancellationToken cancellationToken)

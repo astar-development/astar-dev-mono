@@ -30,7 +30,7 @@ public sealed class GivenAnOneDriveAccount
         var account = new OneDriveAccount { Id = id };
 
         account.Id.ShouldBe(id);
-        account.Id.Id.ShouldBe("unique-account-id");
+        account.Id.Value.ShouldBe("unique-account-id");
     }
 
     [Fact]

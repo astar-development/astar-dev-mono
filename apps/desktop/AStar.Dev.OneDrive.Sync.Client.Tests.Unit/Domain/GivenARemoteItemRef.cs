@@ -14,7 +14,7 @@ public sealed class GivenARemoteItemRef
     {
         var remoteItemRef = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(FolderIdValue), new OneDriveItemId(RemoteItemIdValue));
 
-        remoteItemRef.AccountId.Id.ShouldBe(AccountIdValue);
+        remoteItemRef.AccountId.Value.ShouldBe(AccountIdValue);
     }
 
     [Fact]
@@ -22,7 +22,7 @@ public sealed class GivenARemoteItemRef
     {
         var remoteItemRef = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(FolderIdValue), new OneDriveItemId(RemoteItemIdValue));
 
-        remoteItemRef.FolderId.Id.ShouldBe(FolderIdValue);
+        remoteItemRef.FolderId.Value.ShouldBe(FolderIdValue);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public sealed class GivenARemoteItemRef
     {
         var remoteItemRef = RemoteItemRefFactory.Create(new AccountId(AccountIdValue), new OneDriveFolderId(FolderIdValue), new OneDriveItemId(RemoteItemIdValue));
 
-        remoteItemRef.RemoteItemId.Id.ShouldBe(RemoteItemIdValue);
+        remoteItemRef.RemoteItemId.Value.ShouldBe(RemoteItemIdValue);
     }
 
     [Fact]

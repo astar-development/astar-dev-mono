@@ -14,20 +14,20 @@ public sealed class QuotaRefreshService(IGraphService graphService, IAuthService
     /// <inheritdoc />
     public async Task TryRefreshAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
-        var tokenResult = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).ConfigureAwait(false);
+        var tokenResult = await authService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken).ConfigureAwait(false);
 
         await tokenResult
-            .TapError(_ => OneDriveSyncClientMessages.QuotaRefreshTokenFailed(logger, account.Id.Id))
+            .TapError(_ => OneDriveSyncClientMessages.QuotaRefreshTokenFailed(logger, account.Id.Value))
             .TapAsync(auth => ApplyQuotaAsync(account, auth, cancellationToken))
             .ConfigureAwait(false);
     }
 
     private async Task ApplyQuotaAsync(OneDriveAccount account, AuthResult auth, CancellationToken cancellationToken)
     {
-        var quotaResult = await graphService.GetQuotaAsync(account.Id.Id, _ => Task.FromResult(auth.AccessToken), cancellationToken).ConfigureAwait(false);
+        var quotaResult = await graphService.GetQuotaAsync(account.Id.Value, _ => Task.FromResult(auth.AccessToken), cancellationToken).ConfigureAwait(false);
 
         await quotaResult
-            .TapError(error => OneDriveSyncClientMessages.QuotaRefreshFetchFailed(logger, account.Id.Id, error))
+            .TapError(error => OneDriveSyncClientMessages.QuotaRefreshFetchFailed(logger, account.Id.Value, error))
             .TapAsync(async quota =>
             {
                 account.Quota = StorageQuotaFactory.Create(quota.Total, quota.Used);

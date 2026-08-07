@@ -15,11 +15,11 @@ public class SyncConflictEntityConfiguration : IEntityTypeConfiguration<SyncConf
     {
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.AccountId)
-                   .HasConversion(id => id.Id, str => new AccountId(str));
+                   .HasConversion(id => id.Value, str => new AccountId(str));
         _ = builder.Property(e => e.FolderId)
-                   .HasConversion(id => id.Id, str => new OneDriveFolderId(str));
+                   .HasConversion(id => id.Value, str => new OneDriveFolderId(str));
         _ = builder.Property(e => e.RemoteItemId)
-                   .HasConversion(id => id.Id, str => new OneDriveItemId(str));
+                   .HasConversion(id => id.Value, str => new OneDriveItemId(str));
         _ = builder.Property(e => e.Resolution)
                    .HasConversion(SqliteTypeConverters.OptionConflictPolicyToNullableInt)
                    .IsRequired(false);

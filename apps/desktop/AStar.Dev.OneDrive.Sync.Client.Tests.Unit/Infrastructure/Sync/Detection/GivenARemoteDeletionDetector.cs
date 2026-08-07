@@ -103,7 +103,7 @@ public sealed class GivenARemoteDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, syncedItems, seenRemoteIds, IncludeRules("/file.txt"), TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Id == "item-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Value == "item-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]

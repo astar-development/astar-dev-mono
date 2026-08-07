@@ -132,7 +132,7 @@ public sealed class GivenAStartupService
         var accounts = AssertOk(await CreateSut().RestoreAccountsAsync());
 
         accounts[0].SelectedFolderIds.Count.ShouldBe(1);
-        accounts[0].SelectedFolderIds[0].Id.ShouldBe("folder-abc");
+        accounts[0].SelectedFolderIds[0].Value.ShouldBe("folder-abc");
     }
 
     [Fact]

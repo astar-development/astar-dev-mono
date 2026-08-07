@@ -30,20 +30,20 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
-        OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Id);
-        RaiseProgress(account.Id.Id, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
+        OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Value);
+        RaiseProgress(account.Id.Value, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
-        var outcome = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken).MatchAsync(
+        var outcome = await authService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken).MatchAsync(
             authResult => RunSyncPassAsync(account, authResult, cancellationToken),
             authError => Task.FromResult(SyncOutcomeFactory.CreateAuthFailed(authError is AuthReAuthRequiredError)));
 
-        ApplyOutcome(account.Id.Id, outcome);
+        ApplyOutcome(account.Id.Value, outcome);
     }
 
     /// <inheritdoc />
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken cancellationToken = default)
     {
-        string accountId = conflict.Remote.AccountId.Id;
+        string accountId = conflict.Remote.AccountId.Value;
 
         bool applied = await authService.AcquireTokenSilentAsync(accountId, cancellationToken).MatchAsync(
             authResult => ApplyConflictAsync(conflict, policy, authResult, cancellationToken),
@@ -62,10 +62,10 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
     private async Task<bool> ApplyConflictAsync(SyncConflict conflict, ConflictPolicy policy, AuthResult authResult, CancellationToken cancellationToken)
     {
-        using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Id, authService, authResult.AccessToken, authResult.ExpiresOn);
+        using var tokenFactory = new CachedTokenFactory(conflict.Remote.AccountId.Value, authService, authResult.AccessToken, authResult.ExpiresOn);
         var conflictOutcome = ConflictResolver.Resolve(policy, conflict.Snapshot.LocalModified, conflict.Snapshot.RemoteModified);
 
-        return await conflictApplier.ApplyAsync(conflict, conflictOutcome, conflict.Remote.AccountId.Id, tokenFactory.GetTokenAsync, cancellationToken).ConfigureAwait(false);
+        return await conflictApplier.ApplyAsync(conflict, conflictOutcome, conflict.Remote.AccountId.Value, tokenFactory.GetTokenAsync, cancellationToken).ConfigureAwait(false);
     }
 
     private Task<SyncOutcome> RunSyncPassAsync(OneDriveAccount account, AuthResult authResult, CancellationToken cancellationToken)
@@ -75,7 +75,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
     private async Task<SyncOutcome> ExecuteSyncPassAsync(OneDriveAccount account, AccountSyncConfig syncConfig, AuthResult authResult, CancellationToken cancellationToken)
     {
-        var tokenFactory = new CachedTokenFactory(account.Id.Id, authService, authResult.AccessToken, authResult.ExpiresOn);
+        var tokenFactory = new CachedTokenFactory(account.Id.Value, authService, authResult.AccessToken, authResult.ExpiresOn);
 
         try
         {

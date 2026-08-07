@@ -12,7 +12,7 @@ public sealed class FileDetailEntityConfiguration : IEntityTypeConfiguration<Fil
     {
         _ = builder.ToTable("FileDetail");
         _ = builder.HasKey(file => file.Id);
-        _ = builder.Property(file => file.Id).HasConversion(fileId => fileId.Id, guid => new FileId(guid));
+        _ = builder.Property(file => file.Id).HasConversion(fileId => fileId.Value, guid => new FileId(guid));
 
         _ = builder.ComplexProperty(file => file.FileName, fileName => fileName.Property(name => name.Value).HasColumnName("FileName"));
         _ = builder.ComplexProperty(file => file.DirectoryName, directoryName => directoryName.Property(name => name.Value).HasColumnName("DirectoryName"));

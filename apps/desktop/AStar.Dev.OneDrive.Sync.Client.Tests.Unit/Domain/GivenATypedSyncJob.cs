@@ -194,9 +194,9 @@ public sealed class GivenATypedSyncJob
 
         var result = SyncJobFactory.CreateDownload(remote, MakeTarget(), MakeMetadata());
 
-        result.Remote.AccountId.Id.ShouldBe("account-1");
-        result.Remote.FolderId.Id.ShouldBe("folder-1");
-        result.Remote.RemoteItemId.Id.ShouldBe("item-1");
+        result.Remote.AccountId.Value.ShouldBe("account-1");
+        result.Remote.FolderId.Value.ShouldBe("folder-1");
+        result.Remote.RemoteItemId.Value.ShouldBe("item-1");
     }
 
     [Fact]

@@ -27,7 +27,7 @@ public sealed partial class ConflictItemViewModel : ObservableObject
     }
 
     public Guid Id => conflict.Id;
-    public string AccountId => conflict.Remote.AccountId.Id;
+    public string AccountId => conflict.Remote.AccountId.Value;
     public string FileName => Path.GetFileName(conflict.Target.RelativePath);
     public string RelativePath => conflict.Target.RelativePath;
     public DateTimeOffset LocalModified => conflict.Snapshot.LocalModified;

@@ -70,7 +70,7 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Id == "item-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Value == "item-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public sealed class GivenALocalDeletionDetector
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
 
         await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("item-ok"), Arg.Any<CancellationToken>());
-        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Id == "item-ok"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Value == "item-ok"), Arg.Any<CancellationToken>());
     }
 
     [Fact]

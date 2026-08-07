@@ -26,7 +26,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private readonly Dictionary<string, RuleType> ruleStates = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The unique identifier for the account.</summary>
-    public string AccountId => account.Id.Id;
+    public string AccountId => account.Id.Value;
     public string DisplayName => account.Profile.DisplayName;
     public string Email => account.Profile.Email;
 
@@ -76,7 +76,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Id, cancellationToken)
+            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken)
                 .MatchAsync<AuthResult, AuthError, string?>(
                     ok => ok.AccessToken,
                     error =>
@@ -89,7 +89,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if (accessToken is null)
                 return;
 
-            var driveId = await graphService.GetDriveIdAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
+            var driveId = await graphService.GetDriveIdAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -124,12 +124,12 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync()
     {
-        var folders = await graphService.GetRootFoldersAsync(account.Id.Id, _ => Task.FromResult(accessToken ?? string.Empty))
+        var folders = await graphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty))
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                 f => f,
                 error =>
                 {
-                    OneDriveSyncClientMessages.RootFoldersLoadFailed(logger, account.Id.Id, error);
+                    OneDriveSyncClientMessages.RootFoldersLoadFailed(logger, account.Id.Value, error);
                     LoadError = error;
                     HasLoadError = true;
                     return null;
@@ -142,7 +142,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             id => id,
             () =>
             {
-                OneDriveSyncClientMessages.DriveIdNotAvailable(logger, account.Id.Id);
+                OneDriveSyncClientMessages.DriveIdNotAvailable(logger, account.Id.Value);
                 return null;
             });
 
@@ -156,7 +156,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             string remotePath = $"/{f.Name}";
             var syncState = ResolveRuleState(remotePath) ?? FolderSyncState.Excluded;
 
-            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Id, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
+            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Value, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
             var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value, ResolveRuleState);
 
             vm.IncludeToggled += OnIncludeToggled;
@@ -208,7 +208,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Id, ex.Message, ex);
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.Message, ex);
             HasLoadError = true;
             LoadError = ex.Message;
         }

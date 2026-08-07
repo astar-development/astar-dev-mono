@@ -211,8 +211,8 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     settings.AddAccount(account);
                     search.SetActiveAccount(account.Id);
                     ActiveSection = NavSection.Files;
-                    await files.ActivateAccountAsync(account.Id.Id);
-                    await activity.SetActiveAccountAsync(account.Id.Id, account.Profile.Email);
+                    await files.ActivateAccountAsync(account.Id.Value);
+                    await activity.SetActiveAccountAsync(account.Id.Value, account.Profile.Email);
                     return Unit.Default;
                 })
                 .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(logger, e.Message, e));

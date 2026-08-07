@@ -12,7 +12,7 @@ public sealed class FileClassificationEntityConfiguration : IEntityTypeConfigura
     {
         _ = builder.ToTable("FileClassifications");
         _ = builder.HasKey(e => e.Id);
-        _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId.Id, guid => new FileId(guid));
+        _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId.Value, guid => new FileId(guid));
         _ = builder.HasIndex(e => new { e.FileDetailId, e.CategoryId }).IsUnique();
         _ = builder.HasOne(e => e.FileDetail)
                    .WithMany()

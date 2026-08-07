@@ -15,7 +15,7 @@ public sealed class SyncRuleService(ISyncRuleRepository syncRuleRepository, ILog
     public async Task<int> ApplyRuleAsync(AccountId accountId, string parentRemotePath, RuleType ruleType, IReadOnlyList<(string RemotePath, string Id)> nodes, CancellationToken cancellationToken)
     {
         string ruleTypeName = ruleType.ToString();
-        OneDriveSyncClientMessages.RulePersisting(logger, ruleTypeName, parentRemotePath, accountId.Id);
+        OneDriveSyncClientMessages.RulePersisting(logger, ruleTypeName, parentRemotePath, accountId.Value);
 
         await syncRuleRepository.DeleteChildRulesAsync(accountId, parentRemotePath, cancellationToken).ConfigureAwait(false);
 

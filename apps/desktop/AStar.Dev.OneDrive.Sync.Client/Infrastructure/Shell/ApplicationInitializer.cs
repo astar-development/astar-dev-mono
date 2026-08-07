@@ -44,8 +44,8 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
 
             if (activeAccount is not null)
             {
-                await files.ActivateAccountAsync(activeAccount.Id.Id).ConfigureAwait(false);
-                await activity.SetActiveAccountAsync(activeAccount.Id.Id, activeAccount.Profile.Email).ConfigureAwait(false);
+                await files.ActivateAccountAsync(activeAccount.Id.Value).ConfigureAwait(false);
+                await activity.SetActiveAccountAsync(activeAccount.Id.Value, activeAccount.Profile.Email).ConfigureAwait(false);
                 search.SetActiveAccount(activeAccount.Id);
             }
 
@@ -70,7 +70,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
         foreach (var account in restored)
         {
             await quotaRefreshService.TryRefreshAsync(account, cancellationToken).ConfigureAwait(false);
-            dashboard.UpdateQuota(account.Id.Id, account.Quota);
+            dashboard.UpdateQuota(account.Id.Value, account.Quota);
         }
     }
 }

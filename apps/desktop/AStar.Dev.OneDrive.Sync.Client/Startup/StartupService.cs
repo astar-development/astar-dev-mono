@@ -25,7 +25,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
         => Try.RunAsync(() => BuildAccountsAsync(FilterToCachedEntities(input.entities, input.cachedIds)));
 
     private static IEnumerable<AccountEntity> FilterToCachedEntities(IEnumerable<AccountEntity> entities, HashSet<string> cachedIds)
-        => entities.Where(entity => cachedIds.Contains(entity.Id.Id));
+        => entities.Where(entity => cachedIds.Contains(entity.Id.Value));
 
     private async Task<List<OneDriveAccount>> BuildAccountsAsync(IEnumerable<AccountEntity> entities)
     {

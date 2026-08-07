@@ -14,7 +14,7 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
     {
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.Id)
-                   .HasConversion(id => id.Id, str => new AccountId(str));
+                   .HasConversion(id => id.Value, str => new AccountId(str));
         _ = builder.Property(e => e.LastSyncedAt)
                    .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
                    .IsRequired(false);

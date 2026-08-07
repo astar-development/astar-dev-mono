@@ -28,7 +28,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.AccountId.Id.ShouldBe(string.Empty);
+        syncJob.Remote.AccountId.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.FolderId.Id.ShouldBe(string.Empty);
+        syncJob.Remote.FolderId.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class GivenASyncJob
     {
         var syncJob = CreateMinimalJob();
 
-        syncJob.Remote.RemoteItemId.Id.ShouldBe(string.Empty);
+        syncJob.Remote.RemoteItemId.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -155,9 +155,9 @@ public sealed class GivenASyncJob
         var syncJob = SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt } };
 
         syncJob.Status.Id.ShouldBe(jobId);
-        syncJob.Remote.AccountId.Id.ShouldBe(accountId);
-        syncJob.Remote.FolderId.Id.ShouldBe(folderId);
-        syncJob.Remote.RemoteItemId.Id.ShouldBe(remoteItemId);
+        syncJob.Remote.AccountId.Value.ShouldBe(accountId);
+        syncJob.Remote.FolderId.Value.ShouldBe(folderId);
+        syncJob.Remote.RemoteItemId.Value.ShouldBe(remoteItemId);
         syncJob.Target.RelativePath.ShouldBe(relativePath);
         syncJob.Target.LocalPath.ShouldBe(localPath);
         syncJob.ShouldBeOfType<DownloadSyncJob>();

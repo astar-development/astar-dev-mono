@@ -47,6 +47,6 @@ public sealed class DownloadJobHandler(IHttpDownloader downloader, IGraphService
 
         OneDriveSyncClientMessages.DownloadUrlAbsent(logger, job.Target.RelativePath);
 
-        return await graphService.GetDownloadUrlAsync(accountId, tokenFactory, job.Remote.RemoteItemId.Id, cancellationToken).ConfigureAwait(false);
+        return await graphService.GetDownloadUrlAsync(accountId, tokenFactory, job.Remote.RemoteItemId.Value, cancellationToken).ConfigureAwait(false);
     }
 }
