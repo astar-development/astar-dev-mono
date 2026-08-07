@@ -12,6 +12,7 @@
         <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NuspecFile>AStarDev.SourceGenerators.nuspec</NuspecFile>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
         <IncludeSymbols>false</IncludeSymbols>
         <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
@@ -47,9 +48,10 @@
         <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
-    <!-- Include build props to auto-reference the Attributes assembly -->
+    <!-- Include build props and targets to auto-reference the Attributes assembly -->
     <ItemGroup>
         <None Include="build\AStarDev.SourceGenerators.props" Pack="true" PackagePath="build" />
+        <None Include="build\AStarDev.SourceGenerators.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder.
