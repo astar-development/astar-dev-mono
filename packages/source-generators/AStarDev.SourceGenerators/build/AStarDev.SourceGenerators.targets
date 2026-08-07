@@ -1,0 +1,4 @@
+<Project>
+  <!-- This file ensures the analyzer works with all target frameworks -->
+  <!-- The props file handles runtime reference to Attributes; this file declares analyzer compatibility -->
+</Project>

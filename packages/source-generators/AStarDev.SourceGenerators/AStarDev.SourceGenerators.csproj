@@ -5,9 +5,9 @@
         <IsPackable>true</IsPackable>
         <Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
-
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
+        <PackageType>Analyzer</PackageType>
         <PackageId>AStarDev.SourceGenerators</PackageId>
         <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -51,9 +51,10 @@
         <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
-    <!-- Include build props to auto-reference the Attributes assembly -->
+    <!-- Include build props and targets to auto-reference the Attributes assembly -->
     <ItemGroup>
         <None Include="build\AStarDev.SourceGenerators.props" Pack="true" PackagePath="build" />
+        <None Include="build\AStarDev.SourceGenerators.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder.
