@@ -20,6 +20,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			v0.1.8 - Fix NuGet package structure: analyzer DLL and Attributes DLL were missing due to MSBuild target ordering.
 			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
 			v0.1.6 - Fix build and packaging issues.
 			v0.1.5 - Update dependencies to latest Roslyn versions.
@@ -53,7 +54,7 @@
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder.
          Added via a target so the paths resolve correctly after build output redirection. -->
-    <Target Name="AddPackContent" BeforeTargets="GenerateNuspec" DependsOnTargets="BuildAndCopyAttributes">
+    <Target Name="AddPackContent" BeforeTargets="_GetPackageFiles" DependsOnTargets="BuildAndCopyAttributes">
         <ItemGroup>
             <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
             <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
