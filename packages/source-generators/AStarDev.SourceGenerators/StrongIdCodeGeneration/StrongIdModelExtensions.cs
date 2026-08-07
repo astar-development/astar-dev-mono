@@ -20,13 +20,11 @@ public static partial class StrongIdModelExtensions
         {
             if (tc.Value is ITypeSymbol typeSymbol)
             {
-                // Prefer a fully-qualified display (remove the global:: if present)
                 string display = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", "");
                 return display;
             }
 
-            if (tc.Type is not null)
-                return tc.Type.ToDisplayString();
+            return "System.Guid";
         }
 
         return tc.Value is string s ? s : tc.Value?.ToString() ?? "System.Guid";
