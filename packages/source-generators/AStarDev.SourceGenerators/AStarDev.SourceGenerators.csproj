@@ -22,7 +22,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
-			v0.1.9 - Fix NuGet package framework compatibility: declare support for all target frameworks, not just .NETStandard2.0.
+			v0.1.10 - Fix NuGet package framework compatibility: empty dependency group for all-frameworks support.
+			v0.1.9 - Framework compatibility fix attempt (published with restrictions).
 			v0.1.8 - Fix NuGet package structure: analyzer DLL and Attributes DLL were missing due to MSBuild target ordering.
 			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
 			v0.1.6 - Fix build and packaging issues.

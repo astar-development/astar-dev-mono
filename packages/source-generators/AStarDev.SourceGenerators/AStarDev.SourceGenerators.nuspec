@@ -2,12 +2,17 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>AStarDev.SourceGenerators</id>
-    <version>0.1.9</version>
+    <version>0.1.10</version>
     <title>AStar Dev Source Generators</title>
     <authors>Jason Barden</authors>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/source-generators</projectUrl>
     <description>Source generators and supporting attribute types for AStar.Dev projects.</description>
+    <releaseNotes>v0.1.10 - Fix framework compatibility: empty dependency group for all-frameworks support.
+v0.1.9 - Framework compatibility fix attempt (published with restrictions).
+v0.1.8 - Fix NuGet package structure: include analyzer and Attributes DLLs.
+v0.1.7 - Fix AutoRegisterServiceAttribute detection.
+v0.1.6 - Fix build and packaging issues.</releaseNotes>
     <copyright>Copyright © 2026 AStar Development</copyright>
     <tags>source-generator strongid attributes astartools</tags>
     <packageTypes>
