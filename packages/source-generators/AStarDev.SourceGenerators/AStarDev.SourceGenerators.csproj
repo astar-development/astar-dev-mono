@@ -19,6 +19,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			v0.1.13 - Bundle AStarDev.SourceAnalyzers.dll (ASTAROPT002) into this package so consumers of AStarDev.SourceGenerators receive its diagnostics without a separate package reference.
+			v0.1.12 - Fix StrongIdGenerator emitting 'System.Type Id' instead of 'System.Guid Id' when [StrongId] is applied with no explicit type argument.
 			v0.1.11 - Actual fix: drop custom nuspec (NuspecFile mode skipped _GetPackageFiles, package had zero DLLs); move Attributes DLL out of lib/ so no TFM-scoped asset restricts compatibility.
 			v0.1.10 - Fix NuGet package framework compatibility: empty dependency group for all-frameworks support (did not work, nuspec mode broken).
 			v0.1.9 - Framework compatibility fix attempt (published with restrictions).
@@ -49,6 +51,17 @@
         <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
+    <!-- Build the SourceAnalyzers project separately and copy its DLL into the output
+            so consumers of AStarDev.SourceGenerators receive its diagnostics without a
+            separate package reference. -->
+    <Target Name="BuildAndCopySourceAnalyzers" AfterTargets="Build" BeforeTargets="Pack;GenerateNuspec">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStarDev.SourceAnalyzers\AStarDev.SourceAnalyzers.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+            <Output TaskParameter="TargetOutputs" ItemName="_SourceAnalyzersDll" />
+        </MSBuild>
+        <Message Importance="High" Text="Copying SourceAnalyzers DLL from '@(_SourceAnalyzersDll)' to '$(OutputPath)'" />
+        <Copy SourceFiles="@(_SourceAnalyzersDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    </Target>
+
     <!-- Include build props and targets to auto-reference the Attributes assembly -->
     <ItemGroup>
         <None Include="build\AStarDev.SourceGenerators.props" Pack="true" PackagePath="build" />
@@ -57,16 +70,18 @@
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder.
          Added via a target so the paths resolve correctly after build output redirection. -->
-    <Target Name="AddPackContent" BeforeTargets="_GetPackageFiles" DependsOnTargets="BuildAndCopyAttributes">
+    <Target Name="AddPackContent" BeforeTargets="_GetPackageFiles" DependsOnTargets="BuildAndCopyAttributes;BuildAndCopySourceAnalyzers">
         <ItemGroup>
             <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
             <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
             <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="attributes/netstandard2.0" />
+            <None Include="$(OutputPath)AStarDev.SourceAnalyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         </ItemGroup>
     </Target>
 
     <ItemGroup>
       <ProjectReference Include="..\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" PrivateAssets="all" />
+      <ProjectReference Include="..\AStarDev.SourceAnalyzers\AStarDev.SourceAnalyzers.csproj" PrivateAssets="all" />
     </ItemGroup>
 
 </Project>
