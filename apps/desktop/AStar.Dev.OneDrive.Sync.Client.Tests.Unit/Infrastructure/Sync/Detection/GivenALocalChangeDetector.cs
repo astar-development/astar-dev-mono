@@ -118,7 +118,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Remote.AccountId.Id.ShouldBe(AccountId);
+        jobs[0].Remote.AccountId.Value.ShouldBe(AccountId);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
 
-        jobs[0].Remote.FolderId.Id.ShouldBe("root");
+        jobs[0].Remote.FolderId.Value.ShouldBe("root");
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
 
-        jobs[0].Remote.FolderId.Id.ShouldBe("root");
+        jobs[0].Remote.FolderId.Value.ShouldBe("root");
     }
 
     [Fact]
@@ -297,7 +297,7 @@ public sealed class GivenALocalChangeDetector
 
         var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, lookup);
 
-        jobs[0].Remote.RemoteItemId.Id.ShouldBe(knownRemoteItemId);
+        jobs[0].Remote.RemoteItemId.Value.ShouldBe(knownRemoteItemId);
     }
 
     [Fact]

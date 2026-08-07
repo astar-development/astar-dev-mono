@@ -93,7 +93,7 @@ public sealed class GivenASyncedItemEntityFactory
 
         var entity = SyncedItemEntityFactory.CreateFromUploadJob(new AccountId("acc-1"), job, "uploaded-remote-id", "/file.txt", mockFileSystem);
 
-        entity.RemoteItemId.Id.ShouldBe("uploaded-remote-id");
+        entity.RemoteItemId.Value.ShouldBe("uploaded-remote-id");
     }
 
     [Fact]

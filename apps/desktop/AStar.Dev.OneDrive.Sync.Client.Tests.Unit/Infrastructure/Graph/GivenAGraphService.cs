@@ -304,9 +304,9 @@ public sealed class GivenAGraphService : IDisposable
             items.Add(item);
 
         items.Count.ShouldBe(3);
-        items.ShouldContain(i => i.Id.Id == "file-root");
-        items.ShouldContain(i => i.Id.Id == "subfolder-001" && i is FolderDeltaItem);
-        items.ShouldContain(i => i.Id.Id == "file-sub");
+        items.ShouldContain(i => i.Id.Value == "file-root");
+        items.ShouldContain(i => i.Id.Value == "subfolder-001" && i is FolderDeltaItem);
+        items.ShouldContain(i => i.Id.Value == "file-sub");
     }
 
     [Fact]
@@ -340,8 +340,8 @@ public sealed class GivenAGraphService : IDisposable
             items.Add(item);
 
         items.Count.ShouldBe(2);
-        items.ShouldContain(i => i.Id.Id == "subfolder-A");
-        items.ShouldContain(i => i.Id.Id == AnyFolderId);
+        items.ShouldContain(i => i.Id.Value == "subfolder-A");
+        items.ShouldContain(i => i.Id.Value == AnyFolderId);
     }
 
     [Fact]

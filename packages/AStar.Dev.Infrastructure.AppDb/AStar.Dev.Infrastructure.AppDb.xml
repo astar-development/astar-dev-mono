@@ -353,13 +353,13 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId">
             <summary>Strongly-typed identifier for a file classification category.</summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Int32"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.#ctor(System.Int32)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Int32"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryIdFactory">
@@ -497,13 +497,13 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId">
             <summary>Strongly-typed identifier for a Microsoft Graph drive-item folder.</summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.#ctor(System.String)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.PathNormaliser">
@@ -825,13 +825,13 @@
             A strongly-typed identifier for a OneDrive account within the sync client.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.#ctor(System.String)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.AccountProfile">
@@ -1243,13 +1243,13 @@
             A strongly-typed identifier for an <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.EventEntity"/>.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.#ctor(System.Guid)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle">
@@ -1274,13 +1274,13 @@
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity"/>.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileId.#ctor(System.Guid)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileName">
@@ -1317,13 +1317,13 @@
             A strongly-typed identifier for an <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ImageDetailEntity"/>.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.#ctor(System.Guid)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelId">
@@ -1331,13 +1331,13 @@
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity"/>.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.#ctor(System.Guid)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity">
@@ -1354,13 +1354,13 @@
             A strongly-typed identifier for a OneDrive item (file or folder) within the sync client. This allows for type safety and clearer code when working with OneDrive items in the synchronization process.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.#ctor(System.String)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.String"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.RuleType">
@@ -1857,13 +1857,13 @@
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity"/>.
             </summary>
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.TagId.#ctor(System.Guid)">
             <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Id">The underlying identifier value.</param>
+            <param name="Value">The underlying identifier value.</param>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.TagId.Id">
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.TagId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity">

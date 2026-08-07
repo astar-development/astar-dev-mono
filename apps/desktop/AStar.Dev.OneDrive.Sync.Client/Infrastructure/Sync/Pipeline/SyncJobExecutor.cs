@@ -60,7 +60,7 @@ public sealed class SyncJobExecutor(ISyncRepository syncRepository, ISyncPipelin
 
                 await onJobCompleted(args).ConfigureAwait(false);
             },
-            account.Id.Id,
+            account.Id.Value,
             string.Empty,
             settingsService.Current.ConcurrentWorkerCount,
             cancellationToken).ConfigureAwait(false);

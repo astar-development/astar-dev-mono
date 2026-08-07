@@ -50,12 +50,12 @@
 ```csharp
 catch (OperationCanceledException)
 {
-    RaiseProgress(account.Id.Id, 0, 0, "Sync cancelled", SyncState.Idle);
+    RaiseProgress(account.Id.Value, 0, 0, "Sync cancelled", SyncState.Idle);
 }
 catch (Exception ex)
 {
     Serilog.Log.Error(ex, "...");
-    RaiseProgress(account.Id.Id, 0, 0, ex.Message, SyncState.Error);
+    RaiseProgress(account.Id.Value, 0, 0, ex.Message, SyncState.Error);
 }
 ```
 

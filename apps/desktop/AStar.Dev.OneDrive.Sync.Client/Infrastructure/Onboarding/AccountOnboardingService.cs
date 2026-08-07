@@ -19,7 +19,7 @@ public sealed class AccountOnboardingService(IAccountRepository accountRepositor
         await accountRepository.UpsertAsync(ToEntity(account), cancellationToken).ConfigureAwait(false);
 
         foreach (var (folderId, folderName) in account.FolderNames)
-            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Id, cancellationToken).ConfigureAwait(false);
+            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Value, cancellationToken).ConfigureAwait(false);
 
         if (account.IsActive)
             await accountRepository.SetActiveAccountAsync(account.Id, cancellationToken).ConfigureAwait(false);

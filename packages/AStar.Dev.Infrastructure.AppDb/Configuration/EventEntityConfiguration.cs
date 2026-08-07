@@ -12,7 +12,7 @@ public sealed class EventEntityConfiguration : IEntityTypeConfiguration<EventEnt
     {
         _ = builder.ToTable("Event");
         _ = builder.HasKey(@event => @event.Id);
-        _ = builder.Property(@event => @event.Id).HasConversion(eventId => eventId.Id, guid => new FileEventId(guid));
+        _ = builder.Property(@event => @event.Id).HasConversion(eventId => eventId.Value, guid => new FileEventId(guid));
 
         _ = builder.Property(@event => @event.FileName).HasMaxLength(256);
         _ = builder.Property(@event => @event.DirectoryName).HasMaxLength(256);

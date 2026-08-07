@@ -42,6 +42,7 @@ public sealed record DeleteSyncJob(RemoteItemRef Remote, SyncFileTarget Target, 
 ```
 
 Key changes from current `SyncJob`:
+
 - `Direction` property removed — the type itself is the direction
 - `DownloadUrl` lifted from nullable on base to **required** on `DownloadSyncJob`
 - `UploadedRemoteItemId` lifted from nullable on base to optional on `UploadSyncJob` only
@@ -79,7 +80,7 @@ public static class SyncJobFactory
 Build each grouped record argument before the factory call:
 
 ```csharp
-var remote = RemoteItemRefFactory.Create(account.Id.Id, string.Empty, item.Id);
+var remote = RemoteItemRefFactory.Create(account.Id.Value, string.Empty, item.Id);
 var target = SyncFileTargetFactory.Create(localPath, item.RelativePath ?? item.Name);
 var metadata = SyncFileMetadataFactory.Create(item.Size, item.LastModified ?? DateTimeOffset.MinValue);
 
@@ -94,13 +95,13 @@ SyncJobFactory.CreateDelete(remote, target, metadata);
 
 **Recommendation: do not convert `SyncJobState` to a discriminated union.**
 
-| Criterion | SyncDirection | SyncJobState |
-|-----------|--------------|-------------|
-| Cases carry different data? | Yes — `DownloadUrl`, `UploadedRemoteItemId` | No — all states have identical data |
-| Drives polymorphic behaviour? | Yes — different code paths per direction | No — state is observed, not dispatched on |
-| EF Core query pressure? | Low (one index, mapping only) | High — `WHERE State = X` is the primary queue query |
-| State transitions? | N/A (immutable at creation) | Linear: Queued → InProgress → Completed/Failed/Skipped |
-| Gain from DU? | High — nullables eliminated, type-safe | None — adds record-reconstruction overhead on every state update |
+| Criterion                     | SyncDirection                               | SyncJobState                                                     |
+| ----------------------------- | ------------------------------------------- | ---------------------------------------------------------------- |
+| Cases carry different data?   | Yes — `DownloadUrl`, `UploadedRemoteItemId` | No — all states have identical data                              |
+| Drives polymorphic behaviour? | Yes — different code paths per direction    | No — state is observed, not dispatched on                        |
+| EF Core query pressure?       | Low (one index, mapping only)               | High — `WHERE State = X` is the primary queue query              |
+| State transitions?            | N/A (immutable at creation)                 | Linear: Queued → InProgress → Completed/Failed/Skipped           |
+| Gain from DU?                 | High — nullables eliminated, type-safe      | None — adds record-reconstruction overhead on every state update |
 
 `SyncJobState` is lifecycle data: the same job changes state over time. Encoding that as derived records would require replacing the entire `SyncJob` instance on each `UpdateJobStateAsync` call, propagating the new instance back through active pipeline stages. The enum keeps state updates cheap and EF Core queries simple.
 
@@ -110,25 +111,25 @@ SyncJobFactory.CreateDelete(remote, target, metadata);
 
 All production classes that consume `SyncJob`, `SyncDirection`, or `SyncJobState`.
 
-| File | Impact | Change Required |
-|------|--------|-----------------|
-| `Domain/SyncJob.cs` | **High** | Complete replacement — abstract base + 3 sealed records (grouped-record params already in place) |
-| `Domain/SyncJobFactory.cs` | **High** | Redesign — `Create` → `CreateDownload` / `CreateUpload` / `CreateDelete`; each takes grouped records, calls `SyncJobStatusFactory.Create()` internally |
-| `Infrastructure/Sync/DownloadWorker.cs` | **High** | `switch (job.Direction)` → `switch (job) { case DownloadSyncJob d: ... }`; access `d.DownloadUrl` directly (no null-check needed) |
-| `Data/Repositories/SyncRepository.cs` | **High** | Entity mapping must derive direction from job type; extract `DownloadUrl` / `UploadedRemoteItemId` by type |
-| `Infrastructure/Sync/SyncJobExecutor.cs` | **Medium** | Direction equality check → `is DownloadSyncJob` / `is UploadSyncJob` |
-| `Activity/ActivityItemViewModel.cs` | **Medium** | Direction switch expression → type switch |
-| `Infrastructure/Sync/RemoteFolderEnumerator.cs` | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, ...)` → `SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl)` |
-| `Infrastructure/Sync/LocalChangeDetector.cs` | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status)` → `SyncJobFactory.CreateUpload(remote, target, metadata)` |
-| `Data/Entities/SyncJobEntity.cs` | **Medium** | `Direction` property still needed for persistence; source now derived via mapping, not copied directly |
-| `Infrastructure/Sync/ParallelDownloadPipeline.cs` | **Medium** | `job.Complete()` / `job.Fail(error)` already correct (via `SyncJobExtensions`); verify `with` on upcast `SyncJob` ref preserves concrete type |
-| `Infrastructure/Sync/RemoteEnumerationResult.cs` | **Low** | Holds `IReadOnlyList<SyncJob>` — base type unchanged |
-| `Infrastructure/Sync/ILocalChangeDetector.cs` | **Low** | Returns `IReadOnlyList<SyncJob>` — unchanged |
-| `Infrastructure/Sync/ISyncJobExecutor.cs` | **Low** | Accepts `IReadOnlyList<SyncJob>` — unchanged |
-| `Infrastructure/Sync/IParallelDownloadPipeline.cs` | **Low** | Accepts `IEnumerable<SyncJob>` — unchanged |
-| `Infrastructure/Sync/JobCompletedEventArgs.cs` | **Low** | Holds `SyncJob Job` — unchanged |
-| `Data/ModelBuilderExtensions.cs` | **Low** | Enum-to-int conversion for `SyncDirection` moves to mapping helper; `SyncJobState` unchanged |
-| `Data/Entities/SyncedItemEntityFactory.cs` | **Low** | `CreateFromDownloadJob` / `CreateFromUploadJob` already named by direction; parameter types may narrow to `DownloadSyncJob` / `UploadSyncJob` |
+| File                                               | Impact     | Change Required                                                                                                                                                 |
+| -------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Domain/SyncJob.cs`                                | **High**   | Complete replacement — abstract base + 3 sealed records (grouped-record params already in place)                                                                |
+| `Domain/SyncJobFactory.cs`                         | **High**   | Redesign — `Create` → `CreateDownload` / `CreateUpload` / `CreateDelete`; each takes grouped records, calls `SyncJobStatusFactory.Create()` internally          |
+| `Infrastructure/Sync/DownloadWorker.cs`            | **High**   | `switch (job.Direction)` → `switch (job) { case DownloadSyncJob d: ... }`; access `d.DownloadUrl` directly (no null-check needed)                               |
+| `Data/Repositories/SyncRepository.cs`              | **High**   | Entity mapping must derive direction from job type; extract `DownloadUrl` / `UploadedRemoteItemId` by type                                                      |
+| `Infrastructure/Sync/SyncJobExecutor.cs`           | **Medium** | Direction equality check → `is DownloadSyncJob` / `is UploadSyncJob`                                                                                            |
+| `Activity/ActivityItemViewModel.cs`                | **Medium** | Direction switch expression → type switch                                                                                                                       |
+| `Infrastructure/Sync/RemoteFolderEnumerator.cs`    | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Download, status, ...)` → `SyncJobFactory.CreateDownload(remote, target, metadata, downloadUrl)` |
+| `Infrastructure/Sync/LocalChangeDetector.cs`       | **Medium** | `SyncJobFactory.Create(remote, target, metadata, SyncDirection.Upload, status)` → `SyncJobFactory.CreateUpload(remote, target, metadata)`                       |
+| `Data/Entities/SyncJobEntity.cs`                   | **Medium** | `Direction` property still needed for persistence; source now derived via mapping, not copied directly                                                          |
+| `Infrastructure/Sync/ParallelDownloadPipeline.cs`  | **Medium** | `job.Complete()` / `job.Fail(error)` already correct (via `SyncJobExtensions`); verify `with` on upcast `SyncJob` ref preserves concrete type                   |
+| `Infrastructure/Sync/RemoteEnumerationResult.cs`   | **Low**    | Holds `IReadOnlyList<SyncJob>` — base type unchanged                                                                                                            |
+| `Infrastructure/Sync/ILocalChangeDetector.cs`      | **Low**    | Returns `IReadOnlyList<SyncJob>` — unchanged                                                                                                                    |
+| `Infrastructure/Sync/ISyncJobExecutor.cs`          | **Low**    | Accepts `IReadOnlyList<SyncJob>` — unchanged                                                                                                                    |
+| `Infrastructure/Sync/IParallelDownloadPipeline.cs` | **Low**    | Accepts `IEnumerable<SyncJob>` — unchanged                                                                                                                      |
+| `Infrastructure/Sync/JobCompletedEventArgs.cs`     | **Low**    | Holds `SyncJob Job` — unchanged                                                                                                                                 |
+| `Data/ModelBuilderExtensions.cs`                   | **Low**    | Enum-to-int conversion for `SyncDirection` moves to mapping helper; `SyncJobState` unchanged                                                                    |
+| `Data/Entities/SyncedItemEntityFactory.cs`         | **Low**    | `CreateFromDownloadJob` / `CreateFromUploadJob` already named by direction; parameter types may narrow to `DownloadSyncJob` / `UploadSyncJob`                   |
 
 ---
 
@@ -175,6 +176,7 @@ success ? job.Complete() : job.Fail(error)
 ### Pattern Matching Replacement
 
 Before:
+
 ```csharp
 switch (job.Direction)
 {
@@ -185,6 +187,7 @@ switch (job.Direction)
 ```
 
 After:
+
 ```csharp
 switch (job)
 {
@@ -200,13 +203,13 @@ The compiler enforces exhaustiveness when `SyncJob` is abstract and all derived 
 
 All property accesses on `SyncJob` use the grouped-record paths established by the data clump refactor:
 
-| Property | Access |
-|----------|--------|
-| Remote identity | `job.Remote.AccountId`, `job.Remote.FolderId`, `job.Remote.RemoteItemId` |
-| Local paths | `job.Target.LocalPath`, `job.Target.RelativePath` |
-| File attributes | `job.Metadata.FileSize`, `job.Metadata.RemoteModified` |
-| Job lifecycle | `job.Status.Id`, `job.Status.State`, `job.Status.QueuedAt`, `job.Status.CompletedAt`, `job.Status.ErrorMessage` |
-| Direction-specific | `d.DownloadUrl` (on `DownloadSyncJob`), `u.UploadedRemoteItemId` (on `UploadSyncJob`) |
+| Property           | Access                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Remote identity    | `job.Remote.AccountId`, `job.Remote.FolderId`, `job.Remote.RemoteItemId`                                        |
+| Local paths        | `job.Target.LocalPath`, `job.Target.RelativePath`                                                               |
+| File attributes    | `job.Metadata.FileSize`, `job.Metadata.RemoteModified`                                                          |
+| Job lifecycle      | `job.Status.Id`, `job.Status.State`, `job.Status.QueuedAt`, `job.Status.CompletedAt`, `job.Status.ErrorMessage` |
+| Direction-specific | `d.DownloadUrl` (on `DownloadSyncJob`), `u.UploadedRemoteItemId` (on `UploadSyncJob`)                           |
 
 ---
 

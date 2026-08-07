@@ -19,7 +19,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         _ = fileSystem.Directory.CreateDirectory(localPath);
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         _ = await syncedItemRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
-        syncedItems[item.Id.Id] = entity;
+        syncedItems[item.Id.Value] = entity;
     }
 
     /// <inheritdoc />
@@ -28,7 +28,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
         OneDriveSyncClientMessages.SyncedItemLocalExists(logger, localPath);
         var phantomItem = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
         await RegisterFileAsync(phantomItem, localPath, remotePath, mappings, cancellationToken).ConfigureAwait(false);
-        syncedItems[item.Id.Id] = phantomItem;
+        syncedItems[item.Id.Value] = phantomItem;
     }
 
     /// <inheritdoc />
@@ -36,7 +36,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
     {
         var entity = SyncedItemEntityFactory.CreateFromDownloadJob(accountId, job, remotePath);
         await RegisterFileAsync(entity, job.Target.LocalPath, remotePath, mappings, cancellationToken).ConfigureAwait(false);
-        syncedItems[job.Remote.RemoteItemId.Id] = entity;
+        syncedItems[job.Remote.RemoteItemId.Value] = entity;
     }
 
     /// <inheritdoc />

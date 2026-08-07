@@ -50,7 +50,7 @@ public sealed class GivenAFilesViewModel
         var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
 
-        authService.AcquireTokenSilentAsync(account.Id.Id, Arg.Any<CancellationToken>()).Returns(AuthResultFactory.Success(AccessToken, account.Id.Id, account.Profile));
+        authService.AcquireTokenSilentAsync(account.Id.Value, Arg.Any<CancellationToken>()).Returns(AuthResultFactory.Success(AccessToken, account.Id.Value, account.Profile));
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<DriveId, string>(new DriveId(DriveIdValue)));
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
 

@@ -22,7 +22,7 @@ public static class SyncedItemEntityFactory
         {
             AccountId = accountId,
             RemoteItemId = item.Id,
-            RemoteParentId = item.ParentId.Match(id => id.Id, () => string.Empty),
+            RemoteParentId = item.ParentId.Match(id => id.Value, () => string.Empty),
             RemotePath = remotePath,
             LocalPath = localPath,
             IsFolder = false,
@@ -44,7 +44,7 @@ public static class SyncedItemEntityFactory
         {
             AccountId = accountId,
             RemoteItemId = item.Id,
-            RemoteParentId = item.ParentId.Match(id => id.Id, () => string.Empty),
+            RemoteParentId = item.ParentId.Match(id => id.Value, () => string.Empty),
             RemotePath = remotePath,
             LocalPath = localPath,
             IsFolder = true,

@@ -12,7 +12,7 @@ public sealed class DeletionStatusEntityConfiguration : IEntityTypeConfiguration
     {
         _ = builder.ToTable("DeletionStatus");
         _ = builder.HasKey(status => status.Id);
-        _ = builder.Property(status => status.FileDetailId).HasConversion(fileId => fileId.Id, guid => new FileId(guid));
+        _ = builder.Property(status => status.FileDetailId).HasConversion(fileId => fileId.Value, guid => new FileId(guid));
 
         _ = builder.HasOne(status => status.FileDetail)
             .WithOne(file => file.DeletionStatus)

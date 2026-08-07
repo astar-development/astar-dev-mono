@@ -29,7 +29,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
 
             try
             {
-                var deleteResult = await graphService.DeleteItemAsync(accountId.Id, tokenFactory, remoteId, cancellationToken).ConfigureAwait(false);
+                var deleteResult = await graphService.DeleteItemAsync(accountId.Value, tokenFactory, remoteId, cancellationToken).ConfigureAwait(false);
 
                 deleteResult.Match(
                     _ =>

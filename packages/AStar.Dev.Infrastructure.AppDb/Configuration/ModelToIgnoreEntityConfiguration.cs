@@ -12,7 +12,7 @@ public sealed class ModelToIgnoreEntityConfiguration : IEntityTypeConfiguration<
     {
         _ = builder.ToTable("ModelToIgnore");
         _ = builder.HasKey(model => model.Id);
-        _ = builder.Property(model => model.Id).HasConversion(modelId => modelId.Id, guid => new ModelId(guid));
+        _ = builder.Property(model => model.Id).HasConversion(modelId => modelId.Value, guid => new ModelId(guid));
         _ = builder.Property(model => model.Value).HasMaxLength(300).UseCollation("NOCASE").IsRequired();
     }
 }

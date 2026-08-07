@@ -14,9 +14,9 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
     {
         _ = builder.HasKey(e => e.Id);
         _ = builder.Property(e => e.AccountId)
-                   .HasConversion(id => id.Id, str => new AccountId(str));
+                   .HasConversion(id => id.Value, str => new AccountId(str));
         _ = builder.Property(e => e.RemoteItemId)
-                   .HasConversion(id => id.Id, str => new OneDriveItemId(str));
+                   .HasConversion(id => id.Value, str => new OneDriveItemId(str));
         _ = builder.HasIndex(e => new { e.AccountId, e.RemoteItemId }).IsUnique();
         _ = builder.HasIndex(e => new { e.AccountId, e.LocalPath });
         _ = builder.HasIndex(e => new { e.AccountId, e.SizeInBytes });
@@ -33,7 +33,7 @@ public class SyncedItemEntityConfiguration : IEntityTypeConfiguration<SyncedItem
                    .WithMany()
                    .HasForeignKey(e => e.AccountId)
                    .OnDelete(DeleteBehavior.Cascade);
-        _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId!.Value.Id, guid => new FileId(guid));
+        _ = builder.Property(e => e.FileDetailId).HasConversion(fileId => fileId!.Value.Value, guid => new FileId(guid));
         _ = builder.HasOne(e => e.FileDetail)
                    .WithMany()
                    .HasForeignKey(e => e.FileDetailId)

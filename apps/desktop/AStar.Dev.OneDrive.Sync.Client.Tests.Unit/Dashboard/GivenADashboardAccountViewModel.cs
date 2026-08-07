@@ -243,7 +243,7 @@ public sealed class GivenADashboardAccountViewModel
 
         await ((IAsyncRelayCommand)sut.SyncNowCommand).ExecuteAsync(null);
 
-        await scheduler.Received(1).TriggerAccountAsync(Arg.Is<OneDriveAccount>(a => a.Id.Id == "test-account"), Arg.Any<CancellationToken>());
+        await scheduler.Received(1).TriggerAccountAsync(Arg.Is<OneDriveAccount>(a => a.Id.Value == "test-account"), Arg.Any<CancellationToken>());
     }
 
     [Fact]

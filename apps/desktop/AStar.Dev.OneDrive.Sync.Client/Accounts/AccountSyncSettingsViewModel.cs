@@ -35,7 +35,7 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
     }
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>
-    public string AccountId => account.Id.Id;
+    public string AccountId => account.Id.Value;
     public string Email => account.Profile.Email;
     public string DisplayName => account.Profile.DisplayName;
     public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);

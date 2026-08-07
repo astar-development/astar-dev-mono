@@ -57,7 +57,7 @@ public sealed class GivenADownloadJobBuilder
 
         await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Id == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterFolderAsync(Arg.Any<AccountId>(), Arg.Is<FolderDeltaItem>(i => i.Id.Value == "subfolder-1"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public sealed class GivenADownloadJobBuilder
 
         result.ShouldNotBeNull();
         result.ShouldBeOfType<DownloadSyncJob>();
-        result.Remote.RemoteItemId.Id.ShouldBe("item-a");
+        result.Remote.RemoteItemId.Value.ShouldBe("item-a");
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public sealed class GivenADownloadJobBuilder
         }, [], TestContext.Current.CancellationToken);
 
         conflictsDetected.ShouldHaveSingleItem();
-        conflictsDetected[0].Remote.RemoteItemId.Id.ShouldBe("item-a");
+        conflictsDetected[0].Remote.RemoteItemId.Value.ShouldBe("item-a");
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public sealed class GivenADownloadJobBuilder
 
         await sut.BuildOneAsync(CreateAccount(), CreateSyncConfig(), item, rules, new ConcurrentDictionary<string, SyncedItemEntity>(), _ => Task.CompletedTask, [], TestContext.Current.CancellationToken);
 
-        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Id == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>());
+        await _syncedItemRegistrar.Received(1).RegisterPhantomAsync(Arg.Any<AccountId>(), Arg.Is<FileDeltaItem>(i => i.Id.Value == "item-phantom"), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

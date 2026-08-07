@@ -28,8 +28,8 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
 
         var mappings = await classificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
-        OneDriveSyncClientMessages.SyncPipelinePreparing(logger, account.Id.Id);
-        RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.Preparing"), onProgress);
+        OneDriveSyncClientMessages.SyncPipelinePreparing(logger, account.Id.Value);
+        RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.Preparing"), onProgress);
 
         int progressReportInterval = syncSettings.Value.ProgressReportInterval;
         int workerCount = settingsService.Current.ConcurrentWorkerCount;
@@ -38,10 +38,10 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         Action<int>? enumerationProgress = onProgress is null ? null : count =>
         {
             if (count == 1 || count % progressReportInterval == 0)
-                RaiseProgress(account.Id.Id, count, 0, localizationService.GetLocal("Sync.Enumerating", count), onProgress);
+                RaiseProgress(account.Id.Value, count, 0, localizationService.GetLocal("Sync.Enumerating", count), onProgress);
         };
 
-        Action<string>? stageChanged = onProgress is null ? null : stage => RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal(stage), onProgress);
+        Action<string>? stageChanged = onProgress is null ? null : stage => RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal(stage), onProgress);
 
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -70,7 +70,7 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
             return SyncPassResultFactory.Create(didRun: false, failedJobCount: 0);
 
         if (!hasJobs)
-            onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Id, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
+            onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Value, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
 
         await accountRepository.GetByIdAsync(account.Id, cancellationToken)
             .TapAsync(async entity =>
@@ -106,14 +106,14 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
             if (context.HadNoRules)
                 return;
 
-            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
+            RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
             await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
 
-            RaiseProgress(account.Id.Id, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
+            RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
             await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
 
             var syncedItemsByLocalPath = context.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
-            var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Id, syncConfig.LocalSyncPath.Value, context.Rules, syncedItemsByLocalPath);
+            var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Value, syncConfig.LocalSyncPath.Value, context.Rules, syncedItemsByLocalPath);
 
             foreach (var job in uploadJobs)
             {

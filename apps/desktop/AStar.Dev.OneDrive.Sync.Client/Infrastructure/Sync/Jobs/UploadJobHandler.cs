@@ -16,7 +16,7 @@ public sealed class UploadJobHandler(IGraphService graphService, ILogger<UploadJ
     public async Task<Result<SyncJob, string>> HandleAsync(SyncJob job, string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken)
     {
         var uploadJob = (UploadSyncJob)job;
-        var uploadResult = await graphService.UploadFileAsync(accountId, tokenFactory, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Id, cancellationToken).ConfigureAwait(false);
+        var uploadResult = await graphService.UploadFileAsync(accountId, tokenFactory, uploadJob.Target.LocalPath, uploadJob.Target.RelativePath, parentFolderId: uploadJob.Remote.FolderId.Value, cancellationToken).ConfigureAwait(false);
 
         return uploadResult.Match(
             itemId =>

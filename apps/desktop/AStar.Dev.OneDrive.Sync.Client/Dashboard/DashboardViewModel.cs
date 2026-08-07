@@ -81,7 +81,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     public void AddAccount(OneDriveAccount account)
     {
-        if (AccountSections.Any(s => s.AccountId == account.Id.Id))
+        if (AccountSections.Any(s => s.AccountId == account.Id.Value))
             return;
 
         var section = dashboardAccountViewModelFactory.Create(account);
@@ -172,8 +172,8 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs args)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.Remote.AccountId.Id);
-        string accountEmail = section?.Email ?? args.Job.Remote.AccountId.Id;
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == args.Job.Remote.AccountId.Value);
+        string accountEmail = section?.Email ?? args.Job.Remote.AccountId.Value;
         var item = activityItemViewModelFactory.CreateFromJob(args.Job, accountEmail);
         AddActivityItem(item);
     }
@@ -182,7 +182,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     private void OnConflictDetected(object? sender, SyncConflict conflict)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Value);
         if (section is null)
             return;
 
@@ -193,7 +193,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     private void OnConflictResolved(object? sender, SyncConflict conflict)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Id);
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == conflict.Remote.AccountId.Value);
         if (section is null)
             return;
 

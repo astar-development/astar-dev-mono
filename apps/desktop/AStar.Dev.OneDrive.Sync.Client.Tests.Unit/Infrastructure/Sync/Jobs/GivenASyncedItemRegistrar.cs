@@ -89,7 +89,7 @@ public sealed class GivenASyncedItemRegistrar
 
         await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.IsFolder && e.RemoteItemId.Id == "folder-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.IsFolder && e.RemoteItemId.Value == "folder-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public sealed class GivenASyncedItemRegistrar
 
         await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/Documents/phantom.txt", "/sync-root/Documents/phantom.txt", syncedItems, [], TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-phantom"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Value == "item-phantom"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -290,7 +290,7 @@ public sealed class GivenASyncedItemRegistrar
 
         await sut.RegisterDownloadAsync(new AccountId("user-1"), job, DownloadRemotePath, [], syncedItems, TestContext.Current.CancellationToken);
 
-        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "item-dl-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Value == "item-dl-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -386,7 +386,7 @@ public sealed class GivenASyncedItemRegistrar
         await sut.RegisterUploadAsync(new AccountId("user-1"), job, "uploaded-remote-id", UploadRemotePath, [], syncedItems, TestContext.Current.CancellationToken);
 
         await _syncedItemRepository.Received(1).UpsertAsync(
-            Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Id == "uploaded-remote-id"),
+            Arg.Is<SyncedItemEntity>(e => e.RemoteItemId.Value == "uploaded-remote-id"),
             Arg.Any<CancellationToken>());
     }
 

@@ -38,7 +38,7 @@ public sealed class DownloadJobBuilder(ISyncedItemRegistrar syncedItemRegistrar,
     private async Task<SyncJob?> ProcessFileItemAsync(OneDriveAccount account, AccountSyncConfig syncConfig, FileDeltaItem item, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, Func<SyncConflict, Task> onConflict, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         string localPath = BuildLocalPath(syncConfig.LocalSyncPath.Value, item.Path.EffectivePath.TrimStart('/'));
-        syncedItems.TryGetValue(item.Id.Id, out var knownItem);
+        syncedItems.TryGetValue(item.Id.Value, out var knownItem);
 
         if (knownItem?.Tags.ETag is Option<string>.Some && knownItem.Tags.ETag == item.VersionInfo.ETag && fileSystem.File.Exists(localPath))
         {

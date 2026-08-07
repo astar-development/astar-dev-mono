@@ -58,7 +58,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                     Level = category.Level,
                     IsFamous = category.IsFamous,
                     IsInternet = category.IsInternet,
-                    ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null),
+                    ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Value, null),
                     IncludeInSearch = category.IncludeInSearch
                 };
 
@@ -72,7 +72,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> UpdateCategoryAsync(FileClassificationCategoryId id, FileClassificationCategory category, CancellationToken cancellationToken = default)
     {
-        int rawId = id.Id;
+        int rawId = id.Value;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
@@ -83,7 +83,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         entity.Level = category.Level;
         entity.IsFamous = category.IsFamous;
         entity.IsInternet = category.IsInternet;
-        entity.ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Id, null);
+        entity.ParentId = category.ParentId.MapOrDefault(pid => (int?)pid.Value, null);
         entity.IncludeInSearch = category.IncludeInSearch;
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -94,7 +94,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     /// <inheritdoc />
     public async Task<Result<FileClassificationCategoryId, string>> ReparentCategoryAsync(FileClassificationCategoryId id, Option<FileClassificationCategoryId> newParentId, CancellationToken cancellationToken = default)
     {
-        int rawId = id.Id;
+        int rawId = id.Value;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
@@ -106,7 +106,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         int newLevel = 1;
         if (newParentId is Option<FileClassificationCategoryId>.Some someParent)
         {
-            int newParentRawId = someParent.Value.Id;
+            int newParentRawId = someParent.Value.Value;
             if (newParentRawId == rawId || descendantIds.Contains(newParentRawId))
                 return new Fail<FileClassificationCategoryId, string>("Cannot reparent a category under itself or one of its own descendants.");
 
@@ -118,7 +118,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         }
 
         int levelDelta = newLevel - entity.Level;
-        entity.ParentId = newParentId.MapOrDefault(parentId => (int?)parentId.Id, null);
+        entity.ParentId = newParentId.MapOrDefault(parentId => (int?)parentId.Value, null);
         entity.Level = newLevel;
 
         if (levelDelta != 0 && descendantIds.Count > 0)
@@ -158,7 +158,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     /// <inheritdoc />
     public async Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default)
     {
-        int rawId = id.Id;
+        int rawId = id.Value;
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
         var subCategory = await db.FileClassificationCategories.FirstOrDefaultAsync(c => c.ParentId == rawId, cancellationToken).ConfigureAwait(false);
@@ -198,7 +198,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        int[] categoryIds = [.. fileClassificationCategoryIds.Select(id => id.Id)];
+        int[] categoryIds = [.. fileClassificationCategoryIds.Select(id => id.Value)];
         db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories.Where(c => categoryIds.Contains(c.Id)));
         //_ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false); // need to rethink this
     }

@@ -27,7 +27,7 @@ namespace TestNamespace
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.Int32 Id)");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Int32 Value)");
     }
 
     [Fact]
@@ -50,7 +50,7 @@ namespace TestNamespace
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.String Id)");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.String Value)");
     }
 
     [Fact]
@@ -73,7 +73,7 @@ namespace TestNamespace
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id)");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Value)");
     }
 
     [Fact]
@@ -96,7 +96,7 @@ namespace TestNamespace
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Id);");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Value);");
     }
 
     [Fact]

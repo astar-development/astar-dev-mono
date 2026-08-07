@@ -311,9 +311,9 @@ public sealed class GivenASyncRepository
         var user2Jobs = await repository.GetPendingJobsAsync(new AccountId("user-2"), TestContext.Current.CancellationToken);
 
         user1Jobs.Count.ShouldBe(1);
-        user1Jobs[0].AccountId.Id.ShouldBe("user-1");
+        user1Jobs[0].AccountId.Value.ShouldBe("user-1");
         user2Jobs.Count.ShouldBe(1);
-        user2Jobs[0].AccountId.Id.ShouldBe("user-2");
+        user2Jobs[0].AccountId.Value.ShouldBe("user-2");
     }
 
     [Fact]

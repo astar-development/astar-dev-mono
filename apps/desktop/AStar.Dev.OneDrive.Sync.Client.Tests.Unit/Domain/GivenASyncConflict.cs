@@ -69,9 +69,9 @@ public sealed class GivenASyncConflict
         };
 
         conflict.Id.ShouldBe(id);
-        conflict.Remote.AccountId.Id.ShouldBe("account-123");
-        conflict.Remote.FolderId.Id.ShouldBe("folder-456");
-        conflict.Remote.RemoteItemId.Id.ShouldBe("item-789");
+        conflict.Remote.AccountId.Value.ShouldBe("account-123");
+        conflict.Remote.FolderId.Value.ShouldBe("folder-456");
+        conflict.Remote.RemoteItemId.Value.ShouldBe("item-789");
         conflict.Target.RelativePath.ShouldBe(relativePath);
         conflict.Target.LocalPath.ShouldBe(localPath);
         conflict.Snapshot.LocalSize.ShouldBe(1024);

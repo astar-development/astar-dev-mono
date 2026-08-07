@@ -69,7 +69,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public static ActivityItemViewModel FromJob(SyncJob job, ILocalizationService loc, string accountEmail, string folderName = "") => new(loc)
     {
-        AccountId = job.Remote.AccountId.Id,
+        AccountId = job.Remote.AccountId.Value,
         AccountEmail = accountEmail,
         FolderName = folderName,
         FileName = Path.GetFileName(job.Target.RelativePath),
@@ -88,7 +88,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public static ActivityItemViewModel FromConflict(SyncConflict conflict, ILocalizationService loc, string accountEmail, string folderName) => new(loc)
     {
-        AccountId = conflict.Remote.AccountId.Id,
+        AccountId = conflict.Remote.AccountId.Value,
         AccountEmail = accountEmail,
         FolderName = folderName,
         FileName = Path.GetFileName(conflict.Target.RelativePath),

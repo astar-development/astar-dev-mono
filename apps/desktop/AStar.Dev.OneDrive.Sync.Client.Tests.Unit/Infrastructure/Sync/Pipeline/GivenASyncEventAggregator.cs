@@ -44,7 +44,7 @@ public sealed class GivenASyncEventAggregator
         _syncService.JobCompleted += Raise.EventWith(eventArgs);
 
         captured.ShouldNotBeNull();
-        captured.Job.Remote.AccountId.Id.ShouldBe("acc-2");
+        captured.Job.Remote.AccountId.Value.ShouldBe("acc-2");
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed class GivenASyncEventAggregator
         _syncService.ConflictDetected += Raise.Event<EventHandler<SyncConflict>>(this, conflict);
 
         captured.ShouldNotBeNull();
-        captured.Remote.AccountId.Id.ShouldBe("acc-3");
+        captured.Remote.AccountId.Value.ShouldBe("acc-3");
     }
 
     [Fact]
@@ -85,6 +85,6 @@ public sealed class GivenASyncEventAggregator
         _syncService.ConflictResolved += Raise.Event<EventHandler<SyncConflict>>(this, conflict);
 
         captured.ShouldNotBeNull();
-        captured.Remote.AccountId.Id.ShouldBe("acc-5");
+        captured.Remote.AccountId.Value.ShouldBe("acc-5");
     }
 }

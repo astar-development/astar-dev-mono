@@ -41,7 +41,7 @@ public sealed partial class FilesViewModel(IAccountFilesViewModelFactory account
 
     public void AddAccount(OneDriveAccount account)
     {
-        if (Tabs.Any(t => t.AccountId == account.Id.Id))
+        if (Tabs.Any(t => t.AccountId == account.Id.Value))
             return;
 
         var tab = accountFilesViewModelFactory.Create(account);

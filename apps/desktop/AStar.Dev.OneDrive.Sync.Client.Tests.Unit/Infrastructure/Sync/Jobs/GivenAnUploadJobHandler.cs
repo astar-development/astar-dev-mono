@@ -72,7 +72,7 @@ public sealed class GivenAnUploadJobHandler
         var job = MakeUploadJob();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Value, Arg.Any<CancellationToken>())
             .Returns(new Ok<string, string>("remote-item-id"));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
@@ -86,12 +86,12 @@ public sealed class GivenAnUploadJobHandler
         var job = MakeUploadJob();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Value, Arg.Any<CancellationToken>())
             .Returns(new Ok<string, string>("remote-item-id"));
 
         await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);
 
-        await _graphService.Received(1).UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>());
+        await _graphService.Received(1).UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Value, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class GivenAnUploadJobHandler
         var job = MakeUploadJob();
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(AccessToken);
 
-        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Id, Arg.Any<CancellationToken>())
+        _graphService.UploadFileAsync(AccountId, Arg.Any<Func<CancellationToken, Task<string>>>(), job.Target.LocalPath, Arg.Any<string>(), job.Remote.FolderId.Value, Arg.Any<CancellationToken>())
             .Returns(new Fail<string, string>(uploadError));
 
         var result = await CreateSut().HandleAsync(job, AccountId, tokenFactory, TestContext.Current.CancellationToken);

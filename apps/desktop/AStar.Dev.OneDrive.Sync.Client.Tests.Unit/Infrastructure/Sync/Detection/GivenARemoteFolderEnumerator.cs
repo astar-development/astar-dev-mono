@@ -170,8 +170,8 @@ public sealed class GivenARemoteFolderEnumerator
             items.Add(item);
 
         items.Count.ShouldBe(2);
-        items.ShouldContain(i => i.Id.Id == "item-a");
-        items.ShouldContain(i => i.Id.Id == "item-b");
+        items.ShouldContain(i => i.Id.Value == "item-a");
+        items.ShouldContain(i => i.Id.Value == "item-b");
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public sealed class GivenARemoteFolderEnumerator
             items.Add(item);
 
         items.ShouldHaveSingleItem();
-        items[0].Id.Id.ShouldBe("item-a");
+        items[0].Id.Value.ShouldBe("item-a");
     }
 
     [Fact]

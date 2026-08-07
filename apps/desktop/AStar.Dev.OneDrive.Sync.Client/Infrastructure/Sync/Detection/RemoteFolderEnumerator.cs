@@ -22,7 +22,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
 
         if (rules.Count == 0)
         {
-            OneDriveSyncClientMessages.RemoteFolderEnumeratorNoRules(logger, account.Id.Id);
+            OneDriveSyncClientMessages.RemoteFolderEnumeratorNoRules(logger, account.Id.Value);
             context.HadNoRules = true;
             yield break;
         }
@@ -31,9 +31,9 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, cancellationToken).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
 
         onStageChanged?.Invoke("Sync.ConnectingToDrive");
-        OneDriveSyncClientMessages.RemoteFolderEnumeratorConnectingToDrive(logger, account.Id.Id);
+        OneDriveSyncClientMessages.RemoteFolderEnumeratorConnectingToDrive(logger, account.Id.Value);
 
-        var driveId = await graphService.GetDriveIdAsync(account.Id.Id, tokenFactory, cancellationToken)
+        var driveId = await graphService.GetDriveIdAsync(account.Id.Value, tokenFactory, cancellationToken)
             .MatchAsync<DriveId, string, DriveId?>(
                 driveIdValue => driveIdValue,
                 error =>
@@ -66,7 +66,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 continue;
             }
 
-            OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Id);
+            OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Value);
             var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, cancellationToken).GetAsyncEnumerator(cancellationToken);
             int itemCount = 0;
 
@@ -89,7 +89,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                         break;
 
                     itemCount++;
-                    context.SeenRemoteIds.Add(folderEnumerator.Current.Id.Id);
+                    context.SeenRemoteIds.Add(folderEnumerator.Current.Id.Value);
                     yield return folderEnumerator.Current;
                 }
             }
@@ -118,5 +118,5 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     }
 
     private static string? TryResolveFromSyncedItems(ConcurrentDictionary<string, SyncedItemEntity> syncedItems, string remotePath)
-        => syncedItems.Values.FirstOrDefault(i => i.IsFolder && string.Equals(i.RemotePath, remotePath, StringComparison.OrdinalIgnoreCase))?.RemoteItemId.Id;
+        => syncedItems.Values.FirstOrDefault(i => i.IsFolder && string.Equals(i.RemotePath, remotePath, StringComparison.OrdinalIgnoreCase))?.RemoteItemId.Value;
 }
