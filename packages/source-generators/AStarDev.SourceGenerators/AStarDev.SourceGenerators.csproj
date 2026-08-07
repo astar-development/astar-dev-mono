@@ -9,12 +9,9 @@
         <IsRoslynComponent>true</IsRoslynComponent>
         <PackageType>Analyzer</PackageType>
         <PackageId>AStarDev.SourceGenerators</PackageId>
-        <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <NuspecFile>AStarDev.SourceGenerators.nuspec</NuspecFile>
-        <PackageType>Analyzer</PackageType>
-        <NoWarn>$(NoWarn);NU5128</NoWarn>
+        <NoWarn>$(NoWarn);NU5128;NU5100</NoWarn>
         <IncludeSymbols>false</IncludeSymbols>
         <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
         <PackageTags>source-generator;strongid;attributes;astartools</PackageTags>
@@ -22,7 +19,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
-			v0.1.10 - Fix NuGet package framework compatibility: empty dependency group for all-frameworks support.
+			v0.1.11 - Actual fix: drop custom nuspec (NuspecFile mode skipped _GetPackageFiles, package had zero DLLs); move Attributes DLL out of lib/ so no TFM-scoped asset restricts compatibility.
+			v0.1.10 - Fix NuGet package framework compatibility: empty dependency group for all-frameworks support (did not work, nuspec mode broken).
 			v0.1.9 - Framework compatibility fix attempt (published with restrictions).
 			v0.1.8 - Fix NuGet package structure: analyzer DLL and Attributes DLL were missing due to MSBuild target ordering.
 			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
@@ -63,7 +61,7 @@
         <ItemGroup>
             <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
             <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-            <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="lib/netstandard2.0" />
+            <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="attributes/netstandard2.0" />
         </ItemGroup>
     </Target>
 
