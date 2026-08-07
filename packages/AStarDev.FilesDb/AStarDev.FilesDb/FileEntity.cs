@@ -8,7 +8,7 @@ public class FileEntity
     /// <summary>
     /// Gets or sets the unique identifier for the file entity.
     /// </summary>
-    public Guid Id { get; set; }
+    public FileId Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the file.

@@ -1,3 +1,4 @@
+using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStarDev.FilesDb;
@@ -12,7 +13,7 @@ namespace AStarDev.FilesDb;
 public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContext(options)
 {
     /// <summary>
-    /// Gets or sets the DbSet of <see cref="FileEntity"/> representing the files in the database.
+    /// Gets the repository for managing file entities in the database.
     /// </summary>
-    public DbSet<FileEntity> Files => Set<FileEntity>();
+    public IImmutableEntityRepository<FileEntity> FilesRepository => Set<FileEntity>().ToImmutableEntityRepository(this);
 }
