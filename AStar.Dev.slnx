@@ -73,6 +73,7 @@
         <Project Path="packages/source-generators/AStarDev.SourceGenerators.Tests.Unit/AStarDev.SourceGenerators.Tests.Unit.csproj" />
         <Project Path="packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" />
         <Project Path="packages/source-generators/AStarDev.SourceAnalyzers/AStarDev.SourceAnalyzers.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceAnalyzers.Tests.Unit/AStarDev.SourceAnalyzers.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/zoran/">
         <Project Path="zoran/ImmutableDomain.EntityFrameworkCore/ImmutableDomain.EntityFrameworkCore.csproj" />
