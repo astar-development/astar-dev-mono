@@ -11,7 +11,9 @@ public class FileEntityConfiguration : IEntityTypeConfiguration<FileEntity>
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<FileEntity> builder)
     {
-        builder.HasKey(f => new { f.Path, f.Name });
+        builder.Property("Id").ValueGeneratedOnAdd();
+        builder.HasKey("Id");
+        builder.HasAlternateKey(f => new { f.Path, f.Name });
         builder.Property(f => f.Name).IsRequired().HasMaxLength(255);
         builder.Property(f => f.Path).IsRequired().HasMaxLength(1024);
     }

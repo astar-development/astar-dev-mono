@@ -144,7 +144,8 @@
     "Velopack",
     "wallpaperscraper",
     "XMLDOC",
-    "Xunit"
+    "Xunit",
+    "zoran"
   ],
   "chat.tools.terminal.autoApprove": {
     "dotnet build": true,
