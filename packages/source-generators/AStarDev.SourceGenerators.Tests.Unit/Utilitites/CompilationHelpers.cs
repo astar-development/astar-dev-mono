@@ -7,7 +7,7 @@ internal static class CompilationHelpers
 {
     private const string StrongIdAttributeSource = @"using System;
 namespace AStarDev.SourceGenerators.Attributes {
-    public sealed class StrongIdAttribute(Type? idType) : Attribute
+    public sealed class StrongIdAttribute(Type? idType = null) : Attribute
     {
         /// <summary>
         /// The type of the ID property (e.g., typeof(Guid), typeof(int)).
