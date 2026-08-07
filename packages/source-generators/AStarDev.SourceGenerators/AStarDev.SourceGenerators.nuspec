@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>AStarDev.SourceGenerators</id>
+    <version>0.1.9</version>
+    <title>AStar Dev Source Generators</title>
+    <authors>Jason Barden</authors>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/source-generators</projectUrl>
+    <description>Source generators and supporting attribute types for AStar.Dev projects.</description>
+    <copyright>Copyright © 2026 AStar Development</copyright>
+    <tags>source-generator strongid attributes astartools</tags>
+    <packageTypes>
+      <packageType name="Analyzer" />
+    </packageTypes>
+    <dependencies>
+      <group />
+    </dependencies>
+  </metadata>
+</package>
