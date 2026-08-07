@@ -53,6 +53,7 @@
   -->
   <ItemGroup Label="AStar.Dev packages">
     <PackageVersion Include="AStarDev.LoggingSerilog" Version="0.1.1" />
+    <PackageVersion Include="AStarDev.SourceGenerators" Version="0.1.9" />
     <PackageVersion Include="AStarDev.Utilities" Version="0.1.0" />
     <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
     <PackageVersion Include="Dapper" Version="2.1.79" />

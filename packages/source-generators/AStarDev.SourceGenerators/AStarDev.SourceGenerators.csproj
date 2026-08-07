@@ -5,13 +5,14 @@
         <IsPackable>true</IsPackable>
         <Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
-
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
+        <PackageType>Analyzer</PackageType>
         <PackageId>AStarDev.SourceGenerators</PackageId>
         <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>false</IncludeBuildOutput>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
         <IncludeSymbols>false</IncludeSymbols>
         <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
@@ -20,6 +21,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageReleaseNotes>
+			v0.1.9 - Fix NuGet package framework compatibility: declare support for all target frameworks, not just .NETStandard2.0.
 			v0.1.8 - Fix NuGet package structure: analyzer DLL and Attributes DLL were missing due to MSBuild target ordering.
 			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
 			v0.1.6 - Fix build and packaging issues.
@@ -47,9 +49,10 @@
         <Copy SourceFiles="@(_AttributesDll)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     </Target>
 
-    <!-- Include build props to auto-reference the Attributes assembly -->
+    <!-- Include build props and targets to auto-reference the Attributes assembly -->
     <ItemGroup>
         <None Include="build\AStarDev.SourceGenerators.props" Pack="true" PackagePath="build" />
+        <None Include="build\AStarDev.SourceGenerators.targets" Pack="true" PackagePath="build" />
     </ItemGroup>
 
     <!-- Package the generator DLL and its dependencies in the analyzers folder.
