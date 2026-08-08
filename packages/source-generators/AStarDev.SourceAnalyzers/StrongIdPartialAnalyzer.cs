@@ -12,17 +12,17 @@ namespace AStarDev.SourceAnalyzers;
 /// type and no members are generated.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class StrongIdReadonlyPartialAnalyzer : DiagnosticAnalyzer
+public sealed class StrongIdPartialAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>
-    /// The diagnostic ID for a [StrongId] record struct missing readonly and/or partial.
+    /// The diagnostic ID for a [StrongId] record struct missing partial.
     /// </summary>
     public const string DiagnosticId = "ASTARID001";
 
     private static readonly DiagnosticDescriptor _rule = new(
         DiagnosticId,
         "StrongId record struct must be readonly and partial",
-        "Record struct '{0}' decorated with [StrongId] must be declared readonly and partial, otherwise StrongIdGenerator silently skips it and no members are generated",
+        "Record struct '{0}' decorated with [StrongId] must be declared partial, otherwise StrongIdGenerator silently skips it and no members are generated",
         "AStarDev.SourceAnalyzers",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -52,9 +52,8 @@ public sealed class StrongIdReadonlyPartialAnalyzer : DiagnosticAnalyzer
                         "AStarDev.SourceGenerators.Attributes.StrongIdAttribute"))
             return;
 
-        var isReadonly = recordDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword));
-        var isPartial = recordDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
-        if (isReadonly && isPartial) return;
+        bool isPartial = recordDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
+        if (isPartial) return;
 
         var diag = Diagnostic.Create(_rule, recordDecl.Identifier.GetLocation(), symbol.Name);
         context.ReportDiagnostic(diag);
