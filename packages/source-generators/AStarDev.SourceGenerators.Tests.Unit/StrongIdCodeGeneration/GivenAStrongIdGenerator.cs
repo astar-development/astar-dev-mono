@@ -15,7 +15,7 @@ public sealed class GivenAStrongIdGenerator
                              namespace TestNamespace
                              {
                                  [StrongId(typeof(int))]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -40,7 +40,7 @@ public sealed class GivenAStrongIdGenerator
                              namespace TestNamespace
                              {
                                  [StrongId(typeof(string))]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -65,7 +65,7 @@ public sealed class GivenAStrongIdGenerator
                              namespace TestNamespace
                              {
                                  [StrongId(typeof(Guid))]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -83,14 +83,14 @@ public sealed class GivenAStrongIdGenerator
     }
 
     [Fact]
-    public void when_the_type_is_long_on_a_partial_record_struct_then_the_full_record_struct_is_generated_with_id_property_of_type_guid()
+    public void when_the_type_is_long_on_a_partial_record_struct_then_the_full_record_struct_is_generated_with_id_property_of_type_long()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
                              namespace TestNamespace
                              {
                                  [StrongId(typeof(long))]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -104,7 +104,7 @@ public sealed class GivenAStrongIdGenerator
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Value)");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Int64 Value)");
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public sealed class GivenAStrongIdGenerator
                              namespace TestNamespace
                              {
                                  [StrongId]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -129,7 +129,7 @@ public sealed class GivenAStrongIdGenerator
         var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
         string generatedText = generated.SourceText.ToString();
-        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Value);");
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Guid Value)");
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public sealed class GivenAStrongIdGenerator
                              namespace TestNamespace
                              {
                                  [StrongId]
-                                 public partial record struct MyId { }
+                                 public readonly partial record struct MyId { }
                              }
                              """;
 
@@ -166,7 +166,10 @@ public sealed class GivenAStrongIdGenerator
                                /// <param name="Value">The underlying identifier value.</param>
                                public readonly partial record struct MyId(System.Guid Value)
                                {
+                                   /// <inheritdoc />
                                    public static implicit operator MyId(System.Guid value) => new MyId(value);
+
+                                   /// <inheritdoc />
                                    public static implicit operator System.Guid(MyId id) => id.Value;
                                }
                                """);
