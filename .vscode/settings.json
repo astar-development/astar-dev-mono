@@ -109,6 +109,7 @@
   "files.insertFinalNewline": true,
   "cSpell.language": "en-GB",
   "cSpell.words": [
+    "Analyzer",
     "Analyzers",
     "aspnet",
     "Astar",

@@ -14,18 +14,16 @@ namespace AStarDev.SourceGenerators.StrongIdCodeGeneration;
 public class StrongIdGenerator : IIncrementalGenerator
 {
     /// <summary>
-    /// The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all readonly partial record structs with attributes and generates source code for those annotated with the <see cref="Attributes.StrongIdAttribute" />.
+    /// The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all partial record structs with attributes and generates source code for those annotated with the <see cref="Attributes.StrongIdAttribute" />.
     /// </summary>
     /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Find all readonly partial record structs with attributes
         var recordStructs = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: static (s, _) => s is RecordDeclarationSyntax rec && rec.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword),
                 transform: static (ctx, _) => (RecordDeclarationSyntax)ctx.Node)
-            .Where(static rds => rds.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword)) &&
-                                 rds.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)) &&
+            .Where(static rds => rds.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)) &&
                                  rds.AttributeLists.Count > 0)
             .Collect();
 
