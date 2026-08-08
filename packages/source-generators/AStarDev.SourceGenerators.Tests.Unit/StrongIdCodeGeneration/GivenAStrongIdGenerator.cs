@@ -176,6 +176,31 @@ public sealed class GivenAStrongIdGenerator
     }
 
     [Fact]
+    public void when_the_partial_record_struct_is_not_readonly_then_the_full_record_struct_is_still_generated_with_readonly_added()
+    {
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             namespace TestNamespace
+                             {
+                                 [StrongId(typeof(int))]
+                                 public partial record struct MyId { }
+                             }
+                             """;
+
+        var compilation = CompilationHelpers.CreateCompilation(input);
+
+        var generator = new StrongIdGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
+        var result = driver.GetRunResult();
+        var allGenerated = result.Results.SelectMany(r => r.GeneratedSources).ToList();
+        var generated = allGenerated.FirstOrDefault(x => x.HintName.Contains("MyId", StringComparison.Ordinal));
+        generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+        string generatedText = generated.SourceText.ToString();
+        generatedText.ShouldContain("public readonly partial record struct MyId(System.Int32 Value)");
+    }
+
+    [Fact]
     public void when_the_type_is_non_partial_record_struct_then_no_code_is_generated()
     {
         const string input = """
