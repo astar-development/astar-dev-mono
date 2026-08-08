@@ -2,12 +2,12 @@ using AStar.Dev.File.App.Services;
 
 namespace AStar.Dev.File.App.Tests.Unit;
 
-public class FileDeleteServiceShould
+public class GivenAFileDeleteService
 {
     private readonly FileDeleteService _sut = new();
 
     [Fact]
-    public async Task DeleteFileAsync_WithNonExistentFile_ReturnWithoutError()
+    public async Task when_deleting_a_nonexistent_file_then_returns_without_error()
     {
         const string filePath = "/nonexistent/path/file.txt";
 
@@ -15,19 +15,19 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFileAsync_WithNullFilePath_ReturnWithoutError()
+    public async Task when_deleting_a_null_file_path_then_returns_without_error()
     {
         await _sut.DeleteFileAsync(null!, moveToRecycleBin: false);
     }
 
     [Fact]
-    public async Task DeleteFileAsync_WithEmptyFilePath_ReturnWithoutError()
+    public async Task when_deleting_an_empty_file_path_then_returns_without_error()
     {
         await _sut.DeleteFileAsync(string.Empty, moveToRecycleBin: false);
     }
 
     [Fact]
-    public async Task DeleteFileAsync_WithExistingFile_DeletesPermanentlyWhenNotRecycling()
+    public async Task when_deleting_an_existing_file_without_recycling_then_file_is_permanently_deleted()
     {
         string tempFile = Path.GetTempFileName();
 
@@ -47,13 +47,13 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFilesAsync_WithEmptyList_ReturnWithoutError()
+    public async Task when_deleting_an_empty_list_of_files_then_returns_without_error()
     {
         await _sut.DeleteFilesAsync([], moveToRecycleBin: false);
     }
 
     [Fact]
-    public async Task DeleteFilesAsync_WithNonExistentFiles_ReturnWithoutError()
+    public async Task when_deleting_nonexistent_files_then_returns_without_error()
     {
         string[] files = ["/nonexistent/file1.txt", "/nonexistent/file2.txt"];
 
@@ -61,7 +61,7 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFilesAsync_WithExistingFiles_DeletesPermanentlyWhenNotRecycling()
+    public async Task when_deleting_existing_files_without_recycling_then_files_are_permanently_deleted()
     {
         string tempFile1 = Path.GetTempFileName();
         string tempFile2 = Path.GetTempFileName();
@@ -86,7 +86,7 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFilesAsync_WithMixedExistingAndNonExistentFiles_DeletesOnlyExistingFiles()
+    public async Task when_deleting_mixed_existing_and_nonexistent_files_then_only_existing_files_are_deleted()
     {
         string tempFile = Path.GetTempFileName();
         const string nonExistentFile = "/nonexistent/file.txt";
@@ -107,7 +107,7 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFileAsync_WithMultipleCallsOnSameFile_HandlesGracefully()
+    public async Task when_deleting_the_same_file_multiple_times_then_handles_gracefully()
     {
         string tempFile = Path.GetTempFileName();
 
@@ -126,13 +126,13 @@ public class FileDeleteServiceShould
     }
 
     [Fact]
-    public async Task DeleteFileAsync_WithWhitespaceFilePath_ReturnWithoutError()
+    public async Task when_deleting_a_whitespace_file_path_then_returns_without_error()
     {
         await _sut.DeleteFileAsync("   ", moveToRecycleBin: false);
     }
 
     [Fact]
-    public async Task DeleteFilesAsync_WithRecycleBinFlag_DoesNotThrowOnUnsupportedPlatform()
+    public async Task when_deleting_files_with_recycle_bin_flag_then_does_not_throw_on_unsupported_platform()
     {
         string tempFile = Path.GetTempFileName();
 

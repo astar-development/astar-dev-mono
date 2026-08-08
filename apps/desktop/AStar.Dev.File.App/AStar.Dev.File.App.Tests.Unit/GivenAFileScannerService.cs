@@ -2,10 +2,10 @@ using AStar.Dev.File.App.Services;
 
 namespace AStar.Dev.File.App.Tests.Unit;
 
-public class FileScannerServiceShould
+public class GivenAFileScannerService
 {
     [Fact]
-    public void FileScannerService_CanBeInstantiated()
+    public void when_constructed_with_valid_dependencies_then_instance_is_not_null()
     {
         var dbFactory = Substitute.For<Microsoft.EntityFrameworkCore.IDbContextFactory<Data.FileAppDbContext>>();
         var classifier = Substitute.For<IFileTypeClassifier>();
@@ -15,7 +15,7 @@ public class FileScannerServiceShould
     }
 
     [Fact]
-    public async Task ScanAsync_WithCancellationRequested_ThrowsOperationCanceledException()
+    public async Task when_scan_is_cancelled_then_operation_canceled_exception_is_thrown()
     {
         var dbFactory = Substitute.For<Microsoft.EntityFrameworkCore.IDbContextFactory<Data.FileAppDbContext>>();
         var classifier = Substitute.For<IFileTypeClassifier>();

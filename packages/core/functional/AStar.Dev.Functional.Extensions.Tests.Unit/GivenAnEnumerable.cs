@@ -1,9 +1,9 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public sealed class EnumerableExtensionsShould
+public sealed class GivenAnEnumerable
 {
     [Fact]
-    public void FirstOrNone_ShouldReturnSome_WhenPredicateMatches()
+    public void when_first_or_none_is_called_with_a_matching_predicate_then_some_is_returned()
     {
         var list = new List<string> { "apple", "banana", "cherry" };
 
@@ -15,7 +15,7 @@ public sealed class EnumerableExtensionsShould
     }
 
     [Fact]
-    public void FirstOrNone_ShouldReturnNone_WhenNoPredicateMatches()
+    public void when_first_or_none_is_called_with_no_matching_predicate_then_none_is_returned()
     {
         var list = new List<int> { 1, 2, 3 };
 
@@ -25,7 +25,7 @@ public sealed class EnumerableExtensionsShould
     }
 
     [Fact]
-    public void FirstOrNone_ShouldReturnNone_ForEmptySequence()
+    public void when_first_or_none_is_called_on_an_empty_sequence_then_none_is_returned()
     {
         var list = new List<int>();
 
@@ -35,7 +35,7 @@ public sealed class EnumerableExtensionsShould
     }
 
     [Fact]
-    public void FirstOrNone_ShouldReturnFirstMatchingItem()
+    public void when_first_or_none_is_called_then_the_first_matching_item_is_returned()
     {
         var list = new List<int> { 2, 4, 6 };
 
