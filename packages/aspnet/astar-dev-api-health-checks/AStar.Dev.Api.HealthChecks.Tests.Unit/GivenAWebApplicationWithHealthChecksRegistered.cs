@@ -6,10 +6,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace AStar.Dev.Api.HealthChecks;
 
 [TestSubject(typeof(HealthCheckExtensions))]
-public class HealthCheckExtensionsShould
+public class GivenAWebApplicationWithHealthChecksRegistered
 {
     [Fact]
-    public void ConfigureTheHealthCheckEndpoints()
+    public void when_health_check_endpoints_are_configured_then_health_check_service_is_registered()
     {
         var webApplication = WebApplication.CreateBuilder();
         webApplication.Services.AddHealthChecks();

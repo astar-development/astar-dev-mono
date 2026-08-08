@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStarDev.SourceGenerators.Tests.Unit.ServiceRegistrationGeneration;
 
-public sealed class ServiceRegistrationGeneratorShould
+public sealed class GivenAServiceRegistrationGenerator
 {
     private const string AttributeSource = """
                                            using System;
@@ -48,7 +48,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void RegisterClassWithSingleInterface_DefaultScoped()
+    public void when_a_class_has_a_single_interface_then_it_is_registered_with_default_scoped_lifetime()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -90,7 +90,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void RegisterClassWithSingleInterface_SingletonLifetime()
+    public void when_a_class_has_a_single_interface_and_singleton_lifetime_then_it_is_registered_as_singleton()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -131,7 +131,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void RegisterClassWithSingleInterface_AsSelfTrue()
+    public void when_a_class_has_a_single_interface_and_as_self_is_true_then_it_is_registered_as_both_interface_and_self()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -173,7 +173,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void RegisterClassWithTwoInterfaces_AsOverride()
+    public void when_a_class_has_two_interfaces_and_an_as_override_then_it_is_registered_as_the_specified_interface()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -216,7 +216,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void RegisterClassWithNoInterface_AsSelfTrue()
+    public void when_a_class_has_no_interface_and_as_self_is_true_then_it_is_registered_as_itself()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -256,7 +256,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void DoesNotRegisterAbstractOrNonPublicOrGenericClasses()
+    public void when_a_class_is_abstract_internal_or_generic_then_it_is_not_registered()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -283,12 +283,11 @@ public sealed class ServiceRegistrationGeneratorShould
         var result = driver.GetRunResult();
         var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
 
-        // All candidates are filtered out (abstract, internal, generic), so no source should be generated
         generated.Equals(default(GeneratedSourceResult)).ShouldBeTrue();
     }
 
     [Fact]
-    public void DoesNotRegisterClassWithoutServiceAttribute()
+    public void when_a_class_has_no_service_attribute_then_it_is_not_registered()
     {
         const string input = """
                              namespace TestNamespace
@@ -314,7 +313,7 @@ public sealed class ServiceRegistrationGeneratorShould
     }
 
     [Fact]
-    public void DoesNotRegisterClassWithMultipleInterfacesAndNoAsSpecified()
+    public void when_a_class_has_multiple_interfaces_and_no_as_specified_then_it_is_not_registered()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;

@@ -6,25 +6,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.File.App.Tests.Unit;
 
-public class FileViewerServiceShould
+public class GivenAFileViewerService
 {
     private readonly IDbContextFactory<FileAppDbContext> _dbContextFactory;
     private readonly FileViewerService _sut;
 
-    public FileViewerServiceShould()
+    public GivenAFileViewerService()
     {
         _dbContextFactory = Substitute.For<IDbContextFactory<FileAppDbContext>>();
         _sut = new FileViewerService(_dbContextFactory);
     }
 
     [Fact]
-    public async Task ViewFileAsync_WithNullItem_ReturnsWithoutError()
+    public async Task when_viewing_a_null_item_then_returns_without_error()
     {
         await _sut.ViewFileAsync(null);
     }
 
     [Fact]
-    public async Task ViewFileAsync_WithValidItem_RaisesFileViewRequestedEvent()
+    public async Task when_viewing_a_valid_item_then_file_view_requested_event_is_raised()
     {
         var scannedFile = CreateScannedFile();
         var displayItem = new ScannedFileDisplayItem(scannedFile);
@@ -52,7 +52,7 @@ public class FileViewerServiceShould
     }
 
     [Fact]
-    public async Task ViewFileAsync_WithNonExistentFile_DoesNotThrow()
+    public async Task when_viewing_a_nonexistent_file_then_does_not_throw()
     {
         var dbContext = CreateInMemoryDbContext();
         _dbContextFactory
@@ -73,7 +73,7 @@ public class FileViewerServiceShould
     }
 
     [Fact]
-    public async Task FileViewRequested_EventCanHaveMultipleSubscribers()
+    public async Task when_file_view_requested_event_has_multiple_subscribers_then_all_are_called()
     {
         var scannedFile = CreateScannedFile();
         var displayItem = new ScannedFileDisplayItem(scannedFile);
@@ -98,7 +98,7 @@ public class FileViewerServiceShould
     }
 
     [Fact]
-    public async Task ViewFileAsync_DbContextFactoryIsCalled()
+    public async Task when_viewing_a_file_then_db_context_factory_is_called()
     {
         var scannedFile = CreateScannedFile();
         var displayItem = new ScannedFileDisplayItem(scannedFile);
@@ -117,7 +117,7 @@ public class FileViewerServiceShould
     }
 
     [Fact]
-    public async Task ViewFileAsync_WithValidItem_DbContextIsRequested()
+    public async Task when_viewing_a_valid_item_then_db_context_is_requested()
     {
         var dbContext = CreateInMemoryDbContext();
         _dbContextFactory

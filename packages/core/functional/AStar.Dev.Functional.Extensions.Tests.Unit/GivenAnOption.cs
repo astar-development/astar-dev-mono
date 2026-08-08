@@ -1,12 +1,12 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public sealed class OptionShould
+public sealed class GivenAnOption
 {
     private static readonly int[] ExpectedArrayOfInts = [1, 2, 3];
     private static readonly int[] ExpectedArrayOfInts2 = [20, 40];
 
     [Fact]
-    public void MatchToSomeHandlerWhenOptionIsSome()
+    public void when_option_is_some_then_match_invokes_the_some_handler()
     {
         var option = Option.Some(42);
 
@@ -18,7 +18,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void MatchToNoneHandlerWhenOptionIsNone()
+    public void when_option_is_none_then_match_invokes_the_none_handler()
     {
         var option = Option.None<int>();
 
@@ -30,7 +30,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSomeAsyncHandlerWhenOptionIsSome()
+    public async Task when_option_is_some_then_match_async_invokes_the_async_some_handler()
     {
         var option = Option.Some(42);
 
@@ -42,7 +42,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToNoneHandlerWhenOptionIsNone()
+    public async Task when_option_is_none_then_match_async_invokes_the_none_handler()
     {
         var option = Option.None<int>();
 
@@ -54,7 +54,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSomeHandlerAndAsyncNoneHandlerWhenOptionIsSome()
+    public async Task when_option_is_some_then_match_async_invokes_the_sync_some_handler_with_async_none_handler()
     {
         var option = Option.Some(42);
 
@@ -66,7 +66,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSomeHandlerAndAsyncNoneHandlerWhenOptionIsNone()
+    public async Task when_option_is_none_then_match_async_invokes_the_async_none_handler_with_sync_some_handler()
     {
         var option = Option.None<int>();
 
@@ -78,7 +78,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToAsyncSomeHandlerAndAsyncNoneHandlerWhenOptionIsSome()
+    public async Task when_option_is_some_then_match_async_invokes_the_async_some_handler_with_async_none_handler()
     {
         var option = Option.Some(42);
 
@@ -90,7 +90,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MatchAsyncToAsyncSomeHandlerAndAsyncNoneHandlerWhenOptionIsNone()
+    public async Task when_option_is_none_then_match_async_invokes_the_async_none_handler_with_async_some_handler()
     {
         var option = Option.None<int>();
 
@@ -102,7 +102,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void CreateSomeOptionWithCorrectValue()
+    public void when_some_is_created_then_it_holds_the_correct_value()
     {
         int value = 42;
 
@@ -112,10 +112,10 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ThrowWhenCreatingSomeWithNullValue() => Should.Throw<ArgumentNullException>(() => Option.Some<string>(null!));
+    public void when_some_is_created_with_a_null_value_then_an_argument_null_exception_is_thrown() => Should.Throw<ArgumentNullException>(() => Option.Some<string>(null!));
 
     [Fact]
-    public void ConvertValueToSomeImplicitly()
+    public void when_a_value_is_implicitly_converted_then_it_becomes_some()
     {
         string value = "test";
 
@@ -126,7 +126,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNullToNoneImplicitly()
+    public void when_null_is_implicitly_converted_then_it_becomes_none()
     {
         string? value = null;
 
@@ -136,7 +136,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ExtractValueWithTryGetValueWhenOptionIsSome()
+    public void when_option_is_some_then_try_get_value_returns_true_with_the_value()
     {
         var option = Option.Some(42);
 
@@ -147,7 +147,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ReturnFalseAndDefaultWithTryGetValueWhenOptionIsNone()
+    public void when_option_is_none_then_try_get_value_returns_false_with_the_default_value()
     {
         var option = Option.None<int>();
 
@@ -158,7 +158,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertValueToSomeWithToOption()
+    public void when_to_option_is_called_on_a_value_then_it_becomes_some()
     {
         string value = "test";
 
@@ -169,7 +169,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNullToNoneWithToOption()
+    public void when_to_option_is_called_on_null_then_it_becomes_none()
     {
         string? value = null;
 
@@ -179,7 +179,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertValueToSomeWithToOptionWhenPredicateIsTrue()
+    public void when_to_option_is_called_with_a_true_predicate_then_it_becomes_some()
     {
         int value = 42;
 
@@ -190,7 +190,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertValueToNoneWithToOptionWhenPredicateIsFalse()
+    public void when_to_option_is_called_with_a_false_predicate_then_it_becomes_none()
     {
         int value = 42;
 
@@ -200,7 +200,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNullableToSomeWhenHasValue()
+    public void when_a_nullable_with_a_value_is_converted_then_it_becomes_some()
     {
         int? value = 42;
 
@@ -211,7 +211,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNullableToNoneWhenNull()
+    public void when_a_nullable_without_a_value_is_converted_then_it_becomes_none()
     {
         int? value = null;
 
@@ -221,7 +221,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void MapValueToNewValueWhenOptionIsSome()
+    public void when_option_is_some_then_map_transforms_the_value()
     {
         var option = Option.Some(42);
 
@@ -232,7 +232,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ReturnNoneWhenMappingNoneOption()
+    public void when_option_is_none_then_map_returns_none()
     {
         var option = Option.None<int>();
 
@@ -242,7 +242,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void BindValueToNewOptionWhenOptionIsSome()
+    public void when_option_is_some_then_bind_returns_the_new_option()
     {
         var option = Option.Some(42);
 
@@ -253,7 +253,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ReturnNoneWhenBindingNoneOption()
+    public void when_option_is_none_then_bind_returns_none()
     {
         var option = Option.None<int>();
 
@@ -263,7 +263,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ReturnNoneWhenBindFunctionReturnsNone()
+    public void when_bind_function_returns_none_then_the_result_is_none()
     {
         var option = Option.Some(42);
 
@@ -273,7 +273,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertSomeToOkResult()
+    public void when_option_is_some_then_to_result_returns_ok()
     {
         var option = Option.Some(42);
 
@@ -284,7 +284,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNoneToErrorResult()
+    public void when_option_is_none_then_to_result_returns_error()
     {
         var option = Option.None<int>();
 
@@ -295,7 +295,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertSomeToNullableValue()
+    public void when_option_is_some_then_to_nullable_returns_the_value()
     {
         var option = Option.Some(42);
 
@@ -306,7 +306,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNoneToNullNullable()
+    public void when_option_is_none_then_to_nullable_returns_null()
     {
         var option = Option.None<int>();
 
@@ -316,7 +316,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertSomeToSingleItemEnumerable()
+    public void when_option_is_some_then_to_enumerable_returns_a_single_item_sequence()
     {
         var option = Option.Some(42);
 
@@ -327,7 +327,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertNoneToEmptyEnumerable()
+    public void when_option_is_none_then_to_enumerable_returns_an_empty_sequence()
     {
         var option = Option.None<int>();
 
@@ -337,7 +337,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void DeconstructCorrectlyWhenOptionIsSome()
+    public void when_option_is_some_then_deconstruction_returns_true_and_the_value()
     {
         var option = Option.Some(42);
 
@@ -348,7 +348,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void DeconstructCorrectlyWhenOptionIsNone()
+    public void when_option_is_none_then_deconstruction_returns_false_and_the_default_value()
     {
         var option = Option.None<int>();
 
@@ -359,7 +359,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void HaveSameHashCodeForEqualSomeValues()
+    public void when_two_some_options_have_equal_values_then_their_hash_codes_match()
     {
         var option1 = Option.Some(42);
         var option2 = Option.Some(42);
@@ -368,7 +368,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void HaveDifferentHashCodeForDifferentSomeValues()
+    public void when_two_some_options_have_different_values_then_their_hash_codes_differ()
     {
         var option1 = Option.Some(42);
         var option2 = Option.Some(43);
@@ -377,7 +377,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void HaveSameHashCodeForNone()
+    public void when_two_none_options_are_compared_then_their_hash_codes_match()
     {
         var option1 = Option.None<int>();
         var option2 = Option.None<int>();
@@ -386,7 +386,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void BeEqualForSameValues()
+    public void when_two_some_options_have_the_same_value_then_they_are_equal()
     {
         var option1 = Option.Some(42);
         var option2 = Option.Some(42);
@@ -397,7 +397,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void NotBeEqualForDifferentValues()
+    public void when_two_some_options_have_different_values_then_they_are_not_equal()
     {
         var option1 = Option.Some(42);
         var option2 = Option.Some(43);
@@ -408,7 +408,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void BeEqualForNone()
+    public void when_two_none_options_are_compared_then_they_are_equal()
     {
         var option1 = Option.None<int>();
         var option2 = Option.None<int>();
@@ -419,7 +419,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void NotBeEqualForSomeAndNone()
+    public void when_a_some_option_is_compared_to_a_none_option_then_they_are_not_equal()
     {
         var option1 = Option.Some(42);
         var option2 = Option.None<int>();
@@ -430,7 +430,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void HaveCorrectStringRepresentationForSome()
+    public void when_option_is_some_then_to_string_returns_the_expected_representation()
     {
         var option = Option.Some(42);
 
@@ -440,7 +440,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void HaveCorrectStringRepresentationForNone()
+    public void when_option_is_none_then_to_string_returns_the_expected_representation()
     {
         var option = Option.None<int>();
 
@@ -450,7 +450,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ExecuteSideEffectWithTapWhenOptionIsSome()
+    public void when_option_is_some_then_tap_executes_the_side_effect()
     {
         var option = Option.Some(42);
         bool sideEffectExecuted = false;
@@ -468,7 +468,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void NotExecuteSideEffectWithTapWhenOptionIsNone()
+    public void when_option_is_none_then_tap_does_not_execute_the_side_effect()
     {
         var option = Option.None<int>();
         bool sideEffectExecuted = false;
@@ -480,7 +480,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void FilterToSameOptionWhenPredicateIsTrue()
+    public void when_filter_predicate_is_true_then_the_same_option_is_returned()
     {
         var option = Option.Some(42);
 
@@ -491,7 +491,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void FilterToNoneWhenPredicateIsFalse()
+    public void when_filter_predicate_is_false_then_none_is_returned()
     {
         var option = Option.Some(42);
 
@@ -501,7 +501,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void MapToTransformedValueWithMapOrDefaultWhenOptionIsSome()
+    public void when_option_is_some_then_map_or_default_returns_the_transformed_value()
     {
         var option = Option.Some(42);
 
@@ -511,7 +511,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ReturnDefaultValueWithMapOrDefaultWhenOptionIsNone()
+    public void when_option_is_none_then_map_or_default_returns_the_default_value()
     {
         var option = Option.None<int>();
 
@@ -521,7 +521,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void MapToTransformedValueWithMapOrElseWhenOptionIsSome()
+    public void when_option_is_some_then_map_or_else_returns_the_transformed_value_without_calling_the_factory()
     {
         var option = Option.Some(42);
         bool factoryCalled = false;
@@ -541,7 +541,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void UseFactoryWithMapOrElseWhenOptionIsNone()
+    public void when_option_is_none_then_map_or_else_uses_the_factory()
     {
         var option = Option.None<int>();
         bool factoryCalled = false;
@@ -561,7 +561,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ExtractValuesFromCollectionOfOptions()
+    public void when_values_is_called_on_a_collection_of_options_then_only_the_some_values_are_returned()
     {
         Option<int>[] options = [Option.Some(1), Option.None<int>(), Option.Some(2), Option.None<int>(), Option.Some(3)];
 
@@ -572,7 +572,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void FilterCollectionWithChoosePredicate()
+    public void when_choose_is_called_with_a_predicate_then_only_matching_items_are_returned_as_some()
     {
         int[] numbers = [1, 2, 3, 4, 5];
 
@@ -585,7 +585,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void TransformCollectionWithChooser()
+    public void when_choose_is_called_with_a_chooser_function_then_matching_items_are_transformed()
     {
         int[] numbers = [1, 2, 3, 4, 5];
 
@@ -598,7 +598,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MapAsyncWithSomeOption()
+    public async Task when_option_is_some_then_map_async_transforms_the_value()
     {
         var option = Option.Some(42);
 
@@ -609,7 +609,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MapAsyncWithNoneOption()
+    public async Task when_option_is_none_then_map_async_returns_none()
     {
         var option = Option.None<int>();
 
@@ -619,7 +619,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MapAsyncWithTaskOption()
+    public async Task when_a_task_of_option_is_some_then_map_async_transforms_the_value()
     {
         var optionTask = Task.FromResult(Option.Some(42));
 
@@ -630,7 +630,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task MapAsyncWithTaskOptionAndAsyncMapper()
+    public async Task when_a_task_of_option_is_some_then_map_async_with_an_async_mapper_transforms_the_value()
     {
         var optionTask = Task.FromResult(Option.Some(42));
 
@@ -641,7 +641,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task BindAsyncWithSomeOption()
+    public async Task when_option_is_some_then_bind_async_returns_the_new_option()
     {
         var option = Option.Some(42);
 
@@ -652,7 +652,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task BindAsyncWithNoneOption()
+    public async Task when_option_is_none_then_bind_async_returns_none()
     {
         var option = Option.None<int>();
 
@@ -662,7 +662,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task ToResultAsyncWithSomeOption()
+    public async Task when_option_is_some_then_to_result_async_returns_ok()
     {
         var option = Option.Some(42);
 
@@ -673,7 +673,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task ToResultAsyncWithNoneOption()
+    public async Task when_option_is_none_then_to_result_async_returns_error()
     {
         var option = Option.None<int>();
 
@@ -684,7 +684,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task TapAsyncWithSomeOption()
+    public async Task when_option_is_some_then_tap_async_executes_the_side_effect()
     {
         var option = Option.Some(42);
         bool sideEffectExecuted = false;
@@ -704,7 +704,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task TapAsyncWithNoneOption()
+    public async Task when_option_is_none_then_tap_async_does_not_execute_the_side_effect()
     {
         var option = Option.None<int>();
         bool sideEffectExecuted = false;
@@ -721,7 +721,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task BindAsyncWithTaskOptionAndSyncBinder()
+    public async Task when_a_task_of_option_is_some_then_bind_async_with_a_sync_binder_returns_the_new_option()
     {
         var optionTask = Task.FromResult(Option.Some(42));
 
@@ -732,7 +732,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task ToResultAsyncWithTaskOptionAndSyncErrorFactory()
+    public async Task when_a_task_of_option_is_none_then_to_result_async_with_a_sync_error_factory_returns_error()
     {
         var optionTask = Task.FromResult(Option.None<int>());
 
@@ -743,7 +743,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task ToResultAsyncWithTaskOptionAndAsyncErrorFactory()
+    public async Task when_a_task_of_option_is_none_then_to_result_async_with_an_async_error_factory_returns_error()
     {
         var optionTask = Task.FromResult(Option.None<int>());
 
@@ -754,7 +754,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task TapAsyncWithTaskOptionAndSyncAction()
+    public async Task when_a_task_of_option_is_some_then_tap_async_with_a_sync_action_executes_the_side_effect()
     {
         var optionTask = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
@@ -773,7 +773,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public async Task TapAsyncWithTaskOptionAndAsyncAction()
+    public async Task when_a_task_of_option_is_some_then_tap_async_with_an_async_action_executes_the_side_effect()
     {
         var optionTask = Task.FromResult(Option.Some(42));
         bool sideEffectExecuted = false;
@@ -794,7 +794,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertValueToSomeWithToOptionWhenValueIsNotDefault()
+    public void when_to_option_is_called_on_a_non_default_value_then_it_becomes_some()
     {
         string value = "test";
 
@@ -805,7 +805,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void ConvertDefaultValueToNoneWithToOption()
+    public void when_to_option_is_called_on_a_default_value_then_it_becomes_none()
     {
         int value = default;
 
@@ -815,7 +815,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void GenerateCorrectToStringForSome()
+    public void when_some_to_string_is_called_then_it_returns_the_expected_representation()
     {
         var some = new Option<int>.Some(42);
 
@@ -825,7 +825,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void GenerateCorrectToStringForNone()
+    public void when_none_to_string_is_called_then_it_returns_the_expected_representation()
     {
         var none = Option<int>.None.Instance;
 
@@ -835,7 +835,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void CheckEqualityWithDifferentTypes()
+    public void when_option_is_compared_to_a_different_type_then_equals_returns_false()
     {
         var option = Option.Some(42);
         string notOption = "not an option";
@@ -846,7 +846,7 @@ public sealed class OptionShould
     }
 
     [Fact]
-    public void FilterNoneToNone()
+    public void when_option_is_none_then_filter_returns_none()
     {
         var option = Option.None<int>();
 

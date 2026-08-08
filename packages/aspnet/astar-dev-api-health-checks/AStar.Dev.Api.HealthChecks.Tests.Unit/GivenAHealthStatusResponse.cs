@@ -4,10 +4,10 @@ using JetBrains.Annotations;
 namespace AStar.Dev.Api.HealthChecks;
 
 [TestSubject(typeof(HealthStatusResponse))]
-public class HealthStatusResponseShould
+public class GivenAHealthStatusResponse
 {
     [Fact]
-    public void ContainTheExpectedProperties() =>
+    public void when_serialized_to_json_then_matches_approved_snapshot() =>
         new HealthStatusResponse
         {
             Name = "Test Name",

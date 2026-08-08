@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace AStarDev.SourceGenerators.Tests.Unit.OptionsBindingGeneration;
 
-public sealed class OptionsBindingGeneratorShould
+public sealed class GivenAnOptionsBindingGenerator
 {
     [Fact]
-    public void GenerateRegistrationForClassWithAttributeSectionName()
+    public void when_a_class_has_an_attribute_section_name_then_registration_is_generated()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -35,7 +35,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void GenerateRegistrationForStructWithAttributeSectionName()
+    public void when_a_struct_has_an_attribute_section_name_then_registration_is_generated()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -61,7 +61,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void GenerateRegistrationForClassWithConstSectionNameField()
+    public void when_a_class_has_a_const_section_name_field_then_registration_is_generated()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -87,7 +87,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void PreferAttributeSectionNameOverField()
+    public void when_a_class_has_both_an_attribute_section_name_and_a_field_then_the_attribute_section_name_is_preferred()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -114,7 +114,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void EmitDiagnosticIfNoSectionName()
+    public void when_a_class_has_no_section_name_then_a_diagnostic_is_emitted()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -138,7 +138,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void GenerateRegistrationsForMultipleTypes()
+    public void when_multiple_types_are_annotated_then_registrations_are_generated_for_each()
     {
         const string input = """
                              using AStarDev.SourceGenerators.Attributes;
@@ -168,7 +168,7 @@ public sealed class OptionsBindingGeneratorShould
     }
 
     [Fact]
-    public void DoesNotGenerateForTypesWithoutAttribute()
+    public void when_a_type_has_no_attribute_then_no_registration_is_generated()
     {
         const string input = """
                              using Microsoft.Extensions.DependencyInjection;

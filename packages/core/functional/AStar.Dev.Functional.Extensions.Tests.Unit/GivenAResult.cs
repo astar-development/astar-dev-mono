@@ -1,9 +1,9 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public sealed class ResultShould
+public sealed class GivenAResult
 {
     [Fact]
-    public void MatchToSuccessHandlerWhenResultIsOk()
+    public void when_result_is_ok_then_match_invokes_the_success_handler()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -15,7 +15,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public void MatchToErrorHandlerWhenResultIsError()
+    public void when_result_is_error_then_match_invokes_the_error_handler()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -27,7 +27,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSuccessAsyncHandlerWhenResultIsOk()
+    public async Task when_result_is_ok_then_match_async_invokes_the_async_success_handler()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -39,7 +39,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToErrorHandlerWhenResultIsError()
+    public async Task when_result_is_error_then_match_async_invokes_the_error_handler()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -51,7 +51,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSuccessHandlerAndAsyncErrorHandlerWhenResultIsOk()
+    public async Task when_result_is_ok_then_match_async_with_sync_success_and_async_error_handler_invokes_the_success_handler()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -63,7 +63,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToSuccessHandlerAndAsyncErrorHandlerWhenResultIsError()
+    public async Task when_result_is_error_then_match_async_with_sync_success_and_async_error_handler_invokes_the_error_handler()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -75,7 +75,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToAsyncSuccessHandlerAndAsyncErrorHandlerWhenResultIsOk()
+    public async Task when_result_is_ok_then_match_async_with_async_success_and_async_error_handler_invokes_the_success_handler()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -87,7 +87,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public async Task MatchAsyncToAsyncSuccessHandlerAndAsyncErrorHandlerWhenResultIsError()
+    public async Task when_result_is_error_then_match_async_with_async_success_and_async_error_handler_invokes_the_error_handler()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -99,7 +99,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public void CreateOkResultWithCorrectValue()
+    public void when_an_ok_result_is_created_then_it_holds_the_expected_value()
     {
         string value = "test value";
 
@@ -109,7 +109,7 @@ public sealed class ResultShould
     }
 
     [Fact]
-    public void CreateErrorResultWithCorrectReason()
+    public void when_an_error_result_is_created_then_it_holds_the_expected_reason()
     {
         int reason = 42;
 

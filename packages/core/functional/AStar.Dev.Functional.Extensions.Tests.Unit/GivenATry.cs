@@ -1,9 +1,9 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public sealed class TryShouldOld
+public sealed class GivenATry
 {
     [Fact]
-    public void Try_Run_CapturesSuccess()
+    public void when_run_succeeds_then_the_result_captures_the_returned_value()
     {
         var result = Try.Run(() => 42);
 
@@ -15,7 +15,7 @@ public sealed class TryShouldOld
     }
 
     [Fact]
-    public void Try_Run_CapturesException()
+    public void when_run_throws_then_the_result_captures_the_exception()
     {
         var result = Try.Run<int>(() => throw new InvalidOperationException("fail"));
 
@@ -27,7 +27,7 @@ public sealed class TryShouldOld
     }
 
     [Fact]
-    public void Try_Match_ReturnsCorrectBranch()
+    public void when_matching_a_success_or_a_failure_then_the_correct_branch_is_invoked()
     {
         var success = Try.Run(() => "done");
         var failure = Try.Run<string>(() => throw new InvalidOperationException("fail"));

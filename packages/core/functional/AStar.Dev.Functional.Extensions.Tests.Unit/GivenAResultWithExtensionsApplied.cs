@@ -1,11 +1,9 @@
 namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 
-public sealed class ResultExtensionsShould
+public sealed class GivenAResultWithExtensionsApplied
 {
-    #region Map Tests
-
     [Fact]
-    public void MapSuccessValueWhenResultIsOk()
+    public void when_result_is_ok_then_map_transforms_the_success_value()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -22,7 +20,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void PreserveErrorWhenMappingFailedResult()
+    public void when_result_is_error_then_map_preserves_the_error()
     {
         var result = new Result<int, string>.Error("error message");
 
@@ -39,7 +37,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapSuccessValueAsyncWhenResultIsOk()
+    public async Task when_result_is_ok_then_map_async_transforms_the_success_value()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -56,7 +54,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenMappingFailedResultAsync()
+    public async Task when_result_is_error_then_map_async_preserves_the_error()
     {
         var result = new Result<int, string>.Error("error message");
 
@@ -73,7 +71,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapSuccessValueFromTaskResultWhenResultIsOk()
+    public async Task when_task_result_is_ok_then_map_async_transforms_the_success_value()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -90,7 +88,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenMappingFailedTaskResult()
+    public async Task when_task_result_is_error_then_map_async_preserves_the_error()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error message"));
 
@@ -107,7 +105,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapSuccessValueAsyncFromTaskResultWhenResultIsOk()
+    public async Task when_task_result_is_ok_then_map_async_with_async_mapper_transforms_the_success_value()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -124,7 +122,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenMappingFailedTaskResultAsync()
+    public async Task when_task_result_is_error_then_map_async_with_async_mapper_preserves_the_error()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error message"));
 
@@ -140,12 +138,8 @@ public sealed class ResultExtensionsShould
         matchResult.ShouldBe("error message");
     }
 
-    #endregion
-
-    #region MapFailure Tests
-
     [Fact]
-    public void MapErrorValueWhenResultIsError()
+    public void when_result_is_error_then_map_failure_transforms_the_error_value()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -162,7 +156,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void PreserveSuccessWhenMapFailureOnSuccessResult()
+    public void when_result_is_ok_then_map_failure_preserves_the_success_value()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -179,7 +173,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapErrorValueAsyncWhenResultIsError()
+    public async Task when_result_is_error_then_map_failure_async_transforms_the_error_value()
     {
         var result = new Result<string, int>.Error(42);
 
@@ -196,7 +190,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveSuccessWhenMapFailureAsyncOnSuccessResult()
+    public async Task when_result_is_ok_then_map_failure_async_preserves_the_success_value()
     {
         var result = new Result<string, int>.Ok("success");
 
@@ -213,7 +207,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapErrorValueFromTaskResultWhenResultIsError()
+    public async Task when_task_result_is_error_then_map_failure_async_transforms_the_error_value()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
 
@@ -230,7 +224,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveSuccessWhenMapFailureOnSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_map_failure_async_preserves_the_success_value()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
 
@@ -247,7 +241,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task MapErrorValueAsyncFromTaskResultWhenResultIsError()
+    public async Task when_task_result_is_error_then_map_failure_async_with_async_mapper_transforms_the_error_value()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
 
@@ -264,7 +258,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveSuccessWhenMapFailureAsyncOnSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_map_failure_async_with_async_mapper_preserves_the_success_value()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
 
@@ -280,12 +274,8 @@ public sealed class ResultExtensionsShould
         matchResult.ShouldBe("success");
     }
 
-    #endregion
-
-    #region Bind Tests
-
     [Fact]
-    public void BindSuccessValueToNewResultWhenResultIsOk()
+    public void when_result_is_ok_then_bind_returns_the_new_result()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -302,7 +292,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void BindSuccessValueToErrorResultWhenBindFunctionReturnsError()
+    public void when_bind_function_returns_an_error_result_then_bind_returns_the_error_result()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -319,7 +309,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void PreserveErrorWhenBindingFailedResult()
+    public void when_result_is_error_then_bind_preserves_the_original_error()
     {
         var result = new Result<int, string>.Error("original error");
 
@@ -336,7 +326,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueAsyncToNewResultWhenResultIsOk()
+    public async Task when_result_is_ok_then_bind_async_returns_the_new_result()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -353,7 +343,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueAsyncToErrorResultWhenBindFunctionReturnsError()
+    public async Task when_async_bind_function_returns_an_error_result_then_bind_async_returns_the_error_result()
     {
         var result = new Result<int, string>.Ok(42);
 
@@ -370,7 +360,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenBindingAsyncFailedResult()
+    public async Task when_result_is_error_then_bind_async_preserves_the_original_error()
     {
         var result = new Result<int, string>.Error("original error");
 
@@ -387,7 +377,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueFromTaskResultWhenResultIsOk()
+    public async Task when_task_result_is_ok_then_bind_async_returns_the_new_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -404,7 +394,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueFromTaskResultToErrorWhenBindFunctionReturnsError()
+    public async Task when_task_result_is_ok_and_bind_function_returns_an_error_result_then_bind_async_returns_the_error_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -421,7 +411,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenBindingFailedTaskResult()
+    public async Task when_task_result_is_error_then_bind_async_preserves_the_original_error()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("original error"));
 
@@ -438,7 +428,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueFromTaskResultAsyncWhenResultIsOk()
+    public async Task when_task_result_is_ok_then_bind_async_with_async_binder_returns_the_new_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -455,7 +445,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task BindSuccessValueFromTaskResultAsyncToErrorWhenBindFunctionReturnsError()
+    public async Task when_task_result_is_ok_and_async_bind_function_returns_an_error_result_then_bind_async_returns_the_error_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
@@ -472,7 +462,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task PreserveErrorWhenBindingFailedTaskResultAsync()
+    public async Task when_task_result_is_error_then_bind_async_with_async_binder_preserves_the_original_error()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("original error"));
 
@@ -488,12 +478,8 @@ public sealed class ResultExtensionsShould
         matchResult.ShouldBe("original error");
     }
 
-    #endregion
-
-    #region Tap Tests
-
     [Fact]
-    public void ExecuteSideEffectAndReturnOriginalResultWhenTappingSuccessResult()
+    public void when_result_is_ok_then_tap_executes_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<int, string>.Ok(42);
         int sideEffectValue = 0;
@@ -505,7 +491,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorResult()
+    public void when_result_is_error_then_tap_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<int, string>.Error("error");
         int sideEffectValue = 0;
@@ -517,7 +503,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void ExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorResult()
+    public void when_result_is_error_then_tap_error_executes_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<string, int>.Error(42);
         int sideEffectValue = 0;
@@ -529,7 +515,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public void NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessResult()
+    public void when_result_is_ok_then_tap_error_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<string, int>.Ok("success");
         int sideEffectValue = 0;
@@ -541,7 +527,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingSuccessResult()
+    public async Task when_result_is_ok_then_tap_async_executes_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<int, string>.Ok(42);
         int sideEffectValue = 0;
@@ -558,7 +544,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorResult()
+    public async Task when_result_is_error_then_tap_async_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<int, string>.Error("error");
         int sideEffectValue = 0;
@@ -575,7 +561,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorResult()
+    public async Task when_result_is_error_then_tap_error_async_executes_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<string, int>.Error(42);
         int sideEffectValue = 0;
@@ -592,7 +578,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessResult()
+    public async Task when_result_is_ok_then_tap_error_async_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var result = new Result<string, int>.Ok("success");
         int sideEffectValue = 0;
@@ -609,7 +595,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteSideEffectAndReturnOriginalResultWhenTappingSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_tap_async_executes_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
         int sideEffectValue = 0;
@@ -621,7 +607,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorTaskResult()
+    public async Task when_task_result_is_error_then_tap_async_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error"));
         int sideEffectValue = 0;
@@ -633,7 +619,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorTaskResult()
+    public async Task when_task_result_is_error_then_tap_error_async_executes_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
         int sideEffectValue = 0;
@@ -645,7 +631,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_tap_error_async_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
         int sideEffectValue = 0;
@@ -657,7 +643,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_tap_async_with_async_action_executes_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
         int sideEffectValue = 0;
@@ -674,7 +660,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorTaskResult()
+    public async Task when_task_result_is_error_then_tap_async_with_async_action_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("error"));
         int sideEffectValue = 0;
@@ -691,7 +677,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task ExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnErrorTaskResult()
+    public async Task when_task_result_is_error_then_tap_error_async_with_async_action_executes_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Error(42));
         int sideEffectValue = 0;
@@ -708,7 +694,7 @@ public sealed class ResultExtensionsShould
     }
 
     [Fact]
-    public async Task NotExecuteAsyncSideEffectAndReturnOriginalResultWhenTappingErrorOnSuccessTaskResult()
+    public async Task when_task_result_is_ok_then_tap_error_async_with_async_action_does_not_execute_the_side_effect_and_returns_the_original_result()
     {
         var resultTask = Task.FromResult<Result<string, int>>(new Result<string, int>.Ok("success"));
         int sideEffectValue = 0;
@@ -723,6 +709,4 @@ public sealed class ResultExtensionsShould
         sideEffectValue.ShouldBe(0);
         tapped.ShouldBe(await resultTask);
     }
-
-    #endregion
 }
