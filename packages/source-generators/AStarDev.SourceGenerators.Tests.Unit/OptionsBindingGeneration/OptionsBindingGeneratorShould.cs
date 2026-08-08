@@ -1,5 +1,5 @@
 using AStarDev.SourceGenerators.OptionsBindingGeneration;
-using AStarDev.SourceGenerators.Tests.Unit.Utilitites;
+using AStarDev.SourceGenerators.Tests.Unit.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -10,14 +10,16 @@ public sealed class OptionsBindingGeneratorShould
     [Fact]
     public void GenerateRegistrationForClassWithAttributeSectionName()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions(""MySection"")]
-    public partial class MyOptions { }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions("MySection")]
+                                 public partial class MyOptions { }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
@@ -35,14 +37,16 @@ namespace TestNamespace
     [Fact]
     public void GenerateRegistrationForStructWithAttributeSectionName()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions(""StructSection"")]
-    public partial struct MyStructOptions { }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions("StructSection")]
+                                 public partial struct MyStructOptions { }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
@@ -59,14 +63,16 @@ namespace TestNamespace
     [Fact]
     public void GenerateRegistrationForClassWithConstSectionNameField()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions]
-    public partial class MyOptionsWithField { public const string SectionName = ""FieldSection""; }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions]
+                                 public partial class MyOptionsWithField { public const string SectionName = "FieldSection"; }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
@@ -83,14 +89,16 @@ namespace TestNamespace
     [Fact]
     public void PreferAttributeSectionNameOverField()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions(""AttrSection"")]
-    public partial class MyOptionsWithBoth { public const string SectionName = ""FieldSection""; }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions("AttrSection")]
+                                 public partial class MyOptionsWithBoth { public const string SectionName = "FieldSection"; }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
@@ -108,14 +116,16 @@ namespace TestNamespace
     [Fact]
     public void EmitDiagnosticIfNoSectionName()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions]
-    public partial class MyOptionsNoSection { }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions]
+                                 public partial class MyOptionsNoSection { }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
 
         var generator = new OptionsBindingGenerator();
@@ -130,16 +140,18 @@ namespace TestNamespace
     [Fact]
     public void GenerateRegistrationsForMultipleTypes()
     {
-        const string input = @"using AStarDev.SourceGenerators.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    [AutoRegisterOptions(""SectionA"")]
-    public partial class OptionsA { }
-    [AutoRegisterOptions]
-    public partial class OptionsB { public const string SectionName = ""SectionB""; }
-}";
+        const string input = """
+                             using AStarDev.SourceGenerators.Attributes;
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterOptions("SectionA")]
+                                 public partial class OptionsA { }
+                                 [AutoRegisterOptions]
+                                 public partial class OptionsB { public const string SectionName = "SectionB"; }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
@@ -158,12 +170,14 @@ namespace TestNamespace
     [Fact]
     public void DoesNotGenerateForTypesWithoutAttribute()
     {
-        const string input = @"using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-namespace TestNamespace
-{
-    public partial class NotRegistered { public const string SectionName = ""SectionX""; }
-}";
+        const string input = """
+                             using Microsoft.Extensions.DependencyInjection;
+                             using Microsoft.Extensions.Configuration;
+                             namespace TestNamespace
+                             {
+                                 public partial class NotRegistered { public const string SectionName = "SectionX"; }
+                             }
+                             """;
         var compilation = CompilationHelpers.CreateCompilation(input);
         var generator = new OptionsBindingGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
