@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../zoran/ImmutableDomain.EntityFrameworkCore/ImmutableDomain.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="../../core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
   </ItemGroup>
 
 </Project>

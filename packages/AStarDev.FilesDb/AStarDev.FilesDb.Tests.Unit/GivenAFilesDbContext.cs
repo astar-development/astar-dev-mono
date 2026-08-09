@@ -37,6 +37,8 @@ public sealed class GivenAFilesDbContext : IDisposable
             FileSize = 1024,
         };
         context.Set<FileEntity>().Add(fileEntity);
+        context.Entry(fileEntity.DeletionStatus).State = EntityState.Detached;
+        context.Entry(fileEntity.FileAccessDetail).State = EntityState.Detached;
         context.SaveChanges();
 
         var reloaded = context.Set<FileEntity>().Single();
