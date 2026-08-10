@@ -20,7 +20,9 @@ public class GivenAFileViewerService
     [Fact]
     public async Task when_viewing_a_null_item_then_returns_without_error()
     {
-        await _sut.ViewFileAsync(null);
+        await Should.NotThrowAsync(() => _sut.ViewFileAsync(null));
+
+        await _dbContextFactory.DidNotReceive().CreateDbContextAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -68,8 +70,12 @@ public class GivenAFileViewerService
             FullPath = "/nonexistent/ghost.txt",
             LastModified = DateTime.UtcNow
         });
+        bool eventRaised = false;
+        _sut.FileViewRequested += _ => eventRaised = true;
 
-        await _sut.ViewFileAsync(displayItem);
+        await Should.NotThrowAsync(() => _sut.ViewFileAsync(displayItem));
+
+        eventRaised.ShouldBeTrue();
     }
 
     [Fact]

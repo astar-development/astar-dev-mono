@@ -11,19 +11,19 @@ public class GivenAFileDeleteService
     {
         const string filePath = "/nonexistent/path/file.txt";
 
-        await _sut.DeleteFileAsync(filePath, moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFileAsync(filePath, moveToRecycleBin: false));
     }
 
     [Fact]
     public async Task when_deleting_a_null_file_path_then_returns_without_error()
     {
-        await _sut.DeleteFileAsync(null!, moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFileAsync(null!, moveToRecycleBin: false));
     }
 
     [Fact]
     public async Task when_deleting_an_empty_file_path_then_returns_without_error()
     {
-        await _sut.DeleteFileAsync(string.Empty, moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFileAsync(string.Empty, moveToRecycleBin: false));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class GivenAFileDeleteService
     [Fact]
     public async Task when_deleting_an_empty_list_of_files_then_returns_without_error()
     {
-        await _sut.DeleteFilesAsync([], moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFilesAsync([], moveToRecycleBin: false));
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class GivenAFileDeleteService
     {
         string[] files = ["/nonexistent/file1.txt", "/nonexistent/file2.txt"];
 
-        await _sut.DeleteFilesAsync(files, moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFilesAsync(files, moveToRecycleBin: false));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class GivenAFileDeleteService
     [Fact]
     public async Task when_deleting_a_whitespace_file_path_then_returns_without_error()
     {
-        await _sut.DeleteFileAsync("   ", moveToRecycleBin: false);
+        await Should.NotThrowAsync(() => _sut.DeleteFileAsync("   ", moveToRecycleBin: false));
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class GivenAFileDeleteService
 
         try
         {
-            await _sut.DeleteFilesAsync([tempFile], moveToRecycleBin: true);
+            await Should.NotThrowAsync(() => _sut.DeleteFilesAsync([tempFile], moveToRecycleBin: true));
         }
         finally
         {

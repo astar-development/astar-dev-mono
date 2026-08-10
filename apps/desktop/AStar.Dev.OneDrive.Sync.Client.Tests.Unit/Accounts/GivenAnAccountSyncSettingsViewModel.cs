@@ -179,7 +179,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         var repository = Substitute.For<IAccountRepository>();
         var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
 
-        await sut.BrowseCommand.ExecuteAsync(null);
+        await Should.NotThrowAsync(() => sut.BrowseCommand.ExecuteAsync(null));
     }
 
     [Fact]

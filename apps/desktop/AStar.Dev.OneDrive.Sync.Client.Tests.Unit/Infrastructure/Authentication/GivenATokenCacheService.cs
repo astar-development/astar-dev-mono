@@ -48,14 +48,11 @@ public sealed class GivenATokenCacheService
         var mockCache = Substitute.For<ITokenCache>();
         _ = mockApp.UserTokenCache.Returns(mockCache);
         var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
-        try
-        {
-            await service.RegisterAsync(mockApp);
-        }
-        catch (InvalidOperationException)
-        {
-            // Expected when MSAL helpers are not available in test environment
-        }
+
+        var exception = await Record.ExceptionAsync(() => service.RegisterAsync(mockApp));
+
+        if (exception is not null)
+            exception.ShouldBeOfType<InvalidOperationException>();
     }
 
     [Fact]
@@ -134,14 +131,8 @@ public sealed class GivenATokenCacheService
     public async Task when_register_async_called_with_null_then_null_reference_exception_is_thrown()
     {
         var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
-        try
-        {
-            await service.RegisterAsync(null!);
-        }
-        catch (NullReferenceException)
-        {
-            // Expected - null app parameter is not validated
-        }
+
+        await Should.ThrowAsync<NullReferenceException>(() => service.RegisterAsync(null!));
     }
 
     [Fact]
