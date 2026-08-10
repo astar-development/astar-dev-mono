@@ -362,6 +362,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.op_Implicit(System.Int32)~AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId)~System.Int32">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryIdFactory">
             <summary>Factory methods for creating <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId"/> instances.</summary>
         </member>
@@ -505,6 +511,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.op_Implicit(System.String)~AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId)~System.String">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.PathNormaliser">
             <summary>Normalises a remote OneDrive path by stripping the fixed root segments and splitting the remainder into folder segments and filename stem.</summary>
@@ -833,6 +845,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.op_Implicit(System.String)~AStar.Dev.Infrastructure.AppDb.Entities.AccountId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.AccountId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.AccountId)~System.String">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.AccountProfile">
             <summary>
@@ -1252,6 +1270,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.op_Implicit(System.Guid)~AStar.Dev.Infrastructure.AppDb.Entities.FileEventId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileEventId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.FileEventId)~System.Guid">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileHandle">
             <summary>An opaque, stable handle identifying a file across renames and moves.</summary>
             <param name="Value">The handle value.</param>
@@ -1282,6 +1306,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileId.op_Implicit(System.Guid)~AStar.Dev.Infrastructure.AppDb.Entities.FileId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.FileId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.FileId)~System.Guid">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileName">
             <summary>The name of a file, excluding its directory path.</summary>
@@ -1326,6 +1356,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.Value">
             <summary>The underlying identifier value.</summary>
         </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.op_Implicit(System.Guid)~AStar.Dev.Infrastructure.AppDb.Entities.ImageId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ImageId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.ImageId)~System.Guid">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelId">
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity"/>.
@@ -1339,6 +1375,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.op_Implicit(System.Guid)~AStar.Dev.Infrastructure.AppDb.Entities.ModelId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.ModelId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.ModelId)~System.Guid">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.ModelToIgnoreEntity">
             <summary>A model whose files should be ignored completely by the scraper.</summary>
@@ -1362,6 +1404,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.op_Implicit(System.String)~AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId)~System.String">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.RuleType">
             <summary>
@@ -1865,6 +1913,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.TagId.Value">
             <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.TagId.op_Implicit(System.Guid)~AStar.Dev.Infrastructure.AppDb.Entities.TagId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.TagId.op_Implicit(AStar.Dev.Infrastructure.AppDb.Entities.TagId)~System.Guid">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity">
             <summary>A tag that should cause a scraped file to be ignored.</summary>

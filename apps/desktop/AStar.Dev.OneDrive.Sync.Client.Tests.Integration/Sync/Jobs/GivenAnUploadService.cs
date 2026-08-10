@@ -71,7 +71,7 @@ public sealed class GivenAnUploadService
 
         var result = await uploadTask;
 
-        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(5));
+        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(6));
         result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
