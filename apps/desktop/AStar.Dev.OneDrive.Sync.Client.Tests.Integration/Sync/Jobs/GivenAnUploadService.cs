@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
@@ -57,18 +58,20 @@ public sealed class GivenAnUploadService
               .RespondWith(Response.Create().WithStatusCode(429));
 
         var timeProvider = new FakeTimeProvider();
-        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>());
+        var sut = new UploadService(CreateChunkClientFactory(), mockFileSystem, Substitute.For<ILogger<UploadService>>(), timeProvider);
 
+        var stopwatch = Stopwatch.StartNew();
         var uploadTask = sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
         while (!uploadTask.IsCompleted)
         {
-            await Task.Delay(1, TestContext.Current.CancellationToken);
+            await Task.Yield();
             timeProvider.Advance(TimeSpan.FromMinutes(5));
         }
 
         var result = await uploadTask;
 
+        stopwatch.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(5));
         result.ShouldBeAssignableTo<Fail<string, string>>();
     }
 
