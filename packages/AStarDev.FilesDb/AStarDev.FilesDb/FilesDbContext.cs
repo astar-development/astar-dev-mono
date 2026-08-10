@@ -25,7 +25,7 @@ public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContex
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<FileEntity>().Property<FileId>("Id").HasConversion(fileId => fileId.Id, value => new FileId(value)).ValueGeneratedOnAdd();
+        modelBuilder.Entity<FileEntity>().Property<FileId>("Id").HasConversion(fileId => fileId.Value, value => new FileId(value)).ValueGeneratedOnAdd();
         modelBuilder.Entity<FileEntity>().HasKey("Id");
 
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(FilesDbContext).Assembly);

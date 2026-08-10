@@ -11,7 +11,7 @@ public class FileAccessDetailEntityConfiguration : IEntityTypeConfiguration<File
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<FileAccessDetailEntity> builder)
     {
-        builder.Property(d => d.FileEntityId).HasConversion(id => id.Id, value => new FileId(value));
+        builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasOne(d => d.FileDetail)
             .WithOne()

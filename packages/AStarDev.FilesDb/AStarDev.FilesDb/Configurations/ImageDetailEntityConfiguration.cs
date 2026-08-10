@@ -11,7 +11,7 @@ public class ImageDetailEntityConfiguration : IEntityTypeConfiguration<ImageDeta
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<ImageDetailEntity> builder)
     {
-        builder.Property(d => d.FileEntityId).HasConversion(id => id.Id, value => new FileId(value));
+        builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
         builder.HasKey(d => d.FileEntityId);
 
         builder.HasOne(d => d.FileDetail)
