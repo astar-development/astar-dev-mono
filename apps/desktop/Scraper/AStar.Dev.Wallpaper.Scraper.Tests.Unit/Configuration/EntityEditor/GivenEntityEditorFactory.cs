@@ -17,6 +17,7 @@ public sealed class GivenEntityEditorFactory : IDisposable
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly DbContextOptions<AppDbContext> options;
     private readonly EntityEditorFactory sut;
+    private bool disposed;
 
     public GivenEntityEditorFactory()
     {
@@ -241,8 +242,22 @@ public sealed class GivenEntityEditorFactory : IDisposable
         editor.StatusMessage.ShouldBe("Synced tags to ignore: 1 added, 1 removed.");
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private void SeedClassification(string name, bool includeInSearch)
     {

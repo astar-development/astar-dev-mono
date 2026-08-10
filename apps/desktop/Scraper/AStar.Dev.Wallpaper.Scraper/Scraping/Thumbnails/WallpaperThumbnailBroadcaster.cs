@@ -11,6 +11,7 @@ public sealed class WallpaperThumbnailBroadcaster : IWallpaperThumbnailPublisher
 {
     private readonly Subject<WallpaperThumbnailPayload> thumbnails = new();
     private readonly Subject<string> categorySkipped = new();
+    private bool disposed;
 
     /// <inheritdoc />
     public IObservable<WallpaperThumbnailPayload> Thumbnails => thumbnails.AsObservable();
@@ -29,6 +30,20 @@ public sealed class WallpaperThumbnailBroadcaster : IWallpaperThumbnailPublisher
     /// </summary>
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
         thumbnails.Dispose();
         categorySkipped.Dispose();
     }

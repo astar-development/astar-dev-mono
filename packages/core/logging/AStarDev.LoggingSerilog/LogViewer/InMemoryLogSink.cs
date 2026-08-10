@@ -19,6 +19,7 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     private readonly int capacity;
     private readonly ConcurrentQueue<LogEntry> entries = new();
     private readonly Subject<LogEntry> subject = new();
+    private bool disposed;
 
     /// <summary>Initialises the sink with <see cref="DefaultCapacity"/>.</summary>
     public InMemoryLogSink() : this(DefaultCapacity) { }
@@ -50,6 +51,20 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     /// <inheritdoc />
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
         subject.OnCompleted();
         subject.Dispose();
     }

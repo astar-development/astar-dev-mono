@@ -11,6 +11,7 @@ public sealed class GivenScrapeContextReader : IDisposable
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+    private bool disposed;
 
     public GivenScrapeContextReader()
     {
@@ -123,8 +124,22 @@ public sealed class GivenScrapeContextReader : IDisposable
         result.Directories.ShouldBe(new DirectoryLayout(string.Empty, string.Empty, string.Empty));
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {

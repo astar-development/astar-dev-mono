@@ -11,8 +11,24 @@ public sealed class GivenADriveContextCache : IDisposable
     private const string AnyRootId = "root-001";
 
     private readonly WireMockServer server = WireMockServer.Start();
+    private bool disposed;
 
-    public void Dispose() => server.Stop();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            server.Stop();
+    }
 
     private DriveContextCache CreateSut() => new(new WireMockGraphClientFactory(server));
 

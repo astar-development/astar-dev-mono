@@ -8,6 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Updates;
 public sealed class LocalizedUpdateDialogTextProvider : IUpdateDialogTextProvider, IDisposable
 {
     private readonly ILocalizationService localization;
+    private bool disposed;
 
     public LocalizedUpdateDialogTextProvider(ILocalizationService localization)
     {
@@ -41,5 +42,20 @@ public sealed class LocalizedUpdateDialogTextProvider : IUpdateDialogTextProvide
     private void OnCultureChanged(object? sender, CultureInfo culture) => TextChanged?.Invoke(this, EventArgs.Empty);
 
     /// <summary>Unsubscribes from <see cref="ILocalizationService.CultureChanged"/>.</summary>
-    public void Dispose() => localization.CultureChanged -= OnCultureChanged;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            localization.CultureChanged -= OnCultureChanged;
+    }
 }

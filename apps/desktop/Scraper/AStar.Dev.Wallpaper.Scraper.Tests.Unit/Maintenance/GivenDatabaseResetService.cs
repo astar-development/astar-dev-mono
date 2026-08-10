@@ -13,6 +13,7 @@ public sealed class GivenDatabaseResetService : IDisposable
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
     private readonly MockFileSystem fileSystem = new();
+    private bool disposed;
 
     public GivenDatabaseResetService()
     {
@@ -169,8 +170,22 @@ public sealed class GivenDatabaseResetService : IDisposable
         await Should.NotThrowAsync(() => sut.RemoveDownloadedFilesAsync(TestContext.Current.CancellationToken));
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private DatabaseResetService CreateSut(Clock? clock = null) =>
         new(dbContextFactory, fileSystem, clock ?? (() => DateTimeOffset.UtcNow));

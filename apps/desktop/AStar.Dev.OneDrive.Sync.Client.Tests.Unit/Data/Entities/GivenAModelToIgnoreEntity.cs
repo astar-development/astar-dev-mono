@@ -8,6 +8,7 @@ public sealed class GivenAModelToIgnoreEntity : IDisposable
 {
     private readonly SqliteConnection connection;
     private readonly AppDbContext context;
+    private bool disposed;
 
     public GivenAModelToIgnoreEntity()
     {
@@ -20,6 +21,20 @@ public sealed class GivenAModelToIgnoreEntity : IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
         context.Dispose();
         connection.Dispose();
     }

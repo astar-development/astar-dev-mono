@@ -5,8 +5,24 @@ namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Scraping.Thumbnails;
 public sealed class GivenWallpaperThumbnailBroadcaster : IDisposable
 {
     private readonly WallpaperThumbnailBroadcaster sut = new();
+    private bool disposed;
 
-    public void Dispose() => sut.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            sut.Dispose();
+    }
 
     [Fact]
     public void when_a_thumbnail_is_published_then_subscribers_to_the_feed_receive_it()

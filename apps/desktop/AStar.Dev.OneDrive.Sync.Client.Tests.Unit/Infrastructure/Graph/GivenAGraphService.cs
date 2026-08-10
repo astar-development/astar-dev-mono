@@ -15,8 +15,24 @@ public sealed class GivenAGraphService : IDisposable
     private const string AnyLocalPath = "/home/user/file.txt";
 
     private readonly WireMockServer server = WireMockServer.Start();
+    private bool disposed;
 
-    public void Dispose() => server.Stop();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            server.Stop();
+    }
 
     private GraphService CreateSut()
     {

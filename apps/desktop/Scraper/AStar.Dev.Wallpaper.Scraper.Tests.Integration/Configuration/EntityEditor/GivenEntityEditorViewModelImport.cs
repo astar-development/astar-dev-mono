@@ -18,6 +18,7 @@ public sealed class GivenEntityEditorViewModelImport : IDisposable
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
     private readonly MockFileSystem fileSystem = new();
     private readonly DbContextOptions<AppDbContext> options;
+    private bool disposed;
 
     public GivenEntityEditorViewModelImport()
     {
@@ -86,8 +87,22 @@ public sealed class GivenEntityEditorViewModelImport : IDisposable
         rows.ShouldContain(row => row.Id == 998 && row.ParentId == 78);
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private EntityEditorViewModel<FileClassificationCategoryEntity> CreateSut()
     {
