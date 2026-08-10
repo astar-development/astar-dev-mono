@@ -131,8 +131,8 @@
   <ItemGroup Label="Authentication and security">
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.84.0" />
-    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.84.0" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.87.0" />
+    <PackageVersion Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.87.0" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="3.4.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />
