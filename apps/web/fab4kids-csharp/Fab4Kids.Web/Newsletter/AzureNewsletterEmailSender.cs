@@ -30,7 +30,7 @@ public sealed class AzureNewsletterEmailSender(IOptions<NewsletterOptions> optio
             await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken);
 
             return UnitFp.Instance;
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureNewsletterEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
