@@ -20,6 +20,7 @@ internal sealed class CachedTokenFactory : IDisposable
     private readonly SemaphoreSlim refreshLock = new(1, 1);
     private string cachedToken;
     private DateTimeOffset tokenExpiresOn;
+    private bool disposed;
 
     internal CachedTokenFactory(string accountId, IAuthService authService, string initialToken, DateTimeOffset initialExpiresOn)
     {
@@ -54,7 +55,22 @@ internal sealed class CachedTokenFactory : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => refreshLock.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            refreshLock.Dispose();
+    }
 
     private bool IsNearExpiry() => tokenExpiresOn - DateTimeOffset.UtcNow < TokenRefreshThreshold;
 }

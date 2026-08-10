@@ -6,6 +6,7 @@ namespace AStarDev.Web.Components.Common;
 public partial class CookieConsent : ComponentBase, IDisposable
 {
     private string liveText = string.Empty;
+    private bool disposed;
 
     protected override void OnInitialized() => ConsentState.OnChange += StateHasChanged;
 
@@ -33,7 +34,18 @@ public partial class CookieConsent : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        ConsentState.OnChange -= StateHasChanged;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            ConsentState.OnChange -= StateHasChanged;
     }
 }

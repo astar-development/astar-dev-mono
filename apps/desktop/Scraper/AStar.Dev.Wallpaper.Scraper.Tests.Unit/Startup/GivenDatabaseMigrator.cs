@@ -10,6 +10,7 @@ namespace AStar.Dev.Wallpaper.Scraper.Tests.Unit.Startup;
 public sealed class GivenDatabaseMigrator : IDisposable
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
+    private bool disposed;
 
     [Fact]
     public async Task when_migration_succeeds_then_pending_migrations_are_applied()
@@ -60,8 +61,22 @@ public sealed class GivenDatabaseMigrator : IDisposable
         logger.ErrorLogCount.ShouldBe(0);
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {

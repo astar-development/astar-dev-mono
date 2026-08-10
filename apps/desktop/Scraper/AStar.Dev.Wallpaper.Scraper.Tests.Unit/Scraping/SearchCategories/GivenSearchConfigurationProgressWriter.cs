@@ -10,6 +10,7 @@ public sealed class GivenSearchConfigurationProgressWriter : IDisposable
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+    private bool disposed;
 
     public GivenSearchConfigurationProgressWriter()
     {
@@ -63,8 +64,22 @@ public sealed class GivenSearchConfigurationProgressWriter : IDisposable
         updated.SubscriptionsTotalPages.ShouldBe(9);
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {

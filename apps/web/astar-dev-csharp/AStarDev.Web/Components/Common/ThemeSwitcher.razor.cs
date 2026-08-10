@@ -14,6 +14,8 @@ public partial class ThemeSwitcher : ComponentBase, IDisposable
         ThemeOptionFactory.Create(Theme.Polished, "◆", "Switch to polished theme"),
     ];
 
+    private bool disposed;
+
     protected override void OnInitialized() => ThemeState.OnChange += StateHasChanged;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -33,7 +35,18 @@ public partial class ThemeSwitcher : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        ThemeState.OnChange -= StateHasChanged;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            ThemeState.OnChange -= StateHasChanged;
     }
 }

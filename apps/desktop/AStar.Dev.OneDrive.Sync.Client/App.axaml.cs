@@ -107,12 +107,18 @@ public class App : Application, IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
         if (disposed)
             return;
 
         disposed = true;
-        services?.Dispose();
 
-        GC.SuppressFinalize(this);
+        if (disposing)
+            services?.Dispose();
     }
 }

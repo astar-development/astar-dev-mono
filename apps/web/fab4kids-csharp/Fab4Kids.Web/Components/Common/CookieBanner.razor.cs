@@ -5,6 +5,8 @@ namespace Fab4Kids.Web.Components.Common;
 
 public sealed partial class CookieBanner : ComponentBase, IDisposable
 {
+    private bool disposed;
+
     protected override void OnInitialized() => ConsentState.OnChange += StateHasChanged;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -26,7 +28,18 @@ public sealed partial class CookieBanner : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        ConsentState.OnChange -= StateHasChanged;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            ConsentState.OnChange -= StateHasChanged;
     }
 }

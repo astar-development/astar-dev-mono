@@ -13,6 +13,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     private readonly IVelopackUpdateService updateCheckService;
     private readonly IUpdateDialogTextProvider textProvider;
     private readonly ILogger<UpdateAvailableViewModel> logger;
+    private bool disposed;
 
     /// <summary>Creates the view model for the supplied discovered update.</summary>
     /// <param name="updateInfo">The discovered update, as returned by <see cref="IVelopackUpdateService.CheckForUpdatesAsync"/>.</param>
@@ -79,7 +80,22 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     }
 
     /// <summary>Unsubscribes from the <see cref="IUpdateDialogTextProvider.TextChanged"/> event.</summary>
-    public void Dispose() => textProvider.TextChanged -= OnTextProviderChanged;
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            textProvider.TextChanged -= OnTextProviderChanged;
+    }
 
     [RelayCommand]
     private async Task RestartNowAsync()

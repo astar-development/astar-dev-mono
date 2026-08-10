@@ -11,6 +11,7 @@ public sealed class GivenSearchCategoryReader : IDisposable
 {
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+    private bool disposed;
 
     public GivenSearchCategoryReader()
     {
@@ -59,8 +60,22 @@ public sealed class GivenSearchCategoryReader : IDisposable
         progress.ShouldBe(Option<SearchCategoryProgress>.None.Instance);
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private sealed class TestDbContextFactory(DbContextOptions<AppDbContext> options) : IDbContextFactory<AppDbContext>
     {

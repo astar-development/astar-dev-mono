@@ -11,13 +11,25 @@ public class GivenANugetPackageService : IDisposable
     private readonly INugetApiClient apiClient = Substitute.For<INugetApiClient>();
     private readonly MemoryCache cache = new(new MemoryCacheOptions());
     private readonly ILogger<NugetPackageService> logger = Substitute.For<ILogger<NugetPackageService>>();
+    private bool disposed;
 
     private NugetPackageService CreateSut() => new(apiClient, cache, logger);
 
     public void Dispose()
     {
-        cache.Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            cache.Dispose();
     }
 
     [Fact]

@@ -8,10 +8,18 @@ public abstract class ViewModelBase : ReactiveObject, IDisposable
     protected CancellationTokenSource CancellationTokenSource { get; set; } = new();
     protected CompositeDisposable Disposables { get; } = [];
 
-    public virtual void Dispose()
+    public void Dispose()
     {
-        Disposables.Dispose();
-        CancellationTokenSource.Dispose();
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Disposables.Dispose();
+            CancellationTokenSource.Dispose();
+        }
     }
 }

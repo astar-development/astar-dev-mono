@@ -26,6 +26,7 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     private string thumbnailTags = string.Empty;
     private bool isBusy;
     private CancellationTokenSource? scrapeCancellationSource;
+    private bool disposed;
     private readonly IPlaywrightService playwrightService;
     private readonly IThemeService themeService;
     private readonly IDatabaseResetService databaseResetService;
@@ -337,5 +338,20 @@ public sealed class MainWindowViewModel : ViewModelBase, IDisposable
     /// <summary>
     ///     Cancels any in-flight scrape operation so it does not continue running after the view model is torn down.
     /// </summary>
-    public void Dispose() => scrapeCancellationSource?.Cancel();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            scrapeCancellationSource?.Cancel();
+    }
 }

@@ -10,6 +10,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync.Pipeline;
 public sealed class AvaloniaUiTimer : IUiTimer, IDisposable
 {
     private DispatcherTimer? timer;
+    private bool disposed;
 
     /// <inheritdoc />
     public void Start(TimeSpan interval, Action callback)
@@ -20,5 +21,20 @@ public sealed class AvaloniaUiTimer : IUiTimer, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => timer?.Stop();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            timer?.Stop();
+    }
 }

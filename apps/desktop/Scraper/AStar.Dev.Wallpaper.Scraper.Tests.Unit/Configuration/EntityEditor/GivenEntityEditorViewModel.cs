@@ -18,6 +18,7 @@ public sealed class GivenEntityEditorViewModel : IDisposable
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
     private readonly MockFileSystem fileSystem = new();
     private readonly DbContextOptions<AppDbContext> options;
+    private bool disposed;
 
     public GivenEntityEditorViewModel()
     {
@@ -389,8 +390,22 @@ public sealed class GivenEntityEditorViewModel : IDisposable
         row.Value.ShouldBe("stamped-by-hook");
     }
 
-    public void Dispose() =>
-        connection.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            connection.Dispose();
+    }
 
     private void SeedTag(string value)
     {

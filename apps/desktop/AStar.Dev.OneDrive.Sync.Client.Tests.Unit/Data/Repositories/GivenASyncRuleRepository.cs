@@ -13,6 +13,7 @@ public sealed class GivenASyncRuleRepository : IDisposable
     private readonly SqliteConnection _connection;
     private readonly AppDbContext _seedingContext;
     private readonly IDbContextFactory<AppDbContext> _factory;
+    private bool disposed;
 
     public GivenASyncRuleRepository()
     {
@@ -33,6 +34,20 @@ public sealed class GivenASyncRuleRepository : IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
         _seedingContext.Dispose();
         _connection.Dispose();
     }

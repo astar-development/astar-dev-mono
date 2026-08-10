@@ -12,6 +12,7 @@ public sealed partial class CartWidget : ComponentBase, IDisposable
     private bool open;
     private bool checkingOut;
     private string? checkoutError;
+    private bool disposed;
 
     protected override void OnInitialized() => CartState.OnChange += StateHasChanged;
 
@@ -57,7 +58,18 @@ public sealed partial class CartWidget : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        CartState.OnChange -= StateHasChanged;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            CartState.OnChange -= StateHasChanged;
     }
 }

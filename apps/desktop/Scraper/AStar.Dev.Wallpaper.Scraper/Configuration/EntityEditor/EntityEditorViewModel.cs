@@ -28,6 +28,7 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
     private readonly string exportFilePath;
     private readonly ObservableCollection<TEntity> items;
     private TEntity? selectedItem;
+    private bool disposed;
 
     /// <summary>
     ///     Initialises a new editor, eagerly loading every row of the table described by <paramref name="descriptor" />
@@ -108,8 +109,22 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
         descriptor.ReadOnlyColumns.Contains(propertyName);
 
     /// <summary>Disposes the dedicated <see cref="AppDbContext" /> held for the lifetime of this editor.</summary>
-    public void Dispose() =>
-        context.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            context.Dispose();
+    }
 
     private void AddRow()
     {

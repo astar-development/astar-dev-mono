@@ -15,6 +15,7 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static readonly Uri darkUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Dark.axaml");
     private static readonly Uri hackerUri = new("avares://AStar.Dev.OneDrive.Sync.Client/Themes/Hacker.axaml");
     private Disposable? systemWatcher;
+    private bool disposed;
 
     ///<inheritdoc />
     public AppTheme CurrentTheme { get; private set; } = AppTheme.System;
@@ -104,10 +105,42 @@ public sealed class ThemeService : IThemeService, IDisposable
         _ => lightUri,
     };
 
-    public void Dispose() => systemWatcher?.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (disposing)
+            systemWatcher?.Dispose();
+    }
 
     private sealed class Disposable(Action action) : IDisposable
     {
-        public void Dispose() => action();
+        private bool disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+
+            if (disposing)
+                action();
+        }
     }
 }

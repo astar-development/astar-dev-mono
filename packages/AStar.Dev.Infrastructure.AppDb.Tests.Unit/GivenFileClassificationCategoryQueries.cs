@@ -7,6 +7,7 @@ public sealed class GivenFileClassificationCategoryQueries : IDisposable
 {
     private readonly string databasePath = Path.Combine(Path.GetTempPath(), $"file-classification-category-queries-{Guid.NewGuid():N}.db");
     private readonly AppDbContext context;
+    private bool disposed;
 
     public GivenFileClassificationCategoryQueries()
     {
@@ -62,8 +63,21 @@ public sealed class GivenFileClassificationCategoryQueries : IDisposable
 
     public void Dispose()
     {
-        context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
+        context.Dispose();
         if (File.Exists(databasePath))
         {
             File.Delete(databasePath);

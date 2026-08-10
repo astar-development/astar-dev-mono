@@ -20,6 +20,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private string accountId = string.Empty;
     private string? accessToken;
     private CancellationTokenSource? authCts;
+    private bool disposed;
 
     public AddAccountWizardViewModel(IAuthService authService, IGraphService graphService, ILocalizationService localizationService)
     {
@@ -330,6 +331,20 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
         loc.CultureChanged -= OnCultureChanged;
         CancellationTokenSource? toDispose;
         lock (authCtsLock)
