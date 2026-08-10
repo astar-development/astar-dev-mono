@@ -186,4 +186,28 @@ public class GivenAFulfilmentService
 
         outcome.ShouldBeOfType<ResendFailed>();
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_process_checkout_completed_never_retrieves_the_session()
+    {
+        var sut = CreateSut(sessionService);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.ProcessCheckoutCompletedAsync("cs_test_123", cancellationTokenSource.Token));
+
+        await sessionService.DidNotReceive().GetAsync(Arg.Any<string>(), Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_resend_never_retrieves_the_session()
+    {
+        var sut = CreateSut(sessionService);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.ResendAsync("cs_test_123", "ada@example.com", cancellationTokenSource.Token));
+
+        await sessionService.DidNotReceive().GetAsync(Arg.Any<string>(), Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>());
+    }
 }
