@@ -27,7 +27,7 @@ public sealed class GivenAnHttpDownloaderIoExceptionRetry
 
         while (!downloadTask.IsCompleted)
         {
-            await Task.Delay(1, TestContext.Current.CancellationToken);
+            await Task.Yield();
             timeProvider.Advance(TimeSpan.FromMinutes(5));
         }
 

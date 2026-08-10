@@ -3,7 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.FileClassification;
 
-public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenFileAutoCategorisor(IntegrationTestFixture fixture)
 {
     // PathNormaliser.StripRootPath skips the first 7 segments; paths must have 8+ segments
     // for meaningful folder tokens to survive into the classification pipeline.

@@ -4,7 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Infrastructure;
 
-public sealed class GivenTheIntegrationTestFixture(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenTheIntegrationTestFixture(IntegrationTestFixture fixture)
 {
     [Fact]
     public void when_resolving_services_then_sync_service_is_not_null()

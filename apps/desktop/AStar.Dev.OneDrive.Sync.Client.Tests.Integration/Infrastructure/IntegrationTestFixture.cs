@@ -24,12 +24,11 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
     public MockFileSystem FileSystem { get; } = new();
     public ServiceProvider Services { get; private set; } = null!;
 
-    private string tempDbPath = string.Empty;
+    private TestDbContextFactory testDbContextFactory = null!;
 
     public async ValueTask InitializeAsync()
     {
         WireMock = WireMockServer.Start(0);
-        tempDbPath = Path.GetTempFileName() + ".db";
 
         var inMemoryLogSink = new InMemoryLogSink();
         var services = new ServiceCollection();
@@ -39,7 +38,8 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
 
         var dbContextDescriptor = services.Single(d => d.ServiceType == typeof(IDbContextFactory<AppDbContext>));
         services.Remove(dbContextDescriptor);
-        services.AddSingleton<IDbContextFactory<AppDbContext>>(new TestDbContextFactory(tempDbPath));
+        testDbContextFactory = new TestDbContextFactory();
+        services.AddSingleton<IDbContextFactory<AppDbContext>>(testDbContextFactory);
 
         services.AddSingleton(Options.Create(new EntraIdConfiguration
         {
@@ -75,7 +75,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
     {
         await Services.DisposeAsync();
         WireMock.Stop();
-        try { File.Delete(tempDbPath); } catch { }
+        await testDbContextFactory.DisposeAsync();
     }
 
     private static void ReplaceWithStub<TService>(ServiceCollection services) where TService : class
