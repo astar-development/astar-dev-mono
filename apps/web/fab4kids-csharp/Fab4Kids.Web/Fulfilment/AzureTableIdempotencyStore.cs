@@ -34,7 +34,7 @@ public sealed class AzureTableIdempotencyStore(ILogger<AzureTableIdempotencyStor
             {
                 return false;
             }
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureTableIdempotencyStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
