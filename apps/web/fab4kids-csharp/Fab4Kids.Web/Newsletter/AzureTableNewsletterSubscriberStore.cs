@@ -31,7 +31,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
             {
                 return false;
             }
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureTableNewsletterSubscriberStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
@@ -56,7 +56,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
             await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Replace, cancellationToken);
 
             return UnitFp.Instance;
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureTableNewsletterSubscriberStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
