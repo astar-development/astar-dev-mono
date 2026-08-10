@@ -78,14 +78,16 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_30A7893EAF2D4593B54B7ACFE4926151 }}
           package: ./publish
 
-      - name: Wait for app to warm up
-        run: sleep 15
-
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fab-4-kids.co.uk/)
-          if [ "$STATUS" != "200" ]; then
-            echo "Health check failed with status $STATUS"
-            exit 1
-          fi
-          echo "Health check passed"
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fab-4-kids.co.uk/)
+            if [ "$STATUS" = "200" ]; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Attempt $i: status $STATUS, retrying..."
+            sleep 2
+          done
+          echo "Health check failed with status $STATUS"
+          exit 1
