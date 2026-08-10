@@ -335,9 +335,9 @@ public sealed class GivenAFileClassificationRepository
     }
 
     [Fact]
-    public async Task when_add_category_is_called_with_an_already_cancelled_token_then_no_row_is_persisted()
+    public async Task when_add_category_is_called_with_an_already_cancelled_token_then_the_db_context_factory_is_never_called()
     {
-        var (db, factory) = CreateInMemoryFactory();
+        var (_, factory) = CreateInMemoryFactory();
         var repository = new FileClassificationRepository(factory, CreateLogger());
         var createResult = FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(0), "Photos", 1, false, false, Option.None<FileClassificationCategoryId>(), true);
         var category = ((Ok<FileClassificationCategory, string>)createResult).Value;
@@ -346,6 +346,6 @@ public sealed class GivenAFileClassificationRepository
 
         await Should.ThrowAsync<OperationCanceledException>(() => repository.AddCategoryAsync(category, cancellationTokenSource.Token));
 
-        db.FileClassificationCategories.Any().ShouldBeFalse();
+        await factory.DidNotReceive().CreateDbContextAsync(Arg.Any<CancellationToken>());
     }
 }
