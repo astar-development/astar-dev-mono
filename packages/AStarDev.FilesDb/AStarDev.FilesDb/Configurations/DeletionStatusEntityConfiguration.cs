@@ -11,7 +11,7 @@ public class DeletionStatusEntityConfiguration : IEntityTypeConfiguration<Deleti
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<DeletionStatusEntity> builder)
     {
-        builder.Property(d => d.FileEntityId).HasConversion(id => id.Id, value => new FileId(value));
+        builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasOne(d => d.FileEntity)
             .WithOne()
