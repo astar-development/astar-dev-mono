@@ -5,7 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Data;
 
-public sealed class GivenTheMigrationDropFileClassificationRulesTable(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenTheMigrationDropFileClassificationRulesTable(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task when_all_migrations_are_applied_then_file_classification_rules_table_does_not_exist()

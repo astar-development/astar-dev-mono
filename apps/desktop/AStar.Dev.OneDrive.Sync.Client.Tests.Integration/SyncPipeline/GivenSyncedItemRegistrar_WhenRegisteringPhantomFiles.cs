@@ -8,7 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.SyncPipeline;
 
-public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task when_registering_a_phantom_file_then_a_synced_item_entity_is_persisted()

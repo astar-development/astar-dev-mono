@@ -45,7 +45,7 @@ public sealed class GivenAnHttpDownloader
 
         while (!downloadTask.IsCompleted)
         {
-            await Task.Delay(1, TestContext.Current.CancellationToken);
+            await Task.Yield();
             timeProvider.Advance(TimeSpan.FromMinutes(5));
         }
 

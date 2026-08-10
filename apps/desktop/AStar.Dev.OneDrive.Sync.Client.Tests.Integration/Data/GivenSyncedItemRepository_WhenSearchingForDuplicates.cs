@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.Data;
 
-public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenSyncedItemRepository_WhenSearchingForDuplicates(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task when_no_duplicate_files_exist_then_returns_empty_list()

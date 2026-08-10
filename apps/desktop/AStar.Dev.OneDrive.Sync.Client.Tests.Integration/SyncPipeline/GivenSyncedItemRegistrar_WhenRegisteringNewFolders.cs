@@ -8,7 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.SyncPipeline;
 
-public sealed class GivenSyncedItemRegistrar_WhenRegisteringNewFolders(IntegrationTestFixture fixture) : IClassFixture<IntegrationTestFixture>
+[Collection(IntegrationTestGrouping.Name)]
+public sealed class GivenSyncedItemRegistrar_WhenRegisteringNewFolders(IntegrationTestFixture fixture)
 {
     [Fact]
     public async Task when_registering_a_folder_then_the_folder_is_created_in_the_file_system()
