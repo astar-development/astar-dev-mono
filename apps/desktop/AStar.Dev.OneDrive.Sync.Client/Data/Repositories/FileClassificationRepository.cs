@@ -66,7 +66,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
                 await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
                 return new FileClassificationCategoryId(entity.Id);
-            }).ToResultAsync(ex => ex.GetBaseException().Message);
+            }, cancellationToken).ToResultAsync(ex => ex.GetBaseException().Message);
     }
 
     /// <inheritdoc />
