@@ -85,4 +85,16 @@ public class GivenAnAzureContactEmailSender
 
         result.Match(_ => "ok", err => err).ShouldBe("Something went wrong. Please email owner@astardevelopment.co.uk directly.");
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_the_email_client_is_never_called()
+    {
+        var sut = CreateSut(emailClient, ConfiguredOptions());
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.SendAsync(Message, cancellationTokenSource.Token));
+
+        await emailClient.DidNotReceive().SendAsync(Arg.Any<WaitUntil>(), Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
+    }
 }
