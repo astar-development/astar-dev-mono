@@ -42,11 +42,12 @@ public sealed class WallpaperThumbnailGenerator : IWallpaperThumbnailGenerator
         var rounded = new SKBitmap(source.Width, source.Height);
         using var canvas = new SKCanvas(rounded);
         using var paint = new SKPaint { IsAntialias = true, };
-        using var path = new SKPath();
+        using var pathBuilder = new SKPathBuilder();
 
-        path.AddRoundRect(new SKRoundRect(new SKRect(0, 0, source.Width, source.Height), CornerRadius, CornerRadius));
+        pathBuilder.AddRoundRect(new SKRoundRect(new SKRect(0, 0, source.Width, source.Height), CornerRadius, CornerRadius), SKPathDirection.Clockwise);
+        using var path = pathBuilder.Detach();
         canvas.ClipPath(path, antialias: true);
-        canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.DrawBitmap(source, 0, 0, SKSamplingOptions.Default, paint);
 
         return rounded;
     }
