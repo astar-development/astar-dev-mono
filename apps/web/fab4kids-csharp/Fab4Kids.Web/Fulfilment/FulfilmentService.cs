@@ -36,7 +36,7 @@ public sealed class FulfilmentService(
 
         LogMessage.Information(logger, "webhook/delivery-start", sessionId);
 
-        return await Try.RunAsync(() => sessionService.GetAsync(sessionId, ExpandedLineItemsOptions(), cancellationToken: cancellationToken))
+        return await Try.RunAsync(() => sessionService.GetAsync(sessionId, ExpandedLineItemsOptions(), cancellationToken: cancellationToken), cancellationToken)
             .ToResultAsync(ex =>
             {
                 LogMessage.LogException(logger, nameof(FulfilmentService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
@@ -64,7 +64,7 @@ public sealed class FulfilmentService(
 
         LogMessage.Information(logger, "resend/start", orderReference);
 
-        return await Try.RunAsync(() => sessionService.GetAsync(orderReference, ExpandedLineItemsOptions(), cancellationToken: cancellationToken))
+        return await Try.RunAsync(() => sessionService.GetAsync(orderReference, ExpandedLineItemsOptions(), cancellationToken: cancellationToken), cancellationToken)
             .ToResultAsync(ex =>
             {
                 LogMessage.LogException(logger, nameof(FulfilmentService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
