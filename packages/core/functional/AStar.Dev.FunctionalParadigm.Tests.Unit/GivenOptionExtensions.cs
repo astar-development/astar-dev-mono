@@ -97,24 +97,6 @@ public sealed class GivenOptionExtensions
         Option.None<int>().ToEnumerable().ShouldBeEmpty();
 
     [Fact]
-    public void when_deconstruct_is_called_on_some_then_outputs_true_and_the_value()
-    {
-        var (isSome, value) = Option.Some(42);
-
-        isSome.ShouldBeTrue();
-        value.ShouldBe(42);
-    }
-
-    [Fact]
-    public void when_deconstruct_is_called_on_none_then_outputs_false_and_the_default()
-    {
-        var (isSome, value) = Option.None<int>();
-
-        isSome.ShouldBeFalse();
-        value.ShouldBe(0);
-    }
-
-    [Fact]
     public void when_tap_is_called_on_some_then_invokes_the_action_and_returns_the_original_option()
     {
         int tappedValue = 0;

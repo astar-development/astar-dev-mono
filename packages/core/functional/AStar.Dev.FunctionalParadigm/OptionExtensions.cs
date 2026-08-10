@@ -75,19 +75,6 @@ public static class OptionExtensions
     public static IEnumerable<T> ToEnumerable<T>(this Option<T> option) => option is Option<T>.Some some ? [some.Value] : [];
 
     /// <summary>
-    ///     Enables deconstruction of an option into a boolean and value pair.
-    /// </summary>
-    /// <param name="option"></param>
-    /// <param name="isSome"></param>
-    /// <param name="value"></param>
-    /// <typeparam name="T"></typeparam>
-    public static void Deconstruct<T>(this Option<T> option, out bool isSome, out T? value)
-    {
-        isSome = option is Option<T>.Some;
-        value = isSome ? ((Option<T>.Some)option).Value : default;
-    }
-
-    /// <summary>
     ///     Asynchronously transforms the value inside an <see cref="Option{T}" /> if present.
     /// </summary>
     public static async Task<Option<TResult>> MapAsync<T, TResult>(this Option<T> option, Func<T, Task<TResult>> mapAsync)
