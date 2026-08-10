@@ -78,7 +78,7 @@ public class GivenAnAzureNewsletterEmailSender
     public async Task when_the_cancellation_token_is_already_cancelled_then_the_email_client_is_never_called()
     {
         var sut = CreateSut(emailClient, ConfiguredOptions());
-        using var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         await cancellationTokenSource.CancelAsync();
 
         await Should.ThrowAsync<OperationCanceledException>(() => sut.SendAsync(Subscriber, cancellationTokenSource.Token));

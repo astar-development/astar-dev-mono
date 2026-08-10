@@ -58,7 +58,7 @@ public class GivenABlobSasDeliveryLinkGenerator
     public async Task when_the_cancellation_token_is_already_cancelled_then_an_operation_cancelled_exception_is_thrown()
     {
         var sut = CreateSut(FakeContainerClient());
-        using var cancellationTokenSource = new CancellationTokenSource();
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         await cancellationTokenSource.CancelAsync();
 
         await Should.ThrowAsync<OperationCanceledException>(() => sut.GenerateSignedUrlAsync("pdfs/file1.pdf", cancellationTokenSource.Token));
