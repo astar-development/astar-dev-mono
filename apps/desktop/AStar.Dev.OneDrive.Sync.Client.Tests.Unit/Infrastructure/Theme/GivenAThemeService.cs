@@ -132,21 +132,17 @@ public sealed class GivenAThemeService
     {
         var service = new ThemeService();
 
-        service.Dispose(); // Should not throw
+        Should.NotThrow(() => service.Dispose());
     }
 
     [Fact]
-    public void when_apply_called_after_dispose_then_object_disposed_exception_may_be_thrown()
+    public void when_apply_called_after_dispose_then_theme_is_still_applied()
     {
         var service = new ThemeService();
         service.Dispose();
-        try
-        {
-            service.Apply(AppTheme.Light);
-        }
-        catch (ObjectDisposedException)
-        {
-            // Expected
-        }
+
+        Should.NotThrow(() => service.Apply(AppTheme.Light));
+
+        service.CurrentTheme.ShouldBe(AppTheme.Light);
     }
 }
