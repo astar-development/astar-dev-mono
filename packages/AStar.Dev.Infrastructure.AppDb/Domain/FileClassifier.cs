@@ -8,7 +8,7 @@ public static class FileClassifier
     private static readonly char[] Separators = ['/', '-', '_', '.', '+', ' '];
 
     /// <summary>
-    /// Tokenises <paramref name="remotePath"/> and matches each <see cref="KeywordMapping"/> whose keyword appears in the tokens.
+    /// Tokenises <paramref name="remotePath"/> and matches each part that appears in the tokens.
     /// Returns an empty list when no mappings match — callers such as <see cref="ClassificationCombiner"/> are responsible for the Unclassified sentinel.
     /// </summary>
     /// <param name="remotePath">The remote path to classify.</param>
