@@ -90,7 +90,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 },
                 args => SyncProgressChanged?.Invoke(this, args),
                 args => { JobCompleted?.Invoke(this, args); return Task.CompletedTask; },
-                cancellationToken)).ConfigureAwait(false);
+                cancellationToken), cancellationToken).ConfigureAwait(false);
 
             return exceptional.Match(
                 DetermineOutcome,

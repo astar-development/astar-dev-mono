@@ -32,7 +32,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
 
         var sessionOptions = BuildSessionOptions(items, settings.SiteUrl);
 
-        return await Try.RunAsync(() => sessionService.CreateAsync(sessionOptions, cancellationToken: cancellationToken)).ToResultAsync(ex =>
+        return await Try.RunAsync(() => sessionService.CreateAsync(sessionOptions, cancellationToken: cancellationToken), cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(StripeCheckoutSessionService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
@@ -52,7 +52,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
         if (sessionService is null || string.IsNullOrWhiteSpace(sessionId))
             return Option.None<string>();
 
-        var result = await Try.RunAsync(() => sessionService.GetAsync(sessionId, cancellationToken: cancellationToken)).ToResultAsync(ex =>
+        var result = await Try.RunAsync(() => sessionService.GetAsync(sessionId, cancellationToken: cancellationToken), cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(StripeCheckoutSessionService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 

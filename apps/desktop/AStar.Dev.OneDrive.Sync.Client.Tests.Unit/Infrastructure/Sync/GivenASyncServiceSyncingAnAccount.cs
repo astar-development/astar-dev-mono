@@ -314,4 +314,31 @@ public sealed class GivenASyncServiceSyncingAnAccount
 
         await _authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_the_orchestrator_is_never_called_and_progress_is_sync_cancelled()
+    {
+        SetupAuthSuccess();
+        SetupOrchestratorReturns(true);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        string? capturedMessage = null;
+        SyncState? capturedState = null;
+        var sut = CreateSut();
+        sut.SyncProgressChanged += (_, args) =>
+        {
+            if (args.CurrentFile == "Sync.Cancelled")
+            {
+                capturedMessage = args.CurrentFile;
+                capturedState = args.SyncState;
+            }
+        };
+
+        await sut.SyncAccountAsync(CreateAccount(), cancellationTokenSource.Token);
+
+        capturedMessage.ShouldBe("Sync.Cancelled");
+        capturedState.ShouldBe(SyncState.Idle);
+        await _syncPassOrchestrator.DidNotReceive().OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>());
+    }
 }

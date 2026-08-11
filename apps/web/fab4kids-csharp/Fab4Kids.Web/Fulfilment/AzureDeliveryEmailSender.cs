@@ -27,7 +27,7 @@ public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options
             await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken);
 
             return UnitFp.Instance;
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureDeliveryEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 

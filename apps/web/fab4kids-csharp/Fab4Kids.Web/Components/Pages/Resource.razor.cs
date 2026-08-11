@@ -61,7 +61,7 @@ public sealed partial class Resource : ComponentBase
         added = true;
         StateHasChanged();
 
-        await Task.Delay(AddedFeedbackDuration);
+        await Task.Delay(AddedFeedbackDuration, HttpContext?.RequestAborted ?? CancellationToken.None);
         added = false;
         StateHasChanged();
     }

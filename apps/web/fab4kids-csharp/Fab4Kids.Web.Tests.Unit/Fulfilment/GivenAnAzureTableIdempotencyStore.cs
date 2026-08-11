@@ -61,4 +61,16 @@ public class GivenAnAzureTableIdempotencyStore
 
         result.Match(_ => "ok", err => err).ShouldBe("Something went wrong recording this order.");
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_the_table_client_is_never_called()
+    {
+        var sut = CreateSut(tableClient);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.TryMarkProcessedAsync("cs_test_123", cancellationTokenSource.Token));
+
+        await tableClient.DidNotReceive().CreateIfNotExistsAsync(Arg.Any<CancellationToken>());
+    }
 }

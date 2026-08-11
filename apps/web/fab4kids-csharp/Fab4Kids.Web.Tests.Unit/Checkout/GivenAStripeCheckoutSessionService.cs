@@ -142,4 +142,28 @@ public class GivenAStripeCheckoutSessionService
 
         email.TryGetValue(out string _).ShouldBeFalse();
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_create_session_never_calls_stripe()
+    {
+        var sut = CreateSut(sessionService, ConfiguredOptions());
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.CreateSessionAsync(Items, cancellationTokenSource.Token));
+
+        await sessionService.DidNotReceive().CreateAsync(Arg.Any<SessionCreateOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_get_customer_email_never_calls_stripe()
+    {
+        var sut = CreateSut(sessionService, ConfiguredOptions());
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.GetCustomerEmailAsync("cs_test_123", cancellationTokenSource.Token));
+
+        await sessionService.DidNotReceive().GetAsync(Arg.Any<string>(), Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>());
+    }
 }

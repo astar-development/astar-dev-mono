@@ -28,7 +28,7 @@ public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options
                 await SendCopyToSenderAsync(emailClient, message, settings.FromAddress, cancellationToken);
 
             return UnitFp.Instance;
-        }).ToResultAsync(ex =>
+        }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureContactEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 

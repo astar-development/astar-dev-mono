@@ -88,4 +88,29 @@ public class GivenAnAzureTableNewsletterSubscriberStore
 
         result.Match(_ => "ok", err => err).ShouldBe("Something went wrong saving your subscription.");
     }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_exists_never_calls_the_table_client()
+    {
+        var sut = CreateSut(tableClient);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.ExistsAsync("ada@example.com", cancellationTokenSource.Token));
+
+        await tableClient.DidNotReceive().GetEntityAsync<NewsletterSubscriberEntity>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_the_cancellation_token_is_already_cancelled_then_add_never_calls_the_table_client()
+    {
+        var sut = CreateSut(tableClient);
+        var subscriber = NewsletterSubscriberFactory.Create("ada@example.com", DateTimeOffset.UtcNow);
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.AddAsync(subscriber, cancellationTokenSource.Token));
+
+        await tableClient.DidNotReceive().CreateIfNotExistsAsync(Arg.Any<CancellationToken>());
+    }
 }

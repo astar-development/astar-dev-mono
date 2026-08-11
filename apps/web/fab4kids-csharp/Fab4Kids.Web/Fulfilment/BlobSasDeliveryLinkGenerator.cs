@@ -19,7 +19,7 @@ public sealed class BlobSasDeliveryLinkGenerator(ILogger<BlobSasDeliveryLinkGene
             return Task.FromResult(Result.Failure<string, string>("Something went wrong generating your download link."));
         }
 
-        return Try.RunAsync(() => Task.FromResult(BuildSignedUrl(containerClient, blobPath))).ToResultAsync(ex =>
+        return Try.RunAsync(() => Task.FromResult(BuildSignedUrl(containerClient, blobPath)), cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(BlobSasDeliveryLinkGenerator), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
