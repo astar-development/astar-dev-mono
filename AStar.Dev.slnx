@@ -32,6 +32,7 @@
     <Folder Name="/infra/" />
     <Folder Name="/packages/">
         <Project Path="packages/AStar.Dev.Infrastructure.AppDb/AStar.Dev.Infrastructure.AppDb.csproj" />
+        <Project Path="packages/AStar.Dev.Infrastructure.AppDb.Tests.Unit/AStar.Dev.Infrastructure.AppDb.Tests.Unit.csproj" />
         <Project Path="packages/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
         <Project Path="packages/AStarDev.FilesDb/AStarDev.FilesDb/AStarDev.FilesDb.csproj" />
         <Project Path="packages/AStarDev.FilesDb/AStarDev.FilesDb.Tests.Unit/AStarDev.FilesDb.Tests.Unit.csproj" />
@@ -60,11 +61,13 @@
         <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses.Tests.Unit/AStar.Dev.Guard.Clauses.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting/AStar.Dev.Technical.Debt.Reporting.csproj" />
+        <Project Path="packages/core/utilities/AStar.Dev.Technical.Debt.Reporting.Tests.Unit/AStar.Dev.Technical.Debt.Reporting.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Tests.Unit/AStar.Dev.Velopack.Publishing.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
         <Project Path="packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit/AStar.Dev.Velopack.Publishing.Avalonia.Tests.Unit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.Utilities.Tests.Unit/AStarDev.Utilities.Tests.Unit.csproj" />
     </Folder>
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStarDev.SourceGenerators.Attributes.Tests.Unit/AStarDev.SourceGenerators.Attributes.Tests.Unit.csproj" />
