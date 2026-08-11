@@ -24,7 +24,7 @@ public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<Scrap
 
         using var lockScope = await AcquireConfigureLockAsync(cancellationToken).ConfigureAwait(false);
 
-        return await Try.RunAsync(CreateUserDataDirectoryAsync)
+        return await Try.RunAsync(CreateUserDataDirectoryAsync, cancellationToken)
             .TapAsync(_ => LogMessage.Information(logger, "User data directory created successfully."))
             .MapAsync(_ => GetOrCreatePlaywrightAsync())
             .MapAsync(GetOrCreateContextAsync)
