@@ -123,7 +123,7 @@ public class FileDeleteService : IFileDeleteService
         {
             wFunc = FileOperationType.FoDelete,
             pFrom = paths,
-            fFlags = FileOperationFlags.FofAllowundo | FileOperationFlags.FofNoconfirmation | FileOperationFlags.FofNoerrorui | FileOperationFlags.FofSilent
+            fFlags = FileOperations.FofAllowundo | FileOperations.FofNoconfirmation | FileOperations.FofNoerrorui | FileOperations.FofSilent
         };
 
         try
@@ -156,7 +156,7 @@ public class FileDeleteService : IFileDeleteService
         public string pFrom;
         [MarshalAs(UnmanagedType.LPStr)]
         public string pTo;
-        public FileOperationFlags fFlags;
+        public FileOperations fFlags;
         [MarshalAs(UnmanagedType.Bool)]
         public bool fAnyOperationsAborted;
         public IntPtr hNameMappings;
@@ -173,7 +173,7 @@ public class FileDeleteService : IFileDeleteService
     }
 
     [Flags]
-    private enum FileOperationFlags
+    private enum FileOperations
     {
         FofMultidestfiles = 0x0001,
         FofConfirmmouse = 0x0002,

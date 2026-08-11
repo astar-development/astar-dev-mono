@@ -77,6 +77,8 @@ public sealed class GivenASyncRepository : IDisposable
         var repository = new SyncRepository(factory);
 
         await repository.EnqueueJobsAsync(new List<SyncJob>(), TestContext.Current.CancellationToken);
+
+        (await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken)).ShouldBeEmpty();
     }
 
     [Fact]

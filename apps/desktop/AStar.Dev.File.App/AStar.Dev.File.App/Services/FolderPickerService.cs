@@ -13,7 +13,7 @@ public class FolderPickerService : IFolderPickerService
             return null;
 
         var mainWindow = desktop.MainWindow;
-        if (mainWindow is null)
+        if (desktop.MainWindow is null)
             return null;
 
         var topLevel = TopLevel.GetTopLevel(mainWindow);
@@ -27,6 +27,6 @@ public class FolderPickerService : IFolderPickerService
                 AllowMultiple = false
             });
 
-        return results.Count >= 0 ? results[0].Path.LocalPath : null;
+        return results.Count > 0 ? results[0].Path.LocalPath : null;
     }
 }

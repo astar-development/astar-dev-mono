@@ -116,10 +116,8 @@ public sealed class GivenATypedSyncJob
         const string url = "https://graph.microsoft.com/file";
         SyncJob job = SyncJobFactory.CreateDownload(MakeRemote(), MakeTarget(), MakeMetadata(), url);
 
-        if (job is DownloadSyncJob downloadJob)
-            downloadJob.DownloadUrl.ShouldBe(url);
-        else
-            Assert.Fail("Expected DownloadSyncJob");
+        var downloadJob = job as DownloadSyncJob;
+        downloadJob!.DownloadUrl.ShouldBe(url);
     }
 
     [Fact]
@@ -127,10 +125,8 @@ public sealed class GivenATypedSyncJob
     {
         SyncJob job = SyncJobFactory.CreateUpload(MakeRemote(), MakeTarget(), MakeMetadata());
 
-        if (job is UploadSyncJob uploadJob)
-            (uploadJob.UploadedRemoteItemId is Option<string>.None).ShouldBeTrue();
-        else
-            Assert.Fail("Expected UploadSyncJob");
+        var uploadJob = job as UploadSyncJob;
+        (uploadJob!.UploadedRemoteItemId is Option<string>.None).ShouldBeTrue();
     }
 
     [Fact]

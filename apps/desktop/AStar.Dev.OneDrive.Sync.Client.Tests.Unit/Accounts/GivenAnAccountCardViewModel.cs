@@ -33,7 +33,7 @@ public sealed class GivenAnAccountCardViewModel
     [Fact]
     public void when_constructed_with_no_sync_history_then_localization_receives_never_synced_key()
     {
-        var model = new OneDriveAccount { Id = new AccountId("account-3"), LastSyncedAt = null };
+        var model = new OneDriveAccount { Id = new AccountId("account-3"), LastSyncedAt = null! };
         var localization = Substitute.For<ILocalizationService>();
 
         _ = new AccountCardViewModel(model, localization);
