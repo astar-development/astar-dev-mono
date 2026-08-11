@@ -1,3 +1,4 @@
+using System.Reflection;
 using AStar.Dev.FunctionalParadigm;
 using Blazored.LocalStorage;
 using Bunit;
@@ -87,5 +88,27 @@ public class GivenAResourcePage : Bunit.BunitContext
             .AddCascadingValue(httpContext));
 
         httpContext.Response.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public async Task when_the_request_is_aborted_then_add_to_basket_does_not_wait_out_the_feedback_delay()
+    {
+        var file = PdfFileFactory.Create(1, "Fractions Fun Pack", "pdfs/fractions.pdf", 3.50m);
+        var subcategory = PdfSubcategoryFactory.Create(1, "KS2", [file]);
+        var category = PdfCategoryFactory.Create(1, "Maths", [subcategory]);
+        catalogueService.GetFileById("maths", 1).Returns(Option.Some(PdfFileLookupFactory.Create(category, subcategory, file)));
+        var httpContext = new DefaultHttpContext();
+        using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(Xunit.TestContext.Current.CancellationToken);
+        await cancellationTokenSource.CancelAsync();
+        httpContext.RequestAborted = cancellationTokenSource.Token;
+
+        var cut = Render<Resource>(parameters => parameters
+            .Add(p => p.subject, "maths")
+            .Add(p => p.fileId, 1)
+            .AddCascadingValue(httpContext));
+
+        var addToBasketAsync = typeof(Resource).GetMethod("AddToBasketAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        await Should.ThrowAsync<OperationCanceledException>(() => cut.InvokeAsync(() => (Task)addToBasketAsync.Invoke(cut.Instance, [])!));
     }
 }
