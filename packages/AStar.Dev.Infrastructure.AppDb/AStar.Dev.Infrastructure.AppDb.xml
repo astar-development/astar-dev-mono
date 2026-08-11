@@ -2011,6 +2011,18 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddNoCaseToDatabase.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveKeywords">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveKeywords.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveKeywords.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveKeywords.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions">
             <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
         </member>
