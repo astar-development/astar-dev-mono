@@ -10,6 +10,7 @@ using Avalonia.Threading;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenFileClassificationsViewPagingKeys
 {
     private static (FileClassificationsView View, ScrollViewer ScrollViewer) CreateOverflowingView()

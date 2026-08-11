@@ -7,6 +7,7 @@ using Avalonia.Media;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Controls;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenAnIconRailButton
 {
     private const string ActiveClassName = "active";

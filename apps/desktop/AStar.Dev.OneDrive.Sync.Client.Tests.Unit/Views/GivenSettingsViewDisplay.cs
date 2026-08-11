@@ -12,6 +12,7 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenSettingsViewDisplay
 {
     private static SettingsViewModel CreateViewModel()
