@@ -117,7 +117,7 @@ jobs:
 
             cd "$proj_dir"
 
-            dotnet test \
+            xvfb-run -a dotnet test \
               --no-build \
               --configuration Release \
               --logger "trx;LogFileName=$proj_name.trx" \
