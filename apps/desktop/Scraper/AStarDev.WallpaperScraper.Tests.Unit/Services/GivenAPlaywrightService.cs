@@ -1,4 +1,3 @@
-using AStar.Dev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Services;
 using Microsoft.Extensions.Logging;

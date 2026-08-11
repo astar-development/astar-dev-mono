@@ -202,26 +202,4 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         db.FileClassificationCategories.RemoveRange(db.FileClassificationCategories.Where(c => categoryIds.Contains(c.Id)));
         //_ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false); // need to rethink this
     }
-
-    private static KeywordMapping BuildKeywordMapping(FileClassificationKeywordEntity keyword, Dictionary<int, FileClassificationCategoryEntity> categoryById)
-    {
-        var ancestorNames = new Dictionary<int, string>();
-
-        if (categoryById.TryGetValue(keyword.CategoryId, out var current))
-        {
-            ancestorNames[current.Level] = current.Name;
-
-            while (current.ParentId.HasValue && categoryById.TryGetValue(current.ParentId.Value, out var parent))
-            {
-                ancestorNames[parent.Level] = parent.Name;
-                current = parent;
-            }
-        }
-
-        string level1 = ancestorNames.GetValueOrDefault(1, string.Empty).ToTitleCase();
-        var level2 = ancestorNames.TryGetValue(2, out string? level2Name) ? Option.Some(level2Name.ToTitleCase()) : Option.None<string>();
-        var level3 = ancestorNames.TryGetValue(3, out string? level3Name) ? Option.Some(level3Name.ToTitleCase()) : Option.None<string>();
-
-        return new KeywordMapping(keyword.Keyword.ToTitleCase(), level1, level2, level3, false);
-    }
 }

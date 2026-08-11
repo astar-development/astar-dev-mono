@@ -4,9 +4,9 @@ window.astarTheme = {
     document.documentElement.className = 'theme-' + theme;
   },
   applyStoredTheme: function () {
-    var stored;
+    let stored;
     try { stored = localStorage.getItem('theme'); } catch (_) { }
-    var theme = window.astarTheme.validThemes.indexOf(stored) !== -1 ? stored : 'dark';
+    let theme = window.astarTheme.validThemes.indexOf(stored) !== -1 ? stored : 'dark';
     window.astarTheme.applyThemeClass(theme);
   },
 };

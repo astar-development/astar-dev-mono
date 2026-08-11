@@ -1,4 +1,3 @@
-using AStarDev.Utilities;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Homepage;
 using Microsoft.AspNetCore.Components;
@@ -17,7 +16,7 @@ public sealed partial class Home : ComponentBase
     protected override void OnInitialized() => featured = BuildFeaturedResources();
 
     private List<FeaturedResource> BuildFeaturedResources() =>
-        CatalogueService.GetAllCategories()
+        [.. CatalogueService.GetAllCategories()
             .Select(category => (category, entry: category.Subcategories
                 .SelectMany(subcategory => subcategory.Files.Select(file => (subcategory, file)))
                 .FirstOrDefault()))
@@ -34,6 +33,5 @@ public sealed partial class Home : ComponentBase
                     color,
                     pair.entry.subcategory.Name,
                     ResourceRoutes.DetailHref(subjectSlug, pair.entry.file!.Id));
-            })
-            .ToList();
+            })];
 }

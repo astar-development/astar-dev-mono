@@ -38,11 +38,10 @@ public sealed partial class Resource : ComponentBase
         {
             lookup = found;
             accent = SubjectAccents.Find(found.Category.Name).Match<SubjectAccent?>(value => value, () => null);
-            related = found.Category.Subcategories
+            related = [.. found.Category.Subcategories
                 .SelectMany(subcategory => subcategory.Files)
                 .Where(file => file.Id != found.File.Id)
-                .Take(MaxRelatedResources)
-                .ToList();
+                .Take(MaxRelatedResources)];
 
             return;
         }

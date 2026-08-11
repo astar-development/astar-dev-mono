@@ -59,7 +59,6 @@ public static class OptionExtensions
 
     /// <summary>
     ///     Converts an <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
-    /// ToDo - check whether this compiles at the end of the migration and, if it does, migrate / add tests for it.
     /// </summary>
     public static Result<T, TError> ToResult<T, TError>(this Option<T> option, Func<TError> errorFactory)
         => option.Match(Result.Success<T, TError>, () => Result.Failure<T, TError>(errorFactory()));
@@ -130,7 +129,6 @@ public static class OptionExtensions
 
     /// <summary>
     ///     Asynchronously converts an <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.
-    /// ToDo - check whether this compiles at the end of the migration and, if it does, migrate / add tests for it and the other ToResultAsync overloads.
     /// </summary>
     public static async Task<Result<T, TError>> ToResultAsync<T, TError>(this Option<T> option, Func<Task<TError>> errorFactoryAsync)
         => await option.Match<Task<Result<T, TError>>>(
