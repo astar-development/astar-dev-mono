@@ -37,9 +37,6 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     /// <summary>The file access details recorded for scraped files.</summary>
     public DbSet<FileAccessDetailEntity> FileAccessDetails => Set<FileAccessDetailEntity>();
 
-    /// <summary>The keywords used to automatically classify files.</summary>
-    public DbSet<FileClassificationKeywordEntity> FileClassificationKeywords => Set<FileClassificationKeywordEntity>();
-
     /// <summary>The tags to exclude when scraping.</summary>
     public DbSet<TagToIgnoreEntity> TagsToIgnore => Set<TagToIgnoreEntity>();
 

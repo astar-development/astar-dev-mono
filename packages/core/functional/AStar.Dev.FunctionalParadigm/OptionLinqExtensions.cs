@@ -2,7 +2,6 @@ namespace AStar.Dev.FunctionalParadigm;
 
 /// <summary>
 ///     LINQ-style query support for <see cref="Option{T}" />.
-/// ToDo - check whether this compiles at the end of the migration and, if it does, migrate / add tests for it.
 /// </summary>
 public static class OptionLinqExtensions
 {

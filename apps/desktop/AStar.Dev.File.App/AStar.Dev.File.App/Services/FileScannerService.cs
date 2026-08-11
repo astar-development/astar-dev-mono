@@ -9,6 +9,7 @@ public class FileScannerService(
     IDbContextFactory<FileAppDbContext> dbContextFactory,
     IFileTypeClassifier classifier) : IFileScannerService
 {
+    private const string HourFormat = "HH:mm:ss";
     private const int ProgressReportInterval = 500;
 
     private sealed class Counter { public int Value; }
@@ -25,7 +26,7 @@ public class FileScannerService(
             .Where(f => f.RootPath == rootPath && f.LastScannedAt < scanStartedAt)
             .ExecuteUpdateAsync(s => s.SetProperty(f => f.PendingDelete, true), cancellationToken);
 
-        string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+        string time = DateTime.Now.ToString(HourFormat, CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(
             CurrentFolder: rootPath,
             TotalFilesProcessed: counter.Value,
@@ -40,7 +41,7 @@ public class FileScannerService(
         Counter counter,
         CancellationToken cancellationToken)
     {
-        string time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+        string time = DateTime.Now.ToString(HourFormat, CultureInfo.CurrentCulture);
         progress.Report(new ScanProgressUpdate(CurrentFolder: directory, TotalFilesProcessed: counter.Value, CurrentFileName: null, StatusMessage: $"[{time}] Scanning: {directory}"));
 
         await using var db = await dbContextFactory.CreateDbContextAsync(cancellationToken);
@@ -86,7 +87,7 @@ public class FileScannerService(
 
                 if (counter.Value % ProgressReportInterval == 0)
                 {
-                    time = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+                    time = DateTime.Now.ToString(HourFormat, CultureInfo.CurrentCulture);
                     progress.Report(new ScanProgressUpdate(
                         CurrentFolder: directory,
                         TotalFilesProcessed: counter.Value,
@@ -99,7 +100,7 @@ public class FileScannerService(
         }
         catch (UnauthorizedAccessException ex)
         {
-            string errTime = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
+            string errTime = DateTime.Now.ToString(HourFormat, CultureInfo.CurrentCulture);
             progress.Report(new ScanProgressUpdate(
                 CurrentFolder: directory,
                 TotalFilesProcessed: counter.Value,

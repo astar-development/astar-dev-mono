@@ -37,7 +37,7 @@ public sealed partial class Subject : ComponentBase
             _ => allItems.Where(item => item.KeyStage == selectedFilter),
         };
 
-    private List<SubjectResourceItem> VisibleItems => FilteredItems.Take(visibleCount).ToList();
+    private List<SubjectResourceItem> VisibleItems => [.. FilteredItems.Take(visibleCount)];
 
     private bool HasMoreItems => FilteredItems.Count() > visibleCount;
 
@@ -47,9 +47,7 @@ public sealed partial class Subject : ComponentBase
         {
             category = found;
             accent = SubjectAccents.Find(found.Name).Match<SubjectAccent?>(value => value, () => null);
-            allItems = found.Subcategories
-                .SelectMany(subcategory => subcategory.Files.Select(file => new SubjectResourceItem(file, subcategory.Name, "PDF")))
-                .ToList();
+            allItems = [.. found.Subcategories.SelectMany(subcategory => subcategory.Files.Select(file => new SubjectResourceItem(file, subcategory.Name, "PDF")))];
             filterOptions = ["All", .. found.Subcategories.Select(subcategory => subcategory.Name), .. FormatFilters];
             selectedFilter = "All";
             visibleCount = PageSize;

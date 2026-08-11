@@ -31,13 +31,9 @@ public partial class MainWindow : Window
 
         if (item.IsImage && System.IO.File.Exists(item.FullPath))
         {
-            try
-            {
-                using var bmp = new Bitmap(item.FullPath);
-                imgW = bmp.PixelSize.Width;
-                imgH = bmp.PixelSize.Height;
-            }
-            catch { }
+            using var bmp = new Bitmap(item.FullPath);
+            imgW = bmp.PixelSize.Width;
+            imgH = bmp.PixelSize.Height;
         }
 
         var vm = new ViewWindowViewModel(item, imgW, imgH);

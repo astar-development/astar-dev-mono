@@ -172,7 +172,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
             foreach (var category in all.OrderBy(c => c.Level).ThenBy(c => c.Name))
             {
                 string ancestorPath = category.ParentId is Option<FileClassificationCategoryId>.Some someParent && nodeDict.TryGetValue(someParent.Value, out var parentNode)
-                    ? parentNode.HasAncestorPath ? $"{parentNode.AncestorPath} > {parentNode.Name}" : parentNode.Name
+                    ? HasParentPath(parentNode)
                     : string.Empty;
 
                 var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, category.ParentId, category.IncludeInSearch, repository, categoryEditDialogService, self => RemoveFromParent(self, nodeDict), VisibleCategories, () => LoadAsync(CancellationToken.None), ancestorPath);
@@ -272,4 +272,6 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         foreach (var potentialParent in nodeDict.Values)
             potentialParent.Children.Remove(node);
     }
+
+    private static string HasParentPath(CategoryNodeViewModel parentNode) => parentNode.HasAncestorPath ? $"{parentNode.AncestorPath} > {parentNode.Name}" : parentNode.Name;
 }

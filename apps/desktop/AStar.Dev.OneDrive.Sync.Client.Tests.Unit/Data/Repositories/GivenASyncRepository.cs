@@ -1,6 +1,5 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
-using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +77,8 @@ public sealed class GivenASyncRepository : IDisposable
         var repository = new SyncRepository(factory);
 
         await repository.EnqueueJobsAsync(new List<SyncJob>(), TestContext.Current.CancellationToken);
+
+        (await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken)).ShouldBeEmpty();
     }
 
     [Fact]

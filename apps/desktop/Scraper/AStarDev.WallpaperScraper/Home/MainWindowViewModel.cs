@@ -1,7 +1,6 @@
 using System.Reactive;
 using System.Reflection;
 using AStar.Dev.Logging.Extensions;
-using AStarDev.Utilities;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
 using AStarDev.WallpaperScraper.Services;
@@ -17,7 +16,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
 {
     private readonly IPlaywrightService playwrightService;
     private readonly ILogger<MainWindow> logger;
-    private CancellationTokenSource cancellationTokenSource;
+    private readonly CancellationTokenSource cancellationTokenSource;
     private bool disposed;
 
     public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, ILogger<MainWindow> logger)

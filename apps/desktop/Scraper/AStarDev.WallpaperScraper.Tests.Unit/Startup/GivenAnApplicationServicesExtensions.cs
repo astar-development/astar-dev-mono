@@ -7,7 +7,6 @@ using AStarDev.WallpaperScraper.Services;
 using AStarDev.WallpaperScraper.Startup;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Testably.Abstractions.Testing;
 

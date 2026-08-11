@@ -125,7 +125,7 @@ public sealed class GivenASyncedItemEntityFactory
     [Fact]
     public void when_creating_from_folder_delta_item_then_size_in_bytes_is_null()
     {
-        var item = DeltaItemFactory.CreateFolder(new OneDriveItemId("folder-1"), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("docs"), VersionInfoFactory.Create(null, null));
+        var item = DeltaItemFactory.CreateFolder(new OneDriveItemId("folder-1"), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("docs"), VersionInfoFactory.Create(null!, null!));
 
         var entity = SyncedItemEntityFactory.Create(new AccountId("acc-1"), item, "/docs", "/local/docs");
 

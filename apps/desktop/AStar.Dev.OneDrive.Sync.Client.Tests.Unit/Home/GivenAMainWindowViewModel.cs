@@ -60,7 +60,7 @@ public sealed class GivenAMainWindowViewModel
     }
 
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
-    private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), _accountRepository, Substitute.For<IUiDispatcher>(), _localizationService);
+    private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), Substitute.For<IUiDispatcher>(), _localizationService);
 
     private MainWindowViewModel CreateSut()
     {

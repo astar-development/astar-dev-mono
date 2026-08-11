@@ -22,7 +22,6 @@ public sealed class TopWallpapersScrapeAction(
 {
     private const int FirstPageNumber = 1;
 
-    // TODO: no database field currently holds the Top Wallpapers URL - hard-coded until one is added.
     private const string TopWallpapersUrl = "https://wallhaven.cc/search?categories=001&purity=111&topRange=3M&sorting=toplist&order=desc&page=";
 
     private static readonly ScrapeCategory pseudoCategoryTemplate = new("Top Wallpapers", TopWallpapersUrl, false, false);

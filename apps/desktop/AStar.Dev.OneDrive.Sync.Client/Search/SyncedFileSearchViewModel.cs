@@ -11,11 +11,10 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Search;
 
-public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IAccountRepository accountRepository, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
+public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
 {
     private const int SearchResultCap = 500;
 
-    private readonly IAccountRepository accountRepository = accountRepository;
     private AccountId? activeAccountId;
     private int cachedTagCount;
 

@@ -124,7 +124,7 @@ public sealed class GivenADashboardAccountViewModel
     public void when_constructed_with_no_sync_history_then_localization_receives_common_never_synced_key()
     {
         var localization = Substitute.For<ILocalizationService>();
-        var account = new OneDriveAccount { Id = new AccountId("test-account"), LastSyncedAt = null };
+        var account = new OneDriveAccount { Id = new AccountId("test-account"), LastSyncedAt = null! };
 
         _ = CreateSutWithAccount(account, localization);
 

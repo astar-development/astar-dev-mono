@@ -28,5 +28,15 @@ public sealed class PlainUpdateDialogTextProvider : IUpdateDialogTextProvider
     public string GetMessage(string version) => $"Version {version} is ready to install.";
 
     /// <inheritdoc />
-    public event EventHandler? TextChanged { add { } remove { } }
+    public event EventHandler? TextChanged
+    {
+        add
+        {
+            // No-op: this implementation has no dynamic text, so the event will never fire.
+        }
+        remove
+        {
+            // No-op: this implementation has no dynamic text, so the event will never fire.
+        }
+    }
 }
