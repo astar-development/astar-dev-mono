@@ -42,9 +42,6 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileAccessDetails">
             <summary>The file access details recorded for scraped files.</summary>
         </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.FileClassificationKeywords">
-            <summary>The keywords used to automatically classify files.</summary>
-        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.TagsToIgnore">
             <summary>The tags to exclude when scraping.</summary>
         </member>
@@ -127,12 +124,6 @@
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity})">
-            <inheritdoc />
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationKeywordEntityConfiguration">
-            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity"/>.</summary>
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.FileClassificationKeywordEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.FileDetailEntityConfiguration">
@@ -414,7 +405,7 @@
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassifier.Classify(System.String,System.Collections.Generic.IReadOnlyList{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory})">
             <summary>
-            Tokenises <paramref name="remotePath"/> and matches each <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMapping"/> whose keyword appears in the tokens.
+            Tokenises <paramref name="remotePath"/> and matches each <see cref="!:KeywordMapping"/> whose keyword appears in the tokens.
             Returns an empty list when no mappings match — callers such as <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.ClassificationCombiner"/> are responsible for the Unclassified sentinel.
             </summary>
             <param name="remotePath">The remote path to classify.</param>
@@ -449,18 +440,6 @@
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPathFactory.Create(System.String,AStar.Dev.FunctionalParadigm.Option{System.String})">
             <summary>Creates an <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath"/> with the given name and relative path.</summary>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMapping">
-            <summary>Represents a keyword-to-classification mapping used to classify files by matching keywords in their paths.</summary>
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMapping.#ctor(System.String,System.String,AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean)">
-            <summary>Represents a keyword-to-classification mapping used to classify files by matching keywords in their paths.</summary>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMappingFactory">
-            <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMapping"/>.</summary>
-        </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMappingFactory.Create(System.String,System.String,AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean)">
-            <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.KeywordMapping"/> from the supplied values, returning an error if keyword or level1 are null, empty, or whitespace. The keyword is trimmed before storing.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.Level1Deriver">
             <summary>Derives the Level1 classification value from folder segments and filename tokens.</summary>
@@ -1204,27 +1183,6 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationEntity.Category">
             <summary>Navigation property to the classification category.</summary>
-        </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity">
-            <summary>A keyword matched against path tokens to classify files into a category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.Id">
-            <summary>Primary key.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.Keyword">
-            <summary>Keyword matched against path tokens (e.g. "photos").</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.CategoryId">
-            <summary>FK to the owning category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.IsFamous">
-            <summary>Whether this keyword overrides the famous classification flag.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.IsInternet">
-            <summary>Whether this keyword overrides the internet classification flag.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.FileClassificationKeywordEntity.Category">
-            <summary>Navigation to the owning category.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity">
             <summary>A file discovered and tracked by the scraper.</summary>
