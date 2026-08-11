@@ -417,6 +417,39 @@
             <param name="cultureName">The culture to use for title casing</param>
             <returns>The title-cased string</returns>
         </member>
+        <member name="T:AStarDev.Utilities.TimeSpanExtensions">
+            <summary>
+            Provides extension methods for the <see cref="T:System.TimeSpan"/> struct.
+            </summary>
+        </member>
+        <member name="M:AStarDev.Utilities.TimeSpanExtensions.IsJustNow(System.TimeSpan)">
+            <summary>
+            Determines whether the specified <see cref="T:System.TimeSpan"/> represents a time span of less than two minutes.
+            </summary>
+            <param name="elapsed">The time span to evaluate.</param>
+            <returns><c>true</c> if the time span is less than two minutes; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:AStarDev.Utilities.TimeSpanExtensions.IsMinutesAgo(System.TimeSpan)">
+            <summary>
+            Determines whether the specified <see cref="T:System.TimeSpan"/> represents a time span of less than one hour.
+            </summary>
+            <param name="elapsed">The time span to evaluate.</param>
+            <returns><c>true</c> if the time span is less than one hour; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:AStarDev.Utilities.TimeSpanExtensions.IsHoursAgo(System.TimeSpan)">
+            <summary>
+            Determines whether the specified <see cref="T:System.TimeSpan"/> represents a time span of less than one day.
+            </summary>
+            <param name="elapsed">The time span to evaluate.</param>
+            <returns><c>true</c> if the time span is less than one day; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:AStarDev.Utilities.TimeSpanExtensions.IsYesterday(System.TimeSpan)">
+            <summary>
+            Determines whether the specified <see cref="T:System.TimeSpan"/> represents a time span of less than two days.
+            </summary>
+            <param name="elapsed">The time span to evaluate.</param>
+            <returns><c>true</c> if the time span is less than two days; otherwise, <c>false</c>.</returns>
+        </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.</summary>
         </member>

@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.TestHelpers;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Search;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenASyncedFileResultViewModel
 {
     private static readonly AccountId TestAccountId = new("acc-1");

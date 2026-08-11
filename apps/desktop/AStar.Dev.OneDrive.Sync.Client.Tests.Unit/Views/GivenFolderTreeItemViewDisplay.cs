@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenFolderTreeItemViewDisplay
 {
     private static FolderTreeItemView CreateViewWithViewModel(FolderTreeNodeViewModel viewModel)

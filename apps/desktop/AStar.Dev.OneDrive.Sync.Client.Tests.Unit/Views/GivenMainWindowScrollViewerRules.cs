@@ -5,6 +5,7 @@ using Avalonia.LogicalTree;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Views;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenMainWindowScrollViewerRules
 {
     [AvaloniaFact]

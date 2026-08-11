@@ -16,7 +16,7 @@ internal static class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might (will!) break.
     [STAThread]
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         VelopackApp.Build().Run();
 
@@ -40,7 +40,7 @@ internal static class Program
         }
         finally
         {
-            Log.CloseAndFlush();
+            await Log.CloseAndFlushAsync();
         }
     }
 
