@@ -23,7 +23,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
     /// <inheritdoc />
     public async Task ImportAsync(IFileInfo fileInfo, CancellationToken cancellationToken = default)
     {
-        string json = fileSystem.File.ReadAllText(fileInfo.FullName);
+        string json = await fileSystem.File.ReadAllTextAsync(fileInfo.FullName, cancellationToken).ConfigureAwait(false);
         var importRoot = DeserializeImportRoot(json);
         if (importRoot is null)
             return;
