@@ -23,7 +23,7 @@ public sealed class GivenASyncedFileSearchViewModel
 
     private SyncedFileSearchViewModel CreateSut()
     {
-        var vm = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var vm = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
         vm.SetActiveAccount(TestAccountId);
         return vm;
     }
@@ -190,7 +190,7 @@ public sealed class GivenASyncedFileSearchViewModel
     [Fact]
     public void when_set_active_account_is_called_then_repository_is_not_called()
     {
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
 
         sut.SetActiveAccount(TestAccountId);
 
@@ -201,7 +201,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public void when_set_active_account_is_called_then_available_tags_remain_empty()
     {
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
 
         sut.SetActiveAccount(TestAccountId);
 
@@ -212,7 +212,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public async Task when_view_is_activated_then_available_tags_are_populated_from_repository()
     {
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video", "Document"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
         sut.SetActiveAccount(TestAccountId);
 
         await sut.OnViewActivatedAsync(CancellationToken.None);
@@ -225,7 +225,7 @@ public sealed class GivenASyncedFileSearchViewModel
     [Fact]
     public async Task when_view_is_activated_with_no_active_account_then_repository_is_not_called()
     {
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
 
         await sut.OnViewActivatedAsync(CancellationToken.None);
 
@@ -236,7 +236,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public async Task when_view_is_activated_again_with_same_tag_count_then_available_tags_collection_is_not_rebuilt()
     {
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
         sut.SetActiveAccount(TestAccountId);
         await sut.OnViewActivatedAsync(CancellationToken.None);
         sut.AvailableTags.Add("ManualTag");
@@ -251,7 +251,7 @@ public sealed class GivenASyncedFileSearchViewModel
     {
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>())
             .Returns(["Image", "Video"], ["Image", "Video", "Document"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
         sut.SetActiveAccount(TestAccountId);
 
         await sut.OnViewActivatedAsync(CancellationToken.None);
@@ -267,7 +267,7 @@ public sealed class GivenASyncedFileSearchViewModel
         var secondAccountId = new AccountId("acc-2");
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image"]);
         repository.GetDistinctTagNamesAsync(secondAccountId, Arg.Any<CancellationToken>()).Returns(["Video", "Audio"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
 
         sut.SetActiveAccount(TestAccountId);
         await sut.OnViewActivatedAsync(CancellationToken.None);
@@ -284,7 +284,7 @@ public sealed class GivenASyncedFileSearchViewModel
     public async Task when_account_changes_then_available_tags_are_cleared_immediately()
     {
         repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
+        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, dispatcher, loc);
         sut.SetActiveAccount(TestAccountId);
         await sut.OnViewActivatedAsync(CancellationToken.None);
 
@@ -535,42 +535,6 @@ public sealed class GivenASyncedFileSearchViewModel
         var sut = CreateSut();
 
         sut.TagsLoadingText.ShouldBe("Loading categories...");
-    }
-
-    [Fact]
-    public async Task when_view_is_activated_then_is_loading_tags_is_false_after_load()
-    {
-        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns([]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
-        sut.SetActiveAccount(TestAccountId);
-
-        await sut.OnViewActivatedAsync(CancellationToken.None);
-
-        sut.IsLoadingTags.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task when_view_is_activated_with_no_tags_then_show_no_classifications_hint_is_true()
-    {
-        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns([]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
-        sut.SetActiveAccount(TestAccountId);
-
-        await sut.OnViewActivatedAsync(CancellationToken.None);
-
-        sut.ShowNoClassificationsHint.ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task when_view_is_activated_with_tags_then_show_no_classifications_hint_is_false()
-    {
-        repository.GetDistinctTagNamesAsync(TestAccountId, Arg.Any<CancellationToken>()).Returns(["Image", "Video"]);
-        var sut = new SyncedFileSearchViewModel(repository, fileOpenerService, fileTypeClassifier, accountRepository, dispatcher, loc);
-        sut.SetActiveAccount(TestAccountId);
-
-        await sut.OnViewActivatedAsync(CancellationToken.None);
-
-        sut.ShowNoClassificationsHint.ShouldBeFalse();
     }
 
     [Fact]

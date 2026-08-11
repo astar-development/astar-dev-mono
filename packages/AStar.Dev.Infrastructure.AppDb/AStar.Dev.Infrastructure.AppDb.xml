@@ -405,7 +405,7 @@
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassifier.Classify(System.String,System.Collections.Generic.IReadOnlyList{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory})">
             <summary>
-            Tokenises <paramref name="remotePath"/> and matches each <see cref="!:KeywordMapping"/> whose keyword appears in the tokens.
+            Tokenises <paramref name="remotePath"/> and matches each part that appears in the tokens.
             Returns an empty list when no mappings match — callers such as <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.ClassificationCombiner"/> are responsible for the Unclassified sentinel.
             </summary>
             <param name="remotePath">The remote path to classify.</param>

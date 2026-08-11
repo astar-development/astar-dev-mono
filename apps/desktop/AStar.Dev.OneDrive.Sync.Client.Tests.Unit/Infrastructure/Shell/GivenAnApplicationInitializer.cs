@@ -58,7 +58,7 @@ public sealed class GivenAnApplicationInitializer
     private ActivityViewModel CreateActivityViewModel() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _localizationService), new ActivityItemViewModelFactory(_localizationService), new InlineUiDispatcher(), _localizationService);
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
 
-    private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), _accountRepository, new InlineUiDispatcher(), _localizationService);
+    private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), _localizationService);
 
     private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings)
         => new(_startupService, _quotaRefreshService, accounts, files, dashboard, activity, settings, CreateSearchViewModel(), Substitute.For<ILogger<ApplicationInitializer>>());
