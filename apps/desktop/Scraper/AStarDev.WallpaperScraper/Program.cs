@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AStarDev.WallpaperScraper;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using Velopack;
+
+namespace AStarDev.WallpaperScraper;
 
 [ExcludeFromCodeCoverage]
 internal static class Program

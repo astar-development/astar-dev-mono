@@ -1,6 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Localization;
+using AStarDev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +13,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 /// </summary>
 public sealed partial class AccountCardViewModel : ObservableObject
 {
+    private string GetJustNowText() => localizationService.GetLocal("Common.JustNow");
+    private string GetMinutesAgoText(TimeSpan elapsed) => localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes);
+    private string GetHoursAgoText(TimeSpan elapsed) => localizationService.GetLocal("Common.HoursAgo", (int)elapsed.TotalHours);
+    private string GetYesterdayText() => localizationService.GetLocal("Common.Yesterday");
+    private string GetDaysAgoText(TimeSpan elapsed) => localizationService.GetLocal("Common.DaysAgo", (int)elapsed.TotalDays);
+
     private readonly OneDriveAccount model;
     private readonly ILocalizationService localizationService;
 
@@ -42,15 +49,19 @@ public sealed partial class AccountCardViewModel : ObservableObject
             string[] parts = model.Profile.DisplayName
                 .Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            return parts.Length >= 2
-                ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
-                : model.Profile.DisplayName.Length > 0
-                    ? model.Profile.DisplayName[0].ToString().ToUpperInvariant()
-                    : model.Profile.Email.Length > 0
-                        ? model.Profile.Email[0].ToString().ToUpperInvariant()
-                        : "?";
+            return ExtractInitials(parts);
         }
     }
+
+    private string ExtractInitials(string[] parts) => parts.Length >= 2
+                    ? $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant()
+                    : ExtractDisplayNameOrEmail();
+    private string ExtractDisplayNameOrEmail() => model.Profile.DisplayName.Length > 0
+                        ? model.Profile.DisplayName[0].ToString().ToUpperInvariant()
+                        : ExtractEmail();
+    private string ExtractEmail() => model.Profile.Email.Length > 0
+                            ? model.Profile.Email[0].ToString().ToUpperInvariant()
+                            : "?";
 
     /// <summary>
     /// Accent colour index (0–5) used to pick the avatar background colour.
@@ -121,11 +132,17 @@ public sealed partial class AccountCardViewModel : ObservableObject
         }
 
         var elapsed = DateTimeOffset.UtcNow - lastSyncedAt.Value;
-        LastSyncText = elapsed.TotalMinutes < 2 ? localizationService.GetLocal("Common.JustNow")
-                     : elapsed.TotalHours < 1 ? localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes)
-                     : elapsed.TotalDays < 1 ? localizationService.GetLocal("Common.HoursAgo", (int)elapsed.TotalHours)
-                     : elapsed.TotalDays < 2 ? localizationService.GetLocal("Common.Yesterday")
-                     : localizationService.GetLocal("Common.DaysAgo", (int)elapsed.TotalDays);
+        LastSyncText = GetLastSyncText(elapsed);
+    }
+
+    private string GetLastSyncText(TimeSpan elapsed)
+    {
+        if (elapsed.IsJustNow()) return GetJustNowText();
+        if (elapsed.IsMinutesAgo()) return GetMinutesAgoText(elapsed);
+        if (elapsed.IsHoursAgo()) return GetHoursAgoText(elapsed);
+        if (elapsed.IsYesterday()) return GetYesterdayText();
+
+        return GetDaysAgoText(elapsed);
     }
 
     /// <summary>Returns the palette colour for the given index.</summary>
