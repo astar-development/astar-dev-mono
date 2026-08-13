@@ -2,9 +2,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Theme;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Theme;
 
+[Collection("AvaloniaHeadless")]
 public sealed class GivenAThemeService
 {
-    [Fact]
+    [AvaloniaFact]
     public void when_constructed_then_current_theme_is_system()
     {
         var service = new ThemeService();
@@ -12,7 +13,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.System);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_with_light_theme_then_current_theme_is_light()
     {
         var service = new ThemeService();
@@ -22,7 +23,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.Light);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_with_dark_theme_then_current_theme_is_dark()
     {
         var service = new ThemeService();
@@ -32,7 +33,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.Dark);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_with_system_theme_then_current_theme_is_system()
     {
         var service = new ThemeService();
@@ -42,7 +43,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.System);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_then_theme_changed_event_is_raised()
     {
         var service = new ThemeService();
@@ -61,7 +62,7 @@ public sealed class GivenAThemeService
         raisedTheme.ShouldBe(AppTheme.Dark);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_with_hacker_theme_then_current_theme_is_hacker()
     {
         var service = new ThemeService();
@@ -71,7 +72,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.Hacker);
     }
 
-    [Theory]
+    [AvaloniaTheory]
     [InlineData(AppTheme.Light)]
     [InlineData(AppTheme.Dark)]
     [InlineData(AppTheme.System)]
@@ -88,7 +89,7 @@ public sealed class GivenAThemeService
         eventRaised.ShouldBeTrue();
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_multiple_times_with_same_theme_then_event_is_raised_each_time()
     {
         var service = new ThemeService();
@@ -103,7 +104,7 @@ public sealed class GivenAThemeService
         eventCount.ShouldBe(3);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_with_alternating_themes_then_current_theme_updates_correctly()
     {
         var service = new ThemeService();
@@ -119,7 +120,7 @@ public sealed class GivenAThemeService
         service.CurrentTheme.ShouldBe(AppTheme.Light);
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_service_is_checked_then_it_is_disposable()
     {
         var service = new ThemeService();
@@ -127,7 +128,7 @@ public sealed class GivenAThemeService
         _ = service.ShouldBeAssignableTo<IDisposable>();
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_dispose_called_then_no_exception_is_thrown()
     {
         var service = new ThemeService();
@@ -135,7 +136,7 @@ public sealed class GivenAThemeService
         Should.NotThrow(() => service.Dispose());
     }
 
-    [Fact]
+    [AvaloniaFact]
     public void when_apply_called_after_dispose_then_theme_is_still_applied()
     {
         var service = new ThemeService();
