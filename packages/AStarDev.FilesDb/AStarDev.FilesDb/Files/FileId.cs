@@ -1,6 +1,6 @@
 using AStarDev.SourceGenerators.Attributes;
 
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>
 /// Represents the unique identifier for a file entity.

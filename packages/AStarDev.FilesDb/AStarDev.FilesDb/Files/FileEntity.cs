@@ -1,10 +1,15 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>
 /// Represents a file entity in the database.
 /// </summary>
 public class FileEntity
 {
+    /// <summary>
+    /// Gets or sets the unique identifier of the file entity.
+    /// </summary>
+    public FileId Id { get; set; }
+
     /// <summary>
     /// Gets or sets the name of the file.
     /// </summary>

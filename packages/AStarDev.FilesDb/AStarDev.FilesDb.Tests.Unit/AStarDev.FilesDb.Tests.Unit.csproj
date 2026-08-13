@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     <ProjectReference Include="..\AStarDev.FilesDb\AStarDev.FilesDb.csproj" />
   </ItemGroup>
 
