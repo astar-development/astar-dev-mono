@@ -1,7 +1,8 @@
+using AStarDev.FilesDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AStarDev.FilesDb.Configurations;
+namespace AStarDev.FilesDb.Configurations.Files;
 
 /// <summary>
 /// Represents the configuration for the ImageDetailEntity in the database context.
@@ -11,6 +12,8 @@ public class ImageDetailEntityConfiguration : IEntityTypeConfiguration<ImageDeta
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<ImageDetailEntity> builder)
     {
+        builder.ToTable("ImageDetails");
+        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new ImageDetailId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
         builder.HasKey(d => d.FileEntityId);
 

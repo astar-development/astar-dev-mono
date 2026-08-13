@@ -1,3 +1,5 @@
+using AStarDev.FilesDb.Files;
+using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStarDev.FilesDb.Tests.Unit;
@@ -18,12 +20,10 @@ public sealed class GivenAFilesDbContext : IDisposable
     }
 
     [Fact]
-    public void when_the_model_is_built_then_no_exception_is_thrown()
-    {
-        var model = context.Model;
+    public void when_the_model_is_built_then_no_exception_is_thrown() => context.Model.ShouldNotBeNull();
 
-        model.ShouldNotBeNull();
-    }
+    [Fact]
+    public void when_accessed_the_files_repository_should_be_an_immutable_repository() => context.FilesRepository.ShouldBeAssignableTo<IImmutableEntityRepository<FileEntity>>();
 
     [Fact]
     public void when_the_database_is_created_then_a_file_entity_with_related_details_can_be_saved_and_reloaded()

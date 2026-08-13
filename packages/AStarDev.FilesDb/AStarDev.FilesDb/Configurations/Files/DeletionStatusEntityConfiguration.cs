@@ -1,7 +1,8 @@
+using AStarDev.FilesDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AStarDev.FilesDb.Configurations;
+namespace AStarDev.FilesDb.Configurations.Files;
 
 /// <summary>
 /// Represents the configuration for the DeletionStatusEntity in the database context.
@@ -11,6 +12,8 @@ public class DeletionStatusEntityConfiguration : IEntityTypeConfiguration<Deleti
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<DeletionStatusEntity> builder)
     {
+        builder.ToTable("FileDeletionStatus");
+        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new DeletionStatusId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasOne(d => d.FileEntity)

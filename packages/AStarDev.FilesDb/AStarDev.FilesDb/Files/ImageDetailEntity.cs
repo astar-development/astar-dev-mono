@@ -1,8 +1,11 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>The dimensions of an image file.</summary>
 public sealed class ImageDetailEntity
 {
+    /// <summary>Primary key for the image detail entity.</summary>
+    public ImageDetailId Id { get; set; }
+
     /// <summary>Foreign key to the parent <see cref="FileEntity"/>.</summary>
     public FileId FileEntityId { get; set; }
 

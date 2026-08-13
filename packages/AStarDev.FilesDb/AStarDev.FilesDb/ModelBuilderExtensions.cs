@@ -1,5 +1,6 @@
 
 using System.Reflection;
+using AStarDev.FilesDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -16,6 +17,9 @@ public static class ModelBuilderExtensions
         Type[] targetEntities =
         [
             typeof(FileEntity),
+            typeof(DeletionStatusEntity),
+            typeof(FileAccessDetailEntity),
+            typeof(ImageDetailEntity),
         ];
 
         foreach (var et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))

@@ -1,7 +1,8 @@
+using AStarDev.FilesDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AStarDev.FilesDb.Configurations;
+namespace AStarDev.FilesDb.Configurations.Files;
 
 /// <summary>
 /// Represents the configuration for the FileAccessDetailEntity in the database context.
@@ -11,6 +12,8 @@ public class FileAccessDetailEntityConfiguration : IEntityTypeConfiguration<File
     /// <inheritdoc/>
     public void Configure(EntityTypeBuilder<FileAccessDetailEntity> builder)
     {
+        builder.ToTable("FileAccessDetails");
+        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new FileAccessDetailId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasOne(d => d.FileDetail)

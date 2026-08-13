@@ -1,10 +1,10 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>Tracks when a file's details were last refreshed and when it was last viewed.</summary>
 public sealed class FileAccessDetailEntity
 {
     /// <summary>Primary key.</summary>
-    public int Id { get; set; }
+    public FileAccessDetailId Id { get; set; }
 
     /// <summary>Foreign key to the parent <see cref="FileEntity"/>.</summary>
     public FileId FileEntityId { get; set; }

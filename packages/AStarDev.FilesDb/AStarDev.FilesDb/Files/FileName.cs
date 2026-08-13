@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>
 /// Contains the name of the file entity.

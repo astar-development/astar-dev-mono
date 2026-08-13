@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>An opaque, stable handle identifying a file across renames and moves.</summary>
 /// <param name="Value">The handle value.</param>

@@ -1,3 +1,4 @@
+using AStarDev.FilesDb.Files;
 using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContex
     /// <summary>
     ///   Gets the repository for managing file entities in the database.
     /// </summary>
-    public FilesDbContext() : this(new DbContextOptions<FilesDbContext>()) {}
+    public FilesDbContext() : this(new DbContextOptions<FilesDbContext>()) { }
 
     /// <summary>
     /// Gets the repository for managing file entities in the database.

@@ -1,10 +1,10 @@
-namespace AStarDev.FilesDb;
+namespace AStarDev.FilesDb.Files;
 
 /// <summary>Tracks the soft- and hard-deletion state of a file.</summary>
 public sealed class DeletionStatusEntity
 {
     /// <summary>Primary key.</summary>
-    public int Id { get; set; }
+    public DeletionStatusId Id { get; set; }
 
     /// <summary>Foreign key to the parent <see cref="FileEntity"/>.</summary>
     public FileId FileEntityId { get; set; }
