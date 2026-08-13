@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>Tracks when a file's details were last refreshed and when it was last viewed.</summary>
 public sealed class FileAccessDetailEntity

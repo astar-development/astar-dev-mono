@@ -1,8 +1,8 @@
-using AStarDev.FilesDb.Files;
+using AStarDev.ControlDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AStarDev.FilesDb.Configurations.Files;
+namespace AStarDev.ControlDb.Configurations.Files;
 
 /// <summary>
 /// Represents the configuration for the FileEntity in the database context.

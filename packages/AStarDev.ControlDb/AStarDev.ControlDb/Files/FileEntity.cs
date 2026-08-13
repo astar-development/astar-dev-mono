@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>
 /// Represents a file entity in the database.

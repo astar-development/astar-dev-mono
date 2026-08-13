@@ -1,7 +1,7 @@
-using AStarDev.FilesDb.Files;
+using AStarDev.ControlDb.Files;
 using AStarDev.Utilities;
 
-namespace AStarDev.FilesDb.Tests.Unit.Files;
+namespace AStarDev.ControlDb.Tests.Unit.Files;
 
 public class GivenAFileEntity
 {

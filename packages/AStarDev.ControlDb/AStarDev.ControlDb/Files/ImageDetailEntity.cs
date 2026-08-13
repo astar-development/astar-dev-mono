@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>The dimensions of an image file.</summary>
 public sealed class ImageDetailEntity

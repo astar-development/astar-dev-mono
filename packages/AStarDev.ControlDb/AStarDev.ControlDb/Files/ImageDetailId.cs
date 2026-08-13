@@ -1,6 +1,6 @@
 using AStarDev.SourceGenerators.Attributes;
 
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>
 /// Represents the unique identifier for an image detail entity.
