@@ -39,7 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
-    <ProjectReference Include="..\AStarDev.FilesDb\AStarDev.FilesDb.csproj" />
+    <ProjectReference Include="..\AStarDev.ControlDb\AStarDev.ControlDb.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,22 +1,22 @@
-using AStarDev.FilesDb.Files;
+using AStarDev.ControlDb.Files;
 using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStarDev.FilesDb;
+namespace AStarDev.ControlDb;
 
 /// <summary>
 /// Represents the Entity Framework database context for managing file entities.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="FilesDbContext"/> class with the specified options.
+/// Initializes a new instance of the <see cref="ControlDbContext"/> class with the specified options.
 /// </remarks>
 /// <param name="options">The options to be used by the DbContext.</param>
-public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContext(options)
+public class ControlDbContext(DbContextOptions<ControlDbContext> options) : DbContext(options)
 {
     /// <summary>
     ///   Gets the repository for managing file entities in the database.
     /// </summary>
-    public FilesDbContext() : this(new DbContextOptions<FilesDbContext>()) { }
+    public ControlDbContext() : this(new DbContextOptions<ControlDbContext>()) { }
 
     /// <summary>
     /// Gets the repository for managing file entities in the database.
@@ -29,7 +29,7 @@ public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContex
         modelBuilder.Entity<FileEntity>().Property<FileId>("Id").HasConversion(fileId => fileId.Value, value => new FileId(value)).ValueGeneratedOnAdd();
         modelBuilder.Entity<FileEntity>().HasKey("Id");
 
-        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(FilesDbContext).Assembly);
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(ControlDbContext).Assembly);
 
         modelBuilder.UseSqliteFriendlyConversions();
     }
@@ -49,14 +49,14 @@ public class FilesDbContext(DbContextOptions<FilesDbContext> options) : DbContex
             .UseAsyncSeeding(async (context, _, cancellationToken) =>
             {
                 // do some async seeding here if needed
-                Console.WriteLine("Seeding FilesDbContext... this line is just for demonstration purposes and should be removed.");
+                Console.WriteLine("Seeding ControlDbContext... this line is just for demonstration purposes and should be removed.");
 
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
             })
             .UseSeeding((context, _) =>
             {
                 // do some seeding here if needed
-                Console.WriteLine("Seeding FilesDbContext... this line is just for demonstration purposes and should be removed.");
+                Console.WriteLine("Seeding ControlDbContext... this line is just for demonstration purposes and should be removed.");
                 context.SaveChanges();
             });
     }

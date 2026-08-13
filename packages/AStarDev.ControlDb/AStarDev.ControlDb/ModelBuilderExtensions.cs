@@ -1,11 +1,11 @@
 
 using System.Reflection;
-using AStarDev.FilesDb.Files;
+using AStarDev.ControlDb.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace AStarDev.FilesDb;
+namespace AStarDev.ControlDb;
 
 /// <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="ModelBuilder"/>.</summary>
 public static class ModelBuilderExtensions

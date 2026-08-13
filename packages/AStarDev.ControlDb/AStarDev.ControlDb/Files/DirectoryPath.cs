@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>
 /// Contains the path of the file entity.

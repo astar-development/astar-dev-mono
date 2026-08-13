@@ -1,4 +1,4 @@
-namespace AStarDev.FilesDb.Files;
+namespace AStarDev.ControlDb.Files;
 
 /// <summary>Tracks the soft- and hard-deletion state of a file.</summary>
 public sealed class DeletionStatusEntity

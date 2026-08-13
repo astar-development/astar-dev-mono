@@ -1,7 +1,7 @@
 using AStar.Dev.FunctionalParadigm;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace AStarDev.FilesDb;
+namespace AStarDev.ControlDb;
 
 /// <summary>Shared EF Core value converters for types SQLite cannot store natively.</summary>
 public static class SqliteTypeConverters

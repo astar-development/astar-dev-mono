@@ -1,22 +1,22 @@
-using AStarDev.FilesDb.Files;
+using AStarDev.ControlDb.Files;
 using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStarDev.FilesDb.Tests.Unit;
+namespace AStarDev.ControlDb.Tests.Unit;
 
-public sealed class GivenAFilesDbContext : IDisposable
+public sealed class GivenAControlDbContext : IDisposable
 {
     private readonly string databasePath = Path.Combine(Path.GetTempPath(), $"files-db-context-{Guid.NewGuid():N}.db");
-    private readonly FilesDbContext context;
+    private readonly ControlDbContext context;
     private bool disposed;
 
-    public GivenAFilesDbContext()
+    public GivenAControlDbContext()
     {
-        var options = new DbContextOptionsBuilder<FilesDbContext>()
+        var options = new DbContextOptionsBuilder<ControlDbContext>()
             .UseSqlite($"Data Source={databasePath}")
             .Options;
 
-        context = new FilesDbContext(options);
+        context = new ControlDbContext(options);
     }
 
     [Fact]
