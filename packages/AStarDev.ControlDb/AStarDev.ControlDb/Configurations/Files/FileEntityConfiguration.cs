@@ -13,6 +13,7 @@ public class FileEntityConfiguration : IEntityTypeConfiguration<FileEntity>
     public void Configure(EntityTypeBuilder<FileEntity> builder)
     {
         builder.ToTable("Files");
+        builder.Property(d => d.Id).ValueGeneratedOnAdd();
         builder.Property(d => d.Id).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasAlternateKey(f => new { f.Path, f.Name });

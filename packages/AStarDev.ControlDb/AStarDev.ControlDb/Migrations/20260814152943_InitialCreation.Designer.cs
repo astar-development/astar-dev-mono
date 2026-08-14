@@ -3,6 +3,7 @@ using System;
 using AStarDev.ControlDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStarDev.ControlDb.Migrations
 {
     [DbContext(typeof(ControlDbContext))]
-    partial class ControlDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814152943_InitialCreation")]
+    partial class InitialCreation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
