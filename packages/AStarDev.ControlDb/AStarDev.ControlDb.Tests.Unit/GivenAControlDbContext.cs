@@ -1,4 +1,5 @@
 using AStarDev.ControlDb.Files;
+using AStarDev.ControlDb.ScrapeConfiguration;
 using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,17 +26,20 @@ public sealed class GivenAControlDbContext : IDisposable
     [Fact]
     public void when_accessed_the_files_repository_should_be_an_immutable_repository() => context.FilesRepository.ShouldBeAssignableTo<IImmutableEntityRepository<FileEntity>>();
 
+
+    [Fact]
+    public void when_accessed_the_scrape_configuration_repository_should_be_an_immutable_repository() => context.ScrapeConfigurationRepository.ShouldBeAssignableTo<IImmutableEntityRepository<ScrapeConfigurationEntity>>();
+
     [Fact]
     public void when_the_database_is_created_then_a_file_entity_with_related_details_can_be_saved_and_reloaded()
     {
         context.Database.EnsureCreated();
 
-        var fileEntity = new FileEntity
+        var fileId = new FileId(Guid.Empty);
+        var fileEntity = new FileEntity(fileId, new FileName("wallpaper.jpg"), new DirectoryPath("/pictures/wallpapers"), new FileHandle("handle-1"), 1024)
         {
-            Name = new FileName("wallpaper.jpg"),
-            Path = new DirectoryPath("/pictures/wallpapers"),
-            Handle = new FileHandle("handle-1"),
-            FileSize = 1024,
+            FileAccessDetail = new FileAccessDetailEntity(new FileAccessDetailId(Guid.Empty), fileId, null, null, false),
+            DeletionStatus = new DeletionStatusEntity(new DeletionStatusId(Guid.Empty), fileId, null, null, null),
         };
         context.Set<FileEntity>().Add(fileEntity);
         context.Entry(fileEntity.DeletionStatus).State = EntityState.Detached;

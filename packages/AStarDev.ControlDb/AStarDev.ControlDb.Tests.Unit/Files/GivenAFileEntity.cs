@@ -19,14 +19,19 @@ public class GivenAFileEntity
         var fileAccessDetailId = new FileAccessDetailId(Guid.Empty);
         var deletionStatusId = new DeletionStatusId(Guid.Empty);
         var imageDetailId = new ImageDetailId(Guid.Empty);
-        var imageDetail = new ImageDetailEntity() { Id = imageDetailId, FileEntityId = fileId, Width = 800, Height = 600 };
+        var imageDetail = new ImageDetailEntity(imageDetailId, fileId, 800, 600);
         var fileName = new FileName("example.txt");
         var directoryPath = new DirectoryPath("/path/to/directory");
         var fileHandle = new FileHandle("unique-handle");
-        var fileAccessDetail = new FileAccessDetailEntity() { Id = fileAccessDetailId, FileEntityId = fileId, DetailsLastUpdated = detailsLastUpdated, LastViewed = lastViewed, MoveRequired = true };
-        var fileDeletionStatus = new DeletionStatusEntity() { Id = deletionStatusId, FileEntityId = fileId, SoftDeleted = softDeleted, SoftDeletePending = softDeletePending, HardDeletePending = hardDeleted };
+        var fileAccessDetail = new FileAccessDetailEntity(fileAccessDetailId, fileId, detailsLastUpdated, lastViewed, true);
+        var fileDeletionStatus = new DeletionStatusEntity(deletionStatusId, fileId, softDeleted, softDeletePending, hardDeleted);
 
-        var fileEntity = new FileEntity() { Id = fileId, Name = fileName, Path = directoryPath, Handle = fileHandle, FileSize = 1024, FileAccessDetail = fileAccessDetail, ImageDetail = imageDetail, DeletionStatus = fileDeletionStatus };
+        var fileEntity = new FileEntity(fileId, fileName, directoryPath, fileHandle, 1024)
+        {
+            FileAccessDetail = fileAccessDetail,
+            ImageDetail = imageDetail,
+            DeletionStatus = fileDeletionStatus,
+        };
         return fileEntity;
     }
 }
