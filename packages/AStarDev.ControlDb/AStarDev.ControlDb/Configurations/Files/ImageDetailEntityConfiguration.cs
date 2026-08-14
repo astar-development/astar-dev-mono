@@ -15,11 +15,11 @@ public class ImageDetailEntityConfiguration : IEntityTypeConfiguration<ImageDeta
         builder.ToTable("ImageDetails");
         builder.Property(d => d.Id).HasConversion(id => id.Value, value => new ImageDetailId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
-        builder.HasKey(d => d.FileEntityId);
+        builder.HasKey(d => d.Id);
 
         builder.HasOne(d => d.FileDetail)
-            .WithOne()
-            .HasForeignKey<ImageDetailEntity>("FileEntityId")
-            .HasPrincipalKey<FileEntity>("Id");
+            .WithOne(fileEntity => fileEntity.ImageDetail)
+            .HasForeignKey<ImageDetailEntity>(imageDetail => imageDetail.FileEntityId)
+            .HasPrincipalKey<FileEntity>(fileEntity => fileEntity.Id);
     }
 }

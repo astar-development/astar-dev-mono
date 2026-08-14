@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using AStarDev.ControlDb;
 using AStarDev.LoggingSerilog;
 using AStarDev.WallpaperScraper.Home;
 using AStarDev.WallpaperScraper.Startup;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Testably.Abstractions;
@@ -50,9 +52,15 @@ public partial class App : Application, IDisposable
         var applicationDirectories = serviceProvider.GetRequiredService<IApplicationDirectories>();
         applicationDirectories.CreateIfRequired();
         Log.Information("Application directories created if required...");
+        MigrateDatabase(serviceProvider);
 
         return serviceProvider;
     }
+
+    private static void MigrateDatabase(ServiceProvider serviceProvider) =>
+        DatabaseMigrator.MigrateAsync(
+            serviceProvider.GetRequiredService<IDbContextFactory<ControlDbContext>>(),
+            serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<App>>()).GetAwaiter().GetResult();
 
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>

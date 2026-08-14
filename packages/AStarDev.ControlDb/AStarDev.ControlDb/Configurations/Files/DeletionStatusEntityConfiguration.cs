@@ -17,8 +17,8 @@ public class DeletionStatusEntityConfiguration : IEntityTypeConfiguration<Deleti
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
         builder.HasOne(d => d.FileEntity)
-            .WithOne()
-            .HasForeignKey<DeletionStatusEntity>("FileEntityId")
-            .HasPrincipalKey<FileEntity>("Id");
+            .WithOne(fileEntity => fileEntity.DeletionStatus)
+            .HasForeignKey<DeletionStatusEntity>(deletionStatus => deletionStatus.FileEntityId)
+            .HasPrincipalKey<FileEntity>(fileEntity => fileEntity.Id);
     }
 }

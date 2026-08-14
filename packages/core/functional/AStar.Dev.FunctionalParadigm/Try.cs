@@ -9,6 +9,7 @@ namespace AStar.Dev.FunctionalParadigm;
 ///     captured — it always rethrows, so <see cref="CancellationToken.ThrowIfCancellationRequested" /> semantics
 ///     survive.
 /// </remarks>
+#pragma warning disable CA1031 // Do not catch general exception types - this is the point of the methods
 public static class Try
 {
     /// <summary>
@@ -17,7 +18,6 @@ public static class Try
     /// </summary>
     public static Exceptional<T> Run<T>(Func<T> operation)
     {
-#pragma warning disable CA1031 // Do not catch general exception types - this is the point of this method
         try
         {
             return new Success<T>(operation());
@@ -30,7 +30,6 @@ public static class Try
         {
             return new Failure<T>(exception);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     /// <summary>
@@ -51,7 +50,6 @@ public static class Try
     /// </summary>
     public static async Task<Exceptional<T>> RunAsync<T>(Func<Task<T>> operation)
     {
-#pragma warning disable CA1031 // Do not catch general exception types - this is the point of this method
         try
         {
             var value = await operation().ConfigureAwait(false);
@@ -66,7 +64,6 @@ public static class Try
         {
             return new Failure<T>(exception);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     /// <summary>
@@ -95,3 +92,4 @@ public static class Try
         return result;
     }
 }
+#pragma warning restore CA1031 // Do not catch general exception types
