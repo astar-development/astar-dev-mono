@@ -12,7 +12,6 @@
     "value": "unique-handle"
   },
   "fileSize": 1024,
-  "isImage": true,
   "fileAccessDetail": {
     "id": {
       "value": "00000000-0000-0000-0000-000000000000"
@@ -20,7 +19,6 @@
     "fileEntityId": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
-    "fileDetail": null,
     "detailsLastUpdated": "2024-06-01T12:00:00+00:00",
     "lastViewed": "2024-06-02T12:00:00+00:00",
     "moveRequired": true
@@ -32,7 +30,6 @@
     "fileEntityId": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
-    "fileDetail": null,
     "width": 800,
     "height": 600
   },
@@ -43,7 +40,6 @@
     "fileEntityId": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
-    "fileEntity": null,
     "softDeleted": "2024-06-03T12:00:00+00:00",
     "softDeletePending": "2024-06-04T12:00:00+00:00",
     "hardDeletePending": "2024-06-04T12:00:00+00:00"

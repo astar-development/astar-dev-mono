@@ -13,12 +13,13 @@ public class DeletionStatusEntityConfiguration : IEntityTypeConfiguration<Deleti
     public void Configure(EntityTypeBuilder<DeletionStatusEntity> builder)
     {
         builder.ToTable("FileDeletionStatus");
+        builder.Property(d => d.Id).ValueGeneratedOnAdd();
         builder.Property(d => d.Id).HasConversion(id => id.Value, value => new DeletionStatusId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
-        builder.HasOne(d => d.FileEntity)
-            .WithOne()
-            .HasForeignKey<DeletionStatusEntity>("FileEntityId")
-            .HasPrincipalKey<FileEntity>("Id");
+        builder.HasOne<FileEntity>()
+            .WithOne(fileEntity => fileEntity.DeletionStatus)
+            .HasForeignKey<DeletionStatusEntity>(deletionStatus => deletionStatus.FileEntityId)
+            .HasPrincipalKey<FileEntity>(fileEntity => fileEntity.Id);
     }
 }

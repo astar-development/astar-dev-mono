@@ -13,12 +13,13 @@ public class FileAccessDetailEntityConfiguration : IEntityTypeConfiguration<File
     public void Configure(EntityTypeBuilder<FileAccessDetailEntity> builder)
     {
         builder.ToTable("FileAccessDetails");
+        builder.Property(d => d.Id).ValueGeneratedOnAdd();
         builder.Property(d => d.Id).HasConversion(id => id.Value, value => new FileAccessDetailId(value));
         builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
 
-        builder.HasOne(d => d.FileDetail)
-            .WithOne()
-            .HasForeignKey<FileAccessDetailEntity>("FileEntityId")
-            .HasPrincipalKey<FileEntity>("Id");
+        builder.HasOne<FileEntity>()
+            .WithOne(fileEntity => fileEntity.FileAccessDetail)
+            .HasForeignKey<FileAccessDetailEntity>(accessDetail => accessDetail.FileEntityId)
+            .HasPrincipalKey<FileEntity>(fileEntity => fileEntity.Id);
     }
 }

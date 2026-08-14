@@ -1,20 +1,10 @@
 namespace AStarDev.ControlDb.Files;
 
-/// <summary>The dimensions of an image file.</summary>
-public sealed class ImageDetailEntity
-{
-    /// <summary>Primary key for the image detail entity.</summary>
-    public ImageDetailId Id { get; set; }
-
-    /// <summary>Foreign key to the parent <see cref="FileEntity"/>.</summary>
-    public FileId FileEntityId { get; set; }
-
-    /// <summary>Navigation property to the parent file entity.</summary>
-    public FileEntity FileDetail { get; set; } = null!;
-
-    /// <summary>The width of the image in pixels, or null if not an image.</summary>
-    public int? Width { get; set; }
-
-    /// <summary>The height of the image in pixels, or null if not an image.</summary>
-    public int? Height { get; set; }
-}
+/// <summary>
+/// Represents the details of an image file entity, including its dimensions.
+/// </summary>
+/// <param name="Id">Primary key for the image detail entity.</param>
+/// <param name="FileEntityId">Foreign key to the parent <see cref="FileEntity"/>.</param>
+/// <param name="Width">The width of the image in pixels, or null if not an image.</param>
+/// <param name="Height">The height of the image in pixels, or null if not an image.</param>
+public sealed record ImageDetailEntity(ImageDetailId Id, FileId FileEntityId, int? Width, int? Height);
