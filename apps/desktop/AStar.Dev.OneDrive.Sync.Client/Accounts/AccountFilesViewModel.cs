@@ -109,7 +109,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             foreach (var (path, ruleType) in loadedRuleStates)
                 ruleStates[path] = ruleType;
 
-            await BuildRootFoldersAsync();
+            await BuildRootFoldersAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -122,9 +122,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    private async Task BuildRootFoldersAsync()
+    private async Task BuildRootFoldersAsync(CancellationToken cancellationToken)
     {
-        var folders = await graphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty))
+        var folders = await graphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken: cancellationToken)
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                 f => f,
                 error =>

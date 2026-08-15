@@ -49,7 +49,7 @@ DI from start. Never `new` service inside class. Never modify production code so
 
 - **Async methods** MUST end `Async` — exceptions: EventHandlers, tests. Neither get suffix.
 - **Blank line before `return`** after code block. NOT after `if`/`else`.
-- **ALL** new code needs GH issue (create if missing), must use TDD — failing test committed first (red), confirm fail, then implement + commit production code separately (green). Never batch test + production code one commit. New Git branch required: `feature/<gh-issue-number-if-available>-short-description` / `bug/<gh-issue-number-if-available>-short-description` / etc.
+- **ALL** new code needs GH issue (create if missing), must use TDD — failing test committed first (red), confirm fail, then implement + commit production code separately (green). Never batch test + production code one commit. New Git branch required: `feature/<gh-issue-number>-short-description` / `bug/<gh-issue-number>-short-description` / etc.
 - **Coverage exclusions** — class not testable/little regression value: add `[ExcludeFromCodeCoverage]`
 - **PR** Development done → push branch, raise PR, request human review
 - **NEVER** touch code unrelated to requested change (no judgement-call restructuring, reordering, "while I'm here" cleanup). Beneficial-but-unrelated change (logical grouping, indirect refactor, etc.) → SUGGEST as separate item, don't implement.
@@ -60,6 +60,7 @@ DI from start. Never `new` service inside class. Never modify production code so
 - **Comments**: never comment inside methods
 - **XML comments**: all public members. Implementing interface → `<inheritdoc />` only.
 - **Error handling**: public APIs never throw for invalid input — use `Result<T>` or normalize gracefully. See @.claude/rules/c-sharp-code-style.md § Error Handling.
+- **Null**: NEVER use `null` as a return type, ALWAYS use `Option<T>`
 
 Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-ui.md.
 

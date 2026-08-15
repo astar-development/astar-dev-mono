@@ -102,7 +102,7 @@ public sealed class LocalizationService : ILocalizationService
 
             CurrentCulture = name == target.Name
                 ? target
-                : (name == fallbackCulture.Name ? fallbackCulture : new CultureInfo(name));
+                : SetFallbackIfRequired(name);
 
             return;
         }
@@ -110,6 +110,8 @@ public sealed class LocalizationService : ILocalizationService
         strings = [];
         CurrentCulture = fallbackCulture;
     }
+
+    private static CultureInfo SetFallbackIfRequired(string name) => name == fallbackCulture.Name ? fallbackCulture : new CultureInfo(name);
 
     private static Dictionary<string, string> Parse(Stream stream)
     {

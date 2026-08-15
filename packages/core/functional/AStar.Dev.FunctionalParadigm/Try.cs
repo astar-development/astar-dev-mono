@@ -42,7 +42,7 @@ public static class Try
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Run(operation);
+        return Run(operation, cancellationToken);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public static class Try
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        return await RunAsync(operation).ConfigureAwait(false);
+        return await RunAsync(operation, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

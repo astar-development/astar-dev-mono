@@ -60,11 +60,6 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
     public string SaveButtonText => loc.GetLocal("AccountSync.SaveButton");
 
     [RelayCommand]
-    private static async Task BrowseAsync()
-    {
-    }
-
-    [RelayCommand]
     private async Task SaveAsync()
     {
         var resolvedPath = LocalSyncPathFactory.Create(LocalSyncPath).Match(p => (LocalSyncPath?)p, _ => null);

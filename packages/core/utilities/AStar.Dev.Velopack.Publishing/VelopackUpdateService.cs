@@ -31,7 +31,7 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
         LogMessage.Information(logger, nameof(VelopackUpdateService), channelMessage);
     }
 
-    private static string PlatformChannelSuffix => OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
+    private static string PlatformChannelSuffix => OperatingSystem.IsWindows() ? "win" : SetNonWindowsPlatformSuffix();
 
     /// <inheritdoc />
     public bool IsInstalled => updateManager.IsInstalled;
@@ -87,4 +87,6 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
 
         updateManager.ApplyUpdatesAndRestart(updateInfo.TargetFullRelease);
     }
+
+    private static string SetNonWindowsPlatformSuffix() => OperatingSystem.IsMacOS() ? "osx" : "linux";
 }

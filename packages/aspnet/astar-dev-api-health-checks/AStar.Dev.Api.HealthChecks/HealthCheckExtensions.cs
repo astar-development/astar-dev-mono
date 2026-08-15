@@ -78,6 +78,6 @@ public static class HealthCheckExtensions
 
         string responseString = JsonSerializer.Serialize(healthCheckResponse, _jsonSerializerOptions);
 
-        return httpContext.Response.WriteAsync(responseString);
+        return httpContext.Response.WriteAsync(responseString, httpContext.RequestAborted);
     }
 }

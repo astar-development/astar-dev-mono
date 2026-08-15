@@ -55,11 +55,13 @@ public static class ApplicationPathsProvider
             ? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 applicationName)
-            : OperatingSystem.IsMacOS()
-                ? Path.Combine(home, "Library", "Application Support", applicationName)
-                : Path.Combine(home, ".config", applicationName);
+            : SetNonWindowsPath(applicationName, home);
         _ = Directory.CreateDirectory(directory);
 
         return directory;
     }
+
+    private static string SetNonWindowsPath(string applicationName, string home) => OperatingSystem.IsMacOS()
+                    ? Path.Combine(home, "Library", "Application Support", applicationName)
+                    : Path.Combine(home, ".config", applicationName);
 }

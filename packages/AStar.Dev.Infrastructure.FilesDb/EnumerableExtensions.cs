@@ -21,7 +21,7 @@ public static class EnumerableExtensions
     public static IEnumerable<FileDetail> FilterImagesIfApplicable(this IEnumerable<FileDetail> files, string searchType, CancellationToken cancellationToken)
         => cancellationToken.IsCancellationRequested
                ? files
-               : FilterImagesIfApplicable(files, searchType);
+               : FilterImagesOnlyIfRequested(files, searchType);
 
     /// <summary>
     /// </summary>
@@ -75,7 +75,7 @@ public static class EnumerableExtensions
           .GroupBy(file => FileSize.Create(file.FileSize, file?.ImageDetail?.Height, file?.ImageDetail?.Width),
                    new FileSizeEqualityComparer()).Where(fileGroups => fileGroups.Count() > 1);
 
-    private static IEnumerable<FileDetail> FilterImagesIfApplicable(IEnumerable<FileDetail> files, string searchType)
+    private static IEnumerable<FileDetail> FilterImagesOnlyIfRequested(IEnumerable<FileDetail> files, string searchType)
         => searchType != "Images"
                ? files
                : files.Where(file => file.IsImage);
