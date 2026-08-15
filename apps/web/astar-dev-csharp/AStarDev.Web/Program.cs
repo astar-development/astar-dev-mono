@@ -55,7 +55,7 @@ app.MapRazorComponents<App>()
 
 try
 {
-    app.Run();
+    await app.RunAsync();
 }
 finally
 {

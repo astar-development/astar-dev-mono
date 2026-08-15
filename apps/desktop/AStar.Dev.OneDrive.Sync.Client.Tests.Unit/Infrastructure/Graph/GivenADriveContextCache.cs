@@ -61,7 +61,7 @@ public sealed class GivenADriveContextCache : IDisposable
 
         var result = await CreateSut().ResolveAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var ok = result.ShouldBeAssignableTo<Ok<(GraphServiceClient Client, DriveContext Ctx), string>>()!;
+        var ok = result.ShouldBeAssignableTo<Ok<(GraphServiceClient Client, DriveContext Ctx), string>>();
         ok.Value.Ctx.DriveId.Value.ShouldBe(AnyDriveId);
         ok.Value.Ctx.RootId.ShouldBe(AnyRootId);
     }

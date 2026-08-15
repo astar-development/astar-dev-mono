@@ -8,5 +8,5 @@ public partial class SplashWindowViewModel : ViewModelBase
     public string AppName { get; init; } = string.Empty;
 
     [ObservableProperty]
-    private string status = string.Empty;
+    public partial string Status { get; set; } = string.Empty;
 }

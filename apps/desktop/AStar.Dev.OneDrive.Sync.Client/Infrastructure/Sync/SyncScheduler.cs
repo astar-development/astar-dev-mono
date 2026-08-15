@@ -21,7 +21,6 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     private readonly ConcurrentDictionary<string, CancellationTokenSource> activeSyncs = new();
     private readonly SemaphoreSlim fullPassSemaphore = new(1, 1);
     private Timer? timer;
-    private TimeSpan interval = TimeSpan.FromMinutes(60);
 
     /// <summary>
     /// Default interval for scheduled sync passes. Can be overridden by providing a different interval to StartSync or SetInterval.
@@ -37,12 +36,11 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     /// <inheritdoc />
     public Result<Unit, string> StartSync(TimeSpan? interval = null)
     {
-        this.interval = interval ?? DefaultInterval;
         timer?.Dispose();
 
         try
         {
-            timer = new Timer(OnTimerTickAsync, state: null, dueTime: this.interval, period: this.interval);
+            timer = new Timer(OnTimerTickAsync, state: null, dueTime: interval ?? DefaultInterval, period: interval ?? DefaultInterval);
 
             return new Ok<Unit, string>(Unit.Default);
         }
@@ -58,11 +56,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
     public void StopSync() => timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
     /// <inheritdoc />
-    public void SetInterval(TimeSpan interval)
-    {
-        this.interval = interval;
-        _ = (timer?.Change(interval, interval));
-    }
+    public void SetInterval(TimeSpan interval) => _ = (timer?.Change(interval, interval));
 
     /// <inheritdoc />
     public async Task TriggerNowAsync(CancellationToken cancellationToken = default)
@@ -154,7 +148,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
 
     private async Task RunSyncPassAsync(CancellationToken cancellationToken)
     {
-        if (!fullPassSemaphore.Wait(0, CancellationToken.None))
+        if (!await fullPassSemaphore.WaitAsync(0, CancellationToken.None).ConfigureAwait(false))
             return;
 
         try
@@ -200,7 +194,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         StopSync();
 
         foreach (var cts in activeSyncs.Values)
-            cts.Cancel();
+            await cts.CancelAsync().ConfigureAwait(false);
 
         activeSyncs.Clear();
 

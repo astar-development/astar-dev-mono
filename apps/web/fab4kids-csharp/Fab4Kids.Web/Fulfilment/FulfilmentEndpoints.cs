@@ -15,7 +15,7 @@ public static class FulfilmentEndpoints
 
     private static async Task<IResult> HandleWebhookAsync(HttpRequest request, IFulfilmentService fulfilmentService, IOptions<FulfilmentOptions> options, ILogger<FulfilmentService> logger, CancellationToken cancellationToken)
     {
-        var signature = request.Headers["Stripe-Signature"].FirstOrDefault();
+        string? signature = request.Headers["Stripe-Signature"].FirstOrDefault();
         if (string.IsNullOrWhiteSpace(signature))
         {
             LogMessage.Warning(logger, "webhook/missing-signature", "no Stripe-Signature header");
@@ -24,8 +24,8 @@ public static class FulfilmentEndpoints
         }
 
         using var reader = new StreamReader(request.Body);
-        var payload = await reader.ReadToEndAsync(cancellationToken);
-        var webhookSecret = options.Value.WebhookSecret;
+        string payload = await reader.ReadToEndAsync(cancellationToken);
+        string? webhookSecret = options.Value.WebhookSecret;
 
         Event stripeEvent;
         try

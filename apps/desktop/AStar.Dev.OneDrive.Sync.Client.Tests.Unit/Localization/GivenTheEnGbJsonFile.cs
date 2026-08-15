@@ -11,7 +11,7 @@ public sealed class GivenTheEnGbJsonFile
         var assembly = typeof(LocalizationService).Assembly;
         using var stream = assembly.GetManifestResourceStream("AStar.Dev.OneDrive.Sync.Client.Assets.Localization.en-GB.json");
         stream.ShouldNotBeNull();
-        using var document = JsonDocument.Parse(stream!);
+        using var document = JsonDocument.Parse(stream);
 
         document.RootElement.TryGetProperty("Dashboard.AllSynced", out _).ShouldBeTrue();
     }

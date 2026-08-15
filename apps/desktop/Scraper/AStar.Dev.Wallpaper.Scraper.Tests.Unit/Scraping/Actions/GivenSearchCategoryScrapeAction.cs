@@ -62,8 +62,8 @@ public sealed class GivenSearchCategoryScrapeAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("need to get all <Span Foreground=\"Green\">3</Span> pages")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("need to get all <Span Foreground=\"Green\">3</Span> pages")));
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public sealed class GivenSearchCategoryScrapeAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to persist scrape progress for category: <Run FontSize=\"18\">Nature</Run>, error: <Span Foreground=\"Red\">No search category named 'Nature' exists to update.</Span>")));
-        await page.Received().GotoAsync(Arg.Is<string>(url => url!.Contains("&page=1")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Failed to persist scrape progress for category: <Run FontSize=\"18\">Nature</Run>, error: <Span Foreground=\"Red\">No search category named 'Nature' exists to update.</Span>")));
+        await page.Received().GotoAsync(Arg.Is<string>(url => url.Contains("&page=1")));
     }
 
     [Fact]
@@ -86,8 +86,8 @@ public sealed class GivenSearchCategoryScrapeAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Visiting category: <Run FontSize=\"18\">Space</Run>")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Visiting category: <Run FontSize=\"18\">Nature</Run>")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Visiting category: <Run FontSize=\"18\">Space</Run>")));
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=1&page=1");
         await page.Received(1).GotoAsync("https://wallhaven.cc/search?categories=2&page=1");
         await hrefCollector.Received(2).CollectAsync(page, Arg.Any<CancellationToken>());
@@ -137,9 +137,9 @@ public sealed class GivenSearchCategoryScrapeAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Category: <Run FontSize=\"18\">Nature</Run>") && message!.Contains("already fully visited")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Category: <Run FontSize=\"18\">Nature</Run>") && message.Contains("already fully visited")));
         thumbnailPublisher.Received().PublishCategorySkipped("Nature");
-        await page.DidNotReceive().GotoAsync(Arg.Is<string>(url => url!.Contains("&page=")), Arg.Any<PageGotoOptions>());
+        await page.DidNotReceive().GotoAsync(Arg.Is<string>(url => url.Contains("&page=")), Arg.Any<PageGotoOptions>());
         await hrefCollector.DidNotReceive().CollectAsync(Arg.Any<IPage>(), Arg.Any<CancellationToken>());
     }
 

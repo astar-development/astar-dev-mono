@@ -123,7 +123,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
         }
 
         OneDriveSyncClientMessages.DownloadMoveExhausted(logger, localPath, MaxMoveRetries, lastError?.Message ?? string.Empty);
-        return new Fail<Unit, string>($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message}");
+        return new Fail<Unit, string>($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message ?? "Unknown error"}");
     }
 
     private void TryDeleteTemp(string tempPath)

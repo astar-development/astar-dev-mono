@@ -35,7 +35,7 @@ public sealed class GivenScrapeAllAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Scrape Search Categories") && message.Contains("search categories boom")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Scrape Search Categories") && message.Contains("search categories boom")));
         await topWallpapersScrapeAction.Received().ExecuteAsync(page, progress, Arg.Any<CancellationToken>());
         await subscriptionsScrapeAction.Received().ExecuteAsync(page, progress, Arg.Any<CancellationToken>());
     }
@@ -50,7 +50,7 @@ public sealed class GivenScrapeAllAction
         var result = await sut.ExecuteAsync(page, progress, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Scrape Top Wallpapers") && message.Contains("top wallpapers boom")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Scrape Top Wallpapers") && message.Contains("top wallpapers boom")));
         await subscriptionsScrapeAction.Received().ExecuteAsync(page, progress, Arg.Any<CancellationToken>());
     }
 

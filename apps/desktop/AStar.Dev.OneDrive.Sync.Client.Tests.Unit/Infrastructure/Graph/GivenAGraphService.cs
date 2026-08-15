@@ -170,7 +170,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>().Value;
         folders.Count.ShouldBe(2);
         folders[0].Name.ShouldBe("AFolder");
         folders[1].Name.ShouldBe("ZFolder");
@@ -192,7 +192,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetRootFoldersAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>().Value;
         folders.Count.ShouldBe(1);
         folders[0].Name.ShouldBe("OnlyFolder");
     }
@@ -216,7 +216,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>().Value;
         folders.Count.ShouldBe(2);
         folders[0].Name.ShouldBe("AChild");
         folders[1].Name.ShouldBe("ZChild");
@@ -237,7 +237,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetChildFoldersAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, TestContext.Current.CancellationToken);
 
-        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>()!.Value;
+        var folders = result.ShouldBeAssignableTo<Ok<List<DriveFolder>, string>>().Value;
         folders.Count.ShouldBe(1);
         folders[0].Name.ShouldBe("OnlyChild");
     }
@@ -268,7 +268,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var quotaResult = await CreateSut().GetQuotaAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), TestContext.Current.CancellationToken);
 
-        var (total, used) = quotaResult.ShouldBeAssignableTo<Ok<(long Total, long Used), string>>()!.Value;
+        var (total, used) = quotaResult.ShouldBeAssignableTo<Ok<(long Total, long Used), string>>().Value;
         total.ShouldBe(0L);
         used.ShouldBe(0L);
     }

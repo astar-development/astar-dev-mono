@@ -91,17 +91,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
                 AppendVisible(child);
     }
 
-    private bool NodeOrDescendantMatchesFilterText(CategoryNodeViewModel node)
-    {
-        if (node.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        foreach (var child in node.Children)
-            if (NodeOrDescendantMatchesFilterText(child))
-                return true;
-
-        return false;
-    }
+    private bool NodeOrDescendantMatchesFilterText(CategoryNodeViewModel node) => node.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase) || node.Children.Any(NodeOrDescendantMatchesFilterText);
 
     /// <summary>When true, <see cref="VisibleCategories"/> only includes categories where <see cref="CategoryNodeViewModel.IncludeInSearch"/> is true; when false, only categories where it is false. Display-only; does not change stored data.</summary>
     [ObservableProperty]

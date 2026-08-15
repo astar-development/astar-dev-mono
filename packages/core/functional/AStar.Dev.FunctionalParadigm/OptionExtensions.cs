@@ -27,7 +27,7 @@ public static class OptionExtensions
     /// <summary>
     ///     Converts a value to an <see cref="Option{T}" />, treating default/null as <c>None</c>.
     /// </summary>
-    public static Option<T> ToOption<T>(this T value) => EqualityComparer<T>.Default.Equals(value, default!)
+    public static Option<T> ToOption<T>(this T value) => EqualityComparer<T>.Default.Equals(value, default)
             ? Option.None<T>()
             : new Option<T>.Some(value);
 

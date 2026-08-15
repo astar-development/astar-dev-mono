@@ -131,7 +131,7 @@ public sealed class GivenMainWindowViewModel
             .Returns(configureBehavior ?? (_ => Task.FromResult(configureResult ?? Exceptional.Success(Substitute.For<IPage>()))));
 
         var scrapeConfiguration = Options.Create(new ScrapeConfiguration { ApplicationName = applicationName, WindowSize = new WindowSize(1_234, 567) });
-        var sut = new MainWindowViewModel(scrapeConfiguration, playwrightService, new NullLogger<MainWindow>());
+        var sut = new MainWindowViewModel(scrapeConfiguration, playwrightService, new NullLogger<MainWindowViewModel>());
 
         return sut;
     }
