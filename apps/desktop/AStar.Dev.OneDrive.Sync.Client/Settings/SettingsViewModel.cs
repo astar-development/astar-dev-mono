@@ -15,6 +15,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Settings;
 
 public sealed partial class SettingsViewModel : ObservableObject
 {
+    private const string SyncIntervalMinutesMessage = "Settings.DeltaSyncInterval.Minutes";
     private readonly ISettingsService settingsService;
     private readonly IThemeService themeService;
     private readonly ISyncScheduler scheduler;
@@ -179,11 +180,11 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     private IReadOnlyList<SyncIntervalOption> BuildIntervalOptions() =>
     [
-        new(5,   loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 5),   SyncIntervalMinutes == 5),
-        new(15,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 15),  SyncIntervalMinutes == 15),
-        new(30,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 30),  SyncIntervalMinutes == 30),
-        new(60,  loc.GetLocal("Settings.DeltaSyncInterval.Minutes", 60),  SyncIntervalMinutes == 60),
-        new(120, loc.GetLocal("Settings.Interval.Hours", 2),              SyncIntervalMinutes == 120),
+        new(5,   loc.GetLocal(SyncIntervalMinutesMessage, 5), SyncIntervalMinutes == 5),
+        new(15,  loc.GetLocal(SyncIntervalMinutesMessage, 15), SyncIntervalMinutes == 15),
+        new(30,  loc.GetLocal(SyncIntervalMinutesMessage, 30), SyncIntervalMinutes == 30),
+        new(60,  loc.GetLocal(SyncIntervalMinutesMessage, 60), SyncIntervalMinutes == 60),
+        new(120, loc.GetLocal("Settings.Interval.Hours", 2), SyncIntervalMinutes == 120),
     ];
 
     private void OnSettingsServiceChanged(object? sender, AppSettings settings)

@@ -27,7 +27,7 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
         var options = new UpdateOptions { ExplicitChannel = Channel };
         updateManager = new UpdateManager(new GithubSource(settings.Value.GithubRepositoryUrl.AbsoluteUri, accessToken: null, prerelease: false), options, locator);
 
-        var channelMessage = $"Checking for updates on channel '{Channel}'.";
+        string channelMessage = $"Checking for updates on channel '{Channel}'.";
         LogMessage.Information(logger, nameof(VelopackUpdateService), channelMessage);
     }
 

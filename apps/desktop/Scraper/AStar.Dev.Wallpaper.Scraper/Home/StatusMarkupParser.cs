@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
@@ -139,17 +140,8 @@ public static partial class StatusMarkupParser
         return container;
     }
 
-    private static Dictionary<string, string> ParseAttributes(string attributeText)
-    {
-        var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (Match match in AttributeRegex().Matches(attributeText))
-        {
-            attributes[match.Groups["key"].Value] = match.Groups["value"].Value;
-        }
-
-        return attributes;
-    }
+    private static Dictionary<string, string> ParseAttributes(string attributeText) =>
+        AttributeRegex().Matches(attributeText).Select(match => match.Groups).ToDictionary(groups => groups["key"].Value, groups => groups["value"].Value, StringComparer.OrdinalIgnoreCase);
 
     private static void ApplyAttributes(Inline inline, IReadOnlyDictionary<string, string> attributes)
     {

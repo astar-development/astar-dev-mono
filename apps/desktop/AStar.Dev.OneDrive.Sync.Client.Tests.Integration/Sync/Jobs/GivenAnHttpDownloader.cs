@@ -52,7 +52,7 @@ public sealed class GivenAnHttpDownloader
         var result = await downloadTask;
 
         var error = result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
-        error!.Error.ShouldNotBeNullOrWhiteSpace();
+        error.Error.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]

@@ -53,11 +53,8 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
 
                 var localModified = new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero);
 
-                if (syncedItemsByLocalPath.TryGetValue(filePath, out var known))
-                {
-                    if (localModified <= known.RemoteModifiedAt.AddSeconds(5))
-                        continue;
-                }
+                if (syncedItemsByLocalPath.TryGetValue(filePath, out var known) && localModified <= known.RemoteModifiedAt.AddSeconds(5))
+                    continue;
 
                 string relativePathForUpload = remotePath.TrimStart('/');
 

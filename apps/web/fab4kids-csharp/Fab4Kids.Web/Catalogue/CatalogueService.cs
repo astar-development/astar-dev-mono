@@ -19,7 +19,7 @@ public sealed class CatalogueService : ICatalogueService
     {
         string catalogueFilePath = hostEnvironment.ContentRootPath.CombinePath("Data", "pdfs.json");
         string json = File.ReadAllText(catalogueFilePath);
-        PdfCatalogueDocumentDto document = JsonSerializer.Deserialize<PdfCatalogueDocumentDto>(json, SerializerOptions)
+        var document = JsonSerializer.Deserialize<PdfCatalogueDocumentDto>(json, SerializerOptions)
             ?? throw new InvalidOperationException($"Catalogue file '{catalogueFilePath}' could not be parsed.");
 
         categories = (document.Categories ?? [])

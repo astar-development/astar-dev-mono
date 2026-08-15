@@ -30,7 +30,7 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
         => ctx.SyntaxProvider.CreateSyntaxProvider(
                 predicate: static (node, _) => IsClassCandidateForServiceRegistration(node),
                 transform: static (syntaxCtx, _) => GetDeclaredSymbol(syntaxCtx))
-            .Where(static s => s is not null)!;
+            .Where(static s => s is not null);
 
     private static bool IsClassCandidateForServiceRegistration(SyntaxNode node)
         => node is ClassDeclarationSyntax { AttributeLists.Count: > 0, TypeParameterList: null };

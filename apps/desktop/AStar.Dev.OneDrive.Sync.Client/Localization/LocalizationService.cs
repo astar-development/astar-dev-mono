@@ -32,7 +32,7 @@ public sealed class LocalizationService : ILocalizationService
     private Dictionary<string, string> strings = [];
 
     public CultureInfo CurrentCulture { get; private set; } = fallbackCulture;
-    public IReadOnlyList<CultureInfo> AvailableCultures { get; private set; } = [];
+    public IReadOnlyList<CultureInfo> AvailableCultures { get; private set; }
 
     public event EventHandler<CultureInfo>? CultureChanged;
 

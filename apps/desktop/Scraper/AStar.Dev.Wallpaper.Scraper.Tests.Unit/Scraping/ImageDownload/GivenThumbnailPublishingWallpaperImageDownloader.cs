@@ -26,7 +26,7 @@ public sealed class GivenThumbnailPublishingWallpaperImageDownloader
         result.ShouldBeOfType<Success<byte[]>>();
         result.ShouldBe(new Success<byte[]>(imageBytes));
         thumbnailPublisher.Received(1).Publish(Arg.Is<WallpaperThumbnailPayload>(payload =>
-            payload!.Bytes == thumbnailBytes && payload.CategoryName == "Nature" && payload.Tags.SequenceEqual(expectedTags)));
+            payload.Bytes == thumbnailBytes && payload.CategoryName == "Nature" && payload.Tags.SequenceEqual(expectedTags)));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class GivenThumbnailPublishingWallpaperImageDownloader
 
     private ThumbnailPublishingWallpaperImageDownloader CreateSut(Exceptional<byte[]> downloadResult, byte[]? thumbnailBytes = null)
     {
-        inner.DownloadAsync(page, "https://wallhaven.cc/images/pic.jpg", "Nature", Arg.Is<IReadOnlyList<string>>(tags => tags!.SequenceEqual(expectedTags)), TestContext.Current.CancellationToken)
+        inner.DownloadAsync(page, "https://wallhaven.cc/images/pic.jpg", "Nature", Arg.Is<IReadOnlyList<string>>(tags => tags.SequenceEqual(expectedTags)), TestContext.Current.CancellationToken)
             .Returns(downloadResult);
 
         if (thumbnailBytes is not null && downloadResult is Success<byte[]> success)

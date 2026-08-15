@@ -79,7 +79,8 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     public async Task LoadThumbnailAsync()
     {
         var previous = Interlocked.Exchange(ref thumbnailCts, null);
-        previous?.Cancel();
+        if (previous != null)
+            await previous.CancelAsync();
 
         var cts = new CancellationTokenSource();
         thumbnailCts = cts;
@@ -98,7 +99,10 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
             if (!cts.IsCancellationRequested)
                 dispatcher.Post(() => Thumbnail = bitmap);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Ignore cancellation; the thumbnail will be cleared by CancelThumbnailLoad.
+        }
     }
 
     private static string FormatSize(long? bytes) => bytes switch

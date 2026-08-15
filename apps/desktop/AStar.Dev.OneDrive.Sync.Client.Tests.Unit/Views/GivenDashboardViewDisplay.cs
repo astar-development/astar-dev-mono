@@ -107,7 +107,7 @@ public sealed class GivenDashboardViewDisplay
 
         topBorder.ShouldNotBeNull();
 
-        var statTextBlocks = topBorder!.GetLogicalDescendants()
+        var statTextBlocks = topBorder.GetLogicalDescendants()
             .OfType<TextBlock>()
             .Where(tb => !string.IsNullOrEmpty(tb.Text))
             .ToList();
@@ -129,7 +129,7 @@ public sealed class GivenDashboardViewDisplay
             .FirstOrDefault();
 
         itemsControl.ShouldNotBeNull("ItemsControl for account sections should be present");
-        itemsControl!.ItemsSource.ShouldBe(viewModel.AccountSections);
+        itemsControl.ItemsSource.ShouldBe(viewModel.AccountSections);
     }
 
     [AvaloniaFact]

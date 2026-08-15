@@ -177,7 +177,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         {
             CancellationToken token;
             lock (authCtsLock)
-                token = authCts!.Token;
+                token = authCts.Token;
 
             var result = await authService.SignInInteractiveAsync(token);
             _ = result.Match(

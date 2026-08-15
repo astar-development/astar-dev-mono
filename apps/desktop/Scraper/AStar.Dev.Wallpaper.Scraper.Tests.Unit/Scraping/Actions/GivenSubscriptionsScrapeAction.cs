@@ -82,7 +82,7 @@ public sealed class GivenSubscriptionsScrapeAction
 
         result.ShouldBeOfType<Success<FunctionalParadigm.UnitFp>>();
         await subscriptionsClearer.Received().ClearAllAsync(page, Arg.Any<CancellationToken>());
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Cleared all caught-up subscriptions")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Cleared all caught-up subscriptions")));
     }
 
     [Fact]

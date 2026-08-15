@@ -22,7 +22,7 @@ public partial class CopyButton : ComponentBase
 
     private async Task CopyToClipboardAsync()
     {
-        var success = await JsRuntime.InvokeAsync<bool>("astarClipboard.copy", [Text]);
+        bool success = await JsRuntime.InvokeAsync<bool>("astarClipboard.copy", [Text]);
         if (!success)
             return;
 

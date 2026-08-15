@@ -4,6 +4,10 @@ using AStarDev.WallpaperScraper.Home;
 using AStarDev.WallpaperScraper.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using AStarDev.ControlDb;
+using AStarDev.WallpaperScraper.Configuration;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
@@ -20,6 +24,8 @@ public static class ApplicationServicesExtensions
             .AddSingleton<IPlaywrightService, PlaywrightService>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
+            .AddDbContextFactory<ControlDbContext>((serviceProvider, options) =>
+                options.UseSqlite(serviceProvider.GetRequiredService<IOptions<ScrapeConfiguration>>().Value.ConnectionStrings.Sqlite))
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications();
 }

@@ -53,7 +53,7 @@ builder.Services.AddSingleton<IPdfDeliveryLinkGenerator, BlobSasDeliveryLinkGene
 builder.Services.AddSingleton<IIdempotencyStore>(sp =>
 {
     var idempotencyLogger = sp.GetRequiredService<ILogger<AzureTableIdempotencyStore>>();
-    TableClient? idempotencyTableClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.StorageConnectionString) && !string.IsNullOrWhiteSpace(fulfilmentOptions.IdempotencyTableName)
+    var idempotencyTableClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.StorageConnectionString) && !string.IsNullOrWhiteSpace(fulfilmentOptions.IdempotencyTableName)
         ? new TableClient(fulfilmentOptions.StorageConnectionString, fulfilmentOptions.IdempotencyTableName)
         : null;
 
@@ -62,24 +62,22 @@ builder.Services.AddSingleton<IIdempotencyStore>(sp =>
 builder.Services.AddSingleton<IDeliveryEmailSender>(sp =>
 {
     var deliveryEmailLogger = sp.GetRequiredService<ILogger<AzureDeliveryEmailSender>>();
-    EmailClient? deliveryEmailClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.EmailConnectionString) ? new EmailClient(fulfilmentOptions.EmailConnectionString) : null;
+    var deliveryEmailClient = !string.IsNullOrWhiteSpace(fulfilmentOptions?.EmailConnectionString) ? new EmailClient(fulfilmentOptions.EmailConnectionString) : null;
 
     return new AzureDeliveryEmailSender(sp.GetRequiredService<IOptions<FulfilmentOptions>>(), deliveryEmailLogger, deliveryEmailClient);
 });
 builder.Services.AddScoped<IFulfilmentService, FulfilmentService>();
+builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 var app = builder.Build();
 
 app.Services.GetRequiredService<ICatalogueService>();
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
-}
+app.UseExceptionHandler("/Error", createScopeForErrors: true);
+
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
-
+app.UseHsts();
 app.UseAntiforgery();
 
 app.UseSerilogRequestLogging();
@@ -88,7 +86,7 @@ app.MapStaticAssets();
 app.MapCheckoutEndpoints();
 app.MapFulfilmentEndpoints();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
 try
 {

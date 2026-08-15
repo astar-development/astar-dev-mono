@@ -25,7 +25,7 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ThemeState>();
 builder.Services.AddScoped<CookieConsentState>();
 builder.Services.AddSingleton<IMarkdownRenderer, MarkdownRenderer>();
-var nugetSearchApiBaseAddress = builder.Configuration["NuGet:SearchApiBaseAddress"] ?? "https://azuresearch-usnc.nuget.org/";
+string nugetSearchApiBaseAddress = builder.Configuration["NuGet:SearchApiBaseAddress"] ?? "https://azuresearch-usnc.nuget.org/";
 builder.Services.AddHttpClient<INugetApiClient, NugetApiClient>(client => client.BaseAddress = new Uri(nugetSearchApiBaseAddress));
 builder.Services.AddScoped<INugetPackageService, NugetPackageService>();
 
@@ -36,16 +36,12 @@ if (!string.IsNullOrWhiteSpace(contactFormOptions?.ConnectionString))
 builder.Services.AddSingleton<IContactRateLimiter, ContactRateLimiter>();
 builder.Services.AddScoped<IContactEmailSender, AzureContactEmailSender>();
 builder.Services.AddScoped<IContactSubmissionService, ContactSubmissionService>();
+builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+app.UseExceptionHandler("/Error", createScopeForErrors: true);
+app.UseHsts();
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
@@ -59,7 +55,7 @@ app.MapRazorComponents<App>()
 
 try
 {
-    app.Run();
+    await app.RunAsync();
 }
 finally
 {

@@ -1,0 +1,47 @@
+{
+  "id": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "name": {
+    "name": "example.txt"
+  },
+  "path": {
+    "path": "/path/to/directory"
+  },
+  "handle": {
+    "value": "unique-handle"
+  },
+  "fileSize": 1024,
+  "fileAccessDetail": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "detailsLastUpdated": "2024-06-01T12:00:00+00:00",
+    "lastViewed": "2024-06-02T12:00:00+00:00",
+    "moveRequired": true
+  },
+  "imageDetail": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "width": 800,
+    "height": 600
+  },
+  "deletionStatus": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "softDeleted": "2024-06-03T12:00:00+00:00",
+    "softDeletePending": "2024-06-04T12:00:00+00:00",
+    "hardDeletePending": "2024-06-04T12:00:00+00:00"
+  }
+}

@@ -17,7 +17,7 @@ public sealed class ThemeState(ILocalStorageService localStorage)
 
     public async Task InitializeAsync()
     {
-        var stored = await localStorage.GetItemAsStringAsync(StorageKey);
+        string? stored = await localStorage.GetItemAsStringAsync(StorageKey);
         if (stored is not null && Enum.TryParse<Theme>(stored, ignoreCase: true, out var parsed))
         {
             Current = parsed;

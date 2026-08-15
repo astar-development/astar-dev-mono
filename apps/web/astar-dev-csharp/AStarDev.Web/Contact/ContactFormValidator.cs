@@ -22,7 +22,7 @@ public static class ContactFormValidator
 
     private static Validation<string> ValidateName(string name)
     {
-        var trimmed = name.Trim();
+        string trimmed = name.Trim();
 
         if (trimmed.Length == 0)
             return Validation.Invalid<string>(ValidationErrorFactory.Create("name", "Name is required."));
@@ -35,7 +35,7 @@ public static class ContactFormValidator
 
     private static Validation<string> ValidateEmail(string email)
     {
-        var trimmed = email.Trim();
+        string trimmed = email.Trim();
 
         if (trimmed.Length == 0)
             return Validation.Invalid<string>(ValidationErrorFactory.Create("email", "Email is required."));
@@ -48,7 +48,7 @@ public static class ContactFormValidator
 
     private static Validation<string> ValidateMessage(string message)
     {
-        var trimmed = message.Trim();
+        string trimmed = message.Trim();
 
         if (trimmed.Length == 0)
             return Validation.Invalid<string>(ValidationErrorFactory.Create("message", "Message is required."));
