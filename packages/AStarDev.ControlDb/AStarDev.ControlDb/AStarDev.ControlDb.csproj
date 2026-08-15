@@ -3,9 +3,23 @@
   <PropertyGroup>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-    <NoWarn>CA1062;</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageTags>control-db;astar;astardevelopment</PackageTags>
+    <Title>AStar Dev ControlDb</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Description>An internal database used by AStar Dev projects. You are welcome to use if it helps you.</Description>
+    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/AStarDev.ControlDb</PackageProjectUrl>
+    <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+    <PackageReleaseNotes>v0.1.0 - Initial release</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);CA1724;CA1062</NoWarn>
+</PropertyGroup>
   <!--
     SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
     Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.9.

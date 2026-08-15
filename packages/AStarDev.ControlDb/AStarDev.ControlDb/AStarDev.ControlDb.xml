@@ -1,0 +1,703 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.ControlDb</name>
+    </assembly>
+    <members>
+        <member name="T:AStarDev.ControlDb.Configurations.Files.DeletionStatusEntityConfiguration">
+            <summary>
+            Represents the configuration for the DeletionStatusEntity in the database context.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.Files.DeletionStatusEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.Files.DeletionStatusEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.Files.FileAccessDetailEntityConfiguration">
+            <summary>
+            Represents the configuration for the FileAccessDetailEntity in the database context.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.Files.FileAccessDetailEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.Files.FileAccessDetailEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.Files.FileEntityConfiguration">
+            <summary>
+            Represents the configuration for the FileEntity in the database context.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.Files.FileEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.Files.FileEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.Files.ImageDetailEntityConfiguration">
+            <summary>
+            Represents the configuration for the ImageDetailEntity in the database context.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.Files.ImageDetailEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.Files.ImageDetailEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ConnectionStringsEntityConfiguration">
+            <summary>
+            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity"/> entity.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ConnectionStringsEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ScrapeConfigurationEntityConfiguration">
+            <summary>
+            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity"/> entity.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ScrapeConfigurationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ScrapeDirectoriesEntityConfiguration">
+            <summary>
+            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity"/> entity.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ScrapeDirectoriesEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.SearchConfigurationEntityConfiguration">
+            <summary>
+            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity"/> entity.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.SearchConfigurationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.UserConfigurationEntityConfiguration">
+            <summary>
+            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity"/> entity.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.UserConfigurationEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity})">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStarDev.ControlDb.ControlDbContext">
+            <summary>
+            Represents the Entity Framework database context for managing file entities.
+            </summary>
+            <remarks>
+            Initializes a new instance of the <see cref="T:AStarDev.ControlDb.ControlDbContext"/> class with the specified options.
+            </remarks>
+            <param name="options">The options to be used by the DbContext.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ControlDbContext.#ctor(Microsoft.EntityFrameworkCore.DbContextOptions{AStarDev.ControlDb.ControlDbContext})">
+            <summary>
+            Represents the Entity Framework database context for managing file entities.
+            </summary>
+            <remarks>
+            Initializes a new instance of the <see cref="T:AStarDev.ControlDb.ControlDbContext"/> class with the specified options.
+            </remarks>
+            <param name="options">The options to be used by the DbContext.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ControlDbContext.#ctor">
+            <summary>
+              Gets the repository for managing file entities in the database.
+            </summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ControlDbContext.FilesRepository">
+            <summary>
+            Gets the repository for managing file entities in the database.
+            </summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ControlDbContext.ScrapeConfigurationRepository">
+            <summary>
+            Gets the repository for managing scrape configuration entities in the database.
+            </summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ControlDbContext.OnModelCreating(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ControlDbContext.ConfigureConventions(Microsoft.EntityFrameworkCore.ModelConfigurationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ControlDbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.DeletionStatusEntity">
+            <summary>Tracks the soft- and hard-deletion state of a file.</summary>
+            <param name="Id">Primary key.</param>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="SoftDeleted">The date the file was soft-deleted, or null if not soft-deleted.</param>
+            <param name="SoftDeletePending">The date the file is pending soft-deletion, or null if none pending.</param>
+            <param name="HardDeletePending">The date the file is pending hard-deletion, or null if none pending.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.DeletionStatusEntity.#ctor(AStarDev.ControlDb.Files.DeletionStatusId,AStarDev.ControlDb.Files.FileId,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})">
+            <summary>Tracks the soft- and hard-deletion state of a file.</summary>
+            <param name="Id">Primary key.</param>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="SoftDeleted">The date the file was soft-deleted, or null if not soft-deleted.</param>
+            <param name="SoftDeletePending">The date the file is pending soft-deletion, or null if none pending.</param>
+            <param name="HardDeletePending">The date the file is pending hard-deletion, or null if none pending.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusEntity.Id">
+            <summary>Primary key.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusEntity.FileEntityId">
+            <summary>Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusEntity.SoftDeleted">
+            <summary>The date the file was soft-deleted, or null if not soft-deleted.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusEntity.SoftDeletePending">
+            <summary>The date the file is pending soft-deletion, or null if none pending.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusEntity.HardDeletePending">
+            <summary>The date the file is pending hard-deletion, or null if none pending.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.DeletionStatusId">
+            <summary>
+            Represents the unique identifier for a file deletion status entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.DeletionStatusId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DeletionStatusId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.DeletionStatusId.op_Implicit(System.Guid)~AStarDev.ControlDb.Files.DeletionStatusId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.DeletionStatusId.op_Implicit(AStarDev.ControlDb.Files.DeletionStatusId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.DirectoryPath">
+            <summary>
+            Contains the path of the file entity.
+            </summary>
+            <param name="Path">The path of the file entity.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.DirectoryPath.#ctor(System.String)">
+            <summary>
+            Contains the path of the file entity.
+            </summary>
+            <param name="Path">The path of the file entity.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.DirectoryPath.Path">
+            <summary>The path of the file entity.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileAccessDetailEntity">
+            <summary>Tracks when a file's details were last refreshed and when it was last viewed.</summary>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="Id">Primary key.</param>
+            <param name="DetailsLastUpdated">The date the file's details were last updated, or null if never updated.</param>
+            <param name="LastViewed">The date the file was last viewed, or null if never viewed.</param>
+            <param name="MoveRequired">Whether the file has been marked as needing to move.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileAccessDetailEntity.#ctor(AStarDev.ControlDb.Files.FileAccessDetailId,AStarDev.ControlDb.Files.FileId,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Boolean)">
+            <summary>Tracks when a file's details were last refreshed and when it was last viewed.</summary>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="Id">Primary key.</param>
+            <param name="DetailsLastUpdated">The date the file's details were last updated, or null if never updated.</param>
+            <param name="LastViewed">The date the file was last viewed, or null if never viewed.</param>
+            <param name="MoveRequired">Whether the file has been marked as needing to move.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailEntity.Id">
+            <summary>Primary key.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailEntity.FileEntityId">
+            <summary>Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailEntity.DetailsLastUpdated">
+            <summary>The date the file's details were last updated, or null if never updated.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailEntity.LastViewed">
+            <summary>The date the file was last viewed, or null if never viewed.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailEntity.MoveRequired">
+            <summary>Whether the file has been marked as needing to move.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileAccessDetailId">
+            <summary>
+            Represents the unique identifier for a file access detail entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileAccessDetailId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileAccessDetailId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileAccessDetailId.op_Implicit(System.Guid)~AStarDev.ControlDb.Files.FileAccessDetailId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileAccessDetailId.op_Implicit(AStarDev.ControlDb.Files.FileAccessDetailId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileEntity">
+            <summary>
+            Represents a file entity in the system, containing information about the file's identity, name, path, handle, size, access details, image details, and deletion status.
+            </summary>
+            <param name="Id">The unique identifier of the file entity.</param>
+            <param name="Name">The name of the file.</param>
+            <param name="Path">The directory path of the file.</param>
+            <param name="Handle">The handle of the file, which is an opaque, stable identifier for the file across renames and moves.</param>
+            <param name="FileSize">The file size in bytes.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileEntity.#ctor(AStarDev.ControlDb.Files.FileId,AStarDev.ControlDb.Files.FileName,AStarDev.ControlDb.Files.DirectoryPath,AStarDev.ControlDb.Files.FileHandle,System.Int64)">
+            <summary>
+            Represents a file entity in the system, containing information about the file's identity, name, path, handle, size, access details, image details, and deletion status.
+            </summary>
+            <param name="Id">The unique identifier of the file entity.</param>
+            <param name="Name">The name of the file.</param>
+            <param name="Path">The directory path of the file.</param>
+            <param name="Handle">The handle of the file, which is an opaque, stable identifier for the file across renames and moves.</param>
+            <param name="FileSize">The file size in bytes.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.Id">
+            <summary>The unique identifier of the file entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.Name">
+            <summary>The name of the file.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.Path">
+            <summary>The directory path of the file.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.Handle">
+            <summary>The handle of the file, which is an opaque, stable identifier for the file across renames and moves.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.FileSize">
+            <summary>The file size in bytes.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.FileAccessDetail">
+            <summary>The access details of the file, which tracks when the file's details were last refreshed and when it was last viewed.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.ImageDetail">
+            <summary>The image details of the file, which contains the dimensions of the image if the file is an image.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileEntity.DeletionStatus">
+            <summary>The deletion status of the file, which tracks the soft- and hard-deletion state of the file.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileHandle">
+            <summary>An opaque, stable handle identifying a file across renames and moves.</summary>
+            <param name="Value">The handle value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileHandle.#ctor(System.String)">
+            <summary>An opaque, stable handle identifying a file across renames and moves.</summary>
+            <param name="Value">The handle value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileHandle.Value">
+            <summary>The handle value.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileId">
+            <summary>
+            Represents the unique identifier for a file entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileId.op_Implicit(System.Guid)~AStarDev.ControlDb.Files.FileId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileId.op_Implicit(AStarDev.ControlDb.Files.FileId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.FileName">
+            <summary>
+            Contains the name of the file entity.
+            </summary>
+            <param name="Name">The name of the file entity.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.FileName.#ctor(System.String)">
+            <summary>
+            Contains the name of the file entity.
+            </summary>
+            <param name="Name">The name of the file entity.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.FileName.Name">
+            <summary>The name of the file entity.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.ImageDetailEntity">
+            <summary>
+            Represents the details of an image file entity, including its dimensions.
+            </summary>
+            <param name="Id">Primary key for the image detail entity.</param>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="Width">The width of the image in pixels, or null if not an image.</param>
+            <param name="Height">The height of the image in pixels, or null if not an image.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.ImageDetailEntity.#ctor(AStarDev.ControlDb.Files.ImageDetailId,AStarDev.ControlDb.Files.FileId,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Represents the details of an image file entity, including its dimensions.
+            </summary>
+            <param name="Id">Primary key for the image detail entity.</param>
+            <param name="FileEntityId">Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</param>
+            <param name="Width">The width of the image in pixels, or null if not an image.</param>
+            <param name="Height">The height of the image in pixels, or null if not an image.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.ImageDetailEntity.Id">
+            <summary>Primary key for the image detail entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.ImageDetailEntity.FileEntityId">
+            <summary>Foreign key to the parent <see cref="T:AStarDev.ControlDb.Files.FileEntity"/>.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.ImageDetailEntity.Width">
+            <summary>The width of the image in pixels, or null if not an image.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.ImageDetailEntity.Height">
+            <summary>The height of the image in pixels, or null if not an image.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.Files.ImageDetailId">
+            <summary>
+            Represents the unique identifier for an image detail entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.ImageDetailId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.Files.ImageDetailId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.ImageDetailId.op_Implicit(System.Guid)~AStarDev.ControlDb.Files.ImageDetailId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Files.ImageDetailId.op_Implicit(AStarDev.ControlDb.Files.ImageDetailId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.Migrations.InitialCreation">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.InitialCreation.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.InitialCreation.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.InitialCreation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.ModelBuilderExtensions">
+            <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ModelBuilderExtensions.UseSqliteFriendlyConversions(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
+            <param name="mb">The model builder to configure.</param>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId">
+            <summary>
+            Represents the unique identifier for a connection string entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity">
+            <summary>
+            Represents a connection strings entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the connection strings entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="Sqlite">The SQLite connection string.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String)">
+            <summary>
+            Represents a connection strings entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the connection strings entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="Sqlite">The SQLite connection string.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.Id">
+            <summary>The unique identifier for the connection strings entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.ScrapeConfigurationEntityId">
+            <summary>The unique identifier for the associated scrape configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.Sqlite">
+            <summary>The SQLite connection string.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity">
+            <summary>
+            Represents a scrape configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the scrape configuration entity.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId)">
+            <summary>
+            Represents a scrape configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the scrape configuration entity.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.Id">
+            <summary>The unique identifier for the scrape configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.ConnectionStrings">
+            <summary>The connection strings associated with the scrape configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.UserConfiguration">
+            <summary>The user configuration associated with the scrape configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.SearchConfiguration">
+            <summary>The search configuration associated with the scrape configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.ScrapeDirectories">
+            <summary>The scrape directories associated with the scrape configuration.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId">
+            <summary>
+            Represents the unique identifier for a scrape configuration entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity">
+            <summary>
+            Represents a scrape directories entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the scrape directories entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="RootDirectory">The root directory for scraping.</param>
+            <param name="BaseSaveDirectory">The base save directory for scraped content.</param>
+            <param name="BaseDirectory">The base directory for scraped content.</param>
+            <param name="BaseDirectoryFamous">The base directory for famous scraped content.</param>
+            <param name="SubDirectoryName">The name of the subdirectory for scraped content.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Represents a scrape directories entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the scrape directories entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="RootDirectory">The root directory for scraping.</param>
+            <param name="BaseSaveDirectory">The base save directory for scraped content.</param>
+            <param name="BaseDirectory">The base directory for scraped content.</param>
+            <param name="BaseDirectoryFamous">The base directory for famous scraped content.</param>
+            <param name="SubDirectoryName">The name of the subdirectory for scraped content.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.Id">
+            <summary>The unique identifier for the scrape directories entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.ScrapeConfigurationEntityId">
+            <summary>The unique identifier for the associated scrape configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.RootDirectory">
+            <summary>The root directory for scraping.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.BaseSaveDirectory">
+            <summary>The base save directory for scraped content.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.BaseDirectory">
+            <summary>The base directory for scraped content.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.BaseDirectoryFamous">
+            <summary>The base directory for famous scraped content.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesEntity.SubDirectoryName">
+            <summary>The name of the subdirectory for scraped content.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId">
+            <summary>
+            Represents the unique identifier for a scrape directories entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity">
+            <summary>
+            Represents a search configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the search configuration entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="SearchTerm">The search term for the configuration.</param>
+            <param name="Category">The category for the search.</param>
+            <param name="MaxResults">The maximum number of results to return.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.Nullable{System.Int32})">
+            <summary>
+            Represents a search configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the search configuration entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="SearchTerm">The search term for the configuration.</param>
+            <param name="Category">The category for the search.</param>
+            <param name="MaxResults">The maximum number of results to return.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Id">
+            <summary>The unique identifier for the search configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.ScrapeConfigurationEntityId">
+            <summary>The unique identifier for the associated scrape configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchTerm">
+            <summary>The search term for the configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Category">
+            <summary>The category for the search.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.MaxResults">
+            <summary>The maximum number of results to return.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId">
+            <summary>
+            Represents the unique identifier for a search configuration entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity">
+            <summary>
+            Represents a user configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the user configuration entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="EmailAddress">The email address of the user.</param>
+            <param name="Username">The username of the user.</param>
+            <param name="Password">The password of the user.</param>
+            <param name="SessionCookie">The session cookie of the user.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.String,System.String)">
+            <summary>
+            Represents a user configuration entity in the database.
+            </summary>
+            <param name="Id">The unique identifier for the user configuration entity.</param>
+            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="EmailAddress">The email address of the user.</param>
+            <param name="Username">The username of the user.</param>
+            <param name="Password">The password of the user.</param>
+            <param name="SessionCookie">The session cookie of the user.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.Id">
+            <summary>The unique identifier for the user configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.ScrapeConfigurationEntityId">
+            <summary>The unique identifier for the associated scrape configuration entity.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.EmailAddress">
+            <summary>The email address of the user.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.Username">
+            <summary>The username of the user.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.Password">
+            <summary>The password of the user.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationEntity.SessionCookie">
+            <summary>The session cookie of the user.</summary>
+        </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId">
+            <summary>
+            Represents the unique identifier for a user configuration entity.
+            </summary>
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId.#ctor(System.Guid)">
+            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
+            <param name="Value">The underlying identifier value.</param>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId.Value">
+            <summary>The underlying identifier value.</summary>
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.UserConfigurationId)~System.Guid">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.ControlDb.SqliteTypeConverters">
+            <summary>Shared EF Core value converters for types SQLite cannot store natively.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.DateTimeOffsetToTicks">
+            <summary>Converts a <see cref="T:System.DateTimeOffset"/> to and from UTC ticks.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.NullableDateTimeOffsetToTicks">
+            <summary>Converts a nullable <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.TimeSpanToTicks">
+            <summary>Converts a <see cref="T:System.TimeSpan"/> to and from ticks.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.NullableTimeSpanToTicks">
+            <summary>Converts a nullable <see cref="T:System.TimeSpan"/> to and from nullable ticks.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.GuidToBytes">
+            <summary>Converts a <see cref="T:System.Guid"/> to and from its byte array representation.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.NullableGuidToBytes">
+            <summary>Converts a nullable <see cref="T:System.Guid"/> to and from its byte array representation.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.DecimalToCents">
+            <summary>Converts a <see cref="T:System.Decimal"/> to and from an integral cents representation.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.NullableDecimalToCents">
+            <summary>Converts a nullable <see cref="T:System.Decimal"/> to and from a nullable integral cents representation.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.OptionStringToNullableString">
+            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks">
+            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
+        </member>
+    </members>
+</doc>

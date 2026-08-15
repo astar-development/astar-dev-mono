@@ -6,7 +6,11 @@ namespace AStarDev.ControlDb.Tests.Unit.Files;
 public class GivenAFileEntity
 {
     [Fact]
-    public void when_properties_are_set_correctly_the_properties_are_assigned_as_expected() => CreateSut().ToJson().ShouldMatchApproved();
+    public void when_properties_are_set_correctly_the_properties_are_assigned_as_expected()
+    {
+        string sut = CreateSut().ToJson() + Environment.NewLine;
+        sut.ShouldMatchApproved();
+    }
 
     private static FileEntity CreateSut()
     {
