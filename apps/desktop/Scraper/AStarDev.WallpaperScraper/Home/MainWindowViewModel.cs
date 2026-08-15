@@ -15,11 +15,11 @@ namespace AStarDev.WallpaperScraper.Home;
 public class MainWindowViewModel : ReactiveObject, IDisposable
 {
     private readonly IPlaywrightService playwrightService;
-    private readonly ILogger<MainWindow> logger;
+    private readonly ILogger<MainWindowViewModel> logger;
     private readonly CancellationTokenSource cancellationTokenSource;
     private bool disposed;
 
-    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, ILogger<MainWindow> logger)
+    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, ILogger<MainWindowViewModel> logger)
     {
         cancellationTokenSource = new CancellationTokenSource();
         string userDataDirectory = scrapeConfiguration.Value.UserDataDirectory;

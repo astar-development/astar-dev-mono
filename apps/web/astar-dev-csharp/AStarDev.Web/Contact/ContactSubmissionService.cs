@@ -25,7 +25,7 @@ public sealed class ContactSubmissionService(IContactRateLimiter rateLimiter, IC
         var validation = ContactFormValidator.Validate(name, email, message, sendCopy);
         if (validation.TryGetErrors(out var errors))
         {
-            var invalidProperties = string.Join(",", errors.Select(e => e.Property));
+            string invalidProperties = string.Join(",", errors.Select(e => e.Property));
             LogMessage.Debug(logger, "contact/validation-failed", invalidProperties);
 
             return ContactSubmissionOutcomeFactory.ValidationFailed(errors);

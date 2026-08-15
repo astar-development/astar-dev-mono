@@ -173,7 +173,7 @@ public sealed class GivenAnOption
     {
         string? value = null;
 
-        var option = value!.ToOption();
+        var option = value.ToOption();
 
         _ = option.ShouldBeOfType<Option<string>.None>();
     }

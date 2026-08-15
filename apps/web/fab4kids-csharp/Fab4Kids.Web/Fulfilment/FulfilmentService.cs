@@ -19,7 +19,7 @@ public sealed class FulfilmentService(
     public async Task<FulfilmentOutcome> ProcessCheckoutCompletedAsync(string sessionId, CancellationToken cancellationToken)
     {
         var marked = await idempotencyStore.TryMarkProcessedAsync(sessionId, cancellationToken);
-        var isDuplicate = marked.Match(newlyMarked => !newlyMarked, _ => false);
+        bool isDuplicate = marked.Match(newlyMarked => !newlyMarked, _ => false);
         if (isDuplicate)
         {
             LogMessage.Information(logger, "webhook/duplicate-event", sessionId);
@@ -83,7 +83,7 @@ public sealed class FulfilmentService(
 
     private async Task<FulfilmentOutcome> DeliverAsync(Session session, CancellationToken cancellationToken)
     {
-        var customerEmail = session.CustomerDetails?.Email;
+        string? customerEmail = session.CustomerDetails?.Email;
         if (string.IsNullOrWhiteSpace(customerEmail))
         {
             LogMessage.Warning(logger, "webhook/no-customer-email", session.Id);
@@ -96,7 +96,7 @@ public sealed class FulfilmentService(
         return await emailSender.SendAsync(customerEmail, session.Id, links, cancellationToken).MatchAsync(
             _ =>
             {
-                var linkCount = links.Count.ToString(CultureInfo.InvariantCulture);
+                string linkCount = links.Count.ToString(CultureInfo.InvariantCulture);
                 LogMessage.Information(logger, "webhook/delivery-sent", session.Id, linkCount);
 
                 return FulfilmentOutcomeFactory.Delivered(links.Count);
@@ -111,7 +111,7 @@ public sealed class FulfilmentService(
 
     private async Task<ResendOutcome> CompleteResendAsync(Session session, string orderReference, string email, CancellationToken cancellationToken)
     {
-        var customerEmail = session.CustomerDetails?.Email;
+        string? customerEmail = session.CustomerDetails?.Email;
         if (string.IsNullOrWhiteSpace(customerEmail) || !string.Equals(customerEmail, email, StringComparison.OrdinalIgnoreCase))
         {
             LogMessage.Warning(logger, "resend/email-mismatch", orderReference);
@@ -124,7 +124,7 @@ public sealed class FulfilmentService(
         return await emailSender.SendAsync(customerEmail, orderReference, links, cancellationToken).MatchAsync(
             _ =>
             {
-                var linkCount = links.Count.ToString(CultureInfo.InvariantCulture);
+                string linkCount = links.Count.ToString(CultureInfo.InvariantCulture);
                 LogMessage.Information(logger, "resend/sent", orderReference, linkCount);
 
                 return ResendOutcomeFactory.Sent(links.Count);
@@ -144,12 +144,12 @@ public sealed class FulfilmentService(
 
         foreach (var lineItem in lineItems)
         {
-            var blobPath = lineItem.Price?.Product?.Metadata?.GetValueOrDefault("blobPath");
+            string? blobPath = lineItem.Price?.Product?.Metadata?.GetValueOrDefault("blobPath");
             if (string.IsNullOrWhiteSpace(blobPath))
                 continue;
 
             var urlResult = await linkGenerator.GenerateSignedUrlAsync(blobPath, cancellationToken);
-            var url = urlResult.Match(value => value, _ => string.Empty);
+            string url = urlResult.Match(value => value, _ => string.Empty);
             if (string.IsNullOrWhiteSpace(url))
                 continue;
 

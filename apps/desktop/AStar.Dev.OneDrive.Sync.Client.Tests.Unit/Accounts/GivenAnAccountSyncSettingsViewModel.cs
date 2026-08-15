@@ -224,7 +224,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(SyncPathValue);
+        captured.SyncConfig.LocalSyncPath.Value.ShouldBe(SyncPathValue);
     }
 
     [Fact]
@@ -243,7 +243,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.SyncConfig.ConflictPolicy.ShouldBe(ConflictPolicy.RemoteWins);
+        captured.SyncConfig.ConflictPolicy.ShouldBe(ConflictPolicy.RemoteWins);
     }
 
     [Fact]
@@ -293,7 +293,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
+        captured.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]
@@ -311,7 +311,7 @@ public sealed class GivenAnAccountSyncSettingsViewModel
         await sut.SaveCommand.ExecuteAsync(null);
 
         captured.ShouldNotBeNull();
-        captured!.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
+        captured.SyncConfig.LocalSyncPath.Value.ShouldBe(string.Empty);
     }
 
     [Fact]

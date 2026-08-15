@@ -27,7 +27,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
             return CheckoutSessionOutcomeFactory.Failed("Checkout is currently unavailable.");
         }
 
-        var itemCount = items.Count.ToString(CultureInfo.InvariantCulture);
+        string itemCount = items.Count.ToString(CultureInfo.InvariantCulture);
         LogMessage.Information(logger, "checkout/session-start", itemCount);
 
         var sessionOptions = BuildSessionOptions(items, settings.SiteUrl);

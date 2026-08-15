@@ -14,7 +14,7 @@ public class GivenTheShippedAppSettings
             .AddJsonFile(ProductionAppSettingsPath())
             .Build();
 
-        var channelPrefix = configuration[$"{VelopackUpdateSettings.SectionName}:ChannelPrefix"];
+        string? channelPrefix = configuration[$"{VelopackUpdateSettings.SectionName}:ChannelPrefix"];
 
         channelPrefix.ShouldBe("wallpaper-scraper");
     }

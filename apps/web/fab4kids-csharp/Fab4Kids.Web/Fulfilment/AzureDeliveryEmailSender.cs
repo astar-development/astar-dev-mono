@@ -37,14 +37,14 @@ public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options
 
     private static string BuildHtml(string orderReference, IReadOnlyList<DeliveryLink> links)
     {
-        var items = string.Join(string.Empty, links.Select(link => $"<li><strong>{link.ProductTitle}</strong><br><a href=\"{link.Url}\">Download</a> (expires {link.ExpiresAt:HH:mm})</li>"));
+        string items = string.Join(string.Empty, links.Select(link => $"<li><strong>{link.ProductTitle}</strong><br><a href=\"{link.Url}\">Download</a> (expires {link.ExpiresAt:HH:mm})</li>"));
 
         return $"<h1>Your fab4kids order is ready!</h1><p>Order reference: <code>{orderReference}</code></p><p>Links expire 15 minutes after this email was sent.</p><ul>{items}</ul><p>Thank you for supporting fab4kids!</p>";
     }
 
     private static string BuildText(string orderReference, IReadOnlyList<DeliveryLink> links)
     {
-        var items = string.Join('\n', links.Select(link => $"{link.ProductTitle}: {link.Url} (expires {link.ExpiresAt:O})"));
+        string items = string.Join('\n', links.Select(link => $"{link.ProductTitle}: {link.Url} (expires {link.ExpiresAt:O})"));
 
         return $"Your fab4kids order is ready!\n\nOrder: {orderReference}\n\n{items}\n\nThank you!";
     }

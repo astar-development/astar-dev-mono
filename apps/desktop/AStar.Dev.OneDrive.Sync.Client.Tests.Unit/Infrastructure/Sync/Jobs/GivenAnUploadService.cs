@@ -160,7 +160,7 @@ public sealed class GivenAnUploadService
         var result = await sut.UploadAsync(BuildAnonymousGraphClient(), new DriveId(DriveIdValue), ParentFolderId, "/nonexistent/path/file.bin", RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
         var error = result.ShouldBeAssignableTo<Fail<string, string>>();
-        error!.Error.ShouldContain("Local file not found");
+        error.Error.ShouldContain("Local file not found");
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public sealed class GivenAnUploadService
         var result = await sut.UploadAsync(BuildGraphClient(server), new DriveId(DriveIdValue), ParentFolderId, LocalFilePath, RemotePath, cancellationToken: TestContext.Current.CancellationToken);
 
         var error = result.ShouldBeAssignableTo<Fail<string, string>>();
-        error!.Error.ShouldContain("upload session URL");
+        error.Error.ShouldContain("upload session URL");
     }
 
     [Fact]

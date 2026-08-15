@@ -37,7 +37,6 @@ public partial class App : Application, IDisposable
 
     private static ServiceProvider BuildServices()
     {
-        IFileSystem fileSystem = new RealFileSystem();
         var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
         var collection = new ServiceCollection().AddConfigurationServices(configuration).AddApplicationServices(configuration);
 

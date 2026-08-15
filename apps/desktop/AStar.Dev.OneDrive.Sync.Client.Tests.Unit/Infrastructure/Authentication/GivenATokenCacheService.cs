@@ -132,7 +132,7 @@ public sealed class GivenATokenCacheService
     {
         var service = new TokenCacheService(new MockFileSystem(), Substitute.For<ILogger<TokenCacheService>>());
 
-        await Should.ThrowAsync<NullReferenceException>(() => service.RegisterAsync(null!));
+        await Should.ThrowAsync<NullReferenceException>(() => service.RegisterAsync(null));
     }
 
     [Fact]

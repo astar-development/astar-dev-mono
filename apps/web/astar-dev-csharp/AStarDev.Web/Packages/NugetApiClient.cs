@@ -11,7 +11,7 @@ public sealed class NugetApiClient(HttpClient httpClient) : INugetApiClient
 
     public async Task<Option<PackageData>> FetchAsync(string packageId, CancellationToken cancellationToken)
     {
-        var url = $"query?q=packageid:{Uri.EscapeDataString(packageId)}&prerelease=false&take=1";
+        string url = $"query?q=packageid:{Uri.EscapeDataString(packageId)}&prerelease=false&take=1";
         using var response = await httpClient.GetAsync(url, cancellationToken);
         if (!response.IsSuccessStatusCode)
             return Option.None<PackageData>();

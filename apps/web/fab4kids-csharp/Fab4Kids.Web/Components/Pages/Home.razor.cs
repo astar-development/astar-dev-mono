@@ -24,14 +24,14 @@ public sealed partial class Home : ComponentBase
             .Take(MaxFeaturedResources)
             .Select(pair =>
             {
-                var subjectSlug = pair.category.Name.ToSlug();
-                var color = SubjectAccents.Find(pair.category.Name).Match(accent => accent.Color, () => "var(--color-primary)");
+                string subjectSlug = pair.category.Name.ToSlug();
+                string color = SubjectAccents.Find(pair.category.Name).Match(accent => accent.Color, () => "var(--color-primary)");
 
                 return FeaturedResourceFactory.Create(
-                    pair.entry.file!,
+                    pair.entry.file,
                     pair.category.Name,
                     color,
                     pair.entry.subcategory.Name,
-                    ResourceRoutes.DetailHref(subjectSlug, pair.entry.file!.Id));
+                    ResourceRoutes.DetailHref(subjectSlug, pair.entry.file.Id));
             })];
 }

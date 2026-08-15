@@ -145,7 +145,7 @@ public sealed class GivenAnApplicationInitializer
         await sut.InitializeAsync(TestContext.Current.CancellationToken);
 
         files.ActiveTab.ShouldNotBeNull();
-        files.ActiveTab!.AccountId.ShouldBe("acc-active");
+        files.ActiveTab.AccountId.ShouldBe("acc-active");
     }
 
     [Fact]
@@ -173,6 +173,6 @@ public sealed class GivenAnApplicationInitializer
 
         exception.ShouldNotBeNull();
         exception.ShouldBeOfType<InvalidOperationException>();
-        exception!.Message.ShouldBe("DB failure");
+        exception.Message.ShouldBe("DB failure");
     }
 }

@@ -34,7 +34,7 @@ public sealed class GivenValidationTryGetValue
         };
         var validation = Validation.Invalid<int>(errors);
 
-        bool result = validation.TryGetErrors(out IReadOnlyList<ValidationError> outErrors);
+        bool result = validation.TryGetErrors(out var outErrors);
 
         result.ShouldBeTrue();
         outErrors.ShouldBe(errors);
@@ -45,7 +45,7 @@ public sealed class GivenValidationTryGetValue
     {
         var validation = Validation.Valid(42);
 
-        bool result = validation.TryGetErrors(out IReadOnlyList<ValidationError> outErrors);
+        bool result = validation.TryGetErrors(out var outErrors);
 
         result.ShouldBeFalse();
         outErrors.ShouldBeEmpty();

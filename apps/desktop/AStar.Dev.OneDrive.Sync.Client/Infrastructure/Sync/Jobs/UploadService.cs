@@ -146,7 +146,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
             {
                 var array = MemoryMarshal.TryGetArray(chunk, out var segment) ? segment : new ArraySegment<byte>(chunk.ToArray());
                 using var content = new ByteArrayContent(array.Array!, array.Offset, array.Count);
-                content.Headers.Add("Content-Range", FormattableString.Invariant($"bytes {rangeStart}-{rangeEnd}/{totalBytes}"));
+                content.Headers.Add("Content-Range", string.Create(CultureInfo.InvariantCulture, $"bytes {rangeStart}-{rangeEnd}/{totalBytes}"));
                 content.Headers.Add("Content-Length", chunk.Length.ToString(CultureInfo.InvariantCulture));
 
                 using var response = await http.PutAsync(sessionUrl, content, cancellationToken).ConfigureAwait(false);
