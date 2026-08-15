@@ -53,7 +53,7 @@ public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<Scrap
     private async Task<IBrowserContext> GetOrCreateContextAsync(IPlaywright _)
         => context ??= await playwright!.Chromium.LaunchPersistentContextAsync(scrapeConfiguration.Value.UserDataDirectory, SetContext()).ConfigureAwait(false);
 
-    private async Task<IBrowserContext> HideWebdriverAsync(IBrowserContext browserContext)
+    private static async Task<IBrowserContext> HideWebdriverAsync(IBrowserContext browserContext)
     {
         await browserContext.AddInitScriptAsync(HideWebdriverScript).ConfigureAwait(false);
 

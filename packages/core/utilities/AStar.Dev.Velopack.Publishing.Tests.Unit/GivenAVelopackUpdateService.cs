@@ -10,7 +10,7 @@ public sealed class GivenAVelopackUpdateService
         var settings = Options.Create(new VelopackUpdateSettings
         {
             GithubRepositoryUrl = new Uri("https://github.com/astar-development/astar-dev-mono"),
-            ChannelPrefix       = channelPrefix
+            ChannelPrefix = channelPrefix
         });
 
         return new VelopackUpdateService(settings, NullLogger<VelopackUpdateService>.Instance);
@@ -21,7 +21,7 @@ public sealed class GivenAVelopackUpdateService
     {
         var sut = BuildSut("onedrive-sync");
 
-        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
+        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : SetNonWindowsPlatformSuffix();
 
         sut.Channel.ShouldBe($"onedrive-sync-{expectedSuffix}");
     }
@@ -31,8 +31,10 @@ public sealed class GivenAVelopackUpdateService
     {
         var sut = BuildSut("clock");
 
-        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
+        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : SetNonWindowsPlatformSuffix();
 
         sut.Channel.ShouldBe($"clock-{expectedSuffix}");
     }
+
+    private static string SetNonWindowsPlatformSuffix() => OperatingSystem.IsMacOS() ? "osx" : "linux";
 }

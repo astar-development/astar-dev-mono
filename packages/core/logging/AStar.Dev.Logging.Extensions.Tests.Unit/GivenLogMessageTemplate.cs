@@ -16,7 +16,7 @@ public sealed class GivenLogMessageTemplate
         logger.Logs.Count.ShouldBe(1);
         var log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
-        log.EventId.Id.ShouldBe(400);
+        log.EventId.Id.ShouldBe(4001);
         log.Message.ShouldBe($"Bad Request (400) for `{path}`");
         log.Exception.ShouldBeNull();
     }

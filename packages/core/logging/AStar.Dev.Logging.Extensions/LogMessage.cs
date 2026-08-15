@@ -20,7 +20,7 @@ public static partial class LogMessage
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="pageName">The name of the page that was viewed.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
+    [LoggerMessage(EventId = 204, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
     public static partial void Trace(ILogger logger, string pageName);
 
     /// <summary>
@@ -45,7 +45,7 @@ public static partial class LogMessage
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="message">The message to log.</param>
-    [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "{message}.")]
+    [LoggerMessage(EventId = 203, Level = LogLevel.Information, Message = "{message}.")]
     public static partial void Information(ILogger logger, string message);
 
     /// <summary>
@@ -84,7 +84,7 @@ public static partial class LogMessage
     /// <param name="exceptionType">The type of the exception being logged.</param>
     /// <param name="exceptionMessage">The message associated with the exception.</param>
     /// <param name="exceptionStack">The stack trace of the exception.</param>
-    [LoggerMessage(EventId = 500, Level = LogLevel.Error, Message = "{Location} encountered {exceptionType} with `{exceptionMessage}`\nExceptionStack: {exceptionStack}")]
+    [LoggerMessage(EventId = 5001, Level = LogLevel.Error, Message = "{Location} encountered {exceptionType} with `{exceptionMessage}`\nExceptionStack: {exceptionStack}")]
     public static partial void LogException(ILogger logger, string location, string exceptionType, string exceptionMessage, string exceptionStack);
 
     /// <summary>
@@ -92,7 +92,7 @@ public static partial class LogMessage
     /// </summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="path">The path of the HTTP request that caused the Bad Request.</param>
-    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "Bad Request (400) for `{Path}`")]
+    [LoggerMessage(EventId = 4001, Level = LogLevel.Warning, Message = "Bad Request (400) for `{Path}`")]
     public static partial void BadRequest(ILogger logger, string path);
 
     /// <summary>
@@ -207,7 +207,7 @@ public static partial class LogMessage
     /// <param name="attempt">Current retry attempt (1-based).</param>
     /// <param name="maxRetries">Maximum number of retries.</param>
     /// <param name="delaySeconds">Delay in seconds before the next retry.</param>
-    [LoggerMessage(EventId = 429, Level = LogLevel.Debug, Message = "Graph API throttled (attempt {Attempt}/{MaxRetries}), retrying after {DelaySeconds}s")]
+    [LoggerMessage(EventId = 4291, Level = LogLevel.Debug, Message = "Graph API throttled (attempt {Attempt}/{MaxRetries}), retrying after {DelaySeconds}s")]
     public static partial void GraphApiThrottled(ILogger logger, int attempt, int maxRetries, double delaySeconds);
 
     /// <summary>Logs successful completion of a file download.</summary>

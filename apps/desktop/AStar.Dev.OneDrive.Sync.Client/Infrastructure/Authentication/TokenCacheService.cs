@@ -104,8 +104,10 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
 
         return OperatingSystem.IsWindows()
             ? appData.CombinePath(ApplicationMetadata.ApplicationNameHyphenated)
-            : OperatingSystem.IsMacOS()
-                ? appData.CombinePath("Library", "Application Support", ApplicationMetadata.ApplicationNameHyphenated)
-                : appData.CombinePath(".config", ApplicationMetadata.ApplicationNameHyphenated);
+            : SetMacOrLinuxPath(appData);
     }
+
+    private static string SetMacOrLinuxPath(string appData) => OperatingSystem.IsMacOS()
+                    ? appData.CombinePath("Library", "Application Support", ApplicationMetadata.ApplicationNameHyphenated)
+                    : appData.CombinePath(".config", ApplicationMetadata.ApplicationNameHyphenated);
 }

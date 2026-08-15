@@ -57,7 +57,7 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         if (effectiveParentId is Option<FileClassificationCategoryId>.None && node.ParentId.HasValue)
             effectiveParentId = Option.Some(FileClassificationCategoryIdFactory.Create(node.ParentId.Value));
 
-        int level = node.Level > 0 ? node.Level : (effectiveParentId is Option<FileClassificationCategoryId>.Some ? parentLevel + 1 : 1);
+        int level = node.Level > 0 ? node.Level : UpdateParentLevel(parentLevel, effectiveParentId);
         var fileClassificationCategoryId = FileClassificationCategoryIdFactory.Create(node.Id);
 
         var createResult = FileClassificationCategoryFactory.Create(fileClassificationCategoryId, node.Name, level, node.IsFamous ?? false, node.IsInternet ?? false, effectiveParentId, node.IncludeInSearch);
@@ -72,6 +72,8 @@ public sealed class FileClassificationExportImportService(IFileClassificationRep
         foreach (var child in node.Children)
             await InsertNodeAsync(child, Option.Some(newFileClassificationCategoryId), level, existingIds, cancellationToken).ConfigureAwait(false);
     }
+
+    private static int UpdateParentLevel(int parentLevel, Option<FileClassificationCategoryId>? effectiveParentId) => effectiveParentId is Option<FileClassificationCategoryId>.Some ? parentLevel + 1 : 1;
 
     private async Task<List<ClassificationCategoryNode>> BuildExportCategoriesAsync(CancellationToken cancellationToken)
     {

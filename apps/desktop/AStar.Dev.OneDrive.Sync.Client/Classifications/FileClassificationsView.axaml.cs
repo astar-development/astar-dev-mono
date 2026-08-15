@@ -55,7 +55,7 @@ public partial class FileClassificationsView : UserControl, IDisposable
         if (topLevel is null)
             return;
 
-        await vm.ExportAsync(topLevel.StorageProvider);
+        await vm.ExportAsync(topLevel.StorageProvider, cts?.Token ?? CancellationToken.None);
     }
 
     private async void OnImportClick(object? sender, RoutedEventArgs e)

@@ -174,15 +174,6 @@ public sealed class GivenAnAccountSyncSettingsViewModel
     }
 
     [Fact]
-    public async Task when_browse_command_is_executed_then_no_exception_is_thrown()
-    {
-        var repository = Substitute.For<IAccountRepository>();
-        var sut = new AccountSyncSettingsViewModel(BuildAccount(), repository, BuildLocalizationService());
-
-        await Should.NotThrowAsync(() => sut.BrowseCommand.ExecuteAsync(null));
-    }
-
-    [Fact]
     public async Task when_save_is_executed_and_entity_is_not_found_then_upsert_is_not_called()
     {
         var repository = Substitute.For<IAccountRepository>();

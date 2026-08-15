@@ -76,35 +76,31 @@ public abstract class Result<TSuccess, TError>
     /// <summary>
     ///     Represents a successful outcome.
     /// </summary>
-    public sealed class Ok : Result<TSuccess, TError>
+    /// <remarks>
+    ///     Creates a successful result.
+    /// </remarks>
+    /// <param name="value">The result value.</param>
+    public sealed class Ok(TSuccess value) : Result<TSuccess, TError>
     {
-        /// <summary>
-        ///     Creates a successful result.
-        /// </summary>
-        /// <param name="value">The result value.</param>
-        public Ok(TSuccess value) => Value = value;
-
         /// <summary>
         ///     The successful value.
         /// </summary>
-        public TSuccess Value { get; }
+        public TSuccess Value { get; } = value;
     }
 
     /// <summary>
     ///     Represents an error outcome.
     /// </summary>
-    public sealed class Error : Result<TSuccess, TError>
+    /// <remarks>
+    ///     Creates an error result.
+    /// </remarks>
+    /// <param name="reason">The failure reason.</param>
+    public sealed class Error(TError reason) : Result<TSuccess, TError>
     {
-        /// <summary>
-        ///     Creates an error result.
-        /// </summary>
-        /// <param name="reason">The failure reason.</param>
-        public Error(TError reason) => Reason = reason;
-
         /// <summary>
         ///     The error reason.
         /// </summary>
-        public TError Reason { get; }
+        public TError Reason { get; } = reason;
     }
 }
 #pragma warning restore S3060

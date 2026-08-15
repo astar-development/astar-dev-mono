@@ -145,6 +145,7 @@ public static class ImmutableUpdateExtensions
 
     private static object? GetNavigationValue(this object source, INavigationBase navigation) =>
         navigation.PropertyInfo is { } propertyInfo ? propertyInfo.GetValue(source)
-        : navigation.FieldInfo is { } fieldInfo ? fieldInfo.GetValue(source)
-        : null;
+        : GetNavValue(source, navigation);
+
+    private static object? GetNavValue(object source, INavigationBase navigation) => navigation.FieldInfo is { } fieldInfo ? fieldInfo.GetValue(source) : null;
 }
