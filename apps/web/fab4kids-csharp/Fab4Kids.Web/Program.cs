@@ -67,17 +67,17 @@ builder.Services.AddSingleton<IDeliveryEmailSender>(sp =>
     return new AzureDeliveryEmailSender(sp.GetRequiredService<IOptions<FulfilmentOptions>>(), deliveryEmailLogger, deliveryEmailClient);
 });
 builder.Services.AddScoped<IFulfilmentService, FulfilmentService>();
+builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 var app = builder.Build();
 
 app.Services.GetRequiredService<ICatalogueService>();
 
 app.UseExceptionHandler("/Error", createScopeForErrors: true);
-builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
-
+app.UseHsts();
 app.UseAntiforgery();
 
 app.UseSerilogRequestLogging();
@@ -86,7 +86,7 @@ app.MapStaticAssets();
 app.MapCheckoutEndpoints();
 app.MapFulfilmentEndpoints();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
 try
 {

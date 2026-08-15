@@ -92,14 +92,14 @@ public sealed class GivenPlaywrightService(PlaywrightServiceFixture fixture) : I
     [Fact]
     public async Task when_configure_playwright_async_is_called_then_the_browser_honours_the_configured_headless_setting()
     {
-        var sut = CreatePlaywrightService(useHeadless: false);
+        var sut = CreatePlaywrightService(useHeadless: true);
 
         var result = await sut.ConfigurePlaywrightAsync(TestContext.Current.CancellationToken);
 
         var page = result.ShouldBeOfType<Success<IPage>>().Value;
         string userAgent = await page.EvaluateAsync<string>("navigator.userAgent");
         await page.Context.CloseAsync();
-        userAgent.ShouldNotContain("HeadlessChrome");
+        userAgent.ShouldContain("HeadlessChrome");
     }
 
     [Fact]

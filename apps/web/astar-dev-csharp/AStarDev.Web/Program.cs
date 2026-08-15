@@ -36,12 +36,12 @@ if (!string.IsNullOrWhiteSpace(contactFormOptions?.ConnectionString))
 builder.Services.AddSingleton<IContactRateLimiter, ContactRateLimiter>();
 builder.Services.AddScoped<IContactEmailSender, AzureContactEmailSender>();
 builder.Services.AddScoped<IContactSubmissionService, ContactSubmissionService>();
+builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 var app = builder.Build();
 
 app.UseExceptionHandler("/Error", createScopeForErrors: true);
-builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
-
+app.UseHsts();
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
