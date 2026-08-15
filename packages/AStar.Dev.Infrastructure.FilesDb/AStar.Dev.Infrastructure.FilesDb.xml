@@ -97,12 +97,10 @@
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Constants">
-            <summary>
-            </summary>
+            <summary>The <c>Constants</c> class contains constant values used throughout the FilesDb infrastructure.</summary>
         </member>
         <member name="F:AStar.Dev.Infrastructure.FilesDb.Constants.SchemaName">
-            <summary>
-            </summary>
+            <summary>The name of the schema used for the FilesDb database.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.Data.ClassificationQueries">
             <summary>
