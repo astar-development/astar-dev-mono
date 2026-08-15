@@ -72,10 +72,10 @@ public sealed class GivenAScrapeConfigurationEntity : IDisposable
 
         var retrieved = context.ScrapeConfiguration
                                 .Include(config => config.SearchConfiguration)
-                                .ThenInclude(searchConfiguration => searchConfiguration!.SearchCategories)
+                                .ThenInclude(searchConfiguration => searchConfiguration.SearchCategories)
                                 .First();
 
-        retrieved.SearchConfiguration!.SearchCategories.ShouldHaveSingleItem();
+        retrieved.SearchConfiguration.SearchCategories.ShouldHaveSingleItem();
         retrieved.SearchConfiguration.SearchCategories.First().Name.ShouldBe("Nature");
     }
 

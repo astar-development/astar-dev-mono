@@ -21,7 +21,7 @@ public sealed class GivenAVelopackUpdateService
     {
         var sut = BuildSut("onedrive-sync");
 
-        var expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
+        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
 
         sut.Channel.ShouldBe($"onedrive-sync-{expectedSuffix}");
     }
@@ -31,7 +31,7 @@ public sealed class GivenAVelopackUpdateService
     {
         var sut = BuildSut("clock");
 
-        var expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
+        string expectedSuffix = OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : "linux";
 
         sut.Channel.ShouldBe($"clock-{expectedSuffix}");
     }

@@ -10,7 +10,7 @@ public static class NewsletterValidator
 
     public static Validation<string> Validate(string email)
     {
-        var trimmed = email.Trim();
+        string trimmed = email.Trim();
 
         if (trimmed.Length == 0)
             return Validation.Invalid<string>(ValidationErrorFactory.Create("email", "Email is required."));

@@ -145,11 +145,8 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         while (pendingIds.Count > 0)
         {
             int currentId = pendingIds.Dequeue();
-            foreach (var child in childrenByParentId[currentId])
-            {
-                if (descendantIds.Add(child.Id))
-                    pendingIds.Enqueue(child.Id);
-            }
+            foreach (var child in childrenByParentId[currentId].Where(desc => descendantIds.Add(desc.Id)))
+                pendingIds.Enqueue(child.Id);
         }
 
         return descendantIds;

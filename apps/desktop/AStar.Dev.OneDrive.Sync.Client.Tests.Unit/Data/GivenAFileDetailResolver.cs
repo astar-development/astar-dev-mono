@@ -6,9 +6,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Data;
 
 public sealed class GivenAFileDetailResolver : IAsyncLifetime
 {
-    private SqliteConnection connection = null!;
-    private DbContextOptions<AppDbContext> options = null!;
-    private FileDetailResolver sut = null!;
+    private SqliteConnection connection = null;
+    private DbContextOptions<AppDbContext> options = null;
+    private FileDetailResolver sut = null;
 
     public async ValueTask InitializeAsync()
     {

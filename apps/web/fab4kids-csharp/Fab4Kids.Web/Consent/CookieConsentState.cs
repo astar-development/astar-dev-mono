@@ -18,7 +18,7 @@ public sealed class CookieConsentState(ILocalStorageService localStorage)
 
     public async Task InitializeAsync()
     {
-        var stored = await localStorage.GetItemAsStringAsync(StorageKey);
+        string? stored = await localStorage.GetItemAsStringAsync(StorageKey);
         AnalyticsAccepted = stored switch
         {
             "accepted" => Option.Some(true),

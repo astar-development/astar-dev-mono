@@ -70,7 +70,7 @@ public sealed class GivenWallpaperPageVisitor
 
         await sut.VisitAsync(context, WallpaperHref, TestContext.Current.CancellationToken);
 
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to load wallpaper page")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Failed to load wallpaper page")));
         await tagReader.DidNotReceive().ReadAsync(Arg.Any<IPage>(), Arg.Any<CancellationToken>());
     }
 
@@ -82,7 +82,7 @@ public sealed class GivenWallpaperPageVisitor
 
         await sut.VisitAsync(context, WallpaperHref, TestContext.Current.CancellationToken);
 
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to get wallpaper image URL")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Failed to get wallpaper image URL")));
         await imageDownloader.DidNotReceive().DownloadAsync(Arg.Any<IPage>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
     }
 
@@ -135,7 +135,7 @@ public sealed class GivenWallpaperPageVisitor
 
         await categoryRegistrar.Received().EnsureCategoriesExistAsync(Arg.Is<IReadOnlyList<TagData>>(tags => tags != null && tags.Any(tag => tag.Tag == "Nature")), Arg.Any<CancellationToken>());
         await fileClassificationRepository.Received().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), WallpaperImageUrl, Arg.Any<string>(), 3, dimensions, Arg.Any<CancellationToken>());
-        await imageDownloader.Received().DownloadAsync(page, WallpaperImageUrl, "Nature", Arg.Is<IReadOnlyList<string>>(tags => tags!.SequenceEqual(expectedNatureTagOnly)), Arg.Any<CancellationToken>());
+        await imageDownloader.Received().DownloadAsync(page, WallpaperImageUrl, "Nature", Arg.Is<IReadOnlyList<string>>(tags => tags.SequenceEqual(expectedNatureTagOnly)), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public sealed class GivenWallpaperPageVisitor
 
         await sut.VisitAsync(context, WallpaperHref, TestContext.Current.CancellationToken);
 
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("Failed to download wallpaper image")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("Failed to download wallpaper image")));
         await fileStore.DidNotReceive().SaveAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
         await fileClassificationRepository.DidNotReceive().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<long>(), Arg.Any<ImageDimensions>(), Arg.Any<CancellationToken>());
     }
@@ -160,7 +160,7 @@ public sealed class GivenWallpaperPageVisitor
 
         await sut.VisitAsync(context, WallpaperHref, TestContext.Current.CancellationToken);
 
-        progress.Received().Report(Arg.Is<string>(message => message!.Contains("disk full")));
+        progress.Received().Report(Arg.Is<string>(message => message.Contains("disk full")));
         await fileClassificationRepository.DidNotReceive().RecordAsync(Arg.Any<IReadOnlyList<TagData>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<long>(), Arg.Any<ImageDimensions>(), Arg.Any<CancellationToken>());
     }
 

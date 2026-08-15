@@ -61,7 +61,7 @@ public sealed class GivenSettingsViewDisplay
 
         var scrollViewer = sut.GetLogicalDescendants().OfType<ScrollViewer>().FirstOrDefault(sv => sv.VerticalScrollBarVisibility == ScrollBarVisibility.Auto);
         scrollViewer.ShouldNotBeNull();
-        scrollViewer!.HorizontalScrollBarVisibility.ShouldBe(ScrollBarVisibility.Disabled, "HorizontalScrollBarVisibility=Disabled prevents the horizontal scrollbar from expanding the content width measurement, which can break the vertical scroll layout");
+        scrollViewer.HorizontalScrollBarVisibility.ShouldBe(ScrollBarVisibility.Disabled, "HorizontalScrollBarVisibility=Disabled prevents the horizontal scrollbar from expanding the content width measurement, which can break the vertical scroll layout");
     }
 
     [AvaloniaFact]

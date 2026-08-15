@@ -200,6 +200,6 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
         exception.ShouldNotBeNull();
         exception.ShouldBeOfType<InvalidOperationException>();
-        exception!.Message.ShouldBe("Settings failure");
+        exception.Message.ShouldBe("Settings failure");
     }
 }

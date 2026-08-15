@@ -36,8 +36,8 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
             await mainWindowViewModel.InitialiseAsync().ConfigureAwait(false);
 
             progress.Report("Starting sync scheduler…");
-            _ = syncScheduler.StartSync(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes))
-                .Match(_ => true, error => throw new InvalidOperationException(error));
+            _ = await syncScheduler.StartSync(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes))
+                .MatchAsync(_ => true, error => throw new InvalidOperationException(error));
         }
         catch (Exception ex)
         {

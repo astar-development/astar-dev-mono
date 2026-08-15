@@ -11,8 +11,8 @@ public sealed class NugetPackageService(INugetApiClient apiClient, IMemoryCache 
 
     public async Task<Result<PackageData, string>> GetPackageDataAsync(string packageId, CancellationToken cancellationToken)
     {
-        var freshKey = FreshCacheKeyFor(packageId);
-        var lastGoodKey = LastGoodCacheKeyFor(packageId);
+        string freshKey = FreshCacheKeyFor(packageId);
+        string lastGoodKey = LastGoodCacheKeyFor(packageId);
 
         if (TryGetCached(freshKey, out var freshValue))
             return freshValue;

@@ -75,7 +75,7 @@ internal sealed class GraphFolderEnumerator(IGraphClientFactory graphClientFacto
 
     private static DeltaItem MapToDeltaItem(DriveItem item, string itemPath)
     {
-        var id = new OneDriveItemId(item.Id!);
+        var id = new OneDriveItemId(item.Id);
         var driveId = new DriveId(item.ParentReference?.DriveId ?? string.Empty);
         var parentId = item.ParentReference?.Id is string pid ? Option.Some(new OneDriveFolderId(pid)) : Option.None<OneDriveFolderId>();
         var path = ItemPathFactory.Create(item.Name ?? string.Empty, itemPath);
