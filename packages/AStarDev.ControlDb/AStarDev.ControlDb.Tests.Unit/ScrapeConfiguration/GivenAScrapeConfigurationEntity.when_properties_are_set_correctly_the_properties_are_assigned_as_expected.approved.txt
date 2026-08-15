@@ -1,0 +1,50 @@
+﻿{
+  "id": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "connectionStrings": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "scrapeConfigurationEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "sqlite": "connection-string"
+  },
+  "userConfiguration": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "scrapeConfigurationEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "emailAddress": "user@example.com",
+    "username": "username",
+    "password": "password",
+    "sessionCookie": "session-cookie"
+  },
+  "searchConfiguration": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "scrapeConfigurationEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "searchTerm": "search-config",
+    "category": "mock-category",
+    "maxResults": 10
+  },
+  "scrapeDirectories": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "scrapeConfigurationEntityId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "rootDirectory": "scrape-directory",
+    "baseSaveDirectory": "base-save-directory",
+    "baseDirectory": "base-directory",
+    "baseDirectoryFamous": "base-directory-famous",
+    "subDirectoryName": "sub-directory-name"
+  }
+}

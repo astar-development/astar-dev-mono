@@ -36,6 +36,7 @@
         <Project Path="packages/AStar.Dev.Infrastructure.FilesDb/AStar.Dev.Infrastructure.FilesDb.csproj" />
         <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb/AStarDev.ControlDb.csproj" />
         <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb.Tests.Unit/AStarDev.ControlDb.Tests.Unit.csproj" />
+        <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb.Tests.Integration/AStarDev.ControlDb.Tests.Integration.csproj" />
     </Folder>
     <Folder Name="/packages/aspnet/" />
     <Folder Name="/packages/aspnet/astar-dev-api-health-checks/">

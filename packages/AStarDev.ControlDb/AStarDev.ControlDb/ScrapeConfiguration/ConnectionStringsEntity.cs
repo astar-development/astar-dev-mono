@@ -6,4 +6,4 @@ namespace AStarDev.ControlDb.ScrapeConfiguration;
 /// <param name="Id">The unique identifier for the connection strings entity.</param>
 /// <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
 /// <param name="Sqlite">The SQLite connection string.</param>
-public record ConnectionStringsEntity(ConnectionStringsId Id, ScrapeConfigurationId ScrapeConfigurationEntityId, string Sqlite);
+public record ConnectionStringsEntity(ConnectionStringId Id, ScrapeConfigurationId ScrapeConfigurationEntityId, string Sqlite);

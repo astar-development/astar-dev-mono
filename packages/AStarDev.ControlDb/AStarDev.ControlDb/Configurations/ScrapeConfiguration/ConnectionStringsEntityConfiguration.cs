@@ -17,7 +17,7 @@ public sealed class ConnectionStringsEntityConfiguration : IEntityTypeConfigurat
         builder.HasKey(sc => sc.Id);
 
         builder.Property(sc => sc.Id).ValueGeneratedOnAdd();
-        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new ConnectionStringsId(value));
+        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new ConnectionStringId(value));
         builder.HasOne<ScrapeConfigurationEntity>()
             .WithOne(scrapeConfiguration => scrapeConfiguration.ConnectionStrings)
             .HasForeignKey<ConnectionStringsEntity>(connectionStrings => connectionStrings.ScrapeConfigurationEntityId)
