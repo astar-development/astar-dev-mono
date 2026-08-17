@@ -99,7 +99,7 @@ All files placed in `Domain/`. Each record ships with its factory class per repo
 ### `RemoteItemRef.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Identifies a specific item in a OneDrive drive folder.</summary>
 public sealed record RemoteItemRef(string AccountId, string FolderId, string RemoteItemId);
@@ -108,7 +108,7 @@ public sealed record RemoteItemRef(string AccountId, string FolderId, string Rem
 ### `RemoteItemRefFactory.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Factory for <see cref="RemoteItemRef"/>.</summary>
 public static class RemoteItemRefFactory
@@ -124,7 +124,7 @@ public static class RemoteItemRefFactory
 ### `SyncFileTarget.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>The local paths involved in a sync operation.</summary>
 public sealed record SyncFileTarget(string LocalPath, string RelativePath);
@@ -133,7 +133,7 @@ public sealed record SyncFileTarget(string LocalPath, string RelativePath);
 ### `SyncFileTargetFactory.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Factory for <see cref="SyncFileTarget"/>.</summary>
 public static class SyncFileTargetFactory
@@ -149,7 +149,7 @@ public static class SyncFileTargetFactory
 ### `SyncFileMetadata.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Remote file attributes captured at the time the sync job was queued.</summary>
 public sealed record SyncFileMetadata(long FileSize, DateTimeOffset RemoteModified);
@@ -158,7 +158,7 @@ public sealed record SyncFileMetadata(long FileSize, DateTimeOffset RemoteModifi
 ### `SyncFileMetadataFactory.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Factory for <see cref="SyncFileMetadata"/>.</summary>
 public static class SyncFileMetadataFactory
@@ -174,7 +174,7 @@ public static class SyncFileMetadataFactory
 ### `SyncJobStatus.cs` _(Clump 4)_
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Identity and execution state of a sync job.</summary>
 public sealed record SyncJobStatus(Guid Id, DateTimeOffset QueuedAt, SyncJobState State = SyncJobState.Queued, string? ErrorMessage = null, DateTimeOffset? CompletedAt = null);
@@ -183,7 +183,7 @@ public sealed record SyncJobStatus(Guid Id, DateTimeOffset QueuedAt, SyncJobStat
 ### `SyncJobStatusFactory.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Factory for <see cref="SyncJobStatus"/>.</summary>
 public static class SyncJobStatusFactory
@@ -200,7 +200,7 @@ public static class SyncJobStatusFactory
 Extension methods on `SyncJob` for state transitions. Eliminates nested `with` at every call site; names the intent, not the mechanism.
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>State-transition extensions for <see cref="SyncJob"/>.</summary>
 public static class SyncJobExtensions
@@ -218,7 +218,7 @@ public static class SyncJobExtensions
 ## Updated `SyncJob.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>
 /// Represents a single file operation queued by the sync engine.
@@ -244,7 +244,7 @@ public sealed record SyncJob(
 `SyncJobFactory.Create` takes the new record objects directly. Call sites **must** construct each argument via the relevant factory `Create` method — no primitive threading through `SyncJobFactory`.
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Creates <see cref="SyncJob"/> instances.</summary>
 public static class SyncJobFactory

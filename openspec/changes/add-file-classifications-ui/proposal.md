@@ -21,6 +21,6 @@ File classification rules exist in the database and drive how synced files are t
 
 ## Impact
 
-- `AStar.Dev.OneDrive.Sync.Client` — new View/ViewModel files, updated repository interface and implementation.
-- `AStar.Dev.OneDrive.Sync.Client.Tests.Unit` — new ViewModel tests; repository tests extended.
+- `AStarDev.OneDriveSyncClient` — new View/ViewModel files, updated repository interface and implementation.
+- `AStarDev.OneDriveSyncClient.TestsUnit` — new ViewModel tests; repository tests extended.
 - No API surface changes; no NuGet package changes.

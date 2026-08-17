@@ -25,14 +25,14 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '*/v[0-9]+.[0-9]+.[0-9]+'
-      - '*/v[0-9]+.[0-9]+.[0-9]+-*'
+      - "*/v[0-9]+.[0-9]+.[0-9]+"
+      - "*/v[0-9]+.[0-9]+.[0-9]+-*"
 
 # ── Permissions ───────────────────────────────────────────────────────────────
 permissions:
-  contents: write   # Create GitHub Release
-  packages: write   # Push .nupkg to GitHub Packages
-  checks: write     # Publish test results
+  contents: write # Create GitHub Release
+  packages: write # Push .nupkg to GitHub Packages
+  checks: write # Publish test results
 
 # ── Environment variables ─────────────────────────────────────────────────────
 env:
@@ -44,13 +44,11 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-
   validate-and-publish:
     name: Build, test & publish
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
@@ -124,11 +122,11 @@ jobs:
             -p:Version=${PACKAGE_VERSION} \
             -p:TreatWarningsAsErrors=true
 
-      # ── Test — finds the matching .Tests.Unit project automatically ────────
+      # ── Test — finds the matching .TestsUnit project automatically ────────
       - name: Test
         run: |
           TEST_PROJ=$(find packages/ \
-            -name "${PACKAGE_NAME}.Tests.Unit.csproj" | head -1)
+            -name "${PACKAGE_NAME}.TestsUnit.csproj" | head -1)
           if [ -z "$TEST_PROJ" ]; then
             echo "No test project found for ${PACKAGE_NAME} — skipping"
           else

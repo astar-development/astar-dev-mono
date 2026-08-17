@@ -8,7 +8,7 @@ STEP 1 — Create the folder structure
 ────────────────────────────────────────────────────────────────────────────
 
 mkdir -p packages/core/AStar.Development.Utilities
-mkdir -p packages/core/AStar.Development.Utilities.Tests.Unit
+mkdir -p packages/core/AStar.Development.Utilities.TestsUnit
 
 ────────────────────────────────────────────────────────────────────────────
 STEP 2 — Copy source files
@@ -28,7 +28,7 @@ STEP 3 — Add both projects to MonoRepo.slnx
 Open MonoRepo.slnx and add inside the appropriate folder. e.g.:
 
     - dotnet sln add ./packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj
-    - dotnet sln add ./packages/core/logging/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj
+    - dotnet sln add ./packages/core/logging/AStar.Dev.Logging.Extensions.TestsUnit/AStar.Dev.Logging.Extensions.TestsUnit.csproj
 
 See slnx-entries.txt for the recommended folder nesting.
 
@@ -59,7 +59,7 @@ dotnet build packages/core/AStar.Development.Utilities
 
 # Run unit tests
 
-dotnet test packages/core/AStar.Development.Utilities.Tests.Unit
+dotnet test packages/core/AStar.Development.Utilities.TestsUnit
 
 # Pack and inspect — confirm version is 1.6.3-pre.{height}
 

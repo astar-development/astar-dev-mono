@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.VelopackPublishing</name>
+    </assembly>
+    <members>
+        <member name="T:AStar.Dev.Velopack.Publishing.IVelopackUpdateService">
+            <summary>Abstracts Velopack update checking/downloading/applying so consumers stay testable.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.IsInstalled">
+            <summary>Gets a value indicating whether the app is running as a Velopack-installed instance.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.Channel">
+            <summary>Gets the explicit Velopack channel this instance checks for updates, e.g. "clock-linux".</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)">
+            <summary>
+            Checks the configured GitHub releases feed for a newer version.
+            Returns <c>null</c> if no update is available, the app is not installed (e.g. running unpackaged), or the check fails.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.DownloadUpdatesAsync(Velopack.UpdateInfo,System.Action{System.Int32},System.Threading.CancellationToken)">
+            <summary>Downloads the update described by <paramref name="updateInfo"/> to the local packages directory.</summary>
+            <param name="updateInfo">The update to download, as returned by <see cref="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)"/>.</param>
+            <param name="progress">An optional callback invoked with the download progress, from 0-100.</param>
+            <param name="cancellationToken">A token to cancel the download.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.ApplyUpdatesAndRestart(Velopack.UpdateInfo)">
+            <summary>Exits the app, applies the downloaded update, and restarts it.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.VelopackUpdateService">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.#ctor(Microsoft.Extensions.Options.IOptions{AStar.Dev.Velopack.Publishing.VelopackUpdateSettings},Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.VelopackUpdateService})">
+            <summary>Creates the update service from the bound <see cref="T:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings"/>.</summary>
+            <param name="settings">The GitHub repository releases are checked against, and the app-specific channel prefix.</param>
+            <param name="logger">The logger used to record check/download/apply outcomes.</param>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.VelopackUpdateService.IsInstalled">
+            <inheritdoc />
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.VelopackUpdateService.Channel">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.DownloadUpdatesAsync(Velopack.UpdateInfo,System.Action{System.Int32},System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.ApplyUpdatesAndRestart(Velopack.UpdateInfo)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.VelopackUpdateServiceCollectionExtensions">
+            <summary>Registers the Velopack update-checking service and its configuration binding with the dependency injection container.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateServiceCollectionExtensions.AddVelopackUpdates(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>Binds <see cref="T:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings"/> from <paramref name="configuration"/> and registers <see cref="T:AStar.Dev.Velopack.Publishing.IVelopackUpdateService"/>.</summary>
+            <param name="services">The service collection to register the update services with.</param>
+            <param name="configuration">The application configuration used to bind <see cref="T:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings"/>.</param>
+            <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings">
+            <summary>Configuration for checking application updates published as GitHub Releases via Velopack.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings.SectionName">
+            <summary>The configuration section name this record binds to.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings.GithubRepositoryUrl">
+            <summary>The GitHub repository releases are published to, e.g. https://github.com/owner/repo.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.VelopackUpdateSettings.ChannelPrefix">
+            <summary>
+            The app-specific prefix for the Velopack update channel, e.g. "clock" or "onedrive-sync".
+            Combined with the current platform (linux/win/osx) to form the explicit channel checked
+            against GitHub Releases. Required because this mono-repo hosts every desktop app's releases
+            in one GitHub repository, and Velopack's channel lookup is scoped per-repo, not per-packId -
+            apps sharing a bare channel name (e.g. "linux") can pick up each other's releases.
+            </summary>
+        </member>
+    </members>
+</doc>

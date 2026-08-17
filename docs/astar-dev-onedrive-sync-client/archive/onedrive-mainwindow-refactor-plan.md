@@ -53,7 +53,7 @@ public interface ISyncEventAggregator
 
 ### Tests
 
-New test class: `AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Sync/GivenASyncEventAggregator.cs`
+New test class: `AStarDev.OneDriveSyncClient.TestsUnit/Infrastructure/Sync/GivenASyncEventAggregator.cs`
 
 ```
 when_sync_service_raises_progress_then_aggregator_raises_progress
@@ -96,7 +96,7 @@ public interface IApplicationInitializer
 
 ### Tests
 
-New test class: `AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Shell/GivenAnApplicationInitializer.cs`
+New test class: `AStarDev.OneDriveSyncClient.TestsUnit/Infrastructure/Shell/GivenAnApplicationInitializer.cs`
 
 ```
 when_initialized_then_accounts_are_restored_from_startup_service
@@ -163,7 +163,7 @@ Removed deps from MainWindowViewModel: `IAuthService`, `IGraphService`, `ISettin
 
 ### Tests (Option A)
 
-New test class: `AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Home/GivenAStatusBarViewModel.cs`
+New test class: `AStarDev.OneDriveSyncClient.TestsUnit/Home/GivenAStatusBarViewModel.cs`
 
 ```
 when_active_account_is_null_then_has_account_is_false
@@ -228,7 +228,7 @@ Removed deps: `IAuthService`, `IGraphService`, `IStartupService`, `ISyncService`
 
 ## Tests for Refactored MainWindowViewModel
 
-New test class: `AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Home/GivenAMainWindowViewModel.cs`
+New test class: `AStarDev.OneDriveSyncClient.TestsUnit/Home/GivenAMainWindowViewModel.cs`
 
 ```
 when_created_then_active_section_is_dashboard
@@ -275,10 +275,10 @@ Branch: `feature/onedrive-mainwindow-decompose`
 - `Infrastructure/Sync/SyncEventAggregator.cs`
 - `Infrastructure/Shell/IApplicationInitializer.cs`
 - `Infrastructure/Shell/ApplicationInitializer.cs`
-- `Tests.Unit/Infrastructure/Sync/GivenASyncEventAggregator.cs`
-- `Tests.Unit/Infrastructure/Shell/GivenAnApplicationInitializer.cs`
-- `Tests.Unit/Home/GivenAMainWindowViewModel.cs`
-- `Tests.Unit/Home/GivenAStatusBarViewModel.cs` (if Option A)
+- `TestsUnit/Infrastructure/Sync/GivenASyncEventAggregator.cs`
+- `TestsUnit/Infrastructure/Shell/GivenAnApplicationInitializer.cs`
+- `TestsUnit/Home/GivenAMainWindowViewModel.cs`
+- `TestsUnit/Home/GivenAStatusBarViewModel.cs` (if Option A)
 
 ### Modified files
 

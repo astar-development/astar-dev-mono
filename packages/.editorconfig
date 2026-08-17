@@ -3,8 +3,8 @@
 root = false
 
 # Test projects — relaxed rules
-# Matches *.Tests.Unit, *.Tests.Integration, etc. projects under packages/
-# Uses **/ prefix so the test folder name can appear at any depth (e.g. packages/core/Foo.Tests.Unit/)
+# Matches *.TestsUnit, *.TestsIntegration, etc. projects under packages/
+# Uses **/ prefix so the test folder name can appear at any depth (e.g. packages/core/Foo.TestsUnit/)
 # Uses /** suffix so files directly in the test folder root are also matched (not just subdirectories)
 [**/*.Tests.*/**]
 dotnet_diagnostic.CA1707.severity = none   # Remove underscores from member names

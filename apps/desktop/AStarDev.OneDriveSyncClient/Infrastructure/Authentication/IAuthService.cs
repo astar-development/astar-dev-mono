@@ -1,0 +1,34 @@
+using AStar.Dev.FunctionalParadigm;
+
+namespace AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
+
+/// <summary>
+/// Abstracts MSAL authentication for OneDrive personal accounts.
+/// All operations are cancellable and never throw — failures are
+/// returned as <see cref="Result{TSuccess,TError}"/> error values.
+/// </summary>
+public interface IAuthService
+{
+    /// <summary>
+    /// Launches the system browser for interactive sign-in.
+    /// Returns when the user completes or cancels authentication.
+    /// </summary>
+    Task<Result<AuthResult, AuthError>> SignInInteractiveAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Attempts a silent token refresh for an already-authenticated account.
+    /// Does NOT open a browser — returns an error result if the token cannot be refreshed silently.
+    /// </summary>
+    Task<Result<AuthResult, AuthError>> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the account from the MSAL cache and deletes cached tokens.
+    /// </summary>
+    Task SignOutAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns all account IDs currently held in the token cache.
+    /// Used at startup to discover which accounts have cached tokens.
+    /// </summary>
+    Task<IReadOnlyList<string>> GetCachedAccountIdsAsync(CancellationToken cancellationToken = default);
+}

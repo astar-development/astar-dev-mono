@@ -1,6 +1,6 @@
 # Code Review Report
 
-**Project:** `apps/desktop/AStar.Dev.OneDrive.Sync.Client`
+**Project:** `apps/desktop/AStarDev.OneDriveSyncClient`
 **Scope:** `Infrastructure/` (all files and subfolders)
 **Date:** 2026-04-26
 **Reviewer:** c-sharp-reviewer subagent

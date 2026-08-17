@@ -1,6 +1,6 @@
 ## Context
 
-`AStar.Dev.OneDrive.Sync.Client` is an Avalonia desktop app that manually orchestrates its startup in `App.axaml.cs`. The current shape:
+`AStarDev.OneDriveSyncClient` is an Avalonia desktop app that manually orchestrates its startup in `App.axaml.cs`. The current shape:
 
 - `App.BuildServiceProvider()` is a static method called at field-initialiser time, before Avalonia is fully running.
 - `App.BootstrapAsync()` is a private method that resolves ~10 services via `_services.GetRequiredService<T>()` — a service-locator pattern.
@@ -22,7 +22,7 @@ The repo mandate: "DI never afterthought. Language supports it? MUST implement f
 - Remove the `private static ISyncScheduler` field from `App`.
 - Deduplicate `IFileSystem` registration.
 - All changes must keep the build green (zero errors, zero warnings, `TreatWarningsAsErrors=true`).
-- All changes must be covered by unit tests in `AStar.Dev.OneDrive.Sync.Client.Tests.Unit`.
+- All changes must be covered by unit tests in `AStarDev.OneDriveSyncClient.TestsUnit`.
 
 **Non-Goals:**
 

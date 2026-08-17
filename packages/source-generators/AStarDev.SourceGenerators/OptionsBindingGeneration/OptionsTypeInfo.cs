@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 namespace AStarDev.SourceGenerators.OptionsBindingGeneration;
 
 /// <summary>
-///  The <see cref="OptionsTypeInfo" /> class represents information about a type that is annotated with the <see cref="Attributes.AutoRegisterOptionsAttribute" />. It contains the type's name, full name, the configuration section name it should bind to, and its location in the source code for diagnostic purposes.
+///  The <see cref="OptionsTypeInfo" /> class represents information about a type that is annotated with the <see cref="SourceGeneratorAttributes.AutoRegisterOptionsAttribute" />. It contains the type's name, full name, the configuration section name it should bind to, and its location in the source code for diagnostic purposes.
 /// </summary>
 public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
 {

@@ -1,0 +1,205 @@
+using System.Globalization;
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb;
+using AStarDev.OneDriveSyncClient.Accounts;
+using AStarDev.OneDriveSyncClient.Activity;
+using AStarDev.OneDriveSyncClient.Classifications;
+using AStarDev.OneDriveSyncClient.Conflicts;
+using AStarDev.OneDriveSyncClient.Dashboard;
+using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Home;
+using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
+using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
+using AStarDev.OneDriveSyncClient.Infrastructure.Onboarding;
+using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
+using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
+using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
+using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.OneDriveSyncClient.Onboarding;
+using AStarDev.OneDriveSyncClient.Search;
+using AStarDev.OneDriveSyncClient.Settings;
+using AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Pipeline;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using ReactiveUnit = System.Reactive.Unit;
+
+namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Shell;
+
+public sealed class GivenAnAppBootstrapper : IAsyncDisposable
+{
+    private readonly ISettingsService settingsService = Substitute.For<ISettingsService>();
+    private readonly IThemeService themeService = Substitute.For<IThemeService>();
+    private readonly ISyncScheduler syncScheduler = Substitute.For<ISyncScheduler>();
+    private readonly IApplicationInitializer applicationInitializer = Substitute.For<IApplicationInitializer>();
+    private readonly IAuthService authService = Substitute.For<IAuthService>();
+    private readonly IGraphService graphService = Substitute.For<IGraphService>();
+    private readonly IAccountRepository accountRepository = Substitute.For<IAccountRepository>();
+    private readonly ISyncRuleService syncRuleService = Substitute.For<ISyncRuleService>();
+    private readonly ISyncEventAggregator syncEventAggregator = Substitute.For<ISyncEventAggregator>();
+    private readonly ISyncService syncService = Substitute.For<ISyncService>();
+    private readonly ISyncRepository syncRepository = Substitute.For<ISyncRepository>();
+    private readonly ILocalizationService localizationService = Substitute.For<ILocalizationService>();
+    private readonly IStartupService startupService = Substitute.For<IStartupService>();
+    private readonly ISettingsService settingsServiceForViewModel = Substitute.For<ISettingsService>();
+    private readonly IThemeService themeServiceForViewModel = Substitute.For<IThemeService>();
+    private readonly ISyncScheduler schedulerForViewModel = Substitute.For<ISyncScheduler>();
+    private readonly IFileSystem fileSystem = Substitute.For<IFileSystem>();
+    private readonly SqliteConnection sqliteConnection;
+    private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+
+    public GivenAnAppBootstrapper()
+    {
+        settingsService.Current.Returns(new AppSettings { SyncIntervalMinutes = 30, Theme = AppTheme.System });
+        settingsServiceForViewModel.Current.Returns(new AppSettings());
+        localizationService.AvailableCultures.Returns([]);
+        startupService.RestoreAccountsAsync().Returns(Task.FromResult<Result<List<OneDriveAccount>, string>>(new Ok<List<OneDriveAccount>, string>([])));
+        syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
+        syncScheduler.StartSync(Arg.Any<TimeSpan?>()).Returns(new Ok<ReactiveUnit, string>(ReactiveUnit.Default));
+
+        sqliteConnection = new SqliteConnection("Data Source=:memory:");
+        sqliteConnection.Open();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(sqliteConnection)
+            .Options;
+
+        dbContextFactory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        dbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(_ => Task.FromResult(new AppDbContext(options)));
+    }
+
+    public async ValueTask DisposeAsync() => await sqliteConnection.DisposeAsync();
+
+    private MainWindowViewModel CreateMainWindowViewModel()
+    {
+        var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, new AddAccountWizardViewModelFactory(authService, graphService, localizationService), new AccountCardViewModelFactory(localizationService), Substitute.For<ILogger<AccountsViewModel>>());
+        var files = new FilesViewModel(new AccountFilesViewModelFactory(authService, graphService, syncRuleService, fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService), localizationService), localizationService);
+        var dashboard = new DashboardViewModel(localizationService, syncEventAggregator, new DashboardAccountViewModelFactory(schedulerForViewModel, accountRepository, localizationService, new ActivityItemViewModelFactory(localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(localizationService), new ManualUiTimer());
+        var activity = new ActivityViewModel(syncRepository, syncEventAggregator, new ConflictItemViewModelFactory(syncService, localizationService), new ActivityItemViewModelFactory(localizationService), new InlineUiDispatcher(), localizationService);
+        var classificationRepo = Substitute.For<IFileClassificationRepository>();
+        classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                          .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
+        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
+        var statusBar = new StatusBarViewModel(accounts, localizationService);
+
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+    }
+
+    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_settings_load_async_is_called()
+    {
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        await settingsService.Received(1).LoadAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_locale_is_applied_from_settings()
+    {
+        settingsService.Current.Returns(new AppSettings { Locale = "en-US", SyncIntervalMinutes = 30, Theme = AppTheme.System });
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        await localizationService.Received(1).SetCultureAsync(Arg.Is<CultureInfo>(c => c.Name == "en-US"), TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_theme_service_apply_is_called()
+    {
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        themeService.Received(1).Apply(Arg.Any<AppTheme>());
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_sync_scheduler_start_sync_is_called()
+    {
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        syncScheduler.Received(1).StartSync(Arg.Any<TimeSpan?>());
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_startup_calls_are_made_in_correct_order()
+    {
+        var callOrder = new List<string>();
+        settingsService.LoadAsync(TestContext.Current.CancellationToken).Returns(_ =>
+        {
+            callOrder.Add("LoadAsync");
+            return Task.CompletedTask;
+        });
+        localizationService.SetCultureAsync(Arg.Any<CultureInfo>(), TestContext.Current.CancellationToken).Returns(_ =>
+        {
+            callOrder.Add("SetCultureAsync");
+            return Task.CompletedTask;
+        });
+        themeService.When(service => service.Apply(Arg.Any<AppTheme>())).Do(_ => callOrder.Add("Apply"));
+        syncScheduler.When(scheduler => scheduler.StartSync(Arg.Any<TimeSpan?>())).Do(_ => callOrder.Add("StartSync"));
+
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        callOrder.ShouldBe(["LoadAsync", "SetCultureAsync", "Apply", "StartSync"]);
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_progress_messages_are_reported()
+    {
+        var reported = new List<string>();
+        var progress = Substitute.For<IProgress<string>>();
+        progress.When(p => p.Report(Arg.Any<string>())).Do(call => reported.Add(call.Arg<string>()));
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(progress, TestContext.Current.CancellationToken);
+
+        reported.Count.ShouldBeGreaterThanOrEqualTo(3);
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_theme_is_applied_with_current_settings_theme()
+    {
+        settingsService.Current.Returns(new AppSettings { Theme = AppTheme.Dark, SyncIntervalMinutes = 60 });
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        themeService.Received(1).Apply(AppTheme.Dark);
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_scheduler_starts_with_interval_from_settings()
+    {
+        settingsService.Current.Returns(new AppSettings { SyncIntervalMinutes = 15, Theme = AppTheme.System });
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        syncScheduler.Received(1).StartSync(TimeSpan.FromMinutes(15));
+    }
+
+    [Fact]
+    public async Task when_bootstrap_async_throws_then_exception_is_rethrown()
+    {
+        settingsService.LoadAsync(TestContext.Current.CancellationToken).Returns(Task.FromException(new InvalidOperationException("Settings failure")));
+        var sut = CreateSut();
+
+        var exception = await Record.ExceptionAsync(() => sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken));
+
+        exception.ShouldNotBeNull();
+        exception.ShouldBeOfType<InvalidOperationException>();
+        exception.Message.ShouldBe("Settings failure");
+    }
+}

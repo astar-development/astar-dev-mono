@@ -1,8 +1,8 @@
 ## Context
 
-`AStar.Dev.OneDrive.Sync.Client` stores OneDrive account data in SQLite via EF Core. All domain identifiers (`AccountId`, `OneDriveFolderId`, `OneDriveItemId`) and the local sync path are currently raw `string` properties on EF entities and domain models. This allows callers to pass a folder ID where an account ID is expected without any compile-time error.
+`AStarDev.OneDriveSyncClient` stores OneDrive account data in SQLite via EF Core. All domain identifiers (`AccountId`, `OneDriveFolderId`, `OneDriveItemId`) and the local sync path are currently raw `string` properties on EF entities and domain models. This allows callers to pass a folder ID where an account ID is expected without any compile-time error.
 
-The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGenerators.Attributes` which generate strongly-typed `record struct` ID wrappers via `[StrongId]`. The app project currently has no reference to these packages.
+The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGeneratorAttributes` which generate strongly-typed `record struct` ID wrappers via `[StrongId]`. The app project currently has no reference to these packages.
 
 ## Goals / Non-Goals
 

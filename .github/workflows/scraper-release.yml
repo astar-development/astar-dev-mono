@@ -38,8 +38,8 @@ name: Scraper Release
 on:
   push:
     tags:
-      - 'scraper-v[0-9]+.[0-9]+.[0-9]+'
-      - 'scraper-v[0-9]+.[0-9]+.[0-9]+-*'
+      - "scraper-v[0-9]+.[0-9]+.[0-9]+"
+      - "scraper-v[0-9]+.[0-9]+.[0-9]+-*"
 
 permissions:
   contents: write
@@ -56,16 +56,14 @@ env:
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
   PROJECT_PATH: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj
-  TEST_PROJECT_PATH: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.Tests.Unit/AStar.Dev.Wallpaper.Scraper.Tests.Unit.csproj
+  TEST_PROJECT_PATH: apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.TestsUnit/AStar.Dev.Wallpaper.Scraper.TestsUnit.csproj
 
 jobs:
-
   release-linux:
     name: Release (linux)
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
@@ -207,7 +205,6 @@ jobs:
             channel: scraper-osx
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:

@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
-    <ProjectReference Include="../../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -81,12 +81,12 @@
 
     <ItemGroup>
         <ProjectReference Include="../../../../packages/AStarDev.ControlDb/AStarDev.ControlDb/AStarDev.ControlDb.csproj" />
-        <ProjectReference Include="../../../../packages/core/logging/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+        <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
         <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
-        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Guard.Clauses/AStar.Dev.Guard.Clauses.csproj" />
-        <ProjectReference Include="../../../../packages/core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
-        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing/AStar.Dev.Velopack.Publishing.csproj" />
-        <ProjectReference Include="../../../../packages/core/utilities/AStar.Dev.Velopack.Publishing.Avalonia/AStar.Dev.Velopack.Publishing.Avalonia.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
+        <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
+        <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     </ItemGroup>
 
 </Project>

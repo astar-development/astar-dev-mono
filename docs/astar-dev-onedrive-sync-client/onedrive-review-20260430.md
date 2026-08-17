@@ -1,4 +1,4 @@
-# Code Review — AStar.Dev.OneDrive.Sync.Client — 2026-04-30
+# Code Review — AStarDev.OneDriveSyncClient — 2026-04-30
 
 ## Summary
 
@@ -120,7 +120,7 @@ private async void OnTimerTickAsync(object? state)
 
 - [ ] **[Models/SyncJob.cs:17-24]** Major — `SyncJob` is a `record` but has mutable `set` properties (`State`, `ErrorMessage`, `DownloadUrl`, `CompletedAt`, `UploadedRemoteItemId`). Fix: make all properties `init`-only and use `with` expressions at mutation sites in `DownloadWorker` and `ParallelDownloadPipeline`.
 
-- [ ] **[Tests/Conflicts/ConflictResolverTests.cs:5] + [Tests/Infrastructure/Sync/SyncServiceTests.cs:9]** Major — Test files are in namespace `AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync` but live in the `Conflicts/` and `Infrastructure/Sync/` folders respectively. Fix: update namespaces to match folder paths.
+- [ ] **[Tests/Conflicts/ConflictResolverTests.cs:5] + [Tests/Infrastructure/Sync/SyncServiceTests.cs:9]** Major — Test files are in namespace `AStarDev.OneDriveSyncClient.TestsUnit.Services.Sync` but live in the `Conflicts/` and `Infrastructure/Sync/` folders respectively. Fix: update namespaces to match folder paths.
 
 - [ ] **[Tests/Conflicts/ConflictResolverTests.cs] + [Tests/Data/Repositories/AccountRepositoryTests.cs] + [Tests/Infrastructure/Authentication/AuthServiceTests.cs]** Major — Multiple test files use PascalCase method names (`Resolve_WithIgnorePolicy_ShouldReturnSkip`, `GetAllAsync_WithNoAccounts_ShouldReturnEmptyList`) rather than the required `when_[action]_then_[outcome]` snake_case convention. Test class names use `Tests` suffix rather than required `Given` prefix. Fix: rename all test methods to snake_case and rename `ConflictResolverTests`/`AccountRepositoryTests`/`AuthServiceTests` to `GivenA[Context]` classes.
 
@@ -168,7 +168,7 @@ private async void OnTimerTickAsync(object? state)
 
 - [ ] **[Accounts/AccountsViewModel.cs:96-101]** Minor — `account.IsActive = Accounts.Count == 0` and `account.AccentIndex = Accounts.Count % 6` mutate the `OneDriveAccount` domain model directly inside the wizard completion handler. Fix: perform this logic inside a factory method before the `AccountAdded` event is raised, not in the ViewModel observer.
 
-- [ ] **[Tests/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj:5]** Minor — `<NoWarn>NU1902</NoWarn>` suppresses a NuGet warning without a documented reason. Fix: add an XML comment explaining why this warning is suppressed.
+- [ ] **[Tests/AStarDev.OneDriveSyncClient.TestsUnit.csproj:5]** Minor — `<NoWarn>NU1902</NoWarn>` suppresses a NuGet warning without a documented reason. Fix: add an XML comment explaining why this warning is suppressed.
 
 - [ ] **[Accounts/AccountsViewModel.cs:79]** Minor — `await authService.SignOutAsync(card.Id)` and `await repository.DeleteAsync(...)` in `RemoveAccountAsync` are awaited without `ConfigureAwait(false)`. ViewModel (UI) code intentionally captures context, but flag for consistency audit against other async calls in the same method.
 

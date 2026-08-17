@@ -45,8 +45,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../zoran/ImmutableDomain.EntityFrameworkCore/ImmutableDomain.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="../../core/functional/AStar.Dev.FunctionalParadigm/AStar.Dev.FunctionalParadigm.csproj" />
-    <ProjectReference Include="../../source-generators/AStarDev.SourceGenerators.Attributes/AStarDev.SourceGenerators.Attributes.csproj" />
+    <ProjectReference Include="../../core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
     <ProjectReference Include="../../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
   </ItemGroup>
 
@@ -54,7 +54,7 @@
     <MSBuild Projects="../../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
-    <MSBuild Projects="../../source-generators/AStarDev.SourceGenerators.Attributes/AStarDev.SourceGenerators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+    <MSBuild Projects="../../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
   </Target>

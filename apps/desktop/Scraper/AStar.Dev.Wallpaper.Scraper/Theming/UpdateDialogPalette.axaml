@@ -5,7 +5,7 @@
       Supplies the 8 theme keys AStar.Dev.Velopack.Publishing.Avalonia's shared update-available
       dialog resolves via DynamicResource (see that package's README.md). Scraper has no broader
       semantic brush scheme of its own (bare FluentTheme + ThemeVariant only), so this is scoped
-      to just the update dialog's needs. Values mirror AStar.Dev.OneDrive.Sync.Client's Light/Dark
+      to just the update dialog's needs. Values mirror AStarDev.OneDriveSyncClient's Light/Dark
       palettes for visual parity between the two apps' update dialogs.
     -->
 

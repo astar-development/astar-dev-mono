@@ -1,4 +1,4 @@
-# Code Review — `AStar.Dev.OneDrive.Sync.Client`
+# Code Review — `AStarDev.OneDriveSyncClient`
 
 **Date:** 2026-06-20
 **Reviewer:** Claude Code (c-sharp-reviewer)

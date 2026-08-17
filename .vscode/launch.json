@@ -8,7 +8,7 @@
       "name": "C#: OneDrive.Sync.Client Debug",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj"
+      "projectPath": "${workspaceFolder}/apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj"
     },
     {
       "name": "C#: Scraper Debug",

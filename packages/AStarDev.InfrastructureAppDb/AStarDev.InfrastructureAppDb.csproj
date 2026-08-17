@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ApplicationIcon>astar.ico</ApplicationIcon>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>AStar Development, Jason Barden</Authors>
+        <Copyright>AStar Development, 2026</Copyright>
+        <PackageProjectUrl>https://github.com/astar-development/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/astar-development/</RepositoryUrl>
+        <Description>Shared EF Core AppDbContext, entities, configuration and migrations for the AStar OneDrive Sync / Wallpaper Scraper desktop apps.</Description>
+        <PackageTags>AStar;Infrastructure;AppDb;EFCore;SQLite</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+        <!--
+          CA1062/CA1812 are emitted across generated EF Core migrations and configuration
+          classes that are part of the package surface. They do not indicate runtime issues
+          here and are intentionally suppressed so the package can build under the repo's
+          warning-as-error policy.
+        -->
+        <NoWarn>$(NoWarn);CA1062;CA1812;CA1861</NoWarn>
+    </PropertyGroup>
+
+    <!--
+      SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries advisory GHSA-2m69-gcr7-jv3q.
+      Upgrading to 3.x risks compatibility with Microsoft.EntityFrameworkCore.Sqlite 10.0.9.
+      Suppressed intentionally; revisit when EF Core ships with a safe SQLitePCLRaw version.
+    -->
+    <ItemGroup>
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Testably.Abstractions" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" >
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" >
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
+        <ProjectReference Include="../core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+        <ProjectReference Include="../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
+        <ProjectReference Include="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
+    </ItemGroup>
+
+    <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
+        <MSBuild Projects="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+            <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+        </MSBuild>
+        <MSBuild Projects="../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+            <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+        </MSBuild>
+    </Target>
+
+</Project>

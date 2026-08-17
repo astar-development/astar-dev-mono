@@ -1,0 +1,245 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:classifications="clr-namespace:AStarDev.OneDriveSyncClient.Classifications"
+             x:Class="AStarDev.OneDriveSyncClient.Classifications.FileClassificationsView"
+             x:DataType="classifications:FileClassificationRulesViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Focusable="True"
+             KeyDown="OnKeyDown">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="0"
+              ColumnDefinitions="*,Auto"
+              Margin="24,20,24,12">
+            <StackPanel Grid.Column="0"
+                        Spacing="4">
+                <TextBlock Text="File classifications"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="Manage the category hierarchy used to classify files during sync."
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBox Text="{Binding FilterText}"
+                         PlaceholderText="Filter by name"
+                         FontSize="{StaticResource FontSizeSm}"
+                         CornerRadius="{StaticResource RadiusMd}"
+                         MinWidth="180"
+                         VerticalAlignment="Center"/>
+                <ToggleSwitch Content="{Binding SearchFilterLabel}"
+                              IsChecked="{Binding ShowOnlyIncludedInSearch}"
+                              FontSize="{StaticResource FontSizeSm}"
+                              VerticalAlignment="Center"/>
+                <Button Content="Export"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        FontSize="{StaticResource FontSizeSm}"
+                        Click="OnExportClick"/>
+                <Button Content="Import"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="{DynamicResource TextAccentBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontSize="{StaticResource FontSizeSm}"
+                        Click="OnImportClick"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1"
+              RowDefinitions="Auto,Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Margin="24,0,24,12">
+
+            <!-- Loading state -->
+            <TextBlock Grid.Row="0"
+                       Text="{Binding LoadingText}"
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       IsVisible="{Binding IsLoading}"/>
+
+            <!-- Empty state -->
+            <TextBlock Grid.Row="1"
+                       Text="No classification categories defined."
+                       FontSize="{StaticResource FontSizeSm}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       IsVisible="{Binding HasNoCategories}"/>
+
+            <!-- Flattened, virtualized category tree: one row per category at any level, indented by CategoryNodeViewModel.IndentWidth -->
+            <ScrollViewer x:Name="CategoriesScrollViewer"
+                          Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+                <ItemsControl ItemsSource="{Binding VisibleCategories}"
+                              IsVisible="{Binding !HasNoCategories}"
+                              MaxWidth="740"
+                              HorizontalAlignment="Stretch">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="classifications:CategoryNodeViewModel">
+                            <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,6">
+                            <Border Grid.Column="0" Width="{Binding IndentWidth}"/>
+                            <Border Grid.Column="1"
+                                    Background="{DynamicResource BackgroundTertiaryBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusMd}"
+                                    Padding="12,10">
+                                <StackPanel Spacing="8">
+
+                                    <!-- Ancestor breadcrumb: shown when a filter may hide this row's real parent, so hierarchy stays unambiguous -->
+                                    <TextBlock Text="{Binding AncestorPath}"
+                                               FontSize="{StaticResource FontSizeXs}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               IsVisible="{Binding HasAncestorPath}"/>
+
+                                    <!-- Category header -->
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Button Content="{Binding ExpandCollapseGlyph}"
+                                                    Command="{Binding ToggleExpandedCommand}"
+                                                    IsVisible="{Binding !IsLeafNode}"
+                                                    Padding="0"
+                                                    Width="16"
+                                                    Height="16"
+                                                    MinWidth="0"
+                                                    MinHeight="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Center"
+                                                    VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       VerticalAlignment="Center"/>
+                                            <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="4,1">
+                                                <TextBlock Text="{Binding Level, StringFormat='L{0}'}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </Border>
+                                            <Border Background="{DynamicResource TextAccentBrush}"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="4,1"
+                                                    IsVisible="{Binding IsFamous}">
+                                                <TextBlock Text="Famous"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="White"/>
+                                            </Border>
+                                            <Border Background="{DynamicResource TextAccentBrush}"
+                                                    CornerRadius="{StaticResource RadiusSm}"
+                                                    Padding="4,1"
+                                                    IsVisible="{Binding IsInternet}">
+                                                <TextBlock Text="Internet"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="White"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Button Content="Edit"
+                                                    Padding="8,4"
+                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    Command="{Binding EditCommand}"
+                                                    IsEnabled="{Binding !IsEditing}"/>
+                                            <Button Content="Delete"
+                                                    Padding="8,4"
+                                                    CornerRadius="{StaticResource RadiusMd}"
+                                                    Background="Transparent"
+                                                    BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    FontSize="{StaticResource FontSizeXs}"
+                                                    Command="{Binding DeleteSelfCommand}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Add sub-category form -->
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="6">
+                                        <TextBox Text="{Binding NewChildCategoryName}"
+                                                 PlaceholderText="New sub-category"
+                                                 FontSize="{StaticResource FontSizeSm}"
+                                                 CornerRadius="{StaticResource RadiusSm}"
+                                                 MinWidth="180"/>
+                                        <Button Content="Add sub-category"
+                                                Padding="8,4"
+                                                CornerRadius="{StaticResource RadiusMd}"
+                                                Background="Transparent"
+                                                BorderBrush="{DynamicResource BorderDefaultBrush}"
+                                                BorderThickness="1"
+                                                FontSize="{StaticResource FontSizeSm}"
+                                                Command="{Binding AddChildCategoryCommand}"/>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
+
+        <!-- Add root category form -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource BackgroundTertiaryBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource RadiusMd}"
+                Padding="12"
+                Margin="24,0,24,20">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Add category"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox Text="{Binding NewCategoryName}"
+                            PlaceholderText="Category name"
+                            FontSize="{StaticResource FontSizeSm}"
+                            CornerRadius="{StaticResource RadiusMd}"
+                            MinWidth="220"/>
+                    <CheckBox Content="Famous"
+                            IsChecked="{Binding IsFamous}"
+                            FontSize="{StaticResource FontSizeSm}"
+                            VerticalAlignment="Center"/>
+                    <CheckBox Content="Internet"
+                            IsChecked="{Binding IsInternet}"
+                            FontSize="{StaticResource FontSizeSm}"
+                            VerticalAlignment="Center"/>
+                    <Button Content="Add"
+                            Padding="14,6"
+                            CornerRadius="{StaticResource RadiusMd}"
+                            Background="{DynamicResource TextAccentBrush}"
+                            Foreground="White"
+                            BorderThickness="0"
+                            FontSize="{StaticResource FontSizeSm}"
+                            Command="{Binding AddCategoryCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+
+</UserControl>

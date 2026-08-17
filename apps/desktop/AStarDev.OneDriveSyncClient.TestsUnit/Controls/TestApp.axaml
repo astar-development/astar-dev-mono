@@ -1,0 +1,30 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:AStarDev.OneDriveSyncClient.Converters;assembly=AStarDev.OneDriveSyncClient"
+             xmlns:home="clr-namespace:AStarDev.OneDriveSyncClient.Home;assembly=AStarDev.OneDriveSyncClient"
+             xmlns:dashboard="clr-namespace:AStarDev.OneDriveSyncClient.Dashboard;assembly=AStarDev.OneDriveSyncClient"
+             xmlns:onboarding="clr-namespace:AStarDev.OneDriveSyncClient.Onboarding;assembly=AStarDev.OneDriveSyncClient"
+             x:Class="AStarDev.OneDriveSyncClient.TestsUnit.Controls.TestApp">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://AStarDev.OneDriveSyncClient/Themes/Base.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:SyncStateToForegroundConverter          x:Key="SyncStateToForegroundConverter"/>
+            <onboarding:BoolToAccentConverter                   x:Key="BoolToAccentConverter"/>
+            <onboarding:StringNotEmptyConverter                 x:Key="StringNotEmptyConverter"/>
+            <home:DepthToIndentConverter                        x:Key="DepthToIndentConverter"/>
+            <converters:SyncStateToBadgeBackgroundConverter     x:Key="SyncStateToBadgeBackgroundConverter"/>
+            <converters:SyncStateToBadgeForegroundConverter     x:Key="SyncStateToBadgeForegroundConverter"/>
+            <dashboard:ConflictCountToColorConverter            x:Key="ConflictCountToColorConverter"/>
+            <converters:IntZeroToBoolConverter                  x:Key="IntZeroToBoolConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme/>
+    </Application.Styles>
+
+</Application>

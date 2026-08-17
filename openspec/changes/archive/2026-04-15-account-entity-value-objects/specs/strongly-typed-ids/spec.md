@@ -2,7 +2,7 @@
 
 ### Requirement: AccountId strongly-typed identifier
 
-The system SHALL define `AccountId` as a `[StrongId(typeof(string))]` partial record struct in the `AStar.Dev.OneDrive.Sync.Client.Domain` namespace. All entity properties, repository method parameters, and domain model properties that represent the Microsoft Graph account object ID MUST use `AccountId` instead of `string`.
+The system SHALL define `AccountId` as a `[StrongId(typeof(string))]` partial record struct in the `AStarDev.OneDriveSyncClient.Domain` namespace. All entity properties, repository method parameters, and domain model properties that represent the Microsoft Graph account object ID MUST use `AccountId` instead of `string`.
 
 #### Scenario: AccountId used as primary key
 
@@ -64,9 +64,9 @@ The system SHALL define `OneDriveItemId` as a `[StrongId(typeof(string))]` parti
 
 ### Requirement: Source generator project references added
 
-The system SHALL add `AStarDev.SourceGenerators` and `AStarDev.SourceGenerators.Attributes` as `<ProjectReference>` entries in `AStar.Dev.OneDrive.Sync.Client.csproj`.
+The system SHALL add `AStarDev.SourceGenerators` and `AStarDev.SourceGeneratorAttributes` as `<ProjectReference>` entries in `AStarDev.OneDriveSyncClient.csproj`.
 
 #### Scenario: Build succeeds with generator references
 
-- **WHEN** `dotnet build` is run against `AStar.Dev.OneDrive.Sync.Client`
+- **WHEN** `dotnet build` is run against `AStarDev.OneDriveSyncClient`
 - **THEN** the build SHALL succeed with zero errors and zero warnings, and all `[StrongId]`-attributed types SHALL have their generated partial implementations present

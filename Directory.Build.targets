@@ -39,8 +39,7 @@
     that set IsPackable=false are unaffected.
   -->
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub"
-                      PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 
   <!-- ── Enforce package metadata on packable projects ─────────────────────
@@ -157,10 +156,10 @@ Framework:  $(TargetFramework)
     display isn't configured correctly), blame mode writes a sequence file
     so you can see exactly which test was running when the process hung.
 
-    Only applies to test projects (IsPackable=false + name ends in .Tests).
+    Only applies to test projects (IsPackable=false + name ends in .TestsUnit or .TestsIntegration).
   -->
-  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR
-                             $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.TestsUnit')) OR
+                             $(MSBuildProjectName.EndsWith('.TestsIntegration'))">
     <VSTestBlame>true</VSTestBlame>
     <VSTestBlameCrash>true</VSTestBlameCrash>
   </PropertyGroup>

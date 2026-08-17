@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:AStar.Dev.Clock.Controls"
+        xmlns:vm="using:AStar.Dev.Clock"
+        xmlns:theming="using:AStar.Dev.Clock.Theming"
+        x:Class="AStar.Dev.Clock.MainWindow"
+        Icon="avares://AStarDev.Clock/Assets/astar.ico"
+        Width="400" Height="450"
+        x:DataType="vm:MainWindowViewModel"
+        Title="AStar Development Clock">
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+Q" Command="{Binding ExitCommand}" />
+  </Window.KeyBindings>
+
+  <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Theme">
+                    <MenuItem Header="_System" ToggleType="Radio" IsChecked="{Binding IsSystemThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.System}" />
+                    <MenuItem Header="_Light" ToggleType="Radio" IsChecked="{Binding IsLightThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Light}" />
+                    <MenuItem Header="_Dark" ToggleType="Radio" IsChecked="{Binding IsDarkThemeSelected}"
+                              Command="{Binding SelectThemeCommand}" CommandParameter="{x:Static theming:ThemeMode.Dark}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="{Binding ToggleSecondHandText}" Command="{Binding ToggleSecondHandCommand}" />
+                <Separator />
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGesture="Ctrl+Q" />
+            </MenuItem>
+        </Menu>
+    <Border Margin="8" CornerRadius="12" Padding="12">
+      <c:AnalogClockControl ShowSecondHand="{Binding ShowSecondHand}" />
+    </Border>
+  </DockPanel>
+
+</Window>

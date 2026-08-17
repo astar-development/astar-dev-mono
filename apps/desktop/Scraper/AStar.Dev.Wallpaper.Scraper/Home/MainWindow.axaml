@@ -62,6 +62,6 @@
         <ScrollViewer x:Name="StatusScroller" Margin="12,8">
             <TextBlock x:Name="StatusLabel" vm:StatusTextBehavior.FormattedText="{Binding StatusText}" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
         </ScrollViewer>
-        
+
     </DockPanel>
 </Window>

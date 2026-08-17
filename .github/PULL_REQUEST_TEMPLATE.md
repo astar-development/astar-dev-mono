@@ -42,7 +42,7 @@ Please include a brief description of the change and the motivation.
 
 ```bash
 # Restore and run tests
-dotnet restore AStar.Dev.slnx
+dotnet restore AStarDev.slnx
 dotnet test --verbosity normal
 ```
 

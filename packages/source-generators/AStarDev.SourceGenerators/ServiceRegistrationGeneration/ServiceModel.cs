@@ -1,4 +1,4 @@
-using AStarDev.SourceGenerators.Attributes;
+using AStarDev.SourceGeneratorAttributes;
 using Microsoft.CodeAnalysis;
 
 namespace AStarDev.SourceGenerators.ServiceRegistrationGeneration;

@@ -43,9 +43,9 @@ Tests for this package live next to the project.
 dotnet test
 
 # Run tests for this package specifically
-dotnet test packages/AStarDev.ControlDb/AStarDev.ControlDb.Tests.Unit/AStarDev.ControlDb.Tests.Unit.csproj
+dotnet test packages/AStarDev.ControlDb/AStarDev.ControlDb.TestsUnit/AStarDev.ControlDb.TestsUnit.csproj
 or
-dotnet test packages/AStarDev.ControlDb/AStarDev.ControlDb.Tests.Integration/AStarDev.ControlDb.Tests.Integration.csproj
+dotnet test packages/AStarDev.ControlDb/AStarDev.ControlDb.TestsIntegration/AStarDev.ControlDb.TestsIntegration.csproj
 ```
 
 ---

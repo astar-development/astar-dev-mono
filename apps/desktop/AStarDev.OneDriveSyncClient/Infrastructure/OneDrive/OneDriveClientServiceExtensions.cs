@@ -1,0 +1,37 @@
+using System.Reflection;
+using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
+
+namespace AStarDev.OneDriveSyncClient.Infrastructure.OneDrive;
+
+/// <summary>
+///     Registers <c>AStar.Dev.OneDrive.Client</c> services with the DI container.
+/// </summary>
+public static class OneDriveClientServiceExtensions
+{
+    /// <summary>
+    ///     Adds MSAL authentication, token management, consent storage, auth state
+    ///     notifications, OneDrive folder browsing, delta queries, and file operations to <paramref name="services" />.
+    /// </summary>
+    public static IServiceCollection AddOneDriveClient(this IServiceCollection services)
+    {
+        _ = services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<EntraIdConfiguration>>().Value;
+
+            return PublicClientApplicationBuilder
+                .Create(options.ClientId)
+                .WithAuthority(options.AuthorityForMicrosoftAccountsOnly)
+                .WithRedirectUri(options.RedirectUri)
+                .WithClientName(ApplicationMetadata.ApplicationName)
+                .WithClientVersion(Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0")
+                .Build();
+        });
+
+        _ = services.AddHttpClient();
+
+        return services;
+    }
+}

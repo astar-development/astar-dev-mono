@@ -4,7 +4,7 @@ namespace AStar.Dev.Wallpaper.Scraper.Updates;
 
 /// <summary>
 ///     Supplies the update-available dialog's display text as hardcoded English strings, mirroring
-///     AStar.Dev.OneDrive.Sync.Client's localized copy. The Scraper has no localisation infrastructure
+///     AStarDev.OneDriveSyncClient's localized copy. The Scraper has no localisation infrastructure
 ///     yet, so this is a plain, non-localised implementation of <see cref="IUpdateDialogTextProvider"/>.
 /// </summary>
 public sealed class PlainUpdateDialogTextProvider : IUpdateDialogTextProvider
