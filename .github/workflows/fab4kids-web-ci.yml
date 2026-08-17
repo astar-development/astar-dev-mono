@@ -15,39 +15,39 @@ on:
   push:
     branches:
       - main
-      - 'feature/**'
-      - 'bug/**'
-      - 'fix/**'
-      - 'doc/**'
+      - "feature/**"
+      - "bug/**"
+      - "fix/**"
+      - "doc/**"
     paths:
-      - 'apps/web/fab4kids-csharp/**'
-      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
-      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
-      - 'packages/core/utilities/AStarDev.Utilities/**'
-      - 'Directory.Build.props'
-      - 'Directory.Build.targets'
-      - 'Directory.Packages.props'
-      - 'global.json'
-      - 'NuGet.Config'
-      - 'AStar.Dev.slnx'
-      - '.github/workflows/fab4kids-web-ci.yml'
-      - '.github/workflows/fab4kids-web-deploy.yml'
+      - "apps/web/fab4kids-csharp/**"
+      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
+      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/utilities/AStarDev.Utilities/**"
+      - "Directory.Build.props"
+      - "Directory.Build.targets"
+      - "Directory.Packages.props"
+      - "global.json"
+      - "NuGet.Config"
+      - "AStarDev.slnx"
+      - ".github/workflows/fab4kids-web-ci.yml"
+      - ".github/workflows/fab4kids-web-deploy.yml"
   pull_request:
     branches:
       - main
     paths:
-      - 'apps/web/fab4kids-csharp/**'
-      - 'packages/core/functional/AStar.Dev.FunctionalParadigm/**'
-      - 'packages/core/logging/AStar.Dev.Logging.Extensions/**'
-      - 'packages/core/utilities/AStarDev.Utilities/**'
-      - 'Directory.Build.props'
-      - 'Directory.Build.targets'
-      - 'Directory.Packages.props'
-      - 'global.json'
-      - 'NuGet.Config'
-      - 'AStar.Dev.slnx'
-      - '.github/workflows/fab4kids-web-ci.yml'
-      - '.github/workflows/fab4kids-web-deploy.yml'
+      - "apps/web/fab4kids-csharp/**"
+      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
+      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/utilities/AStarDev.Utilities/**"
+      - "Directory.Build.props"
+      - "Directory.Build.targets"
+      - "Directory.Packages.props"
+      - "global.json"
+      - "NuGet.Config"
+      - "AStarDev.slnx"
+      - ".github/workflows/fab4kids-web-ci.yml"
+      - ".github/workflows/fab4kids-web-deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -67,18 +67,16 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj
-  TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Unit/Fab4Kids.Web.Tests.Unit.csproj
-  SMOKE_TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.Tests.Integration/Fab4Kids.Web.Tests.Integration.csproj
+  TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.TestsUnit/Fab4Kids.Web.TestsUnit.csproj
+  SMOKE_TEST_PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web.TestsIntegration/Fab4Kids.Web.TestsIntegration.csproj
   SMOKE_APP_URL: http://localhost:5299
 
 jobs:
-
   ci:
     name: Build, test & smoke test
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
@@ -108,14 +106,14 @@ jobs:
           dotnet test ${{ env.TEST_PROJECT_PATH }} \
             --no-build \
             --configuration Release \
-            --logger "trx;LogFileName=Fab4Kids.Web.Tests.Unit.trx" \
+            --logger "trx;LogFileName=Fab4Kids.Web.TestsUnit.trx" \
             --results-directory "$GITHUB_WORKSPACE/TestResults"
 
       - name: Publish unit test results
         uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
         with:
-          files: TestResults/Fab4Kids.Web.Tests.Unit.trx
+          files: TestResults/Fab4Kids.Web.TestsUnit.trx
           check_name: Fab4Kids.Web unit test results
           fail_on: test failures
 
@@ -129,7 +127,7 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.Tests.Integration*' -name playwright.ps1 -print -quit)
+          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
           pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
 
       - name: Publish app for smoke testing
@@ -162,7 +160,7 @@ jobs:
           dotnet test ${{ env.SMOKE_TEST_PROJECT_PATH }} \
             --no-build \
             --configuration Release \
-            --logger "trx;LogFileName=Fab4Kids.Web.Tests.Integration.trx" \
+            --logger "trx;LogFileName=Fab4Kids.Web.TestsIntegration.trx" \
             --results-directory "$GITHUB_WORKSPACE/TestResults"
 
       - name: Show published app log
@@ -177,6 +175,6 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
         with:
-          files: TestResults/Fab4Kids.Web.Tests.Integration.trx
+          files: TestResults/Fab4Kids.Web.TestsIntegration.trx
           check_name: Fab4Kids.Web smoke test results
           fail_on: test failures

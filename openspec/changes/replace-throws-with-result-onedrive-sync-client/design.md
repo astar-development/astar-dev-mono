@@ -1,6 +1,6 @@
 ## Context
 
-`AStar.Dev.OneDrive.Sync.Client` already uses `Result<T, TError>` from `AStar.Dev.Functional.Extensions` at the auth layer (`IAuthService` returns `Result<AuthResult, AuthError>`). The infrastructure layer beneath it — `IGraphService`, `IUploadService`, `IHttpDownloader`, `DownloadWorker`, `SyncService` — still throws exceptions for predictable failures (null Graph API responses, exhausted retries, missing local files). Callers swallow these via broad `catch(Exception)` blocks in `DownloadWorker.RunAsync` and `SyncService.SyncAccountAsync`.
+`AStarDev.OneDriveSyncClient` already uses `Result<T, TError>` from `AStar.Dev.Functional.Extensions` at the auth layer (`IAuthService` returns `Result<AuthResult, AuthError>`). The infrastructure layer beneath it — `IGraphService`, `IUploadService`, `IHttpDownloader`, `DownloadWorker`, `SyncService` — still throws exceptions for predictable failures (null Graph API responses, exhausted retries, missing local files). Callers swallow these via broad `catch(Exception)` blocks in `DownloadWorker.RunAsync` and `SyncService.SyncAccountAsync`.
 
 All callers are in-tree. No external consumers of these interfaces exist.
 
@@ -36,6 +36,7 @@ All callers are in-tree. No external consumers of these interfaces exist.
 **Choice:** Change only `GetDriveIdAsync`, `GetRootFoldersAsync`, `GetChildFoldersAsync`, `GetQuotaAsync`, `EnumerateFolderAsync`, `GetDownloadUrlAsync`, `UploadFileAsync`, `DeleteItemAsync` to return `Result`-wrapped types. `GetFolderIdByPathAsync` already returns `string?` (null = not found, no throw) — leave unchanged.
 
 **New signatures:**
+
 - `Task<Result<DriveId, string>> GetDriveIdAsync(...)`
 - `Task<Result<List<DriveFolder>, string>> GetRootFoldersAsync(...)`
 - `Task<Result<List<DriveFolder>, string>> GetChildFoldersAsync(...)`
@@ -48,6 +49,7 @@ All callers are in-tree. No external consumers of these interfaces exist.
 ### D3 — `IUploadService` and `IHttpDownloader` return Result
 
 **New signatures:**
+
 - `IUploadService.UploadAsync`: `Task<string>` → `Task<Result<string, string>>`
 - `IHttpDownloader.DownloadAsync`: `Task` → `Task<Result<Unit, string>>`
 
@@ -56,12 +58,14 @@ Internal throws inside these implementations become early `return Result.Error("
 ### D4 — `DownloadWorker` uses `Match` on `ResolveDownloadUrlAsync`
 
 `ResolveDownloadUrlAsync` returns `Task<Result<string, string>>`. The caller uses:
+
 ```csharp
 var urlResult = await ResolveDownloadUrlAsync(downloadJob, accessToken, ct);
 return urlResult.Match(
     url  => /* proceed with download, return updated job */,
     err  => /* log + return failed job — outer RunAsync marks as Failed */);
 ```
+
 The existing `catch(Exception)` in `RunAsync` handles all other unhandled exceptions; `Result` covers the predictable URL-missing case.
 
 ### D5 — `SyncService.ApplyConflictOutcomeAsync` uses `Bind`/`Match`
@@ -76,9 +80,11 @@ await result.Match(
 ### D6 — `AccountFilesViewModel` removes inline throw from `Option.Match`
 
 Replace:
+
 ```csharp
 () => throw new InvalidOperationException("Drive ID not available.")
 ```
+
 With a no-op or log — the caller already guards against `_driveId` being `None` via UI state (button disabled when not loaded). If `None` is reached anyway, log a warning and return early rather than crash.
 
 ### D7 — `GraphService.ResolveClientWithDriveContextAsync` returns Result internally

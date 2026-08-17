@@ -1,4 +1,4 @@
-using AStarDev.SourceGenerators.Attributes;
+using AStarDev.SourceGeneratorAttributes;
 
 namespace AStarDev.SourceGenerators.Sample;
 

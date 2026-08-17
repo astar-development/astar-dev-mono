@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStar.Dev.Velopack.Publishing
+    ══════════════════════════════
+    Shared Velopack update check/download/apply plumbing used by the AStar
+    desktop apps (AStarDev.OneDriveSyncClient, AStar.Dev.Wallpaper.Scraper),
+    so each app doesn't duplicate UpdateManager/GithubSource wiring.
+
+    Intentionally lean — TFM, nullable, analysers, IsPackable, GenerateDocumentationFile,
+    and SourceLink are all inherited from packages/Directory.Build.props and the
+    repo root Directory.Build.props. Only package-specific metadata lives here.
+  -->
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageTags>velopack;updates;publishing;astar;astardevelopment</PackageTags>
+    <Title>AStar Dev Velopack Publishing</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Description>Shared Velopack update check/download/apply service and options binding used by AStar Development desktop apps.</Description>
+    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
+    <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!--
+      CA1031: CheckForUpdatesAsync deliberately catches every exception - it is a best-effort
+      background check (network/GitHub API/Velopack internals can all fail in ways callers
+      shouldn't need to enumerate) that logs and returns null rather than propagating.
+    -->
+    <NoWarn>$(NoWarn);CA1031</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

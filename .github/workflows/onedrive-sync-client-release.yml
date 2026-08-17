@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════════════════
 # onedrive-sync-client-release.yml
 #
-# Packages and publishes AStar.Dev.OneDrive.Sync.Client as a Velopack release
+# Packages and publishes AStarDev.OneDriveSyncClient as a Velopack release
 # on GitHub Releases, for the in-app updater (see #744/#746) to discover.
 #
 # Tag format: onedrive-sync-v1.2.3  (or onedrive-sync-v1.2.3-beta.1 for a pre-release)
@@ -35,8 +35,8 @@ name: OneDrive Sync Client Release
 on:
   push:
     tags:
-      - 'onedrive-sync-v[0-9]+.[0-9]+.[0-9]+'
-      - 'onedrive-sync-v[0-9]+.[0-9]+.[0-9]+-*'
+      - "onedrive-sync-v[0-9]+.[0-9]+.[0-9]+"
+      - "onedrive-sync-v[0-9]+.[0-9]+.[0-9]+-*"
 
 permissions:
   contents: write
@@ -52,17 +52,15 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
-  PROJECT_PATH: apps/desktop/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj
-  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj
+  PROJECT_PATH: apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj
+  TEST_PROJECT_PATH: apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/AStarDev.OneDriveSyncClient.TestsUnit.csproj
 
 jobs:
-
   release-linux:
     name: Release (linux)
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
@@ -143,12 +141,12 @@ jobs:
         shell: bash
         run: |
           vpk pack \
-            --packId AStar.Dev.OneDrive.Sync.Client \
+            --packId AStarDev.OneDriveSyncClient \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/linux-x64 \
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev OneDrive Sync Client" \
-            --mainExe "AStar.Dev.OneDrive.Sync.Client" \
+            --mainExe "AStarDev.OneDriveSyncClient" \
             --channel onedrive-sync-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
@@ -194,7 +192,6 @@ jobs:
             channel: onedrive-sync-osx
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
@@ -271,13 +268,13 @@ jobs:
       - name: Pack with vpk
         shell: bash
         run: |
-          MAIN_EXE="AStar.Dev.OneDrive.Sync.Client"
+          MAIN_EXE="AStarDev.OneDriveSyncClient"
           if [ "${{ matrix.channel }}" = "onedrive-sync-win" ]; then
-            MAIN_EXE="AStar.Dev.OneDrive.Sync.Client.exe"
+            MAIN_EXE="AStarDev.OneDriveSyncClient.exe"
           fi
 
           vpk pack \
-            --packId AStar.Dev.OneDrive.Sync.Client \
+            --packId AStarDev.OneDriveSyncClient \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/${{ matrix.rid }} \
             --packAuthors "AStar Development" \

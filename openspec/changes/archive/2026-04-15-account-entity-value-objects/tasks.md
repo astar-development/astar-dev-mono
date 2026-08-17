@@ -1,8 +1,8 @@
 ## 1. Project Setup
 
-- [x] 1.1 Add `<ProjectReference>` for `AStarDev.SourceGenerators` to `AStar.Dev.OneDrive.Sync.Client.csproj`
-- [x] 1.2 Add `<ProjectReference>` for `AStarDev.SourceGenerators.Attributes` to `AStar.Dev.OneDrive.Sync.Client.csproj`
-- [x] 1.3 Run `dotnet build AStar.Dev.OneDrive.Sync.Client` and confirm zero errors before continuing
+- [x] 1.1 Add `<ProjectReference>` for `AStarDev.SourceGenerators` to `AStarDev.OneDriveSyncClient.csproj`
+- [x] 1.2 Add `<ProjectReference>` for `AStarDev.SourceGeneratorAttributes` to `AStarDev.OneDriveSyncClient.csproj`
+- [x] 1.3 Run `dotnet build AStarDev.OneDriveSyncClient` and confirm zero errors before continuing
 
 ## 2. Strongly-Typed ID Value Objects
 
@@ -65,14 +65,14 @@
 
 ## 9. EF Migration
 
-- [x] 9.1 Run `dotnet ef migrations add StronglyTypedIds --project AStar.Dev.OneDrive.Sync.Client`
+- [x] 9.1 Run `dotnet ef migrations add StronglyTypedIds --project AStarDev.OneDriveSyncClient`
 - [x] 9.2 Verify generated migration SQL is a no-op (no `ALTER TABLE` or data changes)
 - [x] 9.3 Run `dotnet ef database update` against a local test database and confirm success
 
 ## 10. Tests
 
 - [x] 10.1 Add unit tests for `LocalSyncPathFactory.Create` — valid path, null, empty, whitespace
-- [x] 10.2 Verify existing unit tests in `AStar.Dev.OneDrive.Sync.Client.Tests.Unit` still pass
+- [x] 10.2 Verify existing unit tests in `AStarDev.OneDriveSyncClient.TestsUnit` still pass
 - [x] 10.3 Update any test helpers or builders that construct entities with raw string IDs
 
 ## 11. Final Verification

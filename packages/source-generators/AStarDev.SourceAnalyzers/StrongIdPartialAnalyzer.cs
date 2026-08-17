@@ -49,7 +49,7 @@ public sealed class StrongIdPartialAnalyzer : DiagnosticAnalyzer
 
         if (!Enumerable.Any(symbol.GetAttributes(),
                 attr => attr.AttributeClass?.ToDisplayString() ==
-                        "AStarDev.SourceGenerators.Attributes.StrongIdAttribute"))
+                        "AStarDev.SourceGeneratorAttributes.StrongIdAttribute"))
             return;
 
         bool isPartial = recordDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));

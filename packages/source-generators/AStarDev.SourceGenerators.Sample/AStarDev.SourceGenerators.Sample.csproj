@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" />
+      <ProjectReference Include="..\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj" />
     </ItemGroup>
 
 </Project>

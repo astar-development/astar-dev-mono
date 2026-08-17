@@ -33,13 +33,13 @@ any nesting depth):
 ```
 AStarDev.Utilities/v1.6.8
 AStar.Dev.Infrastructure.AppDb/v0.3.0
-AStarDev.SourceGenerators.Attributes/v1.0.0
+AStarDev.SourceGeneratorAttributes/v1.0.0
 AStar.Dev.SomePackage/v2.1.0-beta.1     # prerelease: hyphen suffix
 ```
 
 What happens: `nuget-publish.yml` extracts package name + version from the tag, locates
 `packages/**/{PackageName}.csproj`, restores/builds/tests (if a matching
-`{PackageName}.Tests.Unit` project exists), packs, then pushes to GitHub Packages and
+`{PackageName}.TestsUnit` project exists), packs, then pushes to GitHub Packages and
 NuGet.org, and creates a GitHub Release with the `.nupkg`/`.snupkg` attached.
 
 Fails fast if no `.csproj` matches the tagged package name — check the name is exact

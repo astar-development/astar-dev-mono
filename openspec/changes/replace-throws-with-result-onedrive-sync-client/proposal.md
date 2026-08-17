@@ -1,6 +1,6 @@
 ## Why
 
-`AStar.Dev.OneDrive.Sync.Client` throws exceptions for predictable failure conditions (missing download URLs, Graph API gaps, upload exhaustion, missing files) — callers catch them with broad `catch(Exception)` blocks, hiding intent and making error propagation invisible in method signatures. Replacing throws with `Result<T, TError>` from `AStar.Dev.Functional.Extensions` makes failures first-class, enables `Match`/`Map`/`Bind` composition, and ensures users still see error messages without relying on exception semantics.
+`AStarDev.OneDriveSyncClient` throws exceptions for predictable failure conditions (missing download URLs, Graph API gaps, upload exhaustion, missing files) — callers catch them with broad `catch(Exception)` blocks, hiding intent and making error propagation invisible in method signatures. Replacing throws with `Result<T, TError>` from `AStar.Dev.Functional.Extensions` makes failures first-class, enables `Match`/`Map`/`Bind` composition, and ensures users still see error messages without relying on exception semantics.
 
 ## What Changes
 

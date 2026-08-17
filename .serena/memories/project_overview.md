@@ -10,7 +10,7 @@
 - Astro (web)
 - NuGet packages (GitHub + NuGet.org)
 
-**Solution file:** `AStar.Dev.slnx`
+**Solution file:** `AStarDev.slnx`
 
 **Key NuGet packages to use:**
 

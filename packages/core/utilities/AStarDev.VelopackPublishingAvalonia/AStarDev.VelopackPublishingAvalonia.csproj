@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStar.Dev.Velopack.Publishing.Avalonia
+    ═══════════════════════════════════════
+    Shared Avalonia update-available dialog, view model, and notification
+    services used by the AStar desktop apps (AStarDev.OneDriveSyncClient,
+    AStar.Dev.Wallpaper.Scraper), so each app shows the literal same
+    themed update UX instead of hand-rolling its own.
+
+    Builds on AStar.Dev.Velopack.Publishing's low-level check/download/apply
+    plumbing and adds the MVVM presentation layer on top of it.
+
+    Intentionally lean — TFM, nullable, analysers, IsPackable, GenerateDocumentationFile,
+    and SourceLink are all inherited from packages/Directory.Build.props and the
+    repo root Directory.Build.props. Only package-specific metadata lives here.
+  -->
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageTags>velopack;updates;publishing;avalonia;astar;astardevelopment</PackageTags>
+    <Title>AStar Dev Velopack Publishing Avalonia</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Description>Shared Avalonia update-available dialog, view model, and notification services for AStar Development desktop apps, built on AStar.Dev.Velopack.Publishing.</Description>
+    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
+    <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!--
+      CA1031: UpdateAvailableViewModel.RestartNowAsync deliberately catches every exception - it is a
+      best-effort user-facing download/apply attempt (network/GitHub API/Velopack internals can all
+      fail in ways the dialog shouldn't need to enumerate) that surfaces the message via ErrorMessage
+      rather than propagating and crashing the app.
+
+      CA2007: UpdateAvailableViewModel is Avalonia UI-bound code, not general-purpose library code -
+      RestartNowAsync's await must resume on the UI thread (via the captured Avalonia dispatcher
+      SynchronizationContext) so that setting IsBusy/ErrorMessage/ApplyUpdatesAndRestart afterwards is
+      safe for data binding. ConfigureAwait(false) here would move that continuation onto a thread-pool
+      thread and break UI updates.
+    -->
+    <NoWarn>$(NoWarn);CA1031;CA2007</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Velopack" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
+    <ProjectReference Include="../../logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

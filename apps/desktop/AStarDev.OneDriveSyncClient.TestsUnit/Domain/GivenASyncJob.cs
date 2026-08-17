@@ -1,0 +1,299 @@
+using AStar.Dev.FunctionalParadigm;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
+
+namespace AStarDev.OneDriveSyncClient.TestsUnit.Domain;
+
+public sealed class GivenASyncJob
+{
+    private static DownloadSyncJob CreateMinimalJob()
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(""), new OneDriveFolderId(""), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+
+        return SyncJobFactory.CreateDownload(remote, target, metadata);
+    }
+
+    [Fact]
+    public void when_created_then_status_id_is_not_empty()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Status.Id.ShouldNotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_remote_account_id_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Remote.AccountId.Value.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_remote_folder_id_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Remote.FolderId.Value.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_remote_item_id_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Remote.RemoteItemId.Value.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_target_relative_path_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Target.RelativePath.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_target_local_path_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Target.LocalPath.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void when_created_then_job_is_of_type_download_sync_job()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.ShouldBeOfType<DownloadSyncJob>();
+    }
+
+    [Fact]
+    public void when_created_then_status_state_defaults_to_queued()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Status.State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public void when_created_then_status_error_message_is_null()
+    {
+        var syncJob = CreateMinimalJob();
+
+        (syncJob.Status.ErrorMessage is Option<string>.None).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_created_then_download_url_is_null()
+    {
+        var syncJob = CreateMinimalJob();
+
+        (syncJob.DownloadUrl is Option<string>.None).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_created_then_metadata_file_size_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Metadata.FileSize.ShouldBe(0L);
+    }
+
+    [Fact]
+    public void when_created_then_metadata_remote_modified_matches_factory_input()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Metadata.RemoteModified.ShouldBe(default(DateTimeOffset));
+    }
+
+    [Fact]
+    public void when_created_then_status_queued_at_is_not_default()
+    {
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Status.QueuedAt.ShouldNotBe(default(DateTimeOffset));
+    }
+
+    [Fact]
+    public void when_created_then_status_completed_at_is_null()
+    {
+        var syncJob = CreateMinimalJob();
+
+        (syncJob.Status.CompletedAt is Option<DateTimeOffset>.None).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_created_twice_then_status_ids_are_different()
+    {
+        var job1 = CreateMinimalJob();
+        var job2 = CreateMinimalJob();
+
+        job1.Status.Id.ShouldNotBe(job2.Status.Id);
+    }
+
+    [Fact]
+    public void when_created_with_all_properties_then_values_are_correct()
+    {
+        var jobId = Guid.NewGuid();
+        var queuedAt = DateTimeOffset.UtcNow;
+        var remoteModified = DateTimeOffset.UtcNow.AddHours(-1);
+        const string accountId = "account-123";
+        const string folderId = "folder-456";
+        const string remoteItemId = "item-789";
+        const string relativePath = "Documents/report.pdf";
+        const string localPath = "/home/jason/Documents/report.pdf";
+        const long fileSize = 1024L;
+
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(remoteItemId));
+        var target = SyncFileTargetFactory.Create(localPath, relativePath);
+        var metadata = SyncFileMetadataFactory.Create(fileSize, remoteModified);
+        var syncJob = SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt } };
+
+        syncJob.Status.Id.ShouldBe(jobId);
+        syncJob.Remote.AccountId.Value.ShouldBe(accountId);
+        syncJob.Remote.FolderId.Value.ShouldBe(folderId);
+        syncJob.Remote.RemoteItemId.Value.ShouldBe(remoteItemId);
+        syncJob.Target.RelativePath.ShouldBe(relativePath);
+        syncJob.Target.LocalPath.ShouldBe(localPath);
+        syncJob.ShouldBeOfType<DownloadSyncJob>();
+        syncJob.Metadata.FileSize.ShouldBe(fileSize);
+        syncJob.Metadata.RemoteModified.ShouldBe(remoteModified);
+    }
+
+    [Fact]
+    public void when_copied_with_new_state_then_state_is_updated()
+    {
+        var syncJob = CreateMinimalJob() with { Status = CreateMinimalJob().Status with { State = SyncJobState.InProgress } };
+
+        syncJob.Status.State.ShouldBe(SyncJobState.InProgress);
+    }
+
+    [Theory]
+    [InlineData(SyncJobState.Queued)]
+    [InlineData(SyncJobState.InProgress)]
+    [InlineData(SyncJobState.Completed)]
+    [InlineData(SyncJobState.Failed)]
+    [InlineData(SyncJobState.Skipped)]
+    public void when_status_state_is_set_then_all_states_are_supported(SyncJobState state)
+    {
+        var syncJob = CreateMinimalJob() with { Status = CreateMinimalJob().Status with { State = state } };
+
+        syncJob.Status.State.ShouldBe(state);
+    }
+
+    [Fact]
+    public void when_copied_with_error_message_then_error_message_is_set()
+    {
+        const string errorMessage = "File is locked by another process";
+        var original = CreateMinimalJob();
+
+        var syncJob = original with { Status = original.Status with { ErrorMessage = errorMessage } };
+
+        syncJob.Status.ErrorMessage.ShouldBe(errorMessage);
+    }
+
+    [Fact]
+    public void when_copied_with_download_url_then_download_url_is_set()
+    {
+        const string downloadUrl = "https://graph.microsoft.com/v1.0/drives/abc123/items/xyz789/content";
+
+        var syncJob = CreateMinimalJob() with { DownloadUrl = downloadUrl };
+
+        syncJob.DownloadUrl.ShouldBe(downloadUrl);
+    }
+
+    [Fact]
+    public void when_copied_with_completed_at_then_completed_at_is_set()
+    {
+        var completedAt = DateTimeOffset.UtcNow;
+        var original = CreateMinimalJob();
+
+        var syncJob = original with { Status = original.Status with { CompletedAt = completedAt } };
+
+        syncJob.Status.CompletedAt.ShouldBe(completedAt);
+    }
+
+    [Fact]
+    public void when_create_download_is_called_then_result_is_download_sync_job()
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+
+        var downloadJob = SyncJobFactory.CreateDownload(remote, target, metadata);
+
+        downloadJob.ShouldBeOfType<DownloadSyncJob>();
+        downloadJob.Status.State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public void when_create_upload_is_called_then_result_is_upload_sync_job()
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+
+        var uploadJob = SyncJobFactory.CreateUpload(remote, target, metadata);
+
+        uploadJob.ShouldBeOfType<UploadSyncJob>();
+        uploadJob.Status.State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public void when_create_delete_is_called_then_result_is_delete_sync_job()
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId("folder-456"), new OneDriveItemId("item-789"));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+
+        var deleteJob = SyncJobFactory.CreateDelete(remote, target, metadata);
+
+        deleteJob.ShouldBeOfType<DeleteSyncJob>();
+        deleteJob.Status.State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public void when_created_then_status_queued_at_is_set_to_approximately_utc_now()
+    {
+        var beforeCreation = DateTimeOffset.UtcNow;
+
+        var syncJob = CreateMinimalJob();
+
+        syncJob.Status.QueuedAt.ShouldBeGreaterThanOrEqualTo(beforeCreation);
+        syncJob.Status.QueuedAt.ShouldBeLessThanOrEqualTo(DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public void when_two_jobs_have_same_values_then_they_are_equal()
+    {
+        var jobId = Guid.NewGuid();
+        var queuedAt = DateTimeOffset.UtcNow;
+        var remote = RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId(""), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt };
+        var job1 = SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = status };
+        var job2 = SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = status };
+
+        job1.ShouldBe(job2);
+    }
+
+    [Fact]
+    public void when_two_jobs_differ_on_account_id_then_they_are_not_equal()
+    {
+        var jobId = Guid.NewGuid();
+        var queuedAt = DateTimeOffset.UtcNow;
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var status = SyncJobStatusFactory.Create() with { Id = jobId, QueuedAt = queuedAt };
+        var job1 = SyncJobFactory.CreateDownload(RemoteItemRefFactory.Create(new AccountId("account-123"), new OneDriveFolderId(""), new OneDriveItemId("")), target, metadata) with { Status = status };
+        var job2 = SyncJobFactory.CreateDownload(RemoteItemRefFactory.Create(new AccountId("account-456"), new OneDriveFolderId(""), new OneDriveItemId("")), target, metadata) with { Status = status };
+
+        job1.ShouldNotBe(job2);
+    }
+}

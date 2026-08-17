@@ -1,0 +1,263 @@
+using System.Collections.ObjectModel;
+using System.IO.Abstractions;
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.OneDriveSyncClient.Home;
+using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
+using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
+using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
+using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
+using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Utilities;
+using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
+using FolderTreeNodeViewModel = AStarDev.OneDriveSyncClient.Home.FolderTreeNodeViewModel;
+
+namespace AStarDev.OneDriveSyncClient.Accounts;
+
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
+{
+    private string? accessToken;
+    private Option<DriveId> driveIdOption = DriveIdFactory.Empty;
+    private readonly Dictionary<string, RuleType> ruleStates = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The unique identifier for the account.</summary>
+    public string AccountId => account.Id.Value;
+    public string DisplayName => account.Profile.DisplayName;
+    public string Email => account.Profile.Email;
+
+    public string TabLabel => account.Profile.DisplayName.Length > 0
+                                 ? account.Profile.DisplayName
+                                 : account.Profile.Email;
+
+    public int AccentIndex => account.AccentIndex;
+
+    public Color AccentColor => AccountCardViewModel.PaletteColor(account.AccentIndex);
+
+    public ObservableCollection<FolderTreeNodeViewModel> RootFolders { get; } = [];
+
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
+
+    [ObservableProperty]
+    public partial string LoadError { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool HasLoadError { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsActiveTab { get; set; }
+
+    /// <summary>Localised "Loading folders ..." indicator text.</summary>
+    public string LoadingFoldersText => localizationService.GetLocal("Files.LoadingFolders");
+
+    /// <summary>Localised "Could not load folders" error heading.</summary>
+    public string CouldNotLoadText => localizationService.GetLocal("Files.CouldNotLoad");
+
+    /// <summary>Raised after a folder is included or excluded; the argument is the new count of included rules for this account.</summary>
+    public event EventHandler<int>? FolderCountChanged;
+
+    public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
+
+    [RelayCommand]
+    public async Task LoadAsync(CancellationToken cancellationToken)
+    {
+        if (IsLoading)
+            return;
+
+        IsLoading = true;
+        HasLoadError = false;
+        LoadError = string.Empty;
+        RootFolders.Clear();
+
+        try
+        {
+            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken)
+                .MatchAsync<AuthResult, AuthError, string?>(
+                    ok => ok.AccessToken,
+                    error =>
+                    {
+                        LoadError = error is AuthFailedError failed ? failed.Message : "Authentication failed.";
+                        HasLoadError = true;
+                        return null;
+                    });
+
+            if (accessToken is null)
+                return;
+
+            var driveId = await graphService.GetDriveIdAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
+                .MatchAsync<DriveId, string, DriveId?>(
+                    id => id,
+                    error =>
+                    {
+                        LoadError = $"Failed to retrieve drive ID: {error}";
+                        HasLoadError = true;
+                        return null;
+                    });
+
+            if (driveId is null)
+                return;
+
+            driveIdOption = new Option<DriveId>.Some(driveId.Value);
+
+            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, cancellationToken);
+            ruleStates.Clear();
+            foreach (var (path, ruleType) in loadedRuleStates)
+                ruleStates[path] = ruleType;
+
+            await BuildRootFoldersAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            LoadError = $"Failed to load folders: {ex.Message}";
+            HasLoadError = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task BuildRootFoldersAsync(CancellationToken cancellationToken)
+    {
+        var folders = await graphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken: cancellationToken)
+            .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                f => f,
+                error =>
+                {
+                    OneDriveSyncClientMessages.RootFoldersLoadFailed(logger, account.Id.Value, error);
+                    LoadError = error;
+                    HasLoadError = true;
+                    return null;
+                });
+
+        if (folders is null)
+            return;
+
+        var driveId = driveIdOption.Match<DriveId?>(
+            id => id,
+            () =>
+            {
+                OneDriveSyncClientMessages.DriveIdNotAvailable(logger, account.Id.Value);
+                return null;
+            });
+
+        if (driveId is null)
+            return;
+
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(accessToken ?? string.Empty);
+
+        foreach (var f in folders)
+        {
+            string remotePath = $"/{f.Name}";
+            var syncState = ResolveRuleState(remotePath) ?? FolderSyncState.Excluded;
+
+            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Value, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
+            var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value, ResolveRuleState);
+
+            vm.IncludeToggled += OnIncludeToggled;
+            vm.ViewActivityRequested += OnViewActivityRequested;
+            vm.OpenInFileManagerRequested += OnOpenInFileManager;
+
+            RootFolders.Add(vm);
+        }
+    }
+
+    private FolderSyncState? ResolveRuleState(string remotePath)
+    {
+        if (!ruleStates.TryGetValue(remotePath, out var ruleType))
+            return null;
+
+        return ToFolderSyncState(ruleType);
+    }
+
+    private static FolderSyncState ToFolderSyncState(RuleType ruleType) => ruleType switch
+    {
+        RuleType.Include => FolderSyncState.Included,
+        _ => FolderSyncState.Excluded
+    };
+
+    private void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
+        => _ = HandleIncludeToggledAsync(node);
+
+    private async Task HandleIncludeToggledAsync(FolderTreeNodeViewModel node)
+    {
+        try
+        {
+            var ruleType = node.IsIncluded ? RuleType.Include : RuleType.Exclude;
+
+            var affected = ruleType == RuleType.Include
+                ? CollectAllVisible([node])
+                : [node];
+
+            var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
+            int includedCount = await syncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
+
+            string childPrefix = node.RemotePath + "/";
+            foreach (string? key in ruleStates.Keys.Where(k => k.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
+                ruleStates.Remove(key);
+
+            foreach (var (path, _) in ruleNodes)
+                ruleStates[path] = ruleType;
+
+            FolderCountChanged?.Invoke(this, includedCount);
+        }
+        catch (Exception ex)
+        {
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.Message, ex);
+            HasLoadError = true;
+            LoadError = ex.Message;
+        }
+    }
+
+    private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node)
+        => ViewActivityRequested?.Invoke(this, node);
+
+    private void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
+    {
+        string oneDriveBase = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile).CombinePath("OneDrive"));
+
+        if (Path.IsPathRooted(node.Name))
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(logger, node.Name);
+            return;
+        }
+
+        string candidatePath;
+        try
+        {
+            candidatePath = Path.GetFullPath(oneDriveBase.CombinePath(node.Name));
+        }
+        catch (ArgumentException)
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(logger, node.Name);
+            return;
+        }
+
+        if (!candidatePath.StartsWith(oneDriveBase + Path.DirectorySeparatorChar, StringComparison.Ordinal) && candidatePath != oneDriveBase)
+        {
+            OneDriveSyncClientMessages.FileManagerPathEscapesBase(logger, candidatePath);
+            return;
+        }
+
+        if (!fileSystem.Directory.Exists(candidatePath))
+            return;
+
+        fileManagerService.OpenFolder(candidatePath);
+    }
+
+    private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            yield return node;
+
+            foreach (var descendant in CollectAllVisible(node.Children))
+                yield return descendant;
+        }
+    }
+}

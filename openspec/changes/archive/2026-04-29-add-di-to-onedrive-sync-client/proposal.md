@@ -1,6 +1,6 @@
 ## Why
 
-`AStar.Dev.OneDrive.Sync.Client` has grown organic DI anti-patterns that make the app harder to test, reason about, and extend: a static service-locator bootstrap, a premature `BuildServiceProvider()` call during registration, `SettingsService.LoadAsync()` bypassing the container entirely, and `SplashWindow` newed up directly. These block proper unit-testing of the bootstrap path and violate the repo's "DI never afterthought" rule.
+`AStarDev.OneDriveSyncClient` has grown organic DI anti-patterns that make the app harder to test, reason about, and extend: a static service-locator bootstrap, a premature `BuildServiceProvider()` call during registration, `SettingsService.LoadAsync()` bypassing the container entirely, and `SplashWindow` newed up directly. These block proper unit-testing of the bootstrap path and violate the repo's "DI never afterthought" rule.
 
 ## What Changes
 
@@ -21,7 +21,7 @@
 
 ### Modified Capabilities
 
-*(none — no existing spec-level behaviour changes)*
+_(none — no existing spec-level behaviour changes)_
 
 ## Impact
 

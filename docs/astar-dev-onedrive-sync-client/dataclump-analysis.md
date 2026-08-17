@@ -1,21 +1,21 @@
-# Data-Clump Analysis — AStar.Dev.OneDrive.Sync.Client
+# Data-Clump Analysis — AStarDev.OneDriveSyncClient
 
-> Generated 2026-05-06. Scope: all `.cs` files in `apps/desktop/AStar.Dev.OneDrive.Sync.Client/`.
+> Generated 2026-05-06. Scope: all `.cs` files in `apps/desktop/AStarDev.OneDriveSyncClient/`.
 > The SyncJob data-clumps (`RemoteItemRef`, `SyncFileTarget`, `SyncFileMetadata`, `SyncJobStatus`) were already extracted per `syncjob-dataclump-refactor.md` and are not re-listed here.
 
 ---
 
 ## Summary
 
-| # | Clump | Fields | Consumers | Status |
-|---|-------|--------|-----------|--------|
-| 1 | Account Profile | `DisplayName` · `Email` · `AccentIndex` | 5 | Not extracted |
-| 2 | Account Sync Config | `ConflictPolicy` · `LocalSyncPath` | 4 | Not extracted |
-| 3 | Storage Quota | `QuotaTotal` · `QuotaUsed` | 3 | Not extracted |
-| 4 | Remote File Identity in SyncConflict | `AccountId` · `FolderId` · `RemoteItemId` | 2 | `RemoteItemRef` exists — not applied |
-| 5 | Local File Location in SyncConflict | `LocalPath` · `RelativePath` | 2 | `SyncFileTarget` exists — not applied |
-| 6 | Conflict Snapshot | `LocalModified` · `LocalSize` · `RemoteModified` · `RemoteSize` | 2 | Not extracted |
-| 7 | Version Tags in SyncedItemEntity | `ETag` · `CTag` | 2 | `VersionInfo` exists — not applied |
+| #   | Clump                                | Fields                                                          | Consumers | Status                                |
+| --- | ------------------------------------ | --------------------------------------------------------------- | --------- | ------------------------------------- |
+| 1   | Account Profile                      | `DisplayName` · `Email` · `AccentIndex`                         | 5         | Not extracted                         |
+| 2   | Account Sync Config                  | `ConflictPolicy` · `LocalSyncPath`                              | 4         | Not extracted                         |
+| 3   | Storage Quota                        | `QuotaTotal` · `QuotaUsed`                                      | 3         | Not extracted                         |
+| 4   | Remote File Identity in SyncConflict | `AccountId` · `FolderId` · `RemoteItemId`                       | 2         | `RemoteItemRef` exists — not applied  |
+| 5   | Local File Location in SyncConflict  | `LocalPath` · `RelativePath`                                    | 2         | `SyncFileTarget` exists — not applied |
+| 6   | Conflict Snapshot                    | `LocalModified` · `LocalSize` · `RemoteModified` · `RemoteSize` | 2         | Not extracted                         |
+| 7   | Version Tags in SyncedItemEntity     | `ETag` · `CTag`                                                 | 2         | `VersionInfo` exists — not applied    |
 
 ---
 
@@ -23,15 +23,15 @@
 
 **Fields:** `DisplayName` (string), `Email` (string), `AccentIndex` (int)
 
-**Question answered:** *Who is this Microsoft account and how should it be presented?*
+**Question answered:** _Who is this Microsoft account and how should it be presented?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `OneDriveAccount` | `Accounts/OneDriveAccount.cs:11-20` | All three |
-| `AccountEntity` | `Data/Entities/AccountEntity.cs:9-11` | All three |
-| `AuthResult` | `Infrastructure/Authentication/AuthResult.cs:7` | `DisplayName` + `Email` |
-| `AccountCardViewModel` | `Accounts/AccountCardViewModel.cs:29-57` | Reads all three from `_model` |
-| `DashboardAccountViewModel` | `Dashboard/DashboardAccountViewModel.cs:21-23` | Reads all three from `_account` |
+| Consumer                    | File                                            | Fields present                  |
+| --------------------------- | ----------------------------------------------- | ------------------------------- |
+| `OneDriveAccount`           | `Accounts/OneDriveAccount.cs:11-20`             | All three                       |
+| `AccountEntity`             | `Data/Entities/AccountEntity.cs:9-11`           | All three                       |
+| `AuthResult`                | `Infrastructure/Authentication/AuthResult.cs:7` | `DisplayName` + `Email`         |
+| `AccountCardViewModel`      | `Accounts/AccountCardViewModel.cs:29-57`        | Reads all three from `_model`   |
+| `DashboardAccountViewModel` | `Dashboard/DashboardAccountViewModel.cs:21-23`  | Reads all three from `_account` |
 
 **Pattern:** Every site that holds or displays account identity reads the same three fields together. `AccentIndex` always accompanies `DisplayName` + `Email` because all rendering sites need it to pick an avatar colour.
 
@@ -50,6 +50,7 @@ public static class AccountProfileFactory
 ```
 
 **Migration impact:**
+
 - `OneDriveAccount` — replace three flat properties with `AccountProfile Profile { get; set; }`
 - `AccountEntity` — same; or use EF Core Owned Entity Type `[Owned]`
 - `AuthResult` — drop `DisplayName` + `Email` constructor params; pass `AccountProfile` instead
@@ -62,14 +63,14 @@ public static class AccountProfileFactory
 
 **Fields:** `ConflictPolicy` (enum), `LocalSyncPath` (`LocalSyncPath` / string)
 
-**Question answered:** *How should this account's sync behave locally?*
+**Question answered:** _How should this account's sync behave locally?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `OneDriveAccount` | `Accounts/OneDriveAccount.cs:44-49` | Both |
-| `AccountEntity` | `Data/Entities/AccountEntity.cs:16-17` | Both |
-| `AccountSettings` | `Accounts/AccountSettings.cs:12-18` | Both (LocalSyncPath as `string`) |
-| `DashboardAccountViewModel.SyncNowAsync` | `Dashboard/DashboardAccountViewModel.cs:100-104` | Both (inline construction) |
+| Consumer                                 | File                                             | Fields present                   |
+| ---------------------------------------- | ------------------------------------------------ | -------------------------------- |
+| `OneDriveAccount`                        | `Accounts/OneDriveAccount.cs:44-49`              | Both                             |
+| `AccountEntity`                          | `Data/Entities/AccountEntity.cs:16-17`           | Both                             |
+| `AccountSettings`                        | `Accounts/AccountSettings.cs:12-18`              | Both (LocalSyncPath as `string`) |
+| `DashboardAccountViewModel.SyncNowAsync` | `Dashboard/DashboardAccountViewModel.cs:100-104` | Both (inline construction)       |
 
 **Pattern:** Every time an account is loaded, saved, or used to trigger a sync, these two fields move together. `AccountSettings` is a DTO that duplicates both, and `SyncNowAsync` inline-constructs an `OneDriveAccount` by copying only these two fields plus identity fields.
 
@@ -90,6 +91,7 @@ public static class AccountSyncConfigFactory
 ```
 
 **Migration impact:**
+
 - `OneDriveAccount` — replace two flat properties with `AccountSyncConfig SyncConfig { get; set; }`
 - `AccountEntity` — same; EF Core Owned Entity Type for `AccountSyncConfig`
 - `AccountSettings` — replace with `AccountSyncConfig` directly; delete `AccountSettings`
@@ -103,12 +105,12 @@ public static class AccountSyncConfigFactory
 
 **Fields:** `QuotaTotal` (long, bytes), `QuotaUsed` (long, bytes)
 
-**Question answered:** *How much OneDrive storage does this account have and use?*
+**Question answered:** _How much OneDrive storage does this account have and use?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `OneDriveAccount` | `Accounts/OneDriveAccount.cs:32-35` | Both |
-| `AccountEntity` | `Data/Entities/AccountEntity.cs:13-14` | Both |
+| Consumer                    | File                                           | Fields present                                  |
+| --------------------------- | ---------------------------------------------- | ----------------------------------------------- |
+| `OneDriveAccount`           | `Accounts/OneDriveAccount.cs:32-35`            | Both                                            |
+| `AccountEntity`             | `Data/Entities/AccountEntity.cs:13-14`         | Both                                            |
 | `DashboardAccountViewModel` | `Dashboard/DashboardAccountViewModel.cs:26-33` | Both; derives `StorageFraction` + `StorageText` |
 
 **Pattern:** `QuotaTotal` and `QuotaUsed` always appear and change together (refreshed from Graph API as a pair). `DashboardAccountViewModel` re-derives formatted display from both simultaneously.
@@ -131,6 +133,7 @@ public static class StorageQuotaFactory
 ```
 
 **Migration impact:**
+
 - `OneDriveAccount` — `QuotaTotal` + `QuotaUsed` → `StorageQuota Quota { get; set; }`
 - `AccountEntity` — same; EF Core Owned Entity Type
 - `DashboardAccountViewModel` — `StorageFraction` and `StorageText` delegate to `_account.Quota.Fraction`; remove inline calculation
@@ -141,12 +144,12 @@ public static class StorageQuotaFactory
 
 **Fields:** `AccountId` (string), `FolderId` (string), `RemoteItemId` (string)
 
-**Question answered:** *Which remote item is involved in this conflict?*
+**Question answered:** _Which remote item is involved in this conflict?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `SyncConflict` | `Domain/SyncConflict.cs:12-14` | All three — as raw strings |
-| `RemoteItemRef` | `Domain/RemoteItemRef.cs` | Extracted record — used by `SyncJob` |
+| Consumer        | File                           | Fields present                       |
+| --------------- | ------------------------------ | ------------------------------------ |
+| `SyncConflict`  | `Domain/SyncConflict.cs:12-14` | All three — as raw strings           |
+| `RemoteItemRef` | `Domain/RemoteItemRef.cs`      | Extracted record — used by `SyncJob` |
 
 **Pattern:** `SyncConflict` uses the same three-field identity group as `SyncJob.Remote`, but stores raw strings instead of the already-extracted `RemoteItemRef`. This inconsistency means conflict resolution code handles the same concept twice with different shapes.
 
@@ -155,6 +158,7 @@ public static class StorageQuotaFactory
 **Proposed change:** Replace the three string fields with `RemoteItemRef Remote { get; init; }`.
 
 **Migration impact:**
+
 - `Domain/SyncConflict.cs:12-14` — remove `AccountId`, `FolderId`, `RemoteItemId`; add `RemoteItemRef Remote`
 - `Data/Repositories/SyncRepository.cs` — conflict entity mapping
 - `ConflictItemViewModel` — `conflict.AccountId` → `conflict.Remote.AccountId.Id`
@@ -166,18 +170,19 @@ public static class StorageQuotaFactory
 
 **Fields:** `LocalPath` (string), `RelativePath` (string)
 
-**Question answered:** *Where does the conflicting file live on disk?*
+**Question answered:** _Where does the conflicting file live on disk?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `SyncConflict` | `Domain/SyncConflict.cs:15-16` | Both — as raw strings |
-| `SyncFileTarget` | `Domain/SyncFileTarget.cs` | Extracted record — used by `SyncJob` |
+| Consumer         | File                           | Fields present                       |
+| ---------------- | ------------------------------ | ------------------------------------ |
+| `SyncConflict`   | `Domain/SyncConflict.cs:15-16` | Both — as raw strings                |
+| `SyncFileTarget` | `Domain/SyncFileTarget.cs`     | Extracted record — used by `SyncJob` |
 
 **Pattern:** Identical to Clump 4. `SyncConflict` carries the same local-path pair as `SyncJob.Target` but as raw strings, creating an inconsistency between the two domain objects that represent the same operation from different perspectives.
 
 **Proposed change:** Replace `LocalPath` + `RelativePath` with `SyncFileTarget Target { get; init; }`.
 
 **Migration impact:**
+
 - `Domain/SyncConflict.cs:15-16` — remove `LocalPath`, `RelativePath`; add `SyncFileTarget Target`
 - `ConflictItemViewModel` — `conflict.RelativePath` → `conflict.Target.RelativePath`, `conflict.LocalPath` → `conflict.Target.LocalPath`
 - `Data/Repositories/SyncRepository.cs` — conflict entity mapping
@@ -188,11 +193,11 @@ public static class StorageQuotaFactory
 
 **Fields:** `LocalModified` (DateTimeOffset), `LocalSize` (long), `RemoteModified` (DateTimeOffset), `RemoteSize` (long)
 
-**Question answered:** *What were the local and remote file states when the conflict was detected?*
+**Question answered:** _What were the local and remote file states when the conflict was detected?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `SyncConflict` | `Domain/SyncConflict.cs:18-21` | All four |
+| Consumer                | File                                       | Fields present                                              |
+| ----------------------- | ------------------------------------------ | ----------------------------------------------------------- |
+| `SyncConflict`          | `Domain/SyncConflict.cs:18-21`             | All four                                                    |
 | `ConflictItemViewModel` | `Conflicts/ConflictItemViewModel.cs:18-21` | Re-exposes all four; derives four formatted text properties |
 
 **Pattern:** These four values are detected, persisted, and displayed as a unit. `ConflictResolver` reads `LocalModified` and `RemoteModified` together to apply `LastWriteWins` policy. `ConflictItemViewModel` projects all four into display text simultaneously.
@@ -212,6 +217,7 @@ public static class ConflictSnapshotFactory
 ```
 
 **Migration impact:**
+
 - `Domain/SyncConflict.cs` — replace four flat fields with `ConflictSnapshot Snapshot { get; init; }`
 - `Conflicts/ConflictResolver.cs` — `conflict.LocalModified` → `conflict.Snapshot.LocalModified` etc.
 - `ConflictItemViewModel` — all four properties delegate to `conflict.Snapshot.*`
@@ -222,12 +228,12 @@ public static class ConflictSnapshotFactory
 
 **Fields:** `ETag` (string?), `CTag` (string?)
 
-**Question answered:** *What Graph API change-detection tags identify this version of the item?*
+**Question answered:** _What Graph API change-detection tags identify this version of the item?_
 
-| Consumer | File | Fields present |
-|----------|------|----------------|
-| `SyncedItemEntity` | `Data/Entities/SyncedItemEntity.cs:16-17` | Both — flat nullable strings |
-| `VersionInfo` | `Domain/VersionInfo.cs` | Extracted record — used by `DeltaItem` |
+| Consumer           | File                                      | Fields present                         |
+| ------------------ | ----------------------------------------- | -------------------------------------- |
+| `SyncedItemEntity` | `Data/Entities/SyncedItemEntity.cs:16-17` | Both — flat nullable strings           |
+| `VersionInfo`      | `Domain/VersionInfo.cs`                   | Extracted record — used by `DeltaItem` |
 
 **Pattern:** `DeltaItem` already uses `VersionInfo` for ETag/CTag. `SyncedItemEntity` persists the same data as flat columns instead of using an owned type. When ETag/CTag are read from the entity and compared against a `DeltaItem.VersionInfo`, the mismatch forces manual field mapping at every comparison site.
 
@@ -246,6 +252,7 @@ entity.OwnsOne(e => e.Tags, b =>
 ```
 
 **Migration impact:**
+
 - `Data/Entities/SyncedItemEntity.cs:16-17` — remove `ETag`, `CTag`; add `VersionInfo Tags`
 - `Data/Repositories/SyncedItemRepository.cs` — any `entity.ETag` → `entity.Tags.ETag`
 - `Infrastructure/Sync/RemoteFolderEnumerator.cs` — ETag comparison sites

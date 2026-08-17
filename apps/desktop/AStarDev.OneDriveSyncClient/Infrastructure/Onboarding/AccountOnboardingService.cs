@@ -1,0 +1,53 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.OneDriveSyncClient.Accounts;
+using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.Utilities;
+
+namespace AStarDev.OneDriveSyncClient.Infrastructure.Onboarding;
+
+/// <inheritdoc />
+public sealed class AccountOnboardingService(IAccountRepository accountRepository, ISyncRuleRepository syncRuleRepository) : IAccountOnboardingService
+{
+    /// <inheritdoc />
+    public async Task<OneDriveAccount> CompleteOnboardingAsync(OneDriveAccount account, CancellationToken cancellationToken)
+    {
+        if (account.SyncConfig is Option<AccountSyncConfig>.None)
+            account.SyncConfig = ResolveDefaultSyncConfig(account.Profile.Email);
+
+        await accountRepository.UpsertAsync(ToEntity(account), cancellationToken).ConfigureAwait(false);
+
+        foreach (var (folderId, folderName) in account.FolderNames)
+            await syncRuleRepository.UpsertAsync(account.Id, $"/{folderName}", RuleType.Include, folderId.Value, cancellationToken).ConfigureAwait(false);
+
+        if (account.IsActive)
+            await accountRepository.SetActiveAccountAsync(account.Id, cancellationToken).ConfigureAwait(false);
+
+        return account;
+    }
+
+    private static Option<AccountSyncConfig> ResolveDefaultSyncConfig(string email)
+    {
+        string defaultPath = string.Empty;
+        if (email is "jason.barden@outlook.com" or "jason.barden1@outlook.com")
+            defaultPath = "/run/media/jbarden/Tbdrive/sync/".CombinePath(email);
+        else
+            defaultPath = ApplicationMetadata.ApplicationNameHyphenated.UserDirectory().CombinePath(email);
+
+        return LocalSyncPathFactory.Create(defaultPath)
+            .Match(p => Option.Some(AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, p)), _ => Option.None<AccountSyncConfig>());
+    }
+
+    private static AccountEntity ToEntity(OneDriveAccount account)
+        => new()
+        {
+            Id = account.Id,
+            Profile = account.Profile,
+            AccentIndex = account.AccentIndex,
+            IsActive = account.IsActive,
+            LastSyncedAt = account.LastSyncedAt,
+            Quota = account.Quota,
+            SyncConfig = account.SyncConfig.Match(v => v, () => AccountSyncConfigFactory.Default)
+        };
+}

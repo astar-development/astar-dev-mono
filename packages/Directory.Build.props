@@ -47,6 +47,7 @@
     <!-- Enable nullable annotations checking at a stricter level for packages.
          Consumers benefit most from accurate nullability annotations. -->
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CA1707;CA1859;CA1591</NoWarn>
   </PropertyGroup>
 
   <!-- ── API compatibility enforcement ─────────────────────────────────────

@@ -1,0 +1,359 @@
+using AStar.Dev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb;
+using AStarDev.OneDriveSyncClient.Data.Repositories;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
+
+namespace AStarDev.OneDriveSyncClient.TestsUnit.Data.Repositories;
+
+public sealed class GivenASyncRepository : IDisposable
+{
+    private readonly SqliteConnection connection;
+    private readonly AppDbContext seedingContext;
+    private readonly IDbContextFactory<AppDbContext> factory;
+    private bool disposed;
+
+    public GivenASyncRepository()
+    {
+        connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseSqlite(connection)
+            .Options;
+
+        seedingContext = new AppDbContext(options);
+        _ = seedingContext.Database.EnsureCreated();
+        seedingContext.Accounts.AddRange(new AccountEntity { Id = new AccountId("user-1") }, new AccountEntity { Id = new AccountId("user-2") });
+        seedingContext.SaveChanges();
+
+        factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+               .Returns(_ => Task.FromResult(new AppDbContext(options)));
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (disposed)
+            return;
+
+        disposed = true;
+
+        if (!disposing)
+            return;
+
+        seedingContext.Dispose();
+        connection.Dispose();
+    }
+
+    private static SyncConflict MinimalConflict(string accountId = "user-1", string folderId = "", ConflictState state = ConflictState.Pending, DateTimeOffset detectedAt = default)
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(string.Empty));
+
+        return new SyncConflict { Id = Guid.NewGuid(), Remote = remote, State = state, DetectedAt = detectedAt == default ? DateTimeOffset.UtcNow : detectedAt };
+    }
+
+    private static SyncJob MinimalJob(string accountId = "user-1", string folderId = "", SyncJobState state = SyncJobState.Queued)
+    {
+        var remote = RemoteItemRefFactory.Create(new AccountId(accountId), new OneDriveFolderId(folderId), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var job = SyncJobFactory.CreateDownload(remote, target, metadata);
+
+        return job with { Status = job.Status with { State = state } };
+    }
+
+    [Fact]
+    public async Task when_enqueue_jobs_is_called_with_empty_list_then_no_exception_is_thrown()
+    {
+        var repository = new SyncRepository(factory);
+
+        await repository.EnqueueJobsAsync(new List<SyncJob>(), TestContext.Current.CancellationToken);
+
+        (await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_enqueue_jobs_is_called_with_jobs_then_all_are_inserted()
+    {
+        var repository = new SyncRepository(factory);
+        var jobs = new List<SyncJob>
+        {
+            MinimalJob(folderId: "folder-1"),
+            MinimalJob(folderId: "folder-2")
+        };
+
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
+
+        seedingContext.SyncJobs.Count().ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_get_pending_jobs_is_called_with_no_jobs_then_result_is_empty()
+    {
+        var repository = new SyncRepository(factory);
+
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_get_pending_jobs_is_called_then_only_queued_jobs_are_returned()
+    {
+        var repository = new SyncRepository(factory);
+        var jobs = new List<SyncJob>
+        {
+            MinimalJob(folderId: "folder-1", state: SyncJobState.Queued),
+            MinimalJob(folderId: "folder-2", state: SyncJobState.Completed),
+            MinimalJob(folderId: "folder-3", state: SyncJobState.Failed)
+        };
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
+
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        result.Count.ShouldBe(1);
+        result[0].State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public async Task when_get_pending_jobs_is_called_then_jobs_are_ordered_by_queued_at()
+    {
+        var repository = new SyncRepository(factory);
+        var now = DateTimeOffset.UtcNow;
+        var remote = RemoteItemRefFactory.Create(new AccountId("user-1"), new OneDriveFolderId(""), new OneDriveItemId(""));
+        var target = SyncFileTargetFactory.Create("", "");
+        var metadata = SyncFileMetadataFactory.Create(0L, default);
+        var jobs = new List<SyncJob>
+        {
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(3) } },
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(1) } },
+            SyncJobFactory.CreateDownload(remote, target, metadata) with { Status = SyncJobStatusFactory.Create() with { QueuedAt = now.AddSeconds(2) } }
+        };
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
+
+        var result = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        result.Count.ShouldBe(3);
+        result[0].QueuedAt.ShouldBeLessThan(result[1].QueuedAt);
+        result[1].QueuedAt.ShouldBeLessThan(result[2].QueuedAt);
+    }
+
+    [Fact]
+    public async Task when_update_job_state_is_called_then_state_is_updated()
+    {
+        var repository = new SyncRepository(factory);
+        var jobId = Guid.NewGuid();
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
+
+        await repository.UpdateJobStateAsync(jobId, SyncJobState.InProgress, Option.None<string>(), TestContext.Current.CancellationToken);
+
+        var updated = await seedingContext.SyncJobs.FindAsync([jobId], cancellationToken: TestContext.Current.CancellationToken);
+        _ = updated.ShouldNotBeNull();
+        updated.State.ShouldBe(SyncJobState.InProgress);
+    }
+
+    [Fact]
+    public async Task when_update_job_state_is_called_with_completed_state_then_completed_at_is_set()
+    {
+        var repository = new SyncRepository(factory);
+        var jobId = Guid.NewGuid();
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
+
+        await repository.UpdateJobStateAsync(jobId, SyncJobState.Completed, Option.None<string>(), TestContext.Current.CancellationToken);
+
+        var updated = await seedingContext.SyncJobs.FindAsync([jobId], cancellationToken: TestContext.Current.CancellationToken);
+        _ = updated.ShouldNotBeNull();
+        updated.CompletedAt.Match(_ => true, () => false).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_update_job_state_is_called_with_error_message_then_error_is_set()
+    {
+        var repository = new SyncRepository(factory);
+        var jobId = Guid.NewGuid();
+        var baseJob = MinimalJob();
+        var job = baseJob with { Status = baseJob.Status with { Id = jobId } };
+        await repository.EnqueueJobsAsync(new[] { job }, TestContext.Current.CancellationToken);
+
+        await repository.UpdateJobStateAsync(jobId, SyncJobState.Failed, "Upload failed", TestContext.Current.CancellationToken);
+
+        var updated = await seedingContext.SyncJobs.FindAsync([jobId], cancellationToken: TestContext.Current.CancellationToken);
+        _ = updated.ShouldNotBeNull();
+        updated.ErrorMessage.Match(message => message, () => string.Empty).ShouldBe("Upload failed");
+    }
+
+    [Fact]
+    public async Task when_clear_completed_jobs_is_called_then_completed_jobs_are_removed()
+    {
+        var repository = new SyncRepository(factory);
+        var jobs = new List<SyncJob>
+        {
+            MinimalJob(state: SyncJobState.Completed),
+            MinimalJob(state: SyncJobState.Queued),
+            MinimalJob(state: SyncJobState.Completed)
+        };
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
+
+        await repository.ClearCompletedJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        var remaining = await seedingContext.SyncJobs.Where(j => j.AccountId == new AccountId("user-1")).ToListAsync(TestContext.Current.CancellationToken);
+        remaining.Count.ShouldBe(1);
+        remaining[0].State.ShouldBe(SyncJobState.Queued);
+    }
+
+    [Fact]
+    public async Task when_add_conflict_is_called_then_conflict_is_inserted()
+    {
+        var repository = new SyncRepository(factory);
+        var conflict = MinimalConflict(folderId: "folder-1");
+
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
+
+        var inserted = await seedingContext.SyncConflicts.FindAsync([conflict.Id], cancellationToken: TestContext.Current.CancellationToken);
+        _ = inserted.ShouldNotBeNull();
+        inserted.State.ShouldBe(ConflictState.Pending);
+    }
+
+    [Fact]
+    public async Task when_get_pending_conflicts_is_called_then_only_pending_conflicts_are_returned()
+    {
+        var repository = new SyncRepository(factory);
+        var conflict1 = MinimalConflict();
+        var conflict2 = MinimalConflict(state: ConflictState.Resolved);
+
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
+
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        result.Count.ShouldBe(1);
+        result[0].State.ShouldBe(ConflictState.Pending);
+    }
+
+    [Fact]
+    public async Task when_get_pending_conflicts_is_called_then_conflicts_are_ordered_by_detected_at()
+    {
+        var repository = new SyncRepository(factory);
+        var now = DateTimeOffset.UtcNow;
+        var conflict1 = MinimalConflict(detectedAt: now.AddSeconds(2));
+        var conflict2 = MinimalConflict(detectedAt: now.AddSeconds(1));
+
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
+
+        var result = await repository.GetPendingConflictsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        result[0].DetectedAt.ShouldBeLessThan(result[1].DetectedAt);
+    }
+
+    [Fact]
+    public async Task when_resolve_conflict_is_called_then_state_is_updated()
+    {
+        var repository = new SyncRepository(factory);
+        var conflict = MinimalConflict();
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
+
+        await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
+
+        var resolved = await seedingContext.SyncConflicts.FindAsync([conflict.Id], cancellationToken: TestContext.Current.CancellationToken);
+        _ = resolved.ShouldNotBeNull();
+        resolved.State.ShouldBe(ConflictState.Resolved);
+        resolved.Resolution.Match(policy => policy, () => (ConflictPolicy?)null).ShouldBe(ConflictPolicy.Ignore);
+    }
+
+    [Fact]
+    public async Task when_resolve_conflict_is_called_then_resolved_at_is_set()
+    {
+        var repository = new SyncRepository(factory);
+        var conflict = MinimalConflict();
+        await repository.AddConflictAsync(conflict, TestContext.Current.CancellationToken);
+
+        await repository.ResolveConflictAsync(conflict.Id, ConflictPolicy.LocalWins, TestContext.Current.CancellationToken);
+
+        var resolved = await seedingContext.SyncConflicts.FindAsync([conflict.Id], cancellationToken: TestContext.Current.CancellationToken);
+        _ = resolved.ShouldNotBeNull();
+        resolved.ResolvedAt.Match(_ => true, () => false).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_get_pending_conflict_count_is_called_with_no_pending_conflicts_then_zero_is_returned()
+    {
+        var repository = new SyncRepository(factory);
+
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_get_pending_conflict_count_is_called_then_only_pending_count_is_returned()
+    {
+        var repository = new SyncRepository(factory);
+        var conflict1 = MinimalConflict();
+        var conflict2 = MinimalConflict();
+        var conflict3 = MinimalConflict(state: ConflictState.Resolved);
+
+        await repository.AddConflictAsync(conflict1, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict2, TestContext.Current.CancellationToken);
+        await repository.AddConflictAsync(conflict3, TestContext.Current.CancellationToken);
+
+        int count = await repository.GetPendingConflictCountAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_get_pending_jobs_is_called_for_different_accounts_then_results_are_isolated()
+    {
+        var repository = new SyncRepository(factory);
+        var jobs = new List<SyncJob>
+        {
+            MinimalJob(accountId: "user-1"),
+            MinimalJob(accountId: "user-2")
+        };
+        await repository.EnqueueJobsAsync(jobs, TestContext.Current.CancellationToken);
+
+        var user1Jobs = await repository.GetPendingJobsAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+        var user2Jobs = await repository.GetPendingJobsAsync(new AccountId("user-2"), TestContext.Current.CancellationToken);
+
+        user1Jobs.Count.ShouldBe(1);
+        user1Jobs[0].AccountId.Value.ShouldBe("user-1");
+        user2Jobs.Count.ShouldBe(1);
+        user2Jobs[0].AccountId.Value.ShouldBe("user-2");
+    }
+
+    [Fact]
+    public async Task when_enqueue_jobs_is_called_with_a_token_then_the_token_is_forwarded_to_the_context_factory()
+    {
+        var repository = new SyncRepository(factory);
+        using var cts = new CancellationTokenSource();
+
+        await repository.EnqueueJobsAsync([MinimalJob()], cts.Token);
+
+        _ = await factory.Received(1).CreateDbContextAsync(cts.Token);
+    }
+
+    [Fact]
+    public async Task when_add_conflict_is_called_with_a_token_then_the_token_is_forwarded_to_the_context_factory()
+    {
+        var repository = new SyncRepository(factory);
+        using var cts = new CancellationTokenSource();
+
+        await repository.AddConflictAsync(MinimalConflict(), cts.Token);
+
+        _ = await factory.Received(1).CreateDbContextAsync(cts.Token);
+    }
+}

@@ -12,7 +12,7 @@ coordinator, and testing the new class directly (InternalsVisibleTo is already c
 
 ### 1. New file — `ClaimsProfileResolver.cs`
 
-**Path:** `apps/desktop/AStar.Dev.OneDrive.Sync.Client/Infrastructure/Authentication/ClaimsProfileResolver.cs`
+**Path:** `apps/desktop/AStarDev.OneDriveSyncClient/Infrastructure/Authentication/ClaimsProfileResolver.cs`
 
 `internal static class` with two methods:
 
@@ -49,9 +49,9 @@ CC drops to ≤ 3.
 
 ### 3. New test file — `GivenAClaimsProfileResolver.cs`
 
-**Path:** `apps/desktop/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/Infrastructure/Authentication/GivenAClaimsProfileResolver.cs`
+**Path:** `apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/Infrastructure/Authentication/GivenAClaimsProfileResolver.cs`
 
-Namespace: `AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Authentication`
+Namespace: `AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Authentication`
 Class: `public sealed class GivenAClaimsProfileResolver`
 
 `ResolveDisplayName` branches to cover:

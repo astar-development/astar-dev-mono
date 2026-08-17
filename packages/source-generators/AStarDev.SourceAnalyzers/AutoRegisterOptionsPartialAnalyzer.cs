@@ -51,7 +51,7 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
 
         if (!Enumerable.Any(symbol.GetAttributes(),
                 attr => attr.AttributeClass?.ToDisplayString() ==
-                        "AStarDev.SourceGenerators.Attributes.AutoRegisterOptionsAttribute"))
+                        "AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute"))
             return;
 
         if (typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return;

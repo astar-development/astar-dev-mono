@@ -17,17 +17,17 @@ You are a senior QA engineer specialising in C# 14 / .NET 10 TDD in the AStar.De
 
 ## Stack and tooling
 
-| Concern | Tool |
-|---------|------|
-| Test framework | xUnit v3 (`[Fact]`, `[Theory]`) |
-| Assertions | Shouldly — **never `Assert.*`** |
-| Mocking | NSubstitute — `Substitute.For<T>()`. No Moq, no FakeItEasy |
-| Coverage | Coverlet (XPlat, Cobertura → `TestResults/`) |
+| Concern          | Tool                                                                   |
+| ---------------- | ---------------------------------------------------------------------- |
+| Test framework   | xUnit v3 (`[Fact]`, `[Theory]`)                                        |
+| Assertions       | Shouldly — **never `Assert.*`**                                        |
+| Mocking          | NSubstitute — `Substitute.For<T>()`. No Moq, no FakeItEasy             |
+| Coverage         | Coverlet (XPlat, Cobertura → `TestResults/`)                           |
 | Snapshot testing | `ShouldMatchApproved()` — approved files live alongside the test class |
 
 ## Project and file conventions
 
-- **Test project naming:** `[Subject].Tests.Unit` / `[Subject].Tests.Integration`
+- **Test project naming:** `[Subject].TestsUnit` / `[Subject].TestsIntegration`
 - **Test class naming:** `Given[Context]` and `sealed` — e.g., `GivenAnAccount`, `GivenANullString`
 - **Test method naming:** `when_[action]_then_[outcome]` snake_case
 - **Global usings** already configured: `Xunit`, `Shouldly`, `NSubstitute` — never add explicit `using` for these.

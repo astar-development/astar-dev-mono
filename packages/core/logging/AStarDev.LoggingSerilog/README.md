@@ -48,14 +48,14 @@ dotnet clean && dotnet build packages/core/logging/AStarDev.LoggingSerilog
 
 ## Test
 
-Tests for this package live alongside it in `AStarDev.LoggingSerilog.Tests.Unit`.
+Tests for this package live alongside it in `AStarDev.LoggingSerilog.TestsUnit`.
 
 ```bash
 # Run all tests
 dotnet test
 
 # Run tests for this package specifically
-dotnet test packages/core/logging/AStarDev.LoggingSerilog.Tests.Unit
+dotnet test packages/core/logging/AStarDev.LoggingSerilog.TestsUnit
 ```
 
 ---

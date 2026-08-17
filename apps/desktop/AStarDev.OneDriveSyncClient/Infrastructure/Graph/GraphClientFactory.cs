@@ -1,0 +1,19 @@
+using Microsoft.Graph;
+using Microsoft.Kiota.Abstractions.Authentication;
+
+namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;
+
+public sealed class GraphClientFactory : IGraphClientFactory
+{
+    /// <inheritdoc />
+    public GraphServiceClient CreateClient(Func<CancellationToken, Task<string>> tokenFactory)
+        => new(new BaseBearerTokenAuthenticationProvider(new DelegatingAccessTokenProvider(tokenFactory)));
+
+    private sealed class DelegatingAccessTokenProvider(Func<CancellationToken, Task<string>> tokenFactory) : IAccessTokenProvider
+    {
+        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+            => tokenFactory(cancellationToken);
+
+        public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
+    }
+}

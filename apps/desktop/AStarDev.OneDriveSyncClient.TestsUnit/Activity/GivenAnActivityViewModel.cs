@@ -1,0 +1,87 @@
+using AStarDev.OneDriveSyncClient.Activity;
+using AStarDev.OneDriveSyncClient.Conflicts;
+using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
+using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Pipeline;
+
+namespace AStarDev.OneDriveSyncClient.TestsUnit.Activity;
+
+public sealed class GivenAnActivityViewModel
+{
+    private const string AccountId = "acc-1";
+    private const string CurrentFile = "Documents/report.pdf";
+
+    private readonly ISyncService _syncService = Substitute.For<ISyncService>();
+    private readonly ISyncRepository _syncRepository = Substitute.For<ISyncRepository>();
+    private readonly ISyncEventAggregator _syncEventAggregator = Substitute.For<ISyncEventAggregator>();
+    private readonly ILocalizationService _loc = Substitute.For<ILocalizationService>();
+    private readonly IUiDispatcher _dispatcher = new InlineUiDispatcher();
+
+    public GivenAnActivityViewModel() =>
+        _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
+
+    private ActivityViewModel CreateSut() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _loc), new ActivityItemViewModelFactory(_loc), _dispatcher, _loc);
+
+    [Fact]
+    public void when_sync_progress_fires_with_total_zero_and_current_file_then_info_item_added_to_log()
+    {
+        var sut = CreateSut();
+        sut.SubscribeToSyncEvents();
+        var args = new SyncProgressEventArgs(AccountId, "folder-1", 0, 0, CurrentFile, SyncState.Syncing);
+
+        _syncEventAggregator.SyncProgressChanged += Raise.EventWith(args);
+
+        sut.LogItems.ShouldHaveSingleItem();
+        sut.LogItems[0].Type.ShouldBe(ActivityItemType.Info);
+    }
+
+    [Fact]
+    public void when_sync_progress_fires_with_total_zero_and_current_file_then_item_account_id_matches_event()
+    {
+        var sut = CreateSut();
+        sut.SubscribeToSyncEvents();
+        var args = new SyncProgressEventArgs(AccountId, "folder-1", 0, 0, CurrentFile, SyncState.Syncing);
+
+        _syncEventAggregator.SyncProgressChanged += Raise.EventWith(args);
+
+        sut.LogItems[0].AccountId.ShouldBe(AccountId);
+    }
+
+    [Fact]
+    public void when_sync_progress_fires_with_total_zero_and_current_file_then_item_file_name_matches_current_file()
+    {
+        var sut = CreateSut();
+        sut.SubscribeToSyncEvents();
+        var args = new SyncProgressEventArgs(AccountId, "folder-1", 0, 0, CurrentFile, SyncState.Syncing);
+
+        _syncEventAggregator.SyncProgressChanged += Raise.EventWith(args);
+
+        sut.LogItems[0].FileName.ShouldBe(CurrentFile);
+    }
+
+    [Fact]
+    public void when_sync_progress_fires_with_total_greater_than_zero_then_no_item_added()
+    {
+        var sut = CreateSut();
+        sut.SubscribeToSyncEvents();
+        var args = new SyncProgressEventArgs(AccountId, "folder-1", 1, 10, CurrentFile, SyncState.Syncing);
+
+        _syncEventAggregator.SyncProgressChanged += Raise.EventWith(args);
+
+        sut.LogItems.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_sync_progress_fires_with_empty_current_file_then_no_item_added()
+    {
+        var sut = CreateSut();
+        sut.SubscribeToSyncEvents();
+        var args = new SyncProgressEventArgs(AccountId, "folder-1", 0, 0, string.Empty, SyncState.Syncing);
+
+        _syncEventAggregator.SyncProgressChanged += Raise.EventWith(args);
+
+        sut.LogItems.ShouldBeEmpty();
+    }
+}

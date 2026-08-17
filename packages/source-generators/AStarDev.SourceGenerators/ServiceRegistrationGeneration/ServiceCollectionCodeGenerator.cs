@@ -1,5 +1,5 @@
 using System.Text;
-using AStarDev.SourceGenerators.Attributes;
+using AStarDev.SourceGeneratorAttributes;
 
 namespace AStarDev.SourceGenerators.ServiceRegistrationGeneration;
 
@@ -13,7 +13,7 @@ internal static class ServiceCollectionCodeGenerator
         var registrations = BuildServiceRegistrations(items);
         var item = items[0];
 
-        return BuildSourceFile(registrations, item?.Namespace ?? "AStar.Dev");
+        return BuildSourceFile(registrations, item?.Namespace ?? "AStarDev");
     }
 
     private static IEnumerable<string> BuildServiceRegistrations(IReadOnlyList<ServiceModel> items)

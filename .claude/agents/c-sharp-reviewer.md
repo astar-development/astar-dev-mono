@@ -18,7 +18,7 @@ You are a senior C# / .NET engineer reviewing code in the AStar.Dev mono-repo.
 - `.csproj` files must NOT declare ``, `<Nullable>`, `<TreatWarningsAsErrors>`, or output paths — these come from `Directory.Build.props`.
 - NuGet package versions must NOT appear in `.csproj` files — versions belong in `Directory.Packages.props` (Central Package Management).
 - New packages must have `<Description>`, `<PackageTags>`, and `<PackageLicenseExpression>` — enforced by `Directory.Build.targets`.
-- Test projects must be named `*.Tests.Unit` or `*.Tests.Integration`, etc.
+- Test projects must be named `*.TestsUnit` or `*.TestsIntegration`, etc.
 - Prefer `<ProjectReference>` over `<PackageReference>` during local development.
 - All `bin/` and `obj/` output goes to `artifacts/` — never reference build output inside project directories.
 

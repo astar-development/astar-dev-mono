@@ -2,7 +2,7 @@
 
 ## Repo
 
-Mono-repo: Blazor web, Avalonia desktop, ~25 NuGet packages. Solution: `AStar.Dev.slnx`.
+Mono-repo: Blazor web, Avalonia desktop, ~25 NuGet packages. Solution: `AStarDev.slnx`.
 
 ## Build — mandatory clean before every verification
 
@@ -53,7 +53,7 @@ DI from start. Never `new` service inside class. Never modify production code so
 - **Coverage exclusions** — class not testable/little regression value: add `[ExcludeFromCodeCoverage]`
 - **PR** Development done → push branch, raise PR, request human review
 - **NEVER** touch code unrelated to requested change (no judgement-call restructuring, reordering, "while I'm here" cleanup). Beneficial-but-unrelated change (logical grouping, indirect refactor, etc.) → SUGGEST as separate item, don't implement.
-- **Test projects**: `*.Tests.Unit` / `*.Tests.Integration`
+- **Test projects**: `*.TestsUnit` / `*.TestsIntegration`
 - **Method signatures**: single-line regardless param count. Split only >200 chars.
 - **Commits**: Conventional Commits — `feat(scope): ...`, `fix(scope): ...`
 - **Branches**: `feature/...`, `bug/...`, `fix/...`, `doc/...`; `main` always deployable

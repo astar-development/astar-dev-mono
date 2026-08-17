@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- Add `AStarDev.SourceGenerators` + `AStarDev.SourceGenerators.Attributes` project references to `AStar.Dev.OneDrive.Sync.Client.csproj`
+- Add `AStarDev.SourceGenerators` + `AStarDev.SourceGeneratorAttributes` project references to `AStarDev.OneDriveSyncClient.csproj`
 - Introduce `AccountId` as `[StrongId(typeof(string))]` partial record struct
 - Introduce `OneDriveFolderId` as `[StrongId(typeof(string))]` partial record struct
 - Introduce `OneDriveItemId` as `[StrongId(typeof(string))]` partial record struct
@@ -32,5 +32,5 @@
 **EF config:** `AccountEntityConfiguration`, `SyncFolderEntityConfiguration`, `SyncJobEntityConfiguration`, `SyncConflictEntityConfiguration` — value converters required
 **EF migration:** new migration needed after entity changes
 **ViewModels:** all files that read `.Id`, `.AccountId`, `.FolderId`, `.RemoteItemId`, `.LocalPath` as raw strings — call sites updated to unwrap via `.Value` only at persistence/display boundaries
-**Project file:** `AStar.Dev.OneDrive.Sync.Client.csproj` gains two new project references
-**Test project:** `AStar.Dev.OneDrive.Sync.Client.Tests.Unit` — existing tests updated; new unit tests for value objects
+**Project file:** `AStarDev.OneDriveSyncClient.csproj` gains two new project references
+**Test project:** `AStarDev.OneDriveSyncClient.TestsUnit` — existing tests updated; new unit tests for value objects

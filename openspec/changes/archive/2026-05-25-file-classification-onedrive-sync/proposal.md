@@ -23,7 +23,7 @@ Synced files have no semantic metadata beyond their path. Downstream apps (e.g. 
 
 ## Impact
 
-- **`apps/desktop/AStar.Dev.OneDrive.Sync.Client`**: new domain types, new DB entity, new service, extended registrar, new migration
+- **`apps/desktop/AStarDev.OneDriveSyncClient`**: new domain types, new DB entity, new service, extended registrar, new migration
 - **`appsettings.json`**: new `FileClassificationRules` config section
 - **No changes** to sync pipeline logic, conflict resolution, upload/delete paths, or any other app
 - **Additive only** — existing behaviour unchanged; classification is a new side-effect of file registration

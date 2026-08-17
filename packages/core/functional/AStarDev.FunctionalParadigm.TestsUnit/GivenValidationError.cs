@@ -1,0 +1,13 @@
+namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+
+public sealed class GivenValidationError
+{
+    [Fact]
+    public void when_created_then_exposes_property_and_message()
+    {
+        var actual = ValidationErrorFactory.Create("Name", "Required");
+
+        actual.Property.ShouldBe("Name");
+        actual.Message.ShouldBe("Required");
+    }
+}

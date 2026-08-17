@@ -2,6 +2,7 @@
 
 A single repository containing all AStar Development products and shared libraries:
 **Blazor** web applications, **Next.js** web applications, **Avalonia** desktop
+
 - [First-time setup](#first-time-setup)
 - [Building](#building)
 - [Running](#running)
@@ -348,7 +349,7 @@ to build the release changelog automatically.
 ## Migrations
 
 ```bash
-dotnet ef migrations add Indexes --project AStar.Dev.OneDrive.Sync.Client -o Data/Migrations
+dotnet ef migrations add Indexes --project AStarDev.OneDriveSyncClient -o Data/Migrations
 ```
 
 ## Troubleshooting

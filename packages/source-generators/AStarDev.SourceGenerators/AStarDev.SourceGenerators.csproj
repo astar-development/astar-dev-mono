@@ -44,7 +44,7 @@
             so the generator package contains the attributes types without creating
             a NuGet package dependency on a separate Attributes package. -->
     <Target Name="BuildAndCopyAttributes" AfterTargets="Build" BeforeTargets="Pack;GenerateNuspec">
-        <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+        <MSBuild Projects="$(MSBuildThisFileDirectory)..\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
             <Output TaskParameter="TargetOutputs" ItemName="_AttributesDll" />
         </MSBuild>
         <Message Importance="High" Text="Copying Attributes DLL from '@(_AttributesDll)' to '$(OutputPath)'" />
@@ -73,14 +73,14 @@
     <Target Name="AddPackContent" BeforeTargets="_GetPackageFiles" DependsOnTargets="BuildAndCopyAttributes;BuildAndCopySourceAnalyzers">
         <ItemGroup>
             <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-            <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-            <None Include="$(OutputPath)AStarDev.SourceGenerators.Attributes.dll" Pack="true" PackagePath="attributes/netstandard2.0" />
+            <None Include="$(OutputPath)AStarDev.SourceGeneratorAttributes.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+            <None Include="$(OutputPath)AStarDev.SourceGeneratorAttributes.dll" Pack="true" PackagePath="attributes/netstandard2.0" />
             <None Include="$(OutputPath)AStarDev.SourceAnalyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
         </ItemGroup>
     </Target>
 
     <ItemGroup>
-      <ProjectReference Include="..\AStarDev.SourceGenerators.Attributes\AStarDev.SourceGenerators.Attributes.csproj" PrivateAssets="all" />
+      <ProjectReference Include="..\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj" PrivateAssets="all" />
       <ProjectReference Include="..\AStarDev.SourceAnalyzers\AStarDev.SourceAnalyzers.csproj" PrivateAssets="all" />
     </ItemGroup>
 

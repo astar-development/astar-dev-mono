@@ -1,0 +1,65 @@
+using System.Collections.Concurrent;
+using System.IO.Abstractions;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
+using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+
+namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
+
+/// <inheritdoc />
+public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<RemoteDeletionDetector> logger) : IRemoteDeletionDetector
+{
+    /// <inheritdoc />
+    public async Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken)
+    {
+        List<OneDriveItemId> deletedRemoteIds = [];
+
+        foreach (var (remoteId, knownItem) in syncedItems.ToList())
+        {
+            if (cancellationToken.IsCancellationRequested)
+                break;
+
+            if (!SyncRuleEvaluator.IsIncluded(knownItem.RemotePath, rules))
+                continue;
+
+            if (seenRemoteIds.Contains(remoteId))
+                continue;
+
+            OneDriveSyncClientMessages.RemoteDeletionDetectorNotPresent(logger, knownItem.RemotePath);
+            DeleteLocalItem(knownItem);
+            deletedRemoteIds.Add(knownItem.RemoteItemId);
+        }
+
+        if (deletedRemoteIds.Count == 0)
+            return;
+
+        await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, deletedRemoteIds, cancellationToken).ConfigureAwait(false);
+
+        foreach (var remoteId in deletedRemoteIds)
+            syncedItems.TryRemove(remoteId.Value, out _);
+    }
+
+    private void DeleteLocalItem(SyncedItemEntity knownItem)
+    {
+        string localPath = knownItem.LocalPath;
+
+        if (knownItem.IsFolder)
+        {
+            if (fileSystem.Directory.Exists(localPath))
+            {
+                OneDriveSyncClientMessages.RemoteDeletionDetectorFolderDeleted(logger, localPath);
+                fileSystem.Directory.Delete(localPath, recursive: true);
+            }
+        }
+        else
+        {
+            if (fileSystem.File.Exists(localPath))
+            {
+                OneDriveSyncClientMessages.RemoteDeletionDetectorFileDeleted(logger, localPath);
+                fileSystem.File.Delete(localPath);
+            }
+        }
+    }
+}

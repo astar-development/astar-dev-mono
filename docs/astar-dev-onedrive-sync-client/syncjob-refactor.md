@@ -20,7 +20,7 @@ Replacing the `SyncDirection` enum with a discriminated union of three `SyncJob`
 ### Abstract base — `SyncJob.cs`
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>
 /// Base type for all sync file operations queued by the sync engine.
@@ -54,7 +54,7 @@ Key changes from current `SyncJob`:
 `SyncJobStatusFactory.Create()` is called internally — callers never pass `Id` or `QueuedAt` directly.
 
 ```csharp
-namespace AStar.Dev.OneDrive.Sync.Client.Domain;
+namespace AStarDev.OneDriveSyncClient.Domain;
 
 /// <summary>Creates typed <see cref="SyncJob"/> instances with auto-generated identity fields.</summary>
 public static class SyncJobFactory

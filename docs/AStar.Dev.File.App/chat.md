@@ -46,11 +46,11 @@ Read [](file:///home/jason/repos/astar-dev-file-app/src/AStar.Dev.File.App/Views
 
 Read [](file:///home/jason/repos/astar-dev-file-app/src/AStar.Dev.File.App/ViewLocator.cs)
 
-Read [](file:///home/jason/repos/astar-dev-file-app/tests/AStar.Dev.File.App.Tests.Unit/UnitTest1.cs)
+Read [](file:///home/jason/repos/astar-dev-file-app/tests/AStar.Dev.File.App.TestsUnit/UnitTest1.cs)
 
 Read [](file:///home/jason/repos/astar-dev-file-app/src/AStar.Dev.File.App/Views/MainWindow.axaml)
 
-Read [](file:///home/jason/repos/astar-dev-file-app/tests/AStar.Dev.File.App.Tests.Unit/AStar.Dev.File.App.Tests.Unit.csproj)
+Read [](file:///home/jason/repos/astar-dev-file-app/tests/AStar.Dev.File.App.TestsUnit/AStar.Dev.File.App.TestsUnit.csproj)
 
 Analyzing your answers...
 
@@ -102,7 +102,7 @@ Avalonia.Controls.DataGrid (match Avalonia version: 11.3.12)
 
 ```
 
-### `tests/AStar.Dev.File.App.Tests.Unit/AStar.Dev.File.App.Tests.Unit.csproj`
+### `tests/AStar.Dev.File.App.TestsUnit/AStar.Dev.File.App.TestsUnit.csproj`
 - Change `<TargetFramework>net8.0</TargetFramework>` → `net10.0` (required to reference the app project).
 - Add `<ProjectReference>` pointing to `../../src/AStar.Dev.File.App/AStar.Dev.File.App.csproj`.
 
@@ -505,7 +505,7 @@ Since `DataContext` is set externally, access it via `(DataContext as MainWindow
 ## Phase 7 — Unit Tests
 
 Add the following test classes to
-AStar.Dev.File.App.Tests.Unit:
+AStar.Dev.File.App.TestsUnit:
 
 ### `FileTypeClassifierTests.cs`
 
@@ -556,7 +556,7 @@ The steps below are listed in dependency order. Steps on the same numbered level
 ## Verification Steps
 
 1. `dotnet build src/AStar.Dev.File.App` — zero errors or warnings.
-2. `dotnet test tests/AStar.Dev.File.App.Tests.Unit` — all tests green.
+2. `dotnet test tests/AStar.Dev.File.App.TestsUnit` — all tests green.
 3. Run the app: `dotnet run --project src/AStar.Dev.File.App`.
 4. Verify SQLite file created at the correct local app-data path.
 5. Click [SELECT] — OS native folder picker opens.

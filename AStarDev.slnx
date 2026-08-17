@@ -1,0 +1,98 @@
+  <Solution>
+    <Folder Name="/apps/" />
+    <Folder Name="/apps/desktop/">
+        <Project Path="apps/desktop/AStarDev.Clock/AStarDev.Clock.TestsUnit/AStarDev.Clock.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.Clock/AStarDev.Clock/AStarDev.Clock.csproj" />
+        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient.TestsIntegration/AStarDev.OneDriveSyncClient.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/AStarDev.OneDriveSyncClient.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj" />
+    </Folder>
+    <Folder Name="/apps/desktop/AStarDev.FileApp/">
+        <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp.TestsUnit/AStarDev.FileApp.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj" />
+    </Folder>
+    <Folder Name="/apps/desktop/Scraper/">
+        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.TestsUnit/AStar.Dev.Wallpaper.Scraper.TestsUnit.csproj" />
+        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.TestsIntegration/AStar.Dev.Wallpaper.Scraper.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsUnit/AStarDev.WallpaperScraper.TestsUnit.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsIntegration/AStarDev.WallpaperScraper.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj" />
+    </Folder>
+    <Folder Name="/apps/web/" />
+    <Folder Name="/apps/web/astar-dev-csharp/">
+        <Project Path="apps/web/astar-dev-csharp/AStarDev.Web.TestsUnit/AStarDev.Web.TestsUnit.csproj" />
+        <Project Path="apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj" />
+    </Folder>
+    <Folder Name="/apps/web/fab4kids-csharp/">
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web.TestsIntegration/Fab4Kids.Web.TestsIntegration.csproj" />
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web.TestsUnit/Fab4Kids.Web.TestsUnit.csproj" />
+        <Project Path="apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj" />
+    </Folder>
+    <Folder Name="/infra/" />
+    <Folder Name="/packages/">
+        <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb.TestsIntegration/AStarDev.ControlDb.TestsIntegration.csproj" />
+        <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb.TestsUnit/AStarDev.ControlDb.TestsUnit.csproj" />
+        <Project Path="packages/AStarDev.ControlDb/AStarDev.ControlDb/AStarDev.ControlDb.csproj" />
+        <Project Path="packages/AStarDev.InfrastructureAppDb.TestsUnit/AStarDev.InfrastructureAppDb.TestsUnit.csproj" />
+        <Project Path="packages/AStarDev.InfrastructureAppDb/AStarDev.InfrastructureAppDb.csproj" />
+        <Project Path="packages/AStarDev.InfrastructureFilesDb/AStarDev.InfrastructureFilesDb.csproj" />
+    </Folder>
+    <Folder Name="/packages/aspnet/" />
+    <Folder Name="/packages/aspnet/AStarDev.ApiHealthChecks/">
+        <Project Path="packages/aspnet/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks.TestsUnit/AStarDev.ApiHealthChecks.TestsUnit.csproj" />
+        <Project Path="packages/aspnet/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks.csproj" />
+    </Folder>
+    <Folder Name="/packages/core/" />
+    <Folder Name="/packages/core/functional/">
+        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions.TestsUnit/AStar.Dev.Functional.Extensions.TestsUnit.csproj" />
+        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+        <Project Path="packages/core/functional/AStarDev.FunctionalParadigm.TestsUnit/AStarDev.FunctionalParadigm.TestsUnit.csproj" />
+        <Project Path="packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    </Folder>
+    <Folder Name="/packages/core/logging/">
+        <Project Path="packages/core/logging/AStarDev.LoggingSerilog.TestsUnit/AStarDev.LoggingSerilog.TestsUnit.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingExtensions.TestsUnit/AStarDev.LoggingExtensions.TestsUnit.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+    </Folder>
+    <Folder Name="/packages/core/utilities/">
+        <Project Path="packages/core/utilities/AStarDev.GuardClauses.TestsUnit/AStarDev.GuardClauses.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting.TestsUnit/AStarDev.TechnicalDebtReporting.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting/AStarDev.TechnicalDebtReporting.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.Utilities.TestsUnit/AStarDev.Utilities.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.FluentAssignments.TestsUnit/AStarDev.FluentAssignments.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.FluentAssignments/AStar.Dev.FluentAssignments.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.VelopackPublishing.TestsUnit/AStarDev.VelopackPublishing.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.VelopackPublishingAvalonia.TestsUnit/AStarDev.VelopackPublishingAvalonia.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
+    </Folder>
+    <Folder Name="/packages/source-generators/">
+        <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes.TestsUnit/AStarDev.SourceGeneratorAttributes.TestsUnit.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.Sample/AStarDev.SourceGenerators.Sample.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators.TestsUnit/AStarDev.SourceGenerators.TestsUnit.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceAnalyzers.TestsUnit/AStarDev.SourceAnalyzers.TestsUnit.csproj" />
+        <Project Path="packages/source-generators/AStarDev.SourceAnalyzers/AStarDev.SourceAnalyzers.csproj" />
+    </Folder>
+    <Folder Name="/zoran/">
+        <Project Path="zoran/ImmutableDomain.EntityFrameworkCore/ImmutableDomain.EntityFrameworkCore.csproj" />
+    </Folder>
+    <Folder Name="/SolutionItems/">
+        <File Path="CLAUDE.md" />
+        <File Path="Directory.Build.props" />
+        <File Path="Directory.Build.targets" />
+        <File Path="Directory.Packages.props" />
+        <File Path="global.json" />
+        <File Path="local-setup.md" />
+        <File Path="NuGet.Config" />
+        <File Path="README.md" />
+    </Folder>
+    <Folder Name="/spikes/" />
+    <Folder Name="/spikes/scrape-category-import-export-testing/" />
+    <Folder Name="/tests/" />
+  </Solution>
