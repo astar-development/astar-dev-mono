@@ -52,8 +52,8 @@ env:
   NUGET_XMLDOC_MODE: skip
   NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   VELOPACK_VERSION: 1.2.0
-  PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App/AStar.Dev.File.App.csproj
-  TEST_PROJECT_PATH: apps/desktop/AStar.Dev.File.App/AStar.Dev.File.App.TestsUnit/AStar.Dev.File.App.TestsUnit.csproj
+  PROJECT_PATH: apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj
+  TEST_PROJECT_PATH: apps/desktop/AStarDev.FileApp/AStarDev.FileApp.TestsUnit/AStarDev.FileApp.TestsUnit.csproj
 
 jobs:
   release-linux:
@@ -141,12 +141,12 @@ jobs:
         shell: bash
         run: |
           vpk pack \
-            --packId AStar.Dev.File.App \
+            --packId AStarDev.FileApp \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/linux-x64 \
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev File App" \
-            --mainExe "AStar.Dev.File.App" \
+            --mainExe "AStarDev.FileApp" \
             --channel file-app-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
@@ -268,13 +268,13 @@ jobs:
       - name: Pack with vpk
         shell: bash
         run: |
-          MAIN_EXE="AStar.Dev.File.App"
+          MAIN_EXE="AStarDev.FileApp"
           if [ "${{ matrix.channel }}" = "file-app-win" ]; then
-            MAIN_EXE="AStar.Dev.File.App.exe"
+            MAIN_EXE="AStarDev.FileApp.exe"
           fi
 
           vpk pack \
-            --packId AStar.Dev.File.App \
+            --packId AStarDev.FileApp \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/${{ matrix.rid }} \
             --packAuthors "AStar Development" \

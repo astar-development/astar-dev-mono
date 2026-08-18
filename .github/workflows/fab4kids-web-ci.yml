@@ -21,8 +21,8 @@ on:
       - "doc/**"
     paths:
       - "apps/web/fab4kids-csharp/**"
-      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
-      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/functional/AStarDev.FunctionalParadigm/**"
+      - "packages/core/logging/AStarDev.LoggingExtensions/**"
       - "packages/core/utilities/AStarDev.Utilities/**"
       - "Directory.Build.props"
       - "Directory.Build.targets"
@@ -37,8 +37,8 @@ on:
       - main
     paths:
       - "apps/web/fab4kids-csharp/**"
-      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
-      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/functional/AStarDev.FunctionalParadigm/**"
+      - "packages/core/logging/AStarDev.LoggingExtensions/**"
       - "packages/core/utilities/AStarDev.Utilities/**"
       - "Directory.Build.props"
       - "Directory.Build.targets"

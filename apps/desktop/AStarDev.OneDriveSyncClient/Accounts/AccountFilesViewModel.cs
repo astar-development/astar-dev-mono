@@ -19,7 +19,7 @@ using FolderTreeNodeViewModel = AStarDev.OneDriveSyncClient.Home.FolderTreeNodeV
 
 namespace AStarDev.OneDriveSyncClient.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
 {
     private string? accessToken;
     private Option<DriveId> driveIdOption = DriveIdFactory.Empty;
@@ -244,10 +244,10 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             return;
         }
 
-        if (!fileSystem.Directory.Exists(candidatePath))
+        if (!fileSystemServices.FileSystem.Directory.Exists(candidatePath))
             return;
 
-        fileManagerService.OpenFolder(candidatePath);
+        fileSystemServices.FileManagerService.OpenFolder(candidatePath);
     }
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)

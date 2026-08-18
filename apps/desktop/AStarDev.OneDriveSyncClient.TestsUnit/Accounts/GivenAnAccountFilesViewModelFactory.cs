@@ -11,7 +11,11 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Accounts;
 
 public sealed class GivenAnAccountFilesViewModelFactory
 {
-    private static AccountFilesViewModelFactory CreateSut() => new(Substitute.For<IAuthService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>(), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
+    private static AccountFilesViewModelFactory CreateSut()
+    {
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        return new(Substitute.For<IAuthService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>(), fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
+    }
 
     [Fact]
     public void when_create_is_called_then_the_view_model_targets_the_account()

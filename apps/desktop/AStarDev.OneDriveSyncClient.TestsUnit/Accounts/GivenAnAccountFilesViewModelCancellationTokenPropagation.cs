@@ -36,8 +36,9 @@ public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
             .Returns(new Ok<DriveId, string>(new DriveId(DriveIdValue)));
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Ok<List<DriveFolder>, string>([]));
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, syncRuleService, Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
+        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, syncRuleService, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
 
         await sut.LoadAsync(cts.Token);
 

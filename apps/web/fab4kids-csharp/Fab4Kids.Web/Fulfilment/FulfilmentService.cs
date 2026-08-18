@@ -142,9 +142,9 @@ public sealed class FulfilmentService(
         var links = new List<DeliveryLink>();
         var expiresAt = DateTimeOffset.UtcNow.Add(DeliveryLinkTtl);
 
-        foreach (var lineItem in lineItems)
+        foreach (var lineItemPrice in lineItems.Select(lineItem => lineItem.Price))
         {
-            string? blobPath = lineItem.Price?.Product?.Metadata?.GetValueOrDefault("blobPath");
+            string? blobPath = lineItemPrice?.Product?.Metadata?.GetValueOrDefault("blobPath");
             if (string.IsNullOrWhiteSpace(blobPath))
                 continue;
 
@@ -153,7 +153,7 @@ public sealed class FulfilmentService(
             if (string.IsNullOrWhiteSpace(url))
                 continue;
 
-            links.Add(DeliveryLinkFactory.Create(lineItem.Price?.Product?.Name, url, expiresAt));
+            links.Add(DeliveryLinkFactory.Create(lineItemPrice?.Product?.Name, url, expiresAt));
         }
 
         return links;

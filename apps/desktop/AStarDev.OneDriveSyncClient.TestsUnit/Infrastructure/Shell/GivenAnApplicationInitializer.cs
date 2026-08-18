@@ -51,9 +51,10 @@ public sealed class GivenAnApplicationInitializer
 
     private static Task<Result<List<OneDriveAccount>, string>> ErrorResult(string message)
         => Task.FromResult<Result<List<OneDriveAccount>, string>>(new Fail<List<OneDriveAccount>, string>(message));
-
+        
+    private readonly FileSystemServices _fileSystemServices = new(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), _quotaRefreshService, _syncEventAggregator, new AddAccountWizardViewModelFactory(_authService, _graphService, _localizationService), new AccountCardViewModelFactory(_localizationService), Substitute.For<ILogger<AccountsViewModel>>());
-    private FilesViewModel CreateFilesViewModel() => new(new AccountFilesViewModelFactory(_authService, _graphService, Substitute.For<ISyncRuleService>(), _fileSystem, Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(_graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService), _localizationService), _localizationService);
+    private FilesViewModel CreateFilesViewModel() => new(new AccountFilesViewModelFactory(_authService, _graphService, Substitute.For<ISyncRuleService>(), _fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(_graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService), _localizationService), _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(_localizationService), new ManualUiTimer());
     private ActivityViewModel CreateActivityViewModel() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _localizationService), new ActivityItemViewModelFactory(_localizationService), new InlineUiDispatcher(), _localizationService);
     private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());

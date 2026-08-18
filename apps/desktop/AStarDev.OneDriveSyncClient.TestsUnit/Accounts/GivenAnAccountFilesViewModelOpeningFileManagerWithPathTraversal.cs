@@ -100,7 +100,8 @@ public sealed class GivenAnAccountFilesViewModelOpeningFileManagerWithPathTraver
             Id = new AccountId(AccountIdString),
             Profile = AccountProfileFactory.Create("Test User", "test@test.com")
         };
+        var fileSystemServices = new FileSystemServices(fileSystem, fileManagerService);
 
-        return new AccountFilesViewModel(account, authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), fileSystem, fileManagerService, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        return new AccountFilesViewModel(account, authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
     }
 }
