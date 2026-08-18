@@ -6,7 +6,7 @@ window.astarTheme = {
   applyStoredTheme: function () {
     let stored;
     try { stored = localStorage.getItem('theme'); } catch (_) { }
-    let theme = window.astarTheme.validThemes.indexOf(stored) !== -1 ? stored : 'dark';
+    let theme = window.astarTheme.validThemes.includes(stored) ? stored : 'dark';
     window.astarTheme.applyThemeClass(theme);
   },
 };

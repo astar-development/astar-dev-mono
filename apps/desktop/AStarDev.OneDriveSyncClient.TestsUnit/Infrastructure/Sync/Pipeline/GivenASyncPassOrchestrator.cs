@@ -50,7 +50,12 @@ public sealed class GivenASyncPassOrchestrator
             _syncJobExecutor,
             _downloadJobBuilder);
 
-        return new SyncPassOrchestrator(_accountRepository, _driveStateRepository, dependencies, SyncSettingsOptions, _settingsService, _localizationService, _classificationRepository, NullLogger<SyncPassOrchestrator>.Instance);
+        var syncPassRepositories = new SyncPassRepositories(
+            _accountRepository,
+            _driveStateRepository,
+            _classificationRepository);
+
+        return new SyncPassOrchestrator(syncPassRepositories, dependencies, SyncSettingsOptions, _settingsService, _localizationService, NullLogger<SyncPassOrchestrator>.Instance);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()

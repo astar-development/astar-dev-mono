@@ -10,6 +10,10 @@ namespace AStarDev.ControlDb;
 /// <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="ModelBuilder"/>.</summary>
 public static class ModelBuilderExtensions
 {
+    private const string IntegerColumnType = "INTEGER";
+    private const string BlobColumnType = "BLOB";
+    private const string Ticks = "_Ticks";
+
     /// <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
     /// <param name="mb">The model builder to configure.</param>
     public static void UseSqliteFriendlyConversions(this ModelBuilder mb)
@@ -38,39 +42,39 @@ public static class ModelBuilderExtensions
 
             if (propertyType == typeof(DateTimeOffset))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DateTimeOffsetToTicks).HasColumnType("INTEGER").HasColumnName(propInfo.Name + "_Ticks");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DateTimeOffsetToTicks).HasColumnType(IntegerColumnType).HasColumnName(propInfo.Name + Ticks);
             }
             else if (Nullable.GetUnderlyingType(propertyType) == typeof(DateTimeOffset))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDateTimeOffsetToTicks).HasColumnType("INTEGER").HasColumnName(propInfo.Name + "_Ticks");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDateTimeOffsetToTicks).HasColumnType(IntegerColumnType).HasColumnName(propInfo.Name + Ticks);
             }
             else if (propertyType == typeof(TimeSpan))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.TimeSpanToTicks).HasColumnType("INTEGER");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.TimeSpanToTicks).HasColumnType(IntegerColumnType);
             }
             else if (Nullable.GetUnderlyingType(propertyType) == typeof(TimeSpan))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableTimeSpanToTicks).HasColumnType("INTEGER");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableTimeSpanToTicks).HasColumnType(IntegerColumnType);
             }
             else if (propertyType == typeof(Guid))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.GuidToBytes).HasColumnType("BLOB");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.GuidToBytes).HasColumnType(BlobColumnType);
             }
             else if (Nullable.GetUnderlyingType(propertyType) == typeof(Guid))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableGuidToBytes).HasColumnType("BLOB");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableGuidToBytes).HasColumnType(BlobColumnType);
             }
             else if (propertyType == typeof(decimal))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DecimalToCents).HasColumnType("INTEGER");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DecimalToCents).HasColumnType(IntegerColumnType);
             }
             else if (Nullable.GetUnderlyingType(propertyType) == typeof(decimal))
             {
-                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDecimalToCents).HasColumnType("INTEGER");
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDecimalToCents).HasColumnType(IntegerColumnType);
             }
             else if (propertyType.IsEnum)
             {
-                _ = eb.Property(propInfo.Name).HasConversion<int>().HasColumnType("INTEGER");
+                _ = eb.Property(propInfo.Name).HasConversion<int>().HasColumnType(IntegerColumnType);
             }
             else if (Nullable.GetUnderlyingType(propertyType)?.IsEnum == true)
             {
@@ -79,7 +83,7 @@ public static class ModelBuilderExtensions
                 {
                     var converterType = typeof(EnumToNumberConverter<,>).MakeGenericType(enumType, typeof(int));
                     var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
-                    _ = eb.Property(propInfo.Name).HasConversion(converter).HasColumnType("INTEGER");
+                    _ = eb.Property(propInfo.Name).HasConversion(converter).HasColumnType(IntegerColumnType);
                 }
             }
         }

@@ -53,8 +53,10 @@ public sealed class GivenAFilesViewModel
         authService.AcquireTokenSilentAsync(account.Id.Value, Arg.Any<CancellationToken>()).Returns(AuthResultFactory.Success(AccessToken, account.Id.Value, account.Profile));
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<DriveId, string>(new DriveId(DriveIdValue)));
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([new DriveFolder(FolderId, FolderName, Option.None<string>())]));
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepository, Substitute.For<ILogger<SyncRuleService>>()));
 
-        return new AccountFilesViewModel(account, authService, graphService, new SyncRuleService(syncRuleRepository, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        return new AccountFilesViewModel(account, accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
     }
 
     private static OneDriveAccount BuildAccount(string accountId)

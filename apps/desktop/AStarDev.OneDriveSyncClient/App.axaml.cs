@@ -84,7 +84,7 @@ public class App : Application, IDisposable
         return services.BuildServiceProvider();
     }
 
-    private static IConfigurationRoot RegisterOptions(ServiceCollection services)
+    public static IConfigurationRoot RegisterOptions(ServiceCollection services)
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

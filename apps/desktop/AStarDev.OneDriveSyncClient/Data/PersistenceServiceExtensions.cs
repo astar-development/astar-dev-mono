@@ -3,6 +3,7 @@ using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure;
 using AStarDev.OneDriveSyncClient.Infrastructure.Data;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,10 @@ internal static class PersistenceServiceExtensions
         _ = services.AddSingleton<IFileClassificationRepository, FileClassificationRepository>();
         _ = services.AddSingleton<IFileDetailResolver, FileDetailResolver>();
         _ = services.AddTransient<ICategoryResolutionService, CategoryResolutionService>();
+        _ = services.AddSingleton<ISyncPassRepositories>(sp => new SyncPassRepositories(
+            sp.GetRequiredService<IAccountRepository>(),
+            sp.GetRequiredService<IDriveStateRepository>(),
+            sp.GetRequiredService<IFileClassificationRepository>()));
 
         return services;
     }

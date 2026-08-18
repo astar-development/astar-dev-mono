@@ -15,6 +15,7 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Accounts;
 public sealed class GivenAnAccountFilesViewModelWithAuthFailure
 {
     private const string AccountIdString = "account-1";
+    private readonly IAuthService authService = Substitute.For<IAuthService>();
 
     private static OneDriveAccount BuildAccount() => new()
     {
@@ -24,15 +25,15 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
 
     private static AccountFilesViewModel BuildSut(IAuthService authService)
     {
-        var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>());
 
-        return new AccountFilesViewModel(BuildAccount(), authService, Substitute.For<IGraphService>(), new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(Substitute.For<IGraphService>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        return new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(Substitute.For<IGraphService>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
     }
 
     [Fact]
     public async Task when_token_acquisition_fails_with_auth_failed_error_then_load_error_contains_the_failure_message()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Failure("Token has expired"));
         var sut = BuildSut(authService);
@@ -45,7 +46,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_fails_with_auth_failed_error_then_has_load_error_is_true()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Failure("Token has expired"));
         var sut = BuildSut(authService);
@@ -58,7 +58,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_fails_with_auth_failed_error_then_root_folders_remain_empty()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Failure("Token has expired"));
         var sut = BuildSut(authService);
@@ -71,7 +70,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_is_cancelled_then_load_error_is_authentication_failed_fallback()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Cancelled());
         var sut = BuildSut(authService);
@@ -84,7 +82,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_is_cancelled_then_has_load_error_is_true()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Cancelled());
         var sut = BuildSut(authService);
@@ -97,7 +94,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_fails_then_is_loading_is_false_after_return()
     {
-        var authService = Substitute.For<IAuthService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Failure("Error"));
         var sut = BuildSut(authService);
@@ -110,7 +106,6 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     [Fact]
     public async Task when_token_acquisition_succeeds_then_has_load_error_is_false()
     {
-        var authService = Substitute.For<IAuthService>();
         var graphService = Substitute.For<IGraphService>();
         authService.AcquireTokenSilentAsync(AccountIdString, Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", AccountIdString, AccountProfileFactory.Create("Test User", "test@test.com")));
@@ -118,8 +113,10 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
         graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>()).Returns(new Ok<List<DriveFolder>, string>([]));
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
 

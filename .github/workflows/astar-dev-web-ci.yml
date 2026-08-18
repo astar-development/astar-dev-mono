@@ -18,8 +18,8 @@ on:
       - "doc/**"
     paths:
       - "apps/web/astar-dev-csharp/**"
-      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
-      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/functional/AStarDev.FunctionalParadigm/**"
+      - "packages/core/logging/AStarDev.LoggingExtensions/**"
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Packages.props"
@@ -33,8 +33,8 @@ on:
       - main
     paths:
       - "apps/web/astar-dev-csharp/**"
-      - "packages/core/functional/AStar.Dev.FunctionalParadigm/**"
-      - "packages/core/logging/AStar.Dev.Logging.Extensions/**"
+      - "packages/core/functional/AStarDev.FunctionalParadigm/**"
+      - "packages/core/logging/AStarDev.LoggingExtensions/**"
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Packages.props"

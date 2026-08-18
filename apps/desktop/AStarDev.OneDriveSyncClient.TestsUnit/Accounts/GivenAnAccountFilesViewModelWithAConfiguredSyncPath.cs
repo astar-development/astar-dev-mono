@@ -42,8 +42,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.LastWriteWins), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.LastWriteWins), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         sut.RootFolders[0].ToggleIncludeCommand.Execute(null);
@@ -62,8 +64,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -85,8 +89,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -109,7 +115,9 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -132,7 +140,9 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -153,8 +163,10 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([new SyncRuleEntity { AccountId = new AccountId(AccountIdString), RemotePath = $"/{FolderName}", RuleType = RuleType.Include }]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -176,7 +188,9 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
-        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var sut = new AccountFilesViewModel(BuildAccount(LocalSyncPathString, ConflictPolicy.Ignore), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
 
         await sut.LoadCommand.ExecuteAsync(null);
         await sut.RootFolders[0].ToggleExpandCommand.ExecuteAsync(null);
@@ -237,7 +251,9 @@ public sealed class GivenAnAccountFilesViewModelWithAConfiguredSyncPath
         var syncRuleRepo = Substitute.For<ISyncRuleRepository>();
         syncRuleRepo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([]);
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        return new(account, authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        return new(account, accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
     }
 }

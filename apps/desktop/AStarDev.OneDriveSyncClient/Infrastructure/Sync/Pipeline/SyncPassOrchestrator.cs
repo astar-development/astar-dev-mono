@@ -3,7 +3,6 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
-using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
@@ -15,18 +14,18 @@ using Microsoft.Extensions.Options;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 
-internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository, IDriveStateRepository driveStateRepository, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, IFileClassificationRepository classificationRepository, ILogger<SyncPassOrchestrator> logger) : ISyncPassOrchestrator
+internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassRepositories, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, ILogger<SyncPassOrchestrator> logger) : ISyncPassOrchestrator
 {
     public async Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken cancellationToken = default)
     {
-        var driveState = (await driveStateRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false))
+        var driveState = (await syncPassRepositories.DriveStateRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
 
         driveState.LastSyncStartedAt = Option.Some(DateTimeOffset.UtcNow);
         driveState.DeltaLink = Option.None<string>();
-        await driveStateRepository.UpsertAsync(driveState, cancellationToken).ConfigureAwait(false);
+        await syncPassRepositories.DriveStateRepository.UpsertAsync(driveState, cancellationToken).ConfigureAwait(false);
 
-        var mappings = await classificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
+        var mappings = await syncPassRepositories.ClassificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
         OneDriveSyncClientMessages.SyncPipelinePreparing(logger, account.Id.Value);
         RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.Preparing"), onProgress);
@@ -72,11 +71,11 @@ internal sealed class SyncPassOrchestrator(IAccountRepository accountRepository,
         if (!hasJobs)
             onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Value, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
 
-        await accountRepository.GetByIdAsync(account.Id, cancellationToken)
+        await syncPassRepositories.AccountRepository.GetByIdAsync(account.Id, cancellationToken)
             .TapAsync(async entity =>
             {
                 entity.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
-                await accountRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
+                await syncPassRepositories.AccountRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
         account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);

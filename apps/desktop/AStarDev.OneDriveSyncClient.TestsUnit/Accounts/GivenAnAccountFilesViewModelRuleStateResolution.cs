@@ -138,5 +138,9 @@ public sealed class GivenAnAccountFilesViewModelRuleStateResolution
         };
 
     private static AccountFilesViewModel BuildSut((IAuthService Auth, IGraphService Graph) mocks, ISyncRuleRepository syncRuleRepo)
-        => new(BuildAccount(), mocks.Auth, mocks.Graph, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>(), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+    {
+        var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
+        var accountFilesViewServices = new AccountFilesViewServices(mocks.Auth, Substitute.For<ILocalizationService>(), mocks.Graph, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        return new(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
+    }
 }

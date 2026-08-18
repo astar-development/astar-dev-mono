@@ -1,15 +1,11 @@
 using System.Collections.ObjectModel;
-using System.IO.Abstractions;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
-using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
-using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
 using AStarDev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +15,7 @@ using FolderTreeNodeViewModel = AStarDev.OneDriveSyncClient.Home.FolderTreeNodeV
 
 namespace AStarDev.OneDriveSyncClient.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, IFileSystem fileSystem, IFileManagerService fileManagerService, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAccountFilesViewServices accountFilesViewServices, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory) : ObservableObject
 {
     private string? accessToken;
     private Option<DriveId> driveIdOption = DriveIdFactory.Empty;
@@ -53,10 +49,10 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     public partial bool IsActiveTab { get; set; }
 
     /// <summary>Localised "Loading folders ..." indicator text.</summary>
-    public string LoadingFoldersText => localizationService.GetLocal("Files.LoadingFolders");
+    public string LoadingFoldersText => accountFilesViewServices.LocalizationService.GetLocal("Files.LoadingFolders");
 
     /// <summary>Localised "Could not load folders" error heading.</summary>
-    public string CouldNotLoadText => localizationService.GetLocal("Files.CouldNotLoad");
+    public string CouldNotLoadText => accountFilesViewServices.LocalizationService.GetLocal("Files.CouldNotLoad");
 
     /// <summary>Raised after a folder is included or excluded; the argument is the new count of included rules for this account.</summary>
     public event EventHandler<int>? FolderCountChanged;
@@ -76,7 +72,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
         try
         {
-            accessToken = await authService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken)
+            accessToken = await accountFilesViewServices.AuthService.AcquireTokenSilentAsync(account.Id.Value, cancellationToken)
                 .MatchAsync<AuthResult, AuthError, string?>(
                     ok => ok.AccessToken,
                     error =>
@@ -89,7 +85,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             if (accessToken is null)
                 return;
 
-            var driveId = await graphService.GetDriveIdAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
+            var driveId = await accountFilesViewServices.GraphService.GetDriveIdAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken)
                 .MatchAsync<DriveId, string, DriveId?>(
                     id => id,
                     error =>
@@ -104,7 +100,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             driveIdOption = new Option<DriveId>.Some(driveId.Value);
 
-            var loadedRuleStates = await syncRuleService.GetRuleStatesAsync(account.Id, cancellationToken);
+            var loadedRuleStates = await accountFilesViewServices.SyncRuleService.GetRuleStatesAsync(account.Id, cancellationToken);
             ruleStates.Clear();
             foreach (var (path, ruleType) in loadedRuleStates)
                 ruleStates[path] = ruleType;
@@ -124,7 +120,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async Task BuildRootFoldersAsync(CancellationToken cancellationToken)
     {
-        var folders = await graphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken: cancellationToken)
+        var folders = await accountFilesViewServices.GraphService.GetRootFoldersAsync(account.Id.Value, _ => Task.FromResult(accessToken ?? string.Empty), cancellationToken: cancellationToken)
             .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
                 f => f,
                 error =>
@@ -195,7 +191,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 : [node];
 
             var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
-            int includedCount = await syncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
+            int includedCount = await accountFilesViewServices.SyncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
 
             string childPrefix = node.RemotePath + "/";
             foreach (string? key in ruleStates.Keys.Where(k => k.StartsWith(childPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
@@ -244,10 +240,10 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             return;
         }
 
-        if (!fileSystem.Directory.Exists(candidatePath))
+        if (!fileSystemServices.FileSystem.Directory.Exists(candidatePath))
             return;
 
-        fileManagerService.OpenFolder(candidatePath);
+        fileSystemServices.FileManagerService.OpenFolder(candidatePath);
     }
 
     private static IEnumerable<FolderTreeNodeViewModel> CollectAllVisible(IEnumerable<FolderTreeNodeViewModel> nodes)
