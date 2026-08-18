@@ -1,5 +1,3 @@
-using AStarDev.SourceGeneratorAttributes;
-
 namespace AStarDev.SourceGeneratorAttributes.TestsUnit;
 
 public sealed class GivenAStrongIdAttributeDefinition

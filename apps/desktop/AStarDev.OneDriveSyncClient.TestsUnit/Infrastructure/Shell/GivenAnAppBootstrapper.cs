@@ -50,6 +50,9 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private readonly IFileSystem fileSystem = Substitute.For<IFileSystem>();
     private readonly SqliteConnection sqliteConnection;
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
+    private IAccountFilesViewServices accountFilesViewServices => new AccountFilesViewServices(authService, localizationService, graphService, Substitute.For<ISyncRuleService>());
+    private AccountFilesViewModelFactory accountFilesViewModelFactory => new(accountFilesViewServices, new FileSystemServices(fileSystem, Substitute.For<IFileManagerService>()), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService));
+
 
     public GivenAnAppBootstrapper()
     {
@@ -77,7 +80,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     {
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
         var accounts = new AccountsViewModel(authService, graphService, accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), syncEventAggregator, new AddAccountWizardViewModelFactory(authService, graphService, localizationService), new AccountCardViewModelFactory(localizationService), Substitute.For<ILogger<AccountsViewModel>>());
-        var files = new FilesViewModel(new AccountFilesViewModelFactory(authService, graphService, syncRuleService, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService), localizationService), localizationService);
+        var files = new FilesViewModel(accountFilesViewModelFactory, localizationService);
         var dashboard = new DashboardViewModel(localizationService, syncEventAggregator, new DashboardAccountViewModelFactory(schedulerForViewModel, accountRepository, localizationService, new ActivityItemViewModelFactory(localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(localizationService), new ManualUiTimer());
         var activity = new ActivityViewModel(syncRepository, syncEventAggregator, new ConflictItemViewModelFactory(syncService, localizationService), new ActivityItemViewModelFactory(localizationService), new InlineUiDispatcher(), localizationService);
         var classificationRepo = Substitute.For<IFileClassificationRepository>();

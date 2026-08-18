@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;

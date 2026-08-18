@@ -38,7 +38,8 @@ public sealed class GivenAnAccountFilesViewModelCancellationTokenPropagation
             .Returns(new Ok<List<DriveFolder>, string>([]));
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var sut = new AccountFilesViewModel(BuildAccount(), authService, graphService, syncRuleService, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, syncRuleService);
+        var sut = new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>());
 
         await sut.LoadAsync(cts.Token);
 

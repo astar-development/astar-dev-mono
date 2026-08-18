@@ -1,17 +1,12 @@
-using System.IO.Abstractions;
 using AStarDev.OneDriveSyncClient.Home;
-using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
-using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Accounts;
 
 /// <summary>Container-backed factory for <see cref="AccountFilesViewModel"/> instances.</summary>
-public sealed class AccountFilesViewModelFactory(IAuthService authService, IGraphService graphService, ISyncRuleService syncRuleService, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory, ILocalizationService localizationService) : IAccountFilesViewModelFactory
+public sealed class AccountFilesViewModelFactory(IAccountFilesViewServices accountFilesViewServices, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory) : IAccountFilesViewModelFactory
 {
     /// <inheritdoc />
-    public AccountFilesViewModel Create(OneDriveAccount account) => new(account, authService, graphService, syncRuleService, fileSystemServices, logger, folderTreeNodeViewModelFactory, localizationService);
+    public AccountFilesViewModel Create(OneDriveAccount account) => new(account, accountFilesViewServices, fileSystemServices, logger, folderTreeNodeViewModelFactory);
 }

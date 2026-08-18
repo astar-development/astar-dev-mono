@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
 using AStarDev.ControlDb;
 using AStarDev.LoggingSerilog;
 using AStarDev.WallpaperScraper.Home;
@@ -10,7 +9,6 @@ using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Testably.Abstractions;
 
 namespace AStarDev.WallpaperScraper;
 

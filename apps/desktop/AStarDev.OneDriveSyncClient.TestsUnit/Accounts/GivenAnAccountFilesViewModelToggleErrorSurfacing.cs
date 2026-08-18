@@ -90,6 +90,7 @@ public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
     private static AccountFilesViewModel BuildSut((IAuthService Auth, IGraphService Graph) mocks, ISyncRuleService syncRuleService)
     {
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
-        return new(BuildAccount(), mocks.Auth, mocks.Graph, syncRuleService, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(mocks.Auth, Substitute.For<ILocalizationService>(), mocks.Graph, syncRuleService);
+        return new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
     }
 }

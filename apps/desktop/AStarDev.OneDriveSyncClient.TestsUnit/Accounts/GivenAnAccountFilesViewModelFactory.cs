@@ -14,7 +14,8 @@ public sealed class GivenAnAccountFilesViewModelFactory
     private static AccountFilesViewModelFactory CreateSut()
     {
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
-        return new(Substitute.For<IAuthService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>(), fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>(), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(Substitute.For<IAuthService>(), Substitute.For<ILocalizationService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>());
+        return new(accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), Substitute.For<IFolderTreeNodeViewModelFactory>());
     }
 
     [Fact]

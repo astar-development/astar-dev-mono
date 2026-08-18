@@ -31,6 +31,7 @@ public sealed class GivenTheViewModelRegistrations
 
         provider.GetRequiredService<IAccountCardViewModelFactory>().ShouldNotBeNull();
         provider.GetRequiredService<IAccountFilesViewModelFactory>().ShouldNotBeNull();
+        provider.GetRequiredService<IAccountFilesViewServices>().ShouldNotBeNull();
         provider.GetRequiredService<IActivityItemViewModelFactory>().ShouldNotBeNull();
         provider.GetRequiredService<IAddAccountWizardViewModelFactory>().ShouldNotBeNull();
         provider.GetRequiredService<IConflictItemViewModelFactory>().ShouldNotBeNull();

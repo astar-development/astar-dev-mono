@@ -45,8 +45,9 @@ public sealed class GivenAMainWindowViewModel
         _syncRepository.GetPendingConflictsAsync(Arg.Any<AccountId>()).Returns([]);
     }
 
+    private static IAccountFilesViewModelFactory accountFilesViewModelFactory => Substitute.For<IAccountFilesViewModelFactory>();
     private AccountsViewModel CreateAccountsViewModel() => new(_authService, _graphService, _accountRepository, Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), _syncEventAggregator, new AddAccountWizardViewModelFactory(_authService, _graphService, _localizationService), new AccountCardViewModelFactory(_localizationService), Substitute.For<ILogger<AccountsViewModel>>());
-    private FilesViewModel CreateFilesViewModel() => new(new AccountFilesViewModelFactory(_authService, _graphService, Substitute.For<ISyncRuleService>(), fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(_graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), _localizationService), _localizationService), _localizationService);
+    private FilesViewModel CreateFilesViewModel() => new(accountFilesViewModelFactory, _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(_localizationService), new ManualUiTimer());
     private ActivityViewModel CreateActivityViewModel() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _localizationService), new ActivityItemViewModelFactory(_localizationService), new InlineUiDispatcher(), _localizationService);
     private FileClassificationRulesViewModel CreateClassificationRulesViewModel()

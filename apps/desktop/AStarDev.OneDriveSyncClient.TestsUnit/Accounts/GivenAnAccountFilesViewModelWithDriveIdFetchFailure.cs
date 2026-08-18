@@ -71,7 +71,8 @@ public sealed class GivenAnAccountFilesViewModelWithDriveIdFetchFailure
             .Returns(new Fail<DriveId, string>(DriveIdErrorMessage));
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        return new AccountFilesViewModel(BuildAccount(), authService, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()), fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()), Substitute.For<ILocalizationService>());
+        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        return new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
     }
 
     private static OneDriveAccount BuildAccount() => new()
