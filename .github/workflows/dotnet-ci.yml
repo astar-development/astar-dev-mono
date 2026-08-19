@@ -104,6 +104,11 @@ jobs:
             --configuration Release \
             -p:TreatWarningsAsErrors=true
 
+      - name: Install Playwright browsers
+        run: |
+          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
+          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
+
       - name: Test (per project)
         run: |
           mkdir -p TestResults
