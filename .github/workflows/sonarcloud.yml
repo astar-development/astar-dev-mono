@@ -55,6 +55,8 @@ env:
   NUGET_XMLDOC_MODE: skip
   SONAR_PROJECT_KEY: 'astar-development_astar-dev-mono'
   SONAR_ORG: 'astar-development'
+  FAB4KIDS_SMOKE_URL: http://localhost:5299
+  PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj
 
 jobs:
   build-and-analyze:
@@ -127,6 +129,34 @@ jobs:
             --configuration Release \
             -p:TreatWarningsAsErrors=true
 
+      - name: Install Playwright browsers
+        run: |
+          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
+          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
+
+      - name: Publish app for smoke testing
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            --output ./smoke-publish
+
+      - name: Start published app
+        run: |
+          cd smoke-publish
+          ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=${{ env.FAB4KIDS_SMOKE_URL }} nohup dotnet Fab4Kids.Web.dll > "$GITHUB_WORKSPACE/smoke-app.log" 2>&1 &
+          cd ..
+          for i in $(seq 1 30); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' ${{ env.FAB4KIDS_SMOKE_URL }}/)" = "200" ]; then
+              echo "App is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "App failed to start within 30s"
+          cat smoke-app.log
+          exit 1
+
       - name: 🧪 Test (per project)
         run: |
           mkdir -p TestResults
@@ -151,6 +181,14 @@ jobs:
 
             cd "$GITHUB_WORKSPACE"
           done
+
+      - name: Show published app log
+        if: always()
+        run: cat smoke-app.log || true
+
+      - name: Stop published app
+        if: always()
+        run: pkill -f "smoke-publish/Fab4Kids.Web.dll" || true
 
       - name: 🏁 End ☁️ SonarCloud scan
         env:
