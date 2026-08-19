@@ -109,6 +109,34 @@ jobs:
           PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
           pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
 
+      - name: Install Playwright browsers
+        run: |
+          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
+          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
+
+      - name: Publish app for smoke testing
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            --no-restore \
+            --configuration Release \
+            --output ./smoke-publish
+
+      - name: Start published app
+        run: |
+          cd smoke-publish
+          ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=${{ env.SMOKE_APP_URL }} nohup dotnet Fab4Kids.Web.dll > "$GITHUB_WORKSPACE/smoke-app.log" 2>&1 &
+          cd ..
+          for i in $(seq 1 30); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' ${{ env.SMOKE_APP_URL }}/)" = "200" ]; then
+              echo "App is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "App failed to start within 30s"
+          cat smoke-app.log
+          exit 1
+
       - name: Test (per project)
         run: |
           mkdir -p TestResults
