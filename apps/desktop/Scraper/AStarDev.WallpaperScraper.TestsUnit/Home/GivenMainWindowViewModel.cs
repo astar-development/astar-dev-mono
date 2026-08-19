@@ -7,6 +7,7 @@ using Microsoft.Playwright;
 using NSubstitute.Core;
 using AStar.Dev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Home;
+using AStarDev.WallpaperScraper.Scrapers;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Home;
 
@@ -116,7 +117,56 @@ public sealed class GivenMainWindowViewModel
     public void should_contain_the_CancelCommand() =>
         CreateViewModel().CancelCommand.ShouldBeOfType<ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit>>();
 
+    [Fact]
+    public async Task when_scrape_search_categories_command_is_executed_then_the_scrape_orchestrator_is_called()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Exceptional<UnitFp>>(new Success<UnitFp>(UnitFp.Instance)));
+
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe();
+
+        await scrapeOrchestrator.Received().ScrapeSearchCategoriesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_scrape_top_command_is_executed_then_the_scrape_orchestrator_is_called()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeTopAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Exceptional<UnitFp>>(new Success<UnitFp>(UnitFp.Instance)));
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeTopCommand.Execute().Subscribe();
+
+        await scrapeOrchestrator.Received().ScrapeTopAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_scrape_subscribed_command_is_executed_then_the_scrape_orchestrator_is_called()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSubscribedAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Exceptional<UnitFp>>(new Success<UnitFp>(UnitFp.Instance)));
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeSubscribedCommand.Execute().Subscribe();
+
+        await scrapeOrchestrator.Received().ScrapeSubscribedAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_scrape_all_command_is_executed_then_the_scrape_orchestrator_is_called()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Exceptional<UnitFp>>(new Success<UnitFp>(UnitFp.Instance)));
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+        sut.ScrapeAllCommand.Execute().Subscribe();
+
+        await scrapeOrchestrator.Received().ScrapeAllAsync(Arg.Any<CancellationToken>());
+    }
+
     private static MainWindowViewModel CreateViewModel(
+        IScrapeOrchestrator scrapeOrchestrator = null!,
         Exceptional<IPage>? configureResult = null,
         Func<CallInfo, Task<Exceptional<IPage>>>? configureBehavior = null,
         Exceptional<UnitFp>? scrapeActionResult = null,
@@ -124,8 +174,9 @@ public sealed class GivenMainWindowViewModel
         bool? confirmScrape = true,
         string applicationName = "Test App")
     {
+        scrapeOrchestrator ??= Substitute.For<IScrapeOrchestrator>();
         var scrapeConfiguration = Options.Create(new ScrapeConfiguration { ApplicationName = applicationName, WindowSize = new WindowSize(1_234, 567) });
-        var sut = new MainWindowViewModel(scrapeConfiguration, new NullLogger<MainWindowViewModel>());
+        var sut = new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, new NullLogger<MainWindowViewModel>());
 
         return sut;
     }
