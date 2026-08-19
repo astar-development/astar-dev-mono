@@ -3,7 +3,6 @@ using System.Reflection;
 using AStar.Dev.Logging.Extensions;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
-using AStarDev.WallpaperScraper.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Logging;
@@ -14,19 +13,17 @@ namespace AStarDev.WallpaperScraper.Home;
 
 public class MainWindowViewModel : ReactiveObject, IDisposable
 {
-    private readonly IPlaywrightService playwrightService;
     private readonly ILogger<MainWindowViewModel> logger;
     private readonly CancellationTokenSource cancellationTokenSource;
     private bool disposed;
 
-    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IPlaywrightService playwrightService, ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, ILogger<MainWindowViewModel> logger)
     {
         cancellationTokenSource = new CancellationTokenSource();
         string userDataDirectory = scrapeConfiguration.Value.UserDataDirectory;
         LogMessage.Information(logger, "MainWindowViewModel initialized with UserDataDirectory: {UserDataDirectory}", userDataDirectory);
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
         SetWindowSize(scrapeConfiguration.Value.WindowSize);
-        this.playwrightService = playwrightService;
         this.logger = logger;
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", null!);
         ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", null!);
