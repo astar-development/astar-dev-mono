@@ -6,7 +6,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
 {
     public static bool AppConfigured => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FAB4KIDS_SMOKE_URL"));
 
-    [Fact(SkipUnless = nameof(AppConfigured), Skip = "Requires FAB4KIDS_SMOKE_URL pointing at a running published app")]
+    [Fact]
     public async Task when_the_home_page_loads_then_there_are_no_javascript_errors()
     {
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();
@@ -19,7 +19,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
         await page.CloseAsync();
     }
 
-    [Fact(SkipUnless = nameof(AppConfigured), Skip = "Requires FAB4KIDS_SMOKE_URL pointing at a running published app")]
+    [Fact]
     public async Task when_a_subject_page_loads_then_there_are_no_javascript_errors()
     {
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();
@@ -32,7 +32,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
         await page.CloseAsync();
     }
 
-    [Fact(SkipUnless = nameof(AppConfigured), Skip = "Requires FAB4KIDS_SMOKE_URL pointing at a running published app")]
+    [Fact]
     public async Task when_a_pdf_is_added_to_the_basket_and_then_removed_then_the_basket_becomes_empty_again()
     {
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();
@@ -59,7 +59,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
         await page.CloseAsync();
     }
 
-    [Fact(SkipUnless = nameof(AppConfigured), Skip = "Requires FAB4KIDS_SMOKE_URL pointing at a running published app")]
+    [Fact]
     public async Task when_checkout_is_attempted_without_stripe_configured_then_a_friendly_error_is_shown()
     {
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();
@@ -80,7 +80,7 @@ public sealed class GivenThePublishedApp(SmokeTestFixture fixture) : IClassFixtu
         await page.CloseAsync();
     }
 
-    [Fact(SkipUnless = nameof(AppConfigured), Skip = "Requires FAB4KIDS_SMOKE_URL pointing at a running published app")]
+    [Fact]
     public async Task when_the_newsletter_form_is_submitted_with_an_invalid_email_then_a_validation_error_is_shown()
     {
         var (page, consoleErrors, pageErrors) = await CreateInstrumentedPageAsync();

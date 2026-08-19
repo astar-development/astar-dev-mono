@@ -125,7 +125,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
 
-        return null!;
+        return ReactiveCommand.Create(static () => { });
     }
 
     private ReactiveCommand<Unit, Unit> CreateOpenEditorCommand(Func<string> createEditor)
@@ -133,7 +133,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         string message = createEditor();
         LogMessage.Information(logger, "Creating command for editor: {EditorName}", message);
 
-        return null!;
+        return ReactiveCommand.Create(static () => { });
     }
 
     private ReactiveCommand<Unit, Unit> CreateResetDatabaseAndDirectoriesCommand()
@@ -141,7 +141,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         string message = "ResetDatabaseAndDirectoriesCommand";
         LogMessage.Information(logger, "Creating command for editor: {EditorName}", message);
 
-        return null!;
+        return ReactiveCommand.Create(static () => { });
     }
 
     private void CancelRunningScrape() => cancellationTokenSource?.Cancel();
