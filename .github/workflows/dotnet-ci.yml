@@ -64,6 +64,7 @@ env:
   NUGET_ENHANCED_MAX_NETWORK_TRY_COUNT: 6
   NUGET_ENHANCED_NETWORK_TRY_TIMEOUT_MILLISECONDS: 30000
   FAB4KIDS_SMOKE_URL: http://localhost:5299
+  PROJECT_PATH: apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj
 
 jobs:
   build-and-test:
@@ -109,11 +110,6 @@ jobs:
           PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
           pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
 
-      - name: Install Playwright browsers
-        run: |
-          PLAYWRIGHT_SCRIPT=$(find . -path '*Fab4Kids.Web.TestsIntegration*' -name playwright.ps1 -print -quit)
-          pwsh "$PLAYWRIGHT_SCRIPT" install --with-deps chromium
-
       - name: Publish app for smoke testing
         run: |
           dotnet publish ${{ env.PROJECT_PATH }} \
@@ -124,10 +120,10 @@ jobs:
       - name: Start published app
         run: |
           cd smoke-publish
-          ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=${{ env.SMOKE_APP_URL }} nohup dotnet Fab4Kids.Web.dll > "$GITHUB_WORKSPACE/smoke-app.log" 2>&1 &
+          ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=${{ env.FAB4KIDS_SMOKE_URL }} nohup dotnet Fab4Kids.Web.dll > "$GITHUB_WORKSPACE/smoke-app.log" 2>&1 &
           cd ..
           for i in $(seq 1 30); do
-            if [ "$(curl -s -o /dev/null -w '%{http_code}' ${{ env.SMOKE_APP_URL }}/)" = "200" ]; then
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' ${{ env.FAB4KIDS_SMOKE_URL }}/)" = "200" ]; then
               echo "App is up"
               exit 0
             fi
@@ -169,6 +165,14 @@ jobs:
           files: TestResults/**/*.trx
           check_name: Test results
           fail_on: test failures
+
+      - name: Show published app log
+        if: always()
+        run: cat smoke-app.log || true
+
+      - name: Stop published app
+        if: always()
+        run: pkill -f "smoke-publish/Fab4Kids.Web.dll" || true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v7.0.0
