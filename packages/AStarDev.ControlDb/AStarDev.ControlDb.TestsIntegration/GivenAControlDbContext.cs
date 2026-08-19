@@ -1,9 +1,8 @@
 using AStarDev.ControlDb.Files;
 using AStarDev.ControlDb.ScrapeConfiguration;
-using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStarDev.ControlDb.TestsUnit;
+namespace AStarDev.ControlDb.TestsIntegration;
 
 public sealed class GivenAControlDbContext : IDisposable
 {
@@ -24,11 +23,11 @@ public sealed class GivenAControlDbContext : IDisposable
     public void when_the_model_is_built_then_no_exception_is_thrown() => context.Model.ShouldNotBeNull();
 
     [Fact]
-    public void when_accessed_the_files_repository_should_be_an_immutable_repository() => context.FilesRepository.ShouldBeAssignableTo<IImmutableEntityRepository<FileEntity>>();
+    public void when_accessed_the_files_repository_should_be_a_dbset() => context.Files.ShouldBeAssignableTo<DbSet<FileEntity>>();
 
 
     [Fact]
-    public void when_accessed_the_scrape_configuration_repository_should_be_an_immutable_repository() => context.ScrapeConfigurationRepository.ShouldBeAssignableTo<IImmutableEntityRepository<ScrapeConfigurationEntity>>();
+    public void when_accessed_the_scrape_configuration_repository_should_be_a_dbset() => context.ScrapeConfigurations.ShouldBeAssignableTo<DbSet<ScrapeConfigurationEntity>>();
 
     [Fact]
     public async Task when_the_database_is_created_then_a_file_entity_with_related_details_can_be_saved_and_reloaded()
@@ -37,10 +36,10 @@ public sealed class GivenAControlDbContext : IDisposable
 
         var fileId = new FileId(Guid.Empty);
         var fileEntity = CreateFileEntity(fileId);
-        await context.FilesRepository.AddImmutableAsync(fileEntity);
+        await context.Files.AddAsync(fileEntity, TestContext.Current.CancellationToken);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var reloaded = await context.FilesRepository.FindImmutableAsync(fileEntity.Path, fileEntity.Name);
+        var reloaded = await context.Files.FindAsync([fileEntity.Id], TestContext.Current.CancellationToken);
 
         reloaded.ShouldNotBeNull();
         reloaded.Name.ShouldBe(fileEntity.Name);
@@ -54,10 +53,10 @@ public sealed class GivenAControlDbContext : IDisposable
         await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 
         var scrapeConfigurationEntity = CreateScrapeConfigurationEntity();
-        await context.ScrapeConfigurationRepository.AddImmutableAsync(scrapeConfigurationEntity);
+        await context.ScrapeConfigurations.AddAsync(scrapeConfigurationEntity, TestContext.Current.CancellationToken);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var reloaded = await context.ScrapeConfigurationRepository.FindImmutableAsync(scrapeConfigurationEntity.Id);
+        var reloaded = await context.ScrapeConfigurations.FindAsync([scrapeConfigurationEntity.Id], TestContext.Current.CancellationToken);
 
         reloaded.ShouldNotBeNull();
         reloaded.ConnectionStrings.Sqlite.ShouldBe(scrapeConfigurationEntity.ConnectionStrings.Sqlite);

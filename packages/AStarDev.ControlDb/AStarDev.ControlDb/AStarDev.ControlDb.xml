@@ -99,12 +99,12 @@
               Gets the repository for managing file entities in the database.
             </summary>
         </member>
-        <member name="P:AStarDev.ControlDb.ControlDbContext.FilesRepository">
+        <member name="P:AStarDev.ControlDb.ControlDbContext.Files">
             <summary>
             Gets the repository for managing file entities in the database.
             </summary>
         </member>
-        <member name="P:AStarDev.ControlDb.ControlDbContext.ScrapeConfigurationRepository">
+        <member name="P:AStarDev.ControlDb.ControlDbContext.ScrapeConfigurations">
             <summary>
             Gets the repository for managing scrape configuration entities in the database.
             </summary>

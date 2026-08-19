@@ -79,9 +79,7 @@
         <Project Path="packages/source-generators/AStarDev.SourceAnalyzers.TestsUnit/AStarDev.SourceAnalyzers.TestsUnit.csproj" />
         <Project Path="packages/source-generators/AStarDev.SourceAnalyzers/AStarDev.SourceAnalyzers.csproj" />
     </Folder>
-    <Folder Name="/zoran/">
-        <Project Path="zoran/ImmutableDomain.EntityFrameworkCore/ImmutableDomain.EntityFrameworkCore.csproj" />
-    </Folder>
+    <Folder Name="/zoran/" />
     <Folder Name="/SolutionItems/">
         <File Path="CLAUDE.md" />
         <File Path="Directory.Build.props" />
