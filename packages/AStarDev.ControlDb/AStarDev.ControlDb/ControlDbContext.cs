@@ -1,6 +1,5 @@
 using AStarDev.ControlDb.Files;
 using AStarDev.ControlDb.ScrapeConfiguration;
-using ImmutableDomain.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStarDev.ControlDb;
@@ -22,12 +21,12 @@ public class ControlDbContext(DbContextOptions<ControlDbContext> options) : DbCo
     /// <summary>
     /// Gets the repository for managing file entities in the database.
     /// </summary>
-    public IImmutableEntityRepository<FileEntity> FilesRepository => Set<FileEntity>().ToImmutableEntityRepository(this);
+    public DbSet<FileEntity> Files => Set<FileEntity>();
 
     /// <summary>
     /// Gets the repository for managing scrape configuration entities in the database.
     /// </summary>
-    public IImmutableEntityRepository<ScrapeConfigurationEntity> ScrapeConfigurationRepository => Set<ScrapeConfigurationEntity>().ToImmutableEntityRepository(this);
+    public DbSet<ScrapeConfigurationEntity> ScrapeConfigurations => Set<ScrapeConfigurationEntity>();
 
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
