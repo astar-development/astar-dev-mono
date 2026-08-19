@@ -1,4 +1,5 @@
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Reflection;
 using AStar.Dev.Logging.Extensions;
 using AStarDev.WallpaperScraper.Configuration;
@@ -13,17 +14,19 @@ namespace AStarDev.WallpaperScraper.Home;
 
 public class MainWindowViewModel : ReactiveObject, IDisposable
 {
+    private readonly IScrapeOrchestrator scrapeOrchestrator;
     private readonly ILogger<MainWindowViewModel> logger;
     private readonly CancellationTokenSource cancellationTokenSource;
     private bool disposed;
 
-    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, ILogger<MainWindowViewModel> logger)
     {
         cancellationTokenSource = new CancellationTokenSource();
         string userDataDirectory = scrapeConfiguration.Value.UserDataDirectory;
         LogMessage.Information(logger, "MainWindowViewModel initialized with UserDataDirectory: {UserDataDirectory}", userDataDirectory);
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
         SetWindowSize(scrapeConfiguration.Value.WindowSize);
+        this.scrapeOrchestrator = scrapeOrchestrator;
         this.logger = logger;
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", null!);
         ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", null!);
@@ -121,8 +124,18 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction action)
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
+        var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
 
-        return ReactiveCommand.Create(static () => { });
+        var command = actionName switch
+        {
+            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSearchCategoriesAsync(cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeTopAsync(cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSubscribedAsync(cancellationTokenSource!.Token); }, canExecute),
+            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeAllAsync(cancellationTokenSource!.Token); }, canExecute),
+            _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
+        };
+
+        return command;
     }
 
     private ReactiveCommand<Unit, Unit> CreateOpenEditorCommand(Func<string> createEditor)
