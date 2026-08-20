@@ -98,6 +98,53 @@ public sealed class GivenMainWindowViewModel
         CreateViewModel().IsBusy.ShouldBeFalse();
 
     [Fact]
+    public void when_a_scrape_command_is_executing_then_is_busy_is_true()
+    {
+        var completionSource = new TaskCompletionSource<Exceptional<UnitFp>>();
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>()).Returns(completionSource.Task);
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe();
+
+        sut.IsBusy.ShouldBeTrue();
+
+        completionSource.SetResult(new Success<UnitFp>(UnitFp.Instance));
+    }
+
+    [Fact]
+    public void when_a_scrape_command_completes_then_is_busy_is_false_again()
+    {
+        var completionSource = new TaskCompletionSource<Exceptional<UnitFp>>();
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>()).Returns(completionSource.Task);
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe();
+
+        completionSource.SetResult(new Success<UnitFp>(UnitFp.Instance));
+
+        sut.IsBusy.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_a_scrape_command_is_executing_then_a_second_different_scrape_command_cannot_execute()
+    {
+        var completionSource = new TaskCompletionSource<Exceptional<UnitFp>>();
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>()).Returns(completionSource.Task);
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe();
+
+        bool canExecuteTop = false;
+        using var subscription = sut.ScrapeTopCommand.CanExecute.Subscribe(canExecute => canExecuteTop = canExecute);
+
+        canExecuteTop.ShouldBeFalse();
+
+        completionSource.SetResult(new Success<UnitFp>(UnitFp.Instance));
+    }
+
+    [Fact]
     public void should_contain_the_ScrapeSearchCategoriesCommand() =>
         CreateViewModel().ScrapeSearchCategoriesCommand.ShouldBeOfType<ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit>>();
 
