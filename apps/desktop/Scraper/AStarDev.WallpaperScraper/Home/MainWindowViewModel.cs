@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
+using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
@@ -139,14 +140,27 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
 
         var command = actionName switch
         {
-            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
-            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeTopAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
-            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
-            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeAllAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeTopAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
+            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeAllAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
             _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
         };
 
         return command;
+    }
+
+    private async Task RunScrapeAsync(Func<Task<Exceptional<UnitFp>>> scrape)
+    {
+        IsBusy = true;
+        try
+        {
+            await scrape();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private ReactiveCommand<Unit, Unit> CreateOpenEditorCommand(Func<string> createEditor)

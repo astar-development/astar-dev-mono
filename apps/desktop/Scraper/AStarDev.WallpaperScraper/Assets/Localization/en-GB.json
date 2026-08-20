@@ -5,5 +5,8 @@
   "Scraper.SearchCategories.Started": "Starting search categories scrape…",
   "Scraper.Top.Started": "Starting top wallpapers scrape…",
   "Scraper.Subscribed.Started": "Starting subscribed wallpapers scrape…",
-  "Scraper.All.Started": "Starting full wallpaper scrape…"
+  "Scraper.All.Started": "Starting full wallpaper scrape…",
+  "Scraper.SearchCategories.Progress": "Scraping search categories… ({0}/{1})",
+  "Scraper.Top.Progress": "Scraping top wallpapers… ({0}/{1})",
+  "Scraper.Subscribed.Progress": "Scraping subscribed wallpapers… ({0}/{1})"
 }
