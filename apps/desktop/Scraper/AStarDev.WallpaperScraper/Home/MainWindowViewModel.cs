@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -14,14 +15,18 @@ namespace AStarDev.WallpaperScraper.Home;
 
 public class MainWindowViewModel : ReactiveObject, IDisposable
 {
+    private const int MaxStatusMessages = 500;
+
     private readonly IScrapeOrchestrator scrapeOrchestrator;
     private readonly ILogger<MainWindowViewModel> logger;
     private readonly CancellationTokenSource cancellationTokenSource;
+    private readonly Progress<string> statusProgress;
     private bool disposed;
 
     public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, ILogger<MainWindowViewModel> logger)
     {
         cancellationTokenSource = new CancellationTokenSource();
+        statusProgress = new Progress<string>(AddStatusMessage);
         string userDataDirectory = scrapeConfiguration.Value.UserDataDirectory;
         LogMessage.Information(logger, "MainWindowViewModel initialized with UserDataDirectory: {UserDataDirectory}", userDataDirectory);
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
@@ -49,6 +54,12 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     public string Title { get; }
     public double WindowWidth { get; set; } = 1_000;
     public double WindowHeight { get; set; } = 1_000;
+
+    /// <summary>
+    ///     Real-time status messages reported by the running scrape, newest first, capped at
+    ///     <see cref="MaxStatusMessages" /> entries.
+    /// </summary>
+    public ObservableCollection<string> StatusMessages { get; } = [];
 
     /// <summary>Opens the Connection Strings Configuration editor.</summary>
     public ReactiveCommand<Unit, Unit> OpenConnectionStringsCommand { get; }
@@ -128,10 +139,10 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
 
         var command = actionName switch
         {
-            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSearchCategoriesAsync(cancellationTokenSource!.Token); }, canExecute),
-            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeTopAsync(cancellationTokenSource!.Token); }, canExecute),
-            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSubscribedAsync(cancellationTokenSource!.Token); }, canExecute),
-            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeAllAsync(cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeTopAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
+            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
+            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => { await scrapeOrchestrator.ScrapeAllAsync(statusProgress, cancellationTokenSource!.Token); }, canExecute),
             _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
         };
 
@@ -155,6 +166,13 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     }
 
     private void CancelRunningScrape() => cancellationTokenSource?.Cancel();
+
+    private void AddStatusMessage(string message)
+    {
+        StatusMessages.Insert(0, message);
+        if (StatusMessages.Count > MaxStatusMessages)
+            StatusMessages.RemoveAt(StatusMessages.Count - 1);
+    }
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>
     /// <param name="disposing">Whether managed resources should be released.</param>

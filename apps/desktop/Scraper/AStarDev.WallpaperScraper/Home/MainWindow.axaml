@@ -55,8 +55,14 @@
             <TextBlock Text="ThumbnailTags" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" />
         </StackPanel>
 
-        <ScrollViewer x:Name="StatusScroller" Margin="12,8">
-            <TextBlock x:Name="StatusLabel" Text="Placeholder" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+        <ScrollViewer x:Name="StatusScroller" Margin="12,8" MinHeight="0" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="StatusLabel" ItemsSource="{Binding StatusMessages}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}" TextWrapping="Wrap" FontFamily="Consolas,Monospace" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
 
     </DockPanel>
