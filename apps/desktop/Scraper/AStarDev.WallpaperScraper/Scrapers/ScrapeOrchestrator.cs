@@ -10,25 +10,40 @@ namespace AStarDev.WallpaperScraper.Scrapers;
 public sealed class ScrapeOrchestrator(ILocalizationService localizationService) : IScrapeOrchestrator
 {
     /// <inheritdoc/>
-    public Task<Exceptional<UnitFp>> ScrapeSearchCategoriesAsync(IProgress<string> progress, CancellationToken cancellationToken)
+    public async Task<Exceptional<UnitFp>> ScrapeSearchCategoriesAsync(IProgress<string> progress, CancellationToken cancellationToken)
     {
-        progress.Report(localizationService.GetLocal("Scraper.SearchCategories.Started"));
+        for (int i = 0; i < 10; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            progress.Report(localizationService.GetLocal("Scraper.SearchCategories.Progress", i + 1, 10));
+            await Task.Delay(10, cancellationToken);
+        }
 
         throw new NotImplementedException("ScrapeSearchCategoriesAsync is not implemented yet.");
     }
 
     /// <inheritdoc/>
-    public Task<Exceptional<UnitFp>> ScrapeTopAsync(IProgress<string> progress, CancellationToken cancellationToken)
+    public async Task<Exceptional<UnitFp>> ScrapeTopAsync(IProgress<string> progress, CancellationToken cancellationToken)
     {
-        progress.Report(localizationService.GetLocal("Scraper.Top.Started"));
+        for (int i = 0; i < 10; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            progress.Report(localizationService.GetLocal("Scraper.Top.Progress", i + 1, 10));
+            await Task.Delay(10, cancellationToken);
+        }
 
         throw new NotImplementedException("ScrapeTopAsync is not implemented yet.");
     }
 
     /// <inheritdoc/>
-    public Task<Exceptional<UnitFp>> ScrapeSubscribedAsync(IProgress<string> progress, CancellationToken cancellationToken)
+    public async Task<Exceptional<UnitFp>> ScrapeSubscribedAsync(IProgress<string> progress, CancellationToken cancellationToken)
     {
-        progress.Report(localizationService.GetLocal("Scraper.Subscribed.Started"));
+        for (int i = 0; i < 10; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            progress.Report(localizationService.GetLocal("Scraper.Subscribed.Progress", i + 1, 10));
+            await Task.Delay(10, cancellationToken);
+        }
 
         throw new NotImplementedException("ScrapeSubscribedAsync is not implemented yet.");
     }
