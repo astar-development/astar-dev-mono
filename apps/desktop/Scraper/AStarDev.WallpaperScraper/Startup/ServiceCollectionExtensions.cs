@@ -8,6 +8,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Configuration;
+using AStarDev.WallpaperScraper.Scrapers;
+using Testably.Abstractions;
+using System.IO.Abstractions;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
@@ -22,6 +25,8 @@ public static class ApplicationServicesExtensions
         services.AddSingleton<IApplicationDirectories, ApplicationDirectories>()
             .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
+            .AddSingleton<IFileSystem, RealFileSystem>()
+            .AddSingleton<IScrapeOrchestrator, ScrapeOrchestrator>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
             .AddDbContextFactory<ControlDbContext>((serviceProvider, options) =>
