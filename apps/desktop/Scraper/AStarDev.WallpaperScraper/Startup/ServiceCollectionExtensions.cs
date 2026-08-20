@@ -22,7 +22,8 @@ public static class ApplicationServicesExtensions
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddSingleton<IApplicationDirectories, ApplicationDirectories>()
+        services.AddLocalizationServices()
+            .AddSingleton<IApplicationDirectories, ApplicationDirectories>()
             .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
             .AddSingleton<IFileSystem, RealFileSystem>()

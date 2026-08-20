@@ -1,0 +1,9 @@
+{
+  "locale": "en-GB",
+  "culture": "en-GB",
+  "App.Title": "Wallpaper Scraper",
+  "Scraper.SearchCategories.Started": "Starting search categories scrape…",
+  "Scraper.Top.Started": "Starting top wallpapers scrape…",
+  "Scraper.Subscribed.Started": "Starting subscribed wallpapers scrape…",
+  "Scraper.All.Started": "Starting full wallpaper scrape…"
+}
