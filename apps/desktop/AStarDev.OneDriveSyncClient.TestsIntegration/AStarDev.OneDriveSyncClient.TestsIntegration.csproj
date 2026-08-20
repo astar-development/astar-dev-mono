@@ -12,7 +12,7 @@
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <PropertyGroup Condition="$(MSBuildProjectName.Contains('.Tests.'))">
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('.TestsIntegration'))">
     <NoWarn>$(NoWarn);CS1591;IDE1006;</NoWarn>
   </PropertyGroup>
 
@@ -37,6 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="coverlet.collector">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="xunit.v3.mtp-v1" />
     <PackageReference Include="xunit.runner.visualstudio">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

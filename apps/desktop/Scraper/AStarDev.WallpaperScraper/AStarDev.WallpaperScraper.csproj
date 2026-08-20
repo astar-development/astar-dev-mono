@@ -6,7 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\Localization\**" />
+    <EmbeddedResource Include="Assets\Localization\*.json" />
   </ItemGroup>
 
   <!--

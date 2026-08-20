@@ -8,6 +8,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Configuration;
+using AStarDev.WallpaperScraper.Scrapers;
+using Testably.Abstractions;
+using System.IO.Abstractions;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
@@ -19,9 +22,12 @@ public static class ApplicationServicesExtensions
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddSingleton<IApplicationDirectories, ApplicationDirectories>()
+        services.AddLocalizationServices()
+            .AddSingleton<IApplicationDirectories, ApplicationDirectories>()
             .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
+            .AddSingleton<IFileSystem, RealFileSystem>()
+            .AddSingleton<IScrapeOrchestrator, ScrapeOrchestrator>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
             .AddDbContextFactory<ControlDbContext>((serviceProvider, options) =>

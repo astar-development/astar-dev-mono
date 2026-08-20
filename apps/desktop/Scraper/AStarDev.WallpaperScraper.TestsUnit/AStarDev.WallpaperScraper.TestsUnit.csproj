@@ -32,6 +32,10 @@
 
   <ItemGroup>
     <PackageReference Include="Testably.Abstractions.Testing" />
+    <PackageReference Include="coverlet.collector">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit.v3.mtp-v1" />
