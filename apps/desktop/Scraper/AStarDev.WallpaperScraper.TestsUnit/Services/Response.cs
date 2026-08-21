@@ -6,7 +6,7 @@ namespace AStarDev.WallpaperScraper.TestsUnit.Services;
 internal sealed class MockResponse : IResponse
 {
     public int Status { get; set; }
-    public Func<Task<string?>> TextAsyncFunc { get; set; } = () => Task.FromResult<string?>(null);
+    public required Func<Task<string?>> TextAsyncFunc { get; set; }
 
     public string Url => throw new NotImplementedException();
     public string StatusText {get;set;} = string.Empty;
@@ -74,8 +74,5 @@ internal sealed class MockResponse : IResponse
         throw new NotImplementedException();
     }
 
-    public Task<string> TextAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<string> TextAsync() => await TextAsyncFunc() ?? string.Empty;
 }

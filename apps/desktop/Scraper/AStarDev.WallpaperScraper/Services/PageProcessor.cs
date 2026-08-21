@@ -8,18 +8,19 @@ public sealed class PageProcessor(ILocalizationService localizationService, IPag
 {
     /// <inheritdoc/>
     public async Task<Exceptional<PageResult>> ProcessPageAsync(IProgress<string> progress, Uri pageUrl, CancellationToken cancellationToken)
-    {
-        progress.Report(localizationService.GetLocal("Scraper.PageProcessor.Started"));
+        => await Try.RunAsync<PageResult>(async () =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-        var content = await page.GotoAsync(pageUrl.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 30000 });
+                progress.Report(localizationService.GetLocal("Scraper.PageProcessor.Started"));
 
-        if (content is null || content.Status != 200)
-        {
-            return new OperationException($"Failed to load page content for: {pageUrl} with status message: {content?.StatusText}");
-        }
+                var content = await page.GotoAsync(pageUrl.ToString(), new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 30000 });
 
-        string pageText = await content.TextAsync();
+                if (content is null || content.Status != 200)
+                    throw new OperationException(localizationService.GetLocal("Scraper.PageProcessor.FailedToLoad", pageUrl.AbsoluteUri, content?.StatusText ?? "Unknown error"));
 
-        return new PageSuccess(pageText ?? "<html>Failed page content</html>", pageUrl);
-    }
+                string pageText = await content.TextAsync();
+
+                return new PageSuccess(pageText ?? "<html>Failed page content</html>", pageUrl);
+            });
 }
