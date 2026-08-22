@@ -2,14 +2,12 @@ using System.IO.Abstractions;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.WallpaperScraper.Configuration;
-using AStarDev.WallpaperScraper.Home;
 using AStarDev.WallpaperScraper.Scrapers;
 using AStarDev.WallpaperScraper.Services;
 using AStarDev.WallpaperScraper.Startup;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Testably.Abstractions.Testing;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Startup;
 
