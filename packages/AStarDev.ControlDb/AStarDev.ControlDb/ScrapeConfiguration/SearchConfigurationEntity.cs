@@ -5,6 +5,8 @@ namespace AStarDev.ControlDb.ScrapeConfiguration;
 /// </summary>
 public class SearchConfigurationEntity : AuditableEntity
 {
+    private SearchConfigurationEntity() { }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchConfigurationEntity"/> class with the specified parameters.
     /// </summary>

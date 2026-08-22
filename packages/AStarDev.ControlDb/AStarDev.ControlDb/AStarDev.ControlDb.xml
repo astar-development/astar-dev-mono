@@ -396,6 +396,18 @@
         <member name="M:AStarDev.ControlDb.Migrations.InitialCreation.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:AStarDev.ControlDb.Migrations.AddSearchConfiguration">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.AddSearchConfiguration.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.AddSearchConfiguration.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.AddSearchConfiguration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStarDev.ControlDb.ModelBuilderExtensions">
             <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
         </member>

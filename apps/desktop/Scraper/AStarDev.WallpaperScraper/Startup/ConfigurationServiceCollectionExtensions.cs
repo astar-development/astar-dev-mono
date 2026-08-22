@@ -1,4 +1,3 @@
-using AStarDev.WallpaperScraper.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

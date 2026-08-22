@@ -22,5 +22,10 @@ public sealed class SearchConfigurationEntityConfiguration : IEntityTypeConfigur
             .WithOne(scrapeConfiguration => scrapeConfiguration.SearchConfiguration)
             .HasForeignKey<SearchConfigurationEntity>(searchConfiguration => searchConfiguration.ScrapeConfigurationId)
             .HasPrincipalKey<ScrapeConfigurationEntity>(scrapeConfiguration => scrapeConfiguration.Id);
+
+        builder.HasMany(searchConfiguration => searchConfiguration.SearchCategories)
+            .WithOne(searchCategory => searchCategory.SearchConfiguration)
+            .HasForeignKey(searchCategory => searchCategory.SearchConfigurationId)
+            .HasPrincipalKey(searchConfiguration => searchConfiguration.Id);
     }
 }

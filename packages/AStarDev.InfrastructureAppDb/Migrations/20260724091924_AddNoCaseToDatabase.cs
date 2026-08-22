@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AStar.Dev.Infrastructure.AppDb.Migrations;
 
 /// <inheritdoc />
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 public partial class AddNoCaseToDatabase : Migration
 {
     /// <inheritdoc />
