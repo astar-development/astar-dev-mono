@@ -141,7 +141,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
         var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
-        var pageResult = playwrightService.ConfigurePlaywrightAsync(cancellationTokenSource!.Token).GetAwaiter().GetResult();
+        var pageResult = Task.Run(() => playwrightService.ConfigurePlaywrightAsync(cancellationTokenSource!.Token)).GetAwaiter().GetResult();
         var page = pageResult.Match(p => p, _ => throw new InvalidOperationException("Failed to configure Playwright."));
 
         var command = actionName switch
