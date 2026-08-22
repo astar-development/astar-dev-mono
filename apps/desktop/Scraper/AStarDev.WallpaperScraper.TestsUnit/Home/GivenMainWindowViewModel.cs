@@ -277,6 +277,34 @@ public sealed class GivenMainWindowViewModel
         sut.StatusMessages.Last().ShouldBe("Message 2");
     }
 
+    [Fact]
+    public async Task when_constructed_under_a_non_pumping_synchronization_context_then_it_does_not_deadlock()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        var mockPlaywrightService = Substitute.For<IPlaywrightService>();
+        var page = Substitute.For<IPage>();
+        mockPlaywrightService.ConfigurePlaywrightAsync(Arg.Any<CancellationToken>()).Returns(_ => ConfigurePlaywrightAfterYieldingAsync(page));
+        var scrapeConfiguration = Options.Create(new ScraperAppConfiguration { ApplicationName = "Test App", WindowSize = new WindowSize(1_234, 567) });
+
+        var constructionTask = Task.Run(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(new NonPumpingSynchronizationContext());
+
+            return new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>());
+        });
+
+        var completedTask = await Task.WhenAny(constructionTask, Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken));
+
+        completedTask.ShouldBe(constructionTask);
+    }
+
+    private static async Task<Exceptional<IPage>> ConfigurePlaywrightAfterYieldingAsync(IPage page)
+    {
+        await Task.Yield();
+
+        return new Success<IPage>(page);
+    }
+
     private static MainWindowViewModel CreateViewModel(
         IScrapeOrchestrator scrapeOrchestrator = null!,
         Exceptional<IPage>? page = null,
@@ -299,5 +327,12 @@ public sealed class GivenMainWindowViewModel
     private sealed class ImmediateSynchronizationContext : SynchronizationContext
     {
         public override void Post(SendOrPostCallback d, object? state) => d(state);
+    }
+
+    private sealed class NonPumpingSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state) { }
+
+        public override void Send(SendOrPostCallback d, object? state) { }
     }
 }
