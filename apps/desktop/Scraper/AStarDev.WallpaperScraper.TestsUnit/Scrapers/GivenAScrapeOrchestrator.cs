@@ -70,7 +70,7 @@ public sealed class GivenAScrapeOrchestrator
         var mockScrapeConfigurationRepository = Substitute.For<IScrapeConfigurationRepository>();
         var scrapeConfig = new ScrapeConfiguration(new Uri("https://example.com/search-categories"), new Uri("https://example.com/top"), new Uri("https://example.com/subscribed"));
         mockScrapeConfigurationRepository.GetScrapeConfigurationAsync().Returns(scrapeConfig);
-        localizationService.GetLocal("Scraper.SearchCategories.Started", Arg.Any<object[]>()).Returns("Starting search categories scrape…");
+        localizationService.GetLocal("Scraper.SearchCategories.Started").Returns("Starting search categories scrape…");
         var sut = new ScrapeOrchestrator(localizationService, pageProcessor, mockScrapeConfigurationRepository);
         var progress = Substitute.For<IProgress<string>>();
 
@@ -85,7 +85,7 @@ public sealed class GivenAScrapeOrchestrator
         var localizationService = Substitute.For<ILocalizationService>();
         var pageProcessor = Substitute.For<IPageProcessor>();
         var mockPage = Substitute.For<Microsoft.Playwright.IPage>();
-        localizationService.GetLocal("Scraper.Subscribed.Started", Arg.Any<object[]>()).Returns("Starting subscribed wallpapers scrape…");
+        localizationService.GetLocal("Scraper.Subscribed.Started").Returns("Starting subscribed wallpapers scrape…");
         var mockScrapeConfigurationRepository = Substitute.For<IScrapeConfigurationRepository>();
         var scrapeConfig = new ScrapeConfiguration(new Uri("https://example.com/search-categories"), new Uri("https://example.com/top"), new Uri("https://example.com/subscribed"));
         mockScrapeConfigurationRepository.GetScrapeConfigurationAsync().Returns(scrapeConfig);
@@ -103,7 +103,7 @@ public sealed class GivenAScrapeOrchestrator
         var localizationService = Substitute.For<ILocalizationService>();
         var pageProcessor = Substitute.For<IPageProcessor>();
         var mockPage = Substitute.For<Microsoft.Playwright.IPage>();
-        localizationService.GetLocal("Scraper.Top.Started", Arg.Any<object[]>()).Returns("Starting top wallpapers scrape…");
+        localizationService.GetLocal("Scraper.Top.Started").Returns("Starting top wallpapers scrape…");
         var mockScrapeConfigurationRepository = Substitute.For<IScrapeConfigurationRepository>();
         var scrapeConfig = new ScrapeConfiguration(new Uri("https://example.com/search-categories"), new Uri("https://example.com/top"), new Uri("https://example.com/subscribed"));
         mockScrapeConfigurationRepository.GetScrapeConfigurationAsync().Returns(scrapeConfig);
@@ -121,7 +121,7 @@ public sealed class GivenAScrapeOrchestrator
         var localizationService = Substitute.For<ILocalizationService>();
         var pageProcessor = Substitute.For<IPageProcessor>();
         var mockPage = Substitute.For<Microsoft.Playwright.IPage>();
-        localizationService.GetLocal("Scraper.All.Started", Arg.Any<object[]>()).Returns("Starting full wallpaper scrape…");
+        localizationService.GetLocal("Scraper.All.Started").Returns("Starting full wallpaper scrape…");
         var mockScrapeConfigurationRepository = Substitute.For<IScrapeConfigurationRepository>();
         var scrapeConfig = new ScrapeConfiguration(new Uri("https://example.com/search-categories"), new Uri("https://example.com/top"), new Uri("https://example.com/subscribed"));
         mockScrapeConfigurationRepository.GetScrapeConfigurationAsync().Returns(scrapeConfig);

@@ -136,6 +136,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         WindowWidth = windowSize.Width;
         WindowHeight = windowSize.Height;
     }
+    
     private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction action)
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);

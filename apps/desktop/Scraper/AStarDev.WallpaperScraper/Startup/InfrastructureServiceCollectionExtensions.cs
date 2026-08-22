@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
@@ -6,7 +5,6 @@ using Testably.Abstractions;
 namespace AStarDev.WallpaperScraper.Startup;
 
 /// <summary>Registers file system, database, and clock infrastructure services with the dependency injection container.</summary>
-[ExcludeFromCodeCoverage]
 public static class InfrastructureServiceCollectionExtensions
 {
     /// <summary>Registers the file system abstraction, the database context factory, and the system clock delegate.</summary>

@@ -42,6 +42,7 @@ public partial class App : Application, IDisposable
 
         var serviceProvider = collection
             .AddInfrastructureServices()
+            .AddDataServices()
             .AddApplicationServices(configuration)
             .AddLogging(logging => logging.AddSerilog(dispose: true))
             .BuildServiceProvider();

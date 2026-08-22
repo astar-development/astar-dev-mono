@@ -89,7 +89,7 @@ public class GivenAnApplicationServicesExtensions
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddApplicationServices(configuration);
-        services.AddInfrastructureServices();
+        services.AddInfrastructureServices().AddDataServices();
 
         return services.BuildServiceProvider();
     }
