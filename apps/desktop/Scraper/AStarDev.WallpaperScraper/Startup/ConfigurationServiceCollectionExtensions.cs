@@ -24,10 +24,6 @@ public static class ConfigurationServiceCollectionExtensions
     public static IServiceCollection AddConfigurationServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(configuration);
-        services.AddOptions<ScrapeConfiguration>()
-                .Bind(configuration.GetSection(ScrapeConfiguration.SectionName))
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
 
         return services;
     }

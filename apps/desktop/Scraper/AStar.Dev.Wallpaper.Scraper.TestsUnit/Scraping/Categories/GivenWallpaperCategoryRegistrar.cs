@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Categories;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Tags;
+using AStarDev.InfrastructureAppDb.Entities;
 
 namespace AStar.Dev.Wallpaper.Scraper.TestsUnit.Scraping.Categories;
 

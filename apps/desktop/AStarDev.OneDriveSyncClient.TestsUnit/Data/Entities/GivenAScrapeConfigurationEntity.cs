@@ -1,4 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb;
+using AStarDev.InfrastructureAppDb.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 

@@ -10,7 +10,7 @@ using AStarDev.WallpaperScraper.Configuration;
 namespace AStarDev.WallpaperScraper.Services;
 
 /// <inheritdoc />
-public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<ScrapeConfiguration> scrapeConfiguration, IFileSystem fileSystem) : IPlaywrightService, IAsyncDisposable
+public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<ScraperAppConfiguration> scrapeConfiguration, IFileSystem fileSystem) : IPlaywrightService, IAsyncDisposable
 {
     private readonly SemaphoreSlim configureLock = new(1, 1);
     private IPlaywright? playwright;

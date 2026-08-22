@@ -27,12 +27,32 @@
     "id": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
-    "scrapeConfigurationEntityId": {
+    "scrapeConfigurationId": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
     "searchTerm": "search-config",
     "category": "mock-category",
-    "maxResults": 10
+    "maxResults": 10,
+    "baseUrl": "https://example.com",
+    "apiKey": "",
+    "searchCategories": [],
+    "searchString": "",
+    "topWallpapers": "",
+    "searchStringPrefix": "",
+    "searchStringSuffix": "",
+    "subscriptions": "",
+    "imagePauseInSeconds": 0,
+    "startingPageNumber": 0,
+    "totalPages": 0,
+    "subscriptionsStartingPageNumber": 0,
+    "subscriptionsTotalPages": 0,
+    "topWallpapersStartingPageNumber": 0,
+    "topWallpapersTotalPages": 0,
+    "loginUrl": "https://example.com/login",
+    "useHeadless": false,
+    "slowMotionDelay": null,
+    "createdAt": "<date>",
+    "updatedAt": "<date>"
   },
   "scrapeDirectories": {
     "id": {

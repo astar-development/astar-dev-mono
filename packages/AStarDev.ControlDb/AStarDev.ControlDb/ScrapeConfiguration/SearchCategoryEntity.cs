@@ -1,12 +1,10 @@
-using AStar.Dev.Infrastructure.AppDb.Entities;
-
-namespace AStarDev.InfrastructureAppDb.Entities;
+namespace AStarDev.ControlDb.ScrapeConfiguration;
 
 /// <summary>Tracks scraping progress for a single search category.</summary>
 public sealed class SearchCategoryEntity : AuditableEntity
 {
     /// <summary>Foreign key to the parent search configuration.</summary>
-    public int SearchConfigurationId { get; set; }
+    public SearchConfigurationId SearchConfigurationId { get; set; }
 
     /// <summary>Navigation property to the parent search configuration.</summary>
     public SearchConfigurationEntity? SearchConfiguration { get; set; }

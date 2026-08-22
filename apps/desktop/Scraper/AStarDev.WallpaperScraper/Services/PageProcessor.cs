@@ -1,13 +1,15 @@
 using AStar.Dev.FunctionalParadigm;
+using AStarDev.SourceGeneratorAttributes;
 using AStarDev.WallpaperScraper.Localization;
 using Microsoft.Playwright;
 
 namespace AStarDev.WallpaperScraper.Services;
 
-public sealed class PageProcessor(ILocalizationService localizationService, IPage page) : IPageProcessor
+[AutoRegisterService(ServiceLifetime.Singleton)]
+public sealed class PageProcessor(ILocalizationService localizationService) : IPageProcessor
 {
     /// <inheritdoc/>
-    public async Task<Exceptional<PageResult>> ProcessPageAsync(IProgress<string> progress, Uri pageUrl, CancellationToken cancellationToken)
+    public async Task<Exceptional<PageResult>> ProcessPageAsync(IProgress<string> progress, Uri pageUrl, IPage page, CancellationToken cancellationToken)
         => await Try.RunAsync<PageResult>(async () =>
             {
                 cancellationToken.ThrowIfCancellationRequested();

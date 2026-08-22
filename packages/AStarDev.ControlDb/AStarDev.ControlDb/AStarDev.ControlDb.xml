@@ -4,6 +4,15 @@
         <name>AStarDev.ControlDb</name>
     </assembly>
     <members>
+        <member name="T:AStarDev.ControlDb.AuditableEntity">
+            <summary>Base class providing creation and modification timestamps for auditable entities.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.AuditableEntity.CreatedAt">
+            <summary>The date and time the entity was created.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.AuditableEntity.UpdatedAt">
+            <summary>The date and time the entity was last modified.</summary>
+        </member>
         <member name="T:AStarDev.ControlDb.Configurations.Files.DeletionStatusEntityConfiguration">
             <summary>
             Represents the configuration for the DeletionStatusEntity in the database context.
@@ -551,40 +560,136 @@
         <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.ScrapeDirectoriesId)~System.Guid">
             <inheritdoc />
         </member>
+        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity">
+            <summary>Tracks scraping progress for a single search category.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.SearchConfigurationId">
+            <summary>Foreign key to the parent search configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.SearchConfiguration">
+            <summary>Navigation property to the parent search configuration.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.Id">
+            <summary>The unique identifier for the search category.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.Name">
+            <summary>The human-readable name of the category.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.LastKnownImageCount">
+            <summary>The number of images observed for this category as of the last scrape.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.LastPageVisited">
+            <summary>The last page visited for this category.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.TotalPages">
+            <summary>The total number of pages available for this category.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.IncludeInSearch">
+            <summary>Whether this category should be included in the scraping process.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.IsFamous">
+            <summary>
+              Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
+            </summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity.IsInternet">
+            <summary>
+             Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
+            </summary>
+        </member>
         <member name="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity">
             <summary>
             Represents a search configuration entity in the database.
             </summary>
-            <param name="Id">The unique identifier for the search configuration entity.</param>
-            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
-            <param name="SearchTerm">The search term for the configuration.</param>
-            <param name="Category">The category for the search.</param>
-            <param name="MaxResults">The maximum number of results to return.</param>
         </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.Nullable{System.Int32})">
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.Int32)">
             <summary>
-            Represents a search configuration entity in the database.
+            Initializes a new instance of the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity"/> class with the specified parameters.
             </summary>
-            <param name="Id">The unique identifier for the search configuration entity.</param>
-            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
-            <param name="SearchTerm">The search term for the configuration.</param>
-            <param name="Category">The category for the search.</param>
-            <param name="MaxResults">The maximum number of results to return.</param>
+            <param name="searchConfigurationId">The unique identifier for the search configuration entity.</param>
+            <param name="scrapeConfigurationId">The unique identifier for the associated scrape configuration entity.</param>
+            <param name="searchTerm">The search term used for scraping wallpapers.</param>
+            <param name="category">The category associated with the search configuration entity.</param>
+            <param name="maxResults">The maximum number of results to retrieve for the search configuration entity.</param>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Id">
-            <summary>The unique identifier for the search configuration entity.</summary>
+            <summary>
+            Gets or sets the unique identifier for the search configuration entity.
+            </summary>
         </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.ScrapeConfigurationEntityId">
-            <summary>The unique identifier for the associated scrape configuration entity.</summary>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.ScrapeConfigurationId">
+            <summary>
+            Gets or sets the unique identifier for the associated scrape configuration entity.
+            </summary>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchTerm">
-            <summary>The search term for the configuration.</summary>
+            <summary>
+            Gets or sets the search term used for scraping wallpapers.
+            </summary>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Category">
-            <summary>The category for the search.</summary>
+            <summary>
+            Gets or sets the category associated with the search configuration entity. This property is optional and can be null.
+            </summary>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.MaxResults">
-            <summary>The maximum number of results to return.</summary>
+            <summary>
+            Gets or sets the maximum number of results to retrieve for the search configuration entity. This property is optional and can be null.
+            </summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.BaseUrl">
+            <summary>The base URL of the target website.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.ApiKey">
+            <summary>The API key used to authenticate requests to the target website.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchCategories">
+            <summary>The categories the scraper targets.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchString">
+            <summary>The search query used to find content.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.TopWallpapers">
+            <summary>The category or section featuring the most popular content.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchStringPrefix">
+            <summary>A prefix applied before the search string.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchStringSuffix">
+            <summary>A suffix applied after the search string.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Subscriptions">
+            <summary>The subscriptions section on the target website.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.ImagePauseInSeconds">
+            <summary>The pause, in seconds, between processing individual images.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.StartingPageNumber">
+            <summary>The page number to resume search results from.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.TotalPages">
+            <summary>The total number of pages available for search results.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SubscriptionsStartingPageNumber">
+            <summary>The page number to resume subscriptions from.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SubscriptionsTotalPages">
+            <summary>The total number of pages available for subscriptions.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.TopWallpapersStartingPageNumber">
+            <summary>The page number to resume top wallpapers from.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.TopWallpapersTotalPages">
+            <summary>The total number of pages available for top wallpapers.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.LoginUrl">
+            <summary>The URL of the login page on the target website.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.UseHeadless">
+            <summary>Whether the browser runs in headless mode.</summary>
+        </member>
+        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SlowMotionDelay">
+            <summary>Slow motion delay in milliseconds applied to browser automation.</summary>
         </member>
         <member name="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId">
             <summary>

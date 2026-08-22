@@ -20,7 +20,7 @@ public sealed class SearchConfigurationEntityConfiguration : IEntityTypeConfigur
         builder.Property(d => d.Id).HasConversion(id => id.Value, value => new SearchConfigurationId(value));
         builder.HasOne<ScrapeConfigurationEntity>()
             .WithOne(scrapeConfiguration => scrapeConfiguration.SearchConfiguration)
-            .HasForeignKey<SearchConfigurationEntity>(searchConfiguration => searchConfiguration.ScrapeConfigurationEntityId)
+            .HasForeignKey<SearchConfigurationEntity>(searchConfiguration => searchConfiguration.ScrapeConfigurationId)
             .HasPrincipalKey<ScrapeConfigurationEntity>(scrapeConfiguration => scrapeConfiguration.Id);
     }
 }

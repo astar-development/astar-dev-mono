@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
-using Testably.Abstractions;
-using System.IO.Abstractions;
+using AStarDev.SourceGenerators.OptionsBindingGeneration;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
@@ -22,16 +21,17 @@ public static class ApplicationServicesExtensions
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration) =>
-        services.AddLocalizationServices()
+        services.AddAnnotatedServices()
+            .AddAutoRegisteredOptions(configuration)
+            .AddLocalizationServices()
             .AddSingleton<IApplicationDirectories, ApplicationDirectories>()
             .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
-            .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleton<IScrapeOrchestrator, ScrapeOrchestrator>()
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
             .AddDbContextFactory<ControlDbContext>((serviceProvider, options) =>
-                options.UseSqlite(serviceProvider.GetRequiredService<IOptions<ScrapeConfiguration>>().Value.ConnectionStrings.Sqlite))
+                options.UseSqlite(serviceProvider.GetRequiredService<IOptions<ScraperAppConfiguration>>().Value.ConnectionStrings.Sqlite))
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications();
 }

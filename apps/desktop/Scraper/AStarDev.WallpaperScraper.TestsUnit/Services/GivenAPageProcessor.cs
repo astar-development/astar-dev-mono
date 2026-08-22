@@ -11,10 +11,10 @@ public sealed class GivenAPageProcessor
     [Fact]
     public async Task when_process_page_async_is_called_then_a_localised_status_message_is_reported()
     {
-        var (localizationService, sut, mockUrl, progress, _) = CreateSut();
+        var (localizationService, sut, mockUrl, progress, page) = CreateSut();
         localizationService.GetLocal("Scraper.PageProcessor.Started").Returns("Starting page processing…");
 
-        await sut.ProcessPageAsync(progress, mockUrl, TestContext.Current.CancellationToken);
+        await sut.ProcessPageAsync(progress, mockUrl, page, TestContext.Current.CancellationToken);
 
         progress.Received().Report("Starting page processing…");
     }
@@ -32,7 +32,7 @@ public sealed class GivenAPageProcessor
             TextAsyncFunc = () => Task.FromResult<string?>(null)
         }));
 
-        var result = await sut.ProcessPageAsync(progress, mockUrl, TestContext.Current.CancellationToken);
+        var result = await sut.ProcessPageAsync(progress, mockUrl, page, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Failure<PageResult>>();
 
@@ -52,7 +52,7 @@ public sealed class GivenAPageProcessor
             TextAsyncFunc = () => Task.FromResult<string?>("<html>Mock page content</html>")
         }));
 
-        var result = await sut.ProcessPageAsync(progress, mockUrl, TestContext.Current.CancellationToken);
+        var result = await sut.ProcessPageAsync(progress, mockUrl, page, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Success<PageResult>>();
 
@@ -68,7 +68,7 @@ public sealed class GivenAPageProcessor
 
         page.GotoAsync(mockUrl.ToString(), Arg.Any<PageGotoOptions>()).ThrowsAsync(new OperationException("Simulated exception"));
 
-        var result = await sut.ProcessPageAsync(progress, mockUrl, TestContext.Current.CancellationToken);
+        var result = await sut.ProcessPageAsync(progress, mockUrl, page, TestContext.Current.CancellationToken);
 
         result.ShouldBeOfType<Failure<PageResult>>();
 
@@ -80,7 +80,7 @@ public sealed class GivenAPageProcessor
     {
         var localizationService = Substitute.For<ILocalizationService>();
         var page = Substitute.For<IPage>();
-        var sut = new PageProcessor(localizationService, page);
+        var sut = new PageProcessor(localizationService);
         var mockUrl = new Uri("https://example.com");
         var progress = Substitute.For<IProgress<string>>();
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using AStar.Dev.Wallpaper.Scraper.Scraping.ImageDownload;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Storage;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Tags;
+using AStarDev.InfrastructureAppDb.Entities;
 
 namespace AStar.Dev.Wallpaper.Scraper.TestsUnit.Scraping.Storage;
 

@@ -2,6 +2,7 @@ using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scraper.Maintenance;
 using AStar.Dev.Wallpaper.Scraper.Services;
+using AStarDev.InfrastructureAppDb.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Testably.Abstractions.Testing;

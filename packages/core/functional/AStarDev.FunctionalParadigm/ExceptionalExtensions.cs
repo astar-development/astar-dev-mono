@@ -15,7 +15,7 @@ public static class ExceptionalExtensions
         {
             Success<T> success => onSuccess(success.Value),
             Failure<T> failure => onFailure(failure.Exception),
-            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage + $" Type: {exceptional.GetType().FullName}")
         };
 
     /// <summary>
@@ -273,7 +273,7 @@ public static class ExceptionalExtensions
     /// <param name="value">The success value.</param>
     /// <returns>A <see cref="Success{T}" /> instance containing the value.</returns>
     public static Success<T> Success<T>(T value) => new(value);
-    
+
     /// <summary>
     ///    Creates a <see cref="Failure{T}" /> instance from a captured <see cref="Exception" />.
     /// </summary>

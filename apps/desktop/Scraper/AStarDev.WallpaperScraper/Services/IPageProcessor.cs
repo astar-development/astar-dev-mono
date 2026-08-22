@@ -1,4 +1,5 @@
 using AStar.Dev.FunctionalParadigm;
+using Microsoft.Playwright;
 
 namespace AStarDev.WallpaperScraper.Services;
 
@@ -13,7 +14,8 @@ public interface IPageProcessor
     /// </summary>
     /// <param name="progress">The progress reporter to report status messages.</param>
     /// <param name="pageUrl">The URL of the page to process.</param>
+    /// <param name="page">The Playwright page instance to use for processing.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation, containing the result of the page processing.</returns>
-    Task<Exceptional<PageResult>> ProcessPageAsync(IProgress<string> progress, Uri pageUrl, CancellationToken cancellationToken);
+    Task<Exceptional<PageResult>> ProcessPageAsync(IProgress<string> progress, Uri pageUrl, IPage page, CancellationToken cancellationToken);
 }

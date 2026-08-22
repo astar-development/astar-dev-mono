@@ -24,7 +24,7 @@ public sealed class PlaywrightServiceFixture : IAsyncLifetime, IAsyncDisposable
     public async ValueTask InitializeAsync()
     {
         var logger = NullLoggerFactory.Instance.CreateLogger<PlaywrightService>();
-        var scrapeConfiguration = Options.Create(new ScrapeConfiguration
+        var scrapeConfiguration = Options.Create(new ScraperAppConfiguration
         {
             UserDataDirectory = UserDataDirectory,
             SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://localhost"), UseHeadless = true },
@@ -169,7 +169,7 @@ public sealed class GivenPlaywrightService(PlaywrightServiceFixture fixture) : I
     [Fact]
     public async Task when_a_failed_launch_is_followed_by_a_corrected_configuration_then_a_page_is_returned()
     {
-        var configuration = new ScrapeConfiguration { UserDataDirectory = "\0invalid-user-data-directory", SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://localhost"), UseHeadless = true } };
+        var configuration = new ScraperAppConfiguration { UserDataDirectory = "\0invalid-user-data-directory", SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://localhost"), UseHeadless = true } };
         var sut = CreatePlaywrightService(configuration);
 
         var firstResult = await sut.ConfigurePlaywrightAsync(TestContext.Current.CancellationToken);
@@ -227,9 +227,9 @@ public sealed class GivenPlaywrightService(PlaywrightServiceFixture fixture) : I
     }
 
     private IPlaywrightService CreatePlaywrightService(bool useHeadless = true, string? userDataDirectoryOverride = null, Uri? baseUrlOverride = null) =>
-        CreatePlaywrightService(new ScrapeConfiguration { UserDataDirectory = userDataDirectoryOverride ?? userDataDirectory, SearchConfiguration = new SearchConfiguration { BaseUrl = baseUrlOverride ?? new Uri("https://localhost"), UseHeadless = useHeadless } });
+        CreatePlaywrightService(new ScraperAppConfiguration { UserDataDirectory = userDataDirectoryOverride ?? userDataDirectory, SearchConfiguration = new SearchConfiguration { BaseUrl = baseUrlOverride ?? new Uri("https://localhost"), UseHeadless = useHeadless } });
 
-    private IPlaywrightService CreatePlaywrightService(ScrapeConfiguration configuration)
+    private IPlaywrightService CreatePlaywrightService(ScraperAppConfiguration configuration)
     {
         var logger = NullLoggerFactory.Instance.CreateLogger<PlaywrightService>();
 

@@ -1,4 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.InfrastructureAppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Infrastructure.AppDb;

@@ -62,6 +62,14 @@ public class GivenAnApplicationServicesExtensions
     }
 
     [Fact]
+    public void when_scrape_configuration_repository_is_registered_then_it_can_be_resolved()
+    {
+        var sut = CreateSut();
+
+        sut.GetRequiredService<IScrapeConfigurationRepository>().ShouldNotBeNull();
+    }
+
+    [Fact]
     public void when_the_file_system_is_registered_then_it_can_be_resolved()
     {
         var sut = CreateSut();
@@ -75,12 +83,13 @@ public class GivenAnApplicationServicesExtensions
                     .AddInMemoryCollection([
                         new($"{VelopackUpdateSettings.SectionName}:ChannelPrefix", "SomeValue"),
                 new($"{VelopackUpdateSettings.SectionName}:GithubRepositoryUrl", "https://github.com/astar-development/astar-dev-mono"),
-                new($"{ScrapeConfiguration.SectionName}:ApplicationName", "SomeValue")
+                new($"{ScraperAppConfiguration.SectionName}:ApplicationName", "SomeValue")
                     ])
                     .Build();
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddApplicationServices(configuration);
+        services.AddInfrastructureServices();
 
         return services.BuildServiceProvider();
     }
