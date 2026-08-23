@@ -21,7 +21,7 @@ public static class DataServiceCollectionExtensions
 
     private static void ConfigureDbContext(DbContextOptionsBuilder builder)
     {
-        string dbPath = ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath($"{ApplicationMetadata.ApplicationNameHyphenated}.db");
+        string dbPath = ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath(Path.DirectorySeparatorChar.ToString()).CombinePath("data").CombinePath(Path.DirectorySeparatorChar.ToString()).CombinePath("astar-control.db");
         _ = builder.UseSqlite($"Data Source={dbPath}");
     }
 }

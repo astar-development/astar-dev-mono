@@ -2,15 +2,6 @@
   "id": {
     "value": "00000000-0000-0000-0000-000000000000"
   },
-  "connectionStrings": {
-    "id": {
-      "value": "00000000-0000-0000-0000-000000000000"
-    },
-    "scrapeConfigurationEntityId": {
-      "value": "00000000-0000-0000-0000-000000000000"
-    },
-    "sqlite": "connection-string"
-  },
   "userConfiguration": {
     "id": {
       "value": "00000000-0000-0000-0000-000000000000"
@@ -31,7 +22,6 @@
       "value": "00000000-0000-0000-0000-000000000000"
     },
     "searchTerm": "search-config",
-    "category": "mock-category",
     "maxResults": 10,
     "baseUrl": "https://example.com",
     "apiKey": "",

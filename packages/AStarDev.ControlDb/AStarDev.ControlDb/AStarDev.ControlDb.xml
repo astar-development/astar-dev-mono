@@ -45,14 +45,6 @@
         <member name="M:AStarDev.ControlDb.Configurations.Files.ImageDetailEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.Files.ImageDetailEntity})">
             <inheritdoc/>
         </member>
-        <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ConnectionStringsEntityConfiguration">
-            <summary>
-            Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity"/> entity.
-            </summary>
-        </member>
-        <member name="M:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ConnectionStringsEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity})">
-            <inheritdoc/>
-        </member>
         <member name="T:AStarDev.ControlDb.Configurations.ScrapeConfiguration.ScrapeConfigurationEntityConfiguration">
             <summary>
             Provides the configuration for the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity"/> entity.
@@ -415,51 +407,6 @@
             <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
             <param name="mb">The model builder to configure.</param>
         </member>
-        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId">
-            <summary>
-            Represents the unique identifier for a connection string entity.
-            </summary>
-            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Value">The underlying identifier value.</param>
-        </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.#ctor(System.Guid)">
-            <summary>A strongly-typed identifier wrapping a <see cref="T:System.Guid"/> value.</summary>
-            <param name="Value">The underlying identifier value.</param>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.Value">
-            <summary>The underlying identifier value.</summary>
-        </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.op_Implicit(System.Guid)~AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId">
-            <inheritdoc />
-        </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId.op_Implicit(AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId)~System.Guid">
-            <inheritdoc />
-        </member>
-        <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity">
-            <summary>
-            Represents a connection strings entity in the database.
-            </summary>
-            <param name="Id">The unique identifier for the connection strings entity.</param>
-            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
-            <param name="Sqlite">The SQLite connection string.</param>
-        </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String)">
-            <summary>
-            Represents a connection strings entity in the database.
-            </summary>
-            <param name="Id">The unique identifier for the connection strings entity.</param>
-            <param name="ScrapeConfigurationEntityId">The unique identifier for the associated scrape configuration entity.</param>
-            <param name="Sqlite">The SQLite connection string.</param>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.Id">
-            <summary>The unique identifier for the connection strings entity.</summary>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.ScrapeConfigurationEntityId">
-            <summary>The unique identifier for the associated scrape configuration entity.</summary>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ConnectionStringsEntity.Sqlite">
-            <summary>The SQLite connection string.</summary>
-        </member>
         <member name="T:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity">
             <summary>
             Represents a scrape configuration entity in the database.
@@ -474,9 +421,6 @@
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.Id">
             <summary>The unique identifier for the scrape configuration entity.</summary>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.ConnectionStrings">
-            <summary>The connection strings associated with the scrape configuration.</summary>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity.UserConfiguration">
             <summary>The user configuration associated with the scrape configuration.</summary>
@@ -614,15 +558,15 @@
             Represents a search configuration entity in the database.
             </summary>
         </member>
-        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.String,System.Int32)">
+        <member name="M:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.#ctor(AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationId,AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationId,System.String,System.Int32,System.Collections.Generic.ICollection{AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity})">
             <summary>
             Initializes a new instance of the <see cref="T:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity"/> class with the specified parameters.
             </summary>
             <param name="searchConfigurationId">The unique identifier for the search configuration entity.</param>
             <param name="scrapeConfigurationId">The unique identifier for the associated scrape configuration entity.</param>
             <param name="searchTerm">The search term used for scraping wallpapers.</param>
-            <param name="category">The category associated with the search configuration entity.</param>
             <param name="maxResults">The maximum number of results to retrieve for the search configuration entity.</param>
+            <param name="searchCategories">The list of search categories associated with the search configuration entity.</param>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Id">
             <summary>
@@ -637,11 +581,6 @@
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.SearchTerm">
             <summary>
             Gets or sets the search term used for scraping wallpapers.
-            </summary>
-        </member>
-        <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.Category">
-            <summary>
-            Gets or sets the category associated with the search configuration entity. This property is optional and can be null.
             </summary>
         </member>
         <member name="P:AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity.MaxResults">

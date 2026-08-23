@@ -13,15 +13,15 @@ public class SearchConfigurationEntity : AuditableEntity
     /// <param name="searchConfigurationId">The unique identifier for the search configuration entity.</param>
     /// <param name="scrapeConfigurationId">The unique identifier for the associated scrape configuration entity.</param>
     /// <param name="searchTerm">The search term used for scraping wallpapers.</param>
-    /// <param name="category">The category associated with the search configuration entity.</param>
     /// <param name="maxResults">The maximum number of results to retrieve for the search configuration entity.</param>
-    public SearchConfigurationEntity(SearchConfigurationId searchConfigurationId, ScrapeConfigurationId scrapeConfigurationId, string searchTerm, string category, int maxResults)
+    /// <param name="searchCategories">The list of search categories associated with the search configuration entity.</param>
+    public SearchConfigurationEntity(SearchConfigurationId searchConfigurationId, ScrapeConfigurationId scrapeConfigurationId, string searchTerm,  int maxResults, ICollection<SearchCategoryEntity> searchCategories)
     {
         Id = searchConfigurationId;
         ScrapeConfigurationId = scrapeConfigurationId;
         SearchTerm = searchTerm;
-        Category = category;
         MaxResults = maxResults;
+        SearchCategories = searchCategories;
     }
 
     /// <summary>
@@ -38,11 +38,6 @@ public class SearchConfigurationEntity : AuditableEntity
     /// Gets or sets the search term used for scraping wallpapers.
     /// </summary>
     public string SearchTerm { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the category associated with the search configuration entity. This property is optional and can be null.
-    /// </summary>
-    public string? Category { get; init; }
 
     /// <summary>
     /// Gets or sets the maximum number of results to retrieve for the search configuration entity. This property is optional and can be null.

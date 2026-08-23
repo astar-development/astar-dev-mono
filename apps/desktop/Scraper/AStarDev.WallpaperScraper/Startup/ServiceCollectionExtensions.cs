@@ -10,6 +10,7 @@ using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
 using AStarDev.SourceGenerators.OptionsBindingGeneration;
+using AStarDev.Utilities;
 
 namespace AStarDev.WallpaperScraper.Startup;
 
@@ -31,7 +32,7 @@ public static class ApplicationServicesExtensions
             .AddSingleton<MainWindowViewModel>()
             .AddSingleton<MainWindow>()
             .AddDbContextFactory<ControlDbContext>((serviceProvider, options) =>
-                options.UseSqlite(serviceProvider.GetRequiredService<IOptions<ScraperAppConfiguration>>().Value.ConnectionStrings.Sqlite))
+                options.UseSqlite($"Data Source={ApplicationMetadata.ApplicationNameHyphenated.ApplicationDirectory().CombinePath(Path.DirectorySeparatorChar.ToString()).CombinePath("data").CombinePath(Path.DirectorySeparatorChar.ToString()).CombinePath("astar-control.db")}"))
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications();
 }

@@ -49,7 +49,7 @@ public sealed class StartupService(IAccountRepository repository, ISyncRuleRepos
             accounts[0].IsActive = true;
     }
 
-    private static OneDriveAccount BuildOneDriveAccount(AccountEntity entity, List<SyncRuleEntity> rules) => new OneDriveAccount
+    private static OneDriveAccount BuildOneDriveAccount(AccountEntity entity, List<SyncRuleEntity> rules) => new()
     {
         Id = entity.Id,
         Profile = entity.Profile,
