@@ -1,3 +1,5 @@
+using AStarDev.InfrastructureAppDb.Entities;
+
 namespace AStar.Dev.Infrastructure.AppDb.Entities;
 
 /// <summary>The search parameters guiding the scraper's navigation of the target website.</summary>

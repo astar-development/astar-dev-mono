@@ -16,7 +16,7 @@ namespace AStarDev.WallpaperScraper;
 [ExcludeFromCodeCoverage]
 public partial class App : Application, IDisposable
 {
-    private bool disposedValue;
+    private bool disposed;
     private ServiceProvider? serviceProvider;
 
     /// <summary>Loads the application's XAML resources.</summary>
@@ -38,11 +38,11 @@ public partial class App : Application, IDisposable
         var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
         var collection = new ServiceCollection().AddConfigurationServices(configuration).AddApplicationServices(configuration);
 
-        ApplicationOptionsRegistrar.Register(collection, configuration);
         Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
 
         var serviceProvider = collection
             .AddInfrastructureServices()
+            .AddDataServices()
             .AddApplicationServices(configuration)
             .AddLogging(logging => logging.AddSerilog(dispose: true))
             .BuildServiceProvider();
@@ -64,15 +64,14 @@ public partial class App : Application, IDisposable
     /// <param name="disposing">Whether managed resources should be released.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                serviceProvider?.Dispose();
-            }
+        if (disposed) return;
 
-            disposedValue = true;
+        if (disposing)
+        {
+            serviceProvider?.Dispose();
         }
+
+        disposed = true;
     }
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>

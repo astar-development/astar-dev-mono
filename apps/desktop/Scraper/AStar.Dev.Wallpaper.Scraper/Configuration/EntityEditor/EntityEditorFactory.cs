@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.InfrastructureAppDb.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;

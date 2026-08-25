@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Actions;
 using AStar.Dev.Wallpaper.Scraper.Scraping.Context;
+using AStarDev.InfrastructureAppDb.Entities;
 
 namespace AStar.Dev.Wallpaper.Scraper.TestsUnit.Scraping.Context;
 

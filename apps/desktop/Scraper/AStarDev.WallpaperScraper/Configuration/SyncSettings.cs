@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using AStarDev.SourceGeneratorAttributes;
 
 namespace AStarDev.WallpaperScraper.Configuration;
 
 /// <summary>
 ///   Represents the synchronization settings for the application, including the progress report interval.
 /// </summary>
+[AutoRegisterOptions(SectionName)]
 public record SyncSettings()
 {
     /// <summary>

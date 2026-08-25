@@ -21,7 +21,7 @@ public sealed class GivenAPlaywrightService : IDisposable
     private IPlaywrightService CreateSut()
     {
         var logger = NullLoggerFactory.Instance.CreateLogger<PlaywrightService>();
-        var scrapeConfiguration = Options.Create(new ScrapeConfiguration
+        var scrapeConfiguration = Options.Create(new ScraperAppConfiguration
         {
             UserDataDirectory = userDataDirectory,
             SearchConfiguration = new SearchConfiguration { BaseUrl = new Uri("https://localhost"), UseHeadless = true },

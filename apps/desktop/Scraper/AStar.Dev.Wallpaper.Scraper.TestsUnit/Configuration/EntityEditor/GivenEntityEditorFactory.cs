@@ -4,6 +4,7 @@ using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Configuration.EntityEditor;
+using AStarDev.InfrastructureAppDb.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using ReactiveUI;

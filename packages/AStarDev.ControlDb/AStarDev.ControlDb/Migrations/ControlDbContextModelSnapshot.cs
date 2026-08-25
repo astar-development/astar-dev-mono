@@ -203,30 +203,146 @@ namespace AStarDev.ControlDb.Migrations
                     b.ToTable("ScrapeDirectories", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IncludeInSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFamous")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInternet")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LastKnownImageCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LastPageVisited")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<Guid>("SearchConfigurationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TotalPages")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SearchConfigurationId");
+
+                    b.ToTable("SearchCategoryEntity");
+                });
+
             modelBuilder.Entity("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ApiKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Category")
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ImagePauseInSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LoginUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("MaxResults")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("ScrapeConfigurationEntityId")
+                    b.Property<Guid>("ScrapeConfigurationId")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("SearchString")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<string>("SearchStringPrefix")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<string>("SearchStringSuffix")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<string>("SearchTerm")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .UseCollation("NOCASE");
 
+                    b.Property<float?>("SlowMotionDelay")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("StartingPageNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Subscriptions")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<int>("SubscriptionsStartingPageNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SubscriptionsTotalPages")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TopWallpapers")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<int>("TopWallpapersStartingPageNumber")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TopWallpapersTotalPages")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TotalPages")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("UseHeadless")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ScrapeConfigurationEntityId")
+                    b.HasIndex("ScrapeConfigurationId")
                         .IsUnique();
 
                     b.ToTable("SearchConfigurations", (string)null);
@@ -314,11 +430,22 @@ namespace AStarDev.ControlDb.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AStarDev.ControlDb.ScrapeConfiguration.SearchCategoryEntity", b =>
+                {
+                    b.HasOne("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", "SearchConfiguration")
+                        .WithMany("SearchCategories")
+                        .HasForeignKey("SearchConfigurationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SearchConfiguration");
+                });
+
             modelBuilder.Entity("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", b =>
                 {
                     b.HasOne("AStarDev.ControlDb.ScrapeConfiguration.ScrapeConfigurationEntity", null)
                         .WithOne("SearchConfiguration")
-                        .HasForeignKey("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", "ScrapeConfigurationEntityId")
+                        .HasForeignKey("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", "ScrapeConfigurationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -356,6 +483,11 @@ namespace AStarDev.ControlDb.Migrations
 
                     b.Navigation("UserConfiguration")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AStarDev.ControlDb.ScrapeConfiguration.SearchConfigurationEntity", b =>
+                {
+                    b.Navigation("SearchCategories");
                 });
 #pragma warning restore 612, 618
         }

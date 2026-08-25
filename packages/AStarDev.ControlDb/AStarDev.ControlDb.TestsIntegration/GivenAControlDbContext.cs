@@ -1,5 +1,6 @@
 using AStarDev.ControlDb.Files;
 using AStarDev.ControlDb.ScrapeConfiguration;
+using AStarDev.ControlDb.TestsIntegration.TestDataFactories;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStarDev.ControlDb.TestsIntegration;
@@ -32,6 +33,7 @@ public sealed class GivenAControlDbContext : IDisposable
     [Fact]
     public async Task when_the_database_is_created_then_a_file_entity_with_related_details_can_be_saved_and_reloaded()
     {
+        await context.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
         await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 
         var fileId = new FileId(Guid.Empty);
@@ -50,18 +52,17 @@ public sealed class GivenAControlDbContext : IDisposable
     [Fact]
     public async Task when_the_database_is_created_then_a_scrape_configuration_entity_with_related_details_can_be_saved_and_reloaded()
     {
+        await context.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
         await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
 
-        var scrapeConfigurationEntity = CreateScrapeConfigurationEntity();
+        var scrapeConfigurationEntity = ScrapeConfigurationEntityFactory.CreateScrapeConfigurationEntity();
         await context.ScrapeConfigurations.AddAsync(scrapeConfigurationEntity, TestContext.Current.CancellationToken);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var reloaded = await context.ScrapeConfigurations.FindAsync([scrapeConfigurationEntity.Id], TestContext.Current.CancellationToken);
 
         reloaded.ShouldNotBeNull();
-        reloaded.ConnectionStrings.Sqlite.ShouldBe(scrapeConfigurationEntity.ConnectionStrings.Sqlite);
         reloaded.UserConfiguration.EmailAddress.ShouldBe(scrapeConfigurationEntity.UserConfiguration.EmailAddress);
-        reloaded.SearchConfiguration.Category.ShouldBe(scrapeConfigurationEntity.SearchConfiguration.Category);
     }
 
     private static FileEntity CreateFileEntity(FileId fileId)
@@ -71,24 +72,6 @@ public sealed class GivenAControlDbContext : IDisposable
             FileAccessDetail = new FileAccessDetailEntity(new FileAccessDetailId(Guid.Empty), fileId, null, null, false),
             DeletionStatus = new DeletionStatusEntity(new DeletionStatusId(Guid.Empty), fileId, null, null, null),
         };
-    }
-
-    private static ScrapeConfigurationEntity CreateScrapeConfigurationEntity()
-    {
-        var scrapeConfigurationId = new ScrapeConfigurationId(Guid.Empty);
-        var connectionStringId = new ConnectionStringId(Guid.Empty);
-        var userConfigurationId = new UserConfigurationId(Guid.Empty);
-        var searchConfigurationId = new SearchConfigurationId(Guid.Empty);
-        var scrapeDirectoriesId = new ScrapeDirectoriesId(Guid.Empty);
-        var scrapeConfiguration = new ScrapeConfigurationEntity(scrapeConfigurationId)
-        {
-            ConnectionStrings = new ConnectionStringsEntity(connectionStringId, scrapeConfigurationId, "connection-string"),
-            UserConfiguration = new UserConfigurationEntity(userConfigurationId, scrapeConfigurationId, "user@example.com", "username", "password", "session-cookie"),
-            SearchConfiguration = new SearchConfigurationEntity(searchConfigurationId, scrapeConfigurationId, "search-config", "mock-category", 10),
-            ScrapeDirectories = new ScrapeDirectoriesEntity(scrapeDirectoriesId, scrapeConfigurationId, "scrape-directory", "base-save-directory", "base-directory", "base-directory-famous", "sub-directory-name")
-        };
-
-        return scrapeConfiguration;
     }
 
     public void Dispose()

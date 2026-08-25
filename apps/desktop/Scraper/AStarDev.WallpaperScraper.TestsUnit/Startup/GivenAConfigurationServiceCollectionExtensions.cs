@@ -1,3 +1,4 @@
+using AStarDev.SourceGenerators.OptionsBindingGeneration;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Startup;
 using Microsoft.Extensions.Configuration;
@@ -26,14 +27,14 @@ public class GivenAConfigurationServiceCollectionExtensions
     public void when_scrape_configuration_is_registered_then_it_can_be_resolved()
     {
         var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection([new($"{ScrapeConfiguration.SectionName}:ApplicationName", "SomeValue")])
+            .AddInMemoryCollection([new($"{ScraperAppConfiguration.SectionName}:ApplicationName", "SomeValue")])
             .Build();
         var services = new ServiceCollection();
-        services.AddConfigurationServices(configuration);
+        services.AddConfigurationServices(configuration).AddAutoRegisteredOptions(configuration);
 
         var provider = services.BuildServiceProvider();
-        var scrapeConfiguration = provider.GetRequiredService<IOptions<ScrapeConfiguration>>().Value;
+        var scraperAppConfiguration = provider.GetRequiredService<IOptions<ScraperAppConfiguration>>().Value;
 
-        scrapeConfiguration.ApplicationName.ShouldBe("SomeValue");
+        scraperAppConfiguration.ApplicationName.ShouldBe("SomeValue");
     }
 }

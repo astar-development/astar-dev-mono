@@ -1,14 +1,17 @@
+using AStarDev.SourceGeneratorAttributes;
+
 namespace AStarDev.WallpaperScraper.Configuration;
 
 /// <summary>
 ///     Mutable to support direct <see cref="IConfiguration" /> binding; not a candidate for the Records rule.
 /// </summary>
-public class ScrapeConfiguration
+[AutoRegisterOptions(SectionName)]
+public class ScraperAppConfiguration
 {
     /// <summary>
     ///    The name of the configuration section in the application configuration that corresponds to this class.
     /// </summary>
-    public const string SectionName = "ScrapeConfiguration";
+    public const string SectionName = "ScraperAppConfiguration";
 
     /// <summary>
     ///     Gets or sets the display name of the application.

@@ -54,6 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AStarDev.WallpaperScraper\AStarDev.WallpaperScraper.csproj" />
     <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../../../packages/AStarDev.ControlDb/AStarDev.ControlDb/AStarDev.ControlDb.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,6 @@
-namespace AStar.Dev.Infrastructure.AppDb.Entities;
+using AStar.Dev.Infrastructure.AppDb.Entities;
+
+namespace AStarDev.InfrastructureAppDb.Entities;
 
 /// <summary>Tracks scraping progress for a single search category.</summary>
 public sealed class SearchCategoryEntity : AuditableEntity

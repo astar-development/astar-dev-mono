@@ -1,4 +1,3 @@
-using System.Globalization;
 using AStarDev.WallpaperScraper.Localization;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Localization;

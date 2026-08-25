@@ -6,6 +6,7 @@ using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Scrapers;
+using AStarDev.WallpaperScraper.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Logging;
@@ -19,12 +20,13 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     private const int MaxStatusMessages = 500;
 
     private readonly IScrapeOrchestrator scrapeOrchestrator;
+    private readonly IPlaywrightService playwrightService;
     private readonly ILogger<MainWindowViewModel> logger;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Progress<string> statusProgress;
     private bool disposed;
 
-    public MainWindowViewModel(IOptions<ScrapeConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(IOptions<ScraperAppConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, IPlaywrightService playwrightService, ILogger<MainWindowViewModel> logger)
     {
         cancellationTokenSource = new CancellationTokenSource();
         statusProgress = new Progress<string>(AddStatusMessage);
@@ -33,6 +35,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         Title = $"{scrapeConfiguration.Value.ApplicationName} V{ApplicationVersion}";
         SetWindowSize(scrapeConfiguration.Value.WindowSize);
         this.scrapeOrchestrator = scrapeOrchestrator;
+        this.playwrightService = playwrightService;
         this.logger = logger;
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", null!);
         ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", null!);
@@ -133,17 +136,20 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         WindowWidth = windowSize.Width;
         WindowHeight = windowSize.Height;
     }
+    
     private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction action)
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
         var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
+        var pageResult = Task.Run(() => playwrightService.ConfigurePlaywrightAsync(cancellationTokenSource!.Token)).GetAwaiter().GetResult();
+        var page = pageResult.Match(p => p, _ => throw new InvalidOperationException("Failed to configure Playwright."));
 
         var command = actionName switch
         {
-            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
-            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeTopAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
-            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
-            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeAllAsync(statusProgress, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeTopAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
+            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeAllAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
             _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
         };
 

@@ -1,7 +1,7 @@
 namespace AStarDev.Utilities;
 
 /// <summary>
-///
+/// Provides methods to retrieve application-specific paths for data storage, logs, and user files based on the operating system.
 /// </summary>
 public static class ApplicationPathsProvider
 {

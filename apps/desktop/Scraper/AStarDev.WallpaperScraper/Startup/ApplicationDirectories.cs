@@ -14,7 +14,7 @@ namespace AStarDev.WallpaperScraper.Startup;
 [ExcludeFromCodeCoverage]
 public class ApplicationDirectories(IFileSystem fileSystem, ILogger<ApplicationDirectories> logger) : IApplicationDirectories
 {
-    private static readonly string root = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).CombinePath(ApplicationMetadata.ApplicationFolder);
+    private static readonly string root = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).CombinePath(ApplicationMetadata.ApplicationNameHyphenated);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationDirectories" /> class, ensuring that the necessary application directories exist.

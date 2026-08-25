@@ -15,7 +15,7 @@ public static class ExceptionalExtensions
         {
             Success<T> success => onSuccess(success.Value),
             Failure<T> failure => onFailure(failure.Exception),
-            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage)
+            _ => throw new InvalidOperationException(UnexpectedExceptionalTypeMessage + $" Type: {exceptional.GetType().FullName}")
         };
 
     /// <summary>
@@ -265,4 +265,20 @@ public static class ExceptionalExtensions
     /// </summary>
     public static async Task<Result<T, TError>> ToResultAsync<T, TError>(this Task<Exceptional<T>> exceptionalTask, Func<Exception, TError> mapError)
         => (await exceptionalTask.ConfigureAwait(false)).ToResult(mapError);
+
+    /// <summary>
+    ///    Creates a <see cref="Success{T}" /> instance from a value of type <typeparamref name="T" />.
+    /// </summary>
+    /// <typeparam name="T">The type of the success value.</typeparam>
+    /// <param name="value">The success value.</param>
+    /// <returns>A <see cref="Success{T}" /> instance containing the value.</returns>
+    public static Success<T> Success<T>(T value) => new(value);
+
+    /// <summary>
+    ///    Creates a <see cref="Failure{T}" /> instance from a captured <see cref="Exception" />.
+    /// </summary>
+    /// <typeparam name="T">The type of the success value.</typeparam>
+    /// <param name="exception">The captured exception.</param>
+    /// <returns>A <see cref="Failure{T}" /> instance containing the exception.</returns>
+    public static Failure<T> Failure<T>(Exception exception) => new(exception);
 }

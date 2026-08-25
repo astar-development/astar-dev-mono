@@ -157,9 +157,9 @@
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SearchCategoryEntityConfiguration">
-            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity"/>.</summary>
+            <summary>EF Core configuration for <see cref="T:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SearchCategoryEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SearchCategoryEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SearchConfigurationEntityConfiguration">
@@ -1435,43 +1435,6 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.ScrapeDirectoriesEntity.SubDirectoryName">
             <summary>A subdirectory name generated from the search criteria or category.</summary>
         </member>
-        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity">
-            <summary>Tracks scraping progress for a single search category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.SearchConfigurationId">
-            <summary>Foreign key to the parent search configuration.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.SearchConfiguration">
-            <summary>Navigation property to the parent search configuration.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.Id">
-            <summary>The unique identifier for the search category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.Name">
-            <summary>The human-readable name of the category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.LastKnownImageCount">
-            <summary>The number of images observed for this category as of the last scrape.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.LastPageVisited">
-            <summary>The last page visited for this category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.TotalPages">
-            <summary>The total number of pages available for this category.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IncludeInSearch">
-            <summary>Whether this category should be included in the scraping process.</summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IsFamous">
-            <summary>
-              Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
-            </summary>
-        </member>
-        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity.IsInternet">
-            <summary>
-             Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
-            </summary>
-        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity">
             <summary>The search parameters guiding the scraper's navigation of the target website.</summary>
         </member>
@@ -2065,6 +2028,43 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionConflictPolicyToNullableInt">
             <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ConflictPolicy"/> to and from a nullable integer.</summary>
+        </member>
+        <member name="T:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity">
+            <summary>Tracks scraping progress for a single search category.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.SearchConfigurationId">
+            <summary>Foreign key to the parent search configuration.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.SearchConfiguration">
+            <summary>Navigation property to the parent search configuration.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.Id">
+            <summary>The unique identifier for the search category.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.Name">
+            <summary>The human-readable name of the category.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.LastKnownImageCount">
+            <summary>The number of images observed for this category as of the last scrape.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.LastPageVisited">
+            <summary>The last page visited for this category.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.TotalPages">
+            <summary>The total number of pages available for this category.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.IncludeInSearch">
+            <summary>Whether this category should be included in the scraping process.</summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.IsFamous">
+            <summary>
+              Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
+            </summary>
+        </member>
+        <member name="P:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity.IsInternet">
+            <summary>
+             Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
+            </summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.NonAlphaPattern_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the NonAlphaPattern method.</summary>
