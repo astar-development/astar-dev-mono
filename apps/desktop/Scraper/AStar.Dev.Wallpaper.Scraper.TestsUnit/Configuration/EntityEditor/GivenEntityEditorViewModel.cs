@@ -146,7 +146,7 @@ public sealed class GivenEntityEditorViewModel : IDisposable
         await Command(sut.ExportCommand).Execute();
 
         fileSystem.File.Exists("/exports/TagToIgnore.json").ShouldBeTrue();
-        var exported = fileSystem.File.ReadAllText("/exports/TagToIgnore.json").FromJson<List<TagToIgnoreEntity>>(Constants.WebDeserialisationSettings);
+        var exported = fileSystem.File.ReadAllText("/exports/TagToIgnore.json").FromJson<List<TagToIgnoreEntity>>();
         exported.Count.ShouldBe(1);
         exported[0].Value.ShouldBe("exported-tag");
     }

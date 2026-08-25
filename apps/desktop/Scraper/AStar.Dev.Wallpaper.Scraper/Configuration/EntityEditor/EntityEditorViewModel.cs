@@ -212,7 +212,7 @@ public sealed class EntityEditorViewModel<TEntity> : EntityEditorViewModelBase, 
 
     private int UpsertItemsFromExportFile()
     {
-        var imported = fileSystem.File.ReadAllText(exportFilePath).FromJson<List<TEntity>>(Constants.WebDeserialisationSettings);
+        var imported = fileSystem.File.ReadAllText(exportFilePath).FromJson<List<TEntity>>();
         var entityType = context.Model.FindEntityType(typeof(TEntity))!;
         var keyProperties = entityType.FindPrimaryKey()!.Properties;
         var referenceNavigations = entityType.GetNavigations().Where(navigation => !navigation.IsCollection).ToList();

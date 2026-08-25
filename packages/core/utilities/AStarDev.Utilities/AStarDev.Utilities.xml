@@ -45,7 +45,7 @@
                 settings
             </summary>
         </member>
-        <member name="P:AStarDev.Utilities.Constants.WebDeserialisationSettings">
+        <member name="F:AStarDev.Utilities.Constants.WebDeserialisationSettings">
             <summary>
                 Returns an instance of <see href="JsonSerializerOptions"></see> configured with the Web defaults
             </summary>
@@ -287,23 +287,16 @@
             <param name="value">The string to check for being not null, empty or whitespace</param>
             <returns>True if the string is not null, empty or whitespace, False otherwise</returns>
         </member>
-        <member name="M:AStarDev.Utilities.StringExtensions.FromJson``1(System.String)">
-            <summary>
-                The FromJson method, as you might expect, converts the supplied JSON to the specified object
-            </summary>
-            <typeparam name="T">The required type of the object to deserialise to</typeparam>
-            <param name="json">The JSON representation of the object</param>
-            <returns>A deserialised object based on the original JSON</returns>
-        </member>
         <member name="M:AStarDev.Utilities.StringExtensions.FromJson``1(System.String,System.Text.Json.JsonSerializerOptions)">
             <summary>
-                The FromJson method, as you might expect, converts the supplied JSON to the specified object
+                The FromJson method, as you might expect, converts the supplied JSON to the specified object. When no options are supplied, the default <see cref="F:AStarDev.Utilities.Constants.WebDeserialisationSettings" /> will be used
+                to ensure the deserialisation is performed in a consistent manner across the application
             </summary>
             <typeparam name="T">The required type of the object to deserialise to</typeparam>
             <param name="json">The JSON representation of the object</param>
             <param name="options">
                 Allows the specific <see href="JsonSerializerOptions">options</see> to be set to control
-                deserialisation
+                deserialisation. When null, the default <see href="Constants.WebDeserialisationSettings">WebDeserialisationSettings</see> will be used
             </param>
             <returns>A deserialised object based on the original JSON</returns>
         </member>
