@@ -11,5 +11,5 @@ public static class Constants
     /// <summary>
     ///     Returns an instance of <see href="JsonSerializerOptions"></see> configured with the Web defaults
     /// </summary>
-    public static JsonSerializerOptions WebDeserialisationSettings => new(JsonSerializerDefaults.Web);
+    public static readonly JsonSerializerOptions WebDeserialisationSettings = new(JsonSerializerDefaults.Web);
 }

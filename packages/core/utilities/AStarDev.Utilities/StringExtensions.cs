@@ -43,26 +43,20 @@ public static class StringExtensions
         !value.IsNullOrWhiteSpace();
 
     /// <summary>
-    ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object
-    /// </summary>
-    /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
-    /// <param name="json">The JSON representation of the object</param>
-    /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json) =>
-        JsonSerializer.Deserialize<T>(json)!;
-
-    /// <summary>
-    ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object
+    ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object. When no options are supplied, the default <see cref="Constants.WebDeserialisationSettings" /> will be used
+    ///     to ensure the deserialisation is performed in a consistent manner across the application
     /// </summary>
     /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
     /// <param name="json">The JSON representation of the object</param>
     /// <param name="options">
     ///     Allows the specific <see href="JsonSerializerOptions">options</see> to be set to control
-    ///     deserialisation
+    ///     deserialisation. When null, the default <see href="Constants.WebDeserialisationSettings">WebDeserialisationSettings</see> will be used
     /// </param>
     /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json, JsonSerializerOptions options) =>
-        JsonSerializer.Deserialize<T>(json, options)!;
+    public static T FromJson<T>(this string json, JsonSerializerOptions? options = null) =>
+        options is null
+            ? JsonSerializer.Deserialize<T>(json, Constants.WebDeserialisationSettings)!
+            : JsonSerializer.Deserialize<T>(json, options)!;
 
     /// <summary>
     /// </summary>
