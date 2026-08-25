@@ -18,6 +18,8 @@ public sealed class GivenAControlDbContext : IDisposable
             .Options;
 
         context = new ControlDbContext(options);
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
 
     [Fact]
@@ -33,9 +35,6 @@ public sealed class GivenAControlDbContext : IDisposable
     [Fact]
     public async Task when_the_database_is_created_then_a_file_entity_with_related_details_can_be_saved_and_reloaded()
     {
-        await context.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
-        await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
-
         var fileId = new FileId(Guid.Empty);
         var fileEntity = CreateFileEntity(fileId);
         await context.Files.AddAsync(fileEntity, TestContext.Current.CancellationToken);
@@ -52,9 +51,6 @@ public sealed class GivenAControlDbContext : IDisposable
     [Fact]
     public async Task when_the_database_is_created_then_a_scrape_configuration_entity_with_related_details_can_be_saved_and_reloaded()
     {
-        await context.Database.EnsureDeletedAsync(TestContext.Current.CancellationToken);
-        await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
-
         var scrapeConfigurationEntity = ScrapeConfigurationEntityFactory.CreateScrapeConfigurationEntity();
         await context.ScrapeConfigurations.AddAsync(scrapeConfigurationEntity, TestContext.Current.CancellationToken);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
