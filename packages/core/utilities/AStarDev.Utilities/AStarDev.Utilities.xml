@@ -45,7 +45,7 @@
                 settings
             </summary>
         </member>
-        <member name="F:AStarDev.Utilities.Constants.WebDeserialisationSettings">
+        <member name="P:AStarDev.Utilities.Constants.WebDeserialisationSettings">
             <summary>
                 Returns an instance of <see href="JsonSerializerOptions"></see> configured with the Web defaults
             </summary>
@@ -289,7 +289,7 @@
         </member>
         <member name="M:AStarDev.Utilities.StringExtensions.FromJson``1(System.String,System.Text.Json.JsonSerializerOptions)">
             <summary>
-                The FromJson method, as you might expect, converts the supplied JSON to the specified object. When no options are supplied, the default <see cref="F:AStarDev.Utilities.Constants.WebDeserialisationSettings" /> will be used
+                The FromJson method, as you might expect, converts the supplied JSON to the specified object. When no options are supplied, the default <see cref="P:AStarDev.Utilities.Constants.WebDeserialisationSettings" /> will be used
                 to ensure the deserialisation is performed in a consistent manner across the application
             </summary>
             <typeparam name="T">The required type of the object to deserialise to</typeparam>
