@@ -1,4 +1,4 @@
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel.LogViewer;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Conflicts;
@@ -17,8 +17,8 @@ public sealed class GivenTheViewModelRegistrations
     private static ServiceProvider BuildProvider()
     {
         var services = new ServiceCollection();
-        var inMemoryLogSink = new InMemoryLogSink();
-        services.AddViewModels().AddShell(inMemoryLogSink).AddLocalizationServices().AddPersistence().AddLogging();
+        var inMemoryLogProcessor = new InMemoryLogProcessor();
+        services.AddViewModels().AddShell(inMemoryLogProcessor).AddLocalizationServices().AddPersistence().AddLogging();
         App.RegisterOptions(services);
         ServiceProvider = services.BuildServiceProvider();
         return ServiceProvider;

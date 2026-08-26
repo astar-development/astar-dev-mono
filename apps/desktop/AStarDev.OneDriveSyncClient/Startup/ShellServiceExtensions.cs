@@ -15,7 +15,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
 using AStarDev.OneDriveSyncClient.Infrastructure.Versioning;
 using AStarDev.OneDriveSyncClient.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
 
@@ -23,7 +23,7 @@ namespace AStarDev.OneDriveSyncClient.Startup;
 
 internal static class ShellServiceExtensions
 {
-    internal static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogSink inMemoryLogSink)
+    internal static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogProcessor inMemoryLogProcessor)
     {
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
@@ -33,8 +33,8 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IFeatureRegistrar>(featureAvailability);
         _ = services.AddSingleton<IFileManagerService, FileManagerService>();
         _ = services.AddTransient<IFileOpenerService, FileOpenerService>();
-        _ = services.AddSingleton(inMemoryLogSink);
-        _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogSink);
+        _ = services.AddSingleton(inMemoryLogProcessor);
+        _ = services.AddSingleton<ILogEntryProvider>(inMemoryLogProcessor);
         _ = services.AddSingleton<IFileSystem, RealFileSystem>();
         _ = services.AddSingleton(sp => new FileSystemServices(sp.GetRequiredService<IFileSystem>(), sp.GetRequiredService<IFileManagerService>()));
         _ = services.AddSingleton(TimeProvider.System);

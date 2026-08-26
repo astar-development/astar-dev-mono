@@ -48,17 +48,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
 
-    <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Enrichers.Environment" />
-    <PackageReference Include="Serilog.Enrichers.Span" />
-    <PackageReference Include="Serilog.Expressions" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
-    <PackageReference Include="Serilog.Settings.Configuration" />
-    <PackageReference Include="Serilog.Sinks.ApplicationInsights" />
-    <PackageReference Include="Serilog.Sinks.Async" />
-    <PackageReference Include="Serilog.Sinks.Console" />
-    <PackageReference Include="Serilog.Sinks.File" />
-
     <PackageReference Include="Velopack" />
   </ItemGroup>
 
@@ -76,7 +65,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\AStarDev.InfrastructureAppDb\AStarDev.InfrastructureAppDb.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
-    <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+    <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
     <ProjectReference Include="..\..\..\packages\core\functional\AStarDev.FunctionalParadigm\AStarDev.FunctionalParadigm.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStarDev.Utilities\AStarDev.Utilities.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStarDev.VelopackPublishing\AStarDev.VelopackPublishing.csproj" />

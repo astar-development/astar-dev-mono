@@ -7,7 +7,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Localization;
 using AStarDev.OneDriveSyncClient.Startup;
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -30,7 +30,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
     {
         WireMock = WireMockServer.Start(0);
 
-        var inMemoryLogSink = new InMemoryLogSink();
+        var inMemoryLogProcessor = new InMemoryLogProcessor();
         var services = new ServiceCollection();
 
         services.AddLogging();
@@ -50,7 +50,7 @@ public sealed class IntegrationTestFixture : IAsyncLifetime
         }));
         services.AddSingleton(Options.Create(new SyncSettings { ProgressReportInterval = 1 }));
 
-        services.AddShell(inMemoryLogSink);
+        services.AddShell(inMemoryLogProcessor);
 
         ReplaceWithStub<IAuthService>(services);
         ReplaceWithStub<IFolderPickerService>(services);

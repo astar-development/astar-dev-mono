@@ -1,46 +1,46 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.OneDriveSyncClient.Infrastructure;
-using AStarDev.OneDriveSyncClient.Infrastructure.Startup;
-using AStarDev.LoggingSerilog;
+using AStarDev.LoggingOTel;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Velopack;
+using ApplicationMessages = AStar.Dev.Logging.Extensions.ApplicationMessages;
+using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient;
 
 [ExcludeFromCodeCoverage]
 internal static class Program
 {
+    private static ILogger logger = NullLogger.Instance;
+
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might (will!) break.
     [STAThread]
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         VelopackApp.Build().Run();
 
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        using var loggerFactory = LoggerFactory.Create(logging => logging.ConfigureOTelLogging(configuration));
+        logger = loggerFactory.CreateLogger(ApplicationMetadata.ApplicationName);
+
         try
         {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
-
-            _ = Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
-            Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
-
-            Log.Information("Application Starting");
+            ApplicationMessages.Starting(logger, ApplicationMetadata.ApplicationName);
             var appBuilder = BuildAvaloniaApp();
 
             _ = appBuilder.StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Application terminated unexpectedly");
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
+            LogMessage.Error(logger, "Application terminated unexpectedly", ex);
         }
     }
 
@@ -51,9 +51,6 @@ internal static class Program
             .WithInterFont()
             .LogToTrace()
             .With(new X11PlatformOptions { EnableIme = false })
-            .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-                {
-                    Log.Fatal(e.ExceptionObject as Exception, "[Unhandled] {Message}", (e.ExceptionObject as Exception)?.Message ?? "Unknown");
-                    Log.CloseAndFlush();
-                });
+            .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+                LogMessage.Error(logger, $"[Unhandled] {(e.ExceptionObject as Exception)?.Message ?? "Unknown"}", e.ExceptionObject as Exception ?? new InvalidOperationException("Unknown unhandled exception")));
 }
