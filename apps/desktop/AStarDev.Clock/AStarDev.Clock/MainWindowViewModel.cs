@@ -1,10 +1,10 @@
-using AStar.Dev.Clock.Theming;
+using AStarDev.Clock.Theming;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 /// <summary>The main window's view model, exposing the theme selection presented in the File menu.</summary>
 /// <param name="themeService">Applies and persists the selected <see cref="ThemeMode" />.</param>

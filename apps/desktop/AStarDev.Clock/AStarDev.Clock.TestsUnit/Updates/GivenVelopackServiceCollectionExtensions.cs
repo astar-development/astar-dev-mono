@@ -1,10 +1,10 @@
-using AStar.Dev.Clock.Updates;
+using AStarDev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.Clock.TestsUnit.Updates;
+namespace AStarDev.Clock.TestsUnit.Updates;
 
 public sealed class GivenVelopackServiceCollectionExtensions
 {

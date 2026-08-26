@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 
-namespace AStar.Dev.Clock.TestsUnit;
+namespace AStarDev.Clock.TestsUnit;
 
 public sealed class GivenApplicationDirectories
 {

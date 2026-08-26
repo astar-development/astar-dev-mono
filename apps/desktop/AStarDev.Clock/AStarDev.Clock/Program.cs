@@ -2,7 +2,7 @@ using Avalonia;
 using Velopack;
 using System.Diagnostics.CodeAnalysis;
 
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 [ExcludeFromCodeCoverage]
 internal static class Program

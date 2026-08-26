@@ -1,6 +1,6 @@
-using AStar.Dev.Clock.Updates;
+using AStarDev.Clock.Updates;
 
-namespace AStar.Dev.Clock.TestsUnit.Updates;
+namespace AStarDev.Clock.TestsUnit.Updates;
 
 public sealed class GivenAPlainUpdateDialogTextProvider
 {
