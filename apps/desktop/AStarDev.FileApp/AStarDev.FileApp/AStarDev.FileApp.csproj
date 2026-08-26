@@ -36,6 +36,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
 
+    <PackageReference Include="AStarDev.LoggingOTel" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
@@ -62,7 +63,6 @@
   <ItemGroup>
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
-    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

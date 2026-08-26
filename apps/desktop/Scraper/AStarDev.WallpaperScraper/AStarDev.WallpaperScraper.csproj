@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AStarDev.LoggingOTel" />
     <PackageReference Include="AStarDev.Utilities" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
@@ -79,7 +80,6 @@
     <ItemGroup>
         <ProjectReference Include="../../../../packages/AStarDev.ControlDb/AStarDev.ControlDb/AStarDev.ControlDb.csproj" />
         <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
-        <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
         <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
