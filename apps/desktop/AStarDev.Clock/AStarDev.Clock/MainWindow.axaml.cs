@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 public partial class MainWindow : Window
 {

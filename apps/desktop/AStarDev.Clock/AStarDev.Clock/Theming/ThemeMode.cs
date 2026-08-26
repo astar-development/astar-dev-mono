@@ -1,4 +1,4 @@
-namespace AStar.Dev.Clock.Theming;
+namespace AStarDev.Clock.Theming;
 
 /// <summary>The selectable application themes.</summary>
 public enum ThemeMode

@@ -1,4 +1,4 @@
-namespace AStar.Dev.Clock.Theming;
+namespace AStarDev.Clock.Theming;
 
 /// <summary>Applies and persists the application's selected <see cref="ThemeMode" />.</summary>
 public interface IThemeService

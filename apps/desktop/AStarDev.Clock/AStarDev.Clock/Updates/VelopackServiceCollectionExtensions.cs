@@ -4,7 +4,7 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.Clock.Updates;
+namespace AStarDev.Clock.Updates;
 
 /// <summary>Registers the Velopack update-check and update-notification services with the dependency injection container.</summary>
 [ExcludeFromCodeCoverage]

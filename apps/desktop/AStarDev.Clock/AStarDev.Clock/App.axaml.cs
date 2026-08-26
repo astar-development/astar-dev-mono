@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using System.Diagnostics.CodeAnalysis;
-using AStar.Dev.Clock.Theming;
-using AStar.Dev.Clock.Updates;
+using AStarDev.Clock.Theming;
+using AStarDev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.LoggingOTel;
 using Avalonia;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
 
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 [ExcludeFromCodeCoverage]
 public partial class App : Application, IDisposable

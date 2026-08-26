@@ -7,7 +7,7 @@ using Avalonia;
 using Avalonia.Styling;
 using Microsoft.Extensions.Logging;
 
-namespace AStar.Dev.Clock.Theming;
+namespace AStarDev.Clock.Theming;
 
 /// <summary>Applies theme visuals via Avalonia and persists the selected <see cref="ThemeMode" /> to <see cref="ApplicationDirectories.DataDirectory" />.</summary>
 /// <param name="fileSystem">The file system abstraction used to persist the selected theme.</param>

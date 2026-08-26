@@ -1,4 +1,4 @@
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 public interface IApplicationDirectories
 {

@@ -3,7 +3,7 @@ using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
 using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
 
-namespace AStar.Dev.Clock;
+namespace AStarDev.Clock;
 
 public class ApplicationDirectories(IFileSystem fileSystem, ILogger<ApplicationDirectories> logger) : IApplicationDirectories
 {

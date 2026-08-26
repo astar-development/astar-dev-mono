@@ -1,6 +1,6 @@
-using AStar.Dev.Clock.Theming;
+using AStarDev.Clock.Theming;
 
-namespace AStar.Dev.Clock.TestsUnit;
+namespace AStarDev.Clock.TestsUnit;
 
 public sealed class GivenAMainWindowViewModel
 {
