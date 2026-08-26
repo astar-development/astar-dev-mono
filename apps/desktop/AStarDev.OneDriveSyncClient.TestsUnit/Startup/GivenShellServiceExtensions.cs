@@ -1,7 +1,7 @@
 using AStarDev.OneDriveSyncClient.Data;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Startup;
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Startup;
@@ -19,7 +19,7 @@ public sealed class GivenShellServiceExtensions
     private static ServiceCollection BuildServicesWithShell()
     {
         var services = new ServiceCollection();
-        var inMemoryLogSink = new InMemoryLogSink();
+        var inMemoryLogProcessor = new InMemoryLogProcessor();
 
         _ = services.AddLogging();
         _ = services.AddPersistence();
@@ -28,7 +28,7 @@ public sealed class GivenShellServiceExtensions
         _ = services.AddViews();
         _ = services.AddViewModels();
         _ = services.AddSingleton(Options.Create(TestEntraIdConfig));
-        _ = services.AddShell(inMemoryLogSink);
+        _ = services.AddShell(inMemoryLogProcessor);
 
         return services;
     }

@@ -4,20 +4,19 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Infrastructure.Startup;
 using AStarDev.OneDriveSyncClient.Splash;
 using AStarDev.OneDriveSyncClient.Startup;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
-using AStarDev.LoggingSerilog;
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel;
+using AStarDev.LoggingOTel.LogViewer;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Testably.Abstractions;
+using Microsoft.Extensions.Logging;
+using ApplicationMessages = AStar.Dev.Logging.Extensions.ApplicationMessages;
 
 namespace AStarDev.OneDriveSyncClient;
 
@@ -54,32 +53,30 @@ public class App : Application, IDisposable
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
         };
 
-        desktop.Exit += async (_, _) =>
+        desktop.Exit += (_, _) =>
         {
-            Log.Information("[App] Application exiting");
-            await Log.CloseAndFlushAsync();
+            var logger = services.GetRequiredService<ILogger<App>>();
+            ApplicationMessages.Stopping(logger, ApplicationMetadata.ApplicationName);
+            services.Dispose();
         };
     }
 
     private static ServiceProvider BuildServiceProvider()
     {
-        var inMemoryLogSink = new InMemoryLogSink();
-        var fileSystem = new RealFileSystem();
+        var inMemoryLogProcessor = new InMemoryLogProcessor();
 
         var services = new ServiceCollection();
 
-        _ = services.AddLogging(logging => logging.AddSerilog(dispose: true));
         _ = services.AddPersistence();
         _ = services.AddLocalizationServices();
         _ = services.AddStartupTasks();
         _ = services.AddViews();
         _ = services.AddViewModels();
         var configuration = RegisterOptions(services);
-        _ = fileSystem.Directory.CreateDirectory(ApplicationDirectories.LogsDirectory);
-        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", inMemoryLogSink, RollingInterval.Hour, 7);
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, inMemoryLogProcessor));
 
         _ = services.AddVelopackUpdates(configuration);
-        _ = services.AddShell(inMemoryLogSink);
+        _ = services.AddShell(inMemoryLogProcessor);
 
         return services.BuildServiceProvider();
     }
