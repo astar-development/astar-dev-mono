@@ -51,7 +51,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\AStarDev.LoggingExtensions\astar-logging-settings.json" Link="astar-logging-settings.json" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="appsettings.tests.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
