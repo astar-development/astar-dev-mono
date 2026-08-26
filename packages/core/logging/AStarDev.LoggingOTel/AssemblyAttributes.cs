@@ -1,3 +1,3 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("AStarDev.LoggingSerilog.TestsUnit")]
+[assembly: InternalsVisibleTo("AStarDev.LoggingOTel.TestsUnit")]

@@ -1,17 +1,17 @@
 using System.Collections.Concurrent;
-using System.Globalization;
 using System.Reactive.Subjects;
-using Serilog.Core;
-using Serilog.Events;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
 
-namespace AStarDev.LoggingSerilog.LogViewer;
+namespace AStarDev.LoggingOTel.LogViewer;
 
 /// <summary>
-///     Serilog sink that retains the last <see cref="DefaultCapacity"/> log entries in a thread-safe ring buffer
+///     OpenTelemetry log processor that retains the last <see cref="DefaultCapacity"/> log entries in a thread-safe ring buffer
 ///     and exposes them via <see cref="ILogEntryProvider"/> (LG-01, NF-07).
 ///     PII (email addresses) is scrubbed before storage.
 /// </summary>
-public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposable
+public sealed class InMemoryLogProcessor : BaseProcessor<LogRecord>, ILogEntryProvider
 {
     /// <summary>Default maximum number of log entries held in memory.</summary>
     public const int DefaultCapacity = 500;
@@ -21,10 +21,10 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     private readonly Subject<LogEntry> subject = new();
     private bool disposed;
 
-    /// <summary>Initialises the sink with <see cref="DefaultCapacity"/>.</summary>
-    public InMemoryLogSink() : this(DefaultCapacity) { }
+    /// <summary>Initialises the processor with <see cref="DefaultCapacity"/>.</summary>
+    public InMemoryLogProcessor() : this(DefaultCapacity) { }
 
-    private InMemoryLogSink(int capacity)
+    private InMemoryLogProcessor(int capacity)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
         this.capacity = capacity;
@@ -36,10 +36,10 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     /// <inheritdoc />
     public IReadOnlyList<LogEntry> GetSnapshot() => [.. entries];
 
-    /// <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
-    public void Emit(LogEvent logEvent)
+    /// <summary>Called by the OpenTelemetry logging pipeline on arbitrary threads. Never blocks.</summary>
+    public override void OnEnd(LogRecord data)
     {
-        var entry = ToLogEntry(logEvent);
+        var entry = ToLogEntry(data);
         entries.Enqueue(entry);
 
         while (entries.Count > capacity)
@@ -49,41 +49,38 @@ public sealed class InMemoryLogSink : ILogEventSink, ILogEntryProvider, IDisposa
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        if (!disposed && disposing)
+        {
+            disposed = true;
+            subject.OnCompleted();
+            subject.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
-    private void Dispose(bool disposing)
+    private static LogEntry ToLogEntry(LogRecord logRecord)
     {
-        if (disposed)
-            return;
+        string rendered = PiiScrubber.Scrub(logRecord.FormattedMessage ?? string.Empty);
+        string? accountId = ExtractAccountId(logRecord);
+        var timestamp = new DateTimeOffset(logRecord.Timestamp, TimeSpan.Zero);
 
-        disposed = true;
-
-        if (!disposing)
-            return;
-
-        subject.OnCompleted();
-        subject.Dispose();
+        return LogEntryFactory.Create(timestamp, logRecord.LogLevel, rendered, accountId);
     }
 
-    private static LogEntry ToLogEntry(LogEvent logEvent)
+    private static string? ExtractAccountId(LogRecord logRecord)
     {
-        string rendered = PiiScrubber.Scrub(logEvent.RenderMessage(CultureInfo.InvariantCulture));
-        string? accountId = ExtractAccountId(logEvent);
-
-        return LogEntryFactory.Create(logEvent.Timestamp, logEvent.Level, rendered, accountId);
-    }
-
-    private static string? ExtractAccountId(LogEvent logEvent)
-    {
-        if (!logEvent.Properties.TryGetValue("AccountId", out var property))
+        if (logRecord.Attributes is null)
             return null;
 
-        string raw = property.ToString();
+        foreach (var attribute in logRecord.Attributes)
+        {
+            if (attribute.Key == "AccountId")
+                return attribute.Value?.ToString();
+        }
 
-        return raw.Trim('"');
+        return null;
     }
 }
