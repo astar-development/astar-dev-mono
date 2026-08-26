@@ -16,7 +16,6 @@
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Testably.Abstractions" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
@@ -35,7 +34,7 @@
     <EmbeddedResource Remove="src/**" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
-    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
     <None Update="Assets/astar.ico">
       <Pack>true</Pack>
       <PackagePath></PackagePath>

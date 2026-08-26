@@ -118,6 +118,9 @@
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.8.3" />
+    <PackageVersion Include="OpenTelemetry" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
   </ItemGroup>
   <ItemGroup Label="Data access">
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
