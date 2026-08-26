@@ -107,4 +107,36 @@ public sealed class GivenLoggingExtensions
 
         builder.Configuration["SomeTestKey"].ShouldBeNull();
     }
+
+    [Fact]
+    public async Task when_add_o_tel_logging_is_called_on_a_web_application_builder_with_no_connection_string_then_starting_the_host_does_not_throw()
+    {
+        var builder = WebApplication.CreateBuilder();
+        _ = builder.AddOTelLogging();
+        await using var app = builder.Build();
+
+        async Task Act()
+        {
+            await app.StartAsync();
+            await app.StopAsync();
+        }
+
+        await Should.NotThrowAsync(Act);
+    }
+
+    [Fact]
+    public async Task when_add_o_tel_logging_is_called_on_a_host_application_builder_with_no_connection_string_then_starting_the_host_does_not_throw()
+    {
+        var builder = Host.CreateApplicationBuilder();
+        _ = builder.AddOTelLogging();
+        using var host = builder.Build();
+
+        async Task Act()
+        {
+            await host.StartAsync();
+            await host.StopAsync();
+        }
+
+        await Should.NotThrowAsync(Act);
+    }
 }
