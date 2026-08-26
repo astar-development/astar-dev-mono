@@ -4,14 +4,13 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Wallpaper.Scraper.Configuration;
 using AStar.Dev.Wallpaper.Scraper.Startup;
 using AStar.Dev.Wallpaper.Scraper.Theming;
-using AStarDev.LoggingSerilog;
+using AStarDev.LoggingOTel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace AStar.Dev.Wallpaper.Scraper;
 
@@ -44,10 +43,9 @@ public partial class App : Application, IDisposable
         var collection = new ServiceCollection().AddApplicationServices(configuration);
 
         ApplicationOptionsRegistrar.Register(collection, configuration);
-        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
 
         return collection
-            .AddLogging(logging => logging.AddSerilog(dispose: true))
+            .AddLogging(logging => logging.ConfigureOTelLogging(configuration))
             .BuildServiceProvider();
     }
 
