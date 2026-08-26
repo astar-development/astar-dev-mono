@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.ControlDb;
-using AStarDev.LoggingSerilog;
+using AStarDev.LoggingOTel;
 using AStarDev.WallpaperScraper.Home;
 using AStarDev.WallpaperScraper.Startup;
 using Avalonia;
@@ -8,7 +8,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using ApplicationMessages = AStar.Dev.Logging.Extensions.ApplicationMessages;
 
 namespace AStarDev.WallpaperScraper;
 
@@ -38,17 +39,16 @@ public partial class App : Application, IDisposable
         var configuration = ApplicationConfigurationFactory.Build(AppContext.BaseDirectory);
         var collection = new ServiceCollection().AddConfigurationServices(configuration).AddApplicationServices(configuration);
 
-        Log.Logger = SerilogConfigurator.CreateLogger(configuration, $"{ApplicationDirectories.LogsDirectory}/{ApplicationMetadata.ApplicationLogName}", RollingInterval.Hour, 7);
-
         var serviceProvider = collection
             .AddInfrastructureServices()
             .AddDataServices()
             .AddApplicationServices(configuration)
-            .AddLogging(logging => logging.AddSerilog(dispose: true))
+            .AddLogging(logging => logging.ConfigureOTelLogging(configuration))
             .BuildServiceProvider();
         var applicationDirectories = serviceProvider.GetRequiredService<IApplicationDirectories>();
         applicationDirectories.CreateIfRequired();
-        Log.Information("Application directories created if required...");
+        var logger = serviceProvider.GetRequiredService<ILogger<App>>();
+        ApplicationMessages.StartupSuccessful(logger, ApplicationMetadata.ApplicationName);
         MigrateDatabase(serviceProvider);
 
         return serviceProvider;
