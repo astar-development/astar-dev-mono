@@ -41,11 +41,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Playwright" />
-    <PackageReference Include="Serilog.Exceptions" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
-    <PackageReference Include="Serilog.Settings.Configuration" />
-    <PackageReference Include="Serilog.Sinks.Console" />
-    <PackageReference Include="Serilog.Sinks.Seq" />
     <PackageReference Include="SkiaSharp" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     <PackageReference Include="Testably.Abstractions" />
@@ -76,7 +71,7 @@
 
     <ItemGroup>
         <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
-        <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+        <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
         <ProjectReference Include="../../../../packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
         <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
         <ProjectReference Include="../../../../packages/AStarDev.InfrastructureAppDb/AStarDev.InfrastructureAppDb.csproj" />
