@@ -31,7 +31,7 @@ public static class LoggingExtensions
         if (externalSettingsFile.IsNotNullOrWhiteSpace()) _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
         _ = builder.Services.AddScoped(typeof(ILoggerAstar<>), typeof(AStarLogger<>));
-        _ = builder.Services.AddOpenTelemetry().UseAzureMonitor();
+        ConfigureAzureMonitor(builder.Services, builder.Configuration);
 
         return builder;
     }
@@ -54,8 +54,21 @@ public static class LoggingExtensions
         if (externalSettingsFile.IsNotNullOrWhiteSpace()) _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
         _ = builder.Services.AddScoped(typeof(ILoggerAstar<>), typeof(AStarLogger<>));
-        _ = builder.Services.AddOpenTelemetry().UseAzureMonitor();
+        ConfigureAzureMonitor(builder.Services, builder.Configuration);
 
         return builder;
+    }
+
+    /// <summary>
+    ///     Wires up the Azure Monitor OpenTelemetry Distro only when a connection string is actually configured —
+    ///     it throws at host start-up, not at registration time, when neither <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c>
+    ///     nor <c>ApplicationInsights:ConnectionString</c> is set, so this guard keeps local/test runs starting cleanly.
+    /// </summary>
+    private static void ConfigureAzureMonitor(IServiceCollection services, IConfiguration configuration)
+    {
+        string? connectionString = configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? configuration["ApplicationInsights:ConnectionString"];
+
+        if (connectionString.IsNotNullOrWhiteSpace())
+            _ = services.AddOpenTelemetry().UseAzureMonitor(options => options.ConnectionString = connectionString);
     }
 }

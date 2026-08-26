@@ -149,6 +149,13 @@
                 The original instance of <see cref="T:Microsoft.Extensions.Hosting.HostApplicationBuilder" /> for further method chaining.
             </returns>
         </member>
+        <member name="M:AStar.Dev.Logging.Extensions.LoggingExtensions.ConfigureAzureMonitor(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+                Wires up the Azure Monitor OpenTelemetry Distro only when a connection string is actually configured —
+                it throws at host start-up, not at registration time, when neither <c>APPLICATIONINSIGHTS_CONNECTION_STRING</c>
+                nor <c>ApplicationInsights:ConnectionString</c> is set, so this guard keeps local/test runs starting cleanly.
+            </summary>
+        </member>
         <member name="T:AStar.Dev.Logging.Extensions.LogMessage">
             <summary>
               Provides extension methods for logging common application events, such as startup, shutdown, and errors, using strongly-typed log messages with structured logging support.
