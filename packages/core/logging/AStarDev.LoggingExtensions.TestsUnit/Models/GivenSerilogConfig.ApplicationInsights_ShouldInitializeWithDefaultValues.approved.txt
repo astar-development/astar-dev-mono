@@ -1,7 +1,0 @@
-﻿{
-  "logLevel": {
-    "default": "",
-    "microsoftAspNetCore": "",
-    "aStar": ""
-  }
-}

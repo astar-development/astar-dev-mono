@@ -4,6 +4,8 @@
         <IsPackable>false</IsPackable>
         <OutputType>Exe</OutputType>
         <RootNamespace>AStar.Dev.Logging.Extensions.TestsUnit</RootNamespace>
+        <!-- Tests exercise the ILogger pipeline directly to verify log capture; CA1848 (LoggerMessage delegates) doesn't apply to test code. -->
+        <NoWarn>$(NoWarn);CA1848</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -51,7 +53,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\AStarDev.LoggingExtensions\astar-logging-settings.json" Link="astar-logging-settings.json" CopyToOutputDirectory="PreserveNewest" />
+        <None Update="appsettings.tests.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

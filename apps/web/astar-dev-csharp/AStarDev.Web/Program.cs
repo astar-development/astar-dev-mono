@@ -8,10 +8,9 @@ using AStarDev.Web.Theming;
 using Azure.Communication.Email;
 using Blazored.LocalStorage;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddSerilogLogging();
+builder.AddOTelLogging();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -47,17 +46,8 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.UseSerilogRequestLogging();
-
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-try
-{
-    await app.RunAsync();
-}
-finally
-{
-    await Log.CloseAndFlushAsync();
-}
+await app.RunAsync();
