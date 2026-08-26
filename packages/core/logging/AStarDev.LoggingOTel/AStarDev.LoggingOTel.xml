@@ -1,56 +1,56 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>AStarDev.LoggingSerilog</name>
+        <name>AStarDev.LoggingOTel</name>
     </assembly>
     <members>
-        <member name="T:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider">
-            <summary>Provides access to in-memory log entries captured by <see cref="T:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink"/>.</summary>
+        <member name="T:AStarDev.LoggingOTel.LogViewer.ILogEntryProvider">
+            <summary>Provides access to in-memory log entries captured by <see cref="T:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor"/>.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider.GetSnapshot">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.ILogEntryProvider.GetSnapshot">
             <summary>Returns a point-in-time snapshot of all retained log entries.</summary>
         </member>
-        <member name="P:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider.EntryAdded">
-            <summary>Observable that fires each time a new <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/> is captured.</summary>
+        <member name="P:AStarDev.LoggingOTel.LogViewer.ILogEntryProvider.EntryAdded">
+            <summary>Observable that fires each time a new <see cref="T:AStarDev.LoggingOTel.LogViewer.LogEntry"/> is captured.</summary>
         </member>
-        <member name="T:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink">
+        <member name="T:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor">
             <summary>
-                Serilog sink that retains the last <see cref="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity"/> log entries in a thread-safe ring buffer
-                and exposes them via <see cref="T:AStarDev.LoggingSerilog.LogViewer.ILogEntryProvider"/> (LG-01, NF-07).
+                OpenTelemetry log processor that retains the last <see cref="F:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.DefaultCapacity"/> log entries in a thread-safe ring buffer
+                and exposes them via <see cref="T:AStarDev.LoggingOTel.LogViewer.ILogEntryProvider"/> (LG-01, NF-07).
                 PII (email addresses) is scrubbed before storage.
             </summary>
         </member>
-        <member name="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity">
+        <member name="F:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.DefaultCapacity">
             <summary>Default maximum number of log entries held in memory.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.#ctor">
-            <summary>Initialises the sink with <see cref="F:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.DefaultCapacity"/>.</summary>
+        <member name="M:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.#ctor">
+            <summary>Initialises the processor with <see cref="F:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.DefaultCapacity"/>.</summary>
         </member>
-        <member name="P:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.EntryAdded">
+        <member name="P:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.EntryAdded">
             <inheritdoc />
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.GetSnapshot">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.GetSnapshot">
             <inheritdoc />
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.Emit(Serilog.Events.LogEvent)">
-            <summary>Called by the Serilog pipeline on arbitrary threads. Never blocks.</summary>
+        <member name="M:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.OnEnd(OpenTelemetry.Logs.LogRecord)">
+            <summary>Called by the OpenTelemetry logging pipeline on arbitrary threads. Never blocks.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink.Dispose">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor.Dispose(System.Boolean)">
             <inheritdoc />
         </member>
-        <member name="T:AStarDev.LoggingSerilog.LogViewer.LogEntry">
-            <summary>An immutable snapshot of a single Serilog log event, with PII already scrubbed.</summary>
+        <member name="T:AStarDev.LoggingOTel.LogViewer.LogEntry">
+            <summary>An immutable snapshot of a single OpenTelemetry log record, with PII already scrubbed.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.LogEntry.#ctor(System.DateTimeOffset,Serilog.Events.LogEventLevel,System.String,System.String)">
-            <summary>An immutable snapshot of a single Serilog log event, with PII already scrubbed.</summary>
+        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntry.#ctor(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String,System.String)">
+            <summary>An immutable snapshot of a single OpenTelemetry log record, with PII already scrubbed.</summary>
         </member>
-        <member name="T:AStarDev.LoggingSerilog.LogViewer.LogEntryFactory">
-            <summary>Factory for <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/>.</summary>
+        <member name="T:AStarDev.LoggingOTel.LogViewer.LogEntryFactory">
+            <summary>Factory for <see cref="T:AStarDev.LoggingOTel.LogViewer.LogEntry"/>.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.LogEntryFactory.Create(System.DateTimeOffset,Serilog.Events.LogEventLevel,System.String,System.String)">
-            <summary>Creates a <see cref="T:AStarDev.LoggingSerilog.LogViewer.LogEntry"/> with the supplied values.</summary>
+        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntryFactory.Create(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String,System.String)">
+            <summary>Creates a <see cref="T:AStarDev.LoggingOTel.LogViewer.LogEntry"/> with the supplied values.</summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.PiiScrubber.EmailRegex">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.PiiScrubber.EmailRegex">
             <remarks>
             Pattern:<br/>
             <code>[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}</code><br/>
@@ -64,34 +64,36 @@
             </code>
             </remarks>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.LogViewer.PiiScrubber.Scrub(System.String)">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.PiiScrubber.Scrub(System.String)">
             <summary>Replaces any email addresses in <paramref name="message"/> with <c>[email redacted]</c>.</summary>
         </member>
-        <member name="T:AStarDev.LoggingSerilog.SerilogConfigurator">
+        <member name="T:AStarDev.LoggingOTel.OTelLoggingConfigurator">
             <summary>
-            This class provides a method to create a Serilog logger using the provided configuration and log file path. It allows for customization of the rolling interval and the number of retained log files.
+                This class provides extension methods to configure OpenTelemetry logging, exporting to the console and,
+                when a connection string is configured, to Azure Monitor (Application Insights).
             </summary>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,Serilog.RollingInterval,System.Int32)">
+        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)">
             <summary>
-             This method creates a Serilog logger using the provided configuration and log file path. It allows for customization of the rolling interval and the number of retained log files.
+                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)" /> method wires up OpenTelemetry
+                logging: console output plus an Azure Monitor log exporter when a connection string is configured.
             </summary>
-            <param name="configuration">The configuration providing Serilog sink settings.</param>
-            <param name="logFilePath">The path to the log file.</param>
-            <param name="rollingInterval">The rolling interval for the log file.</param>
-            <param name="retainedFileCountLimit">The number of retained log files.</param>
-            <returns>The configured Serilog logger.</returns>
+            <param name="loggingBuilder">The logging builder to configure.</param>
+            <param name="configuration">The configuration providing the Azure Monitor connection string.</param>
+            <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
+            <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
-        <member name="M:AStarDev.LoggingSerilog.SerilogConfigurator.CreateLogger(Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink,Serilog.RollingInterval,System.Int32)">
+        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String)">
             <summary>
-             This method creates a Serilog logger using the provided configuration and log file path, additionally writing log events to the supplied <see cref="T:AStarDev.LoggingSerilog.LogViewer.InMemoryLogSink"/>. It allows for customization of the rolling interval and the number of retained log files.
+                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String)" /> method wires up
+                OpenTelemetry logging the same way as <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)" />,
+                additionally routing log records to the supplied <see cref="T:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor"/>.
             </summary>
-            <param name="configuration">The configuration providing Serilog sink settings.</param>
-            <param name="logFilePath">The path to the log file.</param>
-            <param name="inMemoryLogSink">The in-memory sink to additionally write log events to.</param>
-            <param name="rollingInterval">The rolling interval for the log file.</param>
-            <param name="retainedFileCountLimit">The number of retained log files.</param>
-            <returns>The configured Serilog logger.</returns>
+            <param name="loggingBuilder">The logging builder to configure.</param>
+            <param name="configuration">The configuration providing the Azure Monitor connection string.</param>
+            <param name="inMemoryLogProcessor">The in-memory processor to additionally route log records to.</param>
+            <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
+            <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the EmailRegex method.</summary>

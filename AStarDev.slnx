@@ -51,8 +51,8 @@
         <Project Path="packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
     </Folder>
     <Folder Name="/packages/core/logging/">
-        <Project Path="packages/core/logging/AStarDev.LoggingSerilog.TestsUnit/AStarDev.LoggingSerilog.TestsUnit.csproj" />
-        <Project Path="packages/core/logging/AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingOTel.TestsUnit/AStarDev.LoggingOTel.TestsUnit.csproj" />
+        <Project Path="packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
         <Project Path="packages/core/logging/AStarDev.LoggingExtensions.TestsUnit/AStarDev.LoggingExtensions.TestsUnit.csproj" />
         <Project Path="packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     </Folder>

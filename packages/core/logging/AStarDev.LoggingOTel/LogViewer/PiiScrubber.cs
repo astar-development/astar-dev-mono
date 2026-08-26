@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace AStarDev.LoggingSerilog.LogViewer;
+namespace AStarDev.LoggingOTel.LogViewer;
 
 internal static partial class PiiScrubber
 {
