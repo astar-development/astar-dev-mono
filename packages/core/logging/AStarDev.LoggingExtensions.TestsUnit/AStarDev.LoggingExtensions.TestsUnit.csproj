@@ -4,6 +4,8 @@
         <IsPackable>false</IsPackable>
         <OutputType>Exe</OutputType>
         <RootNamespace>AStar.Dev.Logging.Extensions.TestsUnit</RootNamespace>
+        <!-- Tests exercise the ILogger pipeline directly to verify log capture; CA1848 (LoggerMessage delegates) doesn't apply to test code. -->
+        <NoWarn>$(NoWarn);CA1848</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
