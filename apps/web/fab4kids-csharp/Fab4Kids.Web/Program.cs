@@ -12,12 +12,11 @@ using Fab4Kids.Web.Fulfilment;
 using Fab4Kids.Web.Newsletter;
 using Microsoft.Extensions.Options;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Serilog;
 using Stripe;
 using Stripe.Checkout;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddSerilogLogging();
+builder.AddOTelLogging();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -80,19 +79,10 @@ app.UseHttpsRedirection();
 app.UseHsts();
 app.UseAntiforgery();
 
-app.UseSerilogRequestLogging();
-
 app.MapStaticAssets();
 app.MapCheckoutEndpoints();
 app.MapFulfilmentEndpoints();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
 
-try
-{
-    await app.RunAsync();
-}
-finally
-{
-    await Log.CloseAndFlushAsync();
-}
+await app.RunAsync();
