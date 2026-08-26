@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>AStarDev.LoggingSerilog.TestsUnit</RootNamespace>
+    <RootNamespace>AStarDev.LoggingOTel.TestsUnit</RootNamespace>
+    <!-- Tests exercise the ILogger pipeline directly to verify log capture; CA1848/CA1873 (LoggerMessage delegates) don't apply to test code. -->
+    <NoWarn>$(NoWarn);CA1848;CA1873</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,15 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Serilog" />
     <PackageReference Include="coverlet.collector">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-    <PackageReference Include="Serilog.Settings.Configuration" />
-    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="OpenTelemetry" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp">
         <PrivateAssets>all</PrivateAssets>
@@ -44,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../AStarDev.LoggingSerilog/AStarDev.LoggingSerilog.csproj" />
+    <ProjectReference Include="../AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

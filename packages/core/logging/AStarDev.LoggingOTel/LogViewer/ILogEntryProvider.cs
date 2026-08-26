@@ -1,6 +1,6 @@
-namespace AStarDev.LoggingSerilog.LogViewer;
+namespace AStarDev.LoggingOTel.LogViewer;
 
-/// <summary>Provides access to in-memory log entries captured by <see cref="InMemoryLogSink"/>.</summary>
+/// <summary>Provides access to in-memory log entries captured by <see cref="InMemoryLogProcessor"/>.</summary>
 public interface ILogEntryProvider
 {
     /// <summary>Returns a point-in-time snapshot of all retained log entries.</summary>
