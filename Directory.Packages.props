@@ -52,7 +52,7 @@
     Example:
   -->
   <ItemGroup Label="AStar.Dev packages">
-    <PackageVersion Include="AStarDev.LoggingSerilog" Version="0.1.1" />
+    <PackageVersion Include="AStarDev.LoggingOTel" Version="0.1.0" />
     <PackageVersion Include="AStarDev.SourceGenerators" Version="0.1.14" />
     <PackageVersion Include="AStarDev.Utilities" Version="0.1.0" />
     <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
@@ -117,6 +117,10 @@
     <PackageVersion Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
     <PackageVersion Include="Microsoft.ApplicationInsights.WorkerService" Version="2.23.0" />
+    <PackageVersion Include="OpenTelemetry" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.8.3" />
   </ItemGroup>
   <ItemGroup Label="Data access">
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />

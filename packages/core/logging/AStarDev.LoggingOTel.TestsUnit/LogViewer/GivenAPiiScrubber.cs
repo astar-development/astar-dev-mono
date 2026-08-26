@@ -1,6 +1,6 @@
-using AStarDev.LoggingSerilog.LogViewer;
+using AStarDev.LoggingOTel.LogViewer;
 
-namespace AStarDev.LoggingSerilog.TestsUnit.LogViewer;
+namespace AStarDev.LoggingOTel.TestsUnit.LogViewer;
 
 public sealed class GivenAPiiScrubber
 {
