@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AStarDev.LoggingOTel" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
     <PackageReference Include="Avalonia.ReactiveUI" />
@@ -65,7 +66,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\AStarDev.InfrastructureAppDb\AStarDev.InfrastructureAppDb.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
-    <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
     <ProjectReference Include="..\..\..\packages\core\functional\AStarDev.FunctionalParadigm\AStarDev.FunctionalParadigm.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStarDev.Utilities\AStarDev.Utilities.csproj" />
     <ProjectReference Include="..\..\..\packages\core\utilities\AStarDev.VelopackPublishing\AStarDev.VelopackPublishing.csproj" />
