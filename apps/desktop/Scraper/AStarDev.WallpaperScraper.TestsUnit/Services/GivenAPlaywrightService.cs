@@ -1,3 +1,4 @@
+using System.Reflection;
 using AStarDev.WallpaperScraper.Configuration;
 using AStarDev.WallpaperScraper.Services;
 using Microsoft.Extensions.Logging;
@@ -40,5 +41,22 @@ public sealed class GivenAPlaywrightService : IDisposable
         await Should.ThrowAsync<OperationCanceledException>(() => sut.ConfigurePlaywrightAsync(cancellationTokenSource.Token));
 
         fileSystem.Directory.Exists(userDataDirectory).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_stale_chromium_lock_files_exist_then_they_are_removed_while_preparing_the_user_data_directory()
+    {
+        var sut = CreateSut();
+        fileSystem.Directory.CreateDirectory(userDataDirectory);
+        fileSystem.File.WriteAllText(Path.Combine(userDataDirectory, "SingletonLock"), string.Empty);
+        fileSystem.File.WriteAllText(Path.Combine(userDataDirectory, "SingletonSocket"), string.Empty);
+        fileSystem.File.WriteAllText(Path.Combine(userDataDirectory, "SingletonCookie"), string.Empty);
+
+        MethodInfo createUserDataDirectoryAsync = typeof(PlaywrightService).GetMethod("CreateUserDataDirectoryAsync", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        await (Task)createUserDataDirectoryAsync.Invoke(sut, null)!;
+
+        fileSystem.File.Exists(Path.Combine(userDataDirectory, "SingletonLock")).ShouldBeFalse();
+        fileSystem.File.Exists(Path.Combine(userDataDirectory, "SingletonSocket")).ShouldBeFalse();
+        fileSystem.File.Exists(Path.Combine(userDataDirectory, "SingletonCookie")).ShouldBeFalse();
     }
 }

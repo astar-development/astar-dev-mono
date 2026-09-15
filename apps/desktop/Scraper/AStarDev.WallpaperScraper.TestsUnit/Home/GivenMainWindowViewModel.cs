@@ -179,6 +179,18 @@ public sealed class GivenMainWindowViewModel
     }
 
     [Fact]
+    public void when_a_scrape_command_throws_then_the_error_is_reported_in_status_messages()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<IProgress<string>>(), Arg.Any<IPage>(), Arg.Any<CancellationToken>()).Returns<Task<Exceptional<UnitFp>>>(_ => throw new InvalidOperationException("boom"));
+        var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
+
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe(_ => { }, _ => { });
+
+        sut.StatusMessages.ShouldContain(message => message.Contains("boom", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task when_scrape_top_command_is_executed_then_the_scrape_orchestrator_is_called()
     {
         var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
