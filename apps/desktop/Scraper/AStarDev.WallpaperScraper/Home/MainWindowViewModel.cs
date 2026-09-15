@@ -11,6 +11,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Playwright;
 using ReactiveUI;
 
 namespace AStarDev.WallpaperScraper.Home;
@@ -141,27 +142,28 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
         var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
-        var pageResult = Task.Run(() => playwrightService.ConfigurePlaywrightAsync(cancellationTokenSource!.Token)).GetAwaiter().GetResult();
-        var page = pageResult.Match(p => p, _ => throw new InvalidOperationException("Failed to configure Playwright."));
 
-        var command = actionName switch
+        Func<IPage, Task<Exceptional<UnitFp>>> scrape = actionName switch
         {
-            "Scrape Search Categories" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
-            "Scrape Top Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeTopAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
-            "Scrape Subscribed Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
-            "Scrape All Wallpapers" => ReactiveCommand.CreateFromTask(async () => await RunScrapeAsync(() => scrapeOrchestrator.ScrapeAllAsync(statusProgress, page, cancellationTokenSource!.Token)), canExecute),
+            "Scrape Search Categories" => page => scrapeOrchestrator.ScrapeSearchCategoriesAsync(statusProgress, page, cancellationTokenSource!.Token),
+            "Scrape Top Wallpapers" => page => scrapeOrchestrator.ScrapeTopAsync(statusProgress, page, cancellationTokenSource!.Token),
+            "Scrape Subscribed Wallpapers" => page => scrapeOrchestrator.ScrapeSubscribedAsync(statusProgress, page, cancellationTokenSource!.Token),
+            "Scrape All Wallpapers" => page => scrapeOrchestrator.ScrapeAllAsync(statusProgress, page, cancellationTokenSource!.Token),
             _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
         };
 
-        return command;
+        return ReactiveCommand.CreateFromTask(() => RunScrapeAsync(scrape), canExecute);
     }
 
-    private async Task RunScrapeAsync(Func<Task<Exceptional<UnitFp>>> scrape)
+    private async Task RunScrapeAsync(Func<IPage, Task<Exceptional<UnitFp>>> scrape)
     {
         IsBusy = true;
         try
         {
-            await scrape();
+            var page = await playwrightService.ConfigurePlaywrightAsync(cancellationTokenSource!.Token)
+                .MatchAsync(p => p, exception => throw new InvalidOperationException("Failed to configure Playwright.", exception));
+
+            await scrape(page);
         }
         finally
         {
