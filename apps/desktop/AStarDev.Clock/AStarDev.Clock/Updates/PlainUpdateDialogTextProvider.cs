@@ -1,6 +1,6 @@
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
-namespace AStar.Dev.Clock.Updates;
+namespace AStarDev.Clock.Updates;
 
 /// <summary>
 ///     Supplies the update-available dialog's display text as hardcoded English strings, mirroring

@@ -1,4 +1,4 @@
-namespace AStar.Dev.Clock.Controls;
+namespace AStarDev.Clock.Controls;
 
 /// <summary>Computes clock hand angle units (0.0-1.0 turns) from a point in time.</summary>
 public static class ClockHandGeometry

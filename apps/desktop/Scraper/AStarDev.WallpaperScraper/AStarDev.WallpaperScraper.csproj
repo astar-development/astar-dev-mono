@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AStarDev.LoggingOTel" />
     <PackageReference Include="AStarDev.Utilities" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />

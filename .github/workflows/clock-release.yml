@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════════════════════════════════════
 # clock-release.yml
 #
-# Packages and publishes AStar.Dev.Clock as a Velopack release
+# Packages and publishes AStarDev.Clock as a Velopack release
 # on GitHub Releases, for the in-app updater (see #744/#746) to discover.
 #
 # Tag format: clock-v1.2.3  (or clock-v1.2.3-beta.1 for a pre-release)
@@ -140,12 +140,12 @@ jobs:
         shell: bash
         run: |
           vpk pack \
-            --packId AStar.Dev.Clock \
+            --packId AStarDev.Clock \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/linux-x64 \
             --packAuthors "AStar Development" \
             --packTitle "AStar Dev Clock" \
-            --mainExe "AStar.Dev.Clock" \
+            --mainExe "AStarDev.Clock" \
             --channel clock-linux \
             --releaseNotes release-notes.md \
             --outputDir ./Releases
@@ -267,13 +267,13 @@ jobs:
       - name: Pack with vpk
         shell: bash
         run: |
-          MAIN_EXE="AStar.Dev.Clock"
+          MAIN_EXE="AStarDev.Clock"
           if [ "${{ matrix.channel }}" = "clock-win" ]; then
-            MAIN_EXE="AStar.Dev.Clock.exe"
+            MAIN_EXE="AStarDev.Clock.exe"
           fi
 
           vpk pack \
-            --packId AStar.Dev.Clock \
+            --packId AStarDev.Clock \
             --packVersion ${{ env.VERSION }} \
             --packDir ./publish/${{ matrix.rid }} \
             --packAuthors "AStar Development" \

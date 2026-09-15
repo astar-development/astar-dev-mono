@@ -1,10 +1,10 @@
 using System.Text.Json;
-using AStar.Dev.Clock.Theming;
+using AStarDev.Clock.Theming;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
 using Testably.Abstractions.Testing;
 
-namespace AStar.Dev.Clock.TestsUnit.Theming;
+namespace AStarDev.Clock.TestsUnit.Theming;
 
 public sealed class GivenAThemeService
 {
