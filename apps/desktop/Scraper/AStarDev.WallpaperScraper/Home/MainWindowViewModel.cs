@@ -152,7 +152,16 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
             _ => throw new ArgumentException($"Unknown action name: {actionName}", nameof(actionName)),
         };
 
-        return ReactiveCommand.CreateFromTask(() => RunScrapeAsync(scrape), canExecute);
+        var command = ReactiveCommand.CreateFromTask(() => RunScrapeAsync(scrape), canExecute);
+        command.ThrownExceptions.Subscribe(exception => HandleScrapeCommandException(actionName, exception));
+
+        return command;
+    }
+
+    private void HandleScrapeCommandException(string actionName, Exception exception)
+    {
+        LogMessage.Error(logger, actionName, exception);
+        AddStatusMessage($"'{actionName}' failed: {exception.Message}");
     }
 
     private async Task RunScrapeAsync(Func<IPage, Task<Exceptional<UnitFp>>> scrape)

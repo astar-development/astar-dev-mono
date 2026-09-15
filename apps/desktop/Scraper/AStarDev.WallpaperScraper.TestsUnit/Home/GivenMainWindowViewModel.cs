@@ -185,7 +185,7 @@ public sealed class GivenMainWindowViewModel
         scrapeOrchestrator.ScrapeSearchCategoriesAsync(Arg.Any<IProgress<string>>(), Arg.Any<IPage>(), Arg.Any<CancellationToken>()).Returns<Task<Exceptional<UnitFp>>>(_ => throw new InvalidOperationException("boom"));
         var sut = CreateViewModel(scrapeOrchestrator: scrapeOrchestrator);
 
-        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe();
+        sut.ScrapeSearchCategoriesCommand.Execute().Subscribe(_ => { }, _ => { });
 
         sut.StatusMessages.ShouldContain(message => message.Contains("boom", StringComparison.Ordinal));
     }

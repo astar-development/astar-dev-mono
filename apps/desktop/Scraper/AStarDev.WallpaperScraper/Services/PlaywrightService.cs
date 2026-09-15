@@ -12,6 +12,8 @@ namespace AStarDev.WallpaperScraper.Services;
 /// <inheritdoc />
 public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<ScraperAppConfiguration> scrapeConfiguration, IFileSystem fileSystem) : IPlaywrightService, IAsyncDisposable
 {
+    private static readonly string[] StaleChromiumLockFileNames = ["SingletonLock", "SingletonSocket", "SingletonCookie"];
+
     private readonly SemaphoreSlim configureLock = new(1, 1);
     private IPlaywright? playwright;
     private IBrowserContext? context;
@@ -43,8 +45,22 @@ public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<Scrap
     private Task<IPage?> CreateUserDataDirectoryAsync()
     {
         fileSystem.Directory.CreateDirectory(scrapeConfiguration.Value.UserDataDirectory);
+        RemoveStaleChromiumLockFiles();
 
         return Task.FromResult<IPage?>(null);
+    }
+
+    private void RemoveStaleChromiumLockFiles()
+    {
+        foreach (string lockFileName in StaleChromiumLockFileNames)
+        {
+            string lockFilePath = scrapeConfiguration.Value.UserDataDirectory.CombinePath(lockFileName);
+
+            if (!fileSystem.File.Exists(lockFilePath)) continue;
+
+            fileSystem.File.Delete(lockFilePath);
+            LogMessage.Information(logger, nameof(PlaywrightService), "Removed stale Chromium lock file", lockFilePath);
+        }
     }
 
     private async Task<IPlaywright> GetOrCreatePlaywrightAsync()
