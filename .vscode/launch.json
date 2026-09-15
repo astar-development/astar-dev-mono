@@ -5,31 +5,31 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C#: OneDrive.Sync.Client Debug",
+      "name": "OneDrive.Sync.Client Debug",
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj"
     },
     {
-      "name": "C#: Scraper Debug",
+      "name": "Scraper Debug",
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj"
     },
     {
-      "name": "C#: Scraper Debug V2",
+      "name": "Scraper Debug V2",
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj"
     },
     {
-      "name": "C#: AStar Web",
+      "name": "AStar Web",
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/web/astar-dev-csharp/AStarDev.Web/AStarDev.Web.csproj"
     },
     {
-      "name": "C#: Fab4Kids",
+      "name": "Fab4Kids",
       "type": "dotnet",
       "request": "launch",
       "projectPath": "${workspaceFolder}/apps/web/fab4kids-csharp/Fab4Kids.Web/Fab4Kids.Web.csproj"
