@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using AStar.Dev.FunctionalParadigm;
 using AStarDev.ControlDb;
 using AStarDev.LoggingOTel;
 using AStarDev.WallpaperScraper.Home;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ApplicationMessages = AStar.Dev.Logging.Extensions.ApplicationMessages;
+using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
 
 namespace AStarDev.WallpaperScraper;
 
@@ -46,18 +48,39 @@ public partial class App : Application, IDisposable
             .AddLogging(logging => logging.ConfigureOTelLogging(configuration))
             .BuildServiceProvider();
         var applicationDirectories = serviceProvider.GetRequiredService<IApplicationDirectories>();
-        applicationDirectories.CreateIfRequired();
+        var startupDiagnostics = serviceProvider.GetRequiredService<StartupDiagnostics>();
         var logger = serviceProvider.GetRequiredService<ILogger<App>>();
+        CreateApplicationDirectories(applicationDirectories, startupDiagnostics, logger);
         ApplicationMessages.StartupSuccessful(logger, ApplicationMetadata.ApplicationName);
-        MigrateDatabase(serviceProvider);
+        MigrateDatabase(serviceProvider, startupDiagnostics);
 
         return serviceProvider;
     }
 
-    private static void MigrateDatabase(ServiceProvider serviceProvider) =>
+    private static void CreateApplicationDirectories(IApplicationDirectories applicationDirectories, StartupDiagnostics startupDiagnostics, ILogger logger)
+    {
+        try
+        {
+            applicationDirectories.CreateIfRequired();
+        }
+        catch (Exception exception)
+        {
+            LogMessage.Error(logger, "Failed to create application directories", exception);
+            startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Application directories", exception));
+        }
+    }
+
+    private static void MigrateDatabase(ServiceProvider serviceProvider, StartupDiagnostics startupDiagnostics) =>
         DatabaseMigrator.MigrateAsync(
             serviceProvider.GetRequiredService<IDbContextFactory<ControlDbContext>>(),
-            serviceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<App>>()).GetAwaiter().GetResult();
+            serviceProvider.GetRequiredService<ILogger<App>>())
+            .GetAwaiter().GetResult()
+            .Match(static _ => UnitFp.Instance, exception =>
+            {
+                startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Database migration", exception));
+
+                return UnitFp.Instance;
+            });
 
 
     /// <summary>Releases the resources held by the application's dependency injection container.</summary>
