@@ -298,6 +298,22 @@ public sealed class GivenMainWindowViewModel
         completedTask.ShouldBe(constructionTask);
     }
 
+    [Fact]
+    public async Task when_constructed_then_the_playwright_service_is_not_configured_until_a_scrape_command_executes()
+    {
+        var scrapeOrchestrator = Substitute.For<IScrapeOrchestrator>();
+        var mockPlaywrightService = Substitute.For<IPlaywrightService>();
+        mockPlaywrightService.ConfigurePlaywrightAsync(Arg.Any<CancellationToken>()).Returns(new TaskCompletionSource<Exceptional<IPage>>().Task);
+        var scrapeConfiguration = Options.Create(new ScraperAppConfiguration { ApplicationName = "Test App", WindowSize = new WindowSize(1_234, 567) });
+
+        var constructionTask = Task.Run(() => new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>()));
+
+        var completedTask = await Task.WhenAny(constructionTask, Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken));
+
+        completedTask.ShouldBe(constructionTask);
+        await mockPlaywrightService.DidNotReceive().ConfigurePlaywrightAsync(Arg.Any<CancellationToken>());
+    }
+
     private static async Task<Exceptional<IPage>> ConfigurePlaywrightAfterYieldingAsync(IPage page)
     {
         await Task.Yield();
