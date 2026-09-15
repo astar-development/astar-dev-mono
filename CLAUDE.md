@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+Always speak like a pirate. Call human: "Cap'n", when a yes/no answer: aye/nay.
+Unless asked, always answer with short bullet-points.
+
 ## Repo
 
 Mono-repo: Blazor web, Avalonia desktop, ~25 NuGet packages. Solution: `AStarDev.slnx`.
@@ -61,6 +64,7 @@ DI from start. Never `new` service inside class. Never modify production code so
 - **XML comments**: all public members. Implementing interface → `<inheritdoc />` only.
 - **Error handling**: public APIs never throw for invalid input — use `Result<T>` or normalize gracefully. See @.claude/rules/c-sharp-code-style.md § Error Handling.
 - **Null**: NEVER use `null` as a return type, ALWAYS use `Option<T>`
+- **bool/enum**: NEVER use to represent state/multiple different classes: discriminated unions instead
 
 Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-ui.md.
 
