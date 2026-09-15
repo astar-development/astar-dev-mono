@@ -26,6 +26,7 @@ public static class ApplicationServicesExtensions
             .AddAutoRegisteredOptions(configuration)
             .AddLocalizationServices()
             .AddSingleton<IApplicationDirectories, ApplicationDirectories>()
+            .AddSingleton<StartupDiagnostics>()
             .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>()
             .AddSingleton<IPlaywrightService, PlaywrightService>()
             .AddSingleton<IScrapeOrchestrator, ScrapeOrchestrator>()

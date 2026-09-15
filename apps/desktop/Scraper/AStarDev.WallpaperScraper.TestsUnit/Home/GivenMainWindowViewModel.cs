@@ -7,8 +7,10 @@ using Microsoft.Playwright;
 using NSubstitute.Core;
 using AStar.Dev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Home;
+using AStarDev.WallpaperScraper.Localization;
 using AStarDev.WallpaperScraper.Scrapers;
 using AStarDev.WallpaperScraper.Services;
+using AStarDev.WallpaperScraper.Startup;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Home;
 
@@ -97,6 +99,62 @@ public sealed class GivenMainWindowViewModel
     [Fact]
     public void should_contain_the_IsBusy_property() =>
         CreateViewModel().IsBusy.ShouldBeFalse();
+
+    [Fact]
+    public void when_no_startup_failures_are_recorded_then_has_startup_error_is_false() =>
+        CreateViewModel(startupDiagnostics: new StartupDiagnostics()).HasStartupError.ShouldBeFalse();
+
+    [Fact]
+    public void when_no_startup_failures_are_recorded_then_the_startup_error_message_is_empty() =>
+        CreateViewModel(startupDiagnostics: new StartupDiagnostics()).StartupErrorMessage.ShouldBeEmpty();
+
+    [Fact]
+    public void when_a_startup_failure_is_recorded_then_has_startup_error_is_true()
+    {
+        var startupDiagnostics = new StartupDiagnostics();
+        startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Database migration", new InvalidOperationException("pending model changes")));
+
+        CreateViewModel(startupDiagnostics: startupDiagnostics).HasStartupError.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_a_startup_failure_is_recorded_then_the_startup_error_message_is_localized_from_the_failure()
+    {
+        var startupDiagnostics = new StartupDiagnostics();
+        startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Database migration", new InvalidOperationException("pending model changes")));
+        var localizationService = Substitute.For<ILocalizationService>();
+        localizationService.GetLocal("Startup.Error.Banner", Arg.Any<object[]>()).Returns("Startup failed (Database migration: pending model changes).");
+
+        var sut = CreateViewModel(startupDiagnostics: startupDiagnostics, localizationService: localizationService);
+
+        sut.StartupErrorMessage.ShouldBe("Startup failed (Database migration: pending model changes).");
+    }
+
+    [Fact]
+    public void when_a_startup_failure_is_recorded_then_the_scrape_search_categories_command_cannot_execute()
+    {
+        var startupDiagnostics = new StartupDiagnostics();
+        startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Database migration", new InvalidOperationException("pending model changes")));
+        var sut = CreateViewModel(startupDiagnostics: startupDiagnostics);
+
+        bool canExecute = true;
+        using var subscription = sut.ScrapeSearchCategoriesCommand.CanExecute.Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_a_startup_failure_is_recorded_then_the_scrape_all_command_cannot_execute()
+    {
+        var startupDiagnostics = new StartupDiagnostics();
+        startupDiagnostics.RecordFailure(StartupFailureFactory.Create("Database migration", new InvalidOperationException("pending model changes")));
+        var sut = CreateViewModel(startupDiagnostics: startupDiagnostics);
+
+        bool canExecute = true;
+        using var subscription = sut.ScrapeAllCommand.CanExecute.Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
 
     [Fact]
     public void when_a_scrape_command_is_executing_then_is_busy_is_true()
@@ -302,7 +360,7 @@ public sealed class GivenMainWindowViewModel
         {
             SynchronizationContext.SetSynchronizationContext(new NonPumpingSynchronizationContext());
 
-            return new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>());
+            return new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>(), new StartupDiagnostics(), Substitute.For<ILocalizationService>());
         });
 
         var completedTask = await Task.WhenAny(constructionTask, Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken));
@@ -318,7 +376,7 @@ public sealed class GivenMainWindowViewModel
         mockPlaywrightService.ConfigurePlaywrightAsync(Arg.Any<CancellationToken>()).Returns(new TaskCompletionSource<Exceptional<IPage>>().Task);
         var scrapeConfiguration = Options.Create(new ScraperAppConfiguration { ApplicationName = "Test App", WindowSize = new WindowSize(1_234, 567) });
 
-        var constructionTask = Task.Run(() => new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>()));
+        var constructionTask = Task.Run(() => new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>(), new StartupDiagnostics(), Substitute.For<ILocalizationService>()));
 
         var completedTask = await Task.WhenAny(constructionTask, Task.Delay(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken));
 
@@ -340,14 +398,18 @@ public sealed class GivenMainWindowViewModel
         Exceptional<UnitFp>? scrapeActionResult = null,
         Func<CallInfo, Task<Exceptional<UnitFp>>>? scrapeActionBehavior = null,
         bool? confirmScrape = true,
-        string applicationName = "Test App")
+        string applicationName = "Test App",
+        StartupDiagnostics? startupDiagnostics = null,
+        ILocalizationService? localizationService = null)
     {
         scrapeOrchestrator ??= Substitute.For<IScrapeOrchestrator>();
         var mockPlaywrightService = Substitute.For<IPlaywrightService>();
         page ??= new Success<IPage>(Substitute.For<IPage>());
         mockPlaywrightService.ConfigurePlaywrightAsync(Arg.Any<CancellationToken>()).Returns(page);
         var scrapeConfiguration = Options.Create(new ScraperAppConfiguration { ApplicationName = applicationName, WindowSize = new WindowSize(1_234, 567) });
-        var sut = new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>());
+        startupDiagnostics ??= new StartupDiagnostics();
+        localizationService ??= Substitute.For<ILocalizationService>();
+        var sut = new MainWindowViewModel(scrapeConfiguration, scrapeOrchestrator, mockPlaywrightService, new NullLogger<MainWindowViewModel>(), startupDiagnostics, localizationService);
 
         return sut;
     }

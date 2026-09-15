@@ -5,8 +5,10 @@ using System.Reflection;
 using AStar.Dev.FunctionalParadigm;
 using AStar.Dev.Logging.Extensions;
 using AStarDev.WallpaperScraper.Configuration;
+using AStarDev.WallpaperScraper.Localization;
 using AStarDev.WallpaperScraper.Scrapers;
 using AStarDev.WallpaperScraper.Services;
+using AStarDev.WallpaperScraper.Startup;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.Logging;
@@ -23,11 +25,12 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
     private readonly IScrapeOrchestrator scrapeOrchestrator;
     private readonly IPlaywrightService playwrightService;
     private readonly ILogger<MainWindowViewModel> logger;
+    private readonly StartupDiagnostics startupDiagnostics;
     private readonly CancellationTokenSource cancellationTokenSource;
     private readonly Progress<string> statusProgress;
     private bool disposed;
 
-    public MainWindowViewModel(IOptions<ScraperAppConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, IPlaywrightService playwrightService, ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(IOptions<ScraperAppConfiguration> scrapeConfiguration, IScrapeOrchestrator scrapeOrchestrator, IPlaywrightService playwrightService, ILogger<MainWindowViewModel> logger, StartupDiagnostics startupDiagnostics, ILocalizationService localizationService)
     {
         cancellationTokenSource = new CancellationTokenSource();
         statusProgress = new Progress<string>(AddStatusMessage);
@@ -38,6 +41,8 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         this.scrapeOrchestrator = scrapeOrchestrator;
         this.playwrightService = playwrightService;
         this.logger = logger;
+        this.startupDiagnostics = startupDiagnostics;
+        StartupErrorMessage = ComposeStartupErrorMessage(startupDiagnostics, localizationService);
         ScrapeSearchCategoriesCommand = CreateScrapeCommand("Scrape Search Categories", null!);
         ScrapeTopCommand = CreateScrapeCommand("Scrape Top Wallpapers", null!);
         ScrapeSubscribedCommand = CreateScrapeCommand("Scrape Subscribed Wallpapers", null!);
@@ -103,6 +108,18 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    /// <summary>
+    ///     Gets a value indicating whether one or more startup steps failed, e.g. a pending database
+    ///     migration. While <see langword="true" />, the scrape commands cannot execute.
+    /// </summary>
+    public bool HasStartupError => startupDiagnostics.Failures.Count > 0;
+
+    /// <summary>
+    ///     Gets the message describing the startup failures, for display in a <see cref="MainWindow" />
+    ///     banner. Empty when <see cref="HasStartupError" /> is <see langword="false" />.
+    /// </summary>
+    public string StartupErrorMessage { get; }
+
     public ReactiveCommand<Unit, Unit> ScrapeSearchCategoriesCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ScrapeTopCommand { get; }
@@ -137,11 +154,21 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         WindowWidth = windowSize.Width;
         WindowHeight = windowSize.Height;
     }
-    
+
+    private static string ComposeStartupErrorMessage(StartupDiagnostics startupDiagnostics, ILocalizationService localizationService)
+    {
+        if (startupDiagnostics.Failures.Count == 0) return string.Empty;
+
+        string reasons = string.Join("; ", startupDiagnostics.Failures.Select(failure => $"{failure.Step}: {failure.Exception.Message}"));
+
+        return localizationService.GetLocal("Startup.Error.Banner", reasons);
+    }
+
+
     private ReactiveCommand<Unit, Unit> CreateScrapeCommand(string actionName, IScrapeAction action)
     {
         LogMessage.Information(logger, "Creating command for action: {ActionName}", actionName);
-        var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy);
+        var canExecute = this.WhenAnyValue(vm => vm.IsBusy).Select(busy => !busy && !HasStartupError);
 
         Func<IPage, Task<Exceptional<UnitFp>>> scrape = actionName switch
         {

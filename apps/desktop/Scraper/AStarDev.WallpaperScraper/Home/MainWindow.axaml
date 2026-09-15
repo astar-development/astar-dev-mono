@@ -38,6 +38,11 @@
         </Menu>
         <TextBlock DockPanel.Dock="Top" Margin="12,8" Text="Welcome to the Wallpaper Scraper!" />
 
+        <Border x:Name="StartupErrorBanner" DockPanel.Dock="Top" Margin="12,0,12,8" Padding="12,8" CornerRadius="4"
+                Background="#B71C1C" IsVisible="{Binding HasStartupError}">
+            <TextBlock Text="{Binding StartupErrorMessage}" Foreground="White" TextWrapping="Wrap" />
+        </Border>
+
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="12,0">
             <Button Content="Scrape Search Categories" Command="{Binding ScrapeSearchCategoriesCommand}" />
             <Button Content="Scrape Top Wallpapers" Command="{Binding ScrapeTopCommand}" />
