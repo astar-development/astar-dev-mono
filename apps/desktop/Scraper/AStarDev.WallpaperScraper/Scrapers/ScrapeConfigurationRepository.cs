@@ -17,6 +17,7 @@ public sealed class ScrapeConfigurationRepository(IDbContextFactory<ControlDbCon
                 using var dbContext = dbContextFactory.CreateDbContext();
                 var config = await dbContext.ScrapeConfigurations.FirstAsync();
 
+                    //  TTDo: aadd db config dataa
                 return new ScrapeConfiguration(
                     new Uri(config.SearchConfiguration.BaseUrl + config.SearchConfiguration.SearchStringPrefix),
                     new Uri(config.SearchConfiguration.BaseUrl + config.SearchConfiguration.TopWallpapers),

@@ -11,5 +11,9 @@
   "Scraper.Subscribed.Progress": "Scraping subscribed wallpapers… ({0}/{1})",
   "Scraper.PageProcessor.Started": "Starting page processing…",
   "Scraper.PageProcessor.FailedToLoad": "Failed to load page content for: {0} with status message: {1}",
+  "Scraper.SearchCategories.Failed": "Search categories scrape failed: {0}",
+  "Scraper.Top.Failed": "Top wallpapers scrape failed: {0}",
+  "Scraper.Subscribed.Failed": "Subscribed wallpapers scrape failed: {0}",
+  "Scraper.All.Failed": "Full wallpaper scrape failed: {0}",
   "Startup.Error.Banner": "Startup failed ({0}). Scraping is disabled until this is resolved."
 }

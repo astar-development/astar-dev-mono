@@ -400,6 +400,18 @@
         <member name="M:AStarDev.ControlDb.Migrations.AddSearchConfiguration.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:AStarDev.ControlDb.Migrations.RemoveDefunctTableAndColumn">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.RemoveDefunctTableAndColumn.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.RemoveDefunctTableAndColumn.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.ControlDb.Migrations.RemoveDefunctTableAndColumn.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStarDev.ControlDb.ModelBuilderExtensions">
             <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
         </member>

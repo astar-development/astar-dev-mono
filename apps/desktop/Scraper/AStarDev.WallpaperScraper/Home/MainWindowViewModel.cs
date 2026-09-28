@@ -20,7 +20,7 @@ namespace AStarDev.WallpaperScraper.Home;
 
 public class MainWindowViewModel : ReactiveObject, IDisposable
 {
-    private const int MaxStatusMessages = 500;
+    private const int MaxStatusMessages = 100;
 
     private readonly IScrapeOrchestrator scrapeOrchestrator;
     private readonly IPlaywrightService playwrightService;
@@ -149,11 +149,7 @@ public class MainWindowViewModel : ReactiveObject, IDisposable
         }
     });
 
-    private void SetWindowSize(WindowSize windowSize)
-    {
-        WindowWidth = windowSize.Width;
-        WindowHeight = windowSize.Height;
-    }
+    private void SetWindowSize(WindowSize windowSize) => (WindowWidth, WindowHeight) = (windowSize.Width, windowSize.Height);
 
     private static string ComposeStartupErrorMessage(StartupDiagnostics startupDiagnostics, ILocalizationService localizationService)
     {

@@ -16,43 +16,43 @@ public sealed class ScrapeOrchestrator(ILocalizationService localizationService,
     {
         progress.Report(localizationService.GetLocal("Scraper.SearchCategories.Started"));
         var scrapeConfig = await scrapeConfigurationRepository.GetScrapeConfigurationAsync();
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SearchCategoriesUrl, page, cancellationToken));
+        var result = await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SearchCategoriesUrl, page, cancellationToken));
 
-        return UnitFp.Instance;
+        return result.TapError(exception => ReportFailure(progress, "Scraper.SearchCategories.Failed", exception)).Map(_ => UnitFp.Instance);
     }
 
     /// <inheritdoc/>
     public async Task<Exceptional<UnitFp>> ScrapeTopAsync(IProgress<string> progress, IPage page, CancellationToken cancellationToken)
     {
         progress.Report(localizationService.GetLocal("Scraper.Top.Started"));
-
         var scrapeConfig = await scrapeConfigurationRepository.GetScrapeConfigurationAsync();
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.TopWallpapersUrl, page, cancellationToken));
+        var result = await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.TopWallpapersUrl, page, cancellationToken));
 
-        return UnitFp.Instance;
+        return result.TapError(exception => ReportFailure(progress, "Scraper.Top.Failed", exception)).Map(_ => UnitFp.Instance);
     }
 
     /// <inheritdoc/>
     public async Task<Exceptional<UnitFp>> ScrapeSubscribedAsync(IProgress<string> progress, IPage page, CancellationToken cancellationToken)
     {
         progress.Report(localizationService.GetLocal("Scraper.Subscribed.Started"));
-
         var scrapeConfig = await scrapeConfigurationRepository.GetScrapeConfigurationAsync();
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SubscribedUrl, page, cancellationToken));
+        var result = await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SubscribedUrl, page, cancellationToken));
 
-        return UnitFp.Instance;
+        return result.TapError(exception => ReportFailure(progress, "Scraper.Subscribed.Failed", exception)).Map(_ => UnitFp.Instance);
     }
 
     /// <inheritdoc/>
     public async Task<Exceptional<UnitFp>> ScrapeAllAsync(IProgress<string> progress, IPage page, CancellationToken cancellationToken)
     {
         progress.Report(localizationService.GetLocal("Scraper.All.Started"));
-
         var scrapeConfig = await scrapeConfigurationRepository.GetScrapeConfigurationAsync();
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SearchCategoriesUrl, page, cancellationToken));
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.TopWallpapersUrl, page, cancellationToken));
-        await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SubscribedUrl, page, cancellationToken));
 
-        return UnitFp.Instance;
+        var searchCategoriesResult = await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SearchCategoriesUrl, page, cancellationToken));
+        var topResult = await searchCategoriesResult.BindAsync(async _ => await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.TopWallpapersUrl, page, cancellationToken)));
+        var subscribedResult = await topResult.BindAsync(async _ => await scrapeConfig.BindAsync(async config => await pageProcessor.ProcessPageAsync(progress, config.SubscribedUrl, page, cancellationToken)));
+
+        return subscribedResult.TapError(exception => ReportFailure(progress, "Scraper.All.Failed", exception)).Map(_ => UnitFp.Instance);
     }
+
+    private void ReportFailure(IProgress<string> progress, string localizationKey, Exception exception) => progress.Report(localizationService.GetLocal(localizationKey, exception.Message));
 }

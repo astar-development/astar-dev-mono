@@ -91,7 +91,7 @@ public class PlaywrightService(ILogger<PlaywrightService> logger, IOptions<Scrap
         BaseURL = scrapeConfiguration.Value.SearchConfiguration.BaseUrl.EnsureTrailingSlash(),
         Channel = "chrome",
         Headless = scrapeConfiguration.Value.SearchConfiguration.UseHeadless,
-        Args = ["--disable-blink-features=AutomationControlled", "--password-store=kwallet6"],
+        Args = ["--disable-blink-features=AutomationControlled", "--password-store=basic"],
         ViewportSize = new ViewportSize { Width = 2000, Height = 1200 },
         Locale = "en-GB",
         TimezoneId = "Europe/London",
