@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStarDev.ScraperPlaying.UI.ImagePreviewPanel">
+  <Grid RowDefinitions="Auto,*">
+    <ToggleSwitch x:Name="ImageDisplayToggle"
+                  Grid.Row="0"
+                  OnContent="Display Live Preview"
+                  OffContent="Hide Live Preview"
+                  IsChecked="True"
+                  HorizontalAlignment="Left"
+                  Margin="0,0,0,12"
+                  Click="ToggleImageDisplay" />
+    <Border Grid.Row="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            CornerRadius="12"
+            ClipToBounds="True">
+      <Grid RowDefinitions="*,Auto">
+        <Image x:Name="DownloadedImage" Grid.Row="0" Stretch="Uniform" />
+        <Grid x:Name="ImageDetailsPanel"
+              Grid.Row="1"
+              ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto"
+              ColumnSpacing="16"
+              RowSpacing="2"
+              Margin="16"
+              IsVisible="False">
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" FontWeight="SemiBold" FontSize="12" />
+          <TextBlock x:Name="ImageNameText" Grid.Row="0" Grid.Column="1" FontSize="12" TextWrapping="Wrap" />
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="Category" FontWeight="SemiBold" FontSize="12" />
+          <TextBlock x:Name="ImageCategoryText" Grid.Row="1" Grid.Column="1" FontSize="12" TextWrapping="Wrap" />
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="Size" FontWeight="SemiBold" FontSize="12" />
+          <TextBlock x:Name="ImageSizeText" Grid.Row="2" Grid.Column="1" FontSize="12" />
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="Dimensions" FontWeight="SemiBold" FontSize="12" />
+          <TextBlock x:Name="ImageDimensionsText" Grid.Row="3" Grid.Column="1" FontSize="12" />
+        </Grid>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

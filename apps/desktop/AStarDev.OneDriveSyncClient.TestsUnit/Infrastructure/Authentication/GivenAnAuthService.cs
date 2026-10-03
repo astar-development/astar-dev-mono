@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using Microsoft.Extensions.Logging;

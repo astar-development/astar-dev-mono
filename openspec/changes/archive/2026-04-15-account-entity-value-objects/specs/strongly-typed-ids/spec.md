@@ -2,7 +2,7 @@
 
 ### Requirement: AccountId strongly-typed identifier
 
-The system SHALL define `AccountId` as a `[StrongId(typeof(string))]` partial record struct in the `AStarDev.OneDriveSyncClient.Domain` namespace. All entity properties, repository method parameters, and domain model properties that represent the Microsoft Graph account object ID MUST use `AccountId` instead of `string`.
+The system SHALL define `AccountId` as a `[StrongType(typeof(string))]` partial record struct in the `AStarDev.OneDriveSyncClient.Domain` namespace. All entity properties, repository method parameters, and domain model properties that represent the Microsoft Graph account object ID MUST use `AccountId` instead of `string`.
 
 #### Scenario: AccountId used as primary key
 
@@ -31,7 +31,7 @@ The system SHALL define `AccountId` as a `[StrongId(typeof(string))]` partial re
 
 ### Requirement: OneDriveFolderId strongly-typed identifier
 
-The system SHALL define `OneDriveFolderId` as a `[StrongId(typeof(string))]` partial record struct. All properties representing a Microsoft Graph drive-item folder ID MUST use `OneDriveFolderId`.
+The system SHALL define `OneDriveFolderId` as a `[StrongType(typeof(string))]` partial record struct. All properties representing a Microsoft Graph drive-item folder ID MUST use `OneDriveFolderId`.
 
 #### Scenario: OneDriveFolderId on SyncFolderEntity
 
@@ -50,7 +50,7 @@ The system SHALL define `OneDriveFolderId` as a `[StrongId(typeof(string))]` par
 
 ### Requirement: OneDriveItemId strongly-typed identifier
 
-The system SHALL define `OneDriveItemId` as a `[StrongId(typeof(string))]` partial record struct. All properties representing a Microsoft Graph drive-item ID (non-folder) MUST use `OneDriveItemId`.
+The system SHALL define `OneDriveItemId` as a `[StrongType(typeof(string))]` partial record struct. All properties representing a Microsoft Graph drive-item ID (non-folder) MUST use `OneDriveItemId`.
 
 #### Scenario: OneDriveItemId on SyncJobEntity
 
@@ -69,4 +69,4 @@ The system SHALL add `AStarDev.SourceGenerators` and `AStarDev.SourceGeneratorAt
 #### Scenario: Build succeeds with generator references
 
 - **WHEN** `dotnet build` is run against `AStarDev.OneDriveSyncClient`
-- **THEN** the build SHALL succeed with zero errors and zero warnings, and all `[StrongId]`-attributed types SHALL have their generated partial implementations present
+- **THEN** the build SHALL succeed with zero errors and zero warnings, and all `[StrongType]`-attributed types SHALL have their generated partial implementations present

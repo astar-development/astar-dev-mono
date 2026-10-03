@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Fab4Kids.Web.Newsletter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -16,8 +16,8 @@ public class GivenANewsletterSubscriptionService
     public GivenANewsletterSubscriptionService()
     {
         subscriberStore.ExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
-        subscriberStore.AddAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns(UnitFp.Instance);
-        emailSender.SendAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns(UnitFp.Instance);
+        subscriberStore.AddAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns(Unit.Instance);
+        emailSender.SendAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns(Unit.Instance);
     }
 
     private NewsletterSubscriptionService CreateSut() => new(subscriberStore, emailSender, timeProvider, logger);

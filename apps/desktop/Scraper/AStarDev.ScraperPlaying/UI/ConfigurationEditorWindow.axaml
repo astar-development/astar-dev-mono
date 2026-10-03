@@ -1,0 +1,47 @@
+<Window Icon="/Assets/astar.png"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:ui="using:AStarDev.ScraperPlaying.UI"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AStarDev.ScraperPlaying.UI.ConfigurationEditorWindow"
+        Title="Edit Scrape Configuration"
+        Width="900"
+        Height="640"
+        MinWidth="480"
+        MinHeight="320">
+  <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="24">
+    <ComboBox x:Name="ConfigurationPicker"
+              MinWidth="280"
+              PlaceholderText="Select a configuration"
+              Margin="0,0,0,16"
+              SelectionChanged="ConfigurationSelected" />
+    <TabControl Grid.Row="1">
+      <TabItem x:Name="RootSettingsTab" Header="Root settings">
+        <ui:RootSettingsEditor x:Name="RootSettingsTabContent" />
+      </TabItem>
+      <TabItem x:Name="UserTab" Header="User">
+        <ui:UserSettingsEditor x:Name="UserTabContent" />
+      </TabItem>
+      <TabItem x:Name="DirectoriesTab" Header="Directories">
+        <ui:DirectorySettingsEditor x:Name="DirectoriesTabContent" />
+      </TabItem>
+      <TabItem x:Name="SearchTab" Header="Search">
+        <ui:SearchSettingsEditor x:Name="SearchTabContent" />
+      </TabItem>
+      <TabItem x:Name="SearchCategoriesTab" Header="Search categories">
+        <ui:SearchCategoriesEditor x:Name="SearchCategoriesTabContent" />
+      </TabItem>
+      <TabItem x:Name="PersonCategoriesTab" Header="Person categories">
+        <ui:PersonCategoriesEditor x:Name="PersonCategoriesTabContent" />
+      </TabItem>
+    </TabControl>
+    <TextBlock x:Name="ErrorText" Grid.Row="2" Foreground="Red" TextWrapping="Wrap" Margin="0,12,0,0" />
+    <StackPanel Grid.Row="3"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="12"
+                Margin="0,16,0,0">
+      <Button x:Name="SaveButton" Content="Save" Click="Save" />
+      <Button x:Name="CancelButton" Content="Cancel" Click="Cancel" />
+    </StackPanel>
+  </Grid>
+</Window>

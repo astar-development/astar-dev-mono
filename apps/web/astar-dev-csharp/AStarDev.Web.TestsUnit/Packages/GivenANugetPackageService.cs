@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Packages;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;

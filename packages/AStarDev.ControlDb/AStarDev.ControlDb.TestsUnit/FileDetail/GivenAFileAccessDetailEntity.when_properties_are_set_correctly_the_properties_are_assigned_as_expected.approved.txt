@@ -1,0 +1,12 @@
+﻿{
+  "id": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "fileId": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "fileDetail": null,
+  "detailsLastUpdated": null,
+  "lastViewed": null,
+  "moveRequired": false
+}

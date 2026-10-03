@@ -1,4 +1,4 @@
-using AStar.Dev.Technical.Debt.Reporting;
+using AStarDev.TechnicalDebtReporting;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Models;
 

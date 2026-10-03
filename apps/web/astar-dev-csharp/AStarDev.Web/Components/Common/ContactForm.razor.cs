@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Contact;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

@@ -10,8 +10,13 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 public interface IRemoteFolderEnumerator
 {
     /// <summary>
-    /// Loads rules and synced-item state into <paramref name="context"/>, then yields each
-    /// discovered <see cref="DeltaItem"/> as it arrives from the Graph API.
+    /// Loads the account's rules and synced-item state into <paramref name="context"/> before deletion detection.
+    /// </summary>
+    Task PrepareAsync(OneDriveAccount account, RemoteEnumerationContext context, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Yields each discovered <see cref="DeltaItem"/> as it arrives from the Graph API.
+    /// Calls <see cref="PrepareAsync"/> when the context has not already been initialized.
     /// <para>
     /// <see cref="RemoteEnumerationContext.Rules"/>, <see cref="RemoteEnumerationContext.SyncedItems"/>,
     /// and <see cref="RemoteEnumerationContext.HadNoRules"/> are set before the first item is yielded.

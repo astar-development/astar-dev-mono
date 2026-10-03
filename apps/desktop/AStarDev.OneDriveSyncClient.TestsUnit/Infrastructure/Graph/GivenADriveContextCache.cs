@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Graph;

@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -16,19 +16,34 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
-    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task PrepareAsync(OneDriveAccount account, RemoteEnumerationContext context, CancellationToken cancellationToken = default)
     {
+        if (context.IsInitialized)
+            return;
+
         var rules = await syncRuleRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false);
 
         if (rules.Count == 0)
         {
             OneDriveSyncClientMessages.RemoteFolderEnumeratorNoRules(logger, account.Id.Value);
             context.HadNoRules = true;
-            yield break;
+            context.IsInitialized = true;
+
+            return;
         }
 
         context.Rules = rules;
         context.SyncedItems = new ConcurrentDictionary<string, SyncedItemEntity>(await syncedItemRepository.GetAllByAccountAsync(account.Id, cancellationToken).ConfigureAwait(false), StringComparer.OrdinalIgnoreCase);
+        context.IsInitialized = true;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await PrepareAsync(account, context, cancellationToken).ConfigureAwait(false);
+
+        if (context.HadNoRules)
+            yield break;
 
         onStageChanged?.Invoke("Sync.ConnectingToDrive");
         OneDriveSyncClientMessages.RemoteFolderEnumeratorConnectingToDrive(logger, account.Id.Value);
@@ -45,7 +60,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         if (driveId is null)
             yield break;
 
-        var includeRules = rules.Where(r => r.RuleType == RuleType.Include).ToList();
+        var includeRules = context.Rules.Where(r => r.RuleType == RuleType.Include).ToList();
         var rootIncludeRules = includeRules
             .Where(rule => !includeRules.Any(other => other.RemotePath != rule.RemotePath && rule.RemotePath.StartsWith(other.RemotePath + "/", StringComparison.OrdinalIgnoreCase)))
             .ToList();

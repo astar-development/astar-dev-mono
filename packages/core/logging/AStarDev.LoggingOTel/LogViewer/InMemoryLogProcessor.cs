@@ -43,7 +43,7 @@ public sealed class InMemoryLogProcessor : BaseProcessor<LogRecord>, ILogEntryPr
         entries.Enqueue(entry);
 
         while (entries.Count > capacity)
-            entries.TryDequeue(out _);
+            _ = entries.TryDequeue(out _);
 
         subject.OnNext(entry);
     }

@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 
 namespace Fab4Kids.Web.Newsletter;
 

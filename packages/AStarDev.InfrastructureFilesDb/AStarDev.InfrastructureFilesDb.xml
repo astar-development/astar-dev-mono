@@ -284,12 +284,12 @@
         </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Data.SqliteTypeConverters.OptionStringToNullableString">
             <summary>
-              Gets a value converter that converts <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> values to their corresponding nullable representation for storage in SQLite, and vice versa. This converter ensures that <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> values are stored in a format compatible with SQLite's nullable types, allowing for accurate retrieval and conversion back to <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> when reading from the database.
+              Gets a value converter that converts <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> values to their corresponding nullable representation for storage in SQLite, and vice versa. This converter ensures that <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> values are stored in a format compatible with SQLite's nullable types, allowing for accurate retrieval and conversion back to <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> when reading from the database.
             </summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.FilesDb.Data.SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks">
             <summary>
-             Gets a value converter that converts <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> values to their corresponding nullable ticks representation for storage in SQLite, and vice versa. This converter ensures that <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> values are stored in a format compatible with SQLite's INTEGER type, allowing for accurate retrieval and conversion back to <see cref="T:AStar.Dev.FunctionalParadigm.Option`1" /> when reading from the database.
+             Gets a value converter that converts <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> values to their corresponding nullable ticks representation for storage in SQLite, and vice versa. This converter ensures that <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> values are stored in a format compatible with SQLite's INTEGER type, allowing for accurate retrieval and conversion back to <see cref="T:AStarDev.FunctionalParadigm.Option`1" /> when reading from the database.
             </summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.FilesDb.EnumerableExtensions">

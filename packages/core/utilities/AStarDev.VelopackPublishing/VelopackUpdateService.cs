@@ -1,4 +1,4 @@
-using AStar.Dev.Logging.Extensions;
+using AStarDev.LoggingExtensions;
 using global::Velopack;
 using global::Velopack.Locators;
 using global::Velopack.Sources;

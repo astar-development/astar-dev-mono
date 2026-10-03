@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Utilities;
 
 namespace AStar.Dev.Infrastructure.AppDb.Domain;

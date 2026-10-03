@@ -5,23 +5,23 @@ namespace AStarDev.SourceGenerators.Sample;
 /// <summary>
 ///
 /// </summary>
-[StrongId]
+[StrongType]
 public partial record struct UserId;
 
 /// <summary>
 ///
 /// </summary>
-[StrongId(typeof(int))]
+[StrongType(typeof(int))]
 public partial record struct UserId1;
 
 /// <summary>
 ///
 /// </summary>
-[StrongId(typeof(string))]
+[StrongType(typeof(string))]
 public partial record struct UserId2;
 
 /// <summary>
 ///
 /// </summary>
-[StrongId(typeof(Guid))]
+[StrongType(typeof(Guid))]
 public partial record struct UserId3;

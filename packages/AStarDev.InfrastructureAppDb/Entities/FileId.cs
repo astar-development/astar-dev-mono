@@ -5,5 +5,5 @@ namespace AStar.Dev.Infrastructure.AppDb.Entities;
 /// <summary>
 /// A strongly-typed identifier for a <see cref="FileDetailEntity"/>.
 /// </summary>
-[StrongId(typeof(Guid))]
+[StrongType(typeof(Guid))]
 public readonly partial record struct FileId;

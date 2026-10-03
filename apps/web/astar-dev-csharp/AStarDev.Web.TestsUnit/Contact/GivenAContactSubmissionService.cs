@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Contact;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -14,7 +14,7 @@ public class GivenAContactSubmissionService
     public GivenAContactSubmissionService()
     {
         rateLimiter.TryAcquire(Arg.Any<string>()).Returns(true);
-        emailSender.SendAsync(Arg.Any<ContactMessage>(), Arg.Any<CancellationToken>()).Returns(UnitFp.Instance);
+        emailSender.SendAsync(Arg.Any<ContactMessage>(), Arg.Any<CancellationToken>()).Returns(Unit.Instance);
     }
 
     private ContactSubmissionService CreateSut() => new(rateLimiter, emailSender, logger);

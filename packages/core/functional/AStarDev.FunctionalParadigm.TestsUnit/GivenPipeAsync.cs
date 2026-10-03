@@ -1,5 +1,5 @@
-using AStar.Dev.FunctionalParadigm.Composition;
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+using AStarDev.FunctionalParadigm.Composition;
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenPipeAsync
 {

@@ -1,6 +1,6 @@
 using System.Globalization;
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Logging.Extensions;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Fab4Kids.Web.Cart;
 using Microsoft.Extensions.Options;
 using Stripe.Checkout;

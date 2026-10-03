@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using ReactiveUnit = System.Reactive.Unit;
 

@@ -1,4 +1,4 @@
-using AStar.Dev.Logging.Extensions;
+using AStarDev.LoggingExtensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;

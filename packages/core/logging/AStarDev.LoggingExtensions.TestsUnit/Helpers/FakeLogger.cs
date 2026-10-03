@@ -1,4 +1,4 @@
-namespace AStar.Dev.Logging.Extensions.TestsUnit.Helpers;
+namespace AStarDev.LoggingExtensions.TestsUnit.Helpers;
 
 internal sealed class FakeLogger : ILogger
 {

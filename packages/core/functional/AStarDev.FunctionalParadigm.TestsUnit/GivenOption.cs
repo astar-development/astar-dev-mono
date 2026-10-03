@@ -1,4 +1,6 @@
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+using System.Diagnostics.CodeAnalysis;
+
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenOption
 {
@@ -121,6 +123,7 @@ public sealed class GivenOption
         (Option.Some(42) != Option.Some(7)).ShouldBeTrue();
 
     [Fact]
+    [SuppressMessage("Reliability", "CA1508:Avoid dead conditional code", Justification = "Deliberately exercises the record's null-safe equality operator with two nulls.")]
     public void when_a_null_left_operand_is_compared_with_a_null_right_operand_using_equality_operator_then_returns_true()
     {
         Option<int>? left = null;

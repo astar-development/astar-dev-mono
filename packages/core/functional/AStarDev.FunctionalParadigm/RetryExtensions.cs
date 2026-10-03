@@ -1,8 +1,6 @@
-namespace AStar.Dev.FunctionalParadigm;
+namespace AStarDev.FunctionalParadigm;
 
-/// <summary>
-///     Retry helpers for <see cref="Result{TResult,TError}" />-returning operations.
-/// </summary>
+/// <summary>Retry helpers for <see cref="Result{TResult,TError}" />-returning operations.</summary>
 public static class RetryExtensions
 {
     /// <summary>

@@ -3,12 +3,12 @@ using System.Text;
 namespace AStarDev.SourceGenerators.OptionsBindingGeneration;
 
 /// <summary>
-///  The <see cref="OptionsBindingCodeGenerator" /> class is responsible for generating the source code for the <c>AddAutoRegisteredOptions</c> extension method, which registers all options classes annotated with the <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> in the dependency injection container.
+///  The <see cref="OptionsBindingCodeGenerator" /> class is responsible for generating the source code for the <c>AddAutoRegisteredOptions</c> extension method, which registers all options classes annotated with the <see cref="SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> in the dependency injection container.
 /// </summary>
 internal static class OptionsBindingCodeGenerator
 {
     /// <summary>
-    ///   Generates the source code for the <c>AddAutoRegisteredOptions</c> extension method, which registers all options classes annotated with the <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> in the dependency injection container.
+    ///   Generates the source code for the <c>AddAutoRegisteredOptions</c> extension method, which registers all options classes annotated with the <see cref="SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> in the dependency injection container.
     /// </summary>
     /// <param name="types">The list of options types to generate registration code for.</param>
     /// <returns>The generated source code as a string.</returns>

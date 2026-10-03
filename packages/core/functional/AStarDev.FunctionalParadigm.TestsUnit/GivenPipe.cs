@@ -1,6 +1,6 @@
-using AStar.Dev.FunctionalParadigm.Composition;
+using AStarDev.FunctionalParadigm.Composition;
 
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenPipe
 {

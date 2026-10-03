@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Blazored.LocalStorage;
 
 namespace Fab4Kids.Web.Consent;

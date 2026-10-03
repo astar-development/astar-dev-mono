@@ -11,6 +11,14 @@ public sealed class GivenARegisterServiceAttributeDefinition
         => new AutoRegisterServiceAttribute(ServiceLifetime.Singleton).Lifetime.ShouldBe(ServiceLifetime.Singleton);
 
     [Fact]
+    public void when_constructed_with_no_layer_then_layer_defaults_to_miscellaneous()
+        => new AutoRegisterServiceAttribute().Layer.ShouldBe(Layer.Miscellaneous);
+
+    [Fact]
+    public void when_constructed_with_a_layer_then_layer_is_set()
+        => new AutoRegisterServiceAttribute(layer: Layer.Domain).Layer.ShouldBe(Layer.Domain);
+
+    [Fact]
     public void when_as_property_is_set_then_as_is_returned()
         => new AutoRegisterServiceAttribute { As = typeof(string) }.As.ShouldBe(typeof(string));
 

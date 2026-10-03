@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 
 namespace Fab4Kids.Web.Newsletter;
 
@@ -7,5 +7,5 @@ public interface INewsletterSubscriberStore
 {
     Task<Result<bool, string>> ExistsAsync(string email, CancellationToken cancellationToken);
 
-    Task<Result<UnitFp, string>> AddAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken);
+    Task<Result<Unit, string>> AddAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken);
 }

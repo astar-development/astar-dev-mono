@@ -2,7 +2,7 @@
 
 `AStarDev.OneDriveSyncClient` stores OneDrive account data in SQLite via EF Core. All domain identifiers (`AccountId`, `OneDriveFolderId`, `OneDriveItemId`) and the local sync path are currently raw `string` properties on EF entities and domain models. This allows callers to pass a folder ID where an account ID is expected without any compile-time error.
 
-The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGeneratorAttributes` which generate strongly-typed `record struct` ID wrappers via `[StrongId]`. The app project currently has no reference to these packages.
+The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGeneratorAttributes` which generate strongly-typed `record struct` ID wrappers via `[StrongType]`. The app project currently has no reference to these packages.
 
 ## Goals / Non-Goals
 
@@ -21,15 +21,15 @@ The repo already provides `AStarDev.SourceGenerators` + `AStarDev.SourceGenerato
 
 ## Decisions
 
-### D1 — Use `[StrongId(typeof(string))]` for all three identifier types
+### D1 — Use `[StrongType(typeof(string))]` for all three identifier types
 
-`AccountId`, `OneDriveFolderId`, and `OneDriveItemId` are Microsoft Graph object IDs: stable opaque strings. `[StrongId(typeof(string))]` generates a `partial record struct` with implicit conversions to/from `string` disabled by default, ensuring callers are explicit. Source-generator approach keeps the code DRY.
+`AccountId`, `OneDriveFolderId`, and `OneDriveItemId` are Microsoft Graph object IDs: stable opaque strings. `[StrongType(typeof(string))]` generates a `partial record struct` with implicit conversions to/from `string` disabled by default, ensuring callers are explicit. Source-generator approach keeps the code DRY.
 
 **Alternative considered:** Hand-written `readonly record struct` — rejected; more boilerplate for zero additional benefit given the generator already exists in the repo.
 
-### D2 — `LocalSyncPath` as a manual immutable record, not `[StrongId]`
+### D2 — `LocalSyncPath` as a manual immutable record, not `[StrongType]`
 
-A sync path has domain rules (must not be null/empty; normalised directory separator) that belong in a factory method. `[StrongId]` generates plain wrapping with no validation. A `record` with a private constructor and a static `Create` factory returning `Result<LocalSyncPath>` encodes the invariant.
+A sync path has domain rules (must not be null/empty; normalised directory separator) that belong in a factory method. `[StrongType]` generates plain wrapping with no validation. A `record` with a private constructor and a static `Create` factory returning `Result<LocalSyncPath>` encodes the invariant.
 
 **Alternative considered:** Keep as `string` with validation at service layer — rejected; validation belongs at the type boundary, not scattered across callers.
 

@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Fab4Kids.Web.Fulfilment;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -21,7 +21,7 @@ public class GivenAFulfilmentService
         linkGenerator.GenerateSignedUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(Result.Success<string, string>($"https://example.blob.core.windows.net/pdfs/{callInfo.Arg<string>()}?sig=abc")));
         emailSender.SendAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<DeliveryLink>>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Success<UnitFp, string>(UnitFp.Instance));
+            .Returns(Result.Success<Unit, string>(Unit.Instance));
     }
 
     private FulfilmentService CreateSut(SessionService? client) => new(logger, idempotencyStore, linkGenerator, emailSender, client);
@@ -130,7 +130,7 @@ public class GivenAFulfilmentService
         sessionService.GetAsync("cs_test_123", Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>())
             .Returns(SessionWith("ada@example.com", ("Times Tables Pack", "pdfs/file1.pdf")));
         emailSender.SendAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IReadOnlyList<DeliveryLink>>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Failure<UnitFp, string>("Something went wrong sending your download links."));
+            .Returns(Result.Failure<Unit, string>("Something went wrong sending your download links."));
         var sut = CreateSut(sessionService);
 
         var outcome = await sut.ProcessCheckoutCompletedAsync("cs_test_123", TestContext.Current.CancellationToken);

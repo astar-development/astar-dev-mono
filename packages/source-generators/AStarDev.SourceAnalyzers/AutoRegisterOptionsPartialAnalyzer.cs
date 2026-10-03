@@ -6,18 +6,11 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AStarDev.SourceAnalyzers;
 
-/// <summary>
-/// Analyzer that enforces [AutoRegisterOptions] is only applied to partial classes or structs.
-/// </summary>
+/// <summary>Analyzer that enforces [AutoRegisterOptions] is only applied to partial classes or structs.</summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
 {
-    /// <summary>
-    /// The diagnostic ID for missing partial on options classes.
-    /// </summary>
-    public const string DiagnosticId = "ASTAROPT002";
-
-    private static readonly DiagnosticDescriptor _rule = new(
+    private static readonly DiagnosticDescriptor rule = new(
         DiagnosticId,
         "Options class must be partial",
         "Options class '{0}' must be declared partial to support source generation",
@@ -25,8 +18,11 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    /// <summary>The diagnostic ID for missing partial on options classes.</summary>
+    public const string DiagnosticId = "ASTAROPT002";
+
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [_rule];
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [rule];
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
@@ -38,10 +34,6 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
         context.RegisterSyntaxNodeAction(AnalyzeType, SyntaxKind.ClassDeclaration, SyntaxKind.StructDeclaration);
     }
 
-    /// <summary>
-    /// Analyzes a type declaration for the [AutoRegisterOptions] attribute and missing partial keyword.
-    /// </summary>
-    /// <param name="context">The syntax node analysis context.</param>
     private static void AnalyzeType(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not TypeDeclarationSyntax typeDecl) return;
@@ -52,11 +44,13 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
         if (!Enumerable.Any(symbol.GetAttributes(),
                 attr => attr.AttributeClass?.ToDisplayString() ==
                         "AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute"))
+        {
             return;
+        }
 
         if (typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))) return;
 
-        var diag = Diagnostic.Create(_rule, typeDecl.Identifier.GetLocation(), symbol.Name);
+        var diag = Diagnostic.Create(rule, typeDecl.Identifier.GetLocation(), symbol.Name);
         context.ReportDiagnostic(diag);
     }
 }

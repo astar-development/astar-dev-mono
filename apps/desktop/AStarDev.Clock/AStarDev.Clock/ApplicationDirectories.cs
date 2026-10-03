@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
-using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
+using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.Clock;
 

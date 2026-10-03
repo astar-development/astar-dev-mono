@@ -1,5 +1,5 @@
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Logging.Extensions;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Data.Tables;
 
@@ -39,13 +39,13 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
         });
     }
 
-    public Task<Result<UnitFp, string>> AddAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken)
+    public Task<Result<Unit, string>> AddAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken)
     {
         if (tableClient is null)
         {
             LogMessage.Error(logger, "Newsletter subscriber storage is not configured (missing connection string or table name).");
 
-            return Task.FromResult<Result<UnitFp, string>>("Something went wrong. Please try again later.");
+            return Task.FromResult<Result<Unit, string>>("Something went wrong. Please try again later.");
         }
 
         return Try.RunAsync(async () =>
@@ -55,7 +55,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
             var entity = new NewsletterSubscriberEntity { PartitionKey = PartitionKey, RowKey = RowKeyFor(subscriber.Email), SubscribedAt = subscriber.SubscribedAt };
             await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Replace, cancellationToken);
 
-            return UnitFp.Instance;
+            return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureTableNewsletterSubscriberStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);

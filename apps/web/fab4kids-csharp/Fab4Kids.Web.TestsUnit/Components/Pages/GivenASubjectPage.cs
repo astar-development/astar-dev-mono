@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Blazored.LocalStorage;
 using Bunit;
 using Fab4Kids.Web.Cart;

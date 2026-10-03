@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace AStar.Dev.Logging.Extensions;
+namespace AStarDev.LoggingExtensions;
 
 /// <summary>
 ///     The <see cref="AStarEventIds" /> class contains the defined <see cref="EventId" /> events available for logging
@@ -8,8 +8,6 @@ namespace AStar.Dev.Logging.Extensions;
 /// </summary>
 public static class AStarEventIds
 {
-    /// <summary>
-    ///     Gets the <see cref="EventId" /> preconfigured for logging a page view
-    /// </summary>
+    /// <summary>Gets the <see cref="EventId" /> preconfigured for logging a page view</summary>
     public static EventId PageView => new(1_000, "Page view");
 }

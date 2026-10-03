@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
 using AStarDev.OneDriveSyncClient.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;

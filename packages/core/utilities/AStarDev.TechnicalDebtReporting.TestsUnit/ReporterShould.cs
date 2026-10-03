@@ -1,7 +1,7 @@
 // using System.Reflection;
 // using JetBrains.Annotations;
 
-// namespace AStar.Dev.Technical.Debt.Reporting;
+// namespace AStarDev.TechnicalDebtReporting.TestsUnit;
 
 // [TestSubject(typeof(Reporter))]
 // public class ReporterShould

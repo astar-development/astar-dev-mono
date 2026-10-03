@@ -1,0 +1,44 @@
+{
+  "id": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "fileName": {
+    "value": "file-name"
+  },
+  "directoryName": {
+    "value": "file-path"
+  },
+  "fileHandle": {
+    "value": "file-handle"
+  },
+  "fileSize": 12345,
+  "isImage": true,
+  "lastUpdated": "<date>",
+  "fileAccessDetail": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileDetail": null,
+    "detailsLastUpdated": null,
+    "lastViewed": null,
+    "moveRequired": false
+  },
+  "imageDetail": null,
+  "deletionStatus": {
+    "id": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "fileDetail": null,
+    "softDeleted": "<date>",
+    "softDeletePending": "<date>",
+    "hardDeletePending": "<date>"
+  },
+  "fileType": "image/png",
+  "fileTags": []
+}

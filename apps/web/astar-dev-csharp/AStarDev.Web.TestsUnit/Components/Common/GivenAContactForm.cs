@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Components.Common;
 using AStarDev.Web.Contact;
 using Bunit;

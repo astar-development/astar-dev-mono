@@ -1,5 +1,6 @@
 using System.Reactive;
-using AStar.Dev.FunctionalParadigm;
+using Unit = System.Reactive.Unit;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync;

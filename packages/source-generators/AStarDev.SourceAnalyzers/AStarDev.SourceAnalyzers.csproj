@@ -10,11 +10,16 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IncludeReleaseTracking>false</IncludeReleaseTracking>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>source-generator;analyzer;astartools</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
   </ItemGroup>
 </Project>

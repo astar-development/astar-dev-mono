@@ -7,17 +7,15 @@
         <Project Path="apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/AStarDev.OneDriveSyncClient.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj" />
     </Folder>
+    <Folder Name="/apps/desktop/AStarDev.Clock/" />
     <Folder Name="/apps/desktop/AStarDev.FileApp/">
         <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp.TestsUnit/AStarDev.FileApp.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/Scraper/">
-        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.TestsUnit/AStar.Dev.Wallpaper.Scraper.TestsUnit.csproj" />
-        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper.TestsIntegration/AStar.Dev.Wallpaper.Scraper.TestsIntegration.csproj" />
-        <Project Path="apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj" />
-        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsUnit/AStarDev.WallpaperScraper.TestsUnit.csproj" />
-        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsIntegration/AStarDev.WallpaperScraper.TestsIntegration.csproj" />
-        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying.TestsIntegration/AStarDev.ScraperPlaying.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying.TestsUnit/AStarDev.ScraperPlaying.TestsUnit.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying/AStarDev.ScraperPlaying.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/apps/web/astar-dev-csharp/">
@@ -37,12 +35,13 @@
         <Project Path="packages/AStarDev.InfrastructureAppDb.TestsUnit/AStarDev.InfrastructureAppDb.TestsUnit.csproj" />
         <Project Path="packages/AStarDev.InfrastructureAppDb/AStarDev.InfrastructureAppDb.csproj" />
         <Project Path="packages/AStarDev.InfrastructureFilesDb/AStarDev.InfrastructureFilesDb.csproj" />
+        <Project Path="packages/AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
     </Folder>
     <Folder Name="/packages/aspnet/" />
-    <Folder Name="/packages/aspnet/AStarDev.ApiHealthChecks/">
-        <Project Path="packages/aspnet/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks.TestsUnit/AStarDev.ApiHealthChecks.TestsUnit.csproj" />
-        <Project Path="packages/aspnet/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks/AStarDev.ApiHealthChecks.csproj" />
-    </Folder>
+    <Folder Name="/packages/aspnet/AStarDev.ApiHealthChecks/" />
+    <Folder Name="/packages/aspnet/AStarDev.AuthExtensions/" />
+    <Folder Name="/packages/aspnet/AStarDev.AuthExtensions/AStar.Dev.Auth.Extensions/" />
+    <Folder Name="/packages/AStarDev.ControlDb/" />
     <Folder Name="/packages/core/" />
     <Folder Name="/packages/core/functional/">
         <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions.TestsUnit/AStar.Dev.Functional.Extensions.TestsUnit.csproj" />
@@ -69,7 +68,9 @@
         <Project Path="packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
         <Project Path="packages/core/utilities/AStarDev.VelopackPublishingAvalonia.TestsUnit/AStarDev.VelopackPublishingAvalonia.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
+        <Project Path="packages/core/utilities/DemoClassLibrary/DemoClassLibrary.csproj" />
     </Folder>
+    <Folder Name="/packages/core/utilities/AStarDev.FluentAssignments/" />
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes.TestsUnit/AStarDev.SourceGeneratorAttributes.TestsUnit.csproj" />
         <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />

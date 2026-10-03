@@ -1,5 +1,5 @@
 using System.Threading.Channels;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -88,6 +88,14 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         bool signaled = false;
         try
         {
+            await dependencies.RemoteFolderEnumerator.PrepareAsync(account, context, cancellationToken).ConfigureAwait(false);
+
+            if (context.HadNoRules)
+                return;
+
+            RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
+            await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
+
             await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, stageChanged, cancellationToken).ConfigureAwait(false))
             {
                 var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, cancellationToken).ConfigureAwait(false);
@@ -107,9 +115,6 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
 
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
             await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
-
-            RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
-            await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
 
             var syncedItemsByLocalPath = context.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
             var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Value, syncConfig.LocalSyncPath.Value, context.Rules, syncedItemsByLocalPath);

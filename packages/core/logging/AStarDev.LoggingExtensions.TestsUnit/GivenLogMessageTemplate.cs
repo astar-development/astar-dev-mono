@@ -1,6 +1,6 @@
-using AStar.Dev.Logging.Extensions.TestsUnit.Helpers;
+using AStarDev.LoggingExtensions.TestsUnit.Helpers;
 
-namespace AStar.Dev.Logging.Extensions.TestsUnit;
+namespace AStarDev.LoggingExtensions.TestsUnit;
 
 [TestSubject(typeof(LogMessage))]
 public sealed class GivenLogMessageTemplate

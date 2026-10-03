@@ -3,9 +3,10 @@ using Microsoft.CodeAnalysis;
 
 namespace AStarDev.SourceGenerators.ServiceRegistrationGeneration;
 
-internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, string? serviceFqn, bool alsoAsSelf, string @namespace)
+internal sealed class ServiceModel(ServiceLifetime lifetime, Layer layer, string implFqn, string? serviceFqn, bool alsoAsSelf, string @namespace)
 {
     public ServiceLifetime Lifetime { get; } = lifetime;
+    public Layer Layer { get; } = layer;
     public string ImplFqn { get; } = implFqn;
     public string? ServiceFqn { get; } = serviceFqn;
     public string? Namespace { get; } = @namespace;
@@ -17,6 +18,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
             return null;
 
         var lifetime = ExtractLifetime(attr);
+        var layer = ExtractLayer(attr);
         var asType = ExtractAsType(attr);
         bool asSelf = ExtractAsSelf(attr);
         var service = asType ?? InferServiceType(impl);
@@ -27,6 +29,7 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
             ? null
             : new ServiceModel(
             lifetime: lifetime,
+            layer: layer,
             implFqn: impl.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             serviceFqn: service?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             alsoAsSelf: asSelf,
@@ -36,10 +39,15 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
 
     private static bool IsValidImplementationType(INamedTypeSymbol impl) => impl is { IsAbstract: false, Arity: 0, DeclaredAccessibility: Accessibility.Public };
 
-    private static ServiceLifetime ExtractLifetime(AttributeData attr) => attr.ConstructorArguments.Length == 1 &&
+    private static ServiceLifetime ExtractLifetime(AttributeData attr) => attr.ConstructorArguments.Length > 0 &&
                attr.ConstructorArguments[0].Value is int li
             ? (ServiceLifetime)li
             : ServiceLifetime.Scoped;
+
+    private static Layer ExtractLayer(AttributeData attr) => attr.ConstructorArguments.Length > 1 &&
+               attr.ConstructorArguments[1].Value is int la
+            ? (Layer)la
+            : Layer.Miscellaneous;
 
     private static INamedTypeSymbol? ExtractAsType(AttributeData attr)
     {

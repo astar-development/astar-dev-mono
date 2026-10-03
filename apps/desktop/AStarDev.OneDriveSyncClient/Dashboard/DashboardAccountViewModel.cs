@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
-using AStar.Dev.FunctionalParadigm;
+using Unit = System.Reactive.Unit;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Activity;

@@ -1,4 +1,4 @@
-using AStar.Dev.Logging.Extensions;
+using AStarDev.LoggingExtensions;
 using AStarDev.Web.CaseStudies;
 using AStarDev.Web.Components;
 using AStarDev.Web.Consent;

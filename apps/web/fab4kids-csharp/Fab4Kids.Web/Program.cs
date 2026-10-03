@@ -1,4 +1,4 @@
-using AStar.Dev.Logging.Extensions;
+using AStarDev.LoggingExtensions;
 using Azure.Communication.Email;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
